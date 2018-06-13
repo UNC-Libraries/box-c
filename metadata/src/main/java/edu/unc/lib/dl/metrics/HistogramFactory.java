@@ -15,53 +15,41 @@
  */
 package edu.unc.lib.dl.metrics;
 
-import io.dropwizard.metrics5.Gauge;
+import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.MetricName;
 import io.dropwizard.metrics5.MetricRegistry;
 
 /**
- * A factory for creating gauges for reporting various metrics
+ * A factory for creating histrograms for reporting various metrics
  *
  * @author harring
  *
  */
-public class GaugeFactory {
+public class HistogramFactory {
 
     private static final MetricRegistry registry = RegistryService.getInstance().getRegistry();
 
-    private GaugeFactory() {
+    private HistogramFactory() {
 
     }
 
     /**
-     * Creates and registers a gauge under the given name
+     * Creates and registers a histogram under the given name
      *
      * @param metricName the name under which to register the gauge
-     * @param duration the length of time elapsed in ms
      */
-    public static void createDurationGauge(MetricName name, Long duration) {
-        registry.register(name, new Gauge<Long>() {
-            @Override
-            public Long getValue() {
-                return duration;
-            }
-        });
+    public static Histogram createHistogram(String name) {
+        return registry.histogram(name);
 
     }
 
     /**
-     * Creates and registers a generic gauge under the given name
+     * Creates and registers a histogram under the given metric name
      *
      * @param metricName the name under which to register the gauge
-     * @param value the value to report
      */
-    public static void createGauge(MetricName name, Object value) {
-        registry.register(name, new Gauge<Object>() {
-            @Override
-            public Object getValue() {
-                return value;
-            }
-        });
+    public static Histogram createHistogram(MetricName metricName) {
+        return registry.histogram(metricName);
 
     }
 }

@@ -64,7 +64,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.CounterFactory;
-import edu.unc.lib.dl.metrics.GaugeFactory;
+import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -75,7 +75,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 import io.dropwizard.metrics5.Counter;
-import io.dropwizard.metrics5.MetricRegistry;
+import io.dropwizard.metrics5.Histogram;
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
 import net.greghaines.jesque.meta.QueueInfo;
@@ -95,8 +95,7 @@ import net.greghaines.jesque.worker.WorkerPool;
  *
  */
 public class DepositSupervisor implements WorkerListener {
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DepositSupervisor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DepositSupervisor.class);
 
     @Autowired
     private DepositStatusFactory depositStatusFactory;
@@ -118,6 +117,12 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private DepositEmailHandler depositEmailHandler;
+
+    private static final Histogram depositHist = HistogramFactory
+            .createHistogram("depositDuration");
+
+    private static final Histogram queuedDepositHist = HistogramFactory
+            .createHistogram("queuedDepositDuration");
 
     public net.greghaines.jesque.Config getJesqueConfig() {
         return jesqueConfig;
@@ -185,8 +190,7 @@ public class DepositSupervisor implements WorkerListener {
         long depositEndTime = System.currentTimeMillis();
         long depositTotalTime = depositEndTime - depositStartTime;
 
-        GaugeFactory.createDurationGauge(MetricRegistry.name("deposit " + depositUUID, "deposit-duration"),
-                depositTotalTime);
+        depositHist.update(depositTotalTime);
 
         String strDepositEndTime = Long.toString(depositEndTime);
         depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
@@ -281,7 +285,7 @@ public class DepositSupervisor implements WorkerListener {
 
     private Map<String, Set<String>> getQueuedDepositsWithJobs() {
         Map<String, Set<String>> depositMap = new HashMap<>();
-        for (Queue queue: Queue.values()) {
+        for (Queue queue : Queue.values()) {
             addQueuedDeposits(queue.name(), depositMap);
         }
         return depositMap;
@@ -317,11 +321,12 @@ public class DepositSupervisor implements WorkerListener {
             if (DepositState.running.name().equals(fields.get(DepositField.state.name()))) {
                 String uuid = fields.get(DepositField.uuid.name());
 
-                // Job may have been locked to a particular supervisor depend on when it was interrupted
+                // Job may have been locked to a particular supervisor depending on
+                // when it was interrupted
                 depositStatusFactory.removeSupervisorLock(uuid);
                 // Inform supervisor to resume this deposit from where it left off
                 if (depositSet.containsKey(uuid)) {
-                    // If the job is queued but the job it is waiting on is a cleanup, then it is finished
+                    // If job is queued but  it is waiting on is a cleanup, then it is finished
                     if (depositSet.get(uuid).contains(CleanupDepositJob.class.getName())) {
                         depositStatusFactory.setState(uuid, DepositState.finished);
                     } else {
@@ -349,7 +354,8 @@ public class DepositSupervisor implements WorkerListener {
                 } else {
                     List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
                     if (successfulJobs != null && successfulJobs.size() > 0) {
-                        // Queued but had already performed some jobs, so this is a resumption rather than new deposit
+                        // Queued but had already performed some jobs, so this
+                        // is a resumption rather than new deposit
                         depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
                     } else {
                         depositStatusFactory.setActionRequest(uuid, DepositAction.register);
@@ -378,8 +384,7 @@ public class DepositSupervisor implements WorkerListener {
         return depositStatusFactory;
     }
 
-    public void setDepositStatusFactory(
-            DepositStatusFactory depositStatusFactory) {
+    public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
         this.depositStatusFactory = depositStatusFactory;
     }
 
@@ -404,8 +409,7 @@ public class DepositSupervisor implements WorkerListener {
         stop();
     }
 
-    public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass,
-            String depositUUID) {
+    public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass, String depositUUID) {
         String uuid = UUID.randomUUID().toString();
         return new Job(jobClass.getName(), uuid, depositUUID);
     }
@@ -420,11 +424,11 @@ public class DepositSupervisor implements WorkerListener {
      * java.lang.Object, java.lang.Exception)
      */
     @Override
-    public void onEvent(WorkerEvent event, Worker worker, String queue,
-            Job job, Object runner, Object result, Throwable t) {
+    public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result,
+            Throwable t) {
         if (WorkerEvent.WORKER_POLL != event) {
-            LOG.debug("WorkerEvent {}, {}, {}, {}, {}, {}, {}", new Object[] {
-                    event, worker, queue, job, runner, result, t });
+            LOG.debug("WorkerEvent {}, {}, {}, {}, {}, {}, {}",
+                    new Object[] { event, worker, queue, job, runner, result, t });
         }
 
         String depositUUID;
@@ -432,14 +436,14 @@ public class DepositSupervisor implements WorkerListener {
 
         // Job-level status logging
         switch (event) {
-            case WORKER_ERROR:
-                LOG.error("Worker threw an error: {}", t);
-            case WORKER_START:
-            case WORKER_STOP:
-            case WORKER_POLL:
-            case JOB_PROCESS:
-                return;
-            default:
+        case WORKER_ERROR:
+            LOG.error("Worker threw an error: {}", t);
+        case WORKER_START:
+        case WORKER_STOP:
+        case WORKER_POLL:
+        case JOB_PROCESS:
+            return;
+        default:
         }
 
         depositUUID = (String) job.getArgs()[1];
@@ -448,87 +452,86 @@ public class DepositSupervisor implements WorkerListener {
         j = (AbstractDepositJob) runner;
 
         switch (event) {
-            case JOB_EXECUTE:
-                jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
+        case JOB_EXECUTE:
+            jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
 
-                if (!status.containsKey(DepositField.startTime.name())) {
-                    // Record the deposit start time
-                    long depositStartTime = System.currentTimeMillis();
-                    String strDepositStartTime = Long.toString(depositStartTime);
-                    depositStatusFactory.set(depositUUID, DepositField.startTime, strDepositStartTime);
+            if (!status.containsKey(DepositField.startTime.name())) {
+                // Record the deposit start time
+                long depositStartTime = System.currentTimeMillis();
+                String strDepositStartTime = Long.toString(depositStartTime);
+                depositStatusFactory.set(depositUUID, DepositField.startTime, strDepositStartTime);
 
-                    // Check to see how long the deposit has been on the redis queue
-                    String strQueuedStartTime = status.get(DepositField.submitTime.name());
-                    long queuedStartTime = Long.parseLong(strQueuedStartTime);
-                    long queuedTime = depositStartTime - queuedStartTime;
+                // Check to see how long the deposit has been on the redis queue
+                String strQueuedStartTime = status.get(DepositField.submitTime.name());
+                long queuedStartTime = Long.parseLong(strQueuedStartTime);
+                long queuedTime = depositStartTime - queuedStartTime;
 
-                    GaugeFactory.createDurationGauge(
-                            MetricRegistry.name("deposit " + depositUUID, "queuedDepositDuration"), queuedTime);
-                }
+                queuedDepositHist.update(queuedTime);
+            }
 
-                break;
-            case JOB_SUCCESS:
-                jobStatusFactory.completed(j.getJobUUID());
-                LOG.debug("Registering {} as completed for {}", j.getClass().getName(), depositUUID);
-                break;
-            case WORKER_ERROR:
-            case JOB_FAILURE:
-                String jobUUID = (String) job.getArgs()[0];
-                if (j != null) {
-                    jobUUID = j.getJobUUID();
-                }
+            break;
+        case JOB_SUCCESS:
+            jobStatusFactory.completed(j.getJobUUID());
+            LOG.debug("Registering {} as completed for {}", j.getClass().getName(), depositUUID);
+            break;
+        case WORKER_ERROR:
+        case JOB_FAILURE:
+            String jobUUID = (String) job.getArgs()[0];
+            if (j != null) {
+                jobUUID = j.getJobUUID();
+            }
 
-                if (t != null && t instanceof JobInterruptedException) {
-                    LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
-                    jobStatusFactory.interrupted(jobUUID);
-                    return;
-                }
+            if (t != null && t instanceof JobInterruptedException) {
+                LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
+                jobStatusFactory.interrupted(jobUUID);
+                return;
+            }
 
-                if (t != null && t instanceof FedoraTimeoutException) {
-                    LOG.warn("Fedora timed out for job {} in deposit {},"
-                            + " will resume after delay", jobUUID, depositUUID);
-                    jobStatusFactory.failed(jobUUID);
-                    resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
-                    return;
-                }
+            if (t != null && t instanceof FedoraTimeoutException) {
+                LOG.warn("Fedora timed out for job {} in deposit {}," + " will resume after delay", jobUUID,
+                        depositUUID);
+                jobStatusFactory.failed(jobUUID);
+                resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
+                return;
+            }
 
-                if (t != null) {
-                    LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", t);
-
-                    if (t instanceof JobFailedException) {
-                        String details = ((JobFailedException) t).getDetails();
-                        if (details != null) {
-                            LOG.error("Details for failed job " + jobUUID +
-                                    " in deposit " + depositUUID + ": " + details);
-                        }
-                    }
-                } else {
-                    LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed");
-                }
+            if (t != null) {
+                LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", t);
 
                 if (t instanceof JobFailedException) {
-                    jobStatusFactory.failed(jobUUID, t.getLocalizedMessage());
-                    depositStatusFactory.fail(depositUUID, t.getLocalizedMessage());
-                } else {
-                    jobStatusFactory.failed(jobUUID);
-                    String serviceName = job.getClassName().substring(job.getClassName().lastIndexOf('.') + 1);
-                    depositStatusFactory.fail(depositUUID, "Failed while performing service " + serviceName);
+                    String details = ((JobFailedException) t).getDetails();
+                    if (details != null) {
+                        LOG.error("Details for failed job " + jobUUID + " in deposit " + depositUUID + ": " + details);
+                    }
                 }
+            } else {
+                LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed");
+            }
 
-                // End job timer if failed
-                depositDuration(depositUUID, status);
+            if (t instanceof JobFailedException) {
+                jobStatusFactory.failed(jobUUID, t.getLocalizedMessage());
+                depositStatusFactory.fail(depositUUID, t.getLocalizedMessage());
+            } else {
+                jobStatusFactory.failed(jobUUID);
+                String serviceName = job.getClassName().substring(job.getClassName().lastIndexOf('.') + 1);
+                depositStatusFactory.fail(depositUUID, "Failed while performing service " + serviceName);
+            }
 
-                final Counter failed = CounterFactory.createCounter(job.getClassName(), "failed-deposits");
-                failed.inc();
+            // End job timer if failed
+            depositDuration(depositUUID, status);
 
-                depositEmailHandler.sendDepositResults(depositUUID);
+            final Counter failed = CounterFactory.createCounter(job.getClassName(), "failed-deposits");
+            failed.inc();
 
-                return;
-            default:
-                break;
+            depositEmailHandler.sendDepositResults(depositUUID);
+
+            return;
+        default:
+            break;
         }
 
-        // Now that state from the previous job is recorded, prevent further processing if interrupted
+        // Now that state from the previous job is recorded, prevent further
+        // processing if interrupted
         if (isJobPaused(status)) {
             LOG.debug("Job {} has been paused", depositUUID);
             return;
@@ -540,25 +543,24 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         // Deposit-level actions
-        List<String> successfulJobs = this.jobStatusFactory
-                .getSuccessfulJobNames(depositUUID);
+        List<String> successfulJobs = this.jobStatusFactory.getSuccessfulJobNames(depositUUID);
 
         switch (event) {
-            case JOB_EXECUTE:
-                if (!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
-                    depositStatusFactory.setState(depositUUID, DepositState.running);
-                }
-                break;
-            case JOB_SUCCESS:
-                try {
-                    queueNextJob(job, depositUUID, status, successfulJobs);
-                } catch (DepositFailedException e) {
-                    LOG.error("Failed to enqueue next job for deposit " + depositUUID, e);
-                    depositStatusFactory.fail(depositUUID);
-                }
-                break;
-            default:
-                break;
+        case JOB_EXECUTE:
+            if (!DepositState.running.name().equals(status.get(DepositField.state.name()))) {
+                depositStatusFactory.setState(depositUUID, DepositState.running);
+            }
+            break;
+        case JOB_SUCCESS:
+            try {
+                queueNextJob(job, depositUUID, status, successfulJobs);
+            } catch (DepositFailedException e) {
+                LOG.error("Failed to enqueue next job for deposit " + depositUUID, e);
+                depositStatusFactory.fail(depositUUID);
+            }
+            break;
+        default:
+            break;
         }
     }
 
@@ -575,8 +577,7 @@ public class DepositSupervisor implements WorkerListener {
 
         // Package integrity check
         if (status.get(DepositField.depositMd5.name()) != null) {
-            if (!successfulJobs.contains(PackageIntegrityCheckJob.class
-                    .getName())) {
+            if (!successfulJobs.contains(PackageIntegrityCheckJob.class.getName())) {
                 return makeJob(PackageIntegrityCheckJob.class, depositUUID);
             }
         }
@@ -584,8 +585,8 @@ public class DepositSupervisor implements WorkerListener {
         // Package may be unpacked
         String filename = status.get(DepositField.fileName.name());
         String packagingType = status.get(DepositField.packagingType.name());
-        if (filename != null && filename.toLowerCase().endsWith(".zip") &&
-                !PackagingType.SIMPLE_OBJECT.getUri().equals(packagingType)) {
+        if (filename != null && filename.toLowerCase().endsWith(".zip")
+                && !PackagingType.SIMPLE_OBJECT.getUri().equals(packagingType)) {
             if (!successfulJobs.contains(UnpackDepositJob.class.getName())) {
                 return makeJob(UnpackDepositJob.class, depositUUID);
             }
@@ -608,13 +609,12 @@ public class DepositSupervisor implements WorkerListener {
                 conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
             } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
                 conversion = makeJob(DirectoryToBagJob.class, depositUUID);
-             }
+            }
 
             if (conversion == null) {
-                String msg = MessageFormat
-                        .format("Cannot convert deposit package to N3 BagIt."
-                                + " No converter for this packaging type(s): {0}",
-                                packagingType);
+                String msg = MessageFormat.format(
+                        "Cannot convert deposit package to N3 BagIt." + " No converter for this packaging type(s): {0}",
+                        packagingType);
                 throw new DepositFailedException(msg);
             } else if (!successfulJobs.contains(conversion.getClassName())) {
                 return conversion;
@@ -631,13 +631,15 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(ValidateContentModelJob.class, depositUUID);
         }
 
-        // Perform vocabulary enforcement for package types that retain the original metadata
-//        if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
-//                || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
-//                || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
-//                && !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
-//            return makeJob(VocabularyEnforcementJob.class, depositUUID);
-//        }
+        // Perform vocabulary enforcement for package types that retain the
+        // original metadata
+        // if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
+        // || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
+        // || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
+        // &&
+        // !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
+        // return makeJob(VocabularyEnforcementJob.class, depositUUID);
+        // }
 
         // MODS validation
         File bagPath = new File(depositsDirectory, depositUUID);
@@ -686,8 +688,7 @@ public class DepositSupervisor implements WorkerListener {
     }
 
     private void queueNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs,
-            long delay)
-            throws DepositFailedException {
+            long delay) throws DepositFailedException {
         Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
         if (nextJob != null) {
             LOG.info("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
@@ -708,8 +709,7 @@ public class DepositSupervisor implements WorkerListener {
 
             // schedule cleanup job after the configured delay
             Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
-            LOG.info("Queuing {} for deposit {}",
-                    cleanJob.getClassName(), depositUUID);
+            LOG.info("Queuing {} for deposit {}", cleanJob.getClassName(), depositUUID);
             enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
         }
     }
@@ -759,7 +759,8 @@ public class DepositSupervisor implements WorkerListener {
             jobStatusFactory.clearStale(uuid);
             depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
 
-            // since we already checked for queued jobs at startup, only check when resuming from a paused state
+            // since we already checked for queued jobs at startup, only check
+            // when resuming from a paused state
             boolean enqueueNext = true;
             if (DepositState.paused.name().equals(status.get(DepositField.state.name()))) {
                 Map<String, Set<String>> depositSet = getQueuedDepositsWithJobs();
@@ -770,8 +771,8 @@ public class DepositSupervisor implements WorkerListener {
                 List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
                 queueNextJob(null, uuid, status, successfulJobs, delay);
             } else {
-                LOG.info("Resuming {} from paused state."
-                        + " A job is already queued so no new jobs will be enqueued", uuid);
+                LOG.info("Resuming {} from paused state." + " A job is already queued so no new jobs will be enqueued",
+                        uuid);
             }
 
             depositStatusFactory.setState(uuid, DepositState.queued);
@@ -822,7 +823,7 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         // Send message indicating the deposit has completed
-        opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
-                Arrays.asList(destPid), addedPids, null, depositUUID);
+        opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()), Arrays.asList(destPid),
+                addedPids, null, depositUUID);
     }
 }
