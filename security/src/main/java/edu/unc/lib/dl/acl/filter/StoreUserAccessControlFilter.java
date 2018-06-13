@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.filter;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
 
 import java.io.IOException;
 
@@ -46,6 +47,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
 
     protected static String FORWARDING_ROLE = "group-forwarding";
+    private static final String FORWARDED_MAIL = "forwarded-mail";
 
     private boolean retainGroupsThreadStore;
 
@@ -77,13 +79,8 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             }
             GroupsThreadStore.storeUsername(userName);
 
-            String email = request.getHeader("mail");
-            if (email != null) {
-                if (email.endsWith("_UNC")) {
-                    email = email.substring(0, email.length() - 4);
-                }
-                GroupsThreadStore.storeEmail(email);
-            }
+            String email = getEmailAddress(request);
+            GroupsThreadStore.storeEmail(email);
 
             AccessGroupSet accessGroups = getUserGroups(request);
             GroupsThreadStore.storeGroups(accessGroups);
@@ -144,6 +141,19 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
         }
 
         return accessGroups;
+    }
+
+    private String getEmailAddress(HttpServletRequest request) {
+        String email = request.getHeader("mail");
+        if (email == null && request.isUserInRole(FORWARDING_ROLE)) {
+            email = request.getHeader(FORWARDED_MAIL_HEADER);
+        }
+        if (email != null) {
+            if (email.endsWith("_UNC")) {
+                email = email.substring(0, email.length() - 4);
+            }
+        }
+        return email;
     }
 
     /**

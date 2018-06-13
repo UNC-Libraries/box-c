@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter.FORWARDING_
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_GROUPS_HEADER;
+import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.SHIBBOLETH_GROUPS_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -143,5 +144,39 @@ public class StoreUserAccessControlFilterTest {
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
         assertEquals(0, accessGroups.size());
+    }
+
+    @Test
+    public void testForwardedEmail() throws Exception {
+        when(request.getRemoteUser()).thenReturn("forwarder");
+        when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);
+        when(request.getHeader(FORWARDED_MAIL_HEADER)).thenReturn("user@example.com");
+
+        filter.doFilter(request, response, filterChain);
+
+        assertEquals("user@example.com", GroupsThreadStore.getEmail());
+    }
+
+    @Test
+    public void testIgnoreForwardedEmail() throws Exception {
+        when(request.getRemoteUser()).thenReturn("forwarder");
+        when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(false);
+        when(request.getHeader(FORWARDED_MAIL_HEADER)).thenReturn("user@example.com");
+
+        filter.doFilter(request, response, filterChain);
+
+        assertNull(GroupsThreadStore.getEmail());
+    }
+
+    @Test
+    public void testMailOverrideForwarded() throws Exception {
+        when(request.getRemoteUser()).thenReturn("forwarder");
+        when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);
+        when(request.getHeader("mail")).thenReturn("realuser@example.com");
+        when(request.getHeader(FORWARDED_MAIL_HEADER)).thenReturn("user@example.com");
+
+        filter.doFilter(request, response, filterChain);
+
+        assertEquals("realuser@example.com", GroupsThreadStore.getEmail());
     }
 }
