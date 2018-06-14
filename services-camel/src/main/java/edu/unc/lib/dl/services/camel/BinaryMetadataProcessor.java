@@ -50,13 +50,6 @@ public class BinaryMetadataProcessor implements Processor {
     private final int BINARY_PATH_DEPTH = 3;
     private String baseBinaryPath;
 
-    public BinaryMetadataProcessor(String baseBinaryPath) {
-        this.baseBinaryPath = baseBinaryPath;
-        if (!baseBinaryPath.endsWith("/")) {
-            this.baseBinaryPath += "/";
-        }
-    }
-
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
@@ -94,6 +87,16 @@ public class BinaryMetadataProcessor implements Processor {
             }
         } finally {
             resources.close();
+        }
+    }
+
+    /**
+     * @param baseBinaryPath the baseBinaryPath to set
+     */
+    public void setBaseBinaryPath(String baseBinaryPath) {
+        this.baseBinaryPath = baseBinaryPath;
+        if (!baseBinaryPath.endsWith("/")) {
+            this.baseBinaryPath += "/";
         }
     }
 }

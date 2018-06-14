@@ -56,13 +56,23 @@ public class MetaServicesRouter extends RouteBuilder {
         from("direct:process.enhancement")
             .routeId("ProcessEnhancement")
             .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
-                // Trigger binary processing after an asynchronously
-                .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+                .log("Performing enhancements for ${headers[org.fcrepo.jms.identifier]}")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
                 .removeHeaders("CamelHttp*")
-                .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-                .multicast()
-                .to("direct:process.binary", "direct:process.solr");
+                .to("direct-vm:enhancements.queue.fedora");
+                // Trigger binary processing after an asynchronously
+//                .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+//                .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
+//                .removeHeaders("CamelHttp*")
+//                .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+//                .multicast()
+//                .to("direct:process.binary", "direct:process.solr");
+
+        from("activemq://activemq:queue:repository.enhancements")
+            .routeId("ProcessEnhancementQueue")
+            .log("Pulled enhancement from queue ${headers[org.fcrepo.jms.identifier]}")
+            .delay(simple("500"))
+            .log("Finished enhancement in queue ${headers[org.fcrepo.jms.identifier]}");
 
         from("direct:process.binary")
             .routeId("ProcessOriginalBinary")
