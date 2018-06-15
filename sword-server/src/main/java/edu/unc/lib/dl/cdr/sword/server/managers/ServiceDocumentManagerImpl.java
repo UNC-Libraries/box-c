@@ -78,11 +78,8 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
             pid = RepositoryPaths.getContentRootPid();
         }
 
-        if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
-            LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
-            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-                    "Insufficient privileges to access the service document for " + pid.getPid());
-        }
+        assertHasAccess("Insufficient privileges to access the service document for " + pid.getRepositoryPath(),
+                pid, Permission.viewMetadata);
 
         LOG.debug("Retrieving service document for " + pid);
 

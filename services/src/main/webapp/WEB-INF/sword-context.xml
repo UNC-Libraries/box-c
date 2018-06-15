@@ -91,8 +91,6 @@
     </bean>
     
     <bean id="depositReportingUtil" class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
-        <!-- <property name="tripleStoreQueryService" ref="tripleStoreQueryService" /> -->
-        <!-- <property name="accessClient" ref="accessClient"/> -->
     </bean>
     
     <bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl">
@@ -138,8 +136,6 @@
     </bean>
     
     <bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl">
-        <property name="uipProcessor" ref="fedoraUIPProcessor"/>
-        <property name="depositReportingUtil" ref="depositReportingUtil"/>
     </bean>
     
     <bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
@@ -148,7 +144,6 @@
     </bean>
     
     <bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl">
-        <property name="depositReportingUtil" ref="depositReportingUtil"/>
     </bean>
     
     <bean id="depositorAccessControlFilter" class="edu.unc.lib.dl.cdr.sword.server.filters.DepositorAccessControlFilter">

@@ -87,10 +87,8 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
         }
 
         // Verify access control
-        if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
-            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-                    "Insufficient privileges to view the collection list for " + containerPID.getPid());
-        }
+        assertHasAccess("Insufficient privileges to view the collection list for " + containerPID.getRepositoryPath(),
+                containerPID, Permission.viewMetadata);
 
         Feed feed = abdera.getFactory().newFeed();
         feed.setId(containerPID.getPid());
