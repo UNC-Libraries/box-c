@@ -15,14 +15,21 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -51,6 +58,31 @@ import io.dropwizard.metrics5.Timer;
  */
 public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
+
+    public static final String REPOSITORY_NAMESPACE = "http://fedora.info/definitions/v4/repository#";
+    public static final Resource INBOUND_REFERENCES = createResource(REPOSITORY_NAMESPACE + "InboundReferences");
+    public static final Resource PAIRTREE = createResource(REPOSITORY_NAMESPACE + "Pairtree");
+    public static final Resource REPOSITORY_ROOT = createResource(REPOSITORY_NAMESPACE + "RepositoryRoot");
+    public static final String IANA_NAMESPACE = "http://www.iana.org/assignments/relation/";
+    public static final Property DESCRIBEDBY = createProperty(IANA_NAMESPACE + "describedby");
+    public static final String LDP_NAMESPACE = "http://www.w3.org/ns/ldp#";
+    public static final Property CONTAINS = createProperty(LDP_NAMESPACE + "contains");
+
+    public static final String PREMIS_NAMESPACE = "http://www.loc.gov/premis/rdf/v1#";
+    public static final Property HAS_SIZE = createProperty(PREMIS_NAMESPACE + "hasSize");
+    public static final Property HAS_MESSAGE_DIGEST = createProperty(PREMIS_NAMESPACE + "hasMessageDigest");
+
+    public static final String RDF_NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    public static final Property RDF_TYPE = createProperty(RDF_NAMESPACE + "type");
+
+    public static final Resource CONTAINER = createResource(LDP_NAMESPACE + "Container");
+    public static final Property MEMBERSHIP_RESOURCE = createProperty(LDP_NAMESPACE + "membershipResource");
+    public static final Property NON_RDF_SOURCE = createProperty(LDP_NAMESPACE + "NonRDFSource");
+    public static final Property RDF_SOURCE = createProperty(LDP_NAMESPACE + "RDFSource");
+    public static final Property CREATED_DATE = createProperty(REPOSITORY_NAMESPACE + "created");
+    public static final Property CREATED_BY = createProperty(REPOSITORY_NAMESPACE + "createdBy");
+    public static final Property LAST_MODIFIED_DATE = createProperty(REPOSITORY_NAMESPACE + "lastModified");
+    public static final Property LAST_MODIFIED_BY = createProperty(REPOSITORY_NAMESPACE + "lastModifiedBy");
 
     private List<PID> objsToDestroy;
     @Autowired
@@ -87,7 +119,7 @@ public class DestroyObjectsJob implements Runnable {
         }
     }
 
-    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException {
+    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException, FcrepoOperationFailedException {
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
@@ -96,12 +128,12 @@ public class DestroyObjectsJob implements Runnable {
             }
         } else if (rootOfTree instanceof FileObject) {
             FileObject file = (FileObject) rootOfTree;
-            List<BinaryObject> binaries = file.getBinaryObjects();
-            for (BinaryObject binary : binaries) {
+            BinaryObject binary = file.getOriginalFile();
+            if (binary != null) {
                 addBinaryMetadataToParent(rootOfTree, binary);
             }
         }
-        // destroy root of remaining tree
+        // destroy root of sub-tree
         Model stoneModel = rootOfTree.getModel();
         stoneModel = convertModelToTombstone(rootOfTree);
         repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
@@ -112,7 +144,7 @@ public class DestroyObjectsJob implements Runnable {
         .write();
     }
 
-    private Model convertModelToTombstone(RepositoryObject destroyedObj) {
+    private Model convertModelToTombstone(RepositoryObject destroyedObj) throws IOException, FcrepoOperationFailedException {
         Model oldModel = destroyedObj.getModel();
         Model stoneModel = ModelFactory.createDefaultModel();
         Resource resc = destroyedObj.getResource();
@@ -125,6 +157,7 @@ public class DestroyObjectsJob implements Runnable {
                 stoneModel.add(s);
             }
         }
+        sanitize(stoneModel);
         // determine path and store in tombstone model
         String path = pathFactory.getPath(destroyedObj.getPid()).toNamePath();
         stoneModel.add(resc, Cdr.historicalPath, path);
@@ -146,6 +179,44 @@ public class DestroyObjectsJob implements Runnable {
             }
         }
     }
+
+    private Model sanitize(final Model model) throws IOException, FcrepoOperationFailedException {
+        final List<Statement> remove = new ArrayList<>();
+        for (final StmtIterator it = model.listStatements(); it.hasNext(); ) {
+            final Statement s = it.nextStatement();
+
+            if ((s.getPredicate().getNameSpace().equals(REPOSITORY_NAMESPACE) && !relaxedPredicate(s.getPredicate()))
+                    || s.getSubject().getURI().endsWith("fcr:export?format=jcr/xml")
+                    || s.getSubject().getURI().equals(REPOSITORY_NAMESPACE + "jcr/xml")
+                    || s.getPredicate().equals(DESCRIBEDBY)
+                    || s.getPredicate().equals(CONTAINS)
+                    || s.getPredicate().equals(HAS_MESSAGE_DIGEST)
+                    || s.getPredicate().equals(HAS_SIZE)
+                    || (s.getPredicate().equals(RDF_TYPE) && forbiddenType(s.getResource()))) {
+                remove.add(s);
+            }
+        }
+        return model.remove(remove);
+    }
+
+    private boolean forbiddenType(final Resource resource) {
+        return resource.getNameSpace().equals(REPOSITORY_NAMESPACE)
+            || resource.getURI().equals(CONTAINER.getURI())
+            || resource.getURI().equals(NON_RDF_SOURCE.getURI())
+            || resource.getURI().equals(RDF_SOURCE.getURI());
+   }
+
+   /**
+    * Tests whether the provided property is one of the small subset of the predicates within the
+    * repository namespace that may be modified.  This method always returns false if the
+    * import/export configuration is set to "legacy" mode.
+    * @param p the property (predicate) to test
+    * @return true if the predicate is of the type that can be modified
+    */
+   private boolean relaxedPredicate(final Property p) {
+       return (p.equals(CREATED_BY) || p.equals(CREATED_DATE)
+               || p.equals(LAST_MODIFIED_BY) || p.equals(LAST_MODIFIED_DATE));
+   }
 
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
