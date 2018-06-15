@@ -42,6 +42,7 @@ public class Tombstone extends RepositoryObject {
 
     @Override
     public RepositoryObject getParent() {
-        return driver.getParentObject(this);
+        // tombstone is not in the hierarchy, so doesn't have a parent
+        return null;
     }
 }

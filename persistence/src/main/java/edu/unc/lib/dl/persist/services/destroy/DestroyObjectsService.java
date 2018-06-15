@@ -20,11 +20,14 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -36,8 +39,10 @@ import edu.unc.lib.dl.fedora.PID;
 public class DestroyObjectsService {
 
     private static final Logger log = LoggerFactory.getLogger(DestroyObjectsService.class);
-
+    @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     /**
      * Checks whether the active user has permissions to destroy the listed objects,
@@ -51,8 +56,13 @@ public class DestroyObjectsService {
 
         for (String id : ids) {
             PID pid = PIDs.get(id);
-            aclService.assertHasAccess("User does not have permission to destroy this object", pid,
-                    agent.getPrincipals(), Permission.destroy);
+            if (repoObjLoader.getRepositoryObject(pid) instanceof AdminUnit) {
+                aclService.assertHasAccess("User does not have permission to destroy admin unit", pid,
+                        agent.getPrincipals(), Permission.destroyUnit);
+            } else {
+                aclService.assertHasAccess("User does not have permission to destroy this object", pid,
+                        agent.getPrincipals(), Permission.destroy);
+            }
             objsToDestroy.add(pid);
         }
         if (!objsToDestroy.isEmpty()) {
@@ -60,6 +70,20 @@ public class DestroyObjectsService {
             log.info("Destroy job for {} objects started by {}", objsToDestroy.size(), agent.getUsernameUri());
             job.run();
         }
+    }
+
+    /**
+     * @param aclService the aclService to set
+     */
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    /**
+     * @param repoObjLoader the object loader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
 }
