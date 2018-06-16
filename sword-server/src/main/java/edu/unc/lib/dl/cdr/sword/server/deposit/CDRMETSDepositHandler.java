@@ -30,6 +30,7 @@ import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.MetsHeaderScanner;
@@ -65,7 +66,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
         PID depositPID = scanner.getObjID();
         if (depositPID == null) {
             UUID depositUUID = UUID.randomUUID();
-            depositPID = new PID("uuid:" + depositUUID.toString());
+            depositPID = PIDs.get(depositUUID.toString());
         }
         File dir = makeNewDepositDirectory(depositPID.getUUID());
 
@@ -76,11 +77,11 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
             FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
         } catch (IOException e) {
             throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-                    "Unable to create your deposit bag: " + depositPID.getPid(), e);
+                    "Unable to create your deposit bag: " + depositPID.getRepositoryPath(), e);
         }
 
         // METS specific fields
-        Map<String, String> status = new HashMap<String, String>();
+        Map<String, String> status = new HashMap<>();
         status.put(DepositField.packageProfile.name(), scanner.getProfile());
         status.put(DepositField.metsType.name(), scanner.getType());
         status.put(DepositField.createTime.name(), scanner.getCreateDate());

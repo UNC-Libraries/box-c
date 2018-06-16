@@ -47,7 +47,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -117,7 +117,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
                     "Duplicate request, repository already has deposit " + depositPid);
         }
 
-        Map<String, String> status = new HashMap<String, String>();
+        Map<String, String> status = new HashMap<>();
         status.putAll(extras);
 
         // generic deposit fields
@@ -126,7 +126,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.fileMimetype.name(), deposit.getMimeType());
         status.put(DepositField.depositorName.name(), owner);
         status.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
-        status.put(DepositField.containerId.name(), destination.getPid());
+        status.put(DepositField.containerId.name(), destination.getId());
         status.put(DepositField.depositMethod.name(), DepositMethod.SWORD13.getLabel());
         status.put(DepositField.packagingType.name(), type.getUri());
         status.put(DepositField.depositMd5.name(), deposit.getMd5());
@@ -155,7 +155,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 
         status.put(DepositField.state.name(), DepositState.unregistered.name());
         status.put(DepositField.actionRequest.name(), DepositAction.register.name());
-        Set<String> nulls = new HashSet<String>();
+        Set<String> nulls = new HashSet<>();
         for (String key : status.keySet()) {
             if (status.get(key) == null) {
                 nulls.add(key);
