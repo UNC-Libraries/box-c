@@ -78,4 +78,8 @@ public class Ldp {
      */
     public static final Property membershipResource = createProperty( "http://www.w3.org/ns/ldp#membershipResource" );
 
+    public static final Resource Container = createResource(NS + "Container");
+    public static final Resource NonRdfSource = createResource(NS + "NonRDFSource");
+    public static final Resource RdfSource = createResource(NS + "RDFSource");
+
 }

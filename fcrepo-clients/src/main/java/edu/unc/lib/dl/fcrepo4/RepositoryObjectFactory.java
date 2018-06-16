@@ -535,8 +535,20 @@ public class RepositoryObjectFactory {
      */
     public URI createOrTransformObject(URI uri, Model model) throws FedoraException {
 
+        InputStream modelStream = null;
+        if (model != null) {
+            try {
+                Model newModel = ModelFactory.createDefaultModel();
+                newModel.add(model.listStatements(new SanitizeServerManagedTriplesSelector()));
+                modelStream = RDFModelUtil.streamModel(newModel);
+            } catch (IOException e) {
+                throw new FedoraException("Unable to create object at " + uri, e);
+            }
+        }
+
         try (FcrepoResponse response = getClient().put(uri)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                .body(modelStream, TURTLE_MIMETYPE)
+                .preferLenient()
                 .perform()) {
 
             return response.getLocation();
