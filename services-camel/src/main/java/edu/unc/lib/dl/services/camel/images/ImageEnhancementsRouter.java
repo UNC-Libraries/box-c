@@ -76,7 +76,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 
         from("direct-vm:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
-            .log(LoggingLevel.INFO, "Access copy triggered")
+            .log(LoggingLevel.DEBUG, "Access copy triggered")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "

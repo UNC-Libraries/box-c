@@ -57,6 +57,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
+import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor;
 import edu.unc.lib.dl.test.TestHelper;
@@ -107,6 +108,9 @@ public class EnhancementRouterIT {
     @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
+    @BeanInject(value = "fulltextProcessor")
+    private FulltextProcessor fulltextProcessor;
+
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
@@ -142,7 +146,7 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
+                .whenCompleted(3)
                 .create();
 
         notify.matches(5l, TimeUnit.SECONDS);
@@ -166,12 +170,48 @@ public class EnhancementRouterIT {
 
         notify.matches(5l, TimeUnit.SECONDS);
 
-        System.out.println("What is access copy " + addAccessCopyProcessor);
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
-        System.out.println("Checking to see if access copy called");
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         // Indexing not triggered on binary object
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testInvalidFile() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        BinaryObject binObj = fileObj.addBinary("techmd_fits", new ByteArrayInputStream(FILE_CONTENT.getBytes()),
+                "fits.xml", "text/xml", null, null, null);
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
+                .create();
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(fulltextProcessor,  never()).process(any(Exchange.class));
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        FileObject descObj = fileObj.setDescription(new ByteArrayInputStream(FILE_CONTENT.getBytes()));
+
+        Map<String, Object> headers = createEvent(descObj.getPid(),
+                Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
+                .create();
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
