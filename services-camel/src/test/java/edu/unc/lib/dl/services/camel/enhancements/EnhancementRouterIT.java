@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.services.camel.enhancements;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
@@ -6,6 +21,8 @@ import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -39,10 +56,16 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
 import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 
+/**
+ *
+ * @author bbpennel
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -66,6 +89,9 @@ public class EnhancementRouterIT {
     @Autowired
     private CamelContext cdrEnhancements;
 
+    @Autowired
+    private CamelContext cdrServiceImageEnhancements;
+
     @Produce(uri = "direct-vm:enhancements.fedora")
     private ProducerTemplate template;
 
@@ -84,14 +110,19 @@ public class EnhancementRouterIT {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
+    @BeanInject(value = "getBinaryProcessor")
+    private GetBinaryProcessor getBinaryProcessor;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
 
+        reset(solrIngestProcessor);
+
         TestHelper.setContentBase(baseAddress);
 
         baseBinaryPath = tmpFolder.getRoot().getAbsolutePath();
-        binaryMetadataProcessor.setBaseBinaryPath(baseBinaryPath);
+        getBinaryProcessor.setTempDirectory(baseBinaryPath);
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
         FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
@@ -103,7 +134,7 @@ public class EnhancementRouterIT {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testFolderEnhancements() throws Exception {
         FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
         final Map<String, Object> headers = createEvent(folderObject.getPid(),
@@ -128,15 +159,20 @@ public class EnhancementRouterIT {
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
+        // Separate exchanges when multicasting
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
+                .whenCompleted(2)
                 .create();
 
         notify.matches(5l, TimeUnit.SECONDS);
 
+        System.out.println("What is access copy " + addAccessCopyProcessor);
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        System.out.println("Checking to see if access copy called");
         verify(addAccessCopyProcessor).process(any(Exchange.class));
+        // Indexing not triggered on binary object
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
     private static Map<String, Object> createEvent(PID pid, String... type) {

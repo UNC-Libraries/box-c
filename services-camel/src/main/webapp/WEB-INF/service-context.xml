@@ -214,6 +214,10 @@
         <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
     </camel:camelContext>
     
+    <camel:camelContext id="CdrEnhancements">
+        <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
+    </camel:camelContext>
+    
     <!-- Initialize metaServicesRouter after the routes it depends on -->
     <camel:camelContext id="MetaServicesRouter">
         <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>

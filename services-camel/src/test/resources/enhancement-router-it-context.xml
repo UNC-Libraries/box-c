@@ -63,7 +63,6 @@
     
     <bean id="getBinaryProcessor" class="edu.unc.lib.dl.services.camel.GetBinaryProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
-        <property name="tempDirectory" value="${services.tempDirectory}" />
     </bean>
 
     <bean id="cleanupBinaryProcessor" class="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor">
@@ -76,15 +75,15 @@
         <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
     </bean>
 
-    <camel:camelContext id="CdrServiceImageEnhancements">
+    <camel:camelContext id="cdrServiceImageEnhancements">
         <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
     </camel:camelContext>
     
-    <camel:camelContext id="CdrServiceFulltextExtraction">
+    <camel:camelContext id="cdrServiceFulltextExtraction">
         <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
     </camel:camelContext>
     
-    <camel:camelContext id="CdrServiceSolr">
+    <camel:camelContext id="cdrServiceSolr">
         <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
     </camel:camelContext>
     

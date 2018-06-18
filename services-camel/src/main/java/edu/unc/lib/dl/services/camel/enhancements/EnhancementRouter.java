@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.rdf.Cdr.FileObject;
 import static edu.unc.lib.dl.rdf.Cdr.Folder;
 import static edu.unc.lib.dl.rdf.Cdr.Work;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.INFO;
 
 import org.apache.camel.BeanInject;
@@ -60,7 +61,7 @@ public class EnhancementRouter extends RouteBuilder {
         from("direct-vm:enhancements.fedora")
             .routeId("QueueEnhancementsFromFedora")
             .log(INFO, "Queuing enhancements from Fedora message for ${headers[CamelFcrepoUri]}")
-            .setHeader("CdrEnhancementSet", constant(DEFAULT_ENHANCEMENTS))
+            .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .to("{{cdr.enhancement.stream.camel}}");
 
         from("{{cdr.enhancement.stream.camel}}")
@@ -74,6 +75,7 @@ public class EnhancementRouter extends RouteBuilder {
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} contains '/original_file'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+            .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
             .process(getBinaryProcessor)
             .to("direct:process.enhancements")
@@ -87,6 +89,8 @@ public class EnhancementRouter extends RouteBuilder {
 
         from("direct:process.solr")
             .routeId("IngestSolrIndexing")
+            .log(LoggingLevel.INFO, "Requesting solr indexing of ${headers[CamelFcrepoUri]}"
+                    + " with types ${headers[org.fcrepo.jms.resourceType]}")
             .filter(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Work.getURI() + "'"
                     + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + FileObject.getURI() + "'"
                     + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Folder.getURI() + "'"

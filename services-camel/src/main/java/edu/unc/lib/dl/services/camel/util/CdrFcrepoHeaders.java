@@ -32,4 +32,6 @@ public abstract class CdrFcrepoHeaders {
     public static final String CdrBinaryUri = "CdrBinaryUri";
 
     public static final String CdrUpdateAction = "CdrUpdateAction";
+
+    public static final String CdrEnhancementSet = "CdrEnhancementSet";
 }
