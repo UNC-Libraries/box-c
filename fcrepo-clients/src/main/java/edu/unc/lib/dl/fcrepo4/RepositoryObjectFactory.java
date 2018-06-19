@@ -487,7 +487,7 @@ public class RepositoryObjectFactory {
      * @param property the new property value
      * @param object
      */
-    public void createExclusiveRelationship(RepositoryObject repoObj, Property property, Resource object) {
+    public void createExclusiveRelationship(RepositoryObject repoObj, Property property, Object object) {
         NodeIterator valuesIt = repoObj.getModel().listObjectsOfProperty(property);
         List<Object> previousValues = null;
         if (valuesIt != null && valuesIt.hasNext()) {
