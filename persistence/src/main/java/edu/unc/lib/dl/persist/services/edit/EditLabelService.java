@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
+import java.util.Arrays;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -22,12 +24,17 @@ import org.apache.jena.rdf.model.Statement;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.services.OperationsMessageSender;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that manages editing of the dc:title property on an object
@@ -40,6 +47,10 @@ public class EditLabelService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
+    private TransactionManager txManager;
+    private OperationsMessageSender operationsMessageSender;
+
+    private static final Timer timer = TimerFactory.createTimerForClass(EditLabelService.class);
 
     public EditLabelService() {
     }
@@ -52,35 +63,70 @@ public class EditLabelService {
      * @param label the new label (dc:title) of the given object
      */
     public void editLabel(AgentPrincipals agent, PID pid, String label) {
-        aclService.assertHasAccess(
-                "User does not have permissions to edit labels",
-                pid, agent.getPrincipals(), Permission.editDescription);
+        FedoraTransaction tx = txManager.startTransaction();
 
-        RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
-        Model objModel = obj.getModel();
-        Resource resc = objModel.getResource(obj.getUri().toString());
+        try (Timer.Context context = timer.time()) {
+            aclService.assertHasAccess(
+                    "User does not have permissions to edit labels",
+                    pid, agent.getPrincipals(), Permission.editDescription);
 
-        String oldLabel = replaceOldLabel(objModel, resc, label);
+            RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
+            Model objModel = obj.getModel();
+            Resource resc = objModel.getResource(obj.getUri().toString());
 
-        repoObjFactory.createExclusiveRelationship(obj, DcElements.title, (Resource) objModel.createLiteral(label));
+            String oldLabel = replaceOldLabel(objModel, resc, label);
 
-        obj.getPremisLog()
-        .buildEvent(Premis.Migration)
-        .addImplementorAgent(agent.getUsernameUri())
-        .addEventDetail("Object renamed from " + oldLabel + " to " + label)
-        .write();
+            repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
+
+            obj.getPremisLog()
+            .buildEvent(Premis.Migration)
+            .addImplementorAgent(agent.getUsernameUri())
+            .addEventDetail("Object renamed from " + oldLabel + " to " + label)
+            .write();
+        } catch (Exception e) {
+            tx.cancel(e);
+        } finally {
+            tx.close();
+        }
+
+        // Send message that the action completed
+        operationsMessageSender.sendUpdateDescriptionOperation(
+                agent.getUsername(), Arrays.asList(pid));
     }
 
+    /**
+     * @param aclService the aclService to set
+     */
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
     }
 
-    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+    /**
+     * @param repoObjFactory the factory to set
+     */
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     * @param repoObjLoader the object loader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
     }
 
-    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
-        this.repoObjFactory = repoObjFactory;
+    /**
+     * @param txManager the transaction manager to set
+     */
+    public void setTransactionManager(TransactionManager txManager) {
+        this.txManager = txManager;
+    }
+
+    /**
+     * @param operationsMessageSender
+     */
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
     }
 
     private String replaceOldLabel(Model objModel,Resource resc, String label) {
