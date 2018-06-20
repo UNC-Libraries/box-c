@@ -67,7 +67,7 @@ public class EditLabelController {
             if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
-                log.error("Failed to edit label for {} due to {}", pid, e);
+                log.error("Failed to edit label for {}", pid);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }

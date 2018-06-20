@@ -71,10 +71,8 @@ public class EditLabelService {
                     pid, agent.getPrincipals(), Permission.editDescription);
 
             RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
-            Model objModel = obj.getModel();
-            Resource resc = objModel.getResource(obj.getUri().toString());
 
-            String oldLabel = replaceOldLabel(objModel, resc, label);
+            String oldLabel = getOldLabel(obj);
 
             repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
 
@@ -129,12 +127,13 @@ public class EditLabelService {
         this.operationsMessageSender = operationsMessageSender;
     }
 
-    private String replaceOldLabel(Model objModel,Resource resc, String label) {
-        String oldLabel = "no dc:title";
+    private String getOldLabel(RepositoryObject obj) {
+        String oldLabel = "no 'dc:title'";
+        Model objModel = obj.getModel();
+        Resource resc = obj.getResource();
         if (objModel.contains(resc, DcElements.title)) {
         Statement s = objModel.getRequiredProperty(resc, DcElements.title);
         oldLabel = s.getLiteral().getString();
-        objModel = objModel.remove(s);
         }
         return oldLabel;
      }

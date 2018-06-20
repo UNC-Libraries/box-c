@@ -86,7 +86,7 @@ public class EditLabelIT extends AbstractAPIIT {
         Model workModel = ModelFactory.createDefaultModel();
         workModel.add(workModel.createResource(pid.getRepositoryPath()), DcElements.title,
                 oldLabel);
-        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, workModel);
 
         String newLabel = "new_work_label";
         MvcResult result = mvc.perform(put("/edit/label/" + pid.getUUID())
