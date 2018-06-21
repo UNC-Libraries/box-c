@@ -123,7 +123,7 @@
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.stream}" />
-        <property name="pubSubDomain" value="true" />
+        <property name="pubSubDomain" value="false" />
     </bean>
 
     <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
