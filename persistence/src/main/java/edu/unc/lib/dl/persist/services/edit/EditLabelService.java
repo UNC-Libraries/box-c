@@ -128,7 +128,7 @@ public class EditLabelService {
     }
 
     private String getOldLabel(RepositoryObject obj) {
-        String oldLabel = "no 'dc:title'";
+        String oldLabel = "no dc:title";
         Model objModel = obj.getModel();
         Resource resc = obj.getResource();
         if (objModel.contains(resc, DcElements.title)) {
