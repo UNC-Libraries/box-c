@@ -77,10 +77,10 @@ public class EditLabelService {
             repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
 
             obj.getPremisLog()
-            .buildEvent(Premis.Migration)
-            .addImplementorAgent(agent.getUsernameUri())
-            .addEventDetail("Object renamed from " + oldLabel + " to " + label)
-            .write();
+                .buildEvent(Premis.Migration)
+                .addImplementorAgent(agent.getUsernameUri())
+                .addEventDetail("Object renamed from " + oldLabel + " to " + label)
+                .write();
         } catch (Exception e) {
             tx.cancel(e);
         } finally {
@@ -132,8 +132,8 @@ public class EditLabelService {
         Model objModel = obj.getModel();
         Resource resc = obj.getResource();
         if (objModel.contains(resc, DcElements.title)) {
-        Statement s = objModel.getRequiredProperty(resc, DcElements.title);
-        oldLabel = s.getLiteral().getString();
+            Statement s = objModel.getRequiredProperty(resc, DcElements.title);
+            oldLabel = s.getLiteral().getString();
         }
         return oldLabel;
      }
