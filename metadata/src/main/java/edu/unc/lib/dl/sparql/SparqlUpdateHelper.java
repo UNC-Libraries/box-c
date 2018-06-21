@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
@@ -194,6 +195,9 @@ public class SparqlUpdateHelper {
             return '<' + ((Resource) object).getURI() + '>';
         } else if (object instanceof String) {
             return '"' + object.toString() + '"';
+        } else if (object instanceof Literal) {
+            RDFDatatype type = ((Literal) object).getDatatype();
+            return '"' + object.toString() + "\"^^<" + type.getURI() + ">";
         } else {
             RDFDatatype type = TypeMapper.getInstance().getTypeByClass(object.getClass());
             if (type == null) {

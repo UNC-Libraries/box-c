@@ -123,7 +123,7 @@
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.stream}" />
-        <property name="pubSubDomain" value="true" />
+        <property name="pubSubDomain" value="false" />
     </bean>
 
     <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
@@ -238,6 +238,14 @@
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+    </bean>
+    
+    <bean id="editLabelService" class="edu.unc.lib.dl.persist.services.edit.EditLabelService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
