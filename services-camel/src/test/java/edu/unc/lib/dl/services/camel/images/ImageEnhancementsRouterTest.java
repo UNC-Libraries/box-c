@@ -22,12 +22,17 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.camel.BeanInject;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
@@ -48,7 +53,10 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String userAgent = "curl/7.37.1";
     private static final String fileID = "/file1";
     private final String eventTypes = EVENT_NS + "ResourceCreation";
-    private final String enhancementRoute = "CdrImageEnhancementRoute";
+    private final String thumbnailRoute = "ProcessThumbnails";
+    private final String accessCopyRoute = "AccessCopy";
+    private final String smallThumbRoute = "SmallThumbnail";
+    private final String largeThumbRoute = "LargeThumbnail";
 
     @PropertyInject(value = "fcrepo.baseUrl")
     private static String baseUri;
@@ -59,36 +67,100 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce(uri = "direct:process.binary.original")
     protected ProducerTemplate template;
 
+    @BeanInject(value = "addSmallThumbnailProcessor")
+    private AddDerivativeProcessor addSmallThumbnailProcessor;
+
+    @BeanInject(value = "addLargeThumbnailProcessor")
+    private AddDerivativeProcessor addLargeThumbnailProcessor;
+
+    @BeanInject(value = "addAccessCopyProcessor")
+    private AddDerivativeProcessor addAccessCopyProcessor;
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
     }
 
     @Test
-    public void testRouteMulticastSuccess() throws Exception {
-        createContext(enhancementRoute);
+    public void testThumbnailMulticast() throws Exception {
+        createContext(thumbnailRoute);
 
         getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:accessCopy").expectedMessageCount(1);
         template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
 
         assertMockEndpointsSatisfied();
     }
 
     @Test
-    public void testRouteMulticastFilter() throws Exception {
-        createContext(enhancementRoute);
+    public void testThumbMulticastFilter() throws Exception {
+        createContext(thumbnailRoute);
 
         getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:accessCopy").expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes);
         headers.put(CdrBinaryMimeType, "plain/text");
 
         template.sendBodyAndHeaders("", headers);
 
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbSmallRoute() throws Exception {
+        createContext(smallThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbLargeRoute() throws Exception {
+        createContext(largeThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyRoute() throws Exception {
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyRejection() throws Exception {
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        headers.put(CdrBinaryMimeType, "plain/text");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 

@@ -144,7 +144,7 @@
     </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
-        <constructor-arg value="${fcrepo.binaryBase}"/>
+        <property name="baseBinaryPath" value="${fcrepo.binaryBase}" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
@@ -212,6 +212,10 @@
     
     <camel:camelContext id="CdrServiceCdrEvents">
         <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrEnhancements">
+        <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
     </camel:camelContext>
     
     <!-- Initialize metaServicesRouter after the routes it depends on -->

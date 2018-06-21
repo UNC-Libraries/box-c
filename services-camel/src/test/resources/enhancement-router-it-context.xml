@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:amq="http://activemq.apache.org/schema/core"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:enhancement-router-it-config.properties"/>
+    </bean>
+    
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:enhancement-router-it-config.properties"/>
+    </bean>
+    
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="concurrentConsumers" value="2" />
+    </bean>
+
+    <bean id="activemq"
+        class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig" />
+    </bean>
+
+    <!-- JMS ConnectionFactory to use, configuring the embedded broker using 
+        XML -->
+    <amq:connectionFactory id="jmsFactory"
+        brokerURL="vm://localhost" />
+
+    <amq:broker useJmx="false" persistent="false" useShutdownHook="false">
+        <amq:transportConnectors>
+            <amq:transportConnector uri="vm://localhost:61616" />
+        </amq:transportConnectors>
+    </amq:broker>
+    
+    <bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor" />
+    </bean>
+    
+    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+    </bean>
+    
+    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+    </bean>
+    
+    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+    </bean>
+    
+    <bean id="getBinaryProcessor" class="edu.unc.lib.dl.services.camel.GetBinaryProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+    </bean>
+
+    <bean id="cleanupBinaryProcessor" class="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor">
+    </bean>
+    
+    <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
+    </bean>
+    
+    <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
+    </bean>
+
+    <camel:camelContext id="cdrServiceImageEnhancements">
+        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="cdrServiceFulltextExtraction">
+        <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="cdrServiceSolr">
+        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="cdrEnhancements">
+        <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
+    </camel:camelContext>
+  
+</beans>

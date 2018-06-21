@@ -31,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
-import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.jena.rdf.model.Model;
@@ -49,6 +48,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -82,7 +82,8 @@ public class BinaryMetadataProcessorTest {
 
         binaryBase = tmpFolder.newFolder().getAbsolutePath();
 
-        processor = new BinaryMetadataProcessor(binaryBase);
+        processor = new BinaryMetadataProcessor();
+        processor.setBaseBinaryPath(binaryBase);
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader("CamelFcrepoUri")).thenReturn(RESC_ID);

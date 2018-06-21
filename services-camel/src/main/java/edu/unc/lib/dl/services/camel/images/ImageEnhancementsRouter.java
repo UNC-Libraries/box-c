@@ -49,14 +49,14 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct-vm:imageEnhancements")
-            .routeId("CdrImageEnhancementRoute")
-            .log(LoggingLevel.INFO, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
+        from("direct-vm:process.enhancement.thumbnails")
+            .routeId("ProcessThumbnails")
+            .log(LoggingLevel.INFO, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
-                .log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
+                .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
                 .multicast()
-                .to("direct:small.thumbnail", "direct:large.thumbnail", "direct:accessCopy");
+                .to("direct:small.thumbnail", "direct:large.thumbnail");
 
         from("direct:small.thumbnail")
             .routeId("SmallThumbnail")
@@ -74,12 +74,14 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                     + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-large"))
             .bean(addLargeThumbProcessor);
 
-        from("direct:accessCopy")
+        from("direct-vm:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
-            .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
-            .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                    + "${headers[CdrBinaryPath]} jp2 "
-                    + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-access"))
-            .bean(addAccessCopyProcessor);
+            .log(LoggingLevel.DEBUG, "Access copy triggered")
+            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+                .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
+                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
+                        + "${headers[CdrBinaryPath]} jp2 "
+                        + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-access"))
+                .bean(addAccessCopyProcessor);
     }
 }
