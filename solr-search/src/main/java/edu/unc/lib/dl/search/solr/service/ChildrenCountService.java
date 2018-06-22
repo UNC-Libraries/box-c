@@ -215,6 +215,6 @@ public class ChildrenCountService extends AbstractQueryService {
             // If the id starts with the search value, return match.  Else, compare and continue.
             return countId.indexOf(searchVal) == 0 ? 0 : countId.compareTo(searchValue);
         });
-        return matchIndex == -1 ? null : counts.get(matchIndex);
+        return matchIndex < 0 ? null : counts.get(matchIndex);
     }
 }
