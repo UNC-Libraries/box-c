@@ -15,209 +15,107 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static org.mockito.Matchers.any;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.addMembers;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeContainer;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeFileObject;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makePid;
+import static edu.unc.lib.dl.util.IndexingActionType.ADD;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *
  * @author bbpennel
  *
  */
-public class RecursiveTreeIndexerTest extends Assert {
+public class RecursiveTreeIndexerTest {
+    private static final String USER = "user";
 
     private RecursiveTreeIndexer indexer;
 
     @Mock
-    private SolrUpdateDriver driver;
-    @Mock
-    private UpdateTreeAction action;
-    @Mock
-    private DocumentIndexingPipeline pipeline;
-
-    @Mock
-    private DocumentIndexingPackage dip;
-    @Mock
-    private DocumentIndexingPackage parentDip;
-    @Mock
-    private SolrUpdateRequest request;
-
-    @Mock
     private ContentContainerObject containerObj;
+
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
+    private IndexingMessageSender messageSender;
+
+    @Captor
+    protected ArgumentCaptor<PID> pidCaptor;
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        when(action.getSolrUpdateDriver()).thenReturn(driver);
-        when(action.getPipeline()).thenReturn(pipeline);
+        containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
-        containerObj = makeContainerObject();
-
-        indexer = new RecursiveTreeIndexer(request, action, true);
-
-        when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class)))
-                .thenReturn(dip);
+        indexer = new RecursiveTreeIndexer();
+        indexer.setMessageSender(messageSender);
     }
 
     @Test
-    public void indexNoDip() throws Exception {
+    public void testNonContainer() throws Exception {
+        FileObject fileObj = makeFileObject(makePid(), repositoryObjectLoader);
 
-        when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class))).thenReturn(null);
+        indexer.index(fileObj, ADD, USER);
 
-        indexer.index(containerObj, parentDip);
+        verify(messageSender).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
 
-        verify(pipeline, never()).process(any(DocumentIndexingPackage.class));
-        verify(driver, never()).addDocument(any(IndexDocumentBean.class));
-        verify(request, never()).incrementChildrenProcessed();
-
+        assertEquals(fileObj.getPid(), pidCaptor.getValue());
     }
 
     @Test
-    public void indexGetDipException() throws Exception {
+    public void testNoChildren() throws Exception {
+        ContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
-        when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class)))
-            .thenThrow(new IndexingException(""));
+        indexer.index(containerObj, ADD, USER);
 
-        indexer.index(containerObj, parentDip);
+        verify(messageSender).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
 
-        verify(pipeline, never()).process(any(DocumentIndexingPackage.class));
-        verify(driver, never()).addDocument(any(IndexDocumentBean.class));
-        verify(request, never()).incrementChildrenProcessed();
-
+        assertEquals(containerObj.getPid(), pidCaptor.getValue());
     }
 
     @Test
-    public void indexNoChildren() throws Exception {
+    public void testHierarchy() throws Exception {
+        ContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
+        ContentContainerObject child1Obj = makeContainer(makePid(), repositoryObjectLoader);
+        FileObject fileObj = makeFileObject(makePid(), repositoryObjectLoader);
+        ContentContainerObject child2Obj = makeContainer(makePid(), repositoryObjectLoader);
 
-        when(containerObj.getMembers()).thenReturn(Collections.emptyList());
+        addMembers(containerObj, child1Obj, child2Obj);
+        addMembers(child1Obj, fileObj);
 
-        indexer.index(containerObj, parentDip);
+        indexer.index(containerObj, ADD, USER);
 
-        verify(pipeline).process(any(DocumentIndexingPackage.class));
-        verify(driver).addDocument(any(IndexDocumentBean.class));
-        verify(request).incrementChildrenProcessed();
+        verify(messageSender, times(4)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
 
-    }
-
-    @Test
-    public void indexUpdate() throws Exception {
-
-        indexer = new RecursiveTreeIndexer(request, action, false);
-
-        when(action.getDocumentIndexingPackage(any(PID.class), any(DocumentIndexingPackage.class))).thenReturn(dip);
-
-        indexer.index(containerObj, parentDip);
-
-        verify(pipeline).process(eq(dip));
-        verify(driver, never()).addDocument(any(IndexDocumentBean.class));
-        verify(driver).updateDocument(any(IndexDocumentBean.class));
-        verify(request).incrementChildrenProcessed();
-
-    }
-
-    @Test
-    public void indexHierarchyTest() throws Exception {
-
-        ContentContainerObject child1 = makeContainerObject();
-        ContentContainerObject child2 = makeContainerObject();
-        ContentContainerObject child3 = makeContainerObject();
-
-        addMembers(containerObj, child1, child2);
-        addMembers(child1, child3);
-
-        indexer.index(containerObj, parentDip);
-
-        verify(driver, times(4)).addDocument(any(IndexDocumentBean.class));
-        verify(request, times(4)).incrementChildrenProcessed();
-    }
-
-    /**
-     * Test that indexing continues after encountering an indexing exception
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testIndexingExceptionThrown() throws Exception {
-        ContentContainerObject child1 = makeContainerObject();
-        ContentContainerObject child2 = makeContainerObject();
-        when(action.getDocumentIndexingPackage(eq(child2.getPid()), any(DocumentIndexingPackage.class)))
-                .thenReturn(null);
-        ContentContainerObject child3 = makeContainerObject();
-
-        addMembers(containerObj, child1, child2);
-        addMembers(child1, child3);
-
-        indexer.index(containerObj, parentDip);
-
-        // All objects, including the children of c2 should have been retrieved
-        verify(action, times(4)).getDocumentIndexingPackage(any(PID.class),
-                any(DocumentIndexingPackage.class));
-        // All objects except c2 should have been added to driver
-        verify(driver, times(3)).addDocument(any(IndexDocumentBean.class));
-        // Count should only be increment for objects that successfully indexed
-        verify(request, times(3)).incrementChildrenProcessed();
-    }
-
-    /**
-     * Test that processing ends when an unexpected exception is encountered
-     */
-    @Test(expected = IndexingException.class)
-    public void indexUnexpectedException() throws Exception {
-        ContentContainerObject child1 = makeContainerObject();
-        ContentContainerObject child2 = makeContainerObject();
-
-        addMembers(containerObj, child1, child2);
-
-        // Fail on the second object
-        doNothing().doThrow(new RuntimeException()).when(pipeline).process(any(DocumentIndexingPackage.class));
-
-        try {
-            indexer.index(containerObj, parentDip);
-        } finally {
-            verify(driver, times(1)).addDocument(any(IndexDocumentBean.class));
-        }
-
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
-    }
-
-    private ContentContainerObject makeContainerObject() {
-        PID pid = makePid();
-        ContentContainerObject container = mock(ContentContainerObject.class);
-        when(container.getPid()).thenReturn(pid);
-        return container;
-    }
-
-    private void addMembers(ContentContainerObject container, ContentObject... children) {
-        when(container.getMembers()).thenReturn(Arrays.asList(children));
+        List<PID> pids = pidCaptor.getAllValues();
+        assertTrue(pids.contains(containerObj.getPid()));
+        assertTrue(pids.contains(child1Obj.getPid()));
+        assertTrue(pids.contains(fileObj.getPid()));
+        assertTrue(pids.contains(child2Obj.getPid()));
     }
 }
