@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import java.util.Map;
+
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -28,18 +30,20 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
     protected PID pid;
     protected String targetLabel;
     protected IndexingActionType action;
+    protected Map<String, String> params;
 
     public SolrUpdateRequest(String pid, IndexingActionType action) {
-        this(pid, action, null);
+        this(pid, action, null, null);
     }
 
-    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID) {
+    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, String userID) {
         super(messageID);
         if (pid == null || action == null) {
             throw new IllegalArgumentException("Both a target pid and an action are required.");
         }
         this.pid = PIDs.get(pid);
         this.action = action;
+        this.userID = userID;
     }
 
     public PID getPid() {
@@ -91,5 +95,19 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
     @Override
     public long getTimeCreated() {
         return timeCreated;
+    }
+
+    /**
+     * @return the params
+     */
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    /**
+     * @param params the params to set
+     */
+    public void setParams(Map<String, String> params) {
+        this.params = params;
     }
 }

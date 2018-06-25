@@ -31,9 +31,9 @@ public class ChildSetRequest extends SolrUpdateRequest {
     private static final long serialVersionUID = 1L;
     private List<PID> children;
 
-    public ChildSetRequest(String newParent, List<String> children, IndexingActionType action) {
-        super(newParent, action);
-        this.children = new ArrayList<PID>(children.size());
+    public ChildSetRequest(String newParent, List<String> children, IndexingActionType action, String userID) {
+        super(newParent, action, null, userID);
+        this.children = new ArrayList<>(children.size());
         for (String childString : children) {
             this.children.add(PIDs.get(childString));
         }

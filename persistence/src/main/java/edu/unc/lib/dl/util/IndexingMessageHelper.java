@@ -19,9 +19,13 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -33,12 +37,18 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class IndexingMessageHelper {
+    private static final Logger log = LoggerFactory.getLogger(IndexingMessageHelper.class);
 
     private IndexingMessageHelper() {
     }
 
     public static Document makeIndexingOperationBody(String userid, PID targetPid, Collection<PID> children,
             IndexingActionType actionType) {
+        return makeIndexingOperationBody(userid, targetPid, children, actionType, null);
+    }
+
+    public static Document makeIndexingOperationBody(String userid, PID targetPid, Collection<PID> children,
+            IndexingActionType actionType, Map<String, String> params) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
@@ -53,6 +63,17 @@ public class IndexingMessageHelper {
         }
         entry.addContent(new Element("actionType", ATOM_NS)
                 .setText(actionType.getURI().toString()));
+
+        if (params != null && params.size() > 0) {
+            Element paramsEl = new Element("params", CDR_MESSAGE_NS);
+            entry.addContent(paramsEl);
+            for (Entry<String, String> param : params.entrySet()) {
+                Element paramEl = new Element("param", CDR_MESSAGE_NS);
+                paramEl.setAttribute("name", param.getKey());
+                paramEl.setText(param.getValue());
+                paramsEl.addContent(paramEl);
+            }
+        }
 
         return msg;
     }

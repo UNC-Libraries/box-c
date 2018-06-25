@@ -33,6 +33,8 @@ public class UpdateNodeRequest implements ActionMessage {
     protected long timeStarted;
     protected long timeFinished;
 
+    protected String userID;
+
     protected DocumentIndexingPackage documentIndexingPackage;
 
     protected ProcessingStatus status;
@@ -116,6 +118,11 @@ public class UpdateNodeRequest implements ActionMessage {
     @Override
     public String getQualifiedAction() {
         return null;
+    }
+
+    @Override
+    public String getUserID() {
+        return userID;
     }
 
     @Override

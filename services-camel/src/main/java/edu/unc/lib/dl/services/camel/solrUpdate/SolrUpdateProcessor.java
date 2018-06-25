@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.List;
 import java.util.Map;
@@ -60,21 +61,20 @@ public class SolrUpdateProcessor implements Processor {
         String action = body.getChild("actionType", ATOM_NS).getTextTrim();
         IndexingActionType actionType = IndexingActionType.getAction(action);
 
-        List<String> children = null;
-        Element childrenEl = body.getChild("children", CDR_MESSAGE_NS);
-        if (childrenEl != null) {
-            children = childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
-                    .map(c -> c.getTextTrim())
-                    .collect(Collectors.toList());
-        }
+        List<String> children = extractChildren(body);
+
+        Map<String, String> params = extractParams(body);
+
+        String author = body.getChild("author", ATOM_NS).getChildText("name", ATOM_NS);
 
         try {
             SolrUpdateRequest updateRequest;
             if (children == null) {
-                updateRequest = new SolrUpdateRequest(pid, actionType);
+                updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
             } else {
-                updateRequest = new ChildSetRequest(pid, children, actionType);
+                updateRequest = new ChildSetRequest(pid, children, actionType, author);
             }
+            updateRequest.setParams(params);
 
             IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
             if (indexingAction != null) {
@@ -86,6 +86,25 @@ public class SolrUpdateProcessor implements Processor {
             log.error("Error attempting to perform action " + action +
                     " on object " + pid, e);
         }
+    }
+
+    private List<String> extractChildren(Element body) {
+        Element childrenEl = body.getChild("children", CDR_MESSAGE_NS);
+        if (childrenEl == null) {
+            return null;
+        }
+        return childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
+                .map(c -> c.getTextTrim())
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, String> extractParams(Element body) {
+        Element paramsEl = body.getChild("params", CDR_MESSAGE_NS);
+        if (paramsEl == null) {
+            return null;
+        }
+        return paramsEl.getChildren("param", CDR_MESSAGE_NS).stream()
+                .collect(toMap(p -> p.getAttributeValue("name"), p -> p.getTextTrim()));
     }
 
     /**

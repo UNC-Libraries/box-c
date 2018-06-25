@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services;
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jdom2.Document;
 import org.slf4j.Logger;
@@ -57,7 +58,22 @@ public class IndexingMessageSender extends AbstractMessageSender {
      */
     public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
             IndexingActionType actionType) {
-        Document msg = makeIndexingOperationBody(userid, targetPid, children, actionType);
+        sendIndexingOperation(userid, targetPid, null, actionType, null);
+    }
+
+    /**
+     * Adds message to JMS queue for object(s) to be reindexed.
+     *
+     * @param userid id of user who triggered the operation
+     * @param targetPid PID of object to be indexed
+     * @param children pids of other objects to be indexed
+     * @param actionType type of indexing action to perform
+     * @param parameters map containing additional parameters to include in the
+     *            message
+     */
+    public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
+            IndexingActionType actionType, Map<String, String> parameters) {
+        Document msg = makeIndexingOperationBody(userid, targetPid, children, actionType, parameters);
 
         LOG.debug("sending solr update message for {} of type {}", targetPid, actionType.toString());
         sendMessage(msg);
