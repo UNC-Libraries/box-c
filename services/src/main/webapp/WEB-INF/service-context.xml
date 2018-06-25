@@ -65,14 +65,14 @@
     </bean>
     
     <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="${redis.host:localhost}" />
-        <constructor-arg value="${redis.port:6379}" />
-        <constructor-arg value="2000" />
-        <constructor-arg>
+        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />
+        <constructor-arg value="${redis.port:6379}" type="int" />
+        <constructor-arg value="2000" type="int" />
+        <constructor-arg type="java.lang.String">
             <null />
         </constructor-arg>
-        <constructor-arg value="resque" />
-        <constructor-arg value="0" />
+        <constructor-arg value="resque" type="java.lang.String" />
+        <constructor-arg value="0" type="int" />
     </bean>
     
     <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
