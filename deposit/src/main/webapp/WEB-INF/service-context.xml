@@ -173,8 +173,18 @@
             destroy-method="shutdown">
     </bean>
     
+    <bean id="httpClientRequestConfigBuilder" class="org.apache.http.client.config.RequestConfig"
+        factory-method="custom">
+        <property name="socketTimeout" value="${http.client.socketTimeout:300000}" />
+    </bean>
+    
+    <bean id="httpClientRequestConfig" factory-bean="httpClientRequestConfigBuilder"
+        factory-method="build">
+    </bean>
+    
     <bean id="pooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
         <property name="connectionManager" ref="multiThreadedHttpConnectionManager" />
+        <property name="defaultRequestConfig" ref="httpClientRequestConfig" />
     </bean>
     
     <bean id="pooledHttpClient" class="org.apache.http.impl.client.CloseableHttpClient"
