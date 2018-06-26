@@ -179,9 +179,8 @@
             <artifactId>jackson-core-asl</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.lariverosc</groupId>
-            <artifactId>jesque-spring</artifactId>
-            <version>1.0.0</version>
+            <groupId>net.greghaines</groupId>
+            <artifactId>jesque</artifactId>
         </dependency>
         <dependency>
             <groupId>com.samskivert</groupId>

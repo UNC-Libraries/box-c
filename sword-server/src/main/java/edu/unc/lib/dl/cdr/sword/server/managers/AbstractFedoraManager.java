@@ -15,17 +15,21 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.swordapp.server.AuthCredentials;
+import org.swordapp.server.SwordError;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
  *
@@ -38,10 +42,13 @@ public abstract class AbstractFedoraManager {
     @Autowired
     protected String swordPath;
 
+    @Autowired
+    protected AccessControlService aclService;
+
     protected String readFileAsString(String filePath) throws java.io.IOException {
         LOG.debug("Loading path file " + filePath);
         try (java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath)) {
-            return IOUtils.toString(inStream);
+            return IOUtils.toString(inStream, "UTF-8");
         }
     }
 
@@ -56,20 +63,15 @@ public abstract class AbstractFedoraManager {
         if (pidString.trim().length() == 0) {
             targetPID = RepositoryPaths.getContentRootPid();
         } else {
-            targetPID = new DatastreamPID(pidString);
+            targetPID = PIDs.get(pidString);
         }
         return targetPID;
     }
 
-    protected boolean hasAccess(AuthCredentials auth, PID pid, Permission permission, SwordConfigurationImpl config) {
-        if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername())) {
-            return true;
+    protected void assertHasAccess(String message, PID pid, Permission permission) throws SwordError {
+        if (!aclService.hasAccess(pid, getAgentPrincipals().getPrincipals(), permission)) {
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, SC_FORBIDDEN, message);
         }
-        throw new RuntimeException("Not implemented");
-        //        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-        //        AccessGroupSet groups = GroupsThreadStore.getGroups();
-        //
-        //        return aclBean.hasPermission(groups, permission);
     }
 
     public String getSwordPath() {

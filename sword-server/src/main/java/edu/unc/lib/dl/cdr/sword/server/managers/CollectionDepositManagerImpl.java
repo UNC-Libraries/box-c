@@ -65,14 +65,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
         String depositor = auth.getUsername();
         String owner = (auth.getOnBehalfOf() != null) ? auth.getOnBehalfOf() : depositor;
 
-        SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
-
         PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-        if (!hasAccess(auth, containerPID, Permission.addRemoveContents, configImpl)) {
-            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-                    "Insufficient privileges to deposit to container " + containerPID.getPid());
-        }
+        assertHasAccess("Insufficient privileges to deposit to container " + containerPID.getRepositoryPath(),
+                containerPID, Permission.ingest);
 
         // Get the enum for the provided packaging type. Null can be a legitimate type
         PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
