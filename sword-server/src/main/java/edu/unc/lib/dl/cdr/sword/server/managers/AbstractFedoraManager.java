@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public abstract class AbstractFedoraManager {
 
     protected void assertHasAccess(String message, PID pid, Permission permission) throws SwordError {
         if (!aclService.hasAccess(pid, getAgentPrincipals().getPrincipals(), permission)) {
-            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403, message);
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, SC_FORBIDDEN, message);
         }
     }
 
