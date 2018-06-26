@@ -71,6 +71,7 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/enhancement-router-it-context.xml")
 })
 public class EnhancementRouterIT {

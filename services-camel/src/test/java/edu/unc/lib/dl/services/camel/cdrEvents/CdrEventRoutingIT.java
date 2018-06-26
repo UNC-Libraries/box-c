@@ -16,12 +16,11 @@
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
 import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
+import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -42,6 +41,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
@@ -60,7 +60,10 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/cdr-event-routing-it-context.xml"})
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/jms-context.xml"),
+    @ContextConfiguration("/cdr-event-routing-it-context.xml")
+})
 public class CdrEventRoutingIT {
 
     private static final String USER_ID = "user";
@@ -117,24 +120,24 @@ public class CdrEventRoutingIT {
     }
 
     @Test
-    public void testPublishAction() throws Exception {
+    public void testEditAccessControlAction() throws Exception {
         int numPids = 3;
         List<PID> pids = pidList(numPids);
 
-        opsMsgSender.sendPublishOperation(USER_ID, pids, true);
+        opsMsgSender.sendMarkForDeletionOperation(USER_ID, pids);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(numPids)
+                .whenCompleted(1)
                 .create();
 
         notify.matches(3l, TimeUnit.SECONDS);
 
-        verify(mockIndexingAction, times(numPids)).performAction(updateRequestCaptor.capture());
+        verify(mockIndexingAction).performAction(updateRequestCaptor.capture());
 
-        // Verify that all requests processed triggered status updates
-        List<SolrUpdateRequest> updateRequests = updateRequestCaptor.getAllValues();
-        updateRequests.stream()
-                .peek(r -> assertEquals(UPDATE_STATUS, r.getUpdateAction()));
+        ChildSetRequest updateRequest = (ChildSetRequest) updateRequestCaptor.getValue();
+        assertEquals(UPDATE_ACCESS_TREE, updateRequest.getUpdateAction());
+
+        assertTrue(updateRequest.getChildren().containsAll(pids));
     }
 
     private List<PID> pidList(int count) {
