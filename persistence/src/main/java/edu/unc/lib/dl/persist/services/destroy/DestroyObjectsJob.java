@@ -15,16 +15,23 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
+
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -38,8 +45,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
@@ -65,6 +74,8 @@ public class DestroyObjectsJob implements Runnable {
     private DestroyProxyService proxyService;
     @Autowired
     private ObjectPathFactory pathFactory;
+    @Autowired
+    private FcrepoClient fcrepoClient;
 
     public DestroyObjectsJob(List<PID> objsToDestroy) {
         this.objsToDestroy = objsToDestroy;
@@ -76,11 +87,13 @@ public class DestroyObjectsJob implements Runnable {
         try (Timer.Context context = timer.time()) {
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
-                // remove containment relation from obj's parent
-                proxyService.destroyProxy(pid);
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-                // purge tree with repoObj as root from repository
-                destroyTree(repoObj);
+                if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
+                    // remove containment relation from obj's parent
+                    proxyService.destroyProxy(pid);
+                    // purge tree with repoObj as root from repository
+                    destroyTree(repoObj);
+                }
            }
         } catch (Exception e) {
              tx.cancel(e);
@@ -89,19 +102,26 @@ public class DestroyObjectsJob implements Runnable {
         }
     }
 
-    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException, FcrepoOperationFailedException {
+    private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
+            FcrepoOperationFailedException {
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
             for (ContentObject member : members) {
                 destroyTree(member);
             }
-        } else if (rootOfTree instanceof FileObject) {
+        }
+        if (rootOfTree instanceof FileObject) {
             FileObject file = (FileObject) rootOfTree;
-            BinaryObject binary = file.getOriginalFile();
-            if (binary != null) {
-                addBinaryMetadataToParent(rootOfTree, binary);
+            BinaryObject origFile = file.getOriginalFile();
+            if (origFile != null) {
+                addBinaryMetadataToParent(rootOfTree, origFile);
             }
+        }
+        Model rootModel = rootOfTree.getModel();
+        boolean hasLdpContains = rootModel.contains(rootOfTree.getResource(), Ldp.contains);
+        if (hasLdpContains) {
+            deleteNonContentObjects(rootModel);
         }
         // destroy root of sub-tree
         Model stoneModel = rootOfTree.getModel();
@@ -114,7 +134,8 @@ public class DestroyObjectsJob implements Runnable {
             .write();
     }
 
-    private Model convertModelToTombstone(RepositoryObject destroyedObj) throws IOException, FcrepoOperationFailedException {
+    private Model convertModelToTombstone(RepositoryObject destroyedObj)
+            throws IOException, FcrepoOperationFailedException {
         Model oldModel = destroyedObj.getModel();
         Resource resc = destroyedObj.getResource();
 
@@ -143,6 +164,27 @@ public class DestroyObjectsJob implements Runnable {
         }
     }
 
+    private void deleteNonContentObjects(Model model) {
+        NodeIterator iter = model.listObjectsOfProperty(Ldp.contains);
+        while (iter.hasNext()) {
+            RDFNode obj = iter.next();
+            String objUri = obj.asResource().getURI();
+            // do not delete Premis events
+            if (!objUri.endsWith("event")) {
+                try (FcrepoResponse resp = fcrepoClient.delete(URI.create(objUri)).perform()) {
+                } catch (FcrepoOperationFailedException | IOException e) {
+                    throw new ServiceException("Unable to clean up proxy for " + objUri, e);
+                }
+
+                URI tombstoneUri = URI.create(objUri.toString() + "/" + FCR_TOMBSTONE);
+                try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
+                } catch (FcrepoOperationFailedException | IOException e) {
+                    throw new ServiceException("Unable to clean up proxy tombstone for " + objUri, e);
+                }
+            }
+        }
+    }
+
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
     }
@@ -161,5 +203,9 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setPathFactory(ObjectPathFactory pathFactory) {
         this.pathFactory = pathFactory;
+    }
+
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
     }
 }
