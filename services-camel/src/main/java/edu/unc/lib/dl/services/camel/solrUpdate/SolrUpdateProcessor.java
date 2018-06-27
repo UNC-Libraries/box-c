@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -71,24 +70,19 @@ public class SolrUpdateProcessor implements Processor {
             author = authorEl.getChildText("name", ATOM_NS);
         }
 
-        try {
-            SolrUpdateRequest updateRequest;
-            if (children == null) {
-                updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
-            } else {
-                updateRequest = new ChildSetRequest(pid, children, actionType, author);
-            }
-            updateRequest.setParams(params);
+        SolrUpdateRequest updateRequest;
+        if (children == null) {
+            updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
+        } else {
+            updateRequest = new ChildSetRequest(pid, children, actionType, author);
+        }
+        updateRequest.setParams(params);
 
-            IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
-            if (indexingAction != null) {
-                log.info("Performing action {} on object {}",
-                        action, pid);
-                indexingAction.performAction(updateRequest);
-            }
-        } catch (IndexingException e) {
-            log.error("Error attempting to perform action " + action +
-                    " on object " + pid, e);
+        IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
+        if (indexingAction != null) {
+            log.info("Performing action {} on object {}",
+                    action, pid);
+            indexingAction.performAction(updateRequest);
         }
     }
 
