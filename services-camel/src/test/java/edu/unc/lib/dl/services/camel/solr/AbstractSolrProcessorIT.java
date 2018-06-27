@@ -58,7 +58,7 @@ import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/solr-update-it-context.xml")
+    @ContextConfiguration("/solr-indexing-it-context.xml")
 })
 public abstract class AbstractSolrProcessorIT {
 

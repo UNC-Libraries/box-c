@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
@@ -26,7 +25,6 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -158,29 +156,6 @@ public class CdrEventToSolrUpdateProcessorTest {
         verifyChildPids(subjects);
 
         verifyActionType(IndexingActionType.ADD_SET_TO_PARENT, actionTypeCaptor.getValue());
-    }
-
-    @Test
-    public void testPublishAction() throws Exception {
-        List<PID> subjects = pidList(NUM_TEST_PIDS);
-
-        Document msgDoc = buildMessage(CDRActions.PUBLISH.toString(),
-                UPDATE_STATUS.getName(),
-                targetPid, subjects);
-        when(msg.getBody()).thenReturn(msgDoc);
-
-        processor.process(exchange);
-
-        verify(messageSender, times(NUM_TEST_PIDS)).sendIndexingOperation(stringCaptor.capture(),
-                pidCaptor.capture(), actionTypeCaptor.capture());
-
-        List<PID> targetPids = pidCaptor.getAllValues();
-        assertTrue("Publish message should be sent for each subject pid",
-                targetPids.containsAll(subjects));
-
-        verifyUserid(stringCaptor.getValue());
-
-        verifyActionType(IndexingActionType.UPDATE_STATUS, actionTypeCaptor.getValue());
     }
 
     private Document buildMessage(String operation, String contentName, PID pid, List<PID> subjects) {

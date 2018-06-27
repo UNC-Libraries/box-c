@@ -13,14 +13,14 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
-    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    <bean id="queryLayer" class="edu.unc.lib.dl.search.solr.service.SolrSearchService">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="solrClient" ref="embeddedSolrServer" />
     </bean>
     
-    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
-    </bean>
-        
     <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
@@ -53,20 +53,6 @@
     <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
         <value>${access.group.admin}</value>
     </util:set>
-    
-    <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-    
-    <bean id="abstractMessageSender" class="edu.unc.lib.dl.services.AbstractMessageSender" abstract="true" >
-        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
-    </bean>
-    
-    <bean id="indexingMessageSender" parent="abstractMessageSender"
-        class="edu.unc.lib.dl.services.IndexingMessageSender">
-    </bean>
 
     <bean id="solrFullUpdatePipeline"
         class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
@@ -199,10 +185,7 @@
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />
-    <util:properties id="solrProperties" location="classpath:solr.properties">
-        <prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-        </prop>
-    </util:properties>
+    <util:properties id="solrProperties" location="classpath:solr.properties" />
     
     <bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
         <property name="properties" ref="searchProperties" />
@@ -330,124 +313,10 @@
         <property name="addDocumentMode" value="false" />
     </bean>
     
-    <bean id="recursiveTreeIndexer" class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveTreeIndexer">
-        <property name="indexingMessageSender" ref="indexingMessageSender" />
-    </bean>
-    
-    <bean id="updateTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
-        <property name="actionType" value="ADD" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-    
-    <bean id="indexTreeInplaceAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
-        <property name="actionType" value="ADD" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-        <property name="indexingMessageSender" ref="indexingMessageSender" />
-    </bean>
-    
-    <bean id="indexTreeCleanAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
-        <property name="actionType" value="ADD" />
-        <property name="deleteAction" ref="deleteSolrTreeAction" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-    </bean>
-
-    <bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
-    </bean>
-
-    <bean id="deleteObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
-    </bean>
-
-    <bean id="deleteSolrTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
-        <property name="solrSearchService" ref="queryLayer" />
-        <property name="searchSettings" ref="searchSettings" />
-        <property name="solrSettings" ref="solrSettings" />
-        <property name="accessGroups" ref="accessGroups" />
-    </bean>
-
-    <bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
-    </bean>
-    
-    <bean id="updateAccessControlAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
-        <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
-        <property name="addDocumentMode" value="false" />
-    </bean>
-    
-    <bean id="updateAccessTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="actionType" value="UPDATE_ACCESS" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-    
-    <bean id="addSetToParentAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="actionType" value="ADD" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-    
-    <bean id="updatePathAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
-        <property name="pipeline" ref="solrMoveUpdatePipeline" />
-        <property name="addDocumentMode" value="false" />
-    </bean>
-    
-    <bean id="moveObjectsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="actionType" value="UPDATE_PATH" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-    
-    <bean id="updateTypeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
-        <property name="pipeline" ref="solrUpdateTypePipeline" />
-        <property name="addDocumentMode" value="false" />
-    </bean>
-    
-    <bean id="updateTypeTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="actionType" value="UPDATE_TYPE_TREE" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-
-    <bean id="updatePrimaryObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="actionType" value="ADD" />
-        <property name="treeIndexer" ref="recursiveTreeIndexer" />
-    </bean>
-    
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.dl.util.IndexingActionType"
         value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
-        <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
-        <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
-        <entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
-        <entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
-        <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
-        <entry key="CLEAN_REINDEX" value-ref="indexTreeCleanAction" />
-        <entry key="CLEAR_INDEX" value-ref="clearIndexAction" />
-        <entry key="DELETE" value-ref="deleteObjectAction" />
-        <entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
-        <entry key="COMMIT" value-ref="commitAction" />
-        <entry key="UPDATE_STATUS" value-ref="updateAccessControlAction" />
-        <entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
-        <entry key="UPDATE_ACCESS_TREE" value-ref="updateAccessTreeAction" />
-        <entry key="MOVE" value-ref="moveObjectsAction" />
-        <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
-        <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
-        <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
     </util:map>
 
     <bean id="dipDataLoader"

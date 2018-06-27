@@ -21,7 +21,7 @@ import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS;
+import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_DESCRIPTION;
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
 import static java.util.Collections.singleton;
@@ -34,13 +34,19 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.builder.NotifyBuilder;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -60,9 +66,16 @@ import edu.unc.lib.dl.util.ResourceType;
  * @author bbpennel
  *
  */
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/jms-context.xml"),
+    @ContextConfiguration("/solr-update-processor-it-context.xml")
+})
 public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     private SolrUpdateProcessor processor;
+
+    @Autowired
+    private CamelContext cdrServiceSolrUpdate;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -88,9 +101,16 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         indexDummyDocument(unitObj);
         indexDummyDocument(collObj);
 
-        makeIndexingMessage(unitObj, null, UPDATE_ACCESS);
+        makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(1)
+                .create();
 
         processor.process(exchange);
+
+        notify.matches(3l, TimeUnit.SECONDS);
+
         server.commit();
 
         BriefObjectMetadata unitMd = getSolrMetadata(unitObj);
@@ -152,7 +172,14 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         // Send message indicating the coll2 was added to the unit
         makeIndexingMessage(unitObj, singleton(coll2Obj.getPid()), ADD_SET_TO_PARENT);
 
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(1)
+                .create();
+
         processor.process(exchange);
+
+        notify.matches(3l, TimeUnit.SECONDS);
+
         server.commit();
 
         BriefObjectMetadata unitMd = getSolrMetadata(unitObj);
@@ -198,8 +225,16 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         indexDummyDocument(unitObj);
         indexDummyDocument(collObj);
 
+        // Wait for indexing to complete
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(3)
+                .create();
+
         makeIndexingMessage(rootObj, null, RECURSIVE_ADD);
         processor.process(exchange);
+
+        notify.matches(3l, TimeUnit.SECONDS);
+
         server.commit();
 
         makeIndexingMessage(unitObj, null, DELETE_SOLR_TREE);
