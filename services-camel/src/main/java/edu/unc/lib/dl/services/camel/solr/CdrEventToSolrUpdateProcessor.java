@@ -17,10 +17,6 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.PUBLISH;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.UPDATE_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +34,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -76,7 +73,9 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         String solrActionType = (String) in.getHeader(CdrUpdateAction);
         String userid = (String) in.getHeader("name");
 
-        if (solrActionType == null || solrActionType.equals("none")) {
+        CDRActions actionType = CDRActions.getAction(solrActionType);
+
+        if (actionType == null) {
             log.warn("No solr update action specified, ignoring event for object {}", targetId);
             return;
         }
@@ -87,24 +86,38 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             childPids.add(PIDs.get(subject));
         }
 
-        if (MOVE.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
-                    IndexingActionType.MOVE);
-        } else if (ADD.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
-                    IndexingActionType.ADD_SET_TO_PARENT);
-        } else if (UPDATE_DESCRIPTION.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
-                    IndexingActionType.UPDATE_DESCRIPTION);
-        } else if (PUBLISH.equals(solrActionType)) {
-            for (PID childPid : childPids) {
-                messageSender.sendIndexingOperation(userid, childPid,
-                        IndexingActionType.UPDATE_STATUS);
-            }
-        } else {
+        IndexingActionType indexingActionType;
+        switch (actionType) {
+        case MOVE:
+            indexingActionType = IndexingActionType.MOVE;
+            break;
+        case ADD:
+            indexingActionType = IndexingActionType.ADD_SET_TO_PARENT;
+            break;
+        case REMOVE:
+            indexingActionType = IndexingActionType.DELETE_SOLR_TREE;
+            break;
+        case UPDATE_DESCRIPTION:
+            indexingActionType = IndexingActionType.UPDATE_DESCRIPTION;
+            break;
+        case SET_AS_PRIMARY_OBJECT:
+            indexingActionType = IndexingActionType.RECURSIVE_ADD;
+            break;
+        case EDIT_ACCESS_CONTROL:
+        case MARK_FOR_DELETION:
+        case RESTORE_FROM_DELETION:
+            indexingActionType = IndexingActionType.UPDATE_ACCESS_TREE;
+            break;
+        case EDIT_TYPE:
+            indexingActionType = IndexingActionType.UPDATE_TYPE_TREE;
+            break;
+        default:
             log.warn("Invalid solr update action {}, ignoring event for object {}", solrActionType, targetId);
             return;
         }
+
+        messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
+                indexingActionType);
     }
 
     private List<String> populateList(String field, Element contentBody) {

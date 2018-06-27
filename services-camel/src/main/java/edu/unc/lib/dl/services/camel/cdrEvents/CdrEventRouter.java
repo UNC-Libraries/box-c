@@ -17,13 +17,24 @@
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.EDIT_TYPE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MARK_FOR_DELETION;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.REMOVE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RESTORE_FROM_DELETION;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.SET_AS_PRIMARY_OBJECT;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.UPDATE_DESCRIPTION;
+import static java.util.Arrays.asList;
+
+import java.util.List;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  * Router which listens to and processes CDR Event messages
@@ -38,6 +49,12 @@ public class CdrEventRouter extends RouteBuilder {
     @BeanInject(value = "cdrEventToSolrUpdateProcessor")
     private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
 
+    private static final List<String> solrAllowedActions = asList(MOVE.toString(), REMOVE.toString(), ADD.toString(),
+            EDIT_ACCESS_CONTROL.toString(), MARK_FOR_DELETION.toString(), RESTORE_FROM_DELETION.toString(),
+            EDIT_TYPE.toString(), SET_AS_PRIMARY_OBJECT.toString(), UPDATE_DESCRIPTION.toString());
+
+    private static final String solrAllowed = String.join(",", solrAllowedActions);
+
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
@@ -48,16 +65,9 @@ public class CdrEventRouter extends RouteBuilder {
 
         from("{{cdr.stream.camel}}")
             .routeId("CdrServiceCdrEvents")
-            .log(LoggingLevel.DEBUG, "CDR Event Message received")
+            .log(LoggingLevel.DEBUG, "CDR Event Message received ${headers[" + CdrUpdateAction + "]}")
             .bean(cdrEventProcessor)
-            .filter(simple("${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
-                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
-                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
-                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
-                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
-                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"
-                        + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.UPDATE_DESCRIPTION.getName()
-                        + "'"))
+            .filter(simple("${headers[" + CdrUpdateAction + "]} in '" + solrAllowed + "'"))
             .to("direct:solr-update");
 
         from("direct:solr-update")
