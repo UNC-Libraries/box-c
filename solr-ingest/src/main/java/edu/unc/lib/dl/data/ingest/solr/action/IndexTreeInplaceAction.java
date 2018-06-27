@@ -74,7 +74,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
     /**
      * @param messageSender the messageSender to set
      */
-    public void setMessageSender(IndexingMessageSender messageSender) {
+    public void setIndexingMessageSender(IndexingMessageSender messageSender) {
         this.messageSender = messageSender;
     }
 }

@@ -37,7 +37,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
     public void setupInplace() throws Exception {
 
         action.setAccessGroups(new AccessGroupSet("admin"));
-        ((IndexTreeInplaceAction) action).setMessageSender(messageSender);
+        ((IndexTreeInplaceAction) action).setIndexingMessageSender(messageSender);
     }
 
     @Override

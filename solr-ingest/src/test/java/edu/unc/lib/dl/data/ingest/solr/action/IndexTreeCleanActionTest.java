@@ -80,7 +80,7 @@ public class IndexTreeCleanActionTest {
         when(request.getPid()).thenReturn(pid);
 
         treeIndexer = new RecursiveTreeIndexer();
-        treeIndexer.setMessageSender(messageSender);
+        treeIndexer.setIndexingMessageSender(messageSender);
 
         action = new IndexTreeCleanAction();
         action.setDeleteAction(deleteAction);

@@ -70,7 +70,7 @@ public class UpdateTreeSetActionTest {
         initMocks(this);
 
         treeIndexer = new RecursiveTreeIndexer();
-        treeIndexer.setMessageSender(messageSender);
+        treeIndexer.setIndexingMessageSender(messageSender);
 
         action = new UpdateTreeSetAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);

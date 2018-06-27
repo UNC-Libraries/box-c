@@ -70,7 +70,7 @@ public class RecursiveTreeIndexerTest {
         containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
         indexer = new RecursiveTreeIndexer();
-        indexer.setMessageSender(messageSender);
+        indexer.setIndexingMessageSender(messageSender);
     }
 
     @Test

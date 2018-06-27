@@ -81,7 +81,7 @@ public class UpdateTreeActionTest {
         addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
 
         treeIndexer = new RecursiveTreeIndexer();
-        treeIndexer.setMessageSender(messageSender);
+        treeIndexer.setIndexingMessageSender(messageSender);
 
         action = getAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);
