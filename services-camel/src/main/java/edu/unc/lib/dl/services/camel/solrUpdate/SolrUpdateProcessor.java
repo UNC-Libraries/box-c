@@ -65,7 +65,11 @@ public class SolrUpdateProcessor implements Processor {
 
         Map<String, String> params = extractParams(body);
 
-        String author = body.getChild("author", ATOM_NS).getChildText("name", ATOM_NS);
+        Element authorEl = body.getChild("author", ATOM_NS);
+        String author = null;
+        if (authorEl != null) {
+            author = authorEl.getChildText("name", ATOM_NS);
+        }
 
         try {
             SolrUpdateRequest updateRequest;
