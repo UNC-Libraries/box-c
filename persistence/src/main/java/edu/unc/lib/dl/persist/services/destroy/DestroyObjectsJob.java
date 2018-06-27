@@ -50,6 +50,7 @@ import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
@@ -111,21 +112,21 @@ public class DestroyObjectsJob implements Runnable {
                 destroyTree(member);
             }
         }
+        Resource rootResc = rootOfTree.getResource();
+        Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
             FileObject file = (FileObject) rootOfTree;
             BinaryObject origFile = file.getOriginalFile();
             if (origFile != null) {
-                addBinaryMetadataToParent(rootOfTree, origFile);
+                addBinaryMetadataToParent(rootModel, origFile);
             }
         }
-        Model rootModel = rootOfTree.getModel();
-        boolean hasLdpContains = rootModel.contains(rootOfTree.getResource(), Ldp.contains);
+        boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
             deleteNonContentObjects(rootModel);
         }
         // destroy root of sub-tree
-        Model stoneModel = rootOfTree.getModel();
-        stoneModel = convertModelToTombstone(rootOfTree);
+        Model stoneModel = convertModelToTombstone(rootOfTree, rootResc);
         repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
 
         //add premis event to tombstone
@@ -134,28 +135,27 @@ public class DestroyObjectsJob implements Runnable {
             .write();
     }
 
-    private Model convertModelToTombstone(RepositoryObject destroyedObj)
+    private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)
             throws IOException, FcrepoOperationFailedException {
-        Model oldModel = destroyedObj.getModel();
-        Resource resc = destroyedObj.getResource();
 
         Model stoneModel = ModelFactory.createDefaultModel();
-        stoneModel.add(oldModel.listStatements(new TombstonePropertySelector(resc)));
+        stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
 
-        // determine path and store in tombstone model
-        String path = pathFactory.getPath(destroyedObj.getPid()).toNamePath();
-        stoneModel.add(resc, Cdr.historicalPath, path);
-        stoneModel.add(resc, RDF.type, Cdr.Tombstone);
+        // determine paths and store in tombstone model
+        ObjectPath objPath = pathFactory.getPath(destroyedObj.getPid());
+        String namePath = objPath.toNamePath();
+        stoneModel.add(destroyedResc, Cdr.historicalPath, namePath);
+        String pidPath = objPath.toIdPath();
+        stoneModel.add(destroyedResc, Cdr.historicalIdPath, pidPath);
+        stoneModel.add(destroyedResc, RDF.type, Cdr.Tombstone);
         return stoneModel;
     }
 
-    private void addBinaryMetadataToParent(RepositoryObject parent, BinaryObject child) {
-        Model childModel = child.getModel();
-        Model parentModel = parent.getModel();
-        Resource resc = child.getResource();
+    private void addBinaryMetadataToParent(Model parentModel, BinaryObject child) {
+        Resource childResc = child.getResource();
 
-        TombstonePropertySelector selector = new TombstonePropertySelector(resc);
-        StmtIterator iter = childModel.listStatements(selector);
+        TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
+        StmtIterator iter = childResc.getModel().listStatements(selector);
         while (iter.hasNext()) {
             Statement s = iter.nextStatement();
             if (selector.selects(s)) {
