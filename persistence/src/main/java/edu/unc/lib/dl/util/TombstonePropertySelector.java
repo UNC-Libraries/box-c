@@ -24,8 +24,8 @@ import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
@@ -37,9 +37,9 @@ import edu.unc.lib.dl.rdf.Premis;
 public class TombstonePropertySelector extends SimpleSelector {
 
     List<Property> permittedPredicates = Arrays.asList(
-            DcElements.title, Ebucore.filename, Ebucore.hasMimeType,
-            Premis.hasOriginalName, Premis.hasMessageDigest,
-            Premis.hasSize, RDF.type);
+            DcElements.title, Cdr.filename, Cdr.hasMimeType,
+            Premis.hasOriginalName, Cdr.hasMessageDigest,
+            Cdr.hasSize, RDF.type);
 
     /**
      * Selects only those statements whose predicates match one of the permitted predicates

@@ -54,6 +54,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
@@ -116,6 +117,7 @@ public class DestroyObjectsJobIT {
 
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
         when(path.toNamePath()).thenReturn("path/to/object");
+        when(path.toIdPath()).thenReturn("pid0/pid1/pid2/pid3");
     }
 
     @Test
@@ -143,14 +145,17 @@ public class DestroyObjectsJobIT {
         PID folderObjPid = objsToDestroy.get(0);
         verify(spyProxyService).destroyProxy(folderObjPid);
 
-        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        WorkObject workObj = repoObjLoader.getWorkObject(workObjPid);
-        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
-        assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
+        Tombstone stoneFolder = repoObjLoader.getTombstone(folderObjPid);
+        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.FileObject));
+        assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Work));
+        assertTrue(stoneFolder.getModel().contains(stoneFolder.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFolder.getModel().contains(stoneFolder.getResource(), RDF.type, Cdr.Folder));
 
-        PremisEventObject event = repoObjLoader.getPremisEventObject(folderObj.getPremisLog().listEvents().get(0));
+        PremisEventObject event = repoObjLoader.getPremisEventObject(stoneFolder.getPremisLog().listEvents().get(0));
         assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
         assertTrue(event.getResource().hasProperty(Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
@@ -165,27 +170,27 @@ public class DestroyObjectsJobIT {
         PID folderObj2Pid = objsToDestroy.get(3);
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
-        PID folderObjPid = objsToDestroy.get(0);
-        verify(spyProxyService).destroyProxy(folderObjPid);
+        PID folderObj1Pid = objsToDestroy.get(0);
+        verify(spyProxyService).destroyProxy(folderObj1Pid);
         verify(spyProxyService).destroyProxy(folderObj2Pid);
 
-        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        WorkObject workObj = repoObjLoader.getWorkObject(workObjPid);
-        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
-        FolderObject folderObj2 = repoObjLoader.getFolderObject(folderObj2Pid);
-        assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(folderObj2.getModel().contains(folderObj2.getResource(), RDF.type, Cdr.Tombstone));
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
+        Tombstone stoneFolder1 = repoObjLoader.getTombstone(folderObj1Pid);
+        Tombstone stoneFolder2 = repoObjLoader.getTombstone(folderObj2Pid);
+        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFolder1.getModel().contains(stoneFolder1.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFolder2.getModel().contains(stoneFolder2.getResource(), RDF.type, Cdr.Tombstone));
 
-        PremisEventObject event = repoObjLoader.getPremisEventObject(folderObj.getPremisLog().listEvents().get(0));
+        PremisEventObject event = repoObjLoader.getPremisEventObject(stoneFolder1.getPremisLog().listEvents().get(0));
         assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
         assertTrue(event.getResource().hasProperty(Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
 
-        PremisEventObject event2 = repoObjLoader.getPremisEventObject(folderObj2.getPremisLog().listEvents().get(0));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventDetail,
+        PremisEventObject event2 = repoObjLoader.getPremisEventObject(stoneFolder2.getPremisLog().listEvents().get(0));
+        assertTrue(event2.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
+        assertTrue(event2.getResource().hasProperty(Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
     }
 
@@ -194,8 +199,8 @@ public class DestroyObjectsJobIT {
         PID folderObjPid = objsToDestroy.get(0);
         initializeJob(Arrays.asList(folderObjPid));
         FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
-        WorkObject workObj = repoObjLoader.getWorkObject(folderObj.getMembers().get(0).getPid());
-        FileObject fileObj = repoObjLoader.getFileObject(workObj.getMembers().get(0).getPid());
+        WorkObject workObj = (WorkObject) folderObj.getMembers().get(0);
+        FileObject fileObj = (FileObject) workObj.getMembers().get(0);
 
         job.run();
 
@@ -218,9 +223,9 @@ public class DestroyObjectsJobIT {
         job.run();
 
         verify(spyProxyService).destroyProxy(fileObjPid);
-        fileObj = repoObjLoader.getFileObject(fileObjPid);
-        assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(fileObj.getPremisLog().listEvents().contains(eventPid));
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFile.getPremisLog().listEvents().contains(eventPid));
     }
 
     private List<PID> createContentTree() throws Exception {

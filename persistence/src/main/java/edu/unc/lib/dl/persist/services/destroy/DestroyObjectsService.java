@@ -27,8 +27,10 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
  * Service that manages the destruction of objects in the repository and their replacement by tombstones
@@ -56,14 +58,17 @@ public class DestroyObjectsService {
 
         for (String id : ids) {
             PID pid = PIDs.get(id);
-            if (repoObjLoader.getRepositoryObject(pid) instanceof AdminUnit) {
+            RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
+            if (obj instanceof AdminUnit) {
                 aclService.assertHasAccess("User does not have permission to destroy admin unit", pid,
                         agent.getPrincipals(), Permission.destroyUnit);
             } else {
                 aclService.assertHasAccess("User does not have permission to destroy this object", pid,
                         agent.getPrincipals(), Permission.destroy);
             }
-            objsToDestroy.add(pid);
+            if (obj.getResource().hasProperty(CdrAcl.markedForDeletion)) {
+                objsToDestroy.add(pid);
+            }
         }
         if (!objsToDestroy.isEmpty()) {
             DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);

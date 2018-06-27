@@ -108,7 +108,9 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         if (resc.hasProperty(Premis.hasEventType)) {
             obj =  new PremisEventObject(pid, repositoryObjectDriver, repoObjFactory);
         } else if (isContentPID(pid)) {
-            if (resc.hasProperty(RDF.type, Cdr.Work)) {
+            if (resc.hasProperty(RDF.type, Cdr.Tombstone)) {
+                obj = new Tombstone(pid, repositoryObjectDriver, repoObjFactory);
+            } else if (resc.hasProperty(RDF.type, Cdr.Work)) {
                 obj = new WorkObject(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
                 obj = new FileObject(pid, repositoryObjectDriver, repoObjFactory);
