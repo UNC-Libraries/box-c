@@ -85,6 +85,7 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
         when(header.getValue())
             .thenReturn(REQUEST_URI);
         when(httpResponse.getAllHeaders()).thenReturn(new Header[]{header});
+        when(request.getMethod()).thenReturn("GET");
     }
 
     @Test
