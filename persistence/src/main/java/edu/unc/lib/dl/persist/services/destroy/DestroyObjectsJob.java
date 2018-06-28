@@ -20,10 +20,12 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -139,7 +141,19 @@ public class DestroyObjectsJob implements Runnable {
             throws IOException, FcrepoOperationFailedException {
 
         Model stoneModel = ModelFactory.createDefaultModel();
-        stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
+        // BUG: selector isn't selecting the statements it should be; destroyedResc.getModel() has what we need, but stoneModel doesn't after this line
+        TombstonePropertySelector selector = new TombstonePropertySelector(destroyedResc);
+        Model destroyedObjModel = destroyedResc.getModel();
+        StmtIterator iter = destroyedObjModel.listStatements(selector);
+        CopyOnWriteArrayList<Statement> statements = new CopyOnWriteArrayList<>();
+        while (iter.hasNext()) {
+            statements.add(iter.next());
+        }
+        for (Statement s : statements) {
+            stoneModel.add(s);
+        }
+        //lines 145-154 replaced the following to bring this method in line with the way addBinaryMetadataToParent() works
+        //stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
 
         // determine paths and store in tombstone model
         ObjectPath objPath = pathFactory.getPath(destroyedObj.getPid());
@@ -151,17 +165,35 @@ public class DestroyObjectsJob implements Runnable {
         return stoneModel;
     }
 
-    private void addBinaryMetadataToParent(Model parentModel, BinaryObject child) {
+    private Model addBinaryMetadataToParent(Model parentModel, BinaryObject child) {
         Resource childResc = child.getResource();
-
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
-        StmtIterator iter = childResc.getModel().listStatements(selector);
+        Model childModel = childResc.getModel();
+        StmtIterator iter = childModel.listStatements(selector);
+        CopyOnWriteArrayList<Statement> statements = new CopyOnWriteArrayList<>();
         while (iter.hasNext()) {
-            Statement s = iter.nextStatement();
-            if (selector.selects(s)) {
+            statements.add(iter.next());
+        }
+        for (Statement s : statements) {
+            Property p = s.getPredicate();
+            Statement replacement = null;
+            if (ServerManagedProperties.isServerManagedProperty(p)) {
+                replacement = replaceServerManagedProperty(s, p, childModel, childResc);
+            }
+            if (replacement == null) {
                 parentModel.add(s);
+            } else {
+                parentModel.add(replacement);
             }
         }
+        return parentModel;
+    }
+
+    private Statement replaceServerManagedProperty(Statement s, Property p, Model model, Resource resc) {
+        Property localProperty = ServerManagedProperties.mapToLocalNamespace(p);
+        model.add(resc, localProperty, s.getObject());
+        return resc.getProperty(localProperty);
+
     }
 
     private void deleteNonContentObjects(Model model) {
