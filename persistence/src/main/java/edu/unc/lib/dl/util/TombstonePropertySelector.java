@@ -26,6 +26,7 @@ import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
@@ -36,10 +37,11 @@ import edu.unc.lib.dl.rdf.Premis;
  */
 public class TombstonePropertySelector extends SimpleSelector {
 
-    List<Property> permittedPredicates = Arrays.asList(
-            DcElements.title, Cdr.filename, Cdr.hasMimeType,
-            Premis.hasOriginalName, Cdr.hasMessageDigest,
-            Cdr.hasSize, RDF.type);
+    static final List<Property> permittedPredicates = Arrays.asList(
+            Cdr.filename, Cdr.hasMessageDigest, Cdr.hasMimeType,
+            Cdr.hasSize, DcElements.title, Ebucore.filename,
+            Ebucore.hasMimeType, Premis.hasOriginalName,
+            Premis.hasMessageDigest, Premis.hasSize, RDF.type);
 
     /**
      * Selects only those statements whose predicates match one of the permitted predicates
@@ -48,6 +50,11 @@ public class TombstonePropertySelector extends SimpleSelector {
     public boolean selects(Statement s) {
         return (subject == null || s.getSubject().equals(subject))
             && (permittedPredicates.contains(s.getPredicate()));
+    }
+
+    @Override
+    public boolean test(Statement s) {
+       return selects(s);
     }
 
     public TombstonePropertySelector(Resource subject) {
