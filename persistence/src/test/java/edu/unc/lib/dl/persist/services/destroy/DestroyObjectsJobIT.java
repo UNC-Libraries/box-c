@@ -128,8 +128,10 @@ public class DestroyObjectsJobIT {
         job.run();
 
         verify(spyProxyService).destroyProxy(fileObjPid);
-        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Resource stoneResc = stoneFile.getResource();
+        assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneResc.hasProperty(Cdr.hasMessageDigest));
     }
 
     @Test
@@ -148,12 +150,12 @@ public class DestroyObjectsJobIT {
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
         Tombstone stoneFolder = repoObjLoader.getTombstone(folderObjPid);
-        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.FileObject));
-        assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Work));
-        assertTrue(stoneFolder.getModel().contains(stoneFolder.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(stoneFolder.getModel().contains(stoneFolder.getResource(), RDF.type, Cdr.Folder));
+        assertTrue(stoneFile.getResource().hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFile.getResource().hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(stoneWork.getResource().hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneWork.getResource().hasProperty(RDF.type, Cdr.Work));
+        assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Folder));
 
         PremisEventObject event = repoObjLoader.getPremisEventObject(stoneFolder.getPremisLog().listEvents().get(0));
         assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
