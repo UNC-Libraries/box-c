@@ -121,7 +121,7 @@ public class DestroyObjectsJobIT {
     }
 
     @Test
-    public void destroySingleObjectTest() {
+    public void destroySingleFileObjectTest() {
         PID fileObjPid = objsToDestroy.get(2);
         initializeJob(Arrays.asList(fileObjPid));
 
@@ -131,7 +131,12 @@ public class DestroyObjectsJobIT {
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource stoneResc = stoneFile.getResource();
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneResc.hasProperty(RDF.type, Cdr.FileObject));
+        // check to make sure metadata from binary was retained by file obj's tombstone
+        assertTrue(stoneResc.hasProperty(Cdr.filename));
         assertTrue(stoneResc.hasProperty(Cdr.hasMessageDigest));
+        assertTrue(stoneResc.hasProperty(Cdr.hasMimeType));
+        assertTrue(stoneResc.hasProperty(Cdr.hasSize));
     }
 
     @Test

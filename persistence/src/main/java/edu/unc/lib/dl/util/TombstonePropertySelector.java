@@ -52,11 +52,6 @@ public class TombstonePropertySelector extends SimpleSelector {
             && (permittedPredicates.contains(s.getPredicate()));
     }
 
-    @Override
-    public boolean test(Statement s) {
-       return selects(s);
-    }
-
     public TombstonePropertySelector(Resource subject) {
         super(subject, (Property) null, (Object) null);
      }

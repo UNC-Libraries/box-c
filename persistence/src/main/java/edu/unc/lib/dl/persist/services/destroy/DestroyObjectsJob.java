@@ -120,7 +120,7 @@ public class DestroyObjectsJob implements Runnable {
             FileObject file = (FileObject) rootOfTree;
             BinaryObject origFile = file.getOriginalFile();
             if (origFile != null) {
-                addBinaryMetadataToParent(rootModel, origFile);
+                addBinaryMetadataToParent(rootResc, origFile);
             }
         }
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
@@ -141,19 +141,7 @@ public class DestroyObjectsJob implements Runnable {
             throws IOException, FcrepoOperationFailedException {
 
         Model stoneModel = ModelFactory.createDefaultModel();
-        // BUG: selector isn't selecting the statements it should be; destroyedResc.getModel() has what we need, but stoneModel doesn't after this line
-        TombstonePropertySelector selector = new TombstonePropertySelector(destroyedResc);
-        Model destroyedObjModel = destroyedResc.getModel();
-        StmtIterator iter = destroyedObjModel.listStatements(selector);
-        CopyOnWriteArrayList<Statement> statements = new CopyOnWriteArrayList<>();
-        while (iter.hasNext()) {
-            statements.add(iter.next());
-        }
-        for (Statement s : statements) {
-            stoneModel.add(s);
-        }
-        //lines 145-154 replaced the following to bring this method in line with the way addBinaryMetadataToParent() works
-        //stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
+        stoneModel.add(destroyedResc.getModel().listStatements(new TombstonePropertySelector(destroyedResc)));
 
         // determine paths and store in tombstone model
         ObjectPath objPath = pathFactory.getPath(destroyedObj.getPid());
@@ -165,7 +153,7 @@ public class DestroyObjectsJob implements Runnable {
         return stoneModel;
     }
 
-    private Model addBinaryMetadataToParent(Model parentModel, BinaryObject child) {
+    private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         Resource childResc = child.getResource();
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
         Model childModel = childResc.getModel();
@@ -176,23 +164,24 @@ public class DestroyObjectsJob implements Runnable {
         }
         for (Statement s : statements) {
             Property p = s.getPredicate();
-            Statement replacement = null;
-            if (ServerManagedProperties.isServerManagedProperty(p)) {
-                replacement = replaceServerManagedProperty(s, p, childModel, childResc);
+            if (p.equals(RDF.type)) {
+                continue;
             }
-            if (replacement == null) {
-                parentModel.add(s);
+            Property replacement = null;
+            if (ServerManagedProperties.isServerManagedProperty(p)) {
+                replacement = replaceServerManagedProperty(p);
+            }
+            if (replacement != null) {
+                parentResc.addProperty(replacement, s.getObject());
             } else {
-                parentModel.add(replacement);
+                parentResc.addProperty(p, s.getObject());
             }
         }
-        return parentModel;
     }
 
-    private Statement replaceServerManagedProperty(Statement s, Property p, Model model, Resource resc) {
+    private Property replaceServerManagedProperty(Property p) {
         Property localProperty = ServerManagedProperties.mapToLocalNamespace(p);
-        model.add(resc, localProperty, s.getObject());
-        return resc.getProperty(localProperty);
+        return localProperty;
 
     }
 
