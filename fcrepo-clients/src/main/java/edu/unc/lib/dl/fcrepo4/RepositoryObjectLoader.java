@@ -134,6 +134,14 @@ public class RepositoryObjectLoader {
         return (DepositRecord) repoObj;
     }
 
+    public Tombstone getTombstone(PID pid) {
+        RepositoryObject repoObj = getRepositoryObject(pid);
+        if (!(repoObj instanceof Tombstone)) {
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a tombstone");
+        }
+        return (Tombstone) repoObj;
+    }
+
     public RepositoryObject getRepositoryObject(PID pid) {
         try {
             return repositoryObjCache.get(pid);

@@ -254,7 +254,7 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new file object with the given model and a generate pid
+     * Creates a new file object with the given model and a generated pid
      *
      * @param model
      * @return
@@ -291,7 +291,7 @@ public class RepositoryObjectFactory {
             ldpFactory.createDirectFileSet(createdUri, RepositoryPathConstants.DATA_FILE_FILESET);
 
         } catch (IOException e) {
-            throw new FedoraException("Unable to create deposit record at " + path, e);
+            throw new FedoraException("Unable to create file object at " + path, e);
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
@@ -439,7 +439,7 @@ public class RepositoryObjectFactory {
      */
     public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
 
-        URI createdUri = createObject(eventPid.getRepositoryUri(), model);
+        URI createdUri = createOrTransformObject(eventPid.getRepositoryUri(), model);
 
         return new PremisEventObject(PIDs.get(createdUri), repoObjDriver, this);
     }
@@ -525,17 +525,30 @@ public class RepositoryObjectFactory {
 
     /**
      * Creates a fedora object at the given location with the provided
-     * properties
+     * properties, or replaces an existing object's triples with those in
+     * the provided model
      *
      * @param uri
      * @param model
      * @return
      * @throws FedoraException
      */
-    public URI createObject(URI uri, Model model) throws FedoraException {
+    public URI createOrTransformObject(URI uri, Model model) throws FedoraException {
+
+        InputStream modelStream = null;
+        if (model != null) {
+            try {
+                Model newModel = ModelFactory.createDefaultModel();
+                newModel.add(model.listStatements(new SanitizeServerManagedTriplesSelector()));
+                modelStream = RDFModelUtil.streamModel(newModel);
+            } catch (IOException e) {
+                throw new FedoraException("Unable to create object at " + uri, e);
+            }
+        }
 
         try (FcrepoResponse response = getClient().put(uri)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                .body(modelStream, TURTLE_MIMETYPE)
+                .preferLenient()
                 .perform()) {
 
             return response.getLocation();

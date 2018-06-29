@@ -260,6 +260,9 @@ public abstract class RepositoryObject {
         }
 
         String remoteEtag = driver.getEtag(this);
+        if (remoteEtag == null) {
+            return false;
+        }
         return remoteEtag.equals(getEtag());
     }
 }

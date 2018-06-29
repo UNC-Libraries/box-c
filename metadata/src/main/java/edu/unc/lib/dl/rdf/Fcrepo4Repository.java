@@ -122,6 +122,12 @@ public class Fcrepo4Repository {
     public static final Property created = createProperty(
             "http://fedora.info/definitions/v4/repository#created" );
 
+    public static final Property createdBy = createProperty(
+            "http://fedora.info/definitions/v4/repository#createdBy" );
+
     public static final Property lastModified = createProperty(
             "http://fedora.info/definitions/v4/repository#lastModified" );
+
+    public static final Property lastModifiedBy = createProperty(
+            "http://fedora.info/definitions/v4/repository#lastModifiedBy" );
 }

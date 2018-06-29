@@ -74,14 +74,38 @@ public class Cdr {
     public static final Property hasManifest = createProperty(
             "http://cdr.unc.edu/definitions/model#hasManifest" );
 
+    /** Relationship indicating a checksum on this binary object */
+    public static final Property hasMessageDigest = createProperty(
+            "http://cdr.unc.edu/definitions/model#hasMessageDigest" );
+
    public static final Property hasMods = createProperty("http://cdr.unc.edu/definitions/model#hasMods");
 
-    /** Identifier indicating the profile of the metadata provided with this object
+   /** The size (e.g., in bytes) of this binary object */
+   public static final Property hasSize = createProperty(
+           "http://cdr.unc.edu/definitions/model#hasSize" );
+
+   /** Identifier indicating the profile of the metadata provided with this object
      *  at deposit time. Used to identify what transformation was used to generate
      *  descriptive metadata from the original metadata.
      */
     public static final Property hasSourceMetadataProfile = createProperty(
             "http://cdr.unc.edu/definitions/model#hasSourceMetadataProfile" );
+
+    /**
+     * Refers to the list of PIDs of parent objects that contained an object slated
+     * for removal from the repository. Includes PIDs of objects beginning from
+     * the immediate parent all the way to the root of the repository.
+     */
+    public static final Property historicalIdPath = createProperty(
+            "http://cdr.unc.edu/definitions/model#historicalIdPath" );
+
+    /**
+     * Refers to the list of names of parent objects that contained an object slated
+     * for removal from the repository. Includes names of objects beginning from
+     * the immediate parent all the way to the root of the repository.
+     */
+    public static final Property historicalPath = createProperty(
+            "http://cdr.unc.edu/definitions/model#historicalPath" );
 
     /** Reference to a vocabulary object. For objects in this collection, if the given
      *  vocabulary applies to a descriptive field it will only index its value if
@@ -149,5 +173,6 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#SourceMetadata" );
     public static final Resource DescriptiveMetadata = createResource(
             "http://cdr.unc.edu/definitions/model#DescriptiveMetadata" );
-
+    public static final Resource Tombstone = createResource(
+            "http://cdr.unc.edu/definitions/model#Tombstone" );
 }

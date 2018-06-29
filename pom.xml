@@ -355,10 +355,23 @@
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
+                    <!--Set reuseForks=false due to the need for different instances of the -->
+                    <!--Singleton ServletContainerAuthenticationProvider -->
+                    <reuseForks>false</reuseForks>
+                    <argLine>${jacoco.agent.it.arg}</argLine>
                     <systemPropertyVariables>
                         <fcrepo.baseUri>http://localhost:48085/rest</fcrepo.baseUri>
+                        <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
                     </systemPropertyVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

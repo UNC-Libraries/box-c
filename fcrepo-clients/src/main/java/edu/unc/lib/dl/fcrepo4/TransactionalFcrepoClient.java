@@ -96,8 +96,10 @@ public class TransactionalFcrepoClient extends FcrepoClient {
                 request.setURI(requestUri);
             }
             FcrepoResponse resp = super.executeRequest(requestUri, request);
-            // Strip tx ids out of response so they are invisible to clients
-            return rewriteResponseBodyUris(resp);
+            if (!request.getMethod().equals("HEAD")) {
+                // Strip tx ids out of response so they are invisible to clients
+                return rewriteResponseBodyUris(resp);
+            }
         }
         return super.executeRequest(requestUri, request);
     }

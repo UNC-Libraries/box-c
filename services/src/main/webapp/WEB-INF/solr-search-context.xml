@@ -104,7 +104,7 @@
     </bean>
     
     <bean id="objectPathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
-        <property name="search" ref="queryLayer" />
+        <property name="search" ref="unrestrictedSolrSearchService" />
         <property name="cacheSize" value="1000" />
         <property name="timeToLiveMilli" value="10000" />
         <property name="solrSettings" ref="solrSettings" />
