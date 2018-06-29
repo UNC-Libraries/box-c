@@ -212,7 +212,7 @@ public class DestroyObjectsJob implements Runnable {
         this.repoObjLoader = repoObjLoader;
     }
 
-    public void setTxManager(TransactionManager txManager) {
+    public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
     }
 
