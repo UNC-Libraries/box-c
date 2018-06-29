@@ -85,7 +85,7 @@ public class DestroyObjectsService {
             }
         }
         if (!objsToDestroy.isEmpty()) {
-            DestroyObjectsJob job = intializeJob(objsToDestroy);
+            DestroyObjectsJob job = initializeJob(objsToDestroy);
             log.info("Destroy job for {} objects started by {}", objsToDestroy.size(), agent.getUsernameUri());
             job.run();
         } else {
@@ -93,7 +93,7 @@ public class DestroyObjectsService {
         }
     }
 
-    private DestroyObjectsJob intializeJob(List<PID> objsToDestroy) {
+    private DestroyObjectsJob initializeJob(List<PID> objsToDestroy) {
         DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
         job.setFcrepoClient(fcrepoClient);
         job.setPathFactory(pathFactory);
