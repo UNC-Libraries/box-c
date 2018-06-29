@@ -267,7 +267,7 @@ public class DestroyObjectsJobIT {
         job.setProxyService(spyProxyService);
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
-        job.setTxManager(txManager);
+        job.setTransactionManager(txManager);
         job.setFcrepoClient(fcrepoClient);
     }
 
