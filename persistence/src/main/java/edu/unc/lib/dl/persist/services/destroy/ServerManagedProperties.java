@@ -18,7 +18,6 @@ package edu.unc.lib.dl.persist.services.destroy;
 import org.apache.jena.rdf.model.Property;
 
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
@@ -28,8 +27,6 @@ import edu.unc.lib.dl.rdf.Premis;
  *
  */
 public enum ServerManagedProperties {
-
-    FILENAME(Ebucore.filename), MIMETYPE(Ebucore.hasMimeType),
     DIGEST(Premis.hasMessageDigest),
     SIZE(Premis.hasSize);
 
@@ -40,19 +37,12 @@ public enum ServerManagedProperties {
     }
 
     public static boolean isServerManagedProperty(Property p) {
-        return p.equals(DIGEST.property) || p.equals(FILENAME.property) || p.equals(MIMETYPE.property)
-                || p.equals(SIZE.property);
+        return p.equals(DIGEST.property) || p.equals(SIZE.property);
     }
 
     public static Property mapToLocalNamespace(Property p) {
         if (p.equals(DIGEST.property)) {
             return Cdr.hasMessageDigest;
-        }
-        if (p.equals(FILENAME.property)) {
-            return Cdr.filename;
-        }
-        if (p.equals(MIMETYPE.property)) {
-            return Cdr.hasMimeType;
         }
         if (p.equals(SIZE.property)) {
             return Cdr.hasSize;

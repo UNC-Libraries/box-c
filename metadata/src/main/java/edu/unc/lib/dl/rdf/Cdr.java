@@ -66,10 +66,6 @@ public class Cdr {
     public static final Property depositedOnBehalfOf = createProperty(
             "http://cdr.unc.edu/definitions/model#depositedOnBehalfOf" );
 
-    /** Name of a binary file. */
-    public static final Property filename = createProperty(
-            "http://cdr.unc.edu/definitions/model#filename" );
-
     /** Relationship indicating that an ingested object was a part of a given deposit */
     public static final Property hasIngestedObject = createProperty(
             "http://cdr.unc.edu/definitions/model#hasIngestedObject");
@@ -81,10 +77,6 @@ public class Cdr {
     /** Relationship indicating a checksum on this binary object */
     public static final Property hasMessageDigest = createProperty(
             "http://cdr.unc.edu/definitions/model#hasMessageDigest" );
-
-    /** Relationship indicating the mimetype of this binary object */
-    public static final Property hasMimeType = createProperty(
-            "http://cdr.unc.edu/definitions/model#hasMimeType" );
 
    public static final Property hasMods = createProperty("http://cdr.unc.edu/definitions/model#hasMods");
 

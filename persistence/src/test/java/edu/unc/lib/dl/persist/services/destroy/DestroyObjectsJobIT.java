@@ -59,6 +59,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -133,9 +134,9 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.FileObject));
         // check to make sure metadata from binary was retained by file obj's tombstone
-        assertTrue(stoneResc.hasProperty(Cdr.filename));
+        assertTrue(stoneResc.hasProperty(Ebucore.filename));
         assertTrue(stoneResc.hasProperty(Cdr.hasMessageDigest));
-        assertTrue(stoneResc.hasProperty(Cdr.hasMimeType));
+        assertTrue(stoneResc.hasProperty(Ebucore.hasMimeType));
         assertTrue(stoneResc.hasProperty(Cdr.hasSize));
     }
 
