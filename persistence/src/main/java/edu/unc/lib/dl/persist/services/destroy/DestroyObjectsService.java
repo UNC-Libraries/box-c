@@ -18,6 +18,7 @@ package edu.unc.lib.dl.persist.services.destroy;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fcrepo.client.FcrepoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,12 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 
 /**
  * Service that manages the destruction of objects in the repository and their replacement by tombstones
@@ -44,7 +48,17 @@ public class DestroyObjectsService {
     @Autowired
     private AccessControlService aclService;
     @Autowired
+    private RepositoryObjectFactory repoObjFactory;
+    @Autowired
     private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private TransactionManager txManager;
+    @Autowired
+    private DestroyProxyService proxyService;
+    @Autowired
+    private ObjectPathFactory pathFactory;
+    @Autowired
+    private FcrepoClient fcrepoClient;
 
     /**
      * Checks whether the active user has permissions to destroy the listed objects,
@@ -71,12 +85,24 @@ public class DestroyObjectsService {
             }
         }
         if (!objsToDestroy.isEmpty()) {
-            DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
+            DestroyObjectsJob job = intializeJob(objsToDestroy);
             log.info("Destroy job for {} objects started by {}", objsToDestroy.size(), agent.getUsernameUri());
             job.run();
         } else {
             log.info("Destroy job submitted by {} provided no eligable candidates, skipping", agent.getUsernameUri());
         }
+    }
+
+    private DestroyObjectsJob intializeJob(List<PID> objsToDestroy) {
+        DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
+        job.setFcrepoClient(fcrepoClient);
+        job.setPathFactory(pathFactory);
+        job.setProxyService(proxyService);
+        job.setRepoObjFactory(repoObjFactory);
+        job.setRepoObjLoader(repoObjLoader);
+        job.setTransactionManager(txManager);
+
+        return job;
     }
 
     /**
@@ -91,6 +117,46 @@ public class DestroyObjectsService {
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
+    }
+
+    /**
+     *
+     * @param repoObjFactory the repository object factory to set
+     */
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     *
+     * @param txManager the transaction manager to set
+     */
+    public void setTransactionManager(TransactionManager txManager) {
+        this.txManager = txManager;
+    }
+
+    /**
+     *
+     * @param proxyService the proxy service to set
+     */
+    public void setProxyService(DestroyProxyService proxyService) {
+        this.proxyService = proxyService;
+    }
+
+    /**
+     *
+     * @param pathFactory the path factory to set
+     */
+    public void setPathFactory(ObjectPathFactory pathFactory) {
+        this.pathFactory = pathFactory;
+    }
+
+    /**
+     *
+     * @param fcrepoClient the fcrepo client to set
+     */
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
     }
 
 }
