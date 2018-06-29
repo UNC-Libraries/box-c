@@ -15,9 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -29,6 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -47,27 +46,30 @@ public class DestroyObjectsController {
     @Autowired
     private DestroyObjectsService service;
 
-    @RequestMapping(value = "edit/destroy/{ids}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/destroy", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> destroyObjects(@PathVariable("ids") List<String> ids) {
-        return destroy(ids);
+    public ResponseEntity<Object> destroyBatch(@RequestParam("ids") String ids) {
+        return destroy(ids.split("\n"));
     }
 
     @RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> destroySingleObject(@PathVariable("id") String id) {
-        List<String> singleId = Arrays.asList(id);
-        return destroy(singleId);
+    public ResponseEntity<Object> destroyObject(@PathVariable("id") String id) {
+        return destroy(id);
     }
 
-    private ResponseEntity<Object> destroy(List<String> ids) {
+    private ResponseEntity<Object> destroy(String... ids) {
         Map<String, Object> result = new HashMap<>();
-        result.put("object ids", ids.toString());
         result.put("action", "destroy");
+        if (ids.length == 1) {
+            result.put("pid", ids[0]);
+        } else {
+            result.put("pids", ids);
+        }
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
         service.destroyObjects(agent, ids);
-        log.info("{} initiated destruction of {} objects from the repository", agent.getUsername(), ids.size());
+        log.info("{} initiated destruction of {} objects from the repository", agent.getUsername(), ids.length);
 
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);

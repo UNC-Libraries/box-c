@@ -53,7 +53,7 @@ public class DestroyObjectsService {
      * @param agent security principals of the agent making request
      * @param ids list of objects to destroy
      */
-    public void destroyObjects(AgentPrincipals agent, List<String> ids) {
+    public void destroyObjects(AgentPrincipals agent, String... ids) {
         List<PID> objsToDestroy = new ArrayList<>();
 
         for (String id : ids) {
