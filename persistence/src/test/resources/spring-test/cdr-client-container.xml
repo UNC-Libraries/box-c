@@ -38,7 +38,7 @@
     </bean>
     
     <bean id="cacheTimeToLive" class="java.lang.Long">
-        <constructor-arg value="100" />
+        <constructor-arg value="5" />
     </bean>
     
     <bean id="cacheMaxSize" class="java.lang.Long">

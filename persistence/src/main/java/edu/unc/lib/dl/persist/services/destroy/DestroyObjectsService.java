@@ -74,6 +74,8 @@ public class DestroyObjectsService {
             DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
             log.info("Destroy job for {} objects started by {}", objsToDestroy.size(), agent.getUsernameUri());
             job.run();
+        } else {
+            log.info("Destroy job submitted by {} provided no eligable candidates, skipping", agent.getUsernameUri());
         }
     }
 

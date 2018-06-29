@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -158,11 +157,10 @@ public class DestroyObjectsJob implements Runnable {
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
         Model childModel = childResc.getModel();
         StmtIterator iter = childModel.listStatements(selector);
-        CopyOnWriteArrayList<Statement> statements = new CopyOnWriteArrayList<>();
+
         while (iter.hasNext()) {
-            statements.add(iter.next());
-        }
-        for (Statement s : statements) {
+            Statement s = iter.next();
+
             Property p = s.getPredicate();
             if (p.equals(RDF.type)) {
                 continue;

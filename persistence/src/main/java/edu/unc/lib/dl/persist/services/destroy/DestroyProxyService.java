@@ -27,6 +27,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
@@ -40,6 +42,8 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  *
  */
 public class DestroyProxyService {
+
+    private static final Logger log = LoggerFactory.getLogger(DestroyProxyService.class);
 
     private SparqlQueryService sparqlQueryService;
     private FcrepoClient fcrepoClient;
@@ -55,6 +59,10 @@ public class DestroyProxyService {
      */
     public String destroyProxy(PID objPid) {
         ProxyInfo proxyInfo = getProxyInfo(objPid);
+        if (proxyInfo == null) {
+            log.debug("No proxy found for object {}", objPid);
+            return null;
+        }
         URI proxyUri = proxyInfo.proxyUri;
 
         try (FcrepoResponse resp = fcrepoClient.delete(proxyUri).perform()) {
