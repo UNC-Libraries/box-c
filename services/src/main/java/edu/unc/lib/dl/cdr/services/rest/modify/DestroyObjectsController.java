@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,17 @@ public class DestroyObjectsController {
     @RequestMapping(value = "edit/destroy/{ids}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> destroyObjects(@PathVariable("ids") List<String> ids) {
+        return destroy(ids);
+    }
+
+    @RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<Object> destroySingleObject(@PathVariable("id") String id) {
+        List<String> singleId = Arrays.asList(id);
+        return destroy(singleId);
+    }
+
+    private ResponseEntity<Object> destroy(List<String> ids) {
         Map<String, Object> result = new HashMap<>();
         result.put("object ids", ids.toString());
         result.put("action", "destroy");
@@ -60,7 +72,4 @@ public class DestroyObjectsController {
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
-
-
 }
