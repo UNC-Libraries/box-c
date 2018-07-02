@@ -52,6 +52,10 @@ public class MockRepositoryObjectHelpers {
         return fileObj;
     }
 
+    public static ContentContainerObject makeContainer(RepositoryObjectLoader repositoryObjectLoader) {
+        return makeContainer(makePid(), repositoryObjectLoader);
+    }
+
     public static ContentContainerObject makeContainer(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
         ContentContainerObject container = mock(ContentContainerObject.class);
         when(container.getMembers()).thenReturn(new ArrayList<>());
@@ -59,6 +63,11 @@ public class MockRepositoryObjectHelpers {
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
 
         return container;
+    }
+
+    public static ContentContainerObject addContainerToParent(ContentContainerObject container,
+            RepositoryObjectLoader repositoryObjectLoader) {
+        return addContainerToParent(container, makePid(), repositoryObjectLoader);
     }
 
     public static ContentContainerObject addContainerToParent(ContentContainerObject container, PID childPid,

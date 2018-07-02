@@ -15,18 +15,17 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.addContainerToParent;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +37,6 @@ import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
@@ -61,7 +59,7 @@ public class UpdateTreeSetActionTest {
 
     private ChildSetRequest request;
 
-    protected UpdateTreeSetAction action;
+    private UpdateTreeSetAction action;
 
     private RecursiveTreeIndexer treeIndexer;
 
@@ -80,7 +78,7 @@ public class UpdateTreeSetActionTest {
 
     @Test
     public void testSingleEmptyChild() throws Exception {
-        ContentContainerObject containerObj = makeContainer();
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
@@ -99,9 +97,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testMultipleChildren() throws Exception {
-        ContentContainerObject container1Obj = makeContainer();
+        ContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
         PID container1Pid = container1Obj.getPid();
-        ContentContainerObject container2Obj = makeContainer();
+        ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
         request = new ChildSetRequest(container1Pid.getRepositoryPath(),
@@ -122,9 +120,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testNestedChildren() throws Exception {
-        ContentContainerObject containerObj = makeContainer();
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
-        ContentContainerObject childObj = addContainerToParent(containerObj);
+        ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -151,25 +149,5 @@ public class UpdateTreeSetActionTest {
                 IndexingActionType.ADD, USER);
 
         action.performAction(request);
-    }
-
-    protected ContentContainerObject makeContainer() {
-        PID pid = makePid();
-        ContentContainerObject container = mock(ContentContainerObject.class);
-        when(container.getMembers()).thenReturn(new ArrayList<>());
-        when(container.getPid()).thenReturn(pid);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
-
-        return container;
-    }
-
-    protected ContentContainerObject addContainerToParent(ContentContainerObject container) {
-        ContentContainerObject memberObj = makeContainer();
-        container.getMembers().add(memberObj);
-        return memberObj;
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
     }
 }
