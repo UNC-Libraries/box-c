@@ -15,41 +15,37 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.dl.util.IndexingActionType.CLEAN_REINDEX;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.UUID;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Literal;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * @author bbpennel
  */
 public class IndexTreeCleanActionTest {
+    private static final String USER = "user";
 
     @Mock
     private SolrUpdateDriver driver;
@@ -60,27 +56,17 @@ public class IndexTreeCleanActionTest {
     @Mock
     private SolrUpdateRequest request;
     @Mock
-    private DocumentIndexingPackageDataLoader loader;
-    @Mock
-    private DocumentIndexingPackageFactory factory;
-    @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
-    private DocumentIndexingPackage dip;
+    private IndexingMessageSender messageSender;
 
-    @Mock
-    private SparqlQueryService sparqlQueryService;
-    @Mock
-    private QueryExecution mockQueryExecution;
-    @Mock
-    private ResultSet mockResultSet;
-    @Mock
-    private QuerySolution mockQuerySolution;
-    @Mock
-    private Literal mockLiteral;
+    private RecursiveTreeIndexer treeIndexer;
 
     @Mock
     private ContentContainerObject containerObj;
+
+    @Captor
+    private ArgumentCaptor<PID> pidCaptor;
 
     private PID pid;
 
@@ -93,49 +79,31 @@ public class IndexTreeCleanActionTest {
         pid = PIDs.get(UUID.randomUUID().toString());
         when(request.getPid()).thenReturn(pid);
 
+        treeIndexer = new RecursiveTreeIndexer();
+        treeIndexer.setIndexingMessageSender(messageSender);
+
         action = new IndexTreeCleanAction();
         action.setDeleteAction(deleteAction);
-        action.setSparqlQueryService(sparqlQueryService);
-        action.setPipeline(pipeline);
+        action.setTreeIndexer(treeIndexer);
         action.setSolrUpdateDriver(driver);
-        action.setFactory(factory);
+        action.setActionType(IndexingActionType.ADD.name());
         action.setRepositoryObjectLoader(repositoryObjectLoader);
 
-        when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExecution);
-        when(mockQueryExecution.execSelect()).thenReturn(mockResultSet);
-        when(mockResultSet.next()).thenReturn(mockQuerySolution).thenReturn(null);
-        when(mockQuerySolution.getLiteral(eq("count"))).thenReturn(mockLiteral);
-
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(containerObj);
-
-        when(factory.createDip(any(PID.class), any(DocumentIndexingPackage.class)))
-                .thenReturn(dip);
+        when(containerObj.getPid()).thenReturn(pid);
     }
 
     @Test
     public void testPerformAction() throws Exception {
+        request = new SolrUpdateRequest(pid.getRepositoryPath(), CLEAN_REINDEX, "1", USER);
 
         action.performAction(request);
 
         verify(deleteAction).performAction(any(SolrUpdateRequest.class));
         verify(driver).commit();
-        verify(driver).addDocument(any(IndexDocumentBean.class));
-    }
 
-    /**
-     * Verify that action is always performed in add mode, so no update requests.
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testIgnoreUpdateMode() throws Exception {
-
-        action.setAddDocumentMode(false);
-
-        action.performAction(request);
-
-        // IndexTreeClean must be performed in addMode
-        verify(driver).addDocument(any(IndexDocumentBean.class));
-        verify(driver, never()).updateDocument(any(IndexDocumentBean.class));
+        verify(messageSender).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
+        assertEquals(pid, pidCaptor.getValue());
     }
 }

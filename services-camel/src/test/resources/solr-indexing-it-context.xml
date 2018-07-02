@@ -13,14 +13,18 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
-    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
-    </bean>
-    
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
         <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
     </bean>
-        
+    
+    <bean id="queryLayer" class="edu.unc.lib.dl.search.solr.service.SolrSearchService">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="solrClient" ref="embeddedSolrServer" />
+    </bean>
+    
     <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
@@ -144,18 +148,6 @@
         </property>
     </bean>
     
-    <bean id="solrSetDWOPipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
-        <property name="filters">
-            <list>
-                <ref bean="setRecordDatesFilter" />
-                <ref bean="setDatastreamFilter" />
-                <ref bean="setContentStatusFilter" />
-                <ref bean="setRelationsFilter" />
-            </list>
-        </property>
-    </bean>
-    
     <bean id="solrDataPath" class="java.nio.file.Files" factory-method="createTempDirectory">
         <constructor-arg type="java.lang.String" value="solr_data" />
         <constructor-arg>
@@ -197,10 +189,7 @@
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />
-    <util:properties id="solrProperties" location="classpath:solr.properties">
-        <prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-        </prop>
-    </util:properties>
+    <util:properties id="solrProperties" location="classpath:solr.properties" />
     
     <bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
         <property name="properties" ref="searchProperties" />
@@ -307,6 +296,7 @@
     <bean id="updateObjectAction"
         class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
+        <property name="addDocumentMode" value="true" />
     </bean>
     
     <bean id="updateDescriptionAction"
@@ -327,63 +317,10 @@
         <property name="addDocumentMode" value="false" />
     </bean>
     
-    <bean id="updateTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
-        <property name="pipeline" ref="solrFullUpdatePipeline" />
-        <property name="solrSearchService" ref="solrSearchService" />
-        <property name="accessGroups" ref="accessGroups" />
-        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-    </bean>
-    
-    <bean id="indexTreeInplaceAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
-        <property name="pipeline" ref="solrFullUpdatePipeline" />
-        <property name="solrSettings" ref="solrSettings" />
-        <property name="solrSearchService" ref="solrSearchService" />
-        <property name="accessGroups" ref="accessGroups" />
-        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
-    </bean>
-
-    <bean id="deleteObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
-    </bean>
-
-    <bean id="deleteSolrTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
-        <property name="solrSearchService" ref="solrSearchService" />
-        <property name="searchSettings" ref="searchSettings" />
-        <property name="solrSettings" ref="solrSettings" />
-        <property name="accessGroups" ref="accessGroups" />
-    </bean>
-    
-    <bean id="updateAccessControlAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
-        <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
-        <property name="addDocumentMode" value="false" />
-        <property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-    </bean>
-    
-    <bean id="addSetToParentAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
-        <property name="pipeline" ref="solrFullUpdatePipeline" />
-        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-    </bean>
-    
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.dl.util.IndexingActionType"
         value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
-        <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
-        <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
-        <entry key="DELETE" value-ref="deleteObjectAction" />
-        <entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
-        <entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
-        <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
     </util:map>
 
     <bean id="dipDataLoader"

@@ -48,12 +48,17 @@ public enum IndexingActionType {
     CLEAR_INDEX("Delete Index", "Deletes everything from the index"),
     UPDATE_STATUS("Update status",
             "Partial update operation which refreshes the status of an object and all of its children"),
+    UPDATE_PATH("Update Path", "Partial update which updates location related properties of an object"),
     MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
     UPDATE_ACCESS("Update access control",
+            "Partial update which refreshes the access control for an object"),
+    UPDATE_ACCESS_TREE("Update access control of a tree",
             "Partial update which refreshes the access control for an object and all its children"),
     ADD_SET_TO_PARENT("Add Set To Parent", "Indexes a set of newly added children contained by a shared parent"),
-    UPDATE_TYPE("Update Resource Type", "Update the resource type of a set of objects"),
-    SET_DEFAULT_WEB_OBJECT("Set Default Web Object", "Deprecated");
+    UPDATE_TYPE("Update Resource Type", "Update the resource type of an object"),
+    UPDATE_TYPE_TREE("Update Resource Type Tree",
+            "Update the resource type of a set of objects and all their children"),
+    SET_PRIMARY_OBJECT("Set Primary Object", "Update the primary object for a work");
 
     private final String label;
     private final String description;

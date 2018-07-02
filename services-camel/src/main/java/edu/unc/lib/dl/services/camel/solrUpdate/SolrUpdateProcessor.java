@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -60,32 +60,49 @@ public class SolrUpdateProcessor implements Processor {
         String action = body.getChild("actionType", ATOM_NS).getTextTrim();
         IndexingActionType actionType = IndexingActionType.getAction(action);
 
-        List<String> children = null;
+        List<String> children = extractChildren(body);
+
+        Map<String, String> params = extractParams(body);
+
+        Element authorEl = body.getChild("author", ATOM_NS);
+        String author = null;
+        if (authorEl != null) {
+            author = authorEl.getChildText("name", ATOM_NS);
+        }
+
+        SolrUpdateRequest updateRequest;
+        if (children == null) {
+            updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
+        } else {
+            updateRequest = new ChildSetRequest(pid, children, actionType, author);
+        }
+        updateRequest.setParams(params);
+
+        IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
+        if (indexingAction != null) {
+            log.info("Performing action {} on object {}",
+                    action, pid);
+            indexingAction.performAction(updateRequest);
+        }
+    }
+
+    private List<String> extractChildren(Element body) {
         Element childrenEl = body.getChild("children", CDR_MESSAGE_NS);
-        if (childrenEl != null) {
-            children = childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
-                    .map(c -> c.getTextTrim())
-                    .collect(Collectors.toList());
+        if (childrenEl == null) {
+            return null;
         }
+        return childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
+                .map(c -> c.getTextTrim())
+                .collect(Collectors.toList());
+    }
 
-        try {
-            SolrUpdateRequest updateRequest;
-            if (children == null) {
-                updateRequest = new SolrUpdateRequest(pid, actionType);
-            } else {
-                updateRequest = new ChildSetRequest(pid, children, actionType);
-            }
-
-            IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
-            if (indexingAction != null) {
-                log.info("Performing action {} on object {}",
-                        action, pid);
-                indexingAction.performAction(updateRequest);
-            }
-        } catch (IndexingException e) {
-            log.error("Error attempting to perform action " + action +
-                    " on object " + pid, e);
+    private Map<String, String> extractParams(Element body) {
+        Element paramsEl = body.getChild("params", CDR_MESSAGE_NS);
+        if (paramsEl == null) {
+            return null;
         }
+        return paramsEl.getChildren("param", CDR_MESSAGE_NS).stream()
+                .collect(toMap(p -> p.getAttributeValue("name"), p -> p.getTextTrim()));
     }
 
     /**

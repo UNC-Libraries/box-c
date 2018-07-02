@@ -59,7 +59,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     public void testMoveFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.MOVE.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.MOVE.toString()));
         assertMockEndpointsSatisfied();
     }
 
@@ -67,7 +67,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     public void testRemoveFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.REMOVE.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.REMOVE.toString()));
         assertMockEndpointsSatisfied();
     }
 
@@ -75,23 +75,23 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     public void testAddFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.ADD.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.ADD.toString()));
         assertMockEndpointsSatisfied();
     }
 
     @Test
-    public void testReorderFilter() throws Exception {
+    public void testMarkForDeletionFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.REORDER.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.MARK_FOR_DELETION.toString()));
         assertMockEndpointsSatisfied();
     }
 
     @Test
-    public void testPublishFilter() throws Exception {
+    public void testEditAccessFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.PUBLISH.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_ACCESS_CONTROL.toString()));
         assertMockEndpointsSatisfied();
     }
 
@@ -99,7 +99,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     public void testEditTypeFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_TYPE.getName()));
+        template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_TYPE.toString()));
         assertMockEndpointsSatisfied();
     }
 

@@ -44,18 +44,10 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
             throw new IllegalArgumentException("Update request must specify one or more children for indexing");
         }
 
-        // Calculate total number of objects to be indexed
-        int indexTargetTotal = 0;
-        for (PID pid : childSetRequest.getChildren()) {
-            indexTargetTotal += this.countDescendants(pid) + 1;
-        }
-        updateRequest.setChildrenPending(indexTargetTotal);
-
         // Index the tree for each pid in the set
-        RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
         for (PID pid : childSetRequest.getChildren()) {
             RepositoryObject obj = repositoryObjectLoader.getRepositoryObject(pid);
-            treeIndexer.index(obj, null);
+            treeIndexer.index(obj, actionType, updateRequest.getUserID());
         }
 
         if (log.isDebugEnabled()) {

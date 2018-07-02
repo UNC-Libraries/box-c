@@ -23,27 +23,6 @@
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
         <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
     </bean>
-    
-    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="concurrentConsumers" value="2" />
-    </bean>
-
-    <bean id="activemq"
-        class="org.apache.activemq.camel.component.ActiveMQComponent">
-        <property name="configuration" ref="jmsConfig" />
-    </bean>
-
-    <!-- JMS ConnectionFactory to use, configuring the embedded broker using 
-        XML -->
-    <amq:connectionFactory id="jmsFactory"
-        brokerURL="vm://localhost" />
-
-    <amq:broker useJmx="false" persistent="false" useShutdownHook="false">
-        <amq:transportConnectors>
-            <amq:transportConnector uri="vm://localhost:61616" />
-        </amq:transportConnectors>
-    </amq:broker>
 
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />

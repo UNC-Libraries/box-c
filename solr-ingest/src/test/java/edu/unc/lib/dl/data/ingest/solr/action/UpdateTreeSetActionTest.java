@@ -15,42 +15,32 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.addContainerToParent;
+import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeContainer;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.UUID;
+import java.util.List;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Literal;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *
@@ -58,79 +48,48 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  *
  */
 public class UpdateTreeSetActionTest {
+    private static final String USER = "user";
 
-    @Mock
-    private SolrUpdateDriver driver;
-    @Mock
-    private SparqlQueryService sparqlQueryService;
-    @Mock
-    private QueryExecution mockQueryExecution;
-    @Mock
-    private ResultSet mockResultSet;
-    @Mock
-    private QuerySolution mockQuerySolution;
-    @Mock
-    private Literal mockLiteral;
-
-    @Mock
-    protected DocumentIndexingPipeline pipeline;
-    @Mock
-    private DocumentIndexingPackageDataLoader loader;
-    @Mock
-    private DocumentIndexingPackageFactory factory;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
-
     @Mock
+    private IndexingMessageSender messageSender;
+    @Captor
+    private ArgumentCaptor<PID> pidCaptor;
+
     private ChildSetRequest request;
 
-    protected UpdateTreeSetAction action;
+    private UpdateTreeSetAction action;
+
+    private RecursiveTreeIndexer treeIndexer;
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExecution);
-        when(mockQueryExecution.execSelect()).thenReturn(mockResultSet);
-        when(mockResultSet.next()).thenReturn(mockQuerySolution);
-        when(mockQuerySolution.getLiteral(eq("count"))).thenReturn(mockLiteral);
+        treeIndexer = new RecursiveTreeIndexer();
+        treeIndexer.setIndexingMessageSender(messageSender);
 
         action = new UpdateTreeSetAction();
-        action.setSparqlQueryService(sparqlQueryService);
-        action.setPipeline(pipeline);
-        action.setAddDocumentMode(true);
-        action.setSolrUpdateDriver(driver);
-        action.setFactory(factory);
         action.setRepositoryObjectLoader(repositoryObjectLoader);
-
-        // Mock factory to produce DIPs
-        when(factory.createDip(any(PID.class), any(DocumentIndexingPackage.class)))
-                .thenAnswer(new Answer<DocumentIndexingPackage>() {
-            @Override
-            public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
-                PID pid = invocation.getArgumentAt(0, PID.class);
-                DocumentIndexingPackage dip = mock(DocumentIndexingPackage.class);
-
-                IndexDocumentBean document = new IndexDocumentBean();
-                document.setId(pid.getId());
-
-                when(dip.getDocument()).thenReturn(document);
-
-                return dip;
-            }
-        });
+        action.setTreeIndexer(treeIndexer);
+        action.setActionType(IndexingActionType.ADD.name());
     }
 
     @Test
     public void testSingleEmptyChild() throws Exception {
-        ContentContainerObject containerObj = makeContainerObject();
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
 
-        when(request.getChildren()).thenReturn(Arrays.asList(containerPid));
-
+        request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
+                IndexingActionType.ADD, USER);
         action.performAction(request);
 
-        verify(driver, times(1)).addDocument(any(IndexDocumentBean.class));
+        verify(messageSender).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
+
+        List<PID> pids = pidCaptor.getAllValues();
+        assertTrue(pids.contains(containerPid));
     }
 
     /**
@@ -138,16 +97,22 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testMultipleChildren() throws Exception {
-        ContentContainerObject container1Obj = makeContainerObject();
+        ContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
         PID container1Pid = container1Obj.getPid();
-        ContentContainerObject container2Obj = makeContainerObject();
+        ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
-        when(request.getChildren()).thenReturn(Arrays.asList(container1Pid, container2Pid));
-
+        request = new ChildSetRequest(container1Pid.getRepositoryPath(),
+                asList(container1Pid.getRepositoryPath(), container2Pid.getRepositoryPath()),
+                IndexingActionType.ADD, USER);
         action.performAction(request);
 
-        verify(driver, times(2)).addDocument(any(IndexDocumentBean.class));
+        verify(messageSender, times(2)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
+
+        List<PID> pids = pidCaptor.getAllValues();
+        assertTrue(pids.contains(container1Pid));
+        assertTrue(pids.contains(container2Pid));
     }
 
     /**
@@ -155,17 +120,20 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testNestedChildren() throws Exception {
-        ContentContainerObject containerObj = makeContainerObject();
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
-        ContentContainerObject childObj = makeContainerObject();
+        ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
 
-        when(containerObj.getMembers()).thenReturn(Arrays.asList(childObj));
-
-        when(request.getChildren()).thenReturn(Arrays.asList(containerPid));
-
+        request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
+                IndexingActionType.ADD, USER);
         action.performAction(request);
 
-        verify(driver, times(2)).addDocument(any(IndexDocumentBean.class));
+        verify(messageSender, times(2)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
+
+        List<PID> pids = pidCaptor.getAllValues();
+        assertTrue(pids.contains(containerPid));
+        assertTrue(pids.contains(childObj.getPid()));
     }
 
     @Test(expected = IndexingException.class)
@@ -177,22 +145,9 @@ public class UpdateTreeSetActionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoChildrenRequest() throws Exception {
-        when(request.getChildren()).thenReturn(Arrays.asList());
+        request = new ChildSetRequest(null, asList(),
+                IndexingActionType.ADD, USER);
 
         action.performAction(request);
-    }
-
-    private ContentContainerObject makeContainerObject() {
-        PID pid = makePid();
-        ContentContainerObject container = mock(ContentContainerObject.class);
-        when(container.getPid()).thenReturn(pid);
-
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
-
-        return container;
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
     }
 }

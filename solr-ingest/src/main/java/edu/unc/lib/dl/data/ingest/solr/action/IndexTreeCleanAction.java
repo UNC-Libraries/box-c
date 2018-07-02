@@ -63,9 +63,4 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
     public void setDeleteAction(DeleteSolrTreeAction deleteAction) {
         this.deleteAction = deleteAction;
     }
-
-    @Override
-    public void setAddDocumentMode(boolean addDocumentMode) {
-        // Do nothing, clean index should always be in add mode
-    }
 }
