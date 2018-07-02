@@ -13,6 +13,10 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    </bean>
+    
     <bean id="queryLayer" class="edu.unc.lib.dl.search.solr.service.SolrSearchService">
         <property name="solrSettings" ref="solrSettings" />
         <property name="searchSettings" ref="searchSettings" />

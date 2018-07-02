@@ -104,12 +104,12 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(1)
+                .whenCompleted(2)
                 .create();
 
         processor.process(exchange);
 
-        notify.matches(3l, TimeUnit.SECONDS);
+        assertTrue(notify.matches(3l, TimeUnit.SECONDS));
 
         server.commit();
 
