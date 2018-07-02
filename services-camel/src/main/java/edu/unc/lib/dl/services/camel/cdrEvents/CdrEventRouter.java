@@ -49,9 +49,9 @@ public class CdrEventRouter extends RouteBuilder {
     @BeanInject(value = "cdrEventToSolrUpdateProcessor")
     private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
 
-    private static final List<String> solrAllowedActions = asList(MOVE.toString(), REMOVE.toString(), ADD.toString(),
-            EDIT_ACCESS_CONTROL.toString(), MARK_FOR_DELETION.toString(), RESTORE_FROM_DELETION.toString(),
-            EDIT_TYPE.toString(), SET_AS_PRIMARY_OBJECT.toString(), UPDATE_DESCRIPTION.toString());
+    private static final List<String> solrAllowedActions = asList(ADD.toString(), EDIT_ACCESS_CONTROL.toString(),
+            EDIT_TYPE.toString(), MARK_FOR_DELETION.toString(), MOVE.toString(), REMOVE.toString(),
+            RESTORE_FROM_DELETION.toString(), SET_AS_PRIMARY_OBJECT.toString(), UPDATE_DESCRIPTION.toString());
 
     private static final String solrAllowed = String.join(",", solrAllowedActions);
 

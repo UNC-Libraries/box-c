@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 
 import java.util.Map;
 
-import org.apache.solr.common.StringUtils;
 import org.springframework.util.Assert;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
@@ -49,9 +48,7 @@ public class DeleteStaleChildren extends AbstractIndexingAction {
 
         Map<String, String> params = updateRequest.getParams();
         String staleTimestamp = params.get(STALE_TIMESTAMP);
-        if (StringUtils.isEmpty(staleTimestamp)) {
-            throw new IllegalArgumentException("Cannot cleanup stale children, no staleTimestamp provided");
-        }
+        Assert.hasText(staleTimestamp, "Cannot cleanup stale children, no staleTimestamp provided");
 
         try {
             // Force commit the updates currently staged

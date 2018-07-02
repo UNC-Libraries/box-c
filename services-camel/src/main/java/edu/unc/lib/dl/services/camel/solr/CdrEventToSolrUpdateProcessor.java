@@ -103,6 +103,7 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         case SET_AS_PRIMARY_OBJECT:
             indexingActionType = IndexingActionType.RECURSIVE_ADD;
             break;
+        // The following access control actions map to the same indexing type
         case EDIT_ACCESS_CONTROL:
         case MARK_FOR_DELETION:
         case RESTORE_FROM_DELETION:

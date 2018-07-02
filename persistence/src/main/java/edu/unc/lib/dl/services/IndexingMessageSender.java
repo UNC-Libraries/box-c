@@ -45,7 +45,7 @@ public class IndexingMessageSender extends AbstractMessageSender {
      * @param actionType type of indexing action to perform
      */
     public void sendIndexingOperation(String userid, PID targetPid, IndexingActionType actionType) {
-        sendIndexingOperation(userid, targetPid, null, actionType);
+        sendIndexingOperation(userid, targetPid, null, actionType, null);
     }
 
     /**
