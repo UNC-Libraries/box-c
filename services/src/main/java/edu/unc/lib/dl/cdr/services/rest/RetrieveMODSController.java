@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,17 +48,17 @@ public class RetrieveMODSController {
     @Autowired
     private MODSRetrievalService modsService;
 
-    @RequestMapping(value = "description/{id}", method = RequestMethod.GET, produces = "text/xml")
-    public @ResponseBody ResponseEntity<InputStream> retrieveMODS(@PathVariable("id") String id) {
+    @RequestMapping(value = "/description/{id}", method = RequestMethod.GET)
+    public @ResponseBody ResponseEntity<String> retrieveMODS(@PathVariable("id") String id) throws IOException {
 
         PID pid = PIDs.get(id);
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
 
-        InputStream modsStream;
+        String modsString;
         try {
-            modsStream = modsService.retrieveMODS(agent, pid);
-            if (modsStream == null) {
+            modsString = modsService.retrieveMODS(agent, pid);
+            if (modsString == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
@@ -70,6 +70,6 @@ public class RetrieveMODSController {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        return new ResponseEntity<InputStream>(modsStream, HttpStatus.OK);
+        return new ResponseEntity<String>(modsString, HttpStatus.OK);
     }
 }

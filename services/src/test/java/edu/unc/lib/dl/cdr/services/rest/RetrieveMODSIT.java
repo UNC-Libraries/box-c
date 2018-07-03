@@ -57,7 +57,7 @@ public class RetrieveMODSIT extends AbstractAPIIT {
         InputStream modsStream = new FileInputStream(modsFile);
         work.setDescription(modsStream);
 
-        MvcResult result = mvc.perform(get("description/" + work.getPid().getUUID()))
+        MvcResult result = mvc.perform(get("/description/" + work.getPid().getUUID()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
     }

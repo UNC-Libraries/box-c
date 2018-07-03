@@ -17,6 +17,9 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -54,7 +57,7 @@ public class MODSRetrievalService {
      * @throws FedoraException
      * @throws IOException
      */
-    public InputStream retrieveMODS(AgentPrincipals agent, PID pid)
+    public String retrieveMODS(AgentPrincipals agent, PID pid)
             throws FedoraException, IOException {
 
         aclService.assertHasAccess(pid, agent.getPrincipals(), Permission.viewMetadata);
@@ -65,7 +68,8 @@ public class MODSRetrievalService {
 
             if (mods != null) {
                 try (InputStream modsStream = mods.getBinaryStream()) {
-                    return modsStream;
+                    String modsString = IOUtils.toString(modsStream, StandardCharsets.UTF_8);
+                    return modsString;
                 }
             } else {
                 return null;
