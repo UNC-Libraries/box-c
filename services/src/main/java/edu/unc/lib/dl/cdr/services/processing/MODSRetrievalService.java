@@ -53,7 +53,7 @@ public class MODSRetrievalService {
      *
      * @param agent security principals of the agent making the request
      * @param pid the pid of the object whose MODS is requested
-     * @return the MODS as an input stream, or null if the object has no MODS
+     * @return the MODS as a String, or null if the object has no MODS
      * @throws FedoraException
      * @throws IOException
      */

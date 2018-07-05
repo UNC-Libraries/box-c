@@ -66,7 +66,7 @@ public class RetrieveMODSController {
                 log.warn("User {} does not have permission to view metadata for {}", agent.getUsername(), pid);
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             } else {
-                log.error("Failed to retrieve MODS for object with pid " + pid, e);
+                log.error("Failed to retrieve MODS for object with pid {}", pid, e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
