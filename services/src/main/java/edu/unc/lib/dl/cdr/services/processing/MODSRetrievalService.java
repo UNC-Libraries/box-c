@@ -60,7 +60,8 @@ public class MODSRetrievalService {
     public String retrieveMODS(AgentPrincipals agent, PID pid)
             throws FedoraException, IOException {
 
-        aclService.assertHasAccess(pid, agent.getPrincipals(), Permission.viewMetadata);
+        aclService.assertHasAccess("User does not have permissions to view MODS", pid, agent.getPrincipals(),
+                Permission.viewMetadata);
 
         try (Timer.Context context = timer.time()) {
             ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
