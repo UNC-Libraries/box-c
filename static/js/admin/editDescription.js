@@ -115,8 +115,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		var editorOptions = {
 			schema : "../../static/schemas/mods-3-7.json",
 			ajaxOptions : {
-				xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
-				xmlUploadPath : "/admin/describe/" + resultObject.id
+				xmlRetrievalPath : "/services/api/description/" + resultObject.id,
+				xmlUploadPath : "/services/api/edit/description/" + resultObject.id
 			},
 			templateOptions : {
 				templatePath: '../../static/js/xmleditor/templates/',
