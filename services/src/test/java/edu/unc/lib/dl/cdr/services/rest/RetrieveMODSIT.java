@@ -29,8 +29,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -71,7 +72,7 @@ public class RetrieveMODSIT extends AbstractAPIIT {
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        String expectedResponseBody = IOUtils.toString(new FileInputStream(modsFile));
+        String expectedResponseBody = FileUtils.readFileToString(modsFile, StandardCharsets.UTF_8);
         assertEquals(expectedResponseBody, responseBody);
     }
 
@@ -95,6 +96,17 @@ public class RetrieveMODSIT extends AbstractAPIIT {
         WorkObject work = repositoryObjectFactory.createWorkObject(null);
 
         mvc.perform(get("/description/" + work.getPid().getUUID()))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void testObjectDoesNotExist() throws Exception {
+        doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
+                eq(viewMetadata));
+        PID pid = makePid();
+
+        mvc.perform(get("/description/" + pid.getUUID()))
                 .andExpect(status().isNotFound())
                 .andReturn();
     }

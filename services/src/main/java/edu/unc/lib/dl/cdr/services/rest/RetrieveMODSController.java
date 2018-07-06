@@ -33,6 +33,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.MODSRetrievalService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -65,6 +66,9 @@ public class RetrieveMODSController {
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 log.warn("User {} does not have permission to view metadata for {}", agent.getUsername(), pid);
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            } else if (e instanceof NotFoundException) {
+                log.warn("There is no object with pid {}", pid);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else {
                 log.error("Failed to retrieve MODS for object with pid {}", pid, e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
