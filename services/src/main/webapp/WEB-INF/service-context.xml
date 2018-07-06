@@ -331,6 +331,11 @@
       <property name="dataDir" ref="dataDir" />
   </bean>
   
+  <bean id="modsRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.MODSRetrievalService">
+      <property name="aclService" ref="aclService" />
+      <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+  </bean>
+  
     <bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
 
     <bean id="updateCompleteTemplate" factory-bean="mustacheCompiler"
