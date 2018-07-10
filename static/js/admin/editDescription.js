@@ -211,9 +211,9 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			}
 		};
 		
-		if (vocabularyConfigs) {
-			editorOptions.vocabularyConfigs = vocabularyConfigs;
-		}
+//		if (vocabularyConfigs) {
+//			editorOptions.vocabularyConfigs = vocabularyConfigs;
+//		}
 
 		loadingIcon.addClass("hidden");
 
