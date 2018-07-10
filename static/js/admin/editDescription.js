@@ -45,43 +45,6 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		
 		$(".results_header_hierarchy_path").html(containerPath);
 	
-//		var tags = resultObject.tags;
-//		if (tags) {
-//			var validationProblem = "";
-//			var vocabMap = {};
-//			for (var index in tags) {
-//				if (tags[index].label == "invalid term") {
-//					var details = tags[index].details;
-//					for (var detailIndex in details) {
-//						var detail = details[detailIndex]
-//						var vocabName = detail.substring(0, detail.indexOf("|"));
-//						var term = detail.substring(detail.indexOf("|") + 1);
-//						
-//						if (!(vocabName in vocabMap)) {
-//							vocabMap[vocabName] = "";
-//						}
-//						
-//						vocabMap[vocabName] +=  "<li><span class='warning_symbol'>!</span>" + term + "</li>";
-//					}
-//					break;
-//				}
-//			}
-//		
-//			if (!$.isEmptyObject(vocabMap)) {
-//				$.each(vocabMap, function(vocabName, value){
-//					$(".edit_desc_page .results_header_hierarchy_path").after("<div class='result_warning'><h3>Invalid " + vocabName + " terms</h3><ul>" + value + "</ul></div>");
-//				});
-//				
-//				if (resultObject.parentCollection) {
-//					$(".result_warning").append("<p>View all <a href='/admin/invalidVocab/" 
-//							+ resultObject.parentCollection + "'>invalid vocabulary terms</a> in the same collection</p>");
-//				} else {
-//					$(".result_warning").append("<p>View all <a href='/admin/invalidVocab/'>invalid vocabulary terms</a></p>");
-//				}
-//				
-//			}
-//		}
-	
 		var originalUrl = module.config().originalUrl;
 		var recordUrl = module.config().recordUrl;
 		var menuEntries = [{
@@ -210,10 +173,6 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				}
 			}
 		};
-		
-//		if (vocabularyConfigs) {
-//			editorOptions.vocabularyConfigs = vocabularyConfigs;
-//		}
 
 		loadingIcon.addClass("hidden");
 
