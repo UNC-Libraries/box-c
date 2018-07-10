@@ -32,7 +32,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 	var loadingIcon = $("#loading-icon");
 	loadingIcon.removeClass("hidden");
 	
-	$.getJSON("services/api/record/" + pid, function(data) {
+	$.getJSON("/services/api/record/" + pid, function(data) {
 		var resultObject = data;
 		//var vocabularyConfigs = data.vocabularyConfigs;
 		
