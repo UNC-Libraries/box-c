@@ -172,6 +172,8 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
         assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
         assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
+
+        assertTrue(child.hasProperty(Cdr.primaryObject, workChild));
     }
 
     @Test
