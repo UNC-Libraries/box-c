@@ -32,12 +32,12 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 	var loadingIcon = $("#loading-icon");
 	loadingIcon.removeClass("hidden");
 	
-	$.getJSON("/services/api/record/" + pid, function(data) {
+	var fields = "id,title,path,contentStatus,type"
+	$.getJSON("/services/api/record/" + pid + "?fields=" + fields, function(data) {
 		var resultObject = data;
-		//var vocabularyConfigs = data.vocabularyConfigs;
 		
 		var containerPath = pathTemplate({
-			objectPath : resultObject.objectPath? resultObject.objectPath.entries : [],
+			objectPath : resultObject.objectPath? resultObject.objectPath : [],
 			queryMethod : 'list',
 			filterParams : "",
 			skipLast : false
@@ -75,10 +75,15 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			});
 		}
 		
+		var modsRetrievalPath;
+		if (resultObject.contentStatus.hasOwnProperty('Described')) {
+			modsRetrievalPath = "/services/api/description/" + pid;
+		}
+		
 		var editorOptions = {
 			schema : "../../static/schemas/mods-3-7.json",
 			ajaxOptions : {
-				xmlRetrievalPath : "/services/api/description/" + pid,
+				xmlRetrievalPath : modsRetrievalPath,
 				xmlUploadPath : "/services/api/edit/description/" + pid
 			},
 			templateOptions : {
