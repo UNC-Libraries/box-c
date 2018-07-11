@@ -74,6 +74,10 @@ public class UpdateDescriptionController {
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else if (e instanceof MetadataValidationException) {
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    result.put("error", e.getMessage() + "\n" + cause.getMessage());
+                }
                 return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
             } else if (e instanceof IllegalArgumentException) {
                 return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
