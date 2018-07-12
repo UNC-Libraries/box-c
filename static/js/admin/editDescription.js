@@ -76,7 +76,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		}
 		
 		var modsRetrievalPath;
-		if (resultObject.contentStatus.hasOwnProperty('Described')) {
+		if ($.inArray('Described', resultObject.contentStatus) != -1) {
 			modsRetrievalPath = "/services/api/description/" + pid;
 		}
 		
