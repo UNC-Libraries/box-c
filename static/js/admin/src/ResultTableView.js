@@ -518,8 +518,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					howManyItemsText = " (" + self.dragTargets.length + " items)";
 				}
 				
+				var icon = ResourceTypeUtilities.getIconNameForType(metadata.type);
 				// Return helper for representative entry
-				var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
+				var helper = $("<div class='move_helper'><span><i class='" + icon + "'></i>" + metadata.title + "</span>" + howManyItemsText + "</div>");
 				
 				return helper;
 			},

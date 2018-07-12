@@ -635,9 +635,11 @@
 	overflow-y: hidden;
 }
 
-.move_helper .resource_icon {
+.move_helper .fas {
 	vertical-align: bottom;
 	margin-right: 2px;
+	font-size: 18px;
+	color: #1D759F;
 }
 
 .result_table.moving .res_entry.container .title {
