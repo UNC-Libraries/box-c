@@ -103,8 +103,8 @@
 	<c:if test="${not empty badgeIcon}">
 		<div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
 			<div class="fa-stack">
-				<i class="fa fa-circle fa-stack-2x background"></i>
-				<i class="fa fa-${badgeIcon} fa-stack-1x foreground"></i>
+				<i class="fas fa-circle fa-stack-2x background"></i>
+				<i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
 			</div>
 		</div>
 	</c:if>

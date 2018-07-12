@@ -93,19 +93,19 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						filename: 'mods.xml',
 						title: "Blank",
 						description: 'An empty MODS document',
-						icon_class: 'fa fa-file-o'
+						icon_class: 'far fa-file'
 					},
 					{
 						filename: 'generic.xml',
 						title: "Generic Object",
 						description: 'Generic MODS template prepopulated with common fields',
-						icon_class: 'fa fa-file-text-o'
+						icon_class: 'far fa-file-alt'
 					},
 					{
 						filename: 'student_papers.xml',
 						title: "Student Paper",
 						description: 'Standard fields for student paper descriptions',
-						icon_class: 'fa fa-university'
+						icon_class: 'fas fa-university'
 					}
 				],
 				cancelFunction: function() {

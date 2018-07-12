@@ -48,7 +48,7 @@ build-access:
 		static/css/cdr_common.css \
 		static/css/cdrui_styles.css \
 		static/css/fluid_cap.css \
-		static/css/font-awesome.min.css \
+		static/css/font-awesome.5.1.0.css \
 		static/css/structure_browse.css \
 		static/front/front.css \
 		static/front/peek.css \
