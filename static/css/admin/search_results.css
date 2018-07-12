@@ -131,8 +131,10 @@
 	display: inline-block;
 }
 
-.container_title .resource_icon {
+.container_title .fas {
 	vertical-align: bottom;
+	font-size: 18px;
+	color: #1D759F;
 }
 
 .container_title > span {
@@ -416,6 +418,13 @@
 
 .res_entry > .check_box > input {
 	vertical-align: text-bottom;
+}
+
+.res_entry > .type > .fas {
+	margin-top: 7px;
+	padding: 0;
+	font-size: 18px;
+	color: #1D759F;
 }
 
 .res_entry > .type > div {

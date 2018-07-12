@@ -46,8 +46,9 @@
 	*width: 125%;
 }
 
-.structure .resource_icon {
-	vertical-align: -20%;
+.structure .fas {
+	font-size: 16px;
+	color: #1D759F;
 }
 
 .structure .entry .description {

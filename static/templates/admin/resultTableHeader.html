@@ -13,7 +13,7 @@
 						<span>Searching<% if (container) { %> in<% } %></span>
 					<% } %>
 					<% if (container) { %>
-						<div class="resource_icon <%= container.type.toLowerCase() %>"></div>
+						<i class="fas fa-<%= icon %>"></i>
 						<span <%= containerDeleted? "class='deleted'" : "" %>><%= container.title %></span>
 						<img class="action_gear container_menu" src="/static/images/admin/gear.png">
 					

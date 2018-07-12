@@ -391,9 +391,10 @@ li {
 	opacity: 0.3;
 }
 
+.resource_icon.adminUnit { background-position: 0px 0px; }
 .resource_icon.collection { background-position: 0px 0px; }
 .resource_icon.folder { background-position: -16px 0px; }
-.resource_icon.aggregate { background-position: -32px 0px; }
+.resource_icon.work { background-position: -32px 0px; }
 .resource_icon.file { background-position: -48px 0px; }
 
 /** Logo word spacing in Safari **/

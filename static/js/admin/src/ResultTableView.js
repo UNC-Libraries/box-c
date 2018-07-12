@@ -1,6 +1,6 @@
 define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'ResourceTypeUtilities', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation, ResourceTypeUtilities) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -77,7 +77,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				container : container,
 				navigationBar : navigationBar,
 				containerPath : containerPath,
-				queryMethod : data.queryMethod
+				queryMethod : data.queryMethod,
+				icon : ResourceTypeUtilities.getIconNameForType(container.type)
 			});
 			
 			var headerHeightClass = self.options.headerHeightClass;
