@@ -113,15 +113,17 @@ public class CDRMETSGraphExtractor {
             String from = link.getAttributeValue("from", XLINK_NS);
             String arcrole = link.getAttributeValue("arcrole", XLINK_NS);
             String to = link.getAttributeValue("to", XLINK_NS);
-            if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder"
+            Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
+            Resource toR = m.createResource(helper.getPIDURIForDIVID(to));
+            Property role;
+            if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#defaultWebObject"
                     .equals(arcrole)) {
-                // TODO: handle alphabetic sorting
+                // Remap old predicate to current primaryObject predicate
+                role = Cdr.primaryObject;
             } else {
-                Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
-                Resource toR = m.createResource(helper.getPIDURIForDIVID(to));
-                Property role = m.createProperty(arcrole);
-                m.add(fromR, role, toR);
+                role = m.createProperty(arcrole);
             }
+            m.add(fromR, role, toR);
         }
     }
 
