@@ -341,10 +341,6 @@
 	font-size: 70%;
 }
 
-.res_entry.moving .resource_icon {
-	opacity : 0.3;
-}
-
 .result_table .column_headers + .res_entry > td{
 	padding-top: 8px;
 }

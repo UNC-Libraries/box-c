@@ -151,7 +151,7 @@
 } 
 
 /** No resource icons */
-.structure.no_resource_icons .resource_icon {
+.structure.no_resource_icons .fas, .structure.no_resource_icons .far {
 	display: none;
 }
 
