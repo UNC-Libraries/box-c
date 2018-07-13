@@ -1,6 +1,6 @@
 define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'ResourceTypeUtilities', 'detachplus'], 
+		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation, ResourceTypeUtilities) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -77,7 +77,8 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				container : container,
 				navigationBar : navigationBar,
 				containerPath : containerPath,
-				queryMethod : data.queryMethod
+				queryMethod : data.queryMethod,
+				icon : ResourceTypeUtilities.getIconNameForType(container.type)
 			});
 			
 			var headerHeightClass = self.options.headerHeightClass;
@@ -517,8 +518,9 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					howManyItemsText = " (" + self.dragTargets.length + " items)";
 				}
 				
+				var icon = ResourceTypeUtilities.getIconNameForType(metadata.type);
 				// Return helper for representative entry
-				var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
+				var helper = $("<div class='move_helper'><span><i class='" + icon + "'></i>" + metadata.title + "</span>" + howManyItemsText + "</div>");
 				
 				return helper;
 			},

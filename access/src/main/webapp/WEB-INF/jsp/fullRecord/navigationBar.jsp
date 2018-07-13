@@ -35,18 +35,18 @@
 				<ul id="prevNext">
 					<c:choose>
 						<c:when test="${not empty previousNext.previous}">
-							<li><a href="<c:out value='record/${previousNext.previous.id}' />"><i class="fa fa-arrow-left" aria-hidden="true"></i> Previous</a></li>
+							<li><a href="<c:out value='record/${previousNext.previous.id}' />"><i class="fas fa-arrow-left" aria-hidden="true"></i> Previous</a></li>
 						</c:when>
 						<c:otherwise>
-							<li><i class="fa fa-arrow-left"aria-hidden="true"></i> Previous</li>
+							<li><i class="fas fa-arrow-left"aria-hidden="true"></i> Previous</li>
 						</c:otherwise>
 					</c:choose>
 					<c:choose>
 						<c:when test="${not empty previousNext.next}">
-							<li><a href="<c:out value='record/${previousNext.next.id}' />">Next <i class="fa fa-arrow-right" aria-hidden="true"></i></a></li>
+							<li><a href="<c:out value='record/${previousNext.next.id}' />">Next <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
 						</c:when>
 						<c:otherwise>
-							<li>Next <i class="fa fa-arrow-right" aria-hidden="true"></i><li>
+							<li>Next <i class="fas fa-arrow-right" aria-hidden="true"></i><li>
 						</c:otherwise> 
 					</c:choose>
 				</ul>

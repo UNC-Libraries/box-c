@@ -1,5 +1,5 @@
-define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverlay'], 
-		function($, ui, _, ModalLoadingOverlay) {
+define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverlay', 'ResourceTypeUtilities'], 
+		function($, ui, _, ModalLoadingOverlay, ResourceTypeUtilities) {
 	var defaultOptions = {
 			animateSpeed : 100,
 			metadata : null,
@@ -43,8 +43,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			}
 		}
 		
-		var newElement = $(this.options.template({metadata : metadata, isContainer : this.isContainer, 
-				isDeleted : this.isDeleted, validationProblem : validationProblem}));
+		var newElement = $(this.options.template({metadata : metadata,
+				isContainer : this.isContainer, 
+				isDeleted : this.isDeleted,
+				validationProblem : validationProblem,
+				icon : ResourceTypeUtilities.getIconNameForType(this.metadata.type)
+		}));
 		this.checkbox = null;
 		if (this.element) {
 			if (this.actionMenu)

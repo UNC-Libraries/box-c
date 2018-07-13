@@ -212,7 +212,7 @@
 	padding: 0;
 }
 
-.template-form .fa {
+.template-form .far, .template-form .fas {
 	font-size: 37px;
 	float: left;
 	margin-right: 10px;

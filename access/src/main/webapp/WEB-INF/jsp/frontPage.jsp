@@ -49,25 +49,25 @@
 		<ul class="deposit-options-list">
 				<li class="deposit-option">
 				<a href="/forms/open-access-carolina">
-					<div class="deposit-icons"><i class="fa fa-file-text-o"></i></div>
+					<div class="deposit-icons"><i class="fas fa-file-text-o"></i></div>
 					<h2>Open Access Articles</h2>
 				</a>
 			</li>
 			<li class="deposit-option">
 				<a href="/studentPapers">
-					<div class="deposit-icons"><i class="fa fa-graduation-cap"></i></div>
+					<div class="deposit-icons"><i class="fas fa-graduation-cap"></i></div>
 					<h2>Student<br>Papers</h2>
 			</a>
 			</li>
 			<li class="deposit-option">
 				<a href="/forms/posters">
-				<div class="deposit-icons"><i class="fa fa-line-chart"></i></div>
+				<div class="deposit-icons"><i class="fas fa-line-chart"></i></div>
 				<h2>Posters &amp; Presentations</h2>
 				</a>
 			</li>
 			<li class="deposit-option">
 				<a href="/forms/dataset">
-				<div class="deposit-icons"><i class="fa fa-table"></i></div>
+				<div class="deposit-icons"><i class="fas fa-table"></i></div>
 				<h2>Open Access Datasets</h2>
 				</a>
 			</li>

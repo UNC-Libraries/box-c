@@ -5,7 +5,7 @@
 			<% if (isAContainer) { %>
 				<div class="cont_toggle <%= toggleClass %>"></div>
 			<% } %>
-			<div class="resource_icon <%= metadata.type.toLowerCase() %>" title="<%= metadata.type %>"></div>
+			<i class="<%= icon %>" title="<%= metadata.type %>"></i>
 			<a href="<%- primaryAction %>" class="primary_action res_link"><%= metadata.title %></a>
 			
 			<% if (downloadUrl && secondaryActions) { %>

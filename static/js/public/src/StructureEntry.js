@@ -1,4 +1,4 @@
-define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEntry'], function($, ui, structureEntryTemplate) {
+define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEntry', 'ResourceTypeUtilities'], function($, ui, structureEntryTemplate, ResourceTypeUtilities) {
 	var defaultOptions = {
 			indentSuppressed : false,
 			isRoot : false,
@@ -101,7 +101,8 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 			secondaryActions : this.options.structureView.options.secondaryActions,
 			downloadUrl : downloadUrl,
 			isRoot : this.options.isRoot,
-			isSelected : this.options.isSelected
+			isSelected : this.options.isSelected,
+			icon: ResourceTypeUtilities.getIconNameForType(this.metadata.type)
 		});
 	};
 	

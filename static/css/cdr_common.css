@@ -379,23 +379,6 @@ li {
 	color: #0a5274;
 }
 
-/** Icons **/
-.resource_icon {
-	background-image: url('/static/images/resource-types.png');
-	height: 16px;
-	width: 16px;
-	display: inline-block;
-}
-
-.deleted .resource_icon {
-	opacity: 0.3;
-}
-
-.resource_icon.collection { background-position: 0px 0px; }
-.resource_icon.folder { background-position: -16px 0px; }
-.resource_icon.aggregate { background-position: -32px 0px; }
-.resource_icon.file { background-position: -48px 0px; }
-
 /** Logo word spacing in Safari **/
 
 @media screen and (min-color-index:0) and(-webkit-min-device-pixel-ratio:0) 
