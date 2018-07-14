@@ -166,11 +166,6 @@
             <version>0.3</version>
         </dependency>
         <dependency>
-            <groupId>org.irods.jargon</groupId>
-            <artifactId>jargon-core</artifactId>
-            <version>${jargon.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>

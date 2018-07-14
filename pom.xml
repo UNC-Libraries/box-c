@@ -79,7 +79,6 @@
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jargon.version>3.3.1</jargon.version>
         <xacml.version>2.0.9.Final</xacml.version>
         <jetty.version>9.4.7.v20170914</jetty.version>
         <junit.version>4.12</junit.version>
