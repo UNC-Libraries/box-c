@@ -28,8 +28,8 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 
-		if (this.showOptions) {
-			this.showOptions(resultObject);
+		if (this.containerType) {
+			this.containerType(resultObject);
 		}
 		
 		$("input[type='file']", this.$form).change(function(){

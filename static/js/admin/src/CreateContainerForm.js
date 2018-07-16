@@ -24,28 +24,22 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		return errors;
 	};
 
-	CreateContainerForm.prototype.showOptions = function (resultObject) {
-		var regx = /\w{8}-\w{4}-\w{4}-\w{4}-\w{12}/;
+	CreateContainerForm.prototype.containerType = function (resultObject) {
+		var inputType = $("input[name='container_type']", this.$form);
+		var parentType = resultObject.type;
 
-		$("select option", this.$form).each(function() {
-			var self = $(this);
-			var optionType = self.attr('value');
-
-			if (optionType === 'folder' && resultObject === 'adminUnit') {
-				self.addClass('hidden');
-			} else if ((optionType === 'collection' || optionType === 'adminUnit') && resultObject === 'collections') {
-				self.addClass('hidden');
-			} else if ((optionType === 'collection' || optionType === 'adminUnit') && regx.test(resultObject)) {
-				self.addClass('hidden');
-			} else {
-				self.removeClass('hidden');
-			}
-		});
+		if (parentType === "Unit") {
+			inputType.val("collection")
+		} else if (parentType === "Collection") {
+            inputType.val("folder");
+		} else {
+            inputType.val("folder");
+		}
 	};
 	
 	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
 		this.containerName = $("input[name='name']", this.$form).val();
-		this.containerType = $("select", this.$form).val();
+		this.containerType = $("input[name='container_type']", this.$form).val();
 		var pid;
 		if ($.type(resultObject) === 'string') {
 			pid = resultObject;
