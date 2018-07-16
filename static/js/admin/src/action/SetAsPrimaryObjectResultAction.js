@@ -1,4 +1,4 @@
-define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction', "tpl!../templates/admin/editTypeForm"], function($, AjaxCallbackAction, editTypeTemplate) {
+define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, AjaxCallbackAction) {
 
 	function SetAsPrimaryObjectResultAction(context) {
 		this._create(context);
@@ -40,26 +40,18 @@ define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction', "tpl!
 		var pid = this.target.getPid();
 		
 		$.ajax({
-			url : "/services/api/edit/setAsPrimaryObject",
+			url : "/services/api/edit/setAsPrimaryObject/" + pid,
 			type : "PUT",
-			contentType: "application/json; charset=utf-8",
-			dataType: "json",
-			data : JSON.stringify({
-				pid : pid,
-				clear : this.context.clear == true
-			})
 		}).done(function(reponse) {
-				// Trigger refreshing of results
-				self.context.actionHandler.addEvent({
-					action : 'RefreshResult',
-					target : target,
-					waitForUpdate : true
+			// Trigger refreshing of results
+			self.context.actionHandler.addEvent({
+				action : 'RefreshResult',
+				target : target,
+				waitForUpdate : true
 			});
 			
-			self.context.view.$alertHandler.alertHandler("message", "Assignment of object with pid " + pid + " as primary object has started.");
-		}).fail(function() {
-			self.context.view.$alertHandler.alertHandler("error", "Failed to assign object with pid " + pid + " as primary object.");
-		});
+			self.context.view.$alertHandler.alertHandler("success", "Assignment of object with pid " + pid + " as primary object has completed.");
+		})
 	};
 	
 	return SetAsPrimaryObjectResultAction;
