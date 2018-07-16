@@ -11,8 +11,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		var canIngest = $.inArray('ingest', this.container.permissions) !== -1;
 		var items = {};
 
-		console.log(this.container.permissions);
-		console.log(this.container.type);
 		if (canIngest) {
 			var self = this;
 
@@ -20,12 +18,12 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 				($.inArray('createCollection', this.container.permissions) !== -1 && this.container.type === "AdminUnit") ||
 				($.inArray('createAdminUnit', this.container.permissions) !== -1 && this.container.type === "ContentRoot")
 			) {
-                items["addContainer"] = {
-                    name : "Add Container",
-                    visible: function(key, opt){
-                        return self.allowIngestInto(self);
-                    }
-                };
+				items["addContainer"] = {
+				name : "Add Container",
+				visible: function(key, opt) {
+						return self.allowIngestInto(self);
+					}
+				};
 			}
 			items["ingestPackage"] = {
 				name : "Add Ingest Package",

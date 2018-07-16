@@ -1,6 +1,6 @@
 define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createContainerForm', 
-		'ModalLoadingOverlay', 'AbstractFileUploadForm', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractFileUploadForm) {
+		'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
+		function($, ui, _, RemoteStateChangeMonitor, createContainerForm, ModalLoadingOverlay, AbstractForm) {
 	
 	var defaultOptions = {
 			title : 'Create container',
@@ -9,11 +9,11 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	};
 	
 	function CreateContainerForm(options) {
-		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+		this.options = $.extend({}, defaultOptions, options);
 	}
 	
 	CreateContainerForm.prototype.constructor = CreateContainerForm;
-	CreateContainerForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+	CreateContainerForm.prototype = Object.create( AbstractForm.prototype );
 	
 	CreateContainerForm.prototype.validationErrors = function() {
 		var errors = [];
@@ -28,7 +28,9 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		var inputType = $("input[name='container_type']", this.$form);
 		var parentType = resultObject.type;
 
-		if (parentType === "Unit") {
+		if (parentType === "RootObject") {
+			inputType.val("adminUnit");
+		} else if (parentType === "Unit") {
 			inputType.val("collection")
 		} else if (parentType === "Collection") {
             inputType.val("folder");
@@ -40,11 +42,12 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
 		this.containerName = $("input[name='name']", this.$form).val();
 		this.containerType = $("input[name='container_type']", this.$form).val();
+
 		var pid;
 		if ($.type(resultObject) === 'string') {
 			pid = resultObject;
 		} else {
-			pid = resultObject.metadata.id;
+			pid = resultObject.id;
 		}
 
 		this.action_url = "/services/api/edit/create/" + this.containerType + "/" + pid + "?label=" + this.containerName;
