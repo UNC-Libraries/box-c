@@ -12,7 +12,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	
 	function AbstractFileUploadForm(options) {
 		this.options = $.extend({}, defaultOptions, options);
-	};
+	}
 	
 	AbstractFileUploadForm.prototype.getDefaultOptions = function () {
 		return defaultOptions;
@@ -27,6 +27,10 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
+
+		if (this.showOptions) {
+			this.showOptions(resultObject);
+		}
 		
 		$("input[type='file']", this.$form).change(function(){
 			self.ingestFile = this.files[0];
@@ -62,6 +66,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			
 			self.submitted = true;
 			self.overlay.open();
+
 			if (self.supportsAjaxUpload()) {
 				self.submitAjax();
 			} else {
