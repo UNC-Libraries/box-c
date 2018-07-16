@@ -39,8 +39,7 @@ public class SoftwareAgentConstants {
         depositService("deposit"), servicesWorker("services-worker"), selfDepositForms(
                 "forms"), servicesAPI("services"), fixityCheckingService(
                 "fixity"), embargoUpdateService("embargo-update"), clamav(
-                "clamav", "0.99"), FITS("fits", "0.8.5"), iRods("irods", "3.3"), jargon(
-                "jargon", "3.2");
+                "clamav", "0.99"), FITS("fits", "1.0.6");
 
         private String value;
         private String version;
