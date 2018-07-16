@@ -122,9 +122,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Modification options
 		items["sepedit"] = "";
 		if ($.inArray('editResourceType', metadata.permissions) != -1 && metadata.isPart) {
-			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
-			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
-				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
+			items['setAsPrimaryObject'] = {
+				name : 'Set as Primary Object'
 			};
 		}
 		/* Publish action being replaced
@@ -204,7 +203,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						if (dataFile) {
 							self.actionHandler.addEvent({
 								action : 'ChangeLocation',
-								url : "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id),
+								url : "content/" + (dataFile['primaryObject']? dataFile['primaryObject'] : metadata.id),
 								newWindow : true,
 								application : "access"
 							});
@@ -268,11 +267,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							target : resultObject
 						});
 						break;
-					case "setDefaultWebObject" : case "clearDefaultWebObject" :
+					case "setAsPrimaryObject" :
 						self.actionHandler.addEvent({
-							action : 'SetAsDefaultWebObjectBatch',
+							action : 'SetAsPrimaryObject',
 							targets : [resultObject],
-							clear : key == "clearDefaultWebObject",
 							confirm : false
 						});
 						break;
