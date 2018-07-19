@@ -14,17 +14,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		if (canIngest) {
 			var self = this;
 
-			if ((canIngest && (this.container.type === "Folder" || this.container.type === "Collection")) ||
-				($.inArray('createCollection', this.container.permissions) !== -1 && this.container.type === "AdminUnit") ||
-				($.inArray('createAdminUnit', this.container.permissions) !== -1 && this.container.type === "ContentRoot")
-			) {
-				items["addContainer"] = {
-				name : "Add Container",
-				visible: function(key, opt) {
-						return self.allowIngestInto(self);
-					}
-				};
-			}
 			items["ingestPackage"] = {
 				name : "Add Ingest Package",
 				visible: function(key, opt){
@@ -37,6 +26,17 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 					return self.allowIngestInto(self);
 				}
 			};
+			if ((canIngest && (this.container.type === "Folder" || this.container.type === "Collection")) ||
+				($.inArray('createCollection', this.container.permissions) !== -1 && this.container.type === "AdminUnit") ||
+				($.inArray('createAdminUnit', this.container.permissions) !== -1 && this.container.type === "ContentRoot")
+			) {
+				items["addContainer"] = {
+					name : "Add " + CreateContainerForm.prototype.getContainerType(this.container),
+					visible: function(key, opt) {
+						return self.allowIngestInto(self);
+					}
+				};
+			}
 			items["addWork"] = {name : "Add Work",
 				visible: function(key, opt){
 					return self.allowIngestInto(self);

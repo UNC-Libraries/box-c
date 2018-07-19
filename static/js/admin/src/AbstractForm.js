@@ -1,9 +1,9 @@
 /**
  * Implements functionality and UI for the generic add container form
  */
-define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'ModalCreate',
-		'ModalLoadingOverlay', 'ResultObject', 'AlertHandler'],
-	function($, ui, _, RemoteStateChangeMonitor, ModalCreate, ModalLoadingOverlay, ResultObject) {
+define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
+		'ModalLoadingOverlay', 'AlertHandler'],
+	function($, ui, _, ModalCreate, ModalLoadingOverlay) {
 		function AbstractForm(options) {}
 
 		AbstractForm.prototype.open = function(resultObject) {
@@ -15,10 +15,6 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChange
 			this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 			this.$form = this.dialog.first();
 			this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
-
-			if (this.containerType) {
-				this.containerType(resultObject);
-			}
 
 			this.overlay = new ModalLoadingOverlay(this.$form, {
 				autoOpen : false,
