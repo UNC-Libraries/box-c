@@ -1,9 +1,9 @@
 /**
  * Implements functionality and UI for the generic Ingest Package form
  */
-define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'ModalCreate',
+define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractForm', 'RemoteStateChangeMonitor', 'ModalCreate',
 		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'ResultObject', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalCreate, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
+		function($, ui, _, AbstractForm, RemoteStateChangeMonitor, ModalCreate, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -13,6 +13,9 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	function AbstractFileUploadForm(options) {
 		this.options = $.extend({}, defaultOptions, options);
 	}
+	
+	AbstractFileUploadForm.prototype.constructor = AbstractFileUploadForm;
+	AbstractFileUploadForm.prototype = Object.create( AbstractForm.prototype );
 	
 	AbstractFileUploadForm.prototype.getDefaultOptions = function () {
 		return defaultOptions;
@@ -27,10 +30,6 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
-
-		if (this.containerType) {
-			this.containerType(resultObject);
-		}
 		
 		$("input[type='file']", this.$form).change(function(){
 			self.ingestFile = this.files[0];
@@ -121,16 +120,6 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		} else {
 			this.remove();
 		}
-	};
-	
-	AbstractFileUploadForm.prototype.remove = function() {
-		if (this.closed) return;
-		this.closed = true;
-		this.dialog.remove();
-		if (this.overlay)
-			this.overlay.remove();
-		if (this.closeConfirm)
-			this.closeConfirm.remove();
 	};
 	
 	AbstractFileUploadForm.prototype.supportsAjaxUpload = function() {
@@ -226,12 +215,6 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				self.remove();
 			}
 		});
-	};
-	
-	AbstractFileUploadForm.prototype.setError = function(errorText) {
-		$(".errors", this.$form).show();
-		$(".error_stack", this.$form).html(errorText);
-		this.dialog.dialog("option", "position", "center");
 	};
 	
 	// Validate the form and retrieve any errors
