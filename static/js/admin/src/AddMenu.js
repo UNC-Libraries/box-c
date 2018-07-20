@@ -8,17 +8,12 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	};
 	
 	AddMenu.prototype.getMenuItems = function() {
+		var canIngest = $.inArray('ingest', this.container.permissions) !== -1;
 		var items = {};
 
-		if ($.inArray('ingest', this.container.permissions) != -1) {
+		if (canIngest) {
 			var self = this;
 
-			items["addContainer"] = {
-				name : "Add Container",
-				visible: function(key, opt){
-					return self.allowIngestInto(self);
-				}
-			};
 			items["ingestPackage"] = {
 				name : "Add Ingest Package",
 				visible: function(key, opt){
@@ -31,6 +26,17 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 					return self.allowIngestInto(self);
 				}
 			};
+			if ((canIngest && (this.container.type === "Folder" || this.container.type === "Collection")) ||
+				($.inArray('createCollection', this.container.permissions) !== -1 && this.container.type === "AdminUnit") ||
+				($.inArray('createAdminUnit', this.container.permissions) !== -1 && this.container.type === "ContentRoot")
+			) {
+				items["addContainer"] = {
+					name : "Add " + CreateContainerForm.prototype.getContainerType(this.container),
+					visible: function(key, opt) {
+						return self.allowIngestInto(self);
+					}
+				};
+			}
 			items["addWork"] = {name : "Add Work",
 				visible: function(key, opt){
 					return self.allowIngestInto(self);
@@ -38,7 +44,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			};
 			items["addFile"] = {name : "Add File",
 				visible: function(key, opt){
-					if (self.container.type == "Work") {
+					if (self.container.type === "Work") {
 						return true;
 					}
 					return false;
@@ -46,7 +52,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			};
 
 		}
-		if ($.inArray('bulkUpdateDescription', this.container.permissions) != -1) {
+		if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
 			items["importMetadata"] = {name : "Import MODS"};
 		}
 		
@@ -54,7 +60,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	};
 
 	AddMenu.prototype.allowIngestInto = function(self) {
-		if (self.container.type == "Work" || self.container.type == "File") {
+		if (self.container.type === "Work" || self.container.type === "File") {
 			return false;
 		}
 		return true;
@@ -90,7 +96,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 					case "addContainer" :
 						new CreateContainerForm({
 							alertHandler : self.options.alertHandler
-						}).open(self.container.id);
+						}).open(self.container);
 						break;
 					case "ingestPackage" :
 						new IngestPackageForm({

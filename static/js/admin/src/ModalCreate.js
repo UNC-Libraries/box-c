@@ -16,7 +16,7 @@ define('ModalCreate', [ 'jquery', 'jquery-ui', 'ResultObject'],
 				pid = resultObject;
 			}
 
-			return this.options.createFormTemplate({pid : pid, metadata: metadata});
+			return this.options.createFormTemplate({pid : pid, metadata: metadata, options : this.options});
 		};
 
 		ModalCreate.prototype.modalDialog = function(dialog, self) {

@@ -1,20 +1,7 @@
-<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
-<form id="create_container_form" method="post" enctype="multipart/form-data" class="edit_form" target="upload_file_frame">
+<form id="create_container_form" method="post" class="edit_form">
 	<div class="form_field">
-		<label>Container Name*</label>
+		<label><%= options.containerType %> Name*</label>
 		<input name="name" size="38"></input>
-	</div>
-	<div class="form_field">
-		<label>Type*</label>
-		<select name="type">
-			<option value="folder">Folder</option>
-			<option value="collection">Collection</option>
-		</select>
-	</div>
-	<h3>Description</h3>
-	<div class="form_field">
-		<label>Description (MODS)</label>
-		<input type="file" name="description" accept="text/xml,application/xml"/>
 	</div>
 	<div class="update_field">
 		<input type="submit" id="create_container_button" class="update_button" value="Create" />
