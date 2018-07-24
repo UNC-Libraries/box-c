@@ -274,8 +274,8 @@ public class MoveObjectsServiceTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("is not a folder or a work and cannot be added to a folder");
 
-        FolderObject mockWorkObj = mock(FolderObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
+        FolderObject mockFolderObj = mock(FolderObject.class);
+        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockFolderObj);
 
         PID movePid = makePid();
         AdminUnit moveObj = mock(AdminUnit.class);

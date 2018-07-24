@@ -126,7 +126,7 @@ public class MoveObjectsService {
             }
         } else {
             throw new IllegalArgumentException(
-                    "Object with pid: " + pid + " is not a container");
+                    "Object with pid: " + pid + " cannot be added to destination");
         }
 
     }
