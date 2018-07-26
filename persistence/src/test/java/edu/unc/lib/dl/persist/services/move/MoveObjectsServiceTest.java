@@ -193,7 +193,7 @@ public class MoveObjectsServiceTest {
         when(objectPathFactory.getPath(eq(sourcePid))).thenReturn(sourceObjPath);
 
         // Adding retrievable logger for move log
-        Logger actionLogger = (Logger) LoggerFactory.getLogger("move_logger");
+        Logger actionLogger = (Logger) LoggerFactory.getLogger("moves");
         actionAppender = new ListAppender<>();
         actionLogger.setLevel(Level.INFO);
         actionLogger.addAppender(actionAppender);
