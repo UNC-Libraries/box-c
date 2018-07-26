@@ -58,8 +58,8 @@ public class MoveObjectsController {
         // Validate that the request contains the newPath and ids fields.
         if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
                 || moveRequest.getDestination() == null || moveRequest.getDestination().length() == 0) {
-            results.put("error", "Request must provide a destination destination and a list of ids");
-            log.error("Request must provide a destination destination and a list of ids");
+            results.put("error", "Request must provide a destination and a list of ids");
+            log.error("Request must provide a destination and a list of ids");
             return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         }
 
