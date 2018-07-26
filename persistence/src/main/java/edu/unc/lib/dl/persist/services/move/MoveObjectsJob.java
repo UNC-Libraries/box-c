@@ -60,7 +60,7 @@ import io.dropwizard.metrics5.Timer;
  */
 public class MoveObjectsJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(MoveObjectsJob.class);
-    private static final Logger moveLog = LoggerFactory.getLogger("move_logger");
+    private static final Logger moveLog = LoggerFactory.getLogger("moves");
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;

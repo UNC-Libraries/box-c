@@ -58,7 +58,8 @@ public class MoveObjectsController {
         // Validate that the request contains the newPath and ids fields.
         if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
                 || moveRequest.getDestination() == null || moveRequest.getDestination().length() == 0) {
-            results.put("error", "Request must provide a destination destination and a list of ids");
+            results.put("error", "Request must provide a destination and a list of ids");
+            log.error("Request must provide a destination and a list of ids");
             return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         }
 
@@ -71,9 +72,12 @@ public class MoveObjectsController {
             results.put("id", moveId);
             results.put("message", "Operation to move " + moveRequest.moved.size() + " objects into container "
                     + moveRequest.getDestination() + " has begun");
+            log.info("Operation to move {} objects into container {} has begun", moveRequest.moved.size(),
+                    moveRequest.getDestination());
             return new ResponseEntity<>(results, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             results.put("error", e.getMessage());
+            log.error("Move operation could not be started for the following reason: {}", e.getMessage());
             return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             results.put("error", "Failed to perform move operation");
