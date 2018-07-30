@@ -25,6 +25,7 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 		this.options.workPath = "/services/api/edit/delete/{idPath}";
 		this.options.workLabel = "Deleting object...";
 		this.options.followupLabel = "Deleting object....";
+		this.options.workData = { "message" : this.context.delete_message }
 		
 		if ('confirm' in this.context && !this.context.confirm) {
 			this.options.confirm = false;
