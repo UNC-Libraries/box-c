@@ -57,7 +57,8 @@ public class MarkForDeletionController {
 
     @RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> markForDeletion(@PathVariable("id") String id) {
+    public ResponseEntity<Object> markForDeletion(@PathVariable("id") String id,
+            @RequestParam("message") String message) {
         return update(true, AgentPrincipals.createFromThread(), id);
     }
 
@@ -73,7 +74,7 @@ public class MarkForDeletionController {
         return update(true, AgentPrincipals.createFromThread(), ids.split("\n"));
     }
 
-    private ResponseEntity<Object> update(boolean markAsDeleted, AgentPrincipals agent, String... ids) {
+    private ResponseEntity<Object> update(boolean markAsDeleted, AgentPrincipals agent, String message, String... ids) {
         Map<String, Object> result = new HashMap<>();
 
         if (ids.length == 1) {
@@ -85,7 +86,7 @@ public class MarkForDeletionController {
 
         try {
             if (markAsDeleted) {
-                markForDeletionService.markForDeletion(agent, ids);
+                markForDeletionService.markForDeletion(agent, message, ids);
             } else {
                 markForDeletionService.restoreMarked(agent, ids);
             }
@@ -96,6 +97,9 @@ public class MarkForDeletionController {
             log.error("Failed to update mark for deletion flag to {}", markAsDeleted, e);
             result.put("error", e.toString());
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
         result.put("timestamp", System.currentTimeMillis());

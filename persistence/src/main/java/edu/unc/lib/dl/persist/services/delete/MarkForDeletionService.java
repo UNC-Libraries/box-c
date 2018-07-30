@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.delete;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -43,13 +45,18 @@ public class MarkForDeletionService {
      * Mark a pid for deletion using the agent principals provided.
      *
      * @param agent security principals of the agent making request.
+     * @param message message containing the reason for this action
      * @param pids pid of object to mark for deletion
      */
-    public void markForDeletion(AgentPrincipals agent, String... ids) {
+    public void markForDeletion(AgentPrincipals agent, String message, String... ids) {
+        if (isBlank(message)) {
+            throw new IllegalArgumentException("A message describing the reason for this deletion must be provided");
+        }
+
         Collection<PID> pids = new ArrayList<>();
         for (String id : ids) {
             PID pid = PIDs.get(id);
-            Runnable job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader,
+            Runnable job = new MarkForDeletionJob(pid, message, agent, repositoryObjectLoader,
                     sparqlUpdateService, aclService);
             job.run();
             pids.add(pid);

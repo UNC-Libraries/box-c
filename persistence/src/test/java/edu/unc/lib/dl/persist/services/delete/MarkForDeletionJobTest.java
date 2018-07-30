@@ -17,20 +17,25 @@ package edu.unc.lib.dl.persist.services.delete;
 
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -58,6 +63,8 @@ import edu.unc.lib.dl.test.SelfReturningAnswer;
  */
 public class MarkForDeletionJobTest {
 
+    private static final String MESSAGE = "Reason for the deletion";
+
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -76,6 +83,9 @@ public class MarkForDeletionJobTest {
     private PremisLogger premisLogger;
     @Mock
     private AdminUnit repoObj;
+
+    @Captor
+    private ArgumentCaptor<String> messageCaptor;
 
     private PremisEventBuilder eventBuilder;
 
@@ -99,7 +109,7 @@ public class MarkForDeletionJobTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader, sparqlUpdateService, aclService);
+        job = new MarkForDeletionJob(pid, MESSAGE, agent, repositoryObjectLoader, sparqlUpdateService, aclService);
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -134,6 +144,11 @@ public class MarkForDeletionJobTest {
         verify(sparqlUpdateService).executeUpdate(anyString(), anyString());
 
         verify(premisLogger).buildEvent(eq(Premis.Deletion));
+
+        verify(eventBuilder, times(2)).addEventDetail(messageCaptor.capture());
+        List<String> details = messageCaptor.getAllValues();
+        assertTrue(details.contains(MESSAGE));
+
         verify(eventBuilder).write();
     }
 }
