@@ -11,6 +11,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			var formContents = dialogBox.formContents(resultObject);
 			var self = this;
 			this.closed = false;
+			this.resultObject = resultObject;
 
 			this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 			this.$form = this.dialog.first();
@@ -25,17 +26,25 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			// Flag to track when the form has been submitted and needs to be locked
 			this.submitted = false;
 
-			this.$form.submit(function(e){
-				e.preventDefault();
-				self.preprocessForm(resultObject);
-
-				self.submitted = true;
-				self.overlay.open();
-				self.submitAjax();
-
-				return false;
-			});
+			this.$form.submit($.proxy(this.submit, self));
 		};
+
+		AbstractForm.prototype.submit = function(e) {
+			e.preventDefault();
+			this.preprocessForm(this.resultObject);
+			
+			errors = this.validationErrors();
+			if (errors && errors.length > 0) {
+				this.options.alertHandler.alertHandler("error", errors);
+				return false;
+			}
+
+			this.submitted = true;
+			this.overlay.open();
+			this.submitAjax();
+
+			return false;
+		}
 
 		AbstractForm.prototype.close = function() {
 			if (this.closed) return;
