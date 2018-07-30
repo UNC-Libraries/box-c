@@ -283,11 +283,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						});
 						break;
 					case "deleteResult": case "restoreResult":
-        		var deleteForm = new DeleteForm({
-        			alertHandler : self.options.alertHandler,
-        			actionHandler : self.actionHandler
-        		});
-        		deleteForm.open([resultObject]);
+						var deleteForm = new DeleteForm({
+							alertHandler : self.options.alertHandler,
+							actionHandler : self.actionHandler
+						});
+						deleteForm.open([resultObject]);
 						break;
 					case "reindex" :
 						self.actionHandler.addEvent({

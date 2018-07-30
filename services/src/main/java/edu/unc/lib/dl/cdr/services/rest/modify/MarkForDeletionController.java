@@ -52,26 +52,27 @@ public class MarkForDeletionController {
     @RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> restore(@PathVariable("id") String id) {
-        return update(false, AgentPrincipals.createFromThread(), id);
+        return update(false, AgentPrincipals.createFromThread(), null, id);
     }
 
     @RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> markForDeletion(@PathVariable("id") String id,
             @RequestParam("message") String message) {
-        return update(true, AgentPrincipals.createFromThread(), id);
+        return update(true, AgentPrincipals.createFromThread(), message, id);
     }
 
     @RequestMapping(value = "edit/restore", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> restoreBatch(@RequestParam("ids") String ids) {
-        return update(false, AgentPrincipals.createFromThread(), ids.split("\n"));
+        return update(false, AgentPrincipals.createFromThread(), null, ids.split("\n"));
     }
 
     @RequestMapping(value = "edit/delete", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> markBatchForDeletion(@RequestParam("ids") String ids) {
-        return update(true, AgentPrincipals.createFromThread(), ids.split("\n"));
+    public ResponseEntity<Object> markBatchForDeletion(@RequestParam("ids") String ids,
+            @RequestParam("message") String message) {
+        return update(true, AgentPrincipals.createFromThread(), message, ids.split("\n"));
     }
 
     private ResponseEntity<Object> update(boolean markAsDeleted, AgentPrincipals agent, String message, String... ids) {

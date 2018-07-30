@@ -1,6 +1,6 @@
 define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/deleteForm', 
-		'AbstractForm', 'AlertHandler'],
-		function($, ui, _, RemoteStateChangeMonitor, deleteForm,  AbstractForm) {
+		'AbstractForm', 'DeleteBatchAction', 'AlertHandler'],
+		function($, ui, _, RemoteStateChangeMonitor, deleteForm,  AbstractForm, DeleteBatchAction) {
 	
 	var defaultOptions = {
 			title : 'Mark for Deletion',
@@ -59,7 +59,12 @@ define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMo
 				confirm: false
 			});
 		} else {
-			// TODO invoke multi-object event
+			this.actionHandler.addEvent({
+				action : 'DeleteBatch',
+				target : this.resultObject,
+				delete_message : this.delete_message,
+				confirm: false
+			});
 		}
 
 		this.remove();

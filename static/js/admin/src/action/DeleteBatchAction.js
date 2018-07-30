@@ -35,7 +35,8 @@ define('DeleteBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abst
 			this.actionHandler.addEvent({
 				action : 'DeleteResult',
 				target : validTargets[index],
-				confirm : false
+				confirm : false,
+				delete_message : this.context.delete_message
 			});
 		}
 	};

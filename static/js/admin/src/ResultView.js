@@ -38,7 +38,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						}, {
 							actions : [
 								{action : 'RestoreBatch', label : 'Restore'},
-								{action : 'DeleteBatch', label : 'Delete'}
+								{action : 'OpenDeleteBatch', label : 'Delete'}
 							]
 						},
 						{
