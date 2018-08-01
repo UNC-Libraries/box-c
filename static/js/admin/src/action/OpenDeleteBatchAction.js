@@ -1,3 +1,6 @@
+/**
+* Action which opens a dialogue for confirming and providing a message when marking a batch of objects for deletion.
+*/
 define('OpenDeleteBatchAction', [ 'jquery', 'AbstractBatchAction', 'DeleteForm', 'DeleteBatchAction'], function($, AbstractBatchAction, DeleteForm, DeleteBatchAction) {
 	
 	function OpenDeleteBatchAction(context) {

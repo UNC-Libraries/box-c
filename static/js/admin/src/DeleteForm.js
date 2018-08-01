@@ -1,6 +1,6 @@
 define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/deleteForm', 
 		'AbstractForm', 'DeleteBatchAction', 'AlertHandler'],
-		function($, ui, _, RemoteStateChangeMonitor, deleteForm,  AbstractForm, DeleteBatchAction) {
+		function($, ui, _, RemoteStateChangeMonitor, deleteForm,	AbstractForm, DeleteBatchAction) {
 	
 	var defaultOptions = {
 			title : 'Mark for Deletion',
@@ -22,11 +22,11 @@ define('DeleteForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMo
 	* resultObjects is expected to be an array of resultEntry objects
 	*/
 	DeleteForm.prototype.open = function(resultObjects) {
-    if (resultObjects.length == 1) {
-      this.options.delete_target_message = resultObjects[0].metadata.title;
-    } else {
-      this.options.delete_target_message = resultObjects.length + " objects";
-    }
+		if (resultObjects.length == 1) {
+			this.options.delete_target_message = resultObjects[0].metadata.title;
+		} else {
+			this.options.delete_target_message = resultObjects.length + " objects";
+		}
 		
 		AbstractForm.prototype.open.apply(this, [resultObjects]);
 	};
