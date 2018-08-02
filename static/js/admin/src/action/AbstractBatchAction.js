@@ -45,7 +45,10 @@ define('AbstractBatchAction', ['jquery', 'AjaxCallbackAction', 'ConfirmationDial
 		return targetIds;
 	};
 	
-	AbstractBatchAction.prototype.getTargets = function(targets) {
+	AbstractBatchAction.prototype.getTargets = function() {
+		if (this.resultList.constructor.name !== "ResultObjectList") {
+			return this.resultList;
+		}
 		var targets = [];
 		var targetList = this.resultList.resultObjects;
 		for (var id in targetList) {

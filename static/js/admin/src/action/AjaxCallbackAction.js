@@ -82,8 +82,8 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 		}
 	};
 
-	AjaxCallbackAction.prototype.doWork = function(workMethod, workData) {
-		this.performWork(this.options.workMethod, null);
+	AjaxCallbackAction.prototype.doWork = function() {
+		this.performWork(this.options.workMethod, this.options.workData);
 	};
 
 	AjaxCallbackAction.prototype.workState = function() {

@@ -72,7 +72,8 @@ public class MarkForDeletionIT extends AbstractAPIIT {
 
         repositoryObjectFactory.createWorkObject(pid, null);
 
-        MvcResult result = mvc.perform(post("/edit/delete/" + pid.getUUID()))
+        MvcResult result = mvc.perform(post("/edit/delete/" + pid.getUUID())
+                .param("message", "reason message"))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -115,7 +116,8 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         repositoryObjectFactory.createWorkObject(pid3, makeModelWithDeletion(pid3));
 
         MvcResult result = mvc.perform(post("/edit/delete")
-                .param("ids", String.join("\n", idList)))
+                .param("ids", String.join("\n", idList))
+                .param("message", "reason message"))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -167,7 +169,8 @@ public class MarkForDeletionIT extends AbstractAPIIT {
 
         repositoryObjectFactory.createWorkObject(pid, null);
 
-        MvcResult result = mvc.perform(post("/edit/delete/" + pid.getUUID()))
+        MvcResult result = mvc.perform(post("/edit/delete/" + pid.getUUID())
+                .param("message", "reason message"))
             .andExpect(status().isForbidden())
             .andReturn();
 

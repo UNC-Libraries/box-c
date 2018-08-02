@@ -6,7 +6,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 		actions : {
 			deleteBatch : {
 				label : "Delete",
-				action : "DeleteBatch"
+				action : "OpenDeleteBatch"
 			}, restoreBatch : {
 				label : "Restore",
 				action : "RestoreBatch"

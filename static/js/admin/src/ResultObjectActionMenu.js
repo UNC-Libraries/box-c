@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'DeleteForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm, DeleteForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -283,12 +283,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						});
 						break;
 					case "deleteResult": case "restoreResult":
-						self.actionHandler.addEvent({
-							action : ($.inArray('Deleted', metadata.status) == -1)? 
-									'DeleteResult' : 'RestoreResult',
-							target : resultObject,
-							confirmAnchor : options.$trigger
+						var deleteForm = new DeleteForm({
+							alertHandler : self.options.alertHandler,
+							actionHandler : self.actionHandler
 						});
+						deleteForm.open([resultObject]);
 						break;
 					case "reindex" :
 						self.actionHandler.addEvent({

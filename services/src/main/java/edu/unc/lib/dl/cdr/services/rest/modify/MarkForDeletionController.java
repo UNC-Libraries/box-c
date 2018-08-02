@@ -52,28 +52,30 @@ public class MarkForDeletionController {
     @RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> restore(@PathVariable("id") String id) {
-        return update(false, AgentPrincipals.createFromThread(), id);
+        return update(false, AgentPrincipals.createFromThread(), null, id);
     }
 
     @RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> markForDeletion(@PathVariable("id") String id) {
-        return update(true, AgentPrincipals.createFromThread(), id);
+    public ResponseEntity<Object> markForDeletion(@PathVariable("id") String id,
+            @RequestParam("message") String message) {
+        return update(true, AgentPrincipals.createFromThread(), message, id);
     }
 
     @RequestMapping(value = "edit/restore", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> restoreBatch(@RequestParam("ids") String ids) {
-        return update(false, AgentPrincipals.createFromThread(), ids.split("\n"));
+        return update(false, AgentPrincipals.createFromThread(), null, ids.split("\n"));
     }
 
     @RequestMapping(value = "edit/delete", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> markBatchForDeletion(@RequestParam("ids") String ids) {
-        return update(true, AgentPrincipals.createFromThread(), ids.split("\n"));
+    public ResponseEntity<Object> markBatchForDeletion(@RequestParam("ids") String ids,
+            @RequestParam("message") String message) {
+        return update(true, AgentPrincipals.createFromThread(), message, ids.split("\n"));
     }
 
-    private ResponseEntity<Object> update(boolean markAsDeleted, AgentPrincipals agent, String... ids) {
+    private ResponseEntity<Object> update(boolean markAsDeleted, AgentPrincipals agent, String message, String... ids) {
         Map<String, Object> result = new HashMap<>();
 
         if (ids.length == 1) {
@@ -85,7 +87,7 @@ public class MarkForDeletionController {
 
         try {
             if (markAsDeleted) {
-                markForDeletionService.markForDeletion(agent, ids);
+                markForDeletionService.markForDeletion(agent, message, ids);
             } else {
                 markForDeletionService.restoreMarked(agent, ids);
             }
@@ -96,6 +98,9 @@ public class MarkForDeletionController {
             log.error("Failed to update mark for deletion flag to {}", markAsDeleted, e);
             result.put("error", e.toString());
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
         result.put("timestamp", System.currentTimeMillis());

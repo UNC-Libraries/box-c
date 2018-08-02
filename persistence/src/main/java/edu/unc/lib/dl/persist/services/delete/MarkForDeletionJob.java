@@ -47,11 +47,12 @@ public class MarkForDeletionJob implements Runnable {
 
     private AgentPrincipals agent;
     private PID pid;
+    private String message;
 
     private static final Timer timer = TimerFactory.createTimerForClass(MarkForDeletionJob.class);
 
 
-    public MarkForDeletionJob(PID pid, AgentPrincipals agent,
+    public MarkForDeletionJob(PID pid, String message, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
             AccessControlService aclService) {
         this.pid = pid;
@@ -59,6 +60,7 @@ public class MarkForDeletionJob implements Runnable {
         this.sparqlUpdateService = sparqlUpdateService;
         this.aclService = aclService;
         this.agent = agent;
+        this.message = message;
     }
 
     @Override
@@ -86,6 +88,7 @@ public class MarkForDeletionJob implements Runnable {
             repoObj.getPremisLog().buildEvent(Premis.Deletion)
                     .addImplementorAgent(agent.getUsernameUri())
                     .addEventDetail("Item marked for deletion and not available without permissions")
+                    .addEventDetail(message)
                     .write();
         }
     }
