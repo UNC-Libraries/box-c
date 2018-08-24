@@ -15,22 +15,24 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.filters;
 
+import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter;
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**
  * Extension of basic access control filter which specifically handles sword depositors, adding in the
  * <depositor-namespace>:<user-name> group and the generic groups
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class DepositorAccessControlFilter extends StoreUserAccessControlFilter {
     private static final Logger log = LoggerFactory.getLogger(DepositorAccessControlFilter.class);
@@ -50,12 +52,13 @@ public class DepositorAccessControlFilter extends StoreUserAccessControlFilter {
     }
 
     protected AccessGroupSet getDepositorGroups(HttpServletRequest request) {
-        log.debug("SWORD depositor user " + request.getRemoteUser() + " logged in");
+        String user = getRemoteUser(request);
+        log.debug("SWORD depositor user {} logged in", user);
         AccessGroupSet accessGroups = new AccessGroupSet();
-        accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
-        accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
-        if (request.getRemoteUser() != null) {
+        accessGroups.addAccessGroup(AccessPrincipalConstants.PUBLIC_PRINC);
+        if (user != null) {
             accessGroups.addAccessGroup(swordConfig.getDepositorNamespace() + request.getRemoteUser());
+            accessGroups.addAccessGroup(AccessPrincipalConstants.AUTHENTICATED_PRINC);
         }
         return accessGroups;
     }

@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
+import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
@@ -29,7 +32,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Http Filter which requires that the connection be made by an authenticated user
- * 
+ *
  * @author bbpennel
  *
  */
@@ -43,7 +46,8 @@ public class RequireLoginFilter extends OncePerRequestFilter {
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        if (request.getRemoteUser() == null || "".equals(request.getRemoteUser().trim())) {
+        String user = getRemoteUser(request);
+        if (isBlank(user)) {
             if (forwardRequest) {
                 RequestDispatcher dispatcher = request.getRequestDispatcher(notLoggedInUrl);
                 dispatcher.forward(request, response);
@@ -52,7 +56,7 @@ public class RequireLoginFilter extends OncePerRequestFilter {
             }
             return;
         } else {
-            log.debug("User logged in as " + request.getRemoteUser());
+            log.debug("User logged in as {}", user);
             chain.doFilter(request, response);
         }
     }

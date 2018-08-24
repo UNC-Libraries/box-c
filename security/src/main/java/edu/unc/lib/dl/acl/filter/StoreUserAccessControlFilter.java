@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.filter;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
 
 import java.io.IOException;
@@ -71,13 +72,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 
     protected void storeUserGroupData(HttpServletRequest request) {
         try {
-            String userName = request.getRemoteUser();
-            if (userName == null) {
-                userName = "";
-            } else {
-                userName = userName.trim();
-            }
-            GroupsThreadStore.storeUsername(userName);
+            GroupsThreadStore.storeUsername(getRemoteUser(request));
 
             String email = getEmailAddress(request);
             GroupsThreadStore.storeEmail(email);
@@ -109,7 +104,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
         String forwardedGroups = request.getHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER);
         if (log.isDebugEnabled()) {
             log.debug("Forwarding user {} logged in with forwarded groups {}",
-                    request.getRemoteUser(), forwardedGroups);
+                    GroupsThreadStore.getUsername(), forwardedGroups);
         }
         if (forwardedGroups == null) {
             return new AccessGroupSet();
@@ -124,7 +119,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
         String shibGroups = request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
         AccessGroupSet accessGroups = null;
-        String userName = request.getRemoteUser();
+        String userName = GroupsThreadStore.getUsername();
         if (log.isDebugEnabled()) {
             log.debug("Normal user " + userName + " logged in with groups " + shibGroups);
         }
