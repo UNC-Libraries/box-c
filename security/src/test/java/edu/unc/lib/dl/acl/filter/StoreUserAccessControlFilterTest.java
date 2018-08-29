@@ -40,6 +40,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.RemoteUserUtil;
 
 /**
  *
@@ -80,6 +81,25 @@ public class StoreUserAccessControlFilterTest {
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
         verify(request).setAttribute("accessGroupSet", accessGroups);
+    }
+
+    @Test
+    public void testAuthenticatedUserFromHeader() throws Exception {
+        when(request.getHeader(RemoteUserUtil.REMOTE_USER)).thenReturn("user");
+        when(request.getRemoteUser()).thenReturn(null);
+        when(request.getHeader("mail")).thenReturn("user@example.com");
+
+        filter.doFilter(request, response, filterChain);
+
+        assertEquals("user", GroupsThreadStore.getUsername());
+        assertEquals("user@example.com", GroupsThreadStore.getEmail());
+
+        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        verify(request).setAttribute("accessGroupSet", accessGroups);
+
+        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
+        assertTrue("Authenticated must be assigned", accessGroups.contains(AUTHENTICATED_PRINC));
+        assertTrue("User principal must be assigned", accessGroups.contains("unc:onyen:user"));
     }
 
     @Test
