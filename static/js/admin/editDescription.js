@@ -93,19 +93,37 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						filename: 'mods.xml',
 						title: "Blank",
 						description: 'An empty MODS document',
-						icon_class: 'far fa-file'
+						icon_class: 'fa fa-file-o'
 					},
 					{
 						filename: 'generic.xml',
 						title: "Generic Object",
 						description: 'Generic MODS template prepopulated with common fields',
-						icon_class: 'far fa-file-alt'
+						icon_class: 'fa fa-file-text-o'
+					},
+					{
+						filename: 'minimal_metadata.xml',
+						title: "Minimal Metadata",
+						description: 'Simplified MODS template with basic fields',
+						icon_class: 'fa fa-file-text-o'
+					},
+					{
+						filename: 'archives.xml',
+						title: 'Archival Folder',
+						description: 'Wilson MODS template with common fields',
+						icon_class: 'fa fa-archive'
+					},
+					{
+						filename: 'serials.xml',
+						title: "Serial Title",
+						description: 'Template with standard fields to describe serial titles',
+						icon_class: 'fa fa-newspaper-o'
 					},
 					{
 						filename: 'student_papers.xml',
 						title: "Student Paper",
 						description: 'Standard fields for student paper descriptions',
-						icon_class: 'fas fa-university'
+						icon_class: 'fa fa-university'
 					}
 				],
 				cancelFunction: function() {
