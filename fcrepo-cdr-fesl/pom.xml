@@ -31,26 +31,18 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ws</groupId>
 			<artifactId>spring-ws-core</artifactId>
-			<version>${spring.ws.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.fcrepo</groupId>
@@ -122,24 +114,18 @@
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>metadata</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>fcrepo-clients</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-servlet-api</artifactId>
-			<version>7.0.21</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.0</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.security</groupId>
@@ -149,7 +135,6 @@
 		<dependency>
 			<groupId>com.googlecode.concurrentlinkedhashmap</groupId>
 			<artifactId>concurrentlinkedhashmap-lru</artifactId>
-			<version>1.3.2</version>
 		</dependency>
 	</dependencies>
 </project>
