@@ -59,4 +59,8 @@ public class GroupsToHttpHeaderInterceptor implements ClientInterceptor {
 		return true;
 	}
 
+	@Override
+	public void afterCompletion(MessageContext messageContext, Exception ex) throws WebServiceClientException {
+	}
+
 }
