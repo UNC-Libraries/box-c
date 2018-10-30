@@ -80,60 +80,46 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<!-- Tomcat -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-servlet-api</artifactId>
-			<version>7.0.21</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>taglibs</groupId>
 			<artifactId>standard</artifactId>
-			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>jstl</artifactId>
-			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>jsp-api</artifactId>
-			<version>2.2</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>${spring.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -141,30 +127,25 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
-			<version>1.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>
-			<version>1.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-xc</artifactId>
-			<version>1.9.2</version>
 		</dependency>
 
 		<dependency>
 			<groupId>gov.loc</groupId>
 			<artifactId>bagit</artifactId>
-			<version>4.9.0</version>
 		</dependency>
 
 		<!-- XML -->
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>1.1.6</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xom</artifactId>
@@ -187,29 +168,17 @@
 		<dependency>
 			<groupId>org.apache.abdera</groupId>
 			<artifactId>abdera-client</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-		<!-- JMX -->
-		<dependency>
-			<groupId>org.apache.xbean</groupId>
-			<artifactId>xbean-spring</artifactId>
-			<version>3.4.3</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 
 		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -221,20 +190,14 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.5.5</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.5.5</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
@@ -247,38 +210,27 @@
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>access-common</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>fcrepo-clients</artifactId>
-			<version>${cdr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>persistence</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>security</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>solr-search</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>services-worker</artifactId>
-			<version>${cdr.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.1</version>
 		</dependency>
 	</dependencies>
 </project>
