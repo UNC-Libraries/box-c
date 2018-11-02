@@ -11,7 +11,6 @@
 	<name>CDR Services Worker</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<commons-daemon.version>1.0.15</commons-daemon.version>
 	</properties>
 	<build>
 		<finalName>${artifactId}</finalName>
