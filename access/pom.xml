@@ -35,16 +35,13 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
                 <configuration>
-                    <scanIntervalSeconds>2</scanIntervalSeconds>
-                    <stopKey>STOP</stopKey>
-                <webApp>
-                    <webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
-                    <contextPath>/</contextPath>
-                    <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                    <extraClasspath>${basedir}/target/test-classes/</extraClasspath>
-                </webApp>
+                    <webApp>
+                        <webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
+                        <contextPath>/</contextPath>
+                        <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+                        <extraClasspath>${basedir}/target/test-classes/</extraClasspath>
+                    </webApp>
                     <contextHandlers>
                         <contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
                             <contextPath>/static</contextPath>
@@ -84,7 +81,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.1.0</version>
                 <configuration>
                     <webResources>
                         <resource>
@@ -97,23 +93,6 @@
             
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <!--Set reuseForks=false due to the need for different instances of the -->
-                    <!--Singleton ServletContainerAuthenticationProvider -->
-                    <reuseForks>false</reuseForks>
-                    <argLine>${jacoco.agent.it.arg}</argLine>
-                    <systemPropertyVariables>
-                        <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
-                    </systemPropertyVariables>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

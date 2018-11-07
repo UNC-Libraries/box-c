@@ -204,29 +204,10 @@
     <plugins>
     <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven.failsafe.version}</version>
-        <configuration>
-            <!--Set reuseForks=false due to the need for different instances of the -->
-            <!--Singleton ServletContainerAuthenticationProvider -->
-            <reuseForks>false</reuseForks>
-            <argLine>${jacoco.agent.it.arg}</argLine>
-            <systemPropertyVariables>
-                <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
-            </systemPropertyVariables>
-        </configuration>
-        <executions>
-            <execution>
-                <goals>
-                    <goal>integration-test</goal>
-                    <goal>verify</goal>
-                </goals>
-            </execution>
-        </executions>
     </plugin>
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.1.0</version>
         <configuration>
           <webResources>
             <resource>
@@ -240,10 +221,7 @@
     <plugin>
          <groupId>org.eclipse.jetty</groupId>
          <artifactId>jetty-maven-plugin</artifactId>
-         <version>${jetty.version}</version>
          <configuration>
-             <scanIntervalSeconds>2</scanIntervalSeconds>
-             <stopKey>STOP</stopKey>
              <webApp>
                  <contextPath>/</contextPath>
                  <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
@@ -270,13 +248,7 @@
     
     <!-- compiler plugin -->
     <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
-        </configuration>
     </plugin>
     </plugins>
     </build>
