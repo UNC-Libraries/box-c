@@ -31,14 +31,10 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.6.5</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
-            <version>1.6.5</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
@@ -53,7 +49,6 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>persistence</artifactId>
-            <version>${cdr.version}</version>
         </dependency>
         <dependency>
             <groupId>net.greghaines</groupId>
@@ -76,7 +71,6 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
-            <version>${jena.version}</version>
             <type>pom</type>
         </dependency>
         <dependency>
@@ -112,29 +106,23 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>clamavj</artifactId>
-            <version>0.3</version>
         </dependency>
         <dependency>
             <groupId>com.samskivert</groupId>
             <artifactId>jmustache</artifactId>
-            <version>1.9</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
-            <version>1.4.7</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>saxon</artifactId>
-            <version>8.7</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.8.1</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -159,76 +147,55 @@
         <dependency>
             <groupId>gov.loc</groupId>
             <artifactId>bagit</artifactId>
-            <version>4.9.0</version>
         </dependency>
         <!-- integration testing -->
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-commons</artifactId>
-            <version>${fcrepo4.version}</version>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-auth-common</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-servlet</artifactId>
-            <version>${grizzly.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-spring3</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-client-java</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-netty</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-kernel-modeshape</artifactId>
-            <version>${fcrepo4.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-api</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>
-            <version>0.6</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

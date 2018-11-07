@@ -17,9 +17,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <fcrepo-camel.version>4.5.0</fcrepo-camel.version>
-        <camel.version>2.18.0</camel.version>
-        <tika.version>1.16</tika.version>
     </properties>
 
     <dependencies>
@@ -78,32 +75,28 @@
     <dependency>
         <groupId>org.fcrepo.camel</groupId>
         <artifactId>fcrepo-indexing-triplestore</artifactId>
-        <version>4.7.1</version>
+        <version>${fcrepo-indexing-triplestore.version}</version>
     </dependency>
     
     <dependency>
         <groupId>org.fcrepo.client</groupId>
         <artifactId>fcrepo-java-client</artifactId>
-        <version>${fcrepo.client.version}</version>
     </dependency>
     
     <dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>apache-jena-libs</artifactId>
-        <version>${jena.version}</version>
         <type>pom</type>
     </dependency>
     
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
-        <version>${spring.version}</version>
     </dependency>
     
     <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.5.2</version>
     </dependency>
     
     <dependency>
@@ -132,7 +125,6 @@
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>persistence</artifactId>
-        <version>${cdr.version}</version>
     </dependency>
     
     <dependency>
@@ -141,16 +133,15 @@
     </dependency>
     
     <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>fcrepo-clients</artifactId>
+        <scope>test</scope>
+        <type>test-jar</type>
+    </dependency>
 
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>solr-ingest</artifactId>
-        <version>${cdr.version}</version>
     </dependency>
 
     <!-- Testing -->
@@ -171,7 +162,6 @@
     <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <scope>test</scope>
     </dependency>
 
     <!-- logging -->
@@ -188,117 +178,83 @@
         <artifactId>logback-classic</artifactId>
     </dependency>
     <!-- integration testing -->
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-http-commons</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-            <type>test-jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-auth-common</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-http-servlet</artifactId>
-            <version>${grizzly.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-spring3</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-client-java</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-netty</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-kernel-modeshape</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-http-api</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-http-commons</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-auth-common</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-core</artifactId>
-            <version>${solr.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-kahadb-store</artifactId>
-            <version>${activemq.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq.protobuf</groupId>
-            <artifactId>activemq-protobuf</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-fuseki-embedded</artifactId>
-            <scope>test</scope>
-        </dependency>
-</dependencies>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-http-commons</artifactId>
+        <scope>test</scope>
+        <type>test-jar</type>
+    </dependency>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-auth-common</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.grizzly</groupId>
+        <artifactId>grizzly-http-servlet</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-common</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.ext</groupId>
+        <artifactId>jersey-spring3</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+        <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.mock-server</groupId>
+        <artifactId>mockserver-client-java</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.mock-server</groupId>
+        <artifactId>mockserver-netty</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-kernel-modeshape</artifactId>
+        <scope>test</scope>
+        <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-http-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-http-commons</artifactId>
+        <scope>test</scope>
+        <type>test-jar</type>
+    </dependency>
+    <dependency>
+        <groupId>org.fcrepo</groupId>
+        <artifactId>fcrepo-auth-common</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-kahadb-store</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.activemq.protobuf</groupId>
+        <artifactId>activemq-protobuf</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-embedded</artifactId>
+    </dependency>
+    </dependencies>
 
     <build>
     <finalName>${artifactId}</finalName>

@@ -118,7 +118,6 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>persistence</artifactId>
-            <version>${cdr.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -135,41 +134,30 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>solr-ingest</artifactId>
-            <version>${cdr.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>access-common</artifactId>
-            <version>${cdr.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>sword-server</artifactId>
-            <version>${cdr.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-core</artifactId>
-            <version>5.5.1</version>
+            <artifactId>activemq-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-pool</artifactId>
-            <version>5.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -182,35 +170,24 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>${javax.servlet.api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.ws</groupId>
             <artifactId>spring-ws-core</artifactId>
-            <version>${spring.ws.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <!-- 1.x distribution required by spring for the moment -->
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.3.0</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>
@@ -219,96 +196,66 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
-            <version>${jena.version}</version>
             <type>pom</type>
         </dependency>
         <!-- integration testing -->
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-commons</artifactId>
-            <version>${fcrepo4.version}</version>
             <scope>test</scope>
             <type>test-jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-auth-common</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http-servlet</artifactId>
-            <version>${grizzly.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-spring3</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-client-java</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-netty</artifactId>
-            <version>${mock.server.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-kernel-modeshape</artifactId>
-            <version>${fcrepo4.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-api</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-commons</artifactId>
-            <version>${fcrepo4.version}</version>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-auth-common</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>
-            <version>0.6</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
