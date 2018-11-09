@@ -194,14 +194,6 @@
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-client-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-netty</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-kernel-modeshape</artifactId>
             <scope>test</scope>
@@ -216,10 +208,6 @@
             <artifactId>fcrepo-http-commons</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-auth-common</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.kstyrc</groupId>

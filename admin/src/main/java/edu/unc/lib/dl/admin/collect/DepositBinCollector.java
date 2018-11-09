@@ -26,13 +26,13 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.MapType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositMethod;
@@ -65,7 +65,7 @@ public class DepositBinCollector {
     @Autowired
     private DepositStatusFactory depositStatusFactory;
 
-    public void init() throws JsonParseException, JsonMappingException, IOException {
+    public void init() throws JsonProcessingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         MapType mapType = mapper.getTypeFactory()
                 .constructMapType(Map.class, String.class, DepositBinConfiguration.class);
@@ -140,7 +140,7 @@ public class DepositBinCollector {
             List<File> targetFiles;
             // Use the provided list of file paths or the list of all applicable paths
             if (filePathStrings != null) {
-                targetFiles = new ArrayList<File>(filePathStrings.size());
+                targetFiles = new ArrayList<>(filePathStrings.size());
 
                 // Verify that all targets are valid
                 for (String filePathString : filePathStrings) {
@@ -156,7 +156,7 @@ public class DepositBinCollector {
             } else {
                 // Use the list of all applicable files in the bin
                 ListFilesResult fileList = this.listFiles(binKey);
-                targetFiles = new ArrayList<File>(fileList.applicable);
+                targetFiles = new ArrayList<>(fileList.applicable);
             }
 
             // Create deposit directory
@@ -189,7 +189,7 @@ public class DepositBinCollector {
     }
 
     private void registerDeposit(DepositInfo info, DepositBinConfiguration config, Map<String, String> extras) {
-        Map<String, String> status = new HashMap<String, String>();
+        Map<String, String> status = new HashMap<>();
         status.put(DepositField.packagingType.name(), config.getPackageType());
 
         status.put(DepositField.uuid.name(), info.depositPID.getUUID());
@@ -207,7 +207,7 @@ public class DepositBinCollector {
         status.put(DepositField.state.name(), DepositState.unregistered.name());
         status.put(DepositField.actionRequest.name(), DepositAction.register.name());
 
-        Set<String> nulls = new HashSet<String>();
+        Set<String> nulls = new HashSet<>();
         for (String key : status.keySet()) {
             if (status.get(key) == null) {
                 nulls.add(key);
@@ -299,7 +299,7 @@ public class DepositBinCollector {
     }
 
     public class ListFilesResult {
-        public List<File> applicable = new ArrayList<File>();
-        public List<File> nonapplicable = new ArrayList<File>();
+        public List<File> applicable = new ArrayList<>();
+        public List<File> nonapplicable = new ArrayList<>();
     }
 }

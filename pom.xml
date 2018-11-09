@@ -81,28 +81,29 @@
         <fcrepo-indexing-triplestore.version>4.7.1</fcrepo-indexing-triplestore.version>
         <clamavj.version>0.3</clamavj.version>
         
-        <spring.version>4.3.2.RELEASE</spring.version>
-        <spring.security.version>4.3.2.RELEASE</spring.security.version>
+        <spring.version>4.3.20.RELEASE</spring.version>
+        <spring.security.version>4.3.20.RELEASE</spring.security.version>
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <quartz.version>2.3.0</quartz.version>
         
         <junit.version>4.12</junit.version>
         <grizzly.version>2.3.28</grizzly.version>
         <jersey.version>2.24</jersey.version>
+        <jersey.spring3.version>2.24</jersey.spring3.version>
         <mockito.version>1.10.19</mockito.version>
         <fcrepo.client.version>0.3.0</fcrepo.client.version>
-        <mock.server.version>3.10.2</mock.server.version>
+        <mock.server.version>5.4.1</mock.server.version>
         <powermock.version>1.7.4</powermock.version>
         
-        <jackson.version>1.9.13</jackson.version>
+        <jackson.version>2.8.4</jackson.version>
         <jesque.version>2.1.2</jesque.version>
         
         <joda-time.version>2.10.1</joda-time.version>
-        <jmustache.version>1.13</jmustache.version>
+        <jmustache.version>1.14</jmustache.version>
         <mail.version>1.4.7</mail.version>
         <bagit.version>4.12.3</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
-        <guava.version>19.0</guava.version>
+        <guava.version>27.0-jre</guava.version>
         <sword2-server.version>1.0</sword2-server.version>
         
         <httpclient.version>4.5.6</httpclient.version>
@@ -114,7 +115,7 @@
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <abdera.version>1.1.3</abdera.version>
         
-        <activemq.version>5.14.1</activemq.version>
+        <activemq.version>5.15.7</activemq.version>
         <activemq-protobuf.version>1.1</activemq-protobuf.version>
         
         <slf4j.version>1.7.25</slf4j.version>
@@ -125,14 +126,13 @@
         <saxon.version>8.7</saxon.version>
         <xerces.version>2.12.0</xerces.version>
         <xml-apis.version>1.4.01</xml-apis.version>
-        <saaj.version>1.3.28</saaj.version>
+        <saaj.version>1.5.0</saaj.version>
         <xom.version>1.2.5</xom.version>
         
         <jetty.version>9.4.7.v20170914</jetty.version>
-        <tomcat.version>7.0.91</tomcat.version>
         <taglibs.version>1.1.2</taglibs.version>
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
-        <javax.servlet.jsp.version>2.3.1</javax.servlet.jsp.version>
+        <javax.servlet.jsp.version>2.3.3</javax.servlet.jsp.version>
         <jstl.version>1.2</jstl.version>
         <jsp-api.version>2.2</jsp-api.version>
         
@@ -140,12 +140,12 @@
         <embedded-redis.version>0.6</embedded-redis.version>
         <solr.version>6.5.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
-        <jena.version>3.1.1</jena.version>
-        <jena.fuseki.version>2.4.1</jena.fuseki.version>
+        <jena.version>3.9.0</jena.version>
+        <jena.fuseki.version>3.8.0</jena.fuseki.version>
         
         <fcrepo-camel.version>4.5.0</fcrepo-camel.version>
-        <camel.version>2.18.0</camel.version>
-        <tika.version>1.16</tika.version>
+        <camel.version>2.22.1</camel.version>
+        <tika.version>1.19.1</tika.version>
         
         <maven.failsafe.version>2.20</maven.failsafe.version>
         <maven.surefire.version>2.20</maven.surefire.version>
@@ -770,6 +770,11 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.ws</groupId>
                 <artifactId>spring-ws-core</artifactId>
                 <version>${spring.ws.version}</version>
@@ -781,18 +786,18 @@
             </dependency>
             
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-xc</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             
@@ -835,6 +840,11 @@
                 <groupId>xom</groupId>
                 <artifactId>xom</artifactId>
                 <version>${xom.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jvnet.mimepull</groupId>
+                <artifactId>mimepull</artifactId>
+                <version>1.9.7</version>
             </dependency>
             
             <dependency>
@@ -980,30 +990,6 @@
             
             <!-- Servlets -->
             <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-servlet-api</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-catalina</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-api</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-coyote</artifactId>
-                <version>${tomcat.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>taglibs</groupId>
                 <artifactId>standard</artifactId>
                 <version>${taglibs.version}</version>
@@ -1052,6 +1038,63 @@
                 <artifactId>apache-jena-libs</artifactId>
                 <version>${jena.version}</version>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-core</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-arq</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-osgi</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Logging -->
@@ -1116,25 +1159,13 @@
             <dependency>
                 <groupId>org.glassfish.jersey.ext</groupId>
                 <artifactId>jersey-spring3</artifactId>
-                <version>${jersey.version}</version>
+                <version>${jersey.spring3.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.test-framework.providers</groupId>
                 <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
                 <version>${jersey.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mock-server</groupId>
-                <artifactId>mockserver-client-java</artifactId>
-                <version>${mock.server.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mock-server</groupId>
-                <artifactId>mockserver-netty</artifactId>
-                <version>${mock.server.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.mockito.Matchers.any;
@@ -22,18 +23,20 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -226,7 +229,7 @@ public class SerializationUtilTest extends Assert {
     }
 
     private Map<String, Object> getResultMap(String json) throws Exception {
-        return mapper.readValue(json,
-                new TypeReference<Map<String, Object>>(){});
+        MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
+        return mapper.readValue(json, type);
     }
 }

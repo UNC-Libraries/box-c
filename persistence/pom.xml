@@ -143,12 +143,12 @@
             <artifactId>clamavj</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>net.greghaines</groupId>
@@ -186,14 +186,6 @@
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-client-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mock-server</groupId>
-            <artifactId>mockserver-netty</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-kernel-modeshape</artifactId>
             <scope>test</scope>
@@ -202,17 +194,6 @@
         <dependency>
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-http-commons</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-auth-common</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
