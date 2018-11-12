@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Bag;
@@ -113,12 +112,8 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         }
 
         // Reference the content file as the data file
-        try {
-            model.add(mainResource, CdrDeposit.stagingLocation,
-                    DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            failJob(e, "Failed to add staging location for {0} due to encoding issues", contentFile.getName());
-        }
+        model.add(mainResource, CdrDeposit.stagingLocation,
+                DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
     }
 
 }

@@ -152,8 +152,8 @@
     
     <context:annotation-config />
     
-    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean>
     <bean
-        class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
     </bean>
 </beans>

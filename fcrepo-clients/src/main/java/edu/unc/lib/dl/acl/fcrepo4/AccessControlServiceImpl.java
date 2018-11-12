@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -30,6 +33,8 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class AccessControlServiceImpl implements AccessControlService {
+
+    private static final Logger log = LoggerFactory.getLogger(AccessControlServiceImpl.class);
 
     private InheritedPermissionEvaluator permissionEvaluator;
 
@@ -47,6 +52,11 @@ public class AccessControlServiceImpl implements AccessControlService {
         // Check if there are any global agents, if so evaluate immediately against requested permission
         if (globalPermissionEvaluator.hasGlobalPermission(principals, permission)) {
             return true;
+        }
+        boolean result = permissionEvaluator.hasPermission(pid, principals, permission);
+        if (log.isDebugEnabled()) {
+            log.debug("Evaluated permission {} for user with principals {} against {}, result was {}",
+                    permission, principals, pid, result);
         }
 
         return permissionEvaluator.hasPermission(pid, principals, permission);

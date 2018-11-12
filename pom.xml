@@ -58,8 +58,8 @@
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamavj.version>0.3</clamavj.version>
         
-        <spring.version>4.3.20.RELEASE</spring.version>
-        <spring.security.version>4.3.20.RELEASE</spring.security.version>
+        <spring.version>5.1.2.RELEASE</spring.version>
+        <spring.security.version>5.1.2.RELEASE</spring.security.version>
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <quartz.version>2.3.0</quartz.version>
         
@@ -72,7 +72,7 @@
         <mock.server.version>5.4.1</mock.server.version>
         <powermock.version>1.7.4</powermock.version>
         
-        <jackson.version>2.8.11</jackson.version>
+        <jackson.version>2.9.7</jackson.version>
         <jesque.version>2.1.2</jesque.version>
         
         <joda-time.version>2.10.1</joda-time.version>
@@ -113,7 +113,7 @@
         <jstl.version>1.2</jstl.version>
         <jsp-api.version>2.2</jsp-api.version>
         
-        <jedis.version>2.7.3</jedis.version>
+        <jedis.version>2.9.0</jedis.version>
         <embedded-redis.version>0.6</embedded-redis.version>
         <solr.version>6.5.1</solr.version>
         <metrics.version>5.0.0</metrics.version>

@@ -75,9 +75,9 @@
 
     <!-- Import controllers -->
     <bean
-        class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean>
     <bean
-        class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
     </bean>
 
     <!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
@@ -114,17 +114,5 @@
     
     <bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
-    </bean>
-    
-    
-    <!-- JMX -->
-    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-        lazy-init="false">
-        <property name="beans">
-            <map>
-                <entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
-            </map>
-        </property>
-        <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
     </bean>
 </beans>
