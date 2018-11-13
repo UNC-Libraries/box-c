@@ -29,7 +29,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
+import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
@@ -101,7 +101,7 @@ public class TriplesReindexingRouterIT {
     private SparqlQueryService sparqlQueryService;
 
     private Model fusekiModel;
-    private FusekiEmbeddedServer fusekiServer;
+    private FusekiServer fusekiServer;
 
     @Autowired
     private String indexingEndpoint;
@@ -126,7 +126,7 @@ public class TriplesReindexingRouterIT {
         fusekiModel = createDefaultModel();
 
         final Dataset ds = new DatasetImpl(fusekiModel);
-        fusekiServer = FusekiEmbeddedServer.create()
+        fusekiServer = FusekiServer.create()
                 .setPort(Integer.parseInt(fusekiPort))
                 .setContextPath("/fuseki")
                 .add("/test", ds)

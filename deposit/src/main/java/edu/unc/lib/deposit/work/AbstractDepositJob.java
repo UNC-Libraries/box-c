@@ -324,13 +324,13 @@ public abstract class AbstractDepositJob implements Runnable {
         if (!this.dataset.containsNamedModel(uri)) {
             this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
         }
-        return this.dataset.getNamedModel(uri).begin();
+        return this.dataset.getNamedModel(uri);
     }
 
     public Model getReadOnlyModel() {
         String uri = getDepositPID().getURI();
         this.dataset.begin(ReadWrite.READ);
-        return this.dataset.getNamedModel(uri).begin();
+        return this.dataset.getNamedModel(uri);
     }
 
     public void closeModel() {

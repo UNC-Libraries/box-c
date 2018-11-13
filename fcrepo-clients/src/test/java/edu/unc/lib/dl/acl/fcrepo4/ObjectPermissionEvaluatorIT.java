@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
+import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -69,7 +69,7 @@ public class ObjectPermissionEvaluatorIT {
 
     private ObjectAclFactory aclFactory;
 
-    private FusekiEmbeddedServer server;
+    private FusekiServer server;
 
     private SparqlQueryService sparqlService;
 
@@ -83,7 +83,7 @@ public class ObjectPermissionEvaluatorIT {
     public void init() {
         fusekiModel = createDefaultModel();
         Dataset ds = new DatasetImpl(fusekiModel);
-        server = FusekiEmbeddedServer.create().setPort(parseInt(FUSEKI_PORT))
+        server = FusekiServer.create().setPort(parseInt(FUSEKI_PORT))
                 .setContextPath("/fuseki").add("/test", ds)
                 .build();
         server.start();

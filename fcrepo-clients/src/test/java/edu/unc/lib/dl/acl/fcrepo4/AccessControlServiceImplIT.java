@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.jena.fuseki.embedded.FusekiEmbeddedServer;
+import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.DatasetImpl;
@@ -103,7 +103,7 @@ public class AccessControlServiceImplIT {
 
     private SparqlQueryService sparqlService;
 
-    private static FusekiEmbeddedServer server;
+    private static FusekiServer server;
 
     private static Model fusekiModel;
 
@@ -114,7 +114,7 @@ public class AccessControlServiceImplIT {
                 .getResource("/acl/acl-example-structure.ttl").toString();
         fusekiModel.read(structurePath);
         Dataset ds = new DatasetImpl(fusekiModel);
-        server = FusekiEmbeddedServer.create().setPort(parseInt(FUSEKI_PORT))
+        server = FusekiServer.create().setPort(parseInt(FUSEKI_PORT))
                 .setContextPath("/fuseki")
                 .add("/test", ds, false)
                 .build();

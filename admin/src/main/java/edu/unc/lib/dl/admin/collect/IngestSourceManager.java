@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipFile;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.CollectionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 
 import edu.unc.lib.dl.util.PackagingType;
 import gov.loc.repository.bagit.Bag;
@@ -58,7 +58,7 @@ public class IngestSourceManager {
 
     private String configPath;
 
-    public void init() throws JsonParseException, JsonMappingException, IOException {
+    public void init() throws JsonProcessingException, IOException {
         final ObjectMapper mapper = new ObjectMapper();
         final CollectionType type = mapper.getTypeFactory()
                 .constructCollectionType(List.class, IngestSourceConfiguration.class);

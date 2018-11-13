@@ -71,38 +71,94 @@
     </licenses>
 
     <properties>
-        <cdr.version>4.0-SNAPSHOT</cdr.version>
-        <spring.version>4.3.2.RELEASE</spring.version>
-        <fcrepo.version>3.8.0</fcrepo.version>
-        <fcrepo4.version>4.7.4</fcrepo4.version>
-        <spring.security.version>4.3.2.RELEASE</spring.security.version>
-        <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <xacml.version>2.0.9.Final</xacml.version>
-        <jetty.version>9.4.7.v20170914</jetty.version>
+        <project.copyrightYear>2008</project.copyrightYear>
+        
+        <cdr.version>4.0-SNAPSHOT</cdr.version>
+        <fcrepo.version>3.8.0</fcrepo.version>
+        <fcrepo4.version>4.7.4</fcrepo4.version>
+        <fcrepo-indexing-triplestore.version>4.7.1</fcrepo-indexing-triplestore.version>
+        <clamavj.version>0.3</clamavj.version>
+        
+        <spring.version>4.3.20.RELEASE</spring.version>
+        <spring.security.version>4.3.20.RELEASE</spring.security.version>
+        <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
+        <quartz.version>2.3.0</quartz.version>
+        
         <junit.version>4.12</junit.version>
         <grizzly.version>2.3.28</grizzly.version>
         <jersey.version>2.24</jersey.version>
+        <jersey.spring3.version>2.24</jersey.spring3.version>
         <mockito.version>1.10.19</mockito.version>
         <fcrepo.client.version>0.3.0</fcrepo.client.version>
-        <mock.server.version>3.10.2</mock.server.version>
-        <commons-io.version>2.5</commons-io.version>
-        <jena.version>3.1.1</jena.version>
-        <jena.fuseki.version>2.4.1</jena.fuseki.version>
-        <project.copyrightYear>2008</project.copyrightYear>
-        <maven.failsafe.version>2.20</maven.failsafe.version>
-        <maven.surefire.version>2.20</maven.surefire.version>
-        <activemq.version>5.14.1</activemq.version>
-        <solr.version>6.5.1</solr.version>
-        <taglibs.standard.version>1.1.2</taglibs.standard.version>
-        <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
-        <javax.servlet.jsp.version>2.3.1</javax.servlet.jsp.version>
-        <javax.servlet.jstl.version>1.2</javax.servlet.jstl.version>
-        <jdom.version>2.0.6</jdom.version>
+        <mock.server.version>5.4.1</mock.server.version>
+        <powermock.version>1.7.4</powermock.version>
+        
+        <jackson.version>2.8.4</jackson.version>
+        <jesque.version>2.1.2</jesque.version>
+        
+        <joda-time.version>2.10.1</joda-time.version>
+        <jmustache.version>1.14</jmustache.version>
+        <mail.version>1.4.7</mail.version>
+        <bagit.version>4.12.3</bagit.version>
+        <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
+        <guava.version>27.0-jre</guava.version>
+        <sword2-server.version>1.0</sword2-server.version>
+        
+        <httpclient.version>4.5.6</httpclient.version>
+        <commons-compress.version>1.18</commons-compress.version>
+        <commons-codec.version>1.11</commons-codec.version>
+        <commons-io.version>2.6</commons-io.version>
+        <commons-csv.version>1.6</commons-csv.version>
+        <commons-lang3.version>3.8.1</commons-lang3.version>
+        <commons-fileupload.version>1.3.3</commons-fileupload.version>
+        <abdera.version>1.1.3</abdera.version>
+        
+        <activemq.version>5.15.7</activemq.version>
+        <activemq-protobuf.version>1.1</activemq-protobuf.version>
+        
         <slf4j.version>1.7.25</slf4j.version>
         <logback.version>1.2.3</logback.version>
+        
+        <jdom.version>2.0.6</jdom.version>
+        <jaxen.version>1.1.6</jaxen.version>
+        <saxon.version>8.7</saxon.version>
+        <xerces.version>2.12.0</xerces.version>
+        <xml-apis.version>1.4.01</xml-apis.version>
+        <saaj.version>1.5.0</saaj.version>
+        <xom.version>1.2.5</xom.version>
+        
+        <jetty.version>9.4.12.v20180830</jetty.version>
+        <taglibs.version>1.1.2</taglibs.version>
+        <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
+        <javax.servlet.jsp.version>2.3.3</javax.servlet.jsp.version>
+        <jstl.version>1.2</jstl.version>
+        <jsp-api.version>2.2</jsp-api.version>
+        
+        <jedis.version>2.7.3</jedis.version>
+        <embedded-redis.version>0.6</embedded-redis.version>
+        <solr.version>6.5.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
+        <jena.version>3.9.0</jena.version>
+        <jena.fuseki.version>3.8.0</jena.fuseki.version>
+        
+        <fcrepo-camel.version>4.5.0</fcrepo-camel.version>
+        <camel.version>2.22.1</camel.version>
+        <tika.version>1.19.1</tika.version>
+        
+        <maven.failsafe.version>2.22.1</maven.failsafe.version>
+        <maven.surefire.version>2.22.1</maven.surefire.version>
+        <compiler.plugin.version>3.8.0</compiler.plugin.version>
+        <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
+        <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
+        <license-maven-plugin.version>3.0</license-maven-plugin.version>
+        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+        <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+        <maven-scm-provider-svnjava.version>2.1.2</maven-scm-provider-svnjava.version>
+        <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
+        <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
+        <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -224,11 +280,12 @@
     </profiles>
 
     <build>
+        <pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${compiler.plugin.version}</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -237,7 +294,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.6</version>
+                <version>${maven-eclipse-plugin.version}</version>
                 <configuration>
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>true</downloadJavadocs>
@@ -246,7 +303,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
+                <version>${maven-checkstyle-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>check-style</id>
@@ -267,7 +324,7 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>3.0</version>
+                <version>${license-maven-plugin.version}</version>
                 <configuration>
                     <header>etc/header.txt</header>
                     <mapping>
@@ -282,7 +339,6 @@
                     <excludes>
                         <exclude>clamavj/**</exclude>
                         <exclude>oai4solr/**</exclude>
-            <exclude>staging-areas/**</exclude>
                         <exclude>**/*.properties</exclude>
                     </excludes>
                     <properties>
@@ -300,20 +356,18 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.0</version>
+                <version>${maven-release-plugin.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>com.google.code.maven-scm-provider-svnjava</groupId>
                         <artifactId>maven-scm-provider-svnjava</artifactId>
-                        <version>1.10</version>
+                        <version>${maven-scm-provider-svnjava.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <!-- <tagBase>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-metadata/tags</tagBase> -->
                     <providerImplementations>
                         <svn>javasvn</svn>
                     </providerImplementations>
@@ -323,7 +377,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>${exec-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <configuration>
@@ -339,7 +393,6 @@
                 </executions>
                 <inherited>false</inherited>
             </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -352,7 +405,9 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven.failsafe.version}</version>
                 <configuration>
                     <!--Set reuseForks=false due to the need for different instances of the -->
                     <!--Singleton ServletContainerAuthenticationProvider -->
@@ -371,6 +426,104 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build-helper-maven-plugin.version}</version>
+                <configuration>
+                    <portNames>
+                        <portName>fcrepo.dynamic.test.port</portName>
+                        <portName>jetty.dynamic.stop.port</portName>
+                    </portNames>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>reserve-port</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>reserve-network-port</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <!-- JAR Plugin to configure JAR generation. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>.</Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <scanIntervalSeconds>2</scanIntervalSeconds>
+                    <stopKey>STOP</stopKey>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven-war-plugin.version}</version>
+            </plugin>
+        </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -470,7 +623,7 @@
             <dependency>
                 <groupId>net.greghaines</groupId>
                 <artifactId>jesque</artifactId>
-                <version>2.1.2</version>
+                <version>${jesque.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
@@ -484,16 +637,100 @@
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
+             <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>fcrepo-clients</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>fcrepo-clients</artifactId>
+                <version>${cdr.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>security</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>solr-search</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>solr-ingest</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>access-common</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>persistence</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>services-worker</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>sword-server</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>clamavj</artifactId>
+                <version>${clamavj.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.fcrepo.client</groupId>
+                <artifactId>fcrepo-java-client</artifactId>
+                <version>${fcrepo.client.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>httpclient</groupId>
+                        <artifactId>httpclient</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
+            </dependency>
+             <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-module-junit4</artifactId>
+                <version>${powermock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-api-mockito</artifactId>
+                <version>${powermock.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -509,38 +746,7 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>fcrepo-clients</artifactId>
-                <version>${cdr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>fcrepo-clients</artifactId>
-                <version>${cdr.version}</version>
-                <type>test-jar</type>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
-                <version>1.9.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
-                <version>1.9.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-xc</artifactId>
-                <version>1.9.2</version>
-            </dependency>
-            <dependency>
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>2.7.2</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -553,21 +759,263 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.ws</groupId>
+                <artifactId>spring-ws-core</artifactId>
+                <version>${spring.ws.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.quartz-scheduler</groupId>
+                <artifactId>quartz</artifactId>
+                <version>${quartz.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            
+            <dependency>
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom2</artifactId>
                 <version>${jdom.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.10</version>
-                <scope>compile</scope>
+                <groupId>jaxen</groupId>
+                <artifactId>jaxen</artifactId>
+                <version>${jaxen.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>saxon</artifactId>
+                <version>${saxon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.saxon</groupId>
+                <artifactId>saxon-dom</artifactId>
+                <version>${saxon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
+                <version>${xerces.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>${xml-apis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.messaging.saaj</groupId>
+                <artifactId>saaj-impl</artifactId>
+                <version>${saaj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>${xom.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jvnet.mimepull</groupId>
+                <artifactId>mimepull</artifactId>
+                <version>1.9.7</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-time.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpmime</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.samskivert</groupId>
+                <artifactId>jmustache</artifactId>
+                <version>${jmustache.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>gov.loc</groupId>
+                <artifactId>bagit</artifactId>
+                <version>${bagit.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+                <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                <version>${concurrentlinkedhashmap-lru.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.dropwizard.metrics5</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${metrics.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>${commons-csv.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <version>${commons-fileupload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.abdera</groupId>
+                <artifactId>abdera-client</artifactId>
+                <version>${abdera.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.kstyrc</groupId>
+                <artifactId>embedded-redis</artifactId>
+                <version>${embedded-redis.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-kahadb-store</artifactId>
+                <version>${activemq.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq.protobuf</groupId>
+                <artifactId>activemq-protobuf</artifactId>
+                <version>${activemq-protobuf.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-core</artifactId>
+                <version>${solr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-solrj</artifactId>
+                <version>${solr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-dataimporthandler</artifactId>
+                <version>${solr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.solr</groupId>
+                <artifactId>solr-test-framework</artifactId>
+                <version>${solr.version}</version>
+                <scope>test</scope>
+            </dependency>
+            
+            <!-- Servlets -->
+            <dependency>
+                <groupId>taglibs</groupId>
+                <artifactId>standard</artifactId>
+                <version>${taglibs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>jstl</artifactId>
+                <version>${jstl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>jsp-api</artifactId>
+                <version>${jsp-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>javax.servlet.jsp-api</artifactId>
+                <version>${javax.servlet.jsp.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>jena-fuseki-embedded</artifactId>
@@ -584,6 +1032,70 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>apache-jena-libs</artifactId>
+                <version>${jena.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-core</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-arq</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-osgi</artifactId>
+                <version>${jena.version}</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                  </exclusion>
+                </exclusions>
+            </dependency>
+
             <!-- Logging -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -615,6 +1127,58 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-pool</artifactId>
                 <version>${activemq.version}</version>
+            </dependency>
+            
+            <!-- integration testing -->
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-http-commons</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-auth-common</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-http-servlet</artifactId>
+                <version>${grizzly.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring3</artifactId>
+                <version>${jersey.spring3.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+                <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+                <version>${jersey.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-kernel-modeshape</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-http-api</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

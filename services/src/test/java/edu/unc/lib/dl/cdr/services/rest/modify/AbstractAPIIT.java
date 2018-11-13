@@ -15,11 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -30,6 +31,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.MapType;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -78,9 +82,9 @@ public abstract class AbstractAPIIT {
     }
 
     protected Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
+        MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>(){});
+        return mapper.readValue(result.getResponse().getContentAsString(), type);
     }
 
 }

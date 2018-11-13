@@ -28,12 +28,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -57,7 +57,7 @@ public class SerializationUtil {
 
     private static ObjectMapper jsonMapper = new ObjectMapper();
     static {
-        jsonMapper.setSerializationInclusion(Inclusion.NON_NULL);
+        jsonMapper.setSerializationInclusion(Include.NON_NULL);
     }
     private static ApplicationPathSettings applicationPathSettings;
     private static SearchSettings searchSettings;
@@ -253,11 +253,9 @@ public class SerializationUtil {
     public static String metadataToJSON(BriefObjectMetadata metadata, AccessGroupSet groups) {
         try {
             return jsonMapper.writeValueAsString(metadataToMap(metadata, groups));
-        } catch (JsonGenerationException e) {
+        } catch (JsonProcessingException e) {
             log.error("Unable to serialize object " + metadata.getId() + " to json", e);
-        } catch (JsonMappingException e) {
-            log.error("Unable to serialize object " + metadata.getId() + " to json", e);
-        } catch (IOException e) {
+        }  catch (IOException e) {
             log.error("Unable to serialize object " + metadata.getId() + " to json", e);
         }
         return null;
@@ -266,9 +264,7 @@ public class SerializationUtil {
     public static String objectToJSON(Object object) {
         try {
             return jsonMapper.writeValueAsString(object);
-        } catch (JsonGenerationException e) {
-            log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);
-        } catch (JsonMappingException e) {
+        } catch (JsonProcessingException e) {
             log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);
         } catch (IOException e) {
             log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);

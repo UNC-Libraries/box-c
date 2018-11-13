@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +36,6 @@ import java.util.Map;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -49,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -136,8 +134,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("User must have a username to export xml", respMap.get("error"));
     }
 
-    private String createObjectsAndMakeJSON(boolean exportChildren)
-            throws JsonGenerationException, JsonMappingException, IOException {
+    private String createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
         folder.setDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods.xml")));
