@@ -49,8 +49,7 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/font-awesome.min.css \
 		static/css/structure_browse.css \
-		static/front/front.css \
-		static/front/peek.css \
+		static/css/cdr-homepage.css \
 		> static/css/cdr_access.css
 
 SUSPEND = "n"

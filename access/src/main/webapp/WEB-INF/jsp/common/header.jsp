@@ -20,134 +20,83 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
-<div class="darkest fluid-cap-container" id="header">
-	<ul id="topbar">
-		<c:choose>
-			<c:when test="${not empty pageContext.request.remoteUser}">
-				<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
-					<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
-				</c:url>
-				<li class="topbar-menu-option" id="login"><a href="<c:out value='${logoutUrl}' />" class="login" id="login">Log out</a></li>
-			</c:when>
-			<c:otherwise>
-				<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
-					<c:param name="target" value="${currentAbsoluteUrl}" />
-				</c:url>
-				<li class="topbar-menu-option"><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
-			</c:otherwise>
-		</c:choose>
-		<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
-			<c:choose>
-				<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-					<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
-				</c:when>
-				<c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
-					<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
-				</c:when>
-				<c:when test="${not empty briefObject}">
-					<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
-				</c:when>
-			</c:choose>
-			<li class="topbar-menu-option">
-				<a href="${adminBaseUrl}/${jumpToAdmin}" target="_blank">Admin</a>
-			</li>
-		</c:if>
-		<li class="topbar-menu-option">
-		<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
-		<li class="topbar-menu-option">
-			<a href="http://blogs.lib.unc.edu/cdr/">About</a>
-		</li>
-		<c:if test="${not empty pageContext.request.remoteUser}">
-			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
-		</c:if>
-	</ul>
-	<div class="darkest fluid-cap-highlight">
-		<div class="fluid-cap-contents">
-			<div class ="fluid-cap-right-wrap darkest">
-				<div class="fluid-cap-left-wrap darkest">
-					<div class="twocol fluid-cap-left">
-					
-		<div class="cdr-header">
-			<h1 id="cdr-logo"><a href="/" id="titlelink"><span class="white-title">CAROLINA</span> <span class="blue-title">DIGITAL</span> <span class="white-title">REPOSITORY</span></a></h1>
-			
-			<ul id="mainmenu">
-				<c:set var="referUrl">
+<header class="">
+	<div class="logo-row">
+		<div class="logo container">
+			<a href="">
+				<img src="images/university-libraries-logo.png" alt="University Libraries Logo">
+				<h1>Digital Collections Repository</h1>
+			</a>
+		</div>
+	</div>
+	<nav class="menu-row navbar" role="navigation">
+		<div class="container">
+			<div class="navbar-brand">
+				<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
+					<span aria-hidden="true"></span>
+					<span aria-hidden="true"></span>
+					<span aria-hidden="true"></span>
+				</a>
+			</div>
+			<div id="navbar" class="menu navbar-menu">
+				<div class="navbar-start">
+					<a href="/" class="navbar-item">Home</a>
+					<a class="navbar-item">Browse Collections</a>
+					<a href="https://blogs.lib.unc.edu/cdr/" class="navbar-item">What's Here?</a>
+					<a href="https://blogs.lib.unc.edu/cdr/index.php/contact-us/" class="navbar-item">Contact Us</a>
+				</div>
+				<div class="navbar-end">
 					<c:choose>
-						<c:when test="${not empty param.refer}">
-							${param.refer}
+						<c:when test="${not empty pageContext.request.remoteUser}">
+							<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
+								<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
+							</c:url>
+							<a href="<c:out value='${logoutUrl}' />" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
 						</c:when>
 						<c:otherwise>
-							${currentAbsoluteUrl}
+							<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+								<c:param name="target" value="${currentAbsoluteUrl}" />
+							</c:url>
+							<a href="<c:out value='${loginUrl}' />" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
 						</c:otherwise>
 					</c:choose>
-				</c:set>
-			
-				<c:forEach items="${headerMenuSettings.menuRoot.subMenus}" var="menuEntry">
-					<li>
-						<c:set var="activeClass">
-							<c:if test="${requestScope.menuId == menuEntry.key}">
-								active
-							</c:if>
-						</c:set>
-						<c:set var="menuTarget">
-							<c:choose>
-								<c:when test="${not empty menuEntry.value.target}">target="${menuEntry.value.target}"</c:when>
-								<c:otherwise></c:otherwise>
-							</c:choose>
-						</c:set>
-						<c:if test="${not empty menuEntry.value.url}">
-							<c:url var="menuUrl" value="${menuEntry.value.url}">
-								<c:if test="${menuEntry.value.includeReferer}">
-									<c:param name="refer" value="${referUrl}"/>
-								</c:if>
-							</c:url>
-							<a href="<c:out value='${menuUrl}' />" class="${activeClass}" ${menuTarget}>${menuEntry.value.label}</a>
-						</c:if>
-						<c:if test="${not empty menuEntry.value.subMenus}">
-							<ul class="submenu">
-								<c:forEach items="${menuEntry.value.subMenus}" var="subEntry">
-									<li>
-										<c:set var="menuTarget">
-											<c:choose>
-												<c:when test="${not empty subEntry.value.target}">target="${subEntry.value.target}"</c:when>
-												<c:otherwise></c:otherwise>
-											</c:choose>
-										</c:set>
-										<c:url var="menuUrl" value="${subEntry.value.url}">
-											<c:if test="${subEntry.value.includeReferer}">
-												<c:param name="refer" value="${referUrl}"/>
-											</c:if>
-										</c:url>
-										<a href="<c:out value='${menuUrl}' />" ${menuTarget}>${subEntry.value.label}</a>
-									</li>
-								</c:forEach>
-							</ul>
-						</c:if>
-					</li>
-				</c:forEach>
-			</ul>
-		</div>
-	</div>
-	<div id="searchoptions">
-		
-		<div class="contentarea">
-		<div id="searchoptions-bottom">
-			<div id="advancedsearch">
-			<a href="advancedSearch">Advanced Search</a>
+					<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
+						<c:choose>
+							<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
+								<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
+							</c:when>
+							<c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
+								<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
+							</c:when>
+							<c:when test="${not empty briefObject}">
+								<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
+							</c:when>
+						</c:choose>
+						<li class="topbar-menu-option">
+							<a href="${adminBaseUrl}/${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
+						</li>
+					</c:if>
+				</div>
 			</div>
-				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
-						<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
-						<div id="hsearch_inputwrap">
-              <label class="search_label" for="hsearch_text">Search the CDR</label>
-						   <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
-						   <input type="submit" value="Go" id="hsearch_submit">
-						</div>
-				 </form>
+		</div>
+	</nav>
+	<!-- Remove this block for other pages so that menu collapses down with search bar -->
+	<div class="banner-row">
+		<div class="banner container">
+			<h2>Explore materials from Wilson Special Collections Library</h2>
+			<a class="button is-link is-large">Begin your exploration</a>
 		</div>
 	</div>
-</div>
+	<!-- End remove block -->
+	<div class="search-row">
+		<div class="search container">
+			<form method="get" action="basicSearch">
+				<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
+				<label for="search">Search the Carolina Digital Repository</label>
+				<input type="text" name="search" id="search">
+				<button class="button">Search</button>
+			</form>
+			<a href="advancedSearch">Advanced Search</a>
 		</div>
 	</div>
-</div>
-</div>
-</div>
+</header>
