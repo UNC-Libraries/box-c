@@ -90,7 +90,7 @@
 	<!-- End remove block -->
 	<div class="search-row">
 		<div class="search container">
-			<form method="get" action="basicSearch">
+			<form method="get" action="basicSearch" class="search">
 				<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
 				<label for="search">Search the Carolina Digital Repository</label>
 				<input type="text" name="search" id="search">
