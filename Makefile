@@ -19,7 +19,6 @@ build-admin:
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
 		static/css/admin/jquery.contextMenu.css \
-		static/css/font-awesome.min.css \
 		static/css/admin/cdradmin.css \
 		static/css/admin/search_results.css \
 		static/css/admin/admin_forms.css \
@@ -48,7 +47,6 @@ build-access:
 		static/css/cdr_common.css \
 		static/css/cdrui_styles.css \
 		static/css/fluid_cap.css \
-		static/css/font-awesome.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr-homepage.css \
 		> static/css/cdr_access.css
