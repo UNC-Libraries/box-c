@@ -39,8 +39,8 @@
 				<span>Southern Historical Collection</span>
 			</a>
 			<a href="">
-				<img src="/static/front/nc-collection.png" alt="North Carolina Collection" aria-hidden="true">
-				<span>North Carolina Collection</span>
+				<img src="/static/front/southern-folklife-collection.png" alt="Southern Folklife Collection" aria-hidden="true">
+				<span>Southern Folklife Collection</span>
 			</a>
 		</div>
 	</div>

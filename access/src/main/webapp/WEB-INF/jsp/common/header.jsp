@@ -84,7 +84,7 @@
 	<div class="banner-row">
 		<div class="banner container">
 			<h2>Explore materials from Wilson Special Collections Library</h2>
-			<a class="button is-link is-large">Begin your exploration</a>
+			<a href="" class="button is-link is-large">Begin your exploration</a>
 		</div>
 	</div>
 	<!-- End remove block -->
@@ -95,8 +95,8 @@
 				<label for="search">Search the Carolina Digital Repository</label>
 				<input type="text" name="search" id="search">
 				<button class="button">Search</button>
-				<a href="advancedSearch">Advanced Search</a>
 			</form>
+			<a href="advancedSearch">Advanced Search</a>
 		</div>
 	</div>
 </header>

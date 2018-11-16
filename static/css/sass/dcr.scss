@@ -118,6 +118,7 @@ body {
     margin: 0 12px 0 12px;
   }
   a {
+    flex-shrink: 0;
     color: white;
     &:hover, &:active {
       color: $unc-blue;
