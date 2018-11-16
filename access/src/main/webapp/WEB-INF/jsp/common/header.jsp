@@ -95,8 +95,8 @@
 				<label for="search">Search the Carolina Digital Repository</label>
 				<input type="text" name="search" id="search">
 				<button class="button">Search</button>
+				<a href="advancedSearch">Advanced Search</a>
 			</form>
-			<a href="advancedSearch">Advanced Search</a>
 		</div>
 	</div>
 </header>
