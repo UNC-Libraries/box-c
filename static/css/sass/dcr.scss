@@ -216,13 +216,19 @@ body {
 
 footer {
   color: white;
+  display: inline-flex;
+  text-align: center;
+  width: 100%;
+  flex-wrap: wrap;
 
   .footer-menu {
     @include mobile-margin;
     padding: 12px 0;
   }
+
   a {
     color: white;
+    font-size: .8rem;
     &:hover, &:active {
       color: $unc-blue;
     }
