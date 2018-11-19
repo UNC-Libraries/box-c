@@ -42,7 +42,7 @@
 				<div class="navbar-start">
 					<a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
 					<a href="search?types=Collection" class="navbar-item">Browse Collections</a>
-					<a href="https://blogs.lib.unc.edu/cdr/" class="navbar-item">What's Here?</a>
+					<a href="aboutRepository" class="navbar-item">What's Here?</a>
 					<a href="https://library.unc.edu/wilson/contact/" class="navbar-item">Contact Us</a>
 					<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
 						<c:choose>

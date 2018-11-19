@@ -19,7 +19,6 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
 <main>
 	<div class="collection-links">
