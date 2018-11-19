@@ -65,6 +65,10 @@ body {
   a {
     color: white;
   }
+
+  .is-active {
+    background-color: $unc-navy;
+  }
 }
 
 .banner-row {
@@ -88,7 +92,7 @@ body {
     color: white;
     text-align: center;
     background-color: rgba(0,0,0,0.75);
-    line-height: 30px;
+    line-height: 1.5;
   }
   a.button {
     background-color: $unc-blue;

@@ -32,7 +32,7 @@
 	<nav class="menu-row navbar" role="navigation">
 		<div class="container">
 			<div class="navbar-brand">
-				<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
+				<a role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
 					<span aria-hidden="true"></span>
 					<span aria-hidden="true"></span>
 					<span aria-hidden="true"></span>
@@ -40,10 +40,10 @@
 			</div>
 			<div id="navbar" class="menu navbar-menu">
 				<div class="navbar-start">
-					<a href="/" class="navbar-item">Home</a>
+					<a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
 					<a href="search?types=Collection" class="navbar-item">Browse Collections</a>
 					<a href="https://blogs.lib.unc.edu/cdr/" class="navbar-item">What's Here?</a>
-					<a href="https://blogs.lib.unc.edu/cdr/index.php/contact-us/" class="navbar-item">Contact Us</a>
+					<a href="https://library.unc.edu/wilson/contact/" class="navbar-item">Contact Us</a>
 					<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
 						<c:choose>
 							<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
@@ -78,14 +78,16 @@
 			</div>
 		</div>
 	</nav>
-	<!-- Remove this block for other pages so that menu collapses down with search bar -->
-	<div class="banner-row">
-		<div class="banner container">
-			<h2>Explore materials from Wilson Special Collections Library</h2>
-			<a href="" class="button is-link is-large">Begin your exploration</a>
+
+	<c:if test="${isHomepage}">
+		<div class="banner-row">
+			<div class="banner container">
+				<h2>Explore materials from Wilson Special Collections Library</h2>
+				<a href="collections" class="button is-link is-large">Begin your exploration</a>
+			</div>
 		</div>
-	</div>
-	<!-- End remove block -->
+	</c:if>
+
 	<div class="search-row">
 		<div class="search container">
 			<form method="get" action="basicSearch" class="search">
@@ -97,4 +99,5 @@
 			<a href="advancedSearch">Advanced Search</a>
 		</div>
 	</div>
+	<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/mobileMenu"></script>
 </header>
