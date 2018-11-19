@@ -57,7 +57,7 @@
         Special Collections Library's Policies Governing Use. When you are use materials from the Repository, you
         should acknowledge and follow the following policies:</p>
 
-    <h4>Policies Governing Use</h4>
+    <h3>Policies Governing Use</h3>
 
     <p>Researchers agree to abide by restrictions placed on the library’s collections.</p>
     <p>Collection materials including unpublished documents may be subject to laws governing copyright
@@ -97,7 +97,7 @@
     <p>If you have questions about access to files, file formats, or storage devices used to transfer the materials to
         the Library, please contact us for more information. </p>
 
-    <h4>How can I get more information or assistance?</h4>
+    <h3>How can I get more information or assistance?</h3>
 
     <p>You can visit our website: <a href="http://library.unc.edu/wilson/">http://library.unc.edu/wilson</a></p>
     <p>You can also contact us: <a href="mailto:wilsonlibrary@unc.edu">wilsonlibrary@unc.edu</a></p>
