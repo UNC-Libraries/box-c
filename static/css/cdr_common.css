@@ -387,3 +387,27 @@ li {
     word-spacing: -2px;
     }
 }}
+
+/** About repo page **/
+#about-repo h2 {
+	font-size: 18px;
+	text-align: center;
+}
+
+#about-repo h3 {
+	font-size: 16px;
+}
+
+#about-repo p, #about-repo a {
+	font-size: 14px;
+}
+
+#about-repo ul {
+	list-style-type: disc;
+	margin-left: 15px;
+}
+
+#about-repo ul li {
+	margin-left: 25px;
+	text-indent: unset;
+}
