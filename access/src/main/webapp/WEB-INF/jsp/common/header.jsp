@@ -43,7 +43,7 @@
 					<a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
 					<a href="collections" class="navbar-item">Browse Collections</a>
 					<a href="aboutRepository" class="navbar-item">What's Here?</a>
-					<a href="https://library.unc.edu/wilson/contact/" class="navbar-item">Contact Us</a>
+					<a href="${contactUrl}" class="navbar-item">Contact Us</a>
 					<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
 						<c:choose>
 							<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
