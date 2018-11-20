@@ -1,382 +1,382 @@
 body {
-	text-align: center;
-	font-family: verdana, sans-serif;
-	background-color: #ececec;
-	color: #222;
-	font-size: 12px;
-	line-height: 17px;
+    text-align: center;
+    font-family: verdana, sans-serif;
+    background-color: #ececec;
+    color: #222;
+    font-size: 12px;
+    line-height: 17px;
 }
 
 /* Layout */
 #pagewrap {
-	width: 960px;
-	margin: 0 auto 0 auto;
+    width: 960px;
+    margin: 0 auto 0 auto;
 }
 
 #pagewrap_inside {
-	width: 100%;
-	float: left;
-	background-color: #fff;
-	text-align: left;
+    width: 100%;
+    float: left;
+    background-color: #fff;
+    text-align: left;
 }
 
 #header,#content,#footer {
-	width: 100%;
-	float: left;
-	position: relative;
+    width: 100%;
+    float: left;
+    position: relative;
 }
 
 body.full_screen {
-	overflow: hidden;
+    overflow: hidden;
 }
 
 .full_screen #header, .full_screen #footer {
-	display: none;
+    display: none;
 }
 
 .full_screen #content {
-	position: absolute;
-	width: 100%;
-	height: 100%;
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 
 #header {
-	z-index: 2;
+    z-index: 2;
 }
 
 #footer {
-	margin: 0 0 -20px 0;
+    margin: 0 0 -20px 0;
 }
 
 #footer_uncwell {
-	float: right;
-	margin: -7px 0 0;
+    float: right;
+    margin: -7px 0 0;
 }
 
 .fourcol,.twocol,.threecol {
-	float: left;
+    float: left;
 }
 
 .fourcol {
-	width: 240px;
+    width: 240px;
 }
 
 .onecol {
-	width: 960px;
-	float: left;
+    width: 960px;
+    float: left;
 }
 
 .twocol {
-	width: 480px;
+    width: 480px;
 }
 
 .threecol {
-	width: 720px;
+    width: 720px;
 }
 
 .cdr-header {
-	margin: 10px 20px 20px 20px;
+    margin: 10px 20px 20px 20px;
 }
 
 .contentarea {
-	margin: 20px;
+    margin: 20px;
 }
 
 .darkest {
-	background-color: #053a53;
-	float: left;
+    background-color: #053a53;
+    float: left;
 }
 
 .dark {
-	background-color: #0a5274;
-	float: left;
+    background-color: #0a5274;
+    float: left;
 }
 
 .medium {
-	background-color: #5aabcf;
-	float: left;
+    background-color: #5aabcf;
+    float: left;
 }
 
 .light {
-	background-color: #dfebf1;
-	float: left;
+    background-color: #dfebf1;
+    float: left;
 }
 
 .lightest {
-	background-color: #ebf5fa;
-	float: left;
+    background-color: #ebf5fa;
+    float: left;
 }
 
 .gray {
-	background-color: #f3f3f3;
-	float: left;
+    background-color: #f3f3f3;
+    float: left;
 }
 
 .white {
-	background-color: #fff;
-	float: left;
+    background-color: #fff;
+    float: left;
 }
 
 .shadowtop {
-	box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.15) inset
+    box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.15) inset
 }
 
 .shadowbottom {
-	box-shadow: 0 -8px 8px -8px rgba(0, 0, 0, 0.15) inset;
+    box-shadow: 0 -8px 8px -8px rgba(0, 0, 0, 0.15) inset;
 }
 
 .shadowright {
-	background-image: url('/static/images/cdrui_contentshadowright.png');
-	background-repeat: repeat-y;
-	background-position: top right;
+    background-image: url('/static/images/cdrui_contentshadowright.png');
+    background-repeat: repeat-y;
+    background-position: top right;
 }
 
 .hidden {
-	visibility: hidden;
-	display: none !important;
+    visibility: hidden;
+    display: none !important;
 }
 
 .right {
-	float: right;
+    float: right;
 }
 
 .left {
-	float: left;
+    float: left;
 }
 
 .clear {
-	clear: both;
+    clear: both;
 }
 
 .nowrap {
-	white-space: nowrap;
+    white-space: nowrap;
 }
 
 /** Typography */
 
 a {
-	color: #1A698C;
-	text-decoration: none;
+    color: #1A698C;
+    text-decoration: none;
 }
 
 a:hover {
-	color: #2193AF;
-	text-decoration: underline;
+    color: #2193AF;
+    text-decoration: underline;
 }
 
 h2 {
-	font-size: 16px;
-	color: #0A5274;
-	font-weight: normal;
-	margin-bottom: 10px;
-	line-height: 19px;
+    font-size: 16px;
+    color: #0A5274;
+    font-weight: normal;
+    margin-bottom: 10px;
+    line-height: 19px;
 }
 
 h3 {
-	font-size: 12px;
-	font-weight: bold;
-	margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 p, ul {
-	font-size: 12px;
-	line-height: 17px;
-	margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 17px;
+    margin-bottom: 8px;
 }
 
 li {
-	margin-bottom: 5px;
-	text-indent: -15px;
-	margin-left: 15px;
+    margin-bottom: 5px;
+    text-indent: -15px;
+    margin-left: 15px;
 }
 
 .bold {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .indent_content {
-	margin-left: 10px;
+    margin-left: 10px;
 }
 
 /** Header menu */
 
 #cdr-logo {
-	margin: 20px 0 30px 0;
-	word-spacing: -4px;
-	letter-spacing: -1px;
+    margin: 20px 0 30px 0;
+    word-spacing: -4px;
+    letter-spacing: -1px;
 }
 
 /*Header Top Bar*/
 
 #topbar {
-	background-color: #001B28;
-	height: 25px;
-	font-family: helvetica;
-	color: #fff;
+    background-color: #001B28;
+    height: 25px;
+    font-family: helvetica;
+    color: #fff;
 }
 
 #topbar > li {
-	float: right;
-	text-indent: 0;
-	margin: 0;
+    float: right;
+    text-indent: 0;
+    margin: 0;
 }
 
 #topbar > li > a {
-	display: block;
-	padding: 4px 25px;
-	color: #ebf5fa;
+    display: block;
+    padding: 4px 25px;
+    color: #ebf5fa;
 }
 
 .topbar-menu-option {
-	color: #fff;
-	cursor: pointer;
+    color: #fff;
+    cursor: pointer;
 }
 
 .topbar-menu-option:hover {
-	background-color: #ebf5fa;
+    background-color: #ebf5fa;
 }
 
 #topbar > li:hover > a {
-	color: #001B28;
-	text-decoration: none;
+    color: #001B28;
+    text-decoration: none;
 }
 
 #topbar li#login {
-	font-weight: 600;
+    font-weight: 600;
 }
 
 #mainmenu {
-	margin: 0;
-	
-	padding: 0;
+    margin: 0;
+
+    padding: 0;
 }
 
 #mainmenu > li {
-	float: left;
-	margin: 0;
-	text-indent: 0;
-	margin-right: 2px;
-	font-family: helvetica;
-	font-size: 16px;
-	background-color: #E6E9EC;
+    float: left;
+    margin: 0;
+    text-indent: 0;
+    margin-right: 2px;
+    font-family: helvetica;
+    font-size: 16px;
+    background-color: #E6E9EC;
 }
 
 .submenu {
-	visibility: hidden;
-	position: absolute;
-	width: 280px;
+    visibility: hidden;
+    position: absolute;
+    width: 280px;
 }
 
 #mainmenu > li > a, .submenu > li > a{
-	color: #053a53;
-	padding: 8px 20px;
-	line-height: 25px;
-	display: block;
+    color: #053a53;
+    padding: 8px 20px;
+    line-height: 25px;
+    display: block;
 }
 
 #mainmenu > li > a:hover {
-	background-color: #C8DFF0;
-	background-image: none;
+    background-color: #C8DFF0;
+    background-image: none;
 }
 
 #mainmenu > li > .active {
-	background-color: #7BAFD4;
-	background-image: none;
+    background-color: #7BAFD4;
+    background-image: none;
 }
 
 #mainmenu > li:hover > ul,#mainmenu > a:hover > ul {
-	visibility: visible;
+    visibility: visible;
 }
 
 .submenu {
-	border-left: 1px solid #fff;
-	border-right: 1px solid #fff;
-	margin-left: -1px;
-	z-index: 1;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #fff;
+    margin-left: -1px;
+    z-index: 1;
 }
 
 .submenu > li {
-	background-color: #fff;
-	padding: 0;
-	margin: 0;
-	display: block;
-	width: 100%;
-	border-bottom: 1px solid #fff;
-	float: none;
-	z-index: 100;
+    background-color: #fff;
+    padding: 0;
+    margin: 0;
+    display: block;
+    width: 100%;
+    border-bottom: 1px solid #fff;
+    float: none;
+    z-index: 100;
 }
 
 .submenu > li > a {
-	background-color: #7abcd9;
-	background-image: none;
-	margin: 0;
-	padding: 0 20px;
-	border: none;
-	float: none;
-	display: block;
-	z-index: 101;
+    background-color: #7abcd9;
+    background-image: none;
+    margin: 0;
+    padding: 0 20px;
+    border: none;
+    float: none;
+    display: block;
+    z-index: 101;
 }
 
 .submenu > li > a:hover {
-	background-color: #93cee8;
+    background-color: #93cee8;
 }
 
 .secondarymenu {
-	margin: 0 0 0 0;
-	float: right;
+    margin: 0 0 0 0;
+    float: right;
 }
 
 .secondarymenu > li {
-	float: left;
-	margin: 10px 0 0 0;
-	text-indent: 0px;
+    float: left;
+    margin: 10px 0 0 0;
+    text-indent: 0px;
 }
 
 .secondarymenu > li > a {
-	display: block;
-	padding: 0 20px;
-	height: 30px;
-	line-height: 30px;
-	color: #dfebf1;
-	background-color: #084b6b;
-	background-image: url('/static/images/cdrui_contentshadowbottom.png');
-	background-repeat: repeat-x;
-	background-position: bottom left;
-	text-decoration: none;
-	border-right: 1px solid #0A5274;
+    display: block;
+    padding: 0 20px;
+    height: 30px;
+    line-height: 30px;
+    color: #dfebf1;
+    background-color: #084b6b;
+    background-image: url('/static/images/cdrui_contentshadowbottom.png');
+    background-repeat: repeat-x;
+    background-position: bottom left;
+    text-decoration: none;
+    border-right: 1px solid #0A5274;
 }
 
 .secondarymenu > li > a:hover {
-	background-color: #165d7f;
-	text-decoration: none;
-	color: #fff;
+    background-color: #165d7f;
+    text-decoration: none;
+    color: #fff;
 }
 
 .secondarymenu > li > .active {
-	background-color: #fff;
-	background-image: none;
+    background-color: #fff;
+    background-image: none;
 }
 
 /** Faceting */
 .facets {
-	line-height: 14px;
-	margin-bottom: 15px;
-	margin-left: 15px;
+    line-height: 14px;
+    margin-bottom: 15px;
+    margin-left: 15px;
 }
 
 .crumblist {
-	font-size: 11px;
-	line-height: 15px;
+    font-size: 11px;
+    line-height: 15px;
 }
 
 .crumblist > li {
-	margin-left: 22px;
-	text-indent: -22px;
+    margin-left: 22px;
+    text-indent: -22px;
 }
 
 .crumblist a {
-	text-decoration: underline;
-	color: #0a5274;
+    text-decoration: underline;
+    color: #0a5274;
 }
 
 /** Logo word spacing in Safari **/
@@ -390,24 +390,24 @@ li {
 
 /** About repo page **/
 #about-repo h2 {
-	font-size: 18px;
-	text-align: center;
+    font-size: 18px;
+    text-align: center;
 }
 
 #about-repo h3 {
-	font-size: 16px;
+    font-size: 16px;
 }
 
 #about-repo p, #about-repo a {
-	font-size: 14px;
+    font-size: 14px;
 }
 
 #about-repo ul {
-	list-style-type: disc;
-	margin-left: 15px;
+    list-style-type: disc;
+    margin-left: 15px;
 }
 
 #about-repo ul li {
-	margin-left: 25px;
-	text-indent: unset;
+    margin-left: 25px;
+    text-indent: unset;
 }
