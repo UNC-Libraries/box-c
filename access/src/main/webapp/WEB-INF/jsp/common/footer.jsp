@@ -23,10 +23,10 @@
     <p class="footer-menu container">
         <a href="${pageContext.request.contextPath}/">Home</a> |
         <a href="collections">Browse Collections</a> |
-        <a href="http://blogs.lib.unc.edu/cdr/">About</a> |
+        <a href="aboutRepository">About</a> |
         <a href="${contactUrl}">Contact Us</a> |
-        <a href="http://www.lib.unc.edu">Library Home</a> |
-        <a href="http://library.unc.edu/privacy-policy/">Privacy Policy</a> |
+        <a href="https://library.unc.edu">Library Home</a> |
+        <a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
         <a href="http://digitalaccess.unc.edu/report">Accessibility</a>
     </p>
 </footer>
