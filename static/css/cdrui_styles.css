@@ -514,44 +514,6 @@ ul.fpfeed_list li {
     word-wrap: break-word;
 }
 
-#hsearch_inputwrap {
-    background-color: #fff;
-    float: right;
-    margin-top: 0;
-    padding: 2px;
-    height: 30px;
-    width: 300px;
-}
-
-#hsearch_text {
-    border: none;
-    color: #666;
-    height: 30px;
-    float: left;
-    font-family: verdana, sans-serif;
-    font-size: 14px;
-    *height: 16px;
-    width: 230px;
-    padding-left: 5px;
-}
-
-#hsearch_submit {
-    border: none;
-    color: #fff;
-    margin: 0 0 0 0;
-    padding-left: 10px;
-    padding-right: 10px;
-    cursor: pointer;
-    height: 30px;
-    background-color: #5F5F5F;
-    font-family: verdana, sans-serif;
-    font-size: 14px;
-}
-
-#hsearch_submit:hover {
-    background-color: #999999;
-}
-
 #collectionsearch {
     float: left;
     width: 320px;
