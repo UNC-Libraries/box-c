@@ -168,10 +168,30 @@ body {
     background-color: rgba(0,0,0,0.55);
     padding: 5px 0;
   }
+  @media only screen and (max-width: 1087px) {
+    width: 100%;
+    margin: inherit;
+
+    img {
+      max-width: 250px;
+    }
+
+    span {
+      font-size: 1rem;
+    }
+  }
+
+  @media only screen and (max-width: 915px) {
+    img {
+      max-width: 200px;
+    }
+
+    span {
+      font-size: .9rem;
+    }
+  }
   @media only screen and (max-width: 720px) {
     display: block;
-    width: 100%;
-    margin: auto 16px;
     &:not(:first-child) {
       margin-top: 0;
     }
