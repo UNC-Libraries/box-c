@@ -99,6 +99,6 @@
 
     <h3>How can I get more information or assistance?</h3>
 
-    <p>You can visit our website: <a href="http://library.unc.edu/wilson/">http://library.unc.edu/wilson</a></p>
+    <p>You can visit our website: <a href="https://library.unc.edu/wilson/">https://library.unc.edu/wilson</a></p>
     <p>You can also contact us: <a href="mailto:wilsonlibrary@unc.edu">wilsonlibrary@unc.edu</a></p>
 </div>
