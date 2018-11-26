@@ -93,7 +93,7 @@
             <form method="get" action="basicSearch" class="search">
                 <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
                 <label for="hsearch_text">Search the Carolina Digital Repository</label>
-                <<input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
+                <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                 <button type="submit" class="button">Search</button>
             </form>
             <a href="advancedSearch">Advanced Search</a>
