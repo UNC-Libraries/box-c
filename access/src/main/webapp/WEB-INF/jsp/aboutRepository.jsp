@@ -71,18 +71,18 @@
         are advised that the disclosure of certain information pertaining to identifiable living individuals without the
         consent of those individuals may have legal ramifications (e.g., a cause of action under common law for invasion
         of privacy may arise if facts concerning an individual's private life are published that would be deemed
-        highly offensive to a reasonable person). </p>
+        highly offensive to a reasonable person).</p>
     <p>The University Archives at the University of North Carolina at Chapel Hill operates in accordance with the
         North Carolina Public Records Act (N.C.G.S. &sect; 132 1 et seq.) providing unrestricted access to university
         records not covered by state and federal right to privacy acts.</p>
     <p>The University of North Carolina at Chapel Hill, and their libraries, assume no responsibility for infringement of
         literary property rights and copyright or for liability to any person for defamation or invasion of privacy
-        that results from a researcher's use of collections. </p>
+        that results from a researcher's use of collections.</p>
     <p>Researchers agree to indemnify and hold harmless the University of North Carolina at Chapel Hill, and their
         officers, employees, and agents from and against all suits, claims, actions, and expenses arising out of use
         of collections held by the libraries.</p>
 
-    <h3>How We Preserve Digital Materials </h3>
+    <h3>How We Preserve Digital Materials</h3>
 
     <p>Much of the material available in the Digital Collections Repository were acquired by the Library on various
         types of digital storage devices and via cloud storage. The storage devices range from floppy disks to DVDs
@@ -95,7 +95,7 @@
         becomes possible to do so, we will expand and improve access to legacy file formats based on emerging best
         practices and tool development.</p>
     <p>If you have questions about access to files, file formats, or storage devices used to transfer the materials to
-        the Library, please contact us for more information. </p>
+        the Library, please contact us for more information.</p>
 
     <h3>How can I get more information or assistance?</h3>
 
