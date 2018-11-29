@@ -99,5 +99,5 @@
             <a href="advancedSearch">Advanced Search</a>
         </div>
     </div>
-    <script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/mobileMenu"></script>
+    <script type="text/javascript" src="/static/js/public/mobileMenu"></script>
 </header>
