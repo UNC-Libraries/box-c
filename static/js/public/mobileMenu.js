@@ -1,22 +1,20 @@
-require.config({
-    urlArgs: "v=3.4-SNAPSHOT",
-    baseUrl: '/static/js/',
-    paths: {
-        'jquery' : 'cdr-access'
+(function() {
+    var mobile_burger = document.getElementById('navbar-burger');
+
+    mobile_burger.addEventListener('click', toggleMenu, false);
+    mobile_burger.addEventListener('touchstart', toggleMenu, false);
+
+    function toggleMenu() {
+        var target_attribute = mobile_burger.getAttribute('data-target');
+        var mobile_menu = document.getElementById(target_attribute);
+
+        mobile_burger.classList.toggle('open');
+        mobile_menu.classList.toggle('is-active');
+
+        if (mobile_burger.classList.contains('open')) {
+            mobile_burger.setAttribute('aria-expanded', 'true');
+        } else {
+            mobile_burger.setAttribute('aria-expanded', 'false');
+        }
     }
-});
-define('mobileMenu', ['module', 'jquery'], function(module, $) {
-   $('#navbar-burger').on('click touchstart', function(e) {
-       var self = $(this);
-       var mobile_menu = $('#' + self.attr('data-target'));
-
-       self.toggleClass('open');
-       mobile_menu.toggleClass('is-active');
-
-       if (self.hasClass('open')) {
-           self.attr('aria-expanded', true);
-       } else {
-           self.attr('aria-expanded', false)
-       }
-   });
-});
+})();
