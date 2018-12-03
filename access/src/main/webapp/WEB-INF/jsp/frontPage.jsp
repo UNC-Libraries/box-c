@@ -31,10 +31,6 @@
                 <img src="/static/front/university-archives.png" alt="University Archives" aria-hidden="true">
                 <span>University Archives</span>
             </a>
-            <a href="record/uuid:6f98967f-df96-452d-a202-0c99d1b7d951">
-                <img src="/static/front/university-archives.png" alt="Rare Books Collection" aria-hidden="true">
-                <span>Rare Books Collection</span>
-            </a>
         </div>
         <div class="collection-link-row">
             <a href="record/uuid:c59291a6-ad7a-4ad4-b89d-e2fe8acac744">
@@ -44,6 +40,12 @@
             <a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab">
                 <img src="/static/front/southern-folklife-collection.png" alt="Southern Folklife Collection" aria-hidden="true">
                 <span>Southern Folklife Collection</span>
+            </a>
+        </div>
+        <div class="collection-link-row">
+            <a href="record/uuid:6f98967f-df96-452d-a202-0c99d1b7d951">
+                <img src="/static/front/university-archives.png" alt="Rare Books Collection" aria-hidden="true">
+                <span>Rare Books Collection</span>
             </a>
         </div>
     </div>
