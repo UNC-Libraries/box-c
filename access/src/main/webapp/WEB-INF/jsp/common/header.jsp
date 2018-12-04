@@ -20,11 +20,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
-<header class="">
+<header>
     <div class="logo-row">
         <div class="logo container">
-            <a href="">
-                <img src="static/images/university-libraries-logo.png" alt="University Libraries Logo">
+            <a href="/">
+                <img src="static/front/university-libraries-logo.png" alt="University Libraries Logo">
                 <h1>Digital Collections Repository</h1>
             </a>
         </div>
