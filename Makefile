@@ -35,7 +35,7 @@ ifneq ($(VERSION), "")
 endif
 
 build-access:
-	sass static/css/sass/dcr.scss static/css/cdr-homepage.css
+	sass static/css/sass/dcr.scss static/css/cdr-homepage.css --style "expanded"
 	cat static/js/lib/jquery.min.js > static/js/cdr-access.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
 	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js

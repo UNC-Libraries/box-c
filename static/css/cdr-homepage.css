@@ -1,262 +1,255 @@
 @import url("https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600");
-/* line 17, ../sass/dcr.scss */
 * {
-    font-family: 'Open Sans', sans-serif;
+  font-family: 'Open Sans', sans-serif;
 }
 
-/* line 24, ../sass/dcr.scss */
 .logo-row {
-    background-color: #4B9CD3;
+  background-color: #4B9CD3;
 }
 
-/* line 28, ../sass/dcr.scss */
 .menu-row, .banner-row, .search-row, footer {
-    background-color: #13294B;
+  background-color: #13294B;
 }
 
-/* line 32, ../sass/dcr.scss */
 .info-row {
-    background-color: #F5F5F5;
+  background-color: #F5F5F5;
 }
 
-/* line 36, ../sass/dcr.scss */
 .logo, .menu {
-    padding: 12px 0;
+  padding: 12px 0;
 }
 
 @media only screen and (max-width: 1088px) {
-    /* line 40, ../sass/dcr.scss */
-    .logo {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
+  .logo {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
 }
-/* line 42, ../sass/dcr.scss */
 .logo a {
-    display: flex;
-    align-items: center;
-    max-width: 550px;
+  display: flex;
+  align-items: center;
+  max-width: 550px;
 }
-/* line 47, ../sass/dcr.scss */
 .logo img {
-    display: inline-block;
-    max-width: 250px;
-    width: 100%;
-    margin: 8px 0;
+  display: inline-block;
+  max-width: 250px;
+  width: 100%;
+  margin: 8px 0;
 }
-/* line 53, ../sass/dcr.scss */
 .logo h1 {
-    display: inline-block;
-    margin-left: 24px;
-    font-family: 'Libre Baskerville', serif;
-    font-size: 1.25rem;
-    font-style: italic;
-    color: white;
+  display: inline-block;
+  margin-left: 24px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  color: white;
+  line-height: 1.5;
 }
 
-/* line 63, ../sass/dcr.scss */
 .navbar {
-    box-shadow: 2px 2px 2px 0 #071730;
+  box-shadow: 2px 2px 2px 0 #071730;
 }
-/* line 65, ../sass/dcr.scss */
 .navbar a {
-    color: white;
+  color: white;
+}
+.navbar .is-active {
+  background-color: #13294B;
 }
 
-/* line 70, ../sass/dcr.scss */
 .banner-row {
-    background-image: url(../images/banner.jpg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    box-shadow: inset 0 0 10px black;
+  background-image: url(/static/front/banner.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: inset 0 0 10px black;
 }
 
-/* line 78, ../sass/dcr.scss */
 .banner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 300px;
 }
-/* line 84, ../sass/dcr.scss */
 .banner h2 {
-    max-width: 700px;
-    padding: 24px 32px;
-    font-size: 2rem;
-    color: white;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.75);
+  max-width: 700px;
+  padding: 24px 32px;
+  font-size: 2rem;
+  color: white;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.75);
+  line-height: 1.5;
 }
-/* line 92, ../sass/dcr.scss */
 .banner a.button {
-    background-color: #4B9CD3;
+  background-color: #4B9CD3;
 }
 
-/* line 97, ../sass/dcr.scss */
 .search {
-    display: flex;
-    align-items: center;
-    padding: 12px 0;
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
 }
 @media only screen and (max-width: 1088px) {
-    /* line 97, ../sass/dcr.scss */
-    .search {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
+  .search {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
 }
-/* line 102, ../sass/dcr.scss */
 .search label {
-    position: absolute;
-    width: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
 }
-/* line 111, ../sass/dcr.scss */
 .search input {
-    width: 100%;
-    padding: 8px;
-    font-size: 1rem;
+  width: 100%;
+  padding: 8px;
+  font-size: 1rem;
 }
-/* line 116, ../sass/dcr.scss */
 .search button {
-    margin: 0 12px 0 12px;
+  margin: 0 12px 0 12px;
 }
-/* line 119, ../sass/dcr.scss */
 .search a {
-    flex-shrink: 0;
-    color: white;
+  flex-shrink: 0;
+  color: white;
+  font-size: 16px;
 }
-/* line 122, ../sass/dcr.scss */
 .search a:hover, .search a:active {
-    color: #4B9CD3;
+  color: #4B9CD3;
 }
 
-/* line 128, ../sass/dcr.scss */
 .collection-links {
-    margin: 2rem 0;
+  margin: 2rem 0;
 }
 
-/* line 132, ../sass/dcr.scss */
 .collection-link-row {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
-/* line 135, ../sass/dcr.scss */
 .collection-link-row:not(:first-child) {
-    margin-top: 32px;
+  margin-top: 32px;
 }
-/* line 138, ../sass/dcr.scss */
 .collection-link-row a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 16px 0 16px;
-    padding: 16px;
-    border-radius: 16px;
-    background-color: #e0e0e0;
-    box-shadow: 2px 2px 2px #d5d5d5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 16px 0 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: #e0e0e0;
+  box-shadow: 2px 2px 2px #d5d5d5;
 }
-/* line 148, ../sass/dcr.scss */
+.collection-link-row a:hover {
+  text-decoration-color: white;
+}
 .collection-link-row img {
-    max-width: 300px;
-    width: 100%;
+  max-width: 300px;
+  width: 100%;
 }
-/* line 152, ../sass/dcr.scss */
 .collection-link-row span {
-    display: inline-block;
-    width: 100%;
-    margin-top: 4px;
-    font-size: 1.25rem;
-    text-align: center;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.55);
+  display: inline-block;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 1.25rem;
+  text-align: center;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.55);
+  padding: 5px 0;
 }
 @media only screen and (max-width: 720px) {
-    /* line 132, ../sass/dcr.scss */
-    .collection-link-row {
-        display: block;
-        margin: auto 16px;
-    }
-    /* line 164, ../sass/dcr.scss */
-    .collection-link-row:not(:first-child) {
-        margin-top: 0;
-    }
-    /* line 167, ../sass/dcr.scss */
-    .collection-link-row a {
-        margin: 16px auto;
-    }
+  .collection-link-row {
+    display: block;
+    width: 100%;
+    margin: auto 16px;
+  }
+  .collection-link-row:not(:first-child) {
+    margin-top: 0;
+  }
+  .collection-link-row a {
+    margin: 16px auto;
+  }
 }
 
-/* line 173, ../sass/dcr.scss */
 .info-row {
-    box-shadow: inset 0 0 8px grey;
+  box-shadow: inset 0 0 8px grey;
 }
-/* line 175, ../sass/dcr.scss */
 .info-row .info {
-    padding: 24px 0;
-    text-align: center;
+  padding: 24px 0;
+  text-align: center;
 }
 @media only screen and (max-width: 1088px) {
-    /* line 175, ../sass/dcr.scss */
-    .info-row .info {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
+  .info-row .info {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
 }
-/* line 179, ../sass/dcr.scss */
+.info-row .info p {
+  font-size: 1rem;
+}
 .info-row .info h3 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
-/* line 185, ../sass/dcr.scss */
 .info-icons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 16px 0;
-    color: white;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+  vertical-align: center;
+  color: white;
+  font-size: 1rem;
 }
-/* line 191, ../sass/dcr.scss */
+.info-icons a {
+  color: white;
+  padding: 0 16px 0 0;
+  background-color: #3e2b4e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .info-icons div {
-    display: flex;
-    margin: 16px 12px;
+  display: flex;
+  margin: 16px 12px;
 }
-/* line 195, ../sass/dcr.scss */
-.info-icons span {
-    padding: 12px 16px;
-    text-align: center;
-    background-color: #3e2b4e;
-}
-/* line 200, ../sass/dcr.scss */
 .info-icons i {
-    width: 50px;
-    padding: 12px;
-    font-size: 1.5rem;
-    background-color: #715f80;
+  width: 50px;
+  margin-right: 15px;
+  padding: 12px;
+  font-size: 1.5rem;
+  background-color: #715f80;
 }
 
-/* line 209, ../sass/dcr.scss */
+#about-repo {
+  margin-bottom: 32px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+footer {
+  color: white;
+  display: inline-flex;
+  text-align: center;
+  width: 100%;
+  flex-wrap: wrap;
+}
 footer .footer-menu {
-    padding: 12px 0;
+  padding: 12px 0;
 }
 @media only screen and (max-width: 1088px) {
-    /* line 209, ../sass/dcr.scss */
-    footer .footer-menu {
-        margin-left: 16px;
-        margin-right: 16px;
-    }
+  footer .footer-menu {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
 }
-/* line 213, ../sass/dcr.scss */
 footer a {
-    color: white;
+  color: white;
+  font-size: .8rem;
 }
-/* line 215, ../sass/dcr.scss */
 footer a:hover, footer a:active {
-    color: #4B9CD3;
+  color: #4B9CD3;
 }
+
+/*# sourceMappingURL=cdr-homepage.css.map */
