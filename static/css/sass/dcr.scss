@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600');
+
+$unc-blue: #4B9CD3;
+$link-blue: #007FAE;
+$unc-navy: #13294B;
+$light-gray: #E1E1E1;
+$dark-gray: #767676;
+$black: #151515;
+
+@mixin mobile-margin {
+  @media only screen and (max-width: 1088px) {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
+* {
+  font-family: 'Open Sans', sans-serif;
+}
+
+body {
+}
+
+.logo-row {
+  background-color: $unc-blue;
+}
+
+.menu-row, .banner-row, .search-row, footer {
+  background-color: $unc-navy;
+}
+
+.info-row {
+  background-color: #F5F5F5;
+}
+
+.logo, .menu {
+  padding: 12px 0; // 1rem = 16px
+}
+
+.logo {
+  @include mobile-margin;
+  a {
+    display: flex;
+    align-items: center;
+    max-width: 550px;
+  }
+  img {
+    display: inline-block;
+    max-width: 250px;
+    width: 100%;
+    margin: 8px 0;
+  }
+  h1 {
+    display: inline-block;
+    margin-left: 24px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: white;
+    line-height: 1.5;
+  }
+}
+
+.navbar {
+  box-shadow: 2px 2px 2px 0 #071730;
+  a {
+    color: white;
+  }
+
+  .is-active {
+    background-color: $unc-navy;
+  }
+}
+
+.banner-row {
+  background-image: url(/static/front/banner.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: inset 0 0 10px black;
+}
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 300px;
+  h2 {
+    max-width: 700px;
+    padding: 24px 32px;
+    font-size: 2rem;
+    color: white;
+    text-align: center;
+    background-color: rgba(0,0,0,0.75);
+    line-height: 1.5;
+  }
+  a.button {
+    background-color: $unc-blue;
+  }
+}
+
+.search {
+  @include mobile-margin;
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+  label {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+  }
+  input {
+    width: 100%;
+    padding: 8px;
+    font-size: 1rem;
+  }
+  button {
+    margin: 0 12px 0 12px;
+  }
+  a {
+    flex-shrink: 0;
+    color: white;
+    font-size: 16px;
+    &:hover, &:active {
+      color: $unc-blue;
+    }
+  }
+}
+
+.collection-links {
+  margin: 2rem 0;
+}
+
+.collection-link-row {
+  display: flex;
+  justify-content: center;
+  &:not(:first-child) {
+    margin-top: 32px;
+  }
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 16px 0 16px;
+    padding: 16px;
+    border-radius: 16px;
+    background-color: #e0e0e0;
+    box-shadow: 2px 2px 2px #d5d5d5;
+
+    &:hover {
+      text-decoration-color: white;
+    }
+  }
+  img {
+    max-width: 300px;
+    width: 100%;
+  }
+  span {
+    display: inline-block;
+    width: 100%;
+    margin-top: 4px;
+    font-size: 1.25rem;
+    text-align: center;
+    color: white;
+    background-color: rgba(0,0,0,0.55);
+    padding: 5px 0;
+  }
+  @media only screen and (max-width: 720px) {
+    display: block;
+    width: 100%;
+    margin: auto 16px;
+    &:not(:first-child) {
+      margin-top: 0;
+    }
+    a {
+      margin: 16px auto;
+    }
+  }
+}
+
+.info-row {
+  box-shadow: inset 0 0 8px grey;
+  .info {
+    @include mobile-margin;
+    padding: 24px 0;
+    text-align: center;
+
+    p {
+      font-size: 1rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.info-icons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+  vertical-align: center;
+  color: white;
+  font-size: 1rem;
+
+  a {
+    color: white;
+    padding: 0 16px 0 0;
+    background-color: #3e2b4e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  div {
+    display: flex;
+    margin: 16px 12px;
+
+  }
+
+  i {
+    width: 50px;
+    margin-right:15px;
+    padding: 12px;
+    font-size: 1.5rem;
+    background-color: #715f80;
+  }
+}
+
+#about-repo {
+  margin-bottom: 32px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+footer {
+  color: white;
+  display: inline-flex;
+  text-align: center;
+  width: 100%;
+  flex-wrap: wrap;
+
+  .footer-menu {
+    @include mobile-margin;
+    padding: 12px 0;
+  }
+
+  a {
+    color: white;
+    font-size: .8rem;
+    &:hover, &:active {
+      color: $unc-blue;
+    }
+  }
+}
