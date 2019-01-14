@@ -227,11 +227,21 @@
 	float: left;
 }
 
+/* Use if there's an image associated with the case study
 #front-case-study h2, #front #full_text {
 	float: right;
 	width: 50%;
 	display: block;
 	margin-top: 0;
+}
+*/
+
+/* Use if text only case study */
+#front-case-study h2, #front #full_text {
+	display: block;
+	margin-bottom: 15px;
+	margin-top: 0;
+	text-align: center;
 }
 
 #front-case-study h2 i {
