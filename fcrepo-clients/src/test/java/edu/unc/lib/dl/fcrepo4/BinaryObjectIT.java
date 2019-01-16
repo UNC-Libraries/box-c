@@ -42,10 +42,8 @@ public class BinaryObjectIT extends AbstractFedoraIT {
     @Test
     public void createBinaryTest() throws Exception {
         // Create a parent object to put the binary into
-        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-        PID parentPid;
-        try (FcrepoResponse response = client.post(contentBase).perform()) {
-            parentPid = PIDs.get(response.getLocation());
+        PID parentPid = pidMinter.mintContentPid();
+        try (FcrepoResponse response = client.put(parentPid.getRepositoryUri()).perform()) {
         }
 
         URI uri = parentPid.getRepositoryUri();
