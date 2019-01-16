@@ -78,7 +78,7 @@
         <joda-time.version>2.10.1</joda-time.version>
         <jmustache.version>1.14</jmustache.version>
         <mail.version>1.4.7</mail.version>
-        <bagit.version>4.12.3</bagit.version>
+        <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
         <guava.version>27.0-jre</guava.version>
         <sword2-server.version>1.0</sword2-server.version>
