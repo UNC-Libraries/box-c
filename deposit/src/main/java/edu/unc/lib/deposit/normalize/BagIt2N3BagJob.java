@@ -85,9 +85,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             BagVerifier verifier = new BagVerifier();
             verifier.isComplete(bagReader, false);
             verifier.isValid(bagReader, false);
-        } catch (IOException | MaliciousPathException | InterruptedException e) {
-            log.warn(e.getMessage());
-        } catch (MissingBagitFileException e) {
+        } catch (IOException | MaliciousPathException | InterruptedException | MissingBagitFileException e) {
             failJob("Can't find BagIt bag", "A BagIt bag could not be found at the source path.");
         } catch (UnsupportedAlgorithmException | InvalidBagitFileFormatException | MissingPayloadDirectoryException
                 | MissingPayloadManifestException | FileNotInPayloadDirectoryException | UnparsableVersionException
@@ -117,7 +115,8 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
                 log.debug("Adding object {}: {}", i++, filePath);
 
-                StandardBagitAlgorithmNameToSupportedAlgorithmMapping algorithm = new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
+                StandardBagitAlgorithmNameToSupportedAlgorithmMapping algorithm =
+                        new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
                 Resource fileResource = getFileResource(sourceBag, filePath);
 
                 for (Manifest payLoadManifest : payloadManifests) {
@@ -130,10 +129,10 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
                         // add checksums
                         if (checksumType == algorithm.getSupportedAlgorithm("MD5")) {
-                            model.add(fileResource, md5sumProp, checksums.get(algorithm.getSupportedAlgorithm("MD5")));
+                            model.add(fileResource, md5sumProp, checksums.get(Paths.get(filePath)));
                         }
                         if (checksumType ==  algorithm.getSupportedAlgorithm("SHA1")) {
-                            model.add(fileResource, md5sumProp, checksums.get(algorithm.getSupportedAlgorithm("SHA1")));
+                            model.add(fileResource, md5sumProp, checksums.get(Paths.get(filePath)));
                         }
                     }
                 }
@@ -142,9 +141,9 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                 model.add(fileResource, locationProp, sourceFile.toUri().toString());
             }
 
+            // Register tag file as deposit manifests, then register  them for cleanup later 
             Set<Manifest> tags = bagReader.getTagManifests();
 
-            // Register tag file as deposit manifests, then register  them for cleanup later 
             for (Manifest tag : tags) {
                 Map<Path, String> tagList = tag.getFileToChecksumMap();
 
