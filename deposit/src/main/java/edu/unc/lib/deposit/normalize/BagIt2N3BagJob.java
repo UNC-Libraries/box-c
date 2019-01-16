@@ -98,8 +98,9 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         try {
             Bag bagReader = reader.read(sourceFile);
 
-            List<FetchItem> payload = bagReader.getItemsToFetch();
             Set<Manifest> payloadManifests = bagReader.getPayLoadManifests();
+            StandardBagitAlgorithmNameToSupportedAlgorithmMapping algorithm =
+                    new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
 
             Property md5sumProp = CdrDeposit.md5sum;
             Property locationProp = CdrDeposit.stagingLocation;
@@ -110,35 +111,27 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
             int i = 0;
             // Add all of the payload objects into the bag folder
-            for (FetchItem file : payload) {
-                String filePath = file.getPath().toString();
+            for (Manifest payLoadManifest : payloadManifests) {
+                Map<Path, String> payLoadList = payLoadManifest.getFileToChecksumMap();
+                SupportedAlgorithm checksumType = payLoadManifest.getAlgorithm();
 
-                log.debug("Adding object {}: {}", i++, filePath);
+                for (Path filePath : payLoadList.keySet()) {
+                    String fullFilePath = filePath.toAbsolutePath().toString();
+                    log.debug("Adding object {}: {}", i++, filePath);
 
-                StandardBagitAlgorithmNameToSupportedAlgorithmMapping algorithm =
-                        new StandardBagitAlgorithmNameToSupportedAlgorithmMapping();
-                Resource fileResource = getFileResource(sourceBag, filePath);
+                    Resource fileResource = getFileResource(sourceBag, fullFilePath);
 
-                for (Manifest payLoadManifest : payloadManifests) {
-                    Map<Path, String> payLoadManifestList = payLoadManifest.getFileToChecksumMap();
-
-                    for (Path checksumFilePath : payLoadManifestList.keySet()) {
-                        Manifest checksumManifest = ManifestReader.readManifest(algorithm, checksumFilePath, sourceFile, UTF_8);
-                        Map<Path, String> checksums = checksumManifest.getFileToChecksumMap();
-                        SupportedAlgorithm checksumType = checksumManifest.getAlgorithm();
-
-                        // add checksums
-                        if (checksumType == algorithm.getSupportedAlgorithm("MD5")) {
-                            model.add(fileResource, md5sumProp, checksums.get(Paths.get(filePath)));
-                        }
-                        if (checksumType ==  algorithm.getSupportedAlgorithm("SHA1")) {
-                            model.add(fileResource, md5sumProp, checksums.get(Paths.get(filePath)));
-                        }
+                    // add checksums
+                    if (checksumType == algorithm.getSupportedAlgorithm("MD5")) {
+                        model.add(fileResource, md5sumProp, fullFilePath);
                     }
-                }
+                    if (checksumType ==  algorithm.getSupportedAlgorithm("SHA1")) {
+                        model.add(fileResource, md5sumProp, fullFilePath);
+                    }
 
-                // Find staged path for the file
-                model.add(fileResource, locationProp, sourceFile.toUri().toString());
+                    // Find staged path for the file
+                    model.add(fileResource, locationProp, sourceFile.toUri().toString());
+                }
             }
 
             // Register tag file as deposit manifests, then register  them for cleanup later 
