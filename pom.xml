@@ -16,18 +16,6 @@
 
     <developers>
         <developer>
-            <id>greg</id>
-            <name>Gregory Jansen</name>
-            <email>gregory.jansen@gmail.com</email>
-            <url>http://www.meekmok.com/janglejack/</url>
-            <organization>University of North Carolina at Chapel Hill Libraries</organization>
-            <organizationUrl>http://www.lib.unc.edu</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
             <id>bbpennel</id>
             <name>Ben Pennell</name>
             <email>ben.pennell@gmail.com</email>
@@ -39,19 +27,8 @@
             <timezone>-5</timezone>
         </developer>
         <developer>
-            <id>daines</id>
-            <name>Mike Daines</name>
-            <email>daines@email.unc.edu</email>
-            <organization>University of North Carolina at Chapel Hill Libraries</organization>
-            <organizationUrl>http://www.lib.unc.edu</organizationUrl>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
-        <developer>
-            <id>smbarr</id>
-            <name>Steve Barr</name>
+            <id> lfarrell</id>
+            <name>Dean Farrell</name>
             <organization>University of North Carolina at Chapel Hill Libraries</organization>
             <organizationUrl>http://www.lib.unc.edu</organizationUrl>
             <roles>
@@ -77,7 +54,7 @@
         
         <cdr.version>4.0-SNAPSHOT</cdr.version>
         <fcrepo.version>3.8.0</fcrepo.version>
-        <fcrepo4.version>4.7.4</fcrepo4.version>
+        <fcrepo4.version>5.0.1</fcrepo4.version>
         <fcrepo-indexing-triplestore.version>4.7.1</fcrepo-indexing-triplestore.version>
         <clamavj.version>0.3</clamavj.version>
         
@@ -91,7 +68,7 @@
         <jersey.version>2.24</jersey.version>
         <jersey.spring3.version>2.24</jersey.spring3.version>
         <mockito.version>1.10.19</mockito.version>
-        <fcrepo.client.version>0.3.0</fcrepo.client.version>
+        <fcrepo.client.version>0.4.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <powermock.version>1.7.4</powermock.version>
         
