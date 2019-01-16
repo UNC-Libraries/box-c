@@ -26,6 +26,7 @@ import org.apache.jena.rdf.model.Property;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.fcrepo.client.FedoraTypes;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 
@@ -41,23 +42,20 @@ public class LdpContainerFactory {
 
     private static final String DIRECT_CONTAINER_TTL =
             "@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
-            "<> a ldp:DirectContainer ;\n" +
-            " ldp:membershipResource <.> ;\n" +
+            "<> ldp:membershipResource <.> ;\n" +
             " ldp:hasMemberRelation <%s> .";
 
     private static final String DIRECT_FILESET_TTL =
             "@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
             "@prefix pcdm: <http://pcdm.org/models#>\n" +
-            "<> a ldp:DirectContainer ;\n" +
-            " a pcdm:FileSet ;\n" +
+            "<> a pcdm:FileSet ;\n" +
             " ldp:membershipResource <.> ;\n" +
             " ldp:hasMemberRelation pcdm:hasFile .";
 
     private static final String INDIRECT_CONTAINER_TTL =
             "@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
             "@prefix ore: <http://www.openarchives.org/ore/terms/>\n" +
-            "<> a ldp:IndirectContainer ;\n" +
-            " ldp:membershipResource <.> ;\n" +
+            "<> ldp:membershipResource <.> ;\n" +
             " ldp:hasMemberRelation <%s> ;\n" +
             " ldp:insertedContentRelation ore:proxyFor .";
 
@@ -85,7 +83,7 @@ public class LdpContainerFactory {
             throws FedoraException, IOException {
         String relations = String.format(DIRECT_CONTAINER_TTL, memberRelation.toString());
 
-        return createLdpContainer(membershipResource, relations, name);
+        return createLdpContainer(membershipResource, FedoraTypes.LDP_DIRECT_CONTAINER, relations, name);
     }
 
     /**
@@ -101,7 +99,7 @@ public class LdpContainerFactory {
      * @throws IOException
      */
     public URI createDirectFileSet(URI membershipResource, String name) throws FedoraException, IOException {
-        return createLdpContainer(membershipResource, DIRECT_FILESET_TTL, name);
+        return createLdpContainer(membershipResource, FedoraTypes.LDP_DIRECT_CONTAINER, DIRECT_FILESET_TTL, name);
     }
 
     /**
@@ -124,12 +122,13 @@ public class LdpContainerFactory {
             throws FedoraException, IOException {
         String relations = String.format(INDIRECT_CONTAINER_TTL, memberRelation.toString());
 
-        return createLdpContainer(membershipResource, relations, name);
+        return createLdpContainer(membershipResource, FedoraTypes.LDP_INDIRECT_CONTAINER, relations, name);
     }
 
-    private URI createLdpContainer(URI membershipResource, String relationTtl, String name)
+    private URI createLdpContainer(URI membershipResource, String interactionModel, String relationTtl, String name)
             throws FedoraException, IOException {
         try (FcrepoResponse response = client.post(membershipResource)
+                .addInteractionModel(interactionModel)
                 .body(new ByteArrayInputStream(relationTtl.getBytes(StandardCharsets.UTF_8)), TURTLE_MIMETYPE)
                 .slug(name)
                 .perform()) {
