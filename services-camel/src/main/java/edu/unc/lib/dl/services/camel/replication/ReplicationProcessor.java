@@ -47,6 +47,7 @@ import com.google.common.collect.Iterables;
  * @author lfarrell
  *
  */
+@Deprecated
 public class ReplicationProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
 
