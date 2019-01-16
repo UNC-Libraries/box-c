@@ -38,7 +38,6 @@ import org.junit.Test;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.PcdmUse;
@@ -108,7 +107,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
             Resource respResc = respModel.getResource(binaryPath);
 
-            assertTrue(respResc.hasProperty(RDF.type, Fcrepo4Repository.Binary));
+            assertTrue(respResc.hasProperty(RDF.type, Ldp.NonRdfSource));
             assertTrue(respResc.hasProperty(RDF.type, PcdmUse.OriginalFile));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.File));
 
@@ -270,7 +269,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         // test multiple existing relationships
         Resource resc4 = createResource(repoObj4.getPid().getRepositoryPath());
         // add second relationship
-        repoObjFactory.createRelationship(repoObj1.getPid(), DC.relation, resc2);
+        repoObjFactory.createRelationship(repoObj1, DC.relation, resc2);
         replaceModel1 = repoObj1.getModel();
         updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
         // check to see that the subject has two relationships using the property DC.relation

@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataUri;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.ByteArrayInputStream;
@@ -455,7 +454,7 @@ public class RepositoryObjectFactory {
      * @param member
      */
     public void addMember(ContentObject parent, ContentObject member) {
-        createMemberLink(parent.getPid().getRepositoryUri(), member.getPid().getRepositoryUri());
+        createMemberLink(parent, member.getPid().getRepositoryUri());
     }
 
     /**
@@ -464,9 +463,10 @@ public class RepositoryObjectFactory {
      * @param property
      * @param object
      */
-    public void createProperty(PID subject, Property property, String object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getRepositoryPath(), property, object);
-        persistTripleToFedora(subject, sparqlUpdate);
+    public void createProperty(RepositoryObject subject, Property property, String object) {
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
+                property, object);
+        persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
     }
 
     /**
@@ -476,9 +476,9 @@ public class RepositoryObjectFactory {
      * @param memberUri
      * @throws FedoraException
      */
-    public void createMemberLink(URI parentUri, URI memberUri) throws FedoraException {
-        String memberContainer = URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER);
-        ldpFactory.createIndirectProxy(URI.create(memberContainer), parentUri, memberUri);
+    public void createMemberLink(RepositoryObject parent, URI memberUri) throws FedoraException {
+        String memberContainer = URIUtil.join(parent.getUri(), RepositoryPathConstants.MEMBER_CONTAINER);
+        ldpFactory.createIndirectProxy(URI.create(memberContainer), parent.getUri(), memberUri);
     }
 
     /**
@@ -499,7 +499,7 @@ public class RepositoryObjectFactory {
         PID subject = repoObj.getPid();
         String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
                 previousValues);
-        persistTripleToFedora(subject, sparqlUpdate);
+        persistTripleToFedora(repoObj.getMetadataUri(), sparqlUpdate);
     }
 
     /**
@@ -508,19 +508,20 @@ public class RepositoryObjectFactory {
      * @param property
      * @param object
      */
-    public void createRelationship(PID subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getRepositoryPath(), property, object);
-        persistTripleToFedora(subject, sparqlUpdate);
+    public void createRelationship(RepositoryObject subject, Property property, Resource object) {
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
+                property, object);
+        persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
     }
 
     /**
      * Creates the relevant triples in Fedora from the given model
-     * @param pid
+     * @param subject
      * @param model
      */
-    public void createRelationships(PID pid, Model model) {
+    public void createRelationships(RepositoryObject subject, Model model) {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(model);
-        persistTripleToFedora(pid, sparqlUpdate);
+        persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
     }
 
     /**
@@ -590,14 +591,13 @@ public class RepositoryObjectFactory {
         this.sparqlUpdateService = sparqlUpdateService;
     }
 
-    private void persistTripleToFedora(PID subject, String sparqlUpdate) {
-        URI uri = getMetadataUri(subject);
-
-        sparqlUpdateService.executeUpdate(uri.toString(), sparqlUpdate);
+    private void persistTripleToFedora(URI subject, String sparqlUpdate) {
+        sparqlUpdateService.executeUpdate(subject.toString(), sparqlUpdate);
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
-        try (FcrepoResponse response = getClient().put(path).body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+        try (FcrepoResponse response = getClient().put(path)
+                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
                 .perform()) {
 
             URI createdUri = response.getLocation();
