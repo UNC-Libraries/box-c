@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
-import java.net.URI;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -90,7 +89,6 @@ public abstract class ContentObject extends RepositoryObject {
         FileObject fileObj = createFileObject();
 
         BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null, null);
-        URI metadataUri = RepositoryPaths.getMetadataUri(orig.getPid());
         repoObjFactory.createProperty(orig, Cdr.hasSourceMetadataProfile, sourceProfile);
         repoObjFactory.createRelationship(orig, RDF.type, Cdr.SourceMetadata);
         repoObjFactory.createRelationship(this, PcdmModels.hasRelatedObject, fileObj.getResource());
