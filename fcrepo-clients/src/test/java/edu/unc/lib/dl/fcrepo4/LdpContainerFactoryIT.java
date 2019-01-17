@@ -20,13 +20,12 @@ import static org.junit.Assert.assertNotNull;
 
 import java.net.URI;
 
-import org.fcrepo.client.FcrepoResponse;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.fcrepo.client.FcrepoResponse;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RDFModelUtil;

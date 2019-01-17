@@ -36,7 +36,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.EntityTag;
 
@@ -48,6 +48,8 @@ import edu.unc.lib.dl.util.EntityTag;
  */
 public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObject> {
 
+    private static final URI BINARY_TYPE_URI = URI.create(Ldp.NonRdfSource.getURI());
+
     private FcrepoClient client;
     private RepositoryObjectDriver repositoryObjectDriver;
     private RepositoryObjectFactory repoObjFactory;
@@ -58,13 +60,24 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     @Override
     public RepositoryObject load(PID pid) {
 
-        URI metadataUri = RepositoryPaths.getMetadataUri(pid);
-        try (FcrepoResponse response = client.get(metadataUri)
-                .accept(TURTLE_MIMETYPE)
+        try (FcrepoResponse response = client.head(pid.getRepositoryUri())
                 .perform()) {
 
-            Model model = ModelFactory.createDefaultModel();
-            model.read(response.getBody(), null, Lang.TURTLE.getName());
+            URI metadataUri;
+            if (response.hasType(BINARY_TYPE_URI)) {
+                metadataUri = RepositoryPaths.getMetadataUri(pid);
+            } else {
+                metadataUri = pid.getRepositoryUri();
+            }
+
+            Model model;
+            try (FcrepoResponse modelResp = client.get(metadataUri)
+                    .accept(TURTLE_MIMETYPE)
+                    .perform()) {
+
+                model = ModelFactory.createDefaultModel();
+                model.read(modelResp.getBody(), null, Lang.TURTLE.getName());
+            }
 
             String etag = response.getHeaderValue("ETag");
             if (etag != null) {
@@ -114,7 +127,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 obj = new WorkObject(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
                 obj = new FileObject(pid, repositoryObjectDriver, repoObjFactory);
-            } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
+            } else if (resc.hasProperty(RDF.type, Ldp.NonRdfSource)) {
                 obj = new BinaryObject(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Folder)) {
                 obj = new FolderObject(pid, repositoryObjectDriver, repoObjFactory);
@@ -128,7 +141,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
                 obj = new DepositRecord(pid, repositoryObjectDriver, repoObjFactory);
-            } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
+            } else if (resc.hasProperty(RDF.type, Ldp.NonRdfSource)) {
                 obj = new BinaryObject(pid, repositoryObjectDriver, repoObjFactory);
             }
         }

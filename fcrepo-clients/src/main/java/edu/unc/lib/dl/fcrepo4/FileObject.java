@@ -158,7 +158,7 @@ public class FileObject extends ContentObject {
 
         if (associationRelation != null) {
             // Establish association with original file relation
-            repoObjFactory.createRelationship(derivObj.getPid(),
+            repoObjFactory.createRelationship(derivObj,
                     associationRelation, createResource(constructOriginalFilePath()));
         }
 

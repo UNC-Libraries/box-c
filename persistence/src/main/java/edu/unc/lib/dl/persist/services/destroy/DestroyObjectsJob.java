@@ -37,11 +37,11 @@ import org.fcrepo.client.FcrepoResponse;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -78,7 +78,8 @@ public class DestroyObjectsJob implements Runnable {
 
     @Override
     public void run() {
-        FedoraTransaction tx = txManager.startTransaction();
+        // TODO Reenable once fcrepo 5.0.2 is released with FCREPO-2975
+//        FedoraTransaction tx = txManager.startTransaction();
         try (Timer.Context context = timer.time()) {
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
@@ -91,9 +92,10 @@ public class DestroyObjectsJob implements Runnable {
                 }
            }
         } catch (Exception e) {
-             tx.cancel(e);
-        } finally {
-             tx.close();
+            throw new TransactionCancelledException("Delete failed", e);
+//             tx.cancel(e);
+//        } finally {
+//             tx.close();
         }
     }
 

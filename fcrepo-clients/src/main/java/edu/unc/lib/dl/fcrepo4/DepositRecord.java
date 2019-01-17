@@ -118,7 +118,7 @@ public class DepositRecord extends RepositoryObject {
             res.addProperty(Cdr.hasIngestedObject, child);
         }
         // SPARQL update
-        repoObjFactory.createRelationships(getPid(), triples);
+        repoObjFactory.createRelationships(this, triples);
         return this;
     }
 

@@ -57,8 +57,8 @@ public abstract class ContentObject extends RepositoryObject {
             fileObj = repoObjFactory.createFileObject(descModel);
 
             BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null, null);
-            repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-            repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
+            repoObjFactory.createRelationship(this, PcdmModels.hasRelatedObject, fileObj.getResource());
+            repoObjFactory.createRelationship(this, Cdr.hasMods, mods.getResource());
             return fileObj;
         } else {
             fileObj.replaceOriginalFile(modsStream, null, "text/xml", null, null);
@@ -89,12 +89,12 @@ public abstract class ContentObject extends RepositoryObject {
         FileObject fileObj = createFileObject();
 
         BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null, null);
-        repoObjFactory.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
-        repoObjFactory.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
-        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+        repoObjFactory.createProperty(orig, Cdr.hasSourceMetadataProfile, sourceProfile);
+        repoObjFactory.createRelationship(orig, RDF.type, Cdr.SourceMetadata);
+        repoObjFactory.createRelationship(this, PcdmModels.hasRelatedObject, fileObj.getResource());
 
         BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
-        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
+        repoObjFactory.createRelationship(this, Cdr.hasMods, mods.getResource());
 
         return fileObj;
     }

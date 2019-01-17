@@ -44,6 +44,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 
 /**
@@ -179,14 +180,14 @@ public class RepositoryObjectCacheLoaderTest {
     @Test
     public void loadBinaryObjectTest() throws Exception {
 
-        mockResponseBodyWithType(pid, Fcrepo4Repository.Binary);
+        mockResponseBodyWithType(pid, Ldp.NonRdfSource);
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
         assertTrue(obj instanceof BinaryObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
-        assertTrue(obj.getResource().hasProperty(RDF.type, Fcrepo4Repository.Binary));
+        assertTrue(obj.getResource().hasProperty(RDF.type, Ldp.NonRdfSource));
     }
 
     @Test(expected = ObjectTypeMismatchException.class)

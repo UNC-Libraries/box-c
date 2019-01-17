@@ -23,6 +23,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,7 @@ public class PremisEventBuilder {
     private PremisEventBuilder addEvent(Resource eventType, Date date) {
         Resource premisObjResc = getResource();
 
+        premisObjResc.addProperty(RDF.type, Premis.Event);
         premisObjResc.addProperty(Premis.hasEventType, eventType);
         try {
             premisObjResc.addProperty(Premis.hasEventDateTime,

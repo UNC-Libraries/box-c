@@ -48,10 +48,8 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.camel.replication.ReplicationDestinationUnavailableException;
-import edu.unc.lib.dl.services.camel.replication.ReplicationException;
-import edu.unc.lib.dl.services.camel.replication.ReplicationProcessor;
 
+@Deprecated
 public class ReplicationProcessorTest {
     private ReplicationProcessor processor;
     private final String badReplicationLocations = "/no_replicate";
