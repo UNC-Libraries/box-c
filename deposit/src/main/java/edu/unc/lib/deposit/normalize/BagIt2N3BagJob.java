@@ -115,18 +115,19 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                 Map<Path, String> payLoadList = payLoadManifest.getFileToChecksumMap();
                 SupportedAlgorithm checksumType = payLoadManifest.getAlgorithm();
 
-                for (Path filePath : payLoadList.keySet()) {
+                for (Map.Entry<Path, String> checksum : payLoadList.entrySet()) {
+                    Path filePath = checksum.getKey();
                     String fullFilePath = filePath.toAbsolutePath().toString();
-                    log.debug("Adding object {}: {}", i++, filePath);
+                    log.debug("Adding object {}: {}", i++, filePath.toString());
 
                     Resource fileResource = getFileResource(sourceBag, fullFilePath);
 
                     // add checksums
-                    if (checksumType == algorithm.getSupportedAlgorithm("MD5")) {
-                        model.add(fileResource, md5sumProp, fullFilePath);
+                    if (checksumType.equals(algorithm.getSupportedAlgorithm("MD5"))) {
+                        model.add(fileResource, md5sumProp, checksum.getValue());
                     }
-                    if (checksumType ==  algorithm.getSupportedAlgorithm("SHA1")) {
-                        model.add(fileResource, md5sumProp, fullFilePath);
+                    if (checksumType.equals(algorithm.getSupportedAlgorithm("SHA1"))) {
+                        model.add(fileResource, md5sumProp, checksum.getValue());
                     }
 
                     // Find staged path for the file
@@ -154,7 +155,5 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                 UnsupportedAlgorithmException | InvalidBagitFileFormatException e) {
             log.warn("Unable to process bag files. {}", e.getMessage());
         }
-
     }
-
 }
