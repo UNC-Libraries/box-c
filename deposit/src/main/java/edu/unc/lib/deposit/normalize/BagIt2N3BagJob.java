@@ -116,22 +116,26 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                 SupportedAlgorithm checksumType = payLoadManifest.getAlgorithm();
 
                 for (Map.Entry<Path, String> checksum : payLoadList.entrySet()) {
-                    Path filePath = checksum.getKey();
-                    String fullFilePath = filePath.toAbsolutePath().toString();
-                    log.debug("Adding object {}: {}", i++, filePath.toString());
+                    String filePath = checksum.getKey().toString();
+                    log.debug("Adding object {}: {}", i++, filePath);
 
-                    Resource fileResource = getFileResource(sourceBag, fullFilePath);
+                    Resource fileResource = getFileResource(sourceBag, filePath);
 
                     // add checksums
-                    if (checksumType.equals(algorithm.getSupportedAlgorithm("MD5"))) {
+                    if (checksumType.getMessageDigestName()
+                            .equals(algorithm.getSupportedAlgorithm("MD5")
+                                    .getMessageDigestName())) {
                         model.add(fileResource, md5sumProp, checksum.getValue());
                     }
-                    if (checksumType.equals(algorithm.getSupportedAlgorithm("SHA1"))) {
+                    if (checksumType.getMessageDigestName()
+                            .equals(algorithm.getSupportedAlgorithm("SHA1")
+                                    .getMessageDigestName())) {
                         model.add(fileResource, md5sumProp, checksum.getValue());
                     }
 
                     // Find staged path for the file
-                    model.add(fileResource, locationProp, sourceFile.toUri().toString());
+                    Path storedPath = Paths.get(sourceFile.toAbsolutePath().toString(), filePath);
+                    model.add(fileResource, locationProp, storedPath.toUri().toString());
                 }
             }
 
