@@ -15,11 +15,20 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.rdf.CdrDeposit.cleanupLocation;
+import static edu.unc.lib.dl.rdf.CdrDeposit.md5sum;
+import static edu.unc.lib.dl.rdf.CdrDeposit.sha1sum;
+import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
+import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.MD5;
+import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.SHA1;
+
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -27,25 +36,34 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.Bag.Format;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagHelper;
-import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.utilities.SimpleResult;
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.Manifest;
+import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
+import gov.loc.repository.bagit.exceptions.FileNotInPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
+import gov.loc.repository.bagit.exceptions.MissingBagitFileException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadDirectoryException;
+import gov.loc.repository.bagit.exceptions.MissingPayloadManifestException;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
+import gov.loc.repository.bagit.exceptions.VerificationException;
+import gov.loc.repository.bagit.reader.BagReader;
+import gov.loc.repository.bagit.verify.BagVerifier;
+import gov.loc.repository.bagit.verify.MandatoryVerifier;
 
 /**
  * Transforms bagit bags stored in a staging location into n3 for deposit
  *
  * @author bbpennel
  * @author daines
- * @date Nov 9, 2015
+ * @author lfarrell
+ * @date Jan 16, 2019
  */
 public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
     private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
+    private BagReader reader = new BagReader();
 
     public BagIt2N3BagJob() {
         super();
@@ -63,77 +81,80 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
         Map<String, String> status = getDepositStatus();
         String sourcePath = status.get(DepositField.sourcePath.name());
+        Path sourceFile = Paths.get(sourcePath);
 
-        File sourceFile = new File(sourcePath);
+        try {
+            // Verify that the bag has all the required parts
+            Bag bagReader = reader.read(sourceFile);
 
-        if (BagHelper.getVersion(sourceFile) == null) {
-            failJob("Can't find BagIt bag", "A BagIt bag could not be found at the source path.");
-        }
+            // Check that bag exists. Throws MissingBagitFileException
+            MandatoryVerifier.checkBagitFileExists(bagReader.getRootDir(), bagReader.getVersion());
 
-        BagFactory bagFactory = new BagFactory();
-        Bag bag = bagFactory.createBag(sourceFile);
-
-        if (bag.getFormat() != Format.FILESYSTEM) {
-            failJob("Unsupported BagIt bag format", "Only filesystem bags are supported.");
-        }
-
-        // Verify that the bag has all the required parts
-        SimpleResult completeResult = bag.verifyComplete();
-        if (!bag.verifyComplete().isSuccess()) {
-            // Bag did not validate, generate error report and throw exception
-            StringBuilder msg = new StringBuilder();
-            for (String error : completeResult.getErrorMessages()) {
-                msg.append(error).append("\n");
+            try (BagVerifier verifier = new BagVerifier()) {
+                verifier.isComplete(bagReader, false);
+                verifier.isValid(bagReader, false);
             }
 
+            Set<Manifest> payloadManifests = bagReader.getPayLoadManifests();
+
+            // Turn the bag itself into the top level folder for this deposit
+            org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, new File(sourcePath));
+
+            int i = 0;
+            // Add all of the payload objects into the bag folder
+            for (Manifest payLoadManifest : payloadManifests) {
+                Map<Path, String> payLoadList = payLoadManifest.getFileToChecksumMap();
+
+                // Determine which checksum is being recorded
+                String checksumType = payLoadManifest.getAlgorithm().getMessageDigestName();
+                Property checksumProperty;
+                if (MD5.getMessageDigestName().equals(checksumType)) {
+                    checksumProperty = md5sum;
+                } else if (SHA1.getMessageDigestName().equals(checksumType)) {
+                    checksumProperty = sha1sum;
+                } else {
+                    checksumProperty = md5sum;
+                }
+
+                for (Map.Entry<Path, String> pathToChecksum : payLoadList.entrySet()) {
+                    Path path = pathToChecksum.getKey();
+                    // Make the file path relative to the base of the bag
+                    Path relativePath = bagReader.getRootDir().relativize(path);
+                    String filePath = relativePath.toString();
+                    log.debug("Adding object {}: {}", i++, filePath);
+
+                    Resource fileResource = getFileResource(sourceBag, filePath);
+
+                    // add checksums
+                    model.add(fileResource, checksumProperty, pathToChecksum.getValue());
+
+                    // Find staged path for the file
+                    Path storedPath = Paths.get(sourceFile.toAbsolutePath().toString(), filePath);
+                    model.add(fileResource, stagingLocation, storedPath.toUri().toString());
+                }
+            }
+
+            // Register tag file as deposit manifests, then register them for cleanup later 
+            Files.list(bagReader.getRootDir())
+                .filter(Files::isRegularFile)
+                .forEach(path -> {
+                    String pathString = path.toUri().toString();
+                    getDepositStatusFactory().addManifest(getDepositUUID(), pathString);
+                    model.add(depositBag, cleanupLocation, pathString);
+                });
+
+            // Register the bag itself for cleanup
+            model.add(depositBag, cleanupLocation, sourceFile.toAbsolutePath().toUri().toString());
+        } catch (IOException e) {
+            failJob(e, "Unable to read bag file {0}", sourcePath);
+        } catch (InterruptedException e) {
+            failJob(e, "Interrupted while normalizing bag {0}", sourcePath);
+        } catch (MissingBagitFileException | MissingPayloadDirectoryException | MissingPayloadManifestException
+                | FileNotInPayloadDirectoryException | VerificationException | CorruptChecksumException
+                | UnparsableVersionException | MaliciousPathException | UnsupportedAlgorithmException
+                | InvalidBagitFileFormatException e) {
             failJob("Unable to normalize bag " + sourcePath + ", it was not complete according to bagit specifications",
-                    msg.toString());
+                    e.getMessage());
         }
-
-        Collection<BagFile> payload = bag.getPayload();
-
-        Property md5sumProp = CdrDeposit.md5sum;
-        Property locationProp = CdrDeposit.stagingLocation;
-        Property cleanupLocProp = CdrDeposit.cleanupLocation;
-
-        // Turn the bag itself into the top level folder for this deposit
-        org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
-
-        int i = 0;
-        // Add all of the payload objects into the bag folder
-        for (BagFile file : payload) {
-            log.debug("Adding object {}: {}", i++, file.getFilepath());
-
-            String filePath = file.getFilepath();
-
-            Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
-
-            Resource fileResource = getFileResource(sourceBag, filePath);
-
-            // add checksums
-            if (checksums.containsKey(Manifest.Algorithm.MD5)) {
-                model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.MD5));
-            }
-            if (checksums.containsKey(Manifest.Algorithm.SHA1)) {
-                model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.SHA1));
-            }
-
-            // Find staged path for the file
-            Path storedPath = Paths.get(sourceFile.getAbsolutePath(), filePath);
-            model.add(fileResource, locationProp, storedPath.toUri().toString());
-        }
-
-        String sourceAbsPath = sourceFile.getAbsolutePath();
-        // Register tag file as deposit manifests, then register  them for cleanup later 
-        for (BagFile tag : bag.getTags()) {
-            Path path = Paths.get(sourceAbsPath, tag.getFilepath());
-            String pathUri = path.toUri().toString();
-            getDepositStatusFactory().addManifest(getDepositUUID(), pathUri);
-            model.add(depositBag, cleanupLocProp, pathUri);
-        }
-
-        // Register the bag itself for cleanup
-        model.add(depositBag, cleanupLocProp, sourceFile.toPath().toAbsolutePath().toUri().toString());
     }
-
 }

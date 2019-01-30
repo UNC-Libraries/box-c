@@ -18,6 +18,7 @@ package edu.unc.lib.dl.admin.collect;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
@@ -25,6 +26,8 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,10 +42,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 
 import edu.unc.lib.dl.util.PackagingType;
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagHelper;
+import gov.loc.repository.bagit.creator.BagCreator;
+import gov.loc.repository.bagit.domain.Bag;
+import gov.loc.repository.bagit.domain.FetchItem;
+import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
+import gov.loc.repository.bagit.exceptions.MaliciousPathException;
+import gov.loc.repository.bagit.exceptions.UnparsableVersionException;
+import gov.loc.repository.bagit.exceptions.UnsupportedAlgorithmException;
+import gov.loc.repository.bagit.hash.StandardSupportedAlgorithms;
+import gov.loc.repository.bagit.reader.BagReader;
 
 /**
  * Loads and manages ingest sources, which are preconfigured locations to find packages for deposit.
@@ -57,6 +65,8 @@ public class IngestSourceManager {
     private List<IngestSourceConfiguration> configs;
 
     private String configPath;
+
+    private BagReader reader = new BagReader();
 
     public void init() throws JsonProcessingException, IOException {
         final ObjectMapper mapper = new ObjectMapper();
@@ -199,48 +209,63 @@ public class IngestSourceManager {
         }
 
         // Only directory bags are candidates currently
-        String version = BagHelper.getVersion(file);
+        try {
+            Bag bagReader = reader.read(filePath);
+            String version = bagReader.getVersion().toString();
 
-        Map<String, Object> candidate = new HashMap<>();
+            Map<String, Object> candidate = new HashMap<>();
 
-        candidate.put("sourceId", source.getId());
-        candidate.put("base", base);
-        candidate.put("patternMatched", Paths.get(base).relativize(filePath).toString());
+            candidate.put("sourceId", source.getId());
+            candidate.put("base", base);
+            candidate.put("patternMatched", Paths.get(base).relativize(filePath).toString());
 
-        candidate.put("version", version);
+            candidate.put("version", version);
 
-        if (version != null) {
-            // Add payload stats for bags
-            addBagInfo(candidate, filePath);
-        } else if (file.isDirectory()) {
-            candidate.put("packagingType", PackagingType.DIRECTORY.getUri());
-        } else {
-            // Add stats for a non-bag zip file
-            if (file.getName().endsWith(".zip")) {
-                try (ZipFile zip = new ZipFile(file)) {
-                    candidate.put("files", zip.size());
+            if (version != null) {
+                // Add payload stats for bags
+                addBagInfo(candidate, filePath);
+            } else if (file.isDirectory()) {
+                candidate.put("packagingType", PackagingType.DIRECTORY.getUri());
+            } else {
+                // Add stats for a non-bag zip file
+                if (file.getName().endsWith(".zip")) {
+                    try (ZipFile zip = new ZipFile(file)) {
+                        candidate.put("files", zip.size());
+                    }
                 }
+                candidate.put("size", file.length());
             }
-            candidate.put("size", file.length());
-        }
 
-        candidates.add(candidate);
+            candidates.add(candidate);
+        } catch (UnsupportedAlgorithmException | InvalidBagitFileFormatException |
+                UnparsableVersionException | MaliciousPathException e) {
+            log.warn("Unable to add bag candidate. {}", e.getMessage());
+        }
     }
 
     private void addBagInfo(Map<String, Object> fileInfo, Path filePath) {
-        BagFactory bagFactory = new BagFactory();
-        Bag bagFile = bagFactory.createBag(filePath.toFile());
+        StandardSupportedAlgorithms algorithm = StandardSupportedAlgorithms.MD5;
 
-        fileInfo.put("files", bagFile.getPayload().size());
-        long size = 0;
-        Iterator<BagFile> bagIt = bagFile.getPayload().iterator();
-        while (bagIt.hasNext()) {
-            size += bagIt.next().getSize();
+        try {
+            Bag bagFile = BagCreator.bagInPlace(filePath, Arrays.asList(algorithm), true);
+
+            fileInfo.put("files", bagFile.getItemsToFetch().size());
+            long size = 0;
+            Iterator<FetchItem> bagIt = bagFile.getItemsToFetch().iterator();
+            while (bagIt.hasNext()) {
+                Path path = bagIt.next().getPath();
+                size += Files.size(path);
+            }
+
+            fileInfo.put("size", size);
+
+            fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
+
+        } catch (NoSuchAlgorithmException | IOException e) {
+            log.warn("Unable to create bag. {}", e.getMessage());
         }
 
-        fileInfo.put("size", size);
 
-        fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
     }
 
     /**
