@@ -21,7 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
-<div class="content-wrap">
+<div>
 <div class="contentarea">
 	<h2>${pageSubtitle}</h2>
 </div>
@@ -31,8 +31,6 @@
 <c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
 <c:import url="searchResults/resultsPage.jsp">
 	<c:param name="showBreadCrumbs">false</c:param>
-	<c:param name="showSearchBox">false</c:param>
-	<c:param name="showFolderFacet">false</c:param>
 	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
 </c:import>
 </div>

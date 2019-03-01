@@ -252,4 +252,181 @@ footer a:hover, footer a:active {
   color: #4B9CD3;
 }
 
+/**
+*
+* Search pages
+*
+**/
+.search-query-text h2 {
+  color: black;
+  font-size: 25px;
+  font-weight: bold;
+  margin-left: 25px;
+  min-height: 40px;
+}
+.search-query-text h2 span.query-request {
+  font-style: italic;
+  font-weight: normal;
+}
+
+a.search-result-num {
+  background-color: #1A698C;
+  color: white !important;
+  padding: 15px;
+  font-weight: bold;
+}
+a.search-result-num:hover {
+  background-color: #4B9CD3;
+  color: white;
+  text-decoration: none;
+}
+
+.search-result-selected {
+  background-color: gray;
+  color: white !important;
+  padding: 15px;
+  font-weight: bold;
+}
+.search-result-selected:hover {
+  background-color: #E1E1E1;
+  color: white;
+  text-decoration: none;
+}
+
+.facet-padding {
+  padding-left: 15px;
+}
+
+.facet-header {
+  color: black;
+  font-size: 20px;
+  padding: 30px 0 20px 0;
+}
+
+.facets-border {
+  border-bottom: 1px solid #E1E1E1;
+  border-top: 1px solid #E1E1E1;
+  padding-bottom: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+.search-results-border {
+  border-bottom: 1px solid #E1E1E1;
+  border-left: 1px solid #E1E1E1;
+  padding-bottom: 0;
+  padding-left: 15px;
+  padding-right: 25px;
+}
+
+.bottomline {
+  display: inline-flex;
+}
+.bottomline p {
+  font-size: 20px;
+  height: 40px;
+  line-height: 40px;
+  width: 70%;
+}
+
+.browseitem {
+  padding-left: 25px;
+}
+
+.searchitem {
+  padding: 25px;
+}
+
+.border-box-left-top {
+  -webkit-box-shadow: inset 3px 3px 10px -1px rgba(211, 211, 211, 0.5), 0px 16px 22px -15px rgba(211, 211, 211, 0.5);
+  -moz-box-shadow: inset 3px 3px 10px -1px rgba(211, 211, 211, 0.5), 0px 16px 22px -15px rgba(211, 211, 211, 0.5);
+  box-shadow: inset 3px 3px 10px -1px rgba(211, 211, 211, 0.5), 0px 16px 22px -15px rgba(211, 211, 211, 0.5);
+}
+
+.shadowtop + .facet-padding {
+  margin-top: 125px;
+}
+
+.search-pagination-bottom {
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Bulma overrides */
+.select {
+  margin-bottom: 15px;
+}
+
+/*** End of Bulma overrides ***/
+/* Following Bulma breakpoints */
+@media screen and (max-width: 1024px) {
+  .bottomline {
+    display: block;
+  }
+  .bottomline p {
+    width: 100%;
+  }
+
+  .select.is-medium {
+    font-size: 1.05rem;
+  }
+}
+@media screen and (max-width: 768px) {
+  .facet-padding {
+    padding-left: 5px;
+  }
+
+  a.search-result-num {
+    display: inline-block;
+    margin-top: 15px;
+  }
+
+  .bottomline p {
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .light {
+    float: none;
+  }
+}
+/* CDR custom breakpoint */
+@media screen and (max-width: 600px) {
+  .contentarea {
+    float: none;
+    width: 100%;
+  }
+  .contentarea a {
+    float: none;
+    width: 100%;
+  }
+
+  .iteminfo {
+    float: none;
+    width: 100%;
+  }
+  .iteminfo.halfwidth {
+    float: none;
+  }
+
+  .file-info {
+    float: none;
+    width: 100%;
+  }
+  .file-info div {
+    width: 80px;
+  }
+  .file-info p, .file-info .actionlink, .file-info .right {
+    float: none;
+    text-align: left;
+  }
+  .file-info .actionlink a {
+    margin-top: 15px;
+  }
+
+  .facets {
+    word-wrap: break-word;
+  }
+}
+
 /*# sourceMappingURL=cdr-homepage.css.map */

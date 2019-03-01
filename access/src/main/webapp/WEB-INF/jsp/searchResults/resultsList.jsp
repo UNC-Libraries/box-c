@@ -21,6 +21,7 @@
 <div class="bottomline paddedline">
 	<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
 		<c:param name="queryMethod">${queryMethod}</c:param>
+		<c:param name="showPaginationText">true</c:param>
 	</c:import>
 	${navigationBar}
 	<c:import url="searchResults/sortForm.jsp">
@@ -55,6 +56,3 @@
 		</c:otherwise>
 	</c:choose>
 </c:forEach>
-<div class="topline">
-	${navigationBar}
-</div>

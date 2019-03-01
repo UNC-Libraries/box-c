@@ -103,8 +103,6 @@ public class SearchActionController extends AbstractSolrSearchController {
     @RequestMapping("/listContents/{pid}")
     public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.getSearchState().setResourceTypes(
-                Arrays.asList(ResourceType.Work.name(), ResourceType.File.name()));
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
         searchRequest.getSearchState().setRollup(true);
@@ -124,7 +122,6 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
         searchRequest.setApplyCutoffs(true);
         SearchState searchState = searchRequest.getSearchState();
-        searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
         searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
 

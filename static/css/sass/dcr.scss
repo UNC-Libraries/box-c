@@ -6,6 +6,9 @@ $unc-navy: #13294B;
 $light-gray: #E1E1E1;
 $dark-gray: #767676;
 $black: #151515;
+$border-style: 1px solid $light-gray;
+$box-shadow-color: rgba(211,211,211,0.5);
+$box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box-shadow-color;
 
 @mixin mobile-margin {
   @media only screen and (max-width: 1088px) {
@@ -259,3 +262,198 @@ footer {
     }
   }
 }
+
+/**
+*
+* Search pages
+*
+**/
+.search-query-text {
+  h2 {
+    color: black;
+    font-size: 25px;
+    font-weight: bold;
+    margin-left: 25px;
+    min-height: 40px;
+  }
+
+  h2 span.query-request {
+    font-style: italic;
+    font-weight: normal;
+  }
+}
+
+a.search-result-num {
+  background-color: #1A698C;
+  color: white !important;
+  padding: 15px;
+  font-weight: bold;
+
+  &:hover {
+    background-color: $unc-blue;
+    color: white;
+    text-decoration: none;
+  }
+}
+
+.search-result-selected {
+  background-color: gray;
+  color: white !important;
+  padding: 15px;
+  font-weight: bold;
+
+  &:hover {
+    background-color: $light-gray;
+    color: white;
+    text-decoration: none;
+  }
+}
+
+.facet-padding {
+  padding-left: 15px;
+}
+
+.facet-header {
+  color: black;
+  font-size: 20px;
+  padding: 30px 0 20px 0;
+}
+
+.facets-border {
+  border-bottom: $border-style;
+  border-top: $border-style;
+  padding-bottom: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+.search-results-border {
+  border-bottom: $border-style;
+  border-left: $border-style;
+  padding-bottom: 0;
+  padding-left: 15px;
+  padding-right: 25px
+}
+
+.bottomline {
+  display: inline-flex;
+
+  p {
+    font-size: 20px;
+    height: 40px;
+    line-height: 40px;
+    width: 70%;
+  }
+}
+
+.browseitem {
+  padding-left: 25px;
+}
+
+.searchitem {
+  padding: 25px;
+}
+
+.border-box-left-top {
+  -webkit-box-shadow: $box-shadow;
+  -moz-box-shadow: $box-shadow;
+  box-shadow: $box-shadow;
+}
+
+.shadowtop + .facet-padding {
+  margin-top: 125px;
+}
+
+.search-pagination-bottom {
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Bulma overrides */
+.select {
+  margin-bottom: 15px;
+}
+
+/*** End of Bulma overrides ***/
+
+/* Following Bulma breakpoints */
+@media screen and (max-width: 1024px) {
+  .bottomline {
+    display: block;
+
+    p {
+      width: 100%;
+    }
+  }
+
+  .select.is-medium {
+    font-size: 1.05rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .facet-padding {
+    padding-left: 5px;
+  }
+
+  a.search-result-num {
+    display: inline-block;
+    margin-top: 15px;
+  }
+
+  .bottomline {
+    p {
+      font-size: 14px;
+      width: 100%;
+    }
+  }
+
+  .light {
+    float: none;
+  }
+}
+
+/* CDR custom breakpoint */
+@media screen and (max-width: 600px) {
+  .contentarea {
+    float: none;
+    width: 100%;
+
+    a {
+      float: none;
+      width: 100%;
+    }
+  }
+
+  .iteminfo {
+    float: none;
+    width: 100%;
+
+    &.halfwidth {
+      float: none;
+    }
+  }
+
+  .file-info {
+    float: none;
+    width: 100%;
+
+    div {
+      width: 80px;
+    }
+
+    p, .actionlink, .right {
+      float: none;
+      text-align: left;
+    }
+
+    .actionlink a {
+      margin-top: 15px;
+    }
+  }
+
+  .facets {
+    word-wrap: break-word;
+  }
+}
+

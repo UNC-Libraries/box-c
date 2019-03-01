@@ -79,7 +79,7 @@ body.full_screen {
 }
 
 .contentarea {
-	margin: 20px;
+	margin: 20px 0;
 }
 
 .darkest {
@@ -109,7 +109,6 @@ body.full_screen {
 
 .gray {
 	background-color: #f3f3f3;
-	float: left;
 }
 
 .white {

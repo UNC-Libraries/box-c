@@ -585,15 +585,7 @@ ul.fpfeed_list li {
 	border-right: 0 none;
 }
 
-.navigation_bar {
-	float: left;
-}
-
 #sort_select {
-	width: 100px;
-	color: #666;
-	padding: 1px;
-	border: 1px solid #ececec;
 	font-family: verdana, sans-serif;
 }
 
@@ -663,29 +655,6 @@ label {
 
 .paddedline {
 	margin-bottom: 20px;
-}
-
-p.navigation_bar {
-	padding-top: 3px;
-}
-
-p.navigation_bar a {
-	color: #1d759f;
-}
-
-.navigation_sort_form {
-	display: inline;
-	width: 200px;
-}
-
-.topline {
-	margin-bottom: 20px;
-	margin-top: 20px;
-	padding-bottom: 20px;
-	padding-top: 10px;
-	border-top: 1px solid #ececec;
-	float: left;
-	width: 100%;
 }
 
 .actionlink {
@@ -857,10 +826,6 @@ p.navigation_bar a {
 
 .tabbed_content .threecol > .contentarea {
 	margin-left: 0;
-}
-
-.tabbed_content .navigation_sort_form {
-	width: 190px;
 }
 
 .tabbed_content .iteminfo {
