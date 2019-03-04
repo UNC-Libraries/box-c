@@ -19,9 +19,9 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<p>Your search request returned no results.</p>
+<p class="no-search-results">Your search request returned no results.</p>
 
-<p>You may alter or broaden your search query using the navigation options on the left.  Alternatively,
+<p class="no-search-results">You may alter or broaden your search query using the navigation options on the left.  Alternatively,
 	<c:if test="${empty sessionScope.user || empty sessionScope.user.userName}">
 		try <a href="<c:out value='${loginUrl}'/>">logging in</a> or
 	</c:if>

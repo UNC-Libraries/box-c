@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import java.util.Arrays;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -36,7 +34,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -73,11 +70,39 @@ public class SearchActionController extends AbstractSolrSearchController {
 
     private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
         SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
+        String queryText = formatQueryText(request);
 
         model.addAttribute("resultType", "searchResults");
-        model.addAttribute("pageSubtitle", "Search Results");
+        model.addAttribute("pageSubtitle", "Search results for <span class=\"query-request\">\""
+                + queryText + "\"</span>");
 
         return "searchResults";
+    }
+
+    private String formatQueryText(HttpServletRequest request) {
+        String query = request.getParameter("anywhere");
+        String queryTitle = request.getParameter("titleIndex");
+        String queryContributor = request.getParameter("contributorIndex");
+        String querySubject = request.getParameter("subjectIndex");
+        String formattedQuery = "";
+
+        if (query != null) {
+            formattedQuery += query;
+        }
+
+        if (queryTitle != null) {
+            formattedQuery += " Title: " + queryTitle;
+        }
+
+        if (queryContributor != null) {
+            formattedQuery += " Contributor: " + queryContributor;
+        }
+
+        if (querySubject != null) {
+            formattedQuery += " Subject: " + querySubject;
+        }
+
+        return formattedQuery.trim();
     }
 
     @RequestMapping("/list/{pid}")

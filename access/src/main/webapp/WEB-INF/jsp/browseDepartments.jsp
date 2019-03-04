@@ -21,7 +21,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>  
 
 <div class="content-wrap">
-	<div class="contentarea">
+	<div class="search-query-text contentarea">
 		<h2>Browse Departments <c:if test="${not empty container}">in Collection <c:out value=" ${container.title}"/></c:if></h2>
 	</div>
 	<div class="onecol light">

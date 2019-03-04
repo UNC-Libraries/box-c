@@ -22,7 +22,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
 <div>
-<div class="contentarea">
+<div class="search-query-text contentarea">
 	<h2>${pageSubtitle}</h2>
 </div>
 <c:set var="searchState" value="${resultResponse.searchState}"/>
