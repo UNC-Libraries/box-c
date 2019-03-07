@@ -23,18 +23,6 @@
 
 <div class="columns is-mobile">
 	<div class="column is-3 facets-border border-box-left-top">
-		<c:if test="${empty param.showBreadCrumbs || param.showBreadCrumbs}">
-			<div class="column is-12 light shadowtop breadcrumbs">
-				<div class="contentarea">
-					<c:if test="${not empty searchQueryUrl}">
-						<h2>Breadcrumbs</h2>
-						<c:import url="/jsp/util/breadCrumbs.jsp">
-							<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
-						</c:import>
-					</c:if>
-				</div>
-			</div>
-		</c:if>
 		<div class="facet-padding">
 			<div id="facetList" class="contentarea">
 				<h2 class="facet-header">Filter results by...</h2>

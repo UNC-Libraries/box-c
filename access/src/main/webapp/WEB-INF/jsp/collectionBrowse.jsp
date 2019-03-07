@@ -30,7 +30,6 @@
 <c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
 <c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
 <c:import url="searchResults/resultsPage.jsp">
-	<c:param name="showBreadCrumbs">false</c:param>
 	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
 </c:import>
 </div>

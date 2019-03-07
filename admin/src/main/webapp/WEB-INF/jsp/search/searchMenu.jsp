@@ -46,9 +46,6 @@
 						<input type="radio" name="searchType" value="within"/>Within results
 					</p>
 				</form>
-				<c:import url="/jsp/util/breadCrumbs.jsp">
-					<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
-				</c:import>
 			</div>
 		</div>
 	</div>
