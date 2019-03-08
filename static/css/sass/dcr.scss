@@ -269,11 +269,11 @@ footer {
 *
 **/
 .search-query-text {
+  margin: 40px 20px 40px 25px;
   h2 {
     color: black;
-    font-size: 25px;
+    font-size: 2rem;
     font-weight: bold;
-    margin-left: 25px;
     min-height: 40px;
   }
 
@@ -303,10 +303,19 @@ a.search-result-num {
   font-weight: bold;
 
   &:hover {
-    background-color: $light-gray;
+    background-color: #B0B0B0;
     color: white;
     text-decoration: none;
   }
+}
+
+.facets {
+  font-size: 1.1rem;
+}
+
+.check-facet {
+  height: 25px;
+  width: 25px;
 }
 
 .facet-padding {
@@ -319,12 +328,24 @@ a.search-result-num {
   padding: 30px 0 20px 0;
 }
 
+#facetList {
+  h3 {
+    font-size: 1.4rem;
+  }
+}
+
 .facets-border {
   border-bottom: $border-style;
   border-top: $border-style;
   padding-bottom: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+label.checkbox {
+  float: none;
+  font-size: 1.4rem;
+  width: 100%;
 }
 
 .search-results-border {

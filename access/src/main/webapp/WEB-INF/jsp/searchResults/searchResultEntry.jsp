@@ -179,11 +179,6 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
-						<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, metadata)}">
-							<div class="actionlink right download">
-								<a href="${cdr:getOriginalFileUrl(metadata)}?dl=true">Download</a>
-							</div>
-						</c:when>
 						<c:when test="${not empty embargoDate}">
 							<div class="containerinfo">
 								<ul>

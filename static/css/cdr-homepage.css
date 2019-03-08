@@ -257,11 +257,13 @@ footer a:hover, footer a:active {
 * Search pages
 *
 **/
+.search-query-text {
+  margin: 40px 20px 40px 25px;
+}
 .search-query-text h2 {
   color: black;
-  font-size: 25px;
+  font-size: 2rem;
   font-weight: bold;
-  margin-left: 25px;
   min-height: 40px;
 }
 .search-query-text h2 span.query-request {
@@ -288,9 +290,18 @@ a.search-result-num:hover {
   font-weight: bold;
 }
 .search-result-selected:hover {
-  background-color: #E1E1E1;
+  background-color: #B0B0B0;
   color: white;
   text-decoration: none;
+}
+
+.facets {
+  font-size: 1.1rem;
+}
+
+.check-facet {
+  height: 25px;
+  width: 25px;
 }
 
 .facet-padding {
@@ -303,12 +314,22 @@ a.search-result-num:hover {
   padding: 30px 0 20px 0;
 }
 
+#facetList h3 {
+  font-size: 1.4rem;
+}
+
 .facets-border {
   border-bottom: 1px solid #E1E1E1;
   border-top: 1px solid #E1E1E1;
   padding-bottom: 0;
   padding-right: 0;
   padding-top: 0;
+}
+
+label.checkbox {
+  float: none;
+  font-size: 1.4rem;
+  width: 100%;
 }
 
 .search-results-border {
@@ -350,6 +371,10 @@ a.search-result-num:hover {
 .search-pagination-bottom {
   margin: 20px auto;
   text-align: center;
+}
+
+p.no-search-results {
+  font-size: 14px;
 }
 
 /* Bulma overrides */
