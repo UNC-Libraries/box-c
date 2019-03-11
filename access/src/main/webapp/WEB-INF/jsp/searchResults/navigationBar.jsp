@@ -81,11 +81,21 @@
 				<c:when test="${currentPage == 1}">
 					<span class="has-text-weight-bold">&lt;&lt;</span>
 				</c:when>
+				<c:when test="${currentPage == 2}">
+					<c:url var="firstPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
+						<c:param name='a.setStartRow=1' value=''/>
+					</c:url>
+					<a class="has-text-weight-bold" href="<c:out value="${firstPageUrl}"/>">&lt;&lt;</a>
+				</c:when>
 				<c:otherwise>
 					<c:url var="previousPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
 						<c:param name='a.${searchSettings.actions["PREVIOUS_PAGE"]}' value=''/>
 					</c:url>
+					<c:url var="firstPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
+						<c:param name='a.setStartRow=1' value=''/>
+					</c:url>
 					<a class="has-text-weight-bold" href="<c:out value="${previousPageUrl}"/>">&lt;&lt;</a>
+					<a class="has-text-weight-bold search-result-num" href="<c:out value="${firstPageUrl}"/>">1</a>
 				</c:otherwise>
 			</c:choose>
 			<c:if test="${left != 1}">
@@ -108,16 +118,24 @@
 				<span class="has-text-weight-bold">...</span>
 			</c:if>
 			<c:choose>
-				<c:when test="${right == '0' || currentPage == right || (currentPage + 1) == 5}">
+				<c:when test="${right == '0' || currentPage == right}">
 					<span class="has-text-weight-bold">&gt;&gt;</span>
 				</c:when>
-				<c:otherwise>
+				<c:when test="${totalPages == right}">
 					<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-						<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
-					</c:url>
+					<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
+				</c:url>
+					<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
+				</c:when>
+				<c:otherwise>
 					<a class="has-text-weight-bold search-result-num" href="<c:out value="${nextPageUrl}"/>">${totalPages}</a>
+					<c:if test="${(totalPages - 1) == right}">
+						<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
+							<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
+						</c:url>
+						<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
+					</c:if>
 
-					<a href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
 				</c:otherwise>
 			</c:choose>
 		</c:if>
