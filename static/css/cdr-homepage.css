@@ -359,17 +359,19 @@ label.checkbox {
 }
 
 .iteminfo {
+  float: none;
   margin-top: 5px;
+  width: 100%;
 }
 .iteminfo h2, .iteminfo p {
   font-size: inherit;
 }
 .iteminfo h2 > span {
-  font-size: inherit;
-  color: #E1E1E1;
+  font-size: 1.5rem;
 }
 
 h2.iteminfo {
+  line-height: 25px;
   margin-bottom: 20px;
 }
 
