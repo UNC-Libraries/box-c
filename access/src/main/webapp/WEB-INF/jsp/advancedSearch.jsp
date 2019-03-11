@@ -29,16 +29,16 @@
 		<div class="twocol lightest shadowtop">
 			<div class="contentarea">
 				<h3>Search for</h3>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Keyword</label> <input name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
 				</p>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Title</label> <input name="${searchSettings.searchFieldParams['TITLE_INDEX']}" class="advsearch_text" type="text" />
 				</p>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Contributor</label> <input name="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}" class="advsearch_text" type="text" />
 				</p>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Subject</label> <input name="${searchSettings.searchFieldParams['SUBJECT_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 			</div>
@@ -66,12 +66,12 @@
 				</select>
 				
 				<p class="clear"><br /></p>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Date Deposited</label> from <input name="${searchSettings.searchFieldParams['DATE_ADDED']}Start" class="advsearch_date" type="text" />
 						 to <input name="${searchSettings.searchFieldParams['DATE_ADDED']}End" class="advsearch_date" type="text" />
 						<a class="date_field_tooltip" title="Enter dates in YYYY-MM-DD format.  Month and day may be omitted.  Leave the right hand date empty to search for items with dates starting at the left hand date, and vice versa.">?</a>
 				</p>
-				<p class="clear bold">
+				<p class="clear has-text-weight-bold">
 					<label>Date Created</label> from <input name="${searchSettings.searchFieldParams['DATE_CREATED']}Start" class="advsearch_date" type="text" />
 						 to <input name="${searchSettings.searchFieldParams['DATE_CREATED']}End" class="advsearch_date" type="text" />
 					<a class="date_field_tooltip" title="Enter dates in YYYY-MM-DD format.  Month and day may be omitted.  Leave the right hand date empty to search for items with dates starting at the left hand date, and vice versa.">?</a>

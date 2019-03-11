@@ -72,30 +72,30 @@
 		<c:if test="${param.showPaginationText == true}">
 			Showing
 			<c:if test="${resultResponse.resultCount > 0}">
-				<span class="bold">${resultResponse.searchState.startRow+1}-${pageEndCount}</span>
+				<span class="has-text-weight-bold">${resultResponse.searchState.startRow+1}-${pageEndCount}</span>
 				of
 			</c:if>
-			<span class="bold">${resultResponse.resultCount}</span> results found
+			<span class="has-text-weight-bold">${resultResponse.resultCount}</span> results found
 		</c:if>
 		<c:if test="${param.showPaginationLinks == true}">
 			<c:choose>
 				<c:when test="${currentPage == 1}">
-					<span class="bold">&lt;&lt;</span>
+					<span class="has-text-weight-bold">&lt;&lt;</span>
 				</c:when>
 				<c:otherwise>
 					<c:url var="previousPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
 						<c:param name='a.${searchSettings.actions["PREVIOUS_PAGE"]}' value=''/>
 					</c:url>
-					<a class="bold" href="<c:out value="${previousPageUrl}"/>">&lt;&lt;</a>
+					<a class="has-text-weight-bold" href="<c:out value="${previousPageUrl}"/>">&lt;&lt;</a>
 				</c:otherwise>
 			</c:choose>
 			<c:if test="${left != 1}">
-				<span class="bold">...</span>
+				<span class="has-text-weight-bold">...</span>
 			</c:if>
 			<c:forEach var="pageNumber" begin="${left}" end="${right}" step="1" varStatus ="status">
 				<c:choose>
 					<c:when test="${pageNumber == currentPage}">
-						<span class="bold search-result-selected">${pageNumber}</span>
+						<span class="has-text-weight-bold search-result-selected">${pageNumber}</span>
 					</c:when>
 					<c:otherwise>
 						<c:url var="pageJumpUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
@@ -106,23 +106,23 @@
 				</c:choose>
 			</c:forEach>
 			<c:if test="${right != totalPages}">
-				<span class="bold">...</span>
+				<span class="has-text-weight-bold">...</span>
 			</c:if>
 			<c:choose>
 				<c:when test="${right == '0' || currentPage == right}">
-					<span class="bold">&gt;&gt;</span>
+					<span class="has-text-weight-bold">&gt;&gt;</span>
 				</c:when>
 				<c:otherwise>
 					<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
 						<c:param name='a.${searchSettings.actions["NEXT_PAGE"]}' value=''/>
 					</c:url>
-					<a class="bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
+					<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
 				</c:otherwise>
 			</c:choose>
 		</c:if>
 	</c:when>
 	<c:otherwise>
-		<span class="bold">${resultResponse.resultCount}</span> results found
+		<span class="has-text-weight-bold">${resultResponse.resultCount}</span> results found
 	</c:otherwise>
 </c:choose>
 </p>
