@@ -1,18 +1,18 @@
 <%--
 
-    Copyright 2008 The University of North Carolina at Chapel Hill
+	Copyright 2008 The University of North Carolina at Chapel Hill
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-            http://www.apache.org/licenses/LICENSE-2.0
+			http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -62,7 +62,6 @@
 	pageContext.setAttribute("pageEndCount", pageEndCount);
 }
 %>
-
 <p>
 <c:choose>
 	<c:when test="${totalPages > 1}">
@@ -109,14 +108,16 @@
 				<span class="has-text-weight-bold">...</span>
 			</c:if>
 			<c:choose>
-				<c:when test="${right == '0' || currentPage == right}">
+				<c:when test="${right == '0' || currentPage == right || (currentPage + 1) == 5}">
 					<span class="has-text-weight-bold">&gt;&gt;</span>
 				</c:when>
 				<c:otherwise>
 					<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-						<c:param name='a.${searchSettings.actions["NEXT_PAGE"]}' value=''/>
+						<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
 					</c:url>
-					<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
+					<a class="has-text-weight-bold search-result-num" href="<c:out value="${nextPageUrl}"/>">${totalPages}</a>
+
+					<a href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
 				</c:otherwise>
 			</c:choose>
 		</c:if>
