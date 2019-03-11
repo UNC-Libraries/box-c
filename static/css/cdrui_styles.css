@@ -226,7 +226,7 @@
 	word-wrap: break-word;
 }
 
-.searchitem h2 > span, .full_record_top h2 > span {
+.full_record_top h2 > span {
 	font-size: 11px;
 }
 
@@ -282,12 +282,6 @@
 .containerinfo ul li a:hover {
 	color: #1d759f;
 	text-decoration: underline;
-}
-
-.halfwidth {
-	width: 180px;
-	margin-right: 20px;
-	float: left;
 }
 
 .contentcolumn {

@@ -358,6 +358,21 @@ label.checkbox {
   padding: 25px;
 }
 
+.iteminfo {
+  margin-top: 5px;
+}
+.iteminfo h2, .iteminfo p {
+  font-size: inherit;
+}
+.iteminfo h2 > span {
+  font-size: inherit;
+  color: #E1E1E1;
+}
+
+h2.iteminfo {
+  margin-bottom: 20px;
+}
+
 .border-box-left-top {
   -webkit-box-shadow: inset 3px 3px 10px -1px rgba(211, 211, 211, 0.5), 0px 16px 22px -15px rgba(211, 211, 211, 0.5);
   -moz-box-shadow: inset 3px 3px 10px -1px rgba(211, 211, 211, 0.5), 0px 16px 22px -15px rgba(211, 211, 211, 0.5);
@@ -429,9 +444,6 @@ p.no-search-results {
   .iteminfo {
     float: none;
     width: 100%;
-  }
-  .iteminfo.halfwidth {
-    float: none;
   }
 
   .file-info {

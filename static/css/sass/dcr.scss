@@ -375,6 +375,22 @@ label.checkbox {
   padding: 25px;
 }
 
+.iteminfo {
+  margin-top: 5px;
+
+  h2, p {
+    font-size: inherit;
+  }
+
+  h2 > span {
+    font-size: 1.5rem;
+  }
+}
+
+h2.iteminfo {
+  margin-bottom: 20px
+}
+
 .border-box-left-top {
   -webkit-box-shadow: $box-shadow;
   -moz-box-shadow: $box-shadow;
@@ -453,10 +469,6 @@ p.no-search-results {
   .iteminfo {
     float: none;
     width: 100%;
-
-    &.halfwidth {
-      float: none;
-    }
   }
 
   .file-info {
