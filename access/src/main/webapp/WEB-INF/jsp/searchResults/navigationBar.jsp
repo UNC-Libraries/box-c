@@ -128,11 +128,12 @@
 					<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
 				</c:when>
 				<c:otherwise>
+                    <c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
+                        <c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
+                    </c:url>
 					<a class="has-text-weight-bold search-result-num" href="<c:out value="${nextPageUrl}"/>">${totalPages}</a>
+
 					<c:if test="${(totalPages - 1) == right}">
-						<c:url var="nextPageUrl" scope="page" value='${param.queryMethod}${containerPath}?${searchStateUrl}'>
-							<c:param name='a.${searchSettings.actions["SET_START_ROW"]}' value='${(totalPages - 1) * resultResponse.searchState.rowsPerPage}'/>
-						</c:url>
 						<a class="has-text-weight-bold" href="<c:out value="${nextPageUrl}"/>">&gt;&gt;</a>
 					</c:if>
 
