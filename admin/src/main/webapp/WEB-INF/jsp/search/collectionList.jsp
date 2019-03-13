@@ -47,9 +47,9 @@
 				<span class="searchitem_container_count">
 					<c:choose>
 						<c:when test="${not empty childCount}">
-							(${childCount} item<c:if test="${childCount != 1}">s</c:if>)
+							${childCount} item<c:if test="${childCount != 1}">s</c:if>
 						</c:when>
-						<c:otherwise>(0 items)</c:otherwise>
+						<c:otherwise>0 items</c:otherwise>
 					</c:choose>
 				</span>
 			</h2>

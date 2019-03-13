@@ -22,22 +22,29 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <div class="columns is-mobile">
-	<div class="column is-3 facets-border border-box-left-top">
-		<div class="facet-padding">
-			<div id="facetList" class="contentarea">
-				<h2 class="facet-header">Filter results by...</h2>
-				<c:import url="/jsp/util/facetList.jsp">
-					<c:param name="queryMethod"><c:choose>
-						<c:when test="${not empty facetQueryMethod}">${facetQueryMethod}</c:when>
-						<c:otherwise>${queryMethod}</c:otherwise>
-					</c:choose></c:param>
-					<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
-				</c:import>
+<c:choose>
+	<c:when test="${not empty facetFields}">
+		<div class="column is-3 facets-border border-box-left-top">
+			<div class="facet-padding">
+				<div id="facetList" class="contentarea">
+					<h2 class="facet-header">Filter results by...</h2>
+					<c:import url="/jsp/util/facetList.jsp">
+						<c:param name="queryMethod"><c:choose>
+							<c:when test="${not empty facetQueryMethod}">${facetQueryMethod}</c:when>
+							<c:otherwise>${queryMethod}</c:otherwise>
+						</c:choose></c:param>
+						<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
+					</c:import>
+				</div>
 			</div>
 		</div>
-	</div>
-
-	<div class="column is-9 search-results-border border-box-left-top">
+	
+		<div class="column is-9 search-results-border border-box-left-top">
+	</c:when>
+	<c:otherwise>
+		<div class="column is-12 search-results-border border-box-left-top">
+	</c:otherwise>
+</c:choose>
 		<div class="white">
 			<div class="contentarea">
 				<c:choose>

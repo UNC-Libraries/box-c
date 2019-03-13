@@ -1,6 +1,5 @@
 body {
 	text-align: center;
-	font-family: verdana, sans-serif;
 	background-color: #ececec;
 	color: #222;
 	font-size: 12px;
@@ -178,7 +177,7 @@ h3 {
 }
 
 p, ul {
-	font-size: 12px;
+	font-size: 16px;
 	line-height: 17px;
 	margin-bottom: 8px;
 }

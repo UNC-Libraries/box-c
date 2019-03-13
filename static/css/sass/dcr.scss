@@ -17,11 +17,12 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
-* {
+body {
   font-family: 'Open Sans', sans-serif;
 }
 
-body {
+a {
+  color: $link-blue;
 }
 
 .logo-row {
@@ -270,9 +271,11 @@ footer {
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
+  font-size: 16px;
+
   h2 {
     color: black;
-    font-size: 2rem;
+    font-size: 28px;;
     font-weight: bold;
     min-height: 40px;
   }
@@ -310,7 +313,6 @@ a.search-result-num {
 }
 
 .facets {
-  font-size: 1.1rem;
   margin-bottom: 30px;
 }
 
@@ -331,7 +333,6 @@ a.search-result-num {
 
 #facetList {
   h3 {
-    font-size: 1.4rem;
     margin-bottom: 20px;
   }
 }
@@ -339,6 +340,7 @@ a.search-result-num {
 .facets-border {
   border-bottom: $border-style;
   border-top: $border-style;
+  font-size: 16px;
   padding-bottom: 0;
   padding-right: 0;
   padding-top: 0;
@@ -346,7 +348,6 @@ a.search-result-num {
 
 label.checkbox {
   float: none;
-  font-size: 1.4rem;
   width: 100%;
 }
 
@@ -371,23 +372,43 @@ label.checkbox {
 
 .browseitem {
   padding-left: 25px;
+
+  p {
+    font-size: 16px;
+  }
 }
 
 .searchitem {
+  font-size: 16px;
   padding: 25px;
 }
+
+.searchitem_container_count {
+  background-color: $unc-blue;
+  border: 1px solid $unc-blue;
+  border-radius: 5px;
+  color: white;
+  line-height: 18px;
+  margin-bottom: 4px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  width: 100%;
+}
+
 
 .iteminfo {
   float: none;
   margin-top: 5px;
   width: 100%;
+  font-size: 16px;
 
-  h2, p {
-    font-size: inherit;
+  h2 {
+    font-size: 20px;
   }
 
   h2 > span {
-    font-size: 1.5rem;
+    padding: 3px 5px;
+    font-size: 16px;
   }
 }
 

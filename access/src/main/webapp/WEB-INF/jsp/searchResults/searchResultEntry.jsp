@@ -67,14 +67,14 @@
 		</c:import>
 
 		<%-- Main result entry metadata body --%>
-		<div class="iteminfo is-size-6-desktop">
+		<div class="iteminfo">
 			<c:choose>
 				<%-- Metadata body for containers --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
-					<h2 class="iteminfo is-size-4-desktop">
+					<h2 class="iteminfo">
 						<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
 						<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+							<span class="searchitem_container_count">${childCount} item<c:if test="${childCount != 1}">s</c:if></span>
 						</c:if>
 					</h2>
 					
@@ -105,10 +105,10 @@
 				</c:when>
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
-					<h2 class="iteminfo is-size-3-desktop">
+					<h2 class="iteminfo">
 						<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
 						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
-							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+							<span class="searchitem_container_count">${childCount} item<c:if test="${childCount != 1}">s</c:if></span>
 						</c:if>
 					</h2>
 					<div>

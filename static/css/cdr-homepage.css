@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600");
-* {
+body {
   font-family: 'Open Sans', sans-serif;
+}
+
+a {
+  color: #007FAE;
 }
 
 .logo-row {
@@ -259,10 +263,11 @@ footer a:hover, footer a:active {
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
+  font-size: 16px;
 }
 .search-query-text h2 {
   color: black;
-  font-size: 2rem;
+  font-size: 28px;
   font-weight: bold;
   min-height: 40px;
 }
@@ -296,7 +301,7 @@ a.search-result-num:hover {
 }
 
 .facets {
-  font-size: 1.1rem;
+  margin-bottom: 30px;
 }
 
 .check-facet {
@@ -315,12 +320,13 @@ a.search-result-num:hover {
 }
 
 #facetList h3 {
-  font-size: 1.4rem;
+  margin-bottom: 20px;
 }
 
 .facets-border {
   border-bottom: 1px solid #E1E1E1;
   border-top: 1px solid #E1E1E1;
+  font-size: 16px;
   padding-bottom: 0;
   padding-right: 0;
   padding-top: 0;
@@ -328,7 +334,6 @@ a.search-result-num:hover {
 
 label.checkbox {
   float: none;
-  font-size: 1.4rem;
   width: 100%;
 }
 
@@ -353,21 +358,39 @@ label.checkbox {
 .browseitem {
   padding-left: 25px;
 }
+.browseitem p {
+  font-size: 16px;
+}
 
 .searchitem {
+  font-size: 16px;
   padding: 25px;
+}
+
+.searchitem_container_count {
+  background-color: #4B9CD3;
+  border: 1px solid #4B9CD3;
+  border-radius: 5px;
+  color: white;
+  line-height: 18px;
+  margin-bottom: 4px;
+  padding: 3px 5px;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .iteminfo {
   float: none;
   margin-top: 5px;
   width: 100%;
+  font-size: 16px;
 }
-.iteminfo h2, .iteminfo p {
-  font-size: inherit;
+.iteminfo h2 {
+  font-size: 20px;
 }
 .iteminfo h2 > span {
-  font-size: 1.5rem;
+  padding: 3px 5px;
+  font-size: 16px;
 }
 
 h2.iteminfo {

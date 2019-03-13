@@ -18,7 +18,7 @@
 							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 					<% if (metadata.counts && 'child' in metadata.counts) { %>
 					<span class="searchitem_container_count">
-						(<%= metadata.counts.child %>)
+						<%= metadata.counts.child %>
 					</span>
 					<% }
 			 } %>
