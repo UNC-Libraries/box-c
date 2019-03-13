@@ -356,9 +356,13 @@ label.checkbox {
 }
 
 .browseitem {
+  font-size: 16px;
   padding-left: 25px;
 }
-.browseitem p {
+.browseitem h2 {
+  font-size: 20px;
+}
+.browseitem p, .browseitem span {
   font-size: 16px;
 }
 
@@ -374,7 +378,7 @@ label.checkbox {
   color: white;
   line-height: 18px;
   margin-bottom: 4px;
-  padding: 3px 5px;
+  padding: 3px 8px;
   white-space: nowrap;
   width: 100%;
 }

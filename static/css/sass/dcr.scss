@@ -371,9 +371,14 @@ label.checkbox {
 }
 
 .browseitem {
+  font-size: 16px;
   padding-left: 25px;
 
-  p {
+  h2 {
+    font-size: 20px;
+  }
+
+  p, span {
     font-size: 16px;
   }
 }
