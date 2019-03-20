@@ -19,19 +19,17 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<div>
-<div class="search-query-text collection-list has-text-centered">
-	<h2>${pageSubtitle}</h2>
+<div class="columns is-mobile">
+    <div class="column is-12 collection-browse">
+        <c:choose>
+            <c:when test="${resultCount > 0}">
+                <c:import url="searchResults/resultsList.jsp" />
+            </c:when>
+            <c:otherwise>
+                <c:import url="error/noResults.jsp"/>
+            </c:otherwise>
+        </c:choose>
+    </div>
 </div>
-<c:set var="searchState" value="${resultResponse.searchState}"/>
-<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
-<c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
-<c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
-<c:import url="searchResults/collectionResultsPage.jsp">
-	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
-	<c:param name="collectionBrowse">true</c:param>
-</c:import>
-</div>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/collectionBrowse"></script>

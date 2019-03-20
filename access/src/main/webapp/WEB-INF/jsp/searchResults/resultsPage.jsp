@@ -38,7 +38,6 @@
 				</div>
 			</div>
 		</div>
-	
 		<div class="column is-9 search-results-border border-box-left-top">
 	</c:when>
 	<c:otherwise>

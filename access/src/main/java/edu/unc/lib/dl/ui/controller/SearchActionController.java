@@ -157,7 +157,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         model.addAttribute("facetQueryMethod", "search");
         model.addAttribute("menuId", "browse");
         model.addAttribute("resultType", "collectionBrowse");
-        model.addAttribute("pageSubtitle", "Browse Collections");
+        model.addAttribute("pageSubtitle", "Collections");
         return "collectionBrowse";
     }
 

@@ -257,7 +257,7 @@ footer {
 
   a {
     color: white;
-    font-size: .8rem;
+    font-size: 16px;
     &:hover, &:active {
       color: $unc-blue;
     }
@@ -439,6 +439,31 @@ h2.iteminfo {
 
 p.no-search-results {
   font-size: 14px;
+}
+
+/* Collection Page */
+
+.search-query-text.collection-list {
+  margin-bottom: 0;
+}
+
+.collection-browse {
+  .browseitem {
+    background-color: #C8C8C8;
+    margin: 10px 25px;
+    width: 96%;
+  }
+
+  .searchitem_container_count {
+    background-color: inherit;
+    border: none;
+    color: #F8F8F8;
+    font-size: inherit;
+  }
+
+  &:last-child {
+    margin-bottom: 50px;
+  }
 }
 
 /* Bulma overrides */
