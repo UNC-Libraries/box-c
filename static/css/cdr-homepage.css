@@ -427,14 +427,14 @@ p.no-search-results {
 }
 
 .collection-browse .browseitem {
-  background-color: #C8C8C8;
+  background-color: #f7f7f7;
   margin: 10px 15px;
   width: 98%;
 }
 .collection-browse .searchitem_container_count {
   background-color: inherit;
   border: none;
-  color: #F8F8F8;
+  color: gray;
   font-size: inherit;
 }
 .collection-browse:last-child {
@@ -450,7 +450,6 @@ p.no-search-results {
 /* Following Bulma breakpoints */
 @media screen and (max-width: 1215px) {
   .collection-browse .browseitem {
-    background-color: #C8C8C8;
     margin: 10px auto;
     width: 100%;
   }
