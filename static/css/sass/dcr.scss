@@ -450,8 +450,8 @@ p.no-search-results {
 .collection-browse {
   .browseitem {
     background-color: #C8C8C8;
-    margin: 10px 25px;
-    width: 96%;
+    margin: 10px 15px;
+    width: 98%;
   }
 
   .searchitem_container_count {
@@ -474,6 +474,16 @@ p.no-search-results {
 /*** End of Bulma overrides ***/
 
 /* Following Bulma breakpoints */
+@media screen and (max-width: 1215px) {
+  .collection-browse {
+    .browseitem {
+      background-color: #C8C8C8;
+      margin: 10px auto;
+      width: 100%;
+    }
+  }
+}
+
 @media screen and (max-width: 1024px) {
   .bottomline {
     display: block;
