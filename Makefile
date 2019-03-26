@@ -35,7 +35,13 @@ ifneq ($(VERSION), "")
 endif
 
 build-access:
-	sass static/css/sass/dcr.scss static/css/cdr-homepage.css --style "expanded"
+	# Make sure file is empty
+	cat /dev/null > static/css/sass/cdr-ui.scss
+
+	cat static/css/sass/cdr_homepage.scss \
+		static/css/sass/cdr_ui_styles.scss \
+		>> static/css/sass/cdr-ui.scss
+	sass static/css/sass/cdr-ui.scss  static/css/cdr-ui.css --style "expanded"
 	cat static/js/lib/jquery.min.js > static/js/cdr-access.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
 	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
@@ -49,7 +55,7 @@ build-access:
 		static/css/cdrui_styles.css \
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
-		static/css/cdr-homepage.css \
+		static/css/cdr-ui.css \
 		> static/css/cdr_access.css
 
 SUSPEND = "n"
