@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:if test="${empty param.collectionBrowse}">
+<c:if test="${empty param.excludeNavigationBar}">
 	<div class="bottomline paddedline">
 		<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
 			<c:param name="queryMethod">${queryMethod}</c:param>
