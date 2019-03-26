@@ -35,6 +35,8 @@ import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
+// import java.util.Arrays;
+
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
  * parameters, as well as actions performed on the state, and retrieves search results using it.
@@ -73,8 +75,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         String queryText = formatQueryText(request);
 
         model.addAttribute("resultType", "searchResults");
-        model.addAttribute("pageSubtitle", "Search results for <span class=\"query-request\">\""
-                + queryText + "\"</span>");
+        model.addAttribute("pageSubtitle", queryText);
 
         return "searchResults";
     }
@@ -147,6 +148,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
         searchRequest.setApplyCutoffs(true);
         SearchState searchState = searchRequest.getSearchState();
+        // searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeUnit));
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
         searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
 
