@@ -1,6 +1,5 @@
 body {
 	text-align: center;
-	font-family: verdana, sans-serif;
 	background-color: #ececec;
 	color: #222;
 	font-size: 12px;
@@ -79,7 +78,7 @@ body.full_screen {
 }
 
 .contentarea {
-	margin: 20px;
+	margin: 20px 0;
 }
 
 .darkest {
@@ -109,7 +108,6 @@ body.full_screen {
 
 .gray {
 	background-color: #f3f3f3;
-	float: left;
 }
 
 .white {
@@ -179,7 +177,7 @@ h3 {
 }
 
 p, ul {
-	font-size: 12px;
+	font-size: 16px;
 	line-height: 17px;
 	margin-bottom: 8px;
 }

@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import java.util.Arrays;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -36,7 +34,8 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.util.ResourceType;
+
+// import java.util.Arrays;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -73,11 +72,38 @@ public class SearchActionController extends AbstractSolrSearchController {
 
     private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
         SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
+        String queryText = formatQueryText(request);
 
         model.addAttribute("resultType", "searchResults");
-        model.addAttribute("pageSubtitle", "Search Results");
+        model.addAttribute("pageSubtitle", queryText);
 
         return "searchResults";
+    }
+
+    private String formatQueryText(HttpServletRequest request) {
+        String query = request.getParameter("anywhere");
+        String queryTitle = request.getParameter("titleIndex");
+        String queryContributor = request.getParameter("contributorIndex");
+        String querySubject = request.getParameter("subjectIndex");
+        String formattedQuery = "";
+
+        if (query != null) {
+            formattedQuery += query;
+        }
+
+        if (queryTitle != null) {
+            formattedQuery += " Title: " + queryTitle;
+        }
+
+        if (queryContributor != null) {
+            formattedQuery += " Contributor: " + queryContributor;
+        }
+
+        if (querySubject != null) {
+            formattedQuery += " Subject: " + querySubject;
+        }
+
+        return formattedQuery.trim();
     }
 
     @RequestMapping("/list/{pid}")
@@ -103,8 +129,6 @@ public class SearchActionController extends AbstractSolrSearchController {
     @RequestMapping("/listContents/{pid}")
     public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.getSearchState().setResourceTypes(
-                Arrays.asList(ResourceType.Work.name(), ResourceType.File.name()));
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
         searchRequest.getSearchState().setRollup(true);
@@ -124,7 +148,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
         searchRequest.setApplyCutoffs(true);
         SearchState searchState = searchRequest.getSearchState();
-        searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
+        // searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeUnit));
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
         searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
 
@@ -135,7 +159,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         model.addAttribute("facetQueryMethod", "search");
         model.addAttribute("menuId", "browse");
         model.addAttribute("resultType", "collectionBrowse");
-        model.addAttribute("pageSubtitle", "Browse Collections");
+        model.addAttribute("pageSubtitle", "Collections");
         return "collectionBrowse";
     }
 

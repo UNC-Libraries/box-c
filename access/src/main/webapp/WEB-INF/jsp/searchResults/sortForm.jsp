@@ -29,29 +29,31 @@
 </c:choose>
 
 <c:set var="currentSortKey" value="${param.currentSort},${currentSortOrder}"/>
-<form action="sort" id="result_sort_form" class="navigation_sort_form right">
-	<select id="sort_select" name="sort">
-		<option>sort by</option>
-		<c:forEach var="sortEntry" items="${searchSettings.sortDisplayOrder}">
-			<c:choose>
-				<c:when test="${sortEntry == currentSortKey}">
-					<c:set var="selected" value="selected"/>
-				</c:when>
-				<c:otherwise>
-					<c:set var="selected" value=""/>
-				</c:otherwise>
-			</c:choose>
-			<option value="${sortEntry}" ${selected}>${searchSettings.sortDisplayNames[sortEntry]}</option>
-		</c:forEach>
-	</select>
-	<input type="hidden" name="queryPath" value="${queryMethod}" />
-	<c:if test="${not empty searchQueryUrl}">
-		<input type="hidden" name="within" value="${fn:replace(searchQueryUrl, '\\\"', '%22')}" />
-	</c:if>
-	<noscript>
-		<input type="submit" value="Go"/>
-	</noscript>
-	<c:if test="${not empty resultResponse.selectedContainer}">
-		<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}" />
-	</c:if>
-</form>
+<div class="select is-medium">
+	<form action="sort" id="result_sort_form">
+		<select id="sort_select" name="sort">
+			<option>Sort by ...</option>
+			<c:forEach var="sortEntry" items="${searchSettings.sortDisplayOrder}">
+				<c:choose>
+					<c:when test="${sortEntry == currentSortKey}">
+						<c:set var="selected" value="selected"/>
+					</c:when>
+					<c:otherwise>
+						<c:set var="selected" value=""/>
+					</c:otherwise>
+				</c:choose>
+				<option value="${sortEntry}" ${selected}>${searchSettings.sortDisplayNames[sortEntry]}</option>
+			</c:forEach>
+		</select>
+		<input type="hidden" name="queryPath" value="${queryMethod}" />
+		<c:if test="${not empty searchQueryUrl}">
+			<input type="hidden" name="within" value="${fn:replace(searchQueryUrl, '\\\"', '%22')}" />
+		</c:if>
+		<noscript>
+			<input type="submit" value="Go"/>
+		</noscript>
+		<c:if test="${not empty resultResponse.selectedContainer}">
+			<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}" />
+		</c:if>
+	</form>
+</div>

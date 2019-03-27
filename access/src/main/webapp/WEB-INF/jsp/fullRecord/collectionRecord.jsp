@@ -50,7 +50,7 @@
 			<ul class="pipe_list smaller">
 				<c:if test="${not empty briefObject.creator}">
 					<li>
-						<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
+						<span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
 						<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
 							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 						</c:forEach>
@@ -59,14 +59,14 @@
 				<c:if test="${not empty briefObject.parentCollection && briefObject.parentCollection != briefObject.id && briefObject.ancestorPathFacet.highestTier > 0}">
 					<li>
 						<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
-						<span class="bold">Collection:</span> 
+						<span class="has-text-weight-bold">Collection:</span>
 						<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
 					</li>
 				</c:if>
 			</ul>
 			<c:if test="${not empty embargoDate}">
 				<ul class="pipe_list smaller">
-					<li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li>
+					<li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li>
 				</ul>
 				<br class="clear" />
 			</c:if>

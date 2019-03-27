@@ -18,17 +18,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<div class="bottomline paddedline">
-	<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
-		<c:param name="queryMethod">${queryMethod}</c:param>
-	</c:import>
-	${navigationBar}
-	<c:import url="searchResults/sortForm.jsp">
-		<c:param name="queryMethod">${queryMethod}</c:param>
-		<c:param name="currentSort">${searchState.sortType}</c:param>
-		<c:param name="currentSortOrder">${searchState.sortNormalOrder}</c:param>
-	</c:import>
-</div>
+
+<c:if test="${empty param.excludeNavigationBar}">
+	<div class="bottomline paddedline">
+		<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
+			<c:param name="queryMethod">${queryMethod}</c:param>
+			<c:param name="showPaginationText">true</c:param>
+		</c:import>
+		${navigationBar}
+		<c:import url="searchResults/sortForm.jsp">
+			<c:param name="queryMethod">${queryMethod}</c:param>
+			<c:param name="currentSort">${searchState.sortType}</c:param>
+			<c:param name="currentSortOrder">${searchState.sortNormalOrder}</c:param>
+		</c:import>
+	</div>
+</c:if>
 
 <c:if test="${not empty selectedContainer && (empty param.showSelectedContainer || param.showSelectedContainer)}">
 	<c:set var="metadata" value="${selectedContainer}" scope="request"/>
@@ -55,6 +59,3 @@
 		</c:otherwise>
 	</c:choose>
 </c:forEach>
-<div class="topline">
-	${navigationBar}
-</div>
