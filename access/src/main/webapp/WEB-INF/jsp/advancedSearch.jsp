@@ -27,7 +27,7 @@
 <form>
 	<div class="lightest">
 		<div class="twocol lightest shadowtop">
-			<div class="contentarea">
+			<div class="contentarea advsearch">
 				<h3>Search for</h3>
 				<p class="clear bold">
 					<label>Keyword</label> <input name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
@@ -44,7 +44,7 @@
 			</div>
 		</div>
 		<div class="twocol light shadowtop">
-			<div class="contentarea">
+			<div class="contentarea advsearch">
 				<h3>Limit By</h3>
 				<select name="container" class="advsearch_select">
 					<option value="">Collection</option>

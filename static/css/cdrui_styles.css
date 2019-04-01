@@ -1272,6 +1272,11 @@ div.deposit-icons {
 	color: #7BAFD4;
 }
 
+.advsearch {
+	margin-left: 15px;
+	margin-right: 15px;
+}
+
 #hsearch_form {
 	margin-bottom: 1px;
 }
