@@ -13,6 +13,7 @@ require.config({
 		'JP2Viewer' : 'cdr-access',
 		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
+		'dataTables': '/static/plugins/DataTables/datatables.min',
 		'leaflet': '/static/plugins/leaflet/leaflet',
 		'leafletFullscreen': '/static/plugins/Leaflet-fullscreen/dist/Leaflet.fullscreen',
 		'leaflet-IIIF' : '/static/plugins/Leaflet-IIIF/leaflet-iiif',
@@ -32,7 +33,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
-		$structureView = $(".structure.aggregate");
+		$structureView = $(".structure.aggregate"),
+		$childFilesTable = $("#child-files");
 	
 	function loadViewer($viewer, widgetName) {
 		$viewer[widgetName].call($viewer, {
@@ -69,5 +71,19 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 				console.log("Failed to load", e);
 			}
 		});
+	}
+
+	if ($childFilesTable.length > 0) {
+		// Check if user can see edit button
+		var searchable_columns = ($('#child-files th').length === 7) ? [4, 5, 6] : [4, 5];
+
+		$childFilesTable.DataTable({
+			bLengthChange: false, // Remove option to show different number of results
+			columnDefs: [ { orderable: false, searchable: false, targets: searchable_columns } ],
+			language: { search: '', searchPlaceholder: 'Search for keywords' }
+		});
+
+		$('#child-files_filter input').addClass('input'); // Pull in bulma styling
+		$('.child-records h3').css('margin-bottom', '-30px'); // adjust margin to line up with search box
 	}
 });

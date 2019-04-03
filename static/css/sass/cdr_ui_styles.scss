@@ -206,6 +206,104 @@ p.no-search-results {
   }
 }
 
+/* Work page */
+
+
+/* DataTables  */
+#child-files_wrapper div {
+  margin: 15px 0 !important;
+}
+
+#child-files_filter label {
+  float: right;
+  width: 250px;
+}
+
+.input::placeholder, .input {
+  color: black;
+}
+
+.dataTables_wrapper {
+  margin-bottom: 50px;
+}
+
+.child-records {
+  font-size: 16px;
+  margin: 50px 50px 75px 50px;
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+}
+
+.onecol, .content-wrap.full_record {
+  width: 100%;
+}
+
+.full_record_top {
+  border-bottom: 1px solid $light-gray;
+  padding-bottom: 25px;
+
+  .collinfo {
+    padding-top: 25px;
+    width: 85%;
+  }
+
+  .thumbnail.thumbnail-size-large {
+    width: 10%;
+  }
+
+  .thumbnail {
+    .thumbnail-placeholder {
+      position: relative;
+    }
+  }
+
+  a {
+    padding-top: 25px;
+  }
+}
+
+.actionlink.view {
+  max-width: 60px;
+
+  a {
+    margin: auto;
+  }
+}
+
+.even {
+  background-color: ghostwhite !important;
+}
+
+.collinfo_metadata {
+  h2 {
+    font-size: 24px;
+  }
+
+  .actionlink a, ul {
+    font-size: 16px;
+  }
+}
+
+#child-files {
+  border: 1px solid $light-gray;
+  border-collapse: collapse;
+  width: 100%;
+
+  thead {
+    font-weight: bold;
+  }
+
+  th, td {
+    border: 1px solid $light-gray;
+    border-collapse: collapse;
+    padding: 10px;
+    text-align: center;
+  }
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
