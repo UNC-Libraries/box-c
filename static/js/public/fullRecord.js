@@ -74,16 +74,55 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 	}
 
 	if ($childFilesTable.length > 0) {
+		var excluded_columns = [4, 5];
+		var column_defs = [
+			{ orderable: false, targets: excluded_columns },
+			{ searchable: false, target: excluded_columns },
+			{ render: function (data, type, row) { return '<img src="' + row.id + '" alt="Thumbnail image for ' + row.title + '" >' }, targets: 0 },
+			{ render: function (data, type, row) { return row.title; }, targets: 1 },
+			{ render: function (data, type, row) { return row.type; }, targets: 2 },
+			{ render: function (data, type, row) { return row.type; }, targets: 3 },
+			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus"></a>'; },
+				targets: 4
+			},
+			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download"></a>'; },
+				targets: 5
+			}
+		];
+
 		// Check if user can see edit button
-		var searchable_columns = ($('#child-files th').length === 7) ? [4, 5, 6] : [4, 5];
+		if ($('#child-files th').length === 7) {
+			excluded_columns.push(6); // edit button
+
+			// Add to orderable, searchable exclusions
+			[0, 1].forEach(function(d) {
+				column_defs[d].targets = excluded_columns;
+			});
+
+			column_defs.push(
+				{ render: function (data, type, row) {
+						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit"></i></a>'
+					},
+					targets: 6
+				});
+		}
 
 		$childFilesTable.DataTable({
+			ajax: {
+				processing: true,
+				url: '/listJson/' + $childFilesTable.attr('data-pid'),
+				dataSrc: function(d) {
+					return d.metadata.filter(function(g) {
+						return g.label !== 'agreements.txt';
+					});
+				}
+			},
 			bLengthChange: false, // Remove option to show different number of results
-			columnDefs: [ { orderable: false, searchable: false, targets: searchable_columns } ],
+			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search for keywords' }
 		});
 
-		$('#child-files_filter input').addClass('input'); // Pull in bulma styling
+		$('#child-files_filter input').addClass('input');
 		$('.child-records h3').css('margin-bottom', '-30px'); // adjust margin to line up with search box
 	}
 });
