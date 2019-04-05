@@ -162,32 +162,6 @@
 			</tr>
 			</thead>
 			<tbody>
-			<tr>
-				<td>Thumbnailed</td>
-				<td>Dean Rulz!</td>
-				<td>PDF</td>
-				<td>31kb</td>
-				<td><a href="${dataFileUrl}"><i class="fa fa-search-plus"></i></a></td>
-				<td><a href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i></a></td>
-				<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
-					<td>
-						<a href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a>
-					</td>
-				</c:if>
-			</tr>
-			<tr>
-				<td>Thumbnailed 2</td>
-				<td>Dean Rulz 2!</td>
-				<td>DOC</td>
-				<td>321kb</td>
-				<td><a href="${dataFileUrl}"><i class="fa fa-search-plus"></i></a></td>
-				<td><a href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i></a></td>
-				<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
-					<td>
-						<a href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a>
-					</td>
-				</c:if>
-			</tr>
 			</tbody>
 		</table>
 	</div>
