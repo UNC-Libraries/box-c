@@ -112,9 +112,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				processing: true,
 				url: '/listJson/' + $childFilesTable.attr('data-pid'),
 				dataSrc: function(d) {
-					return d.metadata.filter(function(g) {
-						return g.label !== 'agreements.txt';
-					});
+					return d.metadata;
 				}
 			},
 			bLengthChange: false, // Remove option to show different number of results

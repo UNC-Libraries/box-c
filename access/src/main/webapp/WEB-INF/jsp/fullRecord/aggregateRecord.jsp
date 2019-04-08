@@ -141,8 +141,6 @@
 			</c:if>
 		</c:forEach>
 	</c:set>
-	<!-- <div class="structure aggregate" data-pid="${briefObject.id}" data-exclude="${defaultWebObjectID}">
-	</div> -->
 	<link rel="stylesheet" href="/static/plugins/DataTables/datatables.min.css">
 
 	<div class="child-records">
@@ -166,20 +164,4 @@
 		</table>
 	</div>
 </c:if>
-<!--
-<div class="shadowtop">
-<div class="contentarea">
-<c:if test="${briefObject['abstractText'] != null}">
-	<div class="description">
-	<p>
-	<c:out value="${briefObject['abstractText']}" />
-	</p>
-	</div>
-</c:if>
-<div class="metadata">
-${fullObjectView}
-</div>
-</div>
-<c:import url="fullRecord/exports.jsp" />
-</div> -->
 <c:import url="fullRecord/neighborList.jsp" />
