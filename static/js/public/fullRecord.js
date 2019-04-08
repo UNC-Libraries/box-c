@@ -74,7 +74,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 	}
 
 	if ($childFilesTable.length > 0) {
-		var excluded_columns = [4, 5];
+		var excluded_columns = [0, 4, 5];
 		var column_defs = [
 			{ orderable: false, targets: excluded_columns },
 			{ searchable: false, target: excluded_columns },
@@ -117,7 +117,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			},
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
-			language: { search: '', searchPlaceholder: 'Search for keywords' }
+			language: { search: '', searchPlaceholder: 'Search for keywords' },
+			order: [[1, 'asc']]
 		});
 
 		$('#child-files_filter input').addClass('input');
@@ -131,8 +132,26 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			if (type === 'file_type') {
 				return /DATA_FILE\|(.*?)\|/.exec(data_file)[1];
 			} else {
-				return /\|([0-9]+)\|/.exec(data_file)[1];
+				return bytesToSize(/\|([0-9]+)\|/.exec(data_file)[1]);
 			}
+		}
+
+		function bytesToSize(bytes) {
+			if (bytes === 0) {
+				return '0 B';
+			}
+
+			var k = 1024;
+			var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+			var i = Math.floor(Math.log(bytes) / Math.log(k));
+			var val = (bytes / Math.pow(k, i)).toFixed(1);
+			var floored_val = Math.floor(val);
+
+			if (val - floored_val === 0) {
+				return floored_val + ' ' + sizes[i];
+			}
+
+			return val + ' ' + sizes[i];
 		}
 	}
 });
