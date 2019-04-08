@@ -29,7 +29,7 @@ require.config({
 		}
 	}
 });
-define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPlayer', 'thumbnails'], function(module, $) {
+define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTables', 'AudioPlayer', 'thumbnails'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
@@ -80,8 +80,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 			{ searchable: false, target: excluded_columns },
 			{ render: function (data, type, row) { return '<img src="' + row.id + '" alt="Thumbnail image for ' + row.title + '" >' }, targets: 0 },
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
-			{ render: function (data, type, row) { return row.type; }, targets: 2 },
-			{ render: function (data, type, row) { return row.type; }, targets: 3 },
+			{ render: function (data, type, row) { getValue(row.datastream, 'file_type'); }, targets: 2 },
+			{ render: function (data, type, row) { getValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus" title="View"></a>'; },
 				targets: 4
 			},
@@ -124,5 +124,17 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 
 		$('#child-files_filter input').addClass('input');
 		$('.child-records h3').css('margin-bottom', '-30px'); // adjust margin to line up with search box
+
+		function getValue(datastream_info, type) {
+			var data_file = datastream_info.find(function(element) {
+				return /DATA_FILE/.exec(element);
+			});
+
+			if (type === 'file_type') {
+				return /DATA_FILE\|(.*?)\|/.exec(data_file)[1];
+			} else {
+				return /\|([0-9]+)\|/.exec(data_file)[1];
+			}
+		}
 	}
 });
