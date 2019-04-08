@@ -82,10 +82,10 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
 			{ render: function (data, type, row) { return row.type; }, targets: 2 },
 			{ render: function (data, type, row) { return row.type; }, targets: 3 },
-			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus"></a>'; },
+			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus" title="View"></a>'; },
 				targets: 4
 			},
-			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download"></a>'; },
+			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download" title="Download"></a>'; },
 				targets: 5
 			}
 		];
@@ -101,7 +101,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPl
 
 			column_defs.push(
 				{ render: function (data, type, row) {
-						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit"></i></a>'
+						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit" title="Edit"></i></a>'
 					},
 					targets: 6
 				});
