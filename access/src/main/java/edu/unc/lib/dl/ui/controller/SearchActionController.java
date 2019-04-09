@@ -40,8 +40,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
 
-// import java.util.Arrays;
-
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
  * parameters, as well as actions performed on the state, and retrieves search results using it.
@@ -113,7 +111,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request, HttpServletResponse response) {
+    Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request,
+                                 HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(true);

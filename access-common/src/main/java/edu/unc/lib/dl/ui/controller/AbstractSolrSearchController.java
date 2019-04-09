@@ -168,7 +168,8 @@ public abstract class AbstractSolrSearchController {
         this.searchStateFactory = searchStateFactory;
     }
 
-    protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod, HttpServletRequest request) {
+    protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
+                                             HttpServletRequest request) {
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
         Map<String, Object> results = new HashMap<>();
