@@ -18,8 +18,6 @@ package edu.unc.lib.dl.ui.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.ui.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +38,6 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 // import java.util.Arrays;
@@ -220,28 +216,5 @@ public class SearchActionController extends AbstractSolrSearchController {
         model.addAttribute("resultResponse", resultResponse);
 
         return resultResponse;
-    }
-
-    private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod, HttpServletRequest request) {
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
-        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
-        Map<String, Object> results = new HashMap<>();
-        results.put("metadata", resultList);
-
-        SearchState state = resp.getSearchState();
-        results.put("pageStart", state.getStartRow());
-        results.put("pageRows", state.getRowsPerPage());
-        results.put("resultCount", resp.getResultCount());
-        results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
-        results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
-        results.put("queryMethod", queryMethod);
-        results.put("onyen", GroupsThreadStore.getUsername());
-        results.put("email", GroupsThreadStore.getEmail());
-
-        if (resp.getSelectedContainer() != null) {
-            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
-        }
-
-        return results;
     }
 }

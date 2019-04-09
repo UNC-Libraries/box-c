@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,14 +34,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
  *
@@ -201,28 +197,5 @@ public class SearchController extends AbstractSearchController {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(pid);
         return searchRequest;
-    }
-
-    private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod, HttpServletRequest request) {
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
-        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
-        Map<String, Object> results = new HashMap<>();
-        results.put("metadata", resultList);
-
-        SearchState state = resp.getSearchState();
-        results.put("pageStart", state.getStartRow());
-        results.put("pageRows", state.getRowsPerPage());
-        results.put("resultCount", resp.getResultCount());
-        results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
-        results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
-        results.put("queryMethod", queryMethod);
-        results.put("onyen", GroupsThreadStore.getUsername());
-        results.put("email", GroupsThreadStore.getEmail());
-
-        if (resp.getSelectedContainer() != null) {
-            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
-        }
-
-        return results;
     }
 }
