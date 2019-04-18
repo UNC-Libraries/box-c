@@ -211,9 +211,9 @@
 								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
 							</div>
 						</c:when>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
+						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', metadata)}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
+								<a href="<c:out value='${fullRecordUrl}'/>" title="Preview">Preview</a>
 							</div>
 						</c:when>
 						<c:when test="${not empty embargoDate}">
