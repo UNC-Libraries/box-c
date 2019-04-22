@@ -254,18 +254,10 @@ p.no-search-results {
     width: 85%;
   }
 
-  .thumbnail.thumbnail-size-large {
-    width: 10%;
-  }
-
   .thumbnail {
     .thumbnail-placeholder {
       position: relative;
     }
-  }
-
-  a {
-    padding-top: 25px;
   }
 }
 
@@ -289,6 +281,7 @@ p.no-search-results {
   .actionlink {
     a {
       padding: 15px;
+      display: inline-block;
     }
   }
 
@@ -346,6 +339,10 @@ p.no-search-results {
     }
   }
 
+  .pipe_list {
+    margin-left: 15px;
+  }
+
   .select.is-medium {
     font-size: 1.05rem;
   }
@@ -370,6 +367,15 @@ p.no-search-results {
 
   .light {
     float: none;
+  }
+
+  .actionlink.right {
+    float: left;
+    margin-left: 10px;
+  }
+
+  .action-btn {
+    margin-top: 25px;
   }
 }
 
