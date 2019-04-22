@@ -78,6 +78,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		var column_defs = [
 			{ orderable: false, targets: excluded_columns },
 			{ searchable: false, target: excluded_columns },
+			{ width: '10%', targets: [4, 5] },
+			{ width: '20%', targets: [0, 2, 3] },
+			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row) { return '<img src="' + row.id + '" alt="Thumbnail image for ' + row.title + '" >' }, targets: 0 },
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
 			{ render: function (data, type, row) { getValue(row.datastream, 'file_type'); }, targets: 2 },
@@ -98,6 +101,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			[0, 1].forEach(function(d) {
 				column_defs[d].targets = excluded_columns;
 			});
+
+			// Add edit btn to 10% width group
+			column_defs[2].targets = [4, 5, 6];
 
 			column_defs.push(
 				{ render: function (data, type, row) {

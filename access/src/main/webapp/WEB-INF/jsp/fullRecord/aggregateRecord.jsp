@@ -47,29 +47,24 @@
 
 		<div class="collinfo">
 			<div class="collinfo_metadata">
-				<h2><c:out value="${briefObject.title}" /></h2>
-
-				<c:choose>
-					<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
-						<div class="actionlink right download">
-							<a href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
-						</div>
-						<c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-							<div class="actionlink right">
-								<a href="${dataFileUrl}">View</a>
-							</div>
-						</c:if>
-					</c:when>
-					<c:when test="${not empty embargoDate && not empty dataFileUrl}">
-						<div class="noaction right">
-							Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
-						</div>
-					</c:when>
-				</c:choose>
-				<div class="actionlink view">
-					<c:if test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
-						<a href="${dataFileUrl}">View</a>
-					</c:if>
+				<div class="columns">
+					<div class="column is-10">
+						<h2><c:out value="${briefObject.title}" /></h2>
+					</div>
+					<div class="column is-2">
+						<c:choose>
+							<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
+								<div class="actionlink right download">
+									<a href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
+								</div>
+							</c:when>
+							<c:when test="${not empty embargoDate && not empty dataFileUrl}">
+								<div class="noaction right">
+									Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
+								</div>
+							</c:when>
+						</c:choose>
+					</div>
 				</div>
 				<ul class="pipe_list smaller">
 					<c:if test="${not empty briefObject.creator}">

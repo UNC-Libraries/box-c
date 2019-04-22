@@ -235,6 +235,10 @@ p.no-search-results {
     font-size: 16px;
     margin-bottom: 30px;
   }
+
+  .fa {
+    font-size: 24px;
+  }
 }
 
 .onecol, .content-wrap.full_record {
@@ -282,6 +286,12 @@ p.no-search-results {
     font-size: 24px;
   }
 
+  .actionlink {
+    a {
+      padding: 15px;
+    }
+  }
+
   .actionlink a, ul {
     font-size: 16px;
   }
@@ -291,6 +301,7 @@ p.no-search-results {
   border: 1px solid $light-gray;
   border-collapse: collapse;
   width: 100%;
+  word-wrap: break-word;
 
   thead {
     font-weight: bold;
@@ -301,7 +312,12 @@ p.no-search-results {
     border-collapse: collapse;
     padding: 10px;
     text-align: center;
+    vertical-align: middle;
   }
+}
+
+.pipe_list {
+  margin-bottom: 10px;
 }
 
 /* Bulma overrides */
