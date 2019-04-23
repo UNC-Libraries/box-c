@@ -347,8 +347,8 @@ p.no-search-results {
     font-size: 1.05rem;
   }
 
-  #child-files {
-    overflow-x: auto;
+  #child-files_wrapper {
+    overflow-x: scroll;
   }
 }
 
@@ -380,6 +380,16 @@ p.no-search-results {
 
   .action-btn {
     margin-top: 25px;
+  }
+
+  .dataTables_wrapper {
+    .dataTables_filter {
+      float: left !important;
+
+      input {
+        margin-top: 25px;
+        float: left;
+    }
   }
 }
 

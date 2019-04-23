@@ -139,10 +139,11 @@
 		</c:forEach>
 	</c:set>
 	<link rel="stylesheet" href="/static/plugins/DataTables/datatables.min.css">
+    <link rel="stylesheet" href="/static/plugins/DataTables/Responsive-2.2.2/css/responsive.dataTables.css">
 
 	<div class="child-records">
 		<h3>List of Items in This Work (${childCount})</h3>
-		<table id="child-files" data-pid="${briefObject.id}">
+		<table id="child-files" class="responsive" data-pid="${briefObject.id}">
 			<thead>
 			<tr>
 				<th>Thumbnail</th>
