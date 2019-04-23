@@ -84,7 +84,7 @@
 							</ul>
 						</div>
 					</div>
-					<div class="column is-3 action-btn"">
+					<div class="column is-3 action-btn">
 						<c:choose>
 							<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 								<div class="actionlink right download">

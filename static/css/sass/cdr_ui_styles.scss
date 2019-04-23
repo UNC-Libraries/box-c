@@ -346,6 +346,10 @@ p.no-search-results {
   .select.is-medium {
     font-size: 1.05rem;
   }
+
+  #child-files {
+    overflow-x: auto;
+  }
 }
 
 @media screen and (max-width: 768px) {
