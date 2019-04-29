@@ -134,14 +134,8 @@
 	</div>
 </div>
 
-<c:if test="${childCount > 0}">
-	<c:set var="defaultWebObjectID">
-		<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
-			<c:if test="${datastream.name == 'original_file'}">
-				<c:out value="${datastream.owner.pid}"/>
-			</c:if>
-		</c:forEach>
-	</c:set>
+<%-- Reenable once child counts are working --%>
+<%-- <c:if test="${childCount > 0}"> --%>
 	<link rel="stylesheet" href="/static/plugins/DataTables/datatables.min.css">
 	<link rel="stylesheet" href="/static/plugins/DataTables/Responsive-2.2.2/css/responsive.dataTables.css">
 
@@ -165,6 +159,6 @@
 			</tbody>
 		</table>
 	</div>
-</c:if>
+<%-- </c:if> --%>
 
 <c:import url="fullRecord/neighborList.jsp" />
