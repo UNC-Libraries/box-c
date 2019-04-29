@@ -506,6 +506,10 @@ p.no-search-results {
   width: 100%;
 }
 
+.contentarea {
+  margin: 20px;
+}
+
 .full_record_top {
   border-bottom: 1px solid $light-gray;
   padding-bottom: 25px;
@@ -520,6 +524,11 @@ p.no-search-results {
       position: relative;
     }
   }
+}
+
+#full_record_trail {
+  font-size: 14px;
+  text-indent: 0;
 }
 
 .actionlink.view {
@@ -541,6 +550,7 @@ p.no-search-results {
 
   .actionlink {
     a {
+      color: white;
       padding: 15px;
       display: inline-block;
     }

@@ -132,7 +132,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		function getOriginalFileValue(datastream_info, type) {
 			for (var i in datastream_info) {
-				ds_parts = datastream_info[i].split("\|");
+				var ds_parts = datastream_info[i].split("\|");
 				if (ds_parts.length < 5 || ds_parts[0] !== "original_file") {
 					continue;
 				}
