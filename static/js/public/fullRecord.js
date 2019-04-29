@@ -83,8 +83,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row) { return '<img src="' + row.id + '" alt="Thumbnail image for ' + row.title + '" >' }, targets: 0 },
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
-			{ render: function (data, type, row) { getValue(row.datastream, 'file_type'); }, targets: 2 },
-			{ render: function (data, type, row) { getValue(row.datastream, 'file_size');  }, targets: 3 },
+			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },
+			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus" title="View"></a>'; },
 				targets: 4
 			},
@@ -130,16 +130,19 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		$('#child-files_filter input').addClass('input');
 		$('.child-records h3').css('margin-bottom', '-30px'); // adjust margin to line up with search box
 
-		function getValue(datastream_info, type) {
-			var data_file = datastream_info.find(function(element) {
-				return /DATA_FILE/.exec(element);
-			});
-
-			if (type === 'file_type') {
-				return /DATA_FILE\|(.*?)\|/.exec(data_file)[1];
-			} else {
-				return bytesToSize(/\|([0-9]+)\|/.exec(data_file)[1]);
+		function getOriginalFileValue(datastream_info, type) {
+			for (var i in datastream_info) {
+				ds_parts = datastream_info[i].split("\|");
+				if (ds_parts.length < 5 || ds_parts[0] !== "original_file") {
+					continue;
+				}
+				if (type === 'file_type') {
+					return ds_parts[3];
+				} else {
+					return bytesToSize(ds_parts[4])
+				}
 			}
+			return "";
 		}
 
 		function bytesToSize(bytes) {

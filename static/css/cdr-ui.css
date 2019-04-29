@@ -441,6 +441,96 @@ p.no-search-results {
   margin-bottom: 50px;
 }
 
+/* Work page */
+/* DataTables  */
+#child-files_wrapper div {
+  margin: 15px 0 !important;
+}
+
+#child-files_filter label {
+  float: right;
+  width: 250px;
+}
+
+.input::placeholder, .input {
+  color: black;
+}
+
+.dataTables_wrapper {
+  margin-bottom: 50px;
+}
+
+.child-records {
+  font-size: 16px;
+  margin: 50px 50px 75px 50px;
+}
+.child-records h3 {
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+.child-records .fa {
+  font-size: 24px;
+}
+
+.onecol, .content-wrap.full_record {
+  width: 100%;
+}
+
+.full_record_top {
+  border-bottom: 1px solid #E1E1E1;
+  padding-bottom: 25px;
+}
+.full_record_top .collinfo {
+  padding-top: 25px;
+  width: 85%;
+}
+.full_record_top .thumbnail .thumbnail-placeholder {
+  position: relative;
+}
+
+.actionlink.view {
+  max-width: 60px;
+}
+.actionlink.view a {
+  margin: auto;
+}
+
+.even {
+  background-color: ghostwhite !important;
+}
+
+.collinfo_metadata h2 {
+  font-size: 24px;
+}
+.collinfo_metadata .actionlink a {
+  padding: 15px;
+  display: inline-block;
+}
+.collinfo_metadata .actionlink a, .collinfo_metadata ul {
+  font-size: 16px;
+}
+
+#child-files {
+  border: 1px solid #E1E1E1;
+  border-collapse: collapse;
+  width: 100%;
+  word-wrap: break-word;
+}
+#child-files thead {
+  font-weight: bold;
+}
+#child-files th, #child-files td {
+  border: 1px solid #E1E1E1;
+  border-collapse: collapse;
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.pipe_list {
+  margin-bottom: 10px;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
@@ -462,8 +552,16 @@ p.no-search-results {
     width: 100%;
   }
 
+  .pipe_list {
+    margin-left: 15px;
+  }
+
   .select.is-medium {
     font-size: 1.05rem;
+  }
+
+  #child-files_wrapper {
+    overflow-x: scroll;
   }
 }
 @media screen and (max-width: 768px) {
@@ -483,6 +581,23 @@ p.no-search-results {
 
   .light {
     float: none;
+  }
+
+  .actionlink.right {
+    float: left;
+    margin-left: 10px;
+  }
+
+  .action-btn {
+    margin-top: 25px;
+  }
+
+  .dataTables_wrapper .dataTables_filter {
+    float: left !important;
+  }
+  .dataTables_wrapper .dataTables_filter input {
+    margin-top: 25px;
+    float: left;
   }
 }
 /* CDR custom breakpoint */
