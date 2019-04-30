@@ -101,7 +101,7 @@
 						</c:choose>
 
 						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-							<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
+							<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
 						</c:if>
 					</div>
 
