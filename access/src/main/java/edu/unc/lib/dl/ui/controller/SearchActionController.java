@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +35,10 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-// import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -104,6 +107,17 @@ public class SearchActionController extends AbstractSolrSearchController {
         }
 
         return formattedQuery.trim();
+    }
+
+    @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody
+    Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request,
+                                 HttpServletResponse response) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(true);
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        return getResults(resultResponse, "list", request);
     }
 
     @RequestMapping("/list/{pid}")

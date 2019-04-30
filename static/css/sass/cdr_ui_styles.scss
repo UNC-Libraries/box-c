@@ -206,6 +206,123 @@ p.no-search-results {
   }
 }
 
+/* Work page */
+
+
+/* DataTables  */
+#child-files_wrapper div {
+  margin: 15px 0 !important;
+}
+
+#child-files_filter label {
+  float: right;
+  width: 250px;
+}
+
+.input::placeholder, .input {
+  color: black;
+}
+
+.dataTables_wrapper {
+  margin-bottom: 50px;
+}
+
+.child-records {
+  font-size: 16px;
+  margin: 50px 50px 75px 50px;
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+
+  .fa {
+    font-size: 24px;
+  }
+}
+
+.onecol, .content-wrap.full_record {
+  width: 100%;
+}
+
+.contentarea {
+  margin: 20px;
+}
+
+.full_record_top {
+  border-bottom: 1px solid $light-gray;
+  padding-bottom: 25px;
+
+  .collinfo {
+    padding-top: 25px;
+    width: 85%;
+  }
+
+  .thumbnail {
+    .thumbnail-placeholder {
+      position: relative;
+    }
+  }
+}
+
+#full_record_trail {
+  font-size: 14px;
+  text-indent: 0;
+}
+
+.actionlink.view {
+  max-width: 60px;
+
+  a {
+    margin: auto;
+  }
+}
+
+.even {
+  background-color: ghostwhite !important;
+}
+
+.collinfo_metadata {
+  h2 {
+    font-size: 24px;
+  }
+
+  .actionlink {
+    a {
+      color: white;
+      padding: 15px;
+      display: inline-block;
+    }
+  }
+
+  .actionlink a, ul {
+    font-size: 16px;
+  }
+}
+
+#child-files {
+  border: 1px solid $light-gray;
+  border-collapse: collapse;
+  width: 100%;
+  word-wrap: break-word;
+
+  thead {
+    font-weight: bold;
+  }
+
+  th, td {
+    border: 1px solid $light-gray;
+    border-collapse: collapse;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+.pipe_list {
+  margin-bottom: 10px;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
@@ -232,8 +349,16 @@ p.no-search-results {
     }
   }
 
+  .pipe_list {
+    margin-left: 15px;
+  }
+
   .select.is-medium {
     font-size: 1.05rem;
+  }
+
+  #child-files_wrapper {
+    overflow-x: scroll;
   }
 }
 
@@ -256,6 +381,26 @@ p.no-search-results {
 
   .light {
     float: none;
+  }
+
+  .actionlink.right {
+    float: left;
+    margin-left: 10px;
+  }
+
+  .action-btn {
+    margin-top: 25px;
+  }
+
+  .dataTables_wrapper {
+    .dataTables_filter {
+      float: left !important;
+
+      input {
+        margin-top: 25px;
+        float: left;
+      }
+    }
   }
 }
 
