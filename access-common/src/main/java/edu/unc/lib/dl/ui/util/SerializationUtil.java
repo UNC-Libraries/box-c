@@ -121,6 +121,14 @@ public class SerializationUtil {
 
     public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
+        String thumbnail = DatastreamUtil.getThumbnailUrl(metadata, null);
+
+        if (!thumbnail.isEmpty()) {
+            result.put("thumbnail_path", thumbnail);
+        } else {
+            result.put("thumbnail_path", null);
+        }
+
         if (metadata.getId() != null) {
             result.put("id", metadata.getId());
             result.put("uri", applicationPathSettings.getApiRecordPath() + metadata.getId());
