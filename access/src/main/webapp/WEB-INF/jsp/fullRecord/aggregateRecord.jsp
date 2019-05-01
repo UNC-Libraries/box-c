@@ -135,7 +135,7 @@
 </div>
 
 <%-- Reenable once child counts are working --%>
-<%-- <c:if test="${childCount > 0}"> --%>
+<c:if test="${childCount > 0}">
 	<link rel="stylesheet" href="/static/plugins/DataTables/datatables.min.css">
 	<link rel="stylesheet" href="/static/plugins/DataTables/Responsive-2.2.2/css/responsive.dataTables.css">
 
@@ -159,6 +159,6 @@
 			</tbody>
 		</table>
 	</div>
-<%-- </c:if> --%>
+</c:if>
 
 <c:import url="fullRecord/neighborList.jsp" />

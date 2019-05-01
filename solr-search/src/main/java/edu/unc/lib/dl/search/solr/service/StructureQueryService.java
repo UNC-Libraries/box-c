@@ -261,7 +261,7 @@ public class StructureQueryService extends AbstractQueryService {
 
         // Get count of of children objects
         filteredChildrenQuery.addFilterQuery(makeFilter(RESOURCE_TYPE,
-                asList(AdminUnit.name(), Collection.name(), Folder.name(), Work.name())));
+                ChildrenCountService.DEFAULT_CHILD_TYPES));
         childrenCountService.addChildrenCounts(results, principals,
                 CHILD_COUNT, filteredChildrenQuery);
 

@@ -116,6 +116,13 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
+    public void testGetChildrenCountForWork() throws Exception {
+        BriefObjectMetadata bom = getObject(testCorpus.work1Pid);
+
+        assertEquals(2, countService.getChildrenCount(bom, principals));
+    }
+
+    @Test
     public void testAddChildrenCounts() throws Exception {
         BriefObjectMetadata folder1 = getObject(testCorpus.folder1Pid);
         BriefObjectMetadata coll2 = getObject(testCorpus.coll2Pid);
