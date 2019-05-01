@@ -82,8 +82,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ width: '20%', targets: [0, 2, 3] },
 			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row) {
-				var default_img = (row.thumbnail_path !== null) ? row.thumbnail_path : '/static/images/placeholder/document-small.png';
-				return '<img src="' + default_img + '" alt="Thumbnail image for ' + row.title + '" alt="Thumbnail for ' + row.title + '">' }, targets: 0
+				var default_img = ('thumbnail_url' in row) ? row.thumbnail_url : '/static/images/placeholder/document-small.png';
+				return '<img src="' + default_img + '" alt="Thumbnail image for ' + row.title + '">' }, targets: 0
 			},
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },

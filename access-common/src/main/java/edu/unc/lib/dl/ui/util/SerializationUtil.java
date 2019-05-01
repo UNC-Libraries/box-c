@@ -121,12 +121,10 @@ public class SerializationUtil {
 
     public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
-        String thumbnail = DatastreamUtil.getThumbnailUrl(metadata, null);
+        String thumbnail_url = DatastreamUtil.getThumbnailUrl(metadata, null);
 
-        if (!thumbnail.isEmpty()) {
-            result.put("thumbnail_path", thumbnail);
-        } else {
-            result.put("thumbnail_path", null);
+        if (!thumbnail_url.isEmpty()) {
+            result.put("thumbnail_url", thumbnail_url);
         }
 
         if (metadata.getId() != null) {
