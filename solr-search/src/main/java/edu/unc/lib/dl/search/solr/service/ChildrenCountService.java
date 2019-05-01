@@ -23,14 +23,11 @@ import static edu.unc.lib.dl.util.ResourceType.File;
 import static edu.unc.lib.dl.util.ResourceType.Folder;
 import static edu.unc.lib.dl.util.ResourceType.Work;
 import static java.util.Arrays.asList;
-import static java.util.Collections.binarySearch;
 
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +47,7 @@ public class ChildrenCountService extends AbstractQueryService {
     private static final Logger log = LoggerFactory.getLogger(ChildrenCountService.class);
 
     public static final String CHILD_COUNT = "child";
-    private static final List<String> DEFAULT_CHILD_TYPES =
+    public static final List<String> DEFAULT_CHILD_TYPES =
             asList(AdminUnit.name(), Collection.name(), Folder.name(), Work.name());
     private static final List<String> WORK_CHILD_TYPES =
             asList(File.name());
@@ -63,11 +60,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * @return count of number of child objects
      */
     public long getChildrenCount(BriefObjectMetadata container, AccessGroupSet principals) {
-        SolrQuery solrQuery = createBaseQuery(principals, container);
-
-        StringBuilder filterQuery = new StringBuilder();
-        addFilter(filterQuery, ANCESTOR_PATH, container.getPath().getSearchValue());
-        solrQuery.addFilterQuery(filterQuery.toString());
+        SolrQuery solrQuery = createBaseQuery(principals, container, null);
 
         try {
             QueryResponse queryResponse = executeQuery(solrQuery);
@@ -114,116 +107,61 @@ public class ChildrenCountService extends AbstractQueryService {
 
         log.debug("Adding child counts of type {} to result list", countKey);
 
-        SolrQuery solrQuery;
-        if (baseQuery == null) {
-            // Create a base query since we didn't receive one
-            solrQuery = createBaseQuery(principals, null);
-        } else {
+        // Prepare a common base query for each container
+        SolrQuery commonQuery = null;
+        if (baseQuery != null) {
             // Starting from a base query
-            solrQuery = baseQuery.getCopy();
-            // Make sure we aren't returning any normal results
-            solrQuery.setRows(0);
+            commonQuery = baseQuery.getCopy();
             // Remove all facet fields so we are only getting ancestor path
-            String[] facetFields = solrQuery.getFacetFields();
+            String[] facetFields = commonQuery.getFacetFields();
             if (facetFields != null) {
                 for (String facetField : facetFields) {
-                    solrQuery.removeFacetField(facetField);
+                    commonQuery.removeFacetField(facetField);
                 }
             }
         }
 
-        // Algorithm for getting child counts for list of objects currently involves
-        // retrieving counts for every object in Solr and then matching
-        // the counts back to the metadata object using a binary search. We
-        // should reevaluate this as things scale, but was introduced as more
-        // efficient than hundreds of queries per request.
-        String ancestorPathField = solrField(ANCESTOR_PATH);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.addFacetField(ancestorPathField);
+        // Calculate the child count for each provided container one at a time
+        for (BriefObjectMetadata container : containers) {
+            SolrQuery solrQuery = createBaseQuery(principals, container, commonQuery);
 
-        solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
-        // Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
-        solrQuery.setFacetSort("index");
-
-        try {
-            QueryResponse queryResponse = this.executeQuery(solrQuery);
-            assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), containers, countKey);
-        } catch (SolrServerException e) {
-            throw new SolrRuntimeException(e);
+            try {
+                QueryResponse queryResponse = executeQuery(solrQuery);
+                container.getCountMap().put(countKey, queryResponse.getResults().getNumFound());
+            } catch (SolrServerException e) {
+                throw new SolrRuntimeException(e);
+            }
         }
     }
 
-    private SolrQuery createBaseQuery(AccessGroupSet principals, BriefObjectMetadata container) {
-        SolrQuery solrQuery = new SolrQuery();
+    private SolrQuery createBaseQuery(AccessGroupSet principals, BriefObjectMetadata container, SolrQuery baseQuery) {
+        SolrQuery solrQuery;
+        if (baseQuery == null) {
+            solrQuery = new SolrQuery();
 
-        // Add access restrictions to query
-        StringBuilder query = new StringBuilder("*:*");
-        restrictionUtil.add(query, principals);
-        solrQuery.setQuery(query.toString());
+            // Add access restrictions to query
+            StringBuilder query = new StringBuilder("*:*");
+            restrictionUtil.add(query, principals);
+            solrQuery.setQuery(query.toString());
+
+            if (!Work.equals(container.getResourceType())) {
+                // Restrict counts to stand alone content objects
+                solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, DEFAULT_CHILD_TYPES));
+            } else {
+                solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, WORK_CHILD_TYPES));
+            }
+        } else {
+            solrQuery = baseQuery.getCopy();
+        }
 
         solrQuery.setStart(0);
         solrQuery.setRows(0);
         solrQuery.setFacet(true);
 
-        if (container == null || !Work.equals(container.getResourceType())) {
-            // Restrict counts to stand alone content objects
-            solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, DEFAULT_CHILD_TYPES));
-        } else {
-            solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, WORK_CHILD_TYPES));
-        }
+        StringBuilder filterQuery = new StringBuilder();
+        addFilter(filterQuery, ANCESTOR_PATH, container.getPath().getSearchValue());
+        solrQuery.addFilterQuery(filterQuery.toString());
 
         return solrQuery;
-    }
-
-    /**
-     * Assigns children counts to container objects from ancestor path facet results based on matching search values
-     *
-     * @param facetField
-     * @param containerObjects
-     * @param countName
-     */
-    private void assignChildrenCounts(FacetField ancestorsField, List<BriefObjectMetadata> containerObjects,
-            String countName) {
-        if (ancestorsField.getValues() == null) {
-            return;
-        }
-
-        // Get the list of counts per pid
-        List<Count> counts = ancestorsField.getValues();
-        // Determine the most efficient algorithm for searching the counts
-        boolean binarySearch = counts.size() > 64;
-        // Find the count associated with each object in the list of containers
-        for (BriefObjectMetadata container : containerObjects) {
-
-            String searchValue = container.getPath().getSearchValue();
-
-            // Find the facet count for this container, either using a binary or linear search
-            Count match;
-            if (binarySearch) {
-                match = binarySearchForMatchingCount(counts, searchValue);
-            } else {
-                match = counts.stream()
-                    .filter(v -> v.getName().indexOf(searchValue) == 0)
-                    .findFirst()
-                    .orElse(null);
-            }
-
-            // Store the matching count on the container
-            if (match != null) {
-                container.getCountMap().put(countName, match.getCount());
-            } else {
-                container.getCountMap().put(countName, Long.valueOf(0));
-            }
-        }
-    }
-
-    private Count binarySearchForMatchingCount(List<Count> counts, String searchValue) {
-        int matchIndex = binarySearch(counts, searchValue, (countObj, searchValueObj) -> {
-            String searchVal = (String) searchValueObj;
-            String countId = ((Count) countObj).getName();
-            // If the id starts with the search value, return match.  Else, compare and continue.
-            return countId.indexOf(searchVal) == 0 ? 0 : countId.compareTo(searchValue);
-        });
-        return matchIndex < 0 ? null : counts.get(matchIndex);
     }
 }
