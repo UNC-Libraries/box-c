@@ -152,7 +152,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
-        boolean retrieveChildrenCount = resourceType.equals(searchSettings.resourceTypeFolder);
+        boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
         boolean retrieveFacets = resourceType.equals(searchSettings.resourceTypeFolder)
                 || resourceType.equals(searchSettings.resourceTypeCollection);
 

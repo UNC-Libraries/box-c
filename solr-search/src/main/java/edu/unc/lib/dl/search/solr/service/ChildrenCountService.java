@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 import static edu.unc.lib.dl.util.ResourceType.AdminUnit;
 import static edu.unc.lib.dl.util.ResourceType.Collection;
+import static edu.unc.lib.dl.util.ResourceType.File;
 import static edu.unc.lib.dl.util.ResourceType.Folder;
 import static edu.unc.lib.dl.util.ResourceType.Work;
 import static java.util.Arrays.asList;
@@ -49,6 +50,10 @@ public class ChildrenCountService extends AbstractQueryService {
     private static final Logger log = LoggerFactory.getLogger(ChildrenCountService.class);
 
     public static final String CHILD_COUNT = "child";
+    private static final List<String> DEFAULT_CHILD_TYPES =
+            asList(AdminUnit.name(), Collection.name(), Folder.name(), Work.name());
+    private static final List<String> WORK_CHILD_TYPES =
+            asList(File.name());
 
     /**
      * Get the count of child objects within the container, at any depth.
@@ -58,7 +63,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * @return count of number of child objects
      */
     public long getChildrenCount(BriefObjectMetadata container, AccessGroupSet principals) {
-        SolrQuery solrQuery = createBaseQuery(principals);
+        SolrQuery solrQuery = createBaseQuery(principals, container);
 
         StringBuilder filterQuery = new StringBuilder();
         addFilter(filterQuery, ANCESTOR_PATH, container.getPath().getSearchValue());
@@ -102,7 +107,7 @@ public class ChildrenCountService extends AbstractQueryService {
     public void addChildrenCounts(List<BriefObjectMetadata> containers, AccessGroupSet principals,
             String countKey, SolrQuery baseQuery) {
 
-        Assert.notNull(containers);
+        Assert.notNull(containers, "Must provide a list of containers");
         if (containers.size() == 0) {
             return;
         }
@@ -112,7 +117,7 @@ public class ChildrenCountService extends AbstractQueryService {
         SolrQuery solrQuery;
         if (baseQuery == null) {
             // Create a base query since we didn't receive one
-            solrQuery = createBaseQuery(principals);
+            solrQuery = createBaseQuery(principals, null);
         } else {
             // Starting from a base query
             solrQuery = baseQuery.getCopy();
@@ -148,7 +153,7 @@ public class ChildrenCountService extends AbstractQueryService {
         }
     }
 
-    private SolrQuery createBaseQuery(AccessGroupSet principals) {
+    private SolrQuery createBaseQuery(AccessGroupSet principals, BriefObjectMetadata container) {
         SolrQuery solrQuery = new SolrQuery();
 
         // Add access restrictions to query
@@ -160,9 +165,13 @@ public class ChildrenCountService extends AbstractQueryService {
         solrQuery.setRows(0);
         solrQuery.setFacet(true);
 
-        // Restrict counts to stand alone content objects
-        solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE,
-                asList(AdminUnit.name(), Collection.name(), Folder.name(), Work.name())));
+        if (container == null || !Work.equals(container.getResourceType())) {
+            // Restrict counts to stand alone content objects
+            solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, DEFAULT_CHILD_TYPES));
+        } else {
+            solrQuery.addFilterQuery(makeFilter(RESOURCE_TYPE, WORK_CHILD_TYPES));
+        }
+
         return solrQuery;
     }
 
