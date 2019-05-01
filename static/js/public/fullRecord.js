@@ -81,7 +81,10 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ width: '10%', targets: [4, 5] },
 			{ width: '20%', targets: [0, 2, 3] },
 			{ width: '40%', targets: 1 },
-			{ render: function (data, type, row) { return '<img src="' + row.id + '" alt="Thumbnail image for ' + row.title + '" >' }, targets: 0 },
+			{ render: function (data, type, row) {
+				var default_img = ('thumbnail_url' in row) ? row.thumbnail_url : '/static/images/placeholder/document-small.png';
+				return '<img src="' + default_img + '" alt="Thumbnail image for ' + row.title + '">' }, targets: 0
+			},
 			{ render: function (data, type, row) { return row.title; }, targets: 1 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
