@@ -468,8 +468,9 @@ p.no-search-results {
   font-size: 16px;
   margin-bottom: 30px;
 }
-.child-records .default-img-icon {
+.child-records fa.default-img-icon {
   font-size: 32px;
+  color: gray;
 }
 .child-records .is-icon {
   background-color: #1A698C;

@@ -84,7 +84,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row) {
 				var img;
-				console.log(row);
+
 				if ('thumbnail_url' in row) {
 					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">'
 				} else {
