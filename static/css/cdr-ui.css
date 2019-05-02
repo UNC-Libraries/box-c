@@ -468,8 +468,15 @@ p.no-search-results {
   font-size: 16px;
   margin-bottom: 30px;
 }
-.child-records .fa {
-  font-size: 24px;
+.child-records .default-img-icon {
+  font-size: 32px;
+}
+.child-records .is-icon {
+  background-color: #1A698C;
+  border: 1px solid #1A698C;
+  border-radius: 5px;
+  color: white;
+  padding: 7px;
 }
 
 .onecol, .content-wrap.full_record {
@@ -504,8 +511,8 @@ p.no-search-results {
   margin: auto;
 }
 
-.even {
-  background-color: ghostwhite !important;
+table.dataTable tbody tr.odd {
+  background-color: #E1E8FF;
 }
 
 .collinfo_metadata h2 {
@@ -529,8 +536,14 @@ p.no-search-results {
 #child-files thead {
   font-weight: bold;
 }
-#child-files th, #child-files td {
+#child-files th {
   border: 1px solid #E1E1E1;
+}
+#child-files td {
+  border-left: 1px solid #E1E1E1;
+  border-right: 1px solid #E1E1E1;
+}
+#child-files th, #child-files td {
   border-collapse: collapse;
   padding: 10px;
   text-align: center;

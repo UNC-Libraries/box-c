@@ -78,20 +78,28 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		var column_defs = [
 			{ orderable: false, targets: excluded_columns },
 			{ searchable: false, target: excluded_columns },
-			{ width: '10%', targets: [4, 5] },
-			{ width: '20%', targets: [0, 2, 3] },
+			{ type: 'file-size', targets: 3 },
+			{ width: '5%', targets: [0, 4, 5] },
+			{ width: '20%', targets: [2, 3] },
 			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row) {
-				var default_img = ('thumbnail_url' in row) ? row.thumbnail_url : '/static/images/placeholder/document-small.png';
-				return '<img src="' + default_img + '" alt="Thumbnail image for ' + row.title + '">' }, targets: 0
+				var img;
+				console.log(row);
+				if ('thumbnail_url' in row) {
+					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">'
+				} else {
+					img = '<i class="fa fa-file default-img-icon" title="Default thumbnail image"></i>';
+				}
+				return img
+				}, targets: 0
 			},
-			{ render: function (data, type, row) { return row.title; }, targets: 1 },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '">' +row.title + '</a>'; }, targets: 1 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
-			{ render: function (data, type, row) { return '<a href="' + row.uri + '"><i class="fa fa-search-plus" title="View"></a>'; },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '"><i class="fa fa-search-plus is-icon" title="View"></a>'; },
 				targets: 4
 			},
-			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download" title="Download"></a>'; },
+			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download is-icon" title="Download"></a>'; },
 				targets: 5
 			}
 		];
@@ -110,7 +118,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 			column_defs.push(
 				{ render: function (data, type, row) {
-						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit" title="Edit"></i></a>'
+						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit is-icon" title="Edit"></i></a>'
 					},
 					targets: 6
 				});

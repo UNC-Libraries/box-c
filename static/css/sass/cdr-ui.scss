@@ -497,8 +497,16 @@ p.no-search-results {
     margin-bottom: 30px;
   }
 
-  .fa {
-    font-size: 24px;
+  .default-img-icon {
+    font-size: 32px;
+  }
+
+  .is-icon {
+    background-color: #1A698C;
+    border: 1px solid #1A698C;
+    border-radius: 5px;
+    color: white;
+    padding: 7px;
   }
 }
 
@@ -539,8 +547,12 @@ p.no-search-results {
   }
 }
 
-.even {
-  background-color: ghostwhite !important;
+table.dataTable {
+  tbody {
+    tr.odd {
+      background-color: #E1E8FF;
+    }
+  }
 }
 
 .collinfo_metadata {
@@ -562,7 +574,7 @@ p.no-search-results {
 }
 
 #child-files {
-  border: 1px solid $light-gray;
+  border: $border-style;
   border-collapse: collapse;
   width: 100%;
   word-wrap: break-word;
@@ -571,8 +583,16 @@ p.no-search-results {
     font-weight: bold;
   }
 
+  th {
+    border: $border-style;
+  }
+
+  td {
+    border-left: $border-style;
+    border-right: $border-style;
+  }
+
   th, td {
-    border: 1px solid $light-gray;
     border-collapse: collapse;
     padding: 10px;
     text-align: center;

@@ -144,7 +144,7 @@
 		<table id="child-files" class="responsive" data-pid="${briefObject.id}">
 			<thead>
 			<tr>
-				<th>Thumbnail</th>
+				<th></th>
 				<th>Title</th>
 				<th>File Type</th>
 				<th>File Size</th>
