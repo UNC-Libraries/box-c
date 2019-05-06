@@ -1,6 +1,8 @@
 <template>
-    <div>
-        <button @click="showModal = true"><i class="fa fa-file-text-o" aria-hidden="true" title="Metadata"></i> Metadata</button>
+    <div class="meta-modal">
+        <button id="show-modal" class="button is-medium" @click="showModal = true">
+            <i class="fa fa-file-text-o" aria-hidden="true" title="Metadata"></i> Metadata
+        </button>
 
         <div v-if="showModal" @close="showModal = false">
             <transition name="modal">
@@ -8,9 +10,10 @@
                     <div class="modal-wrapper">
                         <div class="modal-container">
 
-                            <div class="modal-header">
+                            <div class="modal-header columns">
                                 <slot name="header">
-                                    default header
+                                    <h3 class="column is-10">{{ containerInfo.title }}</h3>
+                                    <button class="column is-2 button" @click="showModal = false">(X) Close</button>
                                 </slot>
                             </div>
 
@@ -19,21 +22,10 @@
                                     default body
                                 </slot>
                             </div>
-
-                            <div class="modal-footer">
-                                <slot name="footer">
-                                    default footer
-                                    <button class="modal-default-button" @click="$emit('close')">
-                                        OK
-                                    </button>
-                                </slot>
-                            </div>
                         </div>
                     </div>
                 </div>
             </transition>
-
-            <modal-metadata v-if="showModal" @close="showModal = false"></modal-metadata>
         </div>
     </div>
 </template>
@@ -42,7 +34,8 @@
     define(['Vue'], function(Vue) {
         Vue.component('modalMetadata', {
             props: {
-                metadata: Array,
+                containerInfo: Object,
+                metadata: Array
             },
 
             template: template,
@@ -51,12 +44,6 @@
                 return {
                     showModal: false
                 };
-            },
-
-            methods: {
-               displayModal () {
-
-               }
             }
         });
     });
@@ -81,27 +68,28 @@
     }
 
     .modal-container {
-        width: 300px;
+        width: 800px;
         margin: 0 auto;
         padding: 20px 30px;
         background-color: #fff;
-        border-radius: 2px;
+        border-radius: 5px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
         transition: all .3s ease;
-        font-family: Helvetica, Arial, sans-serif;
+    }
+
+    .modal-header {
+        width: 100%;
+        text-align: center;
     }
 
     .modal-header h3 {
+        font-size: 2rem;
         margin-top: 0;
-        color: #42b983;
+        text-transform: capitalize;
     }
 
     .modal-body {
         margin: 20px 0;
-    }
-
-    .modal-default-button {
-        float: right;
     }
 
     /*
@@ -122,5 +110,20 @@
     .modal-leave-active .modal-container {
         -webkit-transform: scale(1.1);
         transform: scale(1.1);
+    }
+
+    .meta-modal button {
+        color: white;
+        background-color: #007FAE;
+    }
+
+    .meta-modal button:hover {
+        color: white;
+        opacity: .9;
+    }
+
+    .modal-header button {
+        margin: auto;
+        padding: 0;
     }
 </style>

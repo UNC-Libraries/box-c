@@ -2,7 +2,7 @@ require.config({
     urlArgs: 'v=4.0-SNAPSHOT',
     baseUrl: '/static/js/',
     paths: {
-        'Vue': 'lib/vue.min',
+        'Vue': 'lib/vue',
         'vue': 'lib/require-vuejs.min'
     },
     shim: {

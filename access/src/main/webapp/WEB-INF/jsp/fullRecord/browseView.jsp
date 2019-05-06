@@ -20,14 +20,15 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<div class="search-query-text collection-list has-text-centered">
-    <h2>${pageSubtitle}</h2>
-</div>
-<div class="columns is-mobile">
-    <div class="column is-12 search-pagination-bottom">
-        <div id="browse_view">
-            <browse-display fetchPath="/listJson/" fetchType="admin_set"></browse-display>
+
+<div class="contentarea">
+    <div class="collinfo_metadata">
+        <div class="">
+            <div id="browse_view">
+                <browse-display path="/listJson/${briefObject.id}" type="${briefObject.resourceType}"></browse-display>
+            </div>
         </div>
     </div>
 </div>
+
 <script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/browseView"></script>
