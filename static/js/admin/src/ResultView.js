@@ -26,8 +26,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						},
 						{
 							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'},
-								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
+								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'}
 							]
 						},
 						{

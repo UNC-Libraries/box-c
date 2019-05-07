@@ -108,24 +108,32 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["openContainer"] = {name : "Open"};
 		}
 		items["viewInCDR"] = {name : "View in CDR"};
-		var dataFile = resultObject.getDatastream("DATA_FILE");
-		if (dataFile) {
+		if (metadata.type == 'File') {
+			var originalFile = resultObject.getDatastream("original_file");
 			items["viewFile"] = {name : "View File"
-				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
+				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
 		}
-		if (resultObject.metadata.type == 'Collection') {
+		if (metadata.type == 'Collection') {
 			items["sepbrowse"] = "";
 			items["viewTrash"] = {name : "View trash for this collection"};
-			items["review"] = {name : "Review unpublished"};
 		}
 		
 		// Modification options
 		items["sepedit"] = "";
-		if ($.inArray('editResourceType', metadata.permissions) != -1 && metadata.isPart) {
-			items['setAsPrimaryObject'] = {
-				name : 'Set as Primary Object'
-			};
+		if ($.inArray('editResourceType', metadata.permissions) != -1) {
+			if (metadata.type == 'File') {
+				if ($.inArray('Is Primary Object', metadata.contentStatus) != -1) {
+					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
+				} else {
+					items['setAsPrimaryObject'] = { name : 'Set as Primary Object' };
+				}
+			} else if (metadata.type == 'Work') {
+				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
+					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
+				}
+			}
 		}
+		
 		/* Publish action being replaced
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
@@ -199,11 +207,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						});
 						break;
 					case "viewFile" :
-						var dataFile = resultObject.getDatastream("DATA_FILE");
-						if (dataFile) {
+						var originalFile = resultObject.getDatastream("original_file");
+						if (originalFile) {
 							self.actionHandler.addEvent({
 								action : 'ChangeLocation',
-								url : "content/" + (dataFile['primaryObject']? dataFile['primaryObject'] : metadata.id),
+								url : "content/" + metadata.id,
 								newWindow : true,
 								application : "access"
 							});
@@ -229,7 +237,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "publish" :
 						self.actionHandler.addEvent({
-							action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
+							action : $.inArray("Unpublished", metadata.status) == -1? 
 									'Unpublish' : 'Publish',
 							target : resultObject
 						});
@@ -267,10 +275,17 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							target : resultObject
 						});
 						break;
+					case "clearPrimaryObject" :
+						self.actionHandler.addEvent({
+							action : 'ClearPrimaryObjectResult',
+							target : resultObject,
+							confirm : false
+						});
+						break;
 					case "setAsPrimaryObject" :
 						self.actionHandler.addEvent({
-							action : 'SetAsPrimaryObject',
-							targets : [resultObject],
+							action : 'SetAsPrimaryObjectResult',
+							target : resultObject,
 							confirm : false
 						});
 						break;
