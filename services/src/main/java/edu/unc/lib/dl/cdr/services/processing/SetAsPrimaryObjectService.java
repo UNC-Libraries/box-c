@@ -17,7 +17,9 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -76,6 +78,48 @@ public class SetAsPrimaryObjectService {
             // Send message that the action completed
             operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(),
                     Arrays.asList(parent.getPid(), fileObjPid));
+        }
+    }
+
+    /**
+     * Clears the primary object for a work.
+     * @param agent
+     * @param objPid Either the pid of the work to clear the primary object for,
+     *    or the pid of the primary object for the work.
+     */
+    public void clearPrimaryObject(AgentPrincipals agent, PID objPid) {
+        try (Timer.Context context = timer.time()) {
+            RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
+
+            RepositoryObject parent;
+            if (repoObj instanceof FileObject) {
+                parent = repoObj.getParent();
+            } else {
+                parent = repoObj;
+            }
+
+            aclService.assertHasAccess("Insufficient privileges to clear primary object for "
+                    + parent.getPid().getId(), parent.getPid(), agent.getPrincipals(), editResourceType);
+
+            if (!(parent instanceof WorkObject)) {
+                throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
+                + " cannot have a primary object.");
+            }
+
+            WorkObject work = (WorkObject) parent;
+
+            List<PID> updated = new ArrayList<>();
+            updated.add(parent.getPid());
+            // if there was a primary object before, capture its pid for reporting
+            FileObject previousPrimary = work.getPrimaryObject();
+            if (previousPrimary != null) {
+                updated.add(previousPrimary.getPid());
+
+                work.clearPrimaryObject();
+            }
+
+            // Send message that the action completed
+            operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(), updated);
         }
     }
 

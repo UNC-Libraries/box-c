@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
@@ -126,6 +127,58 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
             assertEquals(folderObjPid.getUUID(), respMap.get("pid"));
             assertEquals("setAsPrimaryObject", respMap.get("action"));
             assertTrue(respMap.containsKey("error"));
+    }
+
+    @Test
+    public void testClearPrimaryObjectViaFile() throws UnsupportedOperationException, Exception {
+        makePidsAndObjects();
+        testClearPrimaryObject(fileObj);
+    }
+
+    @Test
+    public void testClearPrimaryObjectViaWork() throws UnsupportedOperationException, Exception {
+        makePidsAndObjects();
+        testClearPrimaryObject(parent);
+    }
+
+    private void testClearPrimaryObject(RepositoryObject target) throws Exception {
+        addFileObjAsMember();
+
+        parent.setPrimaryObject(fileObj.getPid());
+        assertPrimaryObjectSet(parent, fileObj);
+
+        MvcResult result = mvc.perform(put("/edit/clearPrimaryObject/" + target.getPid().getUUID()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        assertPrimaryObjectNotSet(parent);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(target.getPid().getUUID(), respMap.get("pid"));
+        assertEquals("clearPrimaryObject", respMap.get("action"));
+    }
+
+    @Test
+    public void testClearPrimaryObjectAuthorizationFailure() throws Exception {
+        makePidsAndObjects();
+        addFileObjAsMember();
+        parent.setPrimaryObject(fileObj.getPid());
+
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(editResourceType));
+
+        MvcResult result = mvc.perform(put("/edit/clearPrimaryObject/" + fileObjPid.getUUID()))
+            .andExpect(status().isForbidden())
+            .andReturn();
+
+        assertPrimaryObjectSet(parent, fileObj);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
+        assertEquals("clearPrimaryObject", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
     }
 
     private void assertPrimaryObjectSet(WorkObject parent, FileObject fileObj) {

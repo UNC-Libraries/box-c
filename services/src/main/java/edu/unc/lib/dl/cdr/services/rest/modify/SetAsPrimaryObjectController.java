@@ -78,4 +78,31 @@ public class SetAsPrimaryObjectController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/edit/clearPrimaryObject/{id}", method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<Object> clearPrimaryObject(@PathVariable("id") String id) {
+        return clearPrimary(id);
+    }
+
+    private ResponseEntity<Object> clearPrimary(String id) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "clearPrimaryObject");
+        result.put("pid", id);
+
+        PID objPid = PIDs.get(id);
+
+        try {
+            setAsPrimaryObjectService.clearPrimaryObject(AgentPrincipals.createFromThread(), objPid);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to clear primary object on or with pid " + objPid, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }
