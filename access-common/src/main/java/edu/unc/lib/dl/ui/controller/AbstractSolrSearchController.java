@@ -39,6 +39,7 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -61,6 +62,8 @@ public abstract class AbstractSolrSearchController {
     protected SearchSettings searchSettings;
     @Autowired
     protected SearchStateFactory searchStateFactory;
+    @Autowired
+    protected ChildrenCountService childrenCountService;
 
     protected SearchRequest generateSearchRequest(HttpServletRequest request) {
         return this.generateSearchRequest(request, null, new SearchRequest());
@@ -171,6 +174,10 @@ public abstract class AbstractSolrSearchController {
     protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
                                              HttpServletRequest request) {
         AccessGroupSet groups = GroupsThreadStore.getGroups();
+
+        childrenCountService.addChildrenCounts(resp.getResultList(),
+                groups);
+
         List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
         Map<String, Object> results = new HashMap<>();
         results.put("metadata", resultList);
