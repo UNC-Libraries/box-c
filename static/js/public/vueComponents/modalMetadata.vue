@@ -12,14 +12,17 @@
 
                             <div class="modal-header columns">
                                 <slot name="header">
-                                    <h3 class="column is-10">{{ containerInfo.title }}</h3>
-                                    <button class="column is-2 button" @click="showModal = false">(X) Close</button>
+                                    <h3 class="column is-11">{{ metadata.title }}</h3>
+                                    <button class="column is-1 button is-small" @click="showModal = false">Close</button>
                                 </slot>
                             </div>
 
                             <div class="modal-body">
                                 <slot name="body">
-                                    default body
+                                    <ul>
+                                        <li><strong>Created</strong>: {{ formatDate(metadata.added) }}</li>
+                                        <li><strong>Last Updated</strong>: {{ formatDate(metadata.updated) }}</li>
+                                    </ul>
                                 </slot>
                             </div>
                         </div>
@@ -34,8 +37,7 @@
     define(['Vue'], function(Vue) {
         Vue.component('modalMetadata', {
             props: {
-                containerInfo: Object,
-                metadata: Array
+                metadata: Object
             },
 
             template: template,
@@ -44,6 +46,17 @@
                 return {
                     showModal: false
                 };
+            },
+
+            methods: {
+                formatDate: function(date_text) {
+                    var date = new Date(date_text);
+                    return date.toLocaleString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                }
             }
         });
     });
@@ -90,6 +103,15 @@
 
     .modal-body {
         margin: 20px 0;
+    }
+
+    .modal-body ul {
+        display: block;
+        text-align: left;
+    }
+
+    .modal-body ul li {
+        margin-bottom: 10px;
     }
 
     /*

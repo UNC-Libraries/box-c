@@ -5,7 +5,7 @@
                 There are <strong>{{ record_list.length }}</strong> {{ noResultsText }} in this {{ resultText }}
             </div>
             <div class="column is-2">
-                <modal-metadata v-if="record_list.length > 0" :metadata="record_list" :container-info="container_metadata"></modal-metadata>
+                <modal-metadata v-if="record_list.length > 0" :metadata="container_metadata"></modal-metadata>
             </div>
         </div>
         <div class="columns">
@@ -41,7 +41,7 @@
 
             data: function() {
                 return {
-                    container_metadata: '',
+                    container_metadata: {},
                     record_list: []
                 }
             },
