@@ -1,39 +1,71 @@
 <template>
     <div class="browse-records-display">
-        <div class="columns spacing">
+        <div v-if="numberOfRecords > 0" class="columns">
             <div class="column is-10">
-                There are <strong>{{ record_list.length }}</strong> {{ noResultsText }} in this {{ resultText }}
+                <browse-search :records="record_list"
+                               :record-type="type"
+                               @browse-query-results="browseSearching">
+                </browse-search>
             </div>
             <div class="column is-2">
-                <modal-metadata v-if="record_list.length > 0" :metadata="container_metadata"></modal-metadata>
+                <browse-sort :records="record_list"
+                             @sort-ordering="sortOrdering">
+                </browse-sort>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column is-7 is-offset-3 spacing">
+                <p>There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
+                <p v-if="numberOfRecords > 0">Displaying {{ pagination_settings.start + 1}} to {{ pagination_settings.start + recordsPerPage}}</p>
+            </div>
+            <div class="column is-2">
+                <modal-metadata  v-if="numberOfRecords > 0" :metadata="container_metadata"></modal-metadata>
             </div>
         </div>
         <div class="columns">
             <div class="column is-12">
-                <ul v-if="record_list.length > 0">
-                    <li class="column is-3" v-for="record in record_list"
+                <ul v-if="numberOfRecords > 0">
+                    <li class="column is-3" v-for="record in displayList"
                         :key="record.id">
                         <a :href="record.uri">
                             <div>
                                 <i class="fa fa-archive"></i>
-                                <div class="record-count">{{ recordCount(39841) }}</div>
+                                <div class="record-count">{{ recordCount(record.counts.child) }}</div>
                             </div>
-                            <div>{{ record.title }}</div>
-                            <div class="spacing">({{ recordCount(3242) }})</div>
+                            <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
                 </ul>
-                <p v-else>There are no {{ noResultsText }} to display</p>
             </div>
         </div>
+        <pagination :per-page="recordsPerPage"
+                    :number-of-records="numberOfRecords"
+                    :page-base-url="container_metadata.uri"
+                    @pagination-records-to-display="pageToDisplay">
+        </pagination>
     </div>
 </template>
 
 <script>
-    define(['Vue', 'vue!public/vueComponents/modalMetadata'], function(Vue) {
+    const COMPONENT_PATH = 'vue!public/vueComponents';
+    const MODULES = [
+        'Vue',
+        `${COMPONENT_PATH}/modalMetadata`,
+        `${COMPONENT_PATH}/browseSearch`,
+        `${COMPONENT_PATH}/browseSort`,
+        `${COMPONENT_PATH}/pagination`
+    ];
+
+    define(MODULES, function(Vue) {
         Vue.component('browseDisplay', {
             props: {
                 path: String,
+
+                recordsPerPage: {
+                    type: Number,
+                    default: 20
+                },
+
                 type: String
             },
 
@@ -42,12 +74,13 @@
             data: function() {
                 return {
                     container_metadata: {},
+                    pagination_settings: {},
                     record_list: []
                 }
             },
 
             computed: {
-                noResultsText: function() {
+                childTypeText: function() {
                     if (this.type === 'AdminUnit') {
                         return 'collections';
                     } else if (this.type === 'Collection') {
@@ -57,18 +90,46 @@
                     }
                 },
 
-                resultText: function() {
+                typeText: function() {
                     if (this.type === 'AdminUnit') {
                         return 'administrative unit';
                     } else {
                         return this.type.toLowerCase();
                     }
+                },
+
+                displayList: function() {
+                    return this.record_list.slice(this.pagination_settings.start, this.pagination_settings.end);
+                },
+
+                numberOfRecords: function() {
+                    return this.record_list.length;
                 }
             },
 
             methods: {
                 recordCount: function(number) {
                     return new Intl.NumberFormat().format(number);
+                },
+
+                /**
+                 * Updates list with results of BrowseSearch component custom event
+                 * @param search_results
+                 */
+                browseSearching: function(search_results) {
+                    this.record_list = search_results;
+                },
+
+                /**
+                 * Updates list with results of BrowseSort component custom event
+                 * @param sorted_records
+                 */
+                sortOrdering: function(sorted_records) {
+                    this.record_list = sorted_records;
+                },
+
+                pageToDisplay: function(pagination_settings) {
+                    this.pagination_settings = pagination_settings;
                 }
             },
 
@@ -78,9 +139,9 @@
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {
-                    self.container_metadata = data.container;
-                    self.record_list = data.metadata;
-                });
+                        self.container_metadata = data.container;
+                        self.record_list = data.metadata;
+                    });
             }
         });
     });
@@ -106,13 +167,9 @@
         font-size: 10rem;
     }
 
-    .browse-records-display .spacing {
-        margin-top: 12px;
-    }
-
     .browse-records-display button {
-        color: white;
         background-color: #007FAE;
+        color: white;
     }
 
     .browse-records-display button:hover {
@@ -120,11 +177,19 @@
         opacity: .9;
     }
 
+    .browse-records-display .spacing {
+        margin-top: 25px;
+    }
+
     .browse-records-display .record-count {
-        margin-top: -45px;
         color: white;
-        margin-bottom: 30px;
-        margin-left: -15px;
         font-size: 40px;
+        margin-bottom: 35px;
+        margin-left: -15px;
+        margin-top: -45px;
+    }
+
+    .browse-records-display .record-title {
+        margin-left: -15px;
     }
 </style>
