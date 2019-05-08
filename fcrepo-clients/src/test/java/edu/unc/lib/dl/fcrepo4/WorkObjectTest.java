@@ -147,6 +147,13 @@ public class WorkObjectTest extends AbstractFedoraTest {
     }
 
     @Test
+    public void clearPrimaryObjectTest() {
+        work.clearPrimaryObject();
+
+        verify(repoObjFactory).deleteProperty(eq(work), eq(Cdr.primaryObject));
+    }
+
+    @Test
     public void getPrimaryObjectTest() {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());

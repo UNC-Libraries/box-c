@@ -39,8 +39,6 @@ import edu.unc.lib.dl.rdf.Cdr;
 public class SetRelationsFilter implements IndexDocumentFilter{
     private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
 
-    private FileObject primaryObj;
-
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Applying setRelationsFilter");
@@ -51,7 +49,7 @@ public class SetRelationsFilter implements IndexDocumentFilter{
 
         // if the content obj is a work obj, set relation on its primary object
         if (contentObj instanceof WorkObject) {
-            primaryObj = ((WorkObject) contentObj).getPrimaryObject();
+            FileObject primaryObj = ((WorkObject) contentObj).getPrimaryObject();
 
             if (primaryObj != null) {
                 // store primary-object relation

@@ -483,9 +483,9 @@ public class RepositoryObjectFactory {
 
     /**
      * Creates a triple in Fedora by replacing the current property with the given property parameter
-     * @param subject
-     * @param property the new property value
-     * @param object
+     * @param repoObj repository object to update the properties of.
+     * @param property the property to update
+     * @param object all of the new values for the property
      */
     public void createExclusiveRelationship(RepositoryObject repoObj, Property property, Object object) {
         NodeIterator valuesIt = repoObj.getModel().listObjectsOfProperty(property);
@@ -500,6 +500,18 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
                 previousValues);
         persistTripleToFedora(repoObj.getMetadataUri(), sparqlUpdate);
+    }
+
+    /**
+     * Deletes all triples with the given property predicate from the specified repository object.
+     * @param repoObj repository object to remove properties from
+     * @param property predicate of properties to remove
+     */
+    public void deleteProperty(RepositoryObject repoObj, Property property) {
+        PID subject = repoObj.getPid();
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlDelete(
+                subject.getRepositoryPath(), property, null);
+        sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), sparqlUpdate);
     }
 
     /**

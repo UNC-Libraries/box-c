@@ -58,6 +58,13 @@ public class WorkObject extends ContentContainerObject {
     }
 
     /**
+     * Clear the primary object set for this work.
+     */
+    public void clearPrimaryObject() {
+        repoObjFactory.deleteProperty(this, Cdr.primaryObject);
+    }
+
+    /**
      * Set the object with the given PID as the primary object for this work.
      * The primary object must be a file object and must be contained by this work.
      *

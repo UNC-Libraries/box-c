@@ -284,6 +284,23 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         assertFalse(updatedResc1Again.hasProperty(DC.relation, resc3));
     }
 
+    @Test
+    public void deletePropertyTest() throws Exception {
+        RepositoryObject repoObj = createObject();
+        repoObjFactory.createProperty(repoObj, DC.title, "Don't delete");
+        repoObjFactory.createProperty(repoObj, DC.creator, "me");
+        repoObjFactory.createProperty(repoObj, DC.creator, "you");
+        repoObjFactory.createProperty(repoObj, DC.creator, "everyone");
+
+        repoObjFactory.deleteProperty(repoObj, DC.creator);
+
+        Model updatedModel = repoObjLoader.getRepositoryObject(repoObj.getPid()).getModel();
+        Resource updatedResc = updatedModel.getResource(repoObj.getPid().getRepositoryPath());
+        // Deletes the requested property but not others
+        assertTrue(updatedResc.hasProperty(DC.title, "Don't delete"));
+        assertFalse(updatedResc.hasProperty(DC.creator));
+    }
+
     private RepositoryObject createObject() throws Exception {
         RepositoryObject repoObj = repoObjFactory.createFolderObject(null);
         return repoObj;

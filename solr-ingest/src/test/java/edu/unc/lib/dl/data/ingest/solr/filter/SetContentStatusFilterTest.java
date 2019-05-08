@@ -58,7 +58,7 @@ public class SetContentStatusFilterTest {
     @Mock
     private IndexDocumentBean idb;
     @Mock
-    private Resource resc;
+    private Resource resc, fileResc;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
 
@@ -72,6 +72,8 @@ public class SetContentStatusFilterTest {
         when(dip.getPid()).thenReturn(pid);
         // by default an object in this test suite has only FacetConstants.CONTENT_NOT_DESCRIBED set
         when(resc.hasProperty(any(Property.class))).thenReturn(false);
+
+        when(fileObj.getParent()).thenReturn(workObj);
 
         filter = new SetContentStatusFilter();
     }
@@ -132,7 +134,22 @@ public class SetContentStatusFilterTest {
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_PRIMARY_OBJECT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.NO_PRIMARY_OBJECT));
+    }
+
+    @Test
+    public void testIsPrimaryObject() throws Exception {
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
+
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.IS_PRIMARY_OBJECT));
     }
 
     @Test
@@ -149,14 +166,15 @@ public class SetContentStatusFilterTest {
 
     @Test
     public void testUnpublishedFileObject() throws Exception {
+        when(workObj.getResource()).thenReturn(resc);
+
         when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getResource()).thenReturn(resc);
-        when(resc.hasProperty(Cdr.unpublished)).thenReturn(true);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        when(fileResc.hasProperty(Cdr.unpublished)).thenReturn(true);
 
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
     }
-
 }

@@ -96,7 +96,13 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	AjaxCallbackAction.prototype.performWork = function(workMethod, workData) {
 		this.workState();
 		var op = this;
-		workMethod(this.workURL, workData, function(data, textStatus, jqXHR) {
+		
+		$.ajax({
+			type: workMethod,
+			url: this.workURL,
+			dataType: "json",
+			data: workData
+		}).done(function(data) {
 			if (op.options.followup) {
 				try {
 					var workSuccessful = op.workDone(data);
@@ -119,33 +125,14 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 					op.context.target.setState("idle");
 				op.complete(data);
 			}
-		}).fail(function(jqxhr, textStatus, error) {
+		}).fail(function(data) {
 			op.alertHandler.alertHandler('error', textStatus + ", " + error);
 			console.error(textStatus, error);
 		});
 	};
 	
 	AjaxCallbackAction.prototype.workDone = function(data) {
-		var jsonData;
-		try {
-			if ($.type(data) === "string")
-				jsonData = $.parseJSON(data);
-			else
-				jsonData = data;
-			
-			if (jsonData.error)
-				throw jsonData.error;
-			
-			this.completeTimestamp = jsonData.timestamp;
-		} catch (e) {
-			throw {
-				message : "Failed to perform action " + this.actionName + " on object " + (this.context.target.metadata? 
-					this.context.target.metadata.title : this.context.target.pid),
-				error : e
-			};
-		}
-		
-		
+		this.completeTimestamp = data.timestamp;
 		return true;
 	};
 

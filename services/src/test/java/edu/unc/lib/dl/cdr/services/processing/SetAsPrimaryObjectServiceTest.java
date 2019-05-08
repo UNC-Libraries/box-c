@@ -82,6 +82,7 @@ public class SetAsPrimaryObjectServiceTest {
 
     private PID fileObjPid;
     private PID folderObjPid;
+    private PID workObjPid;
     private SetAsPrimaryObjectService service;
 
     @Before
@@ -90,9 +91,15 @@ public class SetAsPrimaryObjectServiceTest {
 
         fileObjPid = makePid();
         folderObjPid = makePid();
+        workObjPid = makePid();
+
+        when(workObj.getPid()).thenReturn(workObjPid);
+        when(fileObj.getPid()).thenReturn(fileObjPid);
+        when(folderObj.getPid()).thenReturn(folderObjPid);
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(repoObjLoader.getRepositoryObject(eq(fileObjPid))).thenReturn(fileObj);
+        when(repoObjLoader.getRepositoryObject(eq(workObjPid))).thenReturn(workObj);
 
         service = new SetAsPrimaryObjectService();
         service.setAclService(aclService);
@@ -135,6 +142,61 @@ public class SetAsPrimaryObjectServiceTest {
         when(fileObj.getParent()).thenReturn(folderObj);
 
         service.setAsPrimaryObject(agent, fileObjPid);
+    }
+
+    @Test
+    public void testClearPrimaryObject() {
+        when(fileObj.getParent()).thenReturn(workObj);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+
+        service.clearPrimaryObject(agent, fileObjPid);
+
+        verify(workObj).clearPrimaryObject();
+        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+
+        Collection<PID> collections = pidsCaptor.getValue();
+        assertEquals(collections.size(), 2);
+        assertTrue(collections.contains(fileObjPid));
+        assertTrue(collections.contains(fileObj.getParent().getPid()));
+    }
+
+    @Test
+    public void testClearPrimaryObjectViaWork() {
+        when(fileObj.getParent()).thenReturn(workObj);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+
+        service.clearPrimaryObject(agent, workObjPid);
+
+        verify(workObj).clearPrimaryObject();
+        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+
+        Collection<PID> collections = pidsCaptor.getValue();
+        assertEquals(collections.size(), 2);
+        assertTrue(collections.contains(fileObjPid));
+        assertTrue(collections.contains(workObjPid));
+    }
+
+    @Test
+    public void testClearPrimaryObjectNoPrimarySet() {
+        when(fileObj.getParent()).thenReturn(workObj);
+
+        service.clearPrimaryObject(agent, workObjPid);
+
+        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+
+        Collection<PID> collections = pidsCaptor.getValue();
+        assertEquals(collections.size(), 1);
+        assertTrue(collections.contains(workObjPid));
+    }
+
+    @Test(expected = AccessRestrictionException.class)
+    public void testClearPrimaryObjectAccessRestriction() {
+        doThrow(new AccessRestrictionException()).when(aclService)
+            .assertHasAccess(anyString(), eq(workObjPid), any(AccessGroupSet.class), eq(editResourceType));
+
+        when(fileObj.getParent()).thenReturn(workObj);
+
+        service.clearPrimaryObject(agent, fileObjPid);
     }
 
     private PID makePid() {
