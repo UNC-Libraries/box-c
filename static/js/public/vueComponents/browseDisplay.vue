@@ -14,7 +14,7 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-7 is-offset-3 spacing">
+            <div class="column is-10 spacing">
                 <p>There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
                 <p v-if="numberOfRecords > 0">Displaying <strong>{{ pagination_settings.start + 1}}</strong> to <strong>{{ pagination_settings.start + recordsPerPage}}</strong></p>
             </div>
@@ -25,13 +25,11 @@
         <div class="columns">
             <div class="column is-12">
                 <ul v-if="numberOfRecords > 0">
-                    <li class="column is-3" v-for="record in displayList"
+                    <li class="column" :class="numberOfColumns" v-for="record in displayList"
                         :key="record.id">
                         <a :href="record.uri">
-                            <div>
-                                <i class="fa fa-archive"></i>
-                                <div class="record-count">{{ recordCount(record.counts.child) }}</div>
-                            </div>
+                            <i class="fa" :class="recordType(record.type)"></i>
+                            <div class="record-count">{{ recordCountFormat(record.counts.child) }}</div>
                             <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
@@ -99,17 +97,42 @@
                 },
 
                 displayList: function() {
-                    return this.record_list.slice(this.pagination_settings.start, this.pagination_settings.end);
+                    return this.record_list.slice(
+                        this.pagination_settings.start,
+                        this.pagination_settings.end
+                    );
                 },
 
                 numberOfRecords: function() {
                     return this.record_list.length;
+                },
+
+                numberOfColumns: function() {
+                    let screen_size = window.innerWidth;
+
+                    if (screen_size > 1023) {
+                        return 'is-3';
+                    } else if (screen_size > 768) {
+                        return 'is-4'
+                    } else {
+                        return 'is-6';
+                    }
                 }
             },
 
             methods: {
-                recordCount: function(number) {
+                recordCountFormat: function(number) {
                     return new Intl.NumberFormat().format(number);
+                },
+
+                recordType: function(type) {
+                    if (type === 'Collection') {
+                        return 'fa-archive';
+                    } else if (type === 'Folder') {
+                        return 'fa-folder';
+                    } else {
+                        return 'fa-file';
+                    }
                 },
 
                 /**
@@ -128,6 +151,10 @@
                     this.record_list = sorted_records;
                 },
 
+                /**
+                 * Updates which page to show from the results of Pagination component custom event
+                 * @param pagination_settings
+                 */
                 pageToDisplay: function(pagination_settings) {
                     this.pagination_settings = pagination_settings;
                 }
@@ -159,11 +186,12 @@
         width: 100%;
     }
 
-    .browse-records-display div {
+    .browse-records-display div,
+    .browse-records-display p {
         font-size: 1.4rem;
     }
 
-    .browse-records-display i.fa-archive {
+    .browse-records-display i {
         font-size: 10rem;
     }
 
@@ -179,6 +207,7 @@
 
     .browse-records-display .spacing {
         margin-top: 25px;
+        text-align: center;
     }
 
     .browse-records-display .record-count {
