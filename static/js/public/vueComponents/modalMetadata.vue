@@ -12,8 +12,10 @@
 
                             <div class="modal-header columns">
                                 <slot name="header">
-                                    <h3 class="column is-11">{{ metadata.title }}</h3>
-                                    <button class="column is-1 button is-small" @click="showModal = false">Close</button>
+                                    <div class="column is-12">
+                                        <h3>{{ metadata.title }}</h3>
+                                        <button class="button is-small" @click="showModal = false">Close</button>
+                                    </div>
                                 </slot>
                             </div>
 
@@ -81,8 +83,9 @@
     }
 
     .modal-container {
-        width: 800px;
+        width: auto;
         margin: 0 auto;
+        max-width: 800px;
         padding: 20px 30px;
         background-color: #fff;
         border-radius: 5px;
@@ -95,10 +98,16 @@
         text-align: center;
     }
 
+    .modal-header div {
+        display: inline-flex;
+    }
+
     .modal-header h3 {
         font-size: 2rem;
         margin-top: 0;
+        text-align: center;
         text-transform: capitalize;
+        width: 100%;
     }
 
     .modal-body {
@@ -145,7 +154,18 @@
     }
 
     .modal-header button {
-        margin: auto;
-        padding: 0;
+        float: right;
+        margin: auto 0 auto auto;
+    }
+
+    @media screen and (max-width: 768px) {
+        .modal-container {
+            margin: 0 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            width: 85%;
+        }
     }
 </style>
