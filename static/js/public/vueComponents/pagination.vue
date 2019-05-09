@@ -2,10 +2,13 @@
     <div class="columns pagination">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
+                <li v-if="currentPage !== 1"><a class="back-next" :href="pageUrl(currentPage - 1)"><<</a></li>
+                <li v-else class="no-link"><<</li>
                 <li v-for="page in totalPages">
-                    <!--  <a @click="currentPageRecordSet" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>-->
                      <a :href="pageUrl(page)" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
+                <li v-if="currentPage < totalPages"><a class="back-next" :href="pageUrl(currentPage + 1)">>></a></li>
+                <li v-else class="no-link">>></li>
             </ul>
         </div>
     </div>
@@ -87,7 +90,7 @@
     }
 
     .pagination .page-number {
-        background-color: #0a5274;
+        background-color: #007FAE;
         padding: 15px;
     }
 
@@ -95,8 +98,16 @@
         color: white;
     }
 
+    .pagination a.back-next {
+        color: #007FAE;
+    }
+
     .pagination .current {
         background-color: gray;
+    }
+
+    .pagination .no-link {
+        color: gray;
     }
 
     .pagination .page-number:hover {
