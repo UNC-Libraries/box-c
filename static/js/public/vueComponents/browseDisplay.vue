@@ -2,8 +2,7 @@
     <div class="browse-records-display">
         <div v-if="numberOfRecords > 0" class="columns">
             <div class="column is-10">
-                <browse-search :records="record_list"
-                               :record-type="type"
+                <browse-search :record-id="container_metadata.id"
                                @browse-query-results="browseSearching">
                 </browse-search>
             </div>
@@ -15,7 +14,7 @@
         </div>
         <div class="columns">
             <div class="column is-10 spacing">
-                <p>There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
+                <p :class="{ no_results: numberOfRecords === 0}">There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
                 <p v-if="numberOfRecords > 0">Displaying <strong>{{ pagination_settings.start + 1}}</strong> to <strong>{{ pagination_settings.start + recordsPerPage}}</strong></p>
             </div>
             <div class="column is-2">
@@ -104,7 +103,7 @@
                 },
 
                 numberOfRecords: function() {
-                    return this.record_list.length;
+                    return this.record_list.length || 0;
                 },
 
                 numberOfColumns: function() {
@@ -140,7 +139,8 @@
                  * @param search_results
                  */
                 browseSearching: function(search_results) {
-                    this.record_list = search_results;
+                    this.container_metadata = search_results.container;
+                    this.record_list = search_results.metadata;
                 },
 
                 /**
@@ -213,6 +213,10 @@
         opacity: .9;
     }
 
+    .browse-records-display .no_results {
+        margin-top: 25px;
+    }
+
     .browse-records-display .spacing {
         text-align: center;
     }
@@ -233,6 +237,10 @@
         .browse-records-display .spacing p {
             line-height: 20px;
             text-align: left;
+        }
+
+        .browse-records-display .spacing p.no_results {
+            text-align: center;
         }
     }
 </style>
