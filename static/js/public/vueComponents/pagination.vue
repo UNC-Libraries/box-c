@@ -35,9 +35,10 @@
             methods: {
                 setPage: function() {
                     let params = window.location.search;
+                    let page_number = params.split('=');
 
-                    if (params !== '') {
-                        this.currentPage = parseInt(params.split('=')[1]);
+                    if (page_number.length > 1 && page_number[1] <= this.totalPages) {
+                        this.currentPage = parseInt(page_number[1]);
                     } else {
                         this.currentPage = 1
                     }
