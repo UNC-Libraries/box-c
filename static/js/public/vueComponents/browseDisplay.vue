@@ -113,7 +113,7 @@
                     if (screen_size > 1023) {
                         return 'is-3';
                     } else if (screen_size > 768) {
-                        return 'is-4'
+                        return 'is-4';
                     } else {
                         return 'is-6';
                     }
@@ -169,6 +169,14 @@
                         self.container_metadata = data.container;
                         self.record_list = data.metadata;
                     });
+            },
+
+            ready: function() {
+                window.addEventListener('resize', this.numberOfColumns);
+            },
+
+            beforeDestroy: function() {
+                window.removeEventListener('resize', this.numberOfColumns);
             }
         });
     });
@@ -206,7 +214,6 @@
     }
 
     .browse-records-display .spacing {
-        margin-top: 25px;
         text-align: center;
     }
 
@@ -220,5 +227,12 @@
 
     .browse-records-display .record-title {
         margin-left: -15px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .browse-records-display .spacing p {
+            line-height: 20px;
+            text-align: left;
+        }
     }
 </style>

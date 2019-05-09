@@ -85,7 +85,7 @@
     .modal-container {
         width: auto;
         margin: 0 auto;
-        max-width: 800px;
+        max-width: 720px;
         padding: 20px 30px;
         background-color: #fff;
         border-radius: 5px;
