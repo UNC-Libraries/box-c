@@ -8,7 +8,7 @@
                 </browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :records="record_list"
+                <browse-sort :records="displayList"
                              @sort-ordering="sortOrdering">
                 </browse-sort>
             </div>
@@ -16,7 +16,7 @@
         <div class="columns">
             <div class="column is-7 is-offset-3 spacing">
                 <p>There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
-                <p v-if="numberOfRecords > 0">Displaying {{ pagination_settings.start + 1}} to {{ pagination_settings.start + recordsPerPage}}</p>
+                <p v-if="numberOfRecords > 0">Displaying <strong>{{ pagination_settings.start + 1}}</strong> to <strong>{{ pagination_settings.start + recordsPerPage}}</strong></p>
             </div>
             <div class="column is-2">
                 <modal-metadata  v-if="numberOfRecords > 0" :metadata="container_metadata"></modal-metadata>
