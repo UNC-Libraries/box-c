@@ -23,10 +23,8 @@
 
 <div class="contentarea">
     <div class="collinfo_metadata">
-        <div class="">
-            <div id="browse_view">
-                <browse-display path="/listJson/${briefObject.id}" type="${briefObject.resourceType}" :records-per-page="1"></browse-display>
-            </div>
+        <div id="browse_view">
+            <browse-display path="/listJson/${briefObject.id}" type="${briefObject.resourceType}" :records-per-page="20"></browse-display>
         </div>
     </div>
 </div>
