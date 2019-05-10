@@ -40,7 +40,7 @@
                     if (page_number.length > 1 && page_number[1] <= this.totalPages) {
                         this.currentPage = parseInt(page_number[1]);
                     } else {
-                        this.currentPage = 1
+                        this.currentPage = 1;
                     }
                 },
 

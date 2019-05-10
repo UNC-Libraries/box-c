@@ -52,7 +52,7 @@
 
             methods: {
                 formatDate: function(date_text) {
-                    var date = new Date(date_text);
+                    let date = new Date(date_text);
                     return date.toLocaleString(undefined, {
                         month: 'long',
                         day: 'numeric',
