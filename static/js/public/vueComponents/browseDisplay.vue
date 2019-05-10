@@ -14,8 +14,13 @@
         </div>
         <div class="columns">
             <div class="column is-10 spacing">
-                <p :class="{ no_results: numberOfRecords === 0}">There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.</p>
-                <p v-if="numberOfRecords > 0">Displaying <strong>{{ pagination_settings.start + 1}}</strong> to <strong>{{ pagination_settings.start + recordsPerPage}}</strong></p>
+                <p :class="{ no_results: numberOfRecords === 0}">
+                    There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.
+                </p>
+                <p v-if="numberOfRecords > 0">
+                    Displaying <strong>{{ pagination_settings.start + 1}}</strong> to
+                    <strong>{{ displayNumber }}</strong> of <strong>{{ numberOfRecords }}</strong>
+                </p>
             </div>
             <div class="column is-2">
                 <modal-metadata  v-if="numberOfRecords > 0" :metadata="container_metadata"></modal-metadata>
@@ -24,7 +29,7 @@
         <div class="columns">
             <div class="column is-12">
                 <ul v-if="numberOfRecords > 0">
-                    <li class="column" :class="numberOfColumns" v-for="record in displayList"
+                    <li class="column" :class="column_size" v-for="record in displayList"
                         :key="record.id">
                         <a :href="record.uri">
                             <i class="fa" :class="recordType(record.type)"></i>
@@ -70,6 +75,7 @@
 
             data: function() {
                 return {
+                    column_size: 'is-3',
                     container_metadata: {},
                     pagination_settings: {},
                     record_list: []
@@ -90,9 +96,9 @@
                 typeText: function() {
                     if (this.type === 'AdminUnit') {
                         return 'administrative unit';
-                    } else {
-                        return this.type.toLowerCase();
                     }
+
+                    return this.type.toLowerCase();
                 },
 
                 displayList: function() {
@@ -102,20 +108,18 @@
                     );
                 },
 
-                numberOfRecords: function() {
-                    return this.record_list.length || 0;
+                displayNumber: function() {
+                    let page_display = this.pagination_settings.start + this.recordsPerPage;
+
+                    if (this.numberOfRecords < page_display) {
+                        return this.numberOfRecords;
+                    }
+
+                    return page_display;
                 },
 
-                numberOfColumns: function() {
-                    let screen_size = window.innerWidth;
-
-                    if (screen_size > 1023) {
-                        return 'is-3';
-                    } else if (screen_size > 768) {
-                        return 'is-4';
-                    } else {
-                        return 'is-6';
-                    }
+                numberOfRecords: function() {
+                    return this.record_list.length || 0;
                 }
             },
 
@@ -131,6 +135,18 @@
                         return 'fa-folder';
                     } else {
                         return 'fa-file';
+                    }
+                },
+
+                numberOfColumns: function() {
+                    let screen_size = window.innerWidth;
+
+                    if (screen_size > 1023) {
+                        this.column_size = 'is-3';
+                    } else if (screen_size > 768) {
+                        this.column_size = 'is-4';
+                    } else {
+                        this.column_size = 'is-6';
                     }
                 },
 
@@ -169,10 +185,8 @@
                         self.container_metadata = data.container;
                         self.record_list = data.metadata;
                     });
-            },
 
-            ready: function() {
-                window.addEventListener('resize', this.numberOfColumns);
+                window.addEventListener('resize', _.debounce(this.numberOfColumns));
             },
 
             beforeDestroy: function() {
