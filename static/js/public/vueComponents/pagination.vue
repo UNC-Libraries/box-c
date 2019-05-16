@@ -2,13 +2,13 @@
     <div class="columns pagination">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next" :href="pageUrl(currentPage - 1)"><<</a></li>
-                <li v-else class="no-link"><<</li>
+                <li v-if="currentPage !== 1"><a class="back-next" :href="pageUrl(currentPage - 1)">&lt;&lt;</a></li>
+                <li v-else class="no-link">&lt;&lt;</li>
                 <li v-for="page in totalPages">
                      <a :href="pageUrl(page)" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
-                <li v-if="currentPage < totalPages"><a class="back-next" :href="pageUrl(currentPage + 1)">>></a></li>
-                <li v-else class="no-link">>></li>
+                <li v-if="currentPage < totalPages"><a class="back-next" :href="pageUrl(currentPage + 1)">&gt;&gt;</a></li>
+                <li v-else class="no-link">&gt;&gt;</li>
             </ul>
         </div>
     </div>

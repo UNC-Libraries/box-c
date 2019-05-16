@@ -35,7 +35,6 @@
 		<c:import url="fullRecord/browseView.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
-		<c:import url="fullRecord/aggregateRecord.jsp" />
 		<script>
 			var require = {
 				config: {

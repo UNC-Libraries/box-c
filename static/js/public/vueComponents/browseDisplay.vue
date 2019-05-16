@@ -15,7 +15,7 @@
         <div class="columns">
             <div class="column is-10 spacing">
                 <p :class="{ no_results: numberOfRecords === 0}">
-                    There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this {{ typeText }}.
+                    There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this level.
                 </p>
                 <p v-if="numberOfRecords > 0">
                     Displaying <strong>{{ pagination_settings.start + 1}}</strong> to
@@ -86,19 +86,9 @@
                 childTypeText: function() {
                     if (this.type === 'AdminUnit') {
                         return 'collections';
-                    } else if (this.type === 'Collection') {
-                        return 'folders and files';
                     } else {
-                        return 'files';
+                        return 'items';
                     }
-                },
-
-                typeText: function() {
-                    if (this.type === 'AdminUnit') {
-                        return 'administrative unit';
-                    }
-
-                    return this.type.toLowerCase();
                 },
 
                 displayList: function() {
@@ -119,7 +109,7 @@
                 },
 
                 numberOfRecords: function() {
-                    return this.record_list.length || 0;
+                    return this.record_list.length;
                 }
             },
 
@@ -186,7 +176,7 @@
                         self.record_list = data.metadata;
                     });
 
-                window.addEventListener('resize', _.debounce(this.numberOfColumns));
+                window.addEventListener('resize', _.debounce(this.numberOfColumns), 300);
             },
 
             beforeDestroy: function() {

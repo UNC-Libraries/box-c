@@ -29,10 +29,10 @@
                     let self = this;
 
                     fetch(`/listJson/${this.recordId}?anywhere=${encodeURI(this.search_query)}`)
-                        .then(function (response) {
+                        .then(function(response) {
                             return response.json();
-                        }).then(function (data) {
-                        self.$emit('browse-query-results', data);
+                        }).then(function(data) {
+                            self.$emit('browse-query-results', data);
                     });
                 }
             }
