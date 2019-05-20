@@ -23,10 +23,7 @@
 
 <div class="contentarea">
     <div class="collinfo_metadata">
-        <div id="browse_view">
-            <browse-display path="/listJson/${briefObject.id}" type="${briefObject.resourceType}" :records-per-page="20"></browse-display>
-        </div>
+        <div id="app"></div>
     </div>
 </div>
-
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/browseView"></script>
+<script src="static/js/vue-access.js"></script>

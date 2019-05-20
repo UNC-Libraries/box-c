@@ -36,35 +36,33 @@
 </template>
 
 <script>
-    define(['Vue'], function(Vue) {
-        Vue.component('modalMetadata', {
-            props: {
-                metadata: Object
-            },
+    export default {
+        name: 'modalMetadata',
 
-            template: template,
+        props: {
+            metadata: Object
+        },
 
-            data: function() {
-                return {
-                    showModal: false
-                };
-            },
+        data() {
+            return {
+                showModal: false
+            };
+        },
 
-            methods: {
-                formatDate: function(date_text) {
-                    let date = new Date(date_text);
-                    return date.toLocaleString(undefined, {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                }
+        methods: {
+            formatDate(date_text) {
+                let date = new Date(date_text);
+                return date.toLocaleString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
             }
-        });
-    });
+        }
+    }
 </script>
 
-<style>
+<style scoped lang="scss">
     .modal-mask {
         position: fixed;
         z-index: 9998;
@@ -96,31 +94,36 @@
     .modal-header {
         width: 100%;
         text-align: center;
-    }
 
-    .modal-header div {
-        display: inline-flex;
-    }
+        button {
+            float: right;
+            margin: auto 0 auto auto;
+        }
 
-    .modal-header h3 {
-        font-size: 2rem;
-        margin-top: 0;
-        text-align: center;
-        text-transform: capitalize;
-        width: 100%;
+        div {
+            display: inline-flex;
+        }
+
+        h3 {
+            font-size: 2rem;
+            margin-top: 0;
+            text-align: center;
+            text-transform: capitalize;
+            width: 100%;
+        }
     }
 
     .modal-body {
         margin: 20px 0;
-    }
 
-    .modal-body ul {
-        display: block;
-        text-align: left;
-    }
+        ul {
+            display: block;
+            text-align: left;
 
-    .modal-body ul li {
-        margin-bottom: 10px;
+            li {
+                margin-bottom: 10px;
+            }
+        }
     }
 
     /*
@@ -143,19 +146,17 @@
         transform: scale(1.1);
     }
 
-    .meta-modal button {
-        color: white;
-        background-color: #007FAE;
-    }
+    .meta-modal {
+        button {
+            color: white;
+            background-color: #007FAE;
 
-    .meta-modal button:hover {
-        color: white;
-        opacity: .9;
-    }
+            &:hover {
+                color: white;
+                opacity: .9;
+            }
+        }
 
-    .modal-header button {
-        float: right;
-        margin: auto 0 auto auto;
     }
 
     @media screen and (max-width: 768px) {
