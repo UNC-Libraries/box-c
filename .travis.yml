@@ -21,5 +21,6 @@ matrix:
       before_install:
         - npm i -g npm@6.9.0
         - npm install -g @vue/cli@3.7.0
+        - npm --prefix static/js/vue-cdr-access install
       cache: npm
       script: npm --prefix static/js/vue-cdr-access run test:unit

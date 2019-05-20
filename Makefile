@@ -35,7 +35,8 @@ ifneq ($(VERSION), "")
 endif
 
 build-access:
-    # Build vue application(s) files
+	# Build vue application(s) files
+	npm --prefix static/js/vue-cdr-access install
 	npm --prefix static/js/vue-cdr-access run build
 
 	# Make sure file is empty
