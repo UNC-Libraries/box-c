@@ -35,6 +35,9 @@ ifneq ($(VERSION), "")
 endif
 
 build-access:
+    # Build vue application(s) files
+	npm --prefix static/js/vue-cdr-access run build
+
 	# Make sure file is empty
 	cat /dev/null > static/css/sass/cdr-ui.scss
 
@@ -46,8 +49,16 @@ build-access:
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
 	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
 	echo "});" >> static/js/cdr-access.js
+
+	cat /dev/null > static/js/vue-access.js
+	cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js > static/js/vue-access.js
+	# Add new line so app*.js doesn't get commented out
+	echo >> static/js/vue-access.js
+	cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
+
 	cat \
 		static/js/public/src/*.js \
+		static/js/vue-access.js \
 		>> static/js/cdr-access.js
 		
 	cat static/css/reset.css \
@@ -56,6 +67,7 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
+		static/js/vue-cdr-access/dist/css/app*.css \
 		> static/css/cdr_access.css
 
 SUSPEND = "n"
