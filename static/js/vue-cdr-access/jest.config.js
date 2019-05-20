@@ -26,5 +26,9 @@ module.exports = {
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname'
+  ],
+  automock: false,
+  setupFiles: [
+    './tests/setup.js'
   ]
 }

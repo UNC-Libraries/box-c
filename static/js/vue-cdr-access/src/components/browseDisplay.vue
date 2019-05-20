@@ -163,19 +163,22 @@
              */
             pageToDisplay(pagination_settings) {
                 this.pagination_settings = pagination_settings;
+            },
+
+            retrieveData() {
+                let self = this;
+                fetch(this.browsePath)
+                    .then(function(response) {
+                        return response.json();
+                    }).then(function(data) {
+                    self.container_metadata = data.container;
+                    self.record_list = data.metadata;
+                });
             }
         },
 
         mounted() {
-            let self = this;
-            fetch(this.browsePath)
-                .then(function(response) {
-                    return response.json();
-                }).then(function(data) {
-                self.container_metadata = data.container;
-                self.record_list = data.metadata;
-            });
-
+            this.retrieveData();
             window.addEventListener('resize', debounce(this.numberOfColumns), 300);
         },
 
