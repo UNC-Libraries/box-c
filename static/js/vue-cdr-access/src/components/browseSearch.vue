@@ -31,7 +31,7 @@
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {
-                    self.$emit('browse-query-results', data);
+                        self.$emit('browse-query-results', data);
                 });
             }
         }

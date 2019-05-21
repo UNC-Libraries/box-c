@@ -17,10 +17,6 @@
                 <p :class="{ no_results: numberOfRecords === 0}">
                     There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this level.
                 </p>
-                <p v-if="numberOfRecords > 0">
-                    Displaying <strong>{{ pagination_settings.start + 1}}</strong> to
-                    <strong>{{ displayNumber }}</strong> of <strong>{{ numberOfRecords }}</strong>
-                </p>
             </div>
             <div class="column is-2">
                 <modal-metadata  v-if="numberOfRecords > 0" :metadata="container_metadata"></modal-metadata>
@@ -98,16 +94,6 @@
                 );
             },
 
-            displayNumber() {
-                let page_display = this.pagination_settings.start + this.recordsPerPage;
-
-                if (this.numberOfRecords < page_display) {
-                    return this.numberOfRecords;
-                }
-
-                return page_display;
-            },
-
             numberOfRecords() {
                 return this.record_list.length;
             }
@@ -171,8 +157,8 @@
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {
-                    self.container_metadata = data.container;
-                    self.record_list = data.metadata;
+                        self.container_metadata = data.container;
+                        self.record_list = data.metadata;
                 });
             }
         },
