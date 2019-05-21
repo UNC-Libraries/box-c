@@ -26,9 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.ui.model.response.RssFeedBean;
-import edu.unc.lib.dl.ui.service.RssParserService;
-import edu.unc.lib.dl.ui.util.ExternalContentSettings;
 
 /**
  * Controller which populates the dynamic components making up the front page of
@@ -49,17 +46,10 @@ public class FrontPageController extends AbstractSolrSearchController {
 		model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount(groups));
 		model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount(groups));
 		model.addAttribute("formatCounts", this.queryLayer.getFormatCounts(groups));
-		
+		model.addAttribute("isHomepage", true);
+
 		model.addAttribute("menuId", "home");
-		
-		try {
-			RssFeedBean wpRssFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("wpRss"),
-					Integer.parseInt(ExternalContentSettings.get("external.wpRss.maxLinks")));
-			model.addAttribute("wpRssItem", wpRssFeed.getItems().get(0));
-		} catch (Exception e) {
-			LOG.error("Error retreiving the CDR WordPress Collection Highlights feed", e.getMessage());
-		}
-		
+
 		return "frontPage";
 	}
 }

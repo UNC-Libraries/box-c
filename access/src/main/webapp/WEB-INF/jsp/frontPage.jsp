@@ -19,164 +19,47 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
-<div id="peek">
-	<div id="front-headline">
-		<h1>Preserve, share, and promote your scholarly&nbsp;and&nbsp;creative&nbsp;work.</h1>
-	</div>
-	<div id="peek-enter">
-		<div class="button">
-			<a href="#p">A peek inside the repository</a>
-		</div>
-	</div>
-	<div id="peek-exit">
-		<div class="button">
-			<a href="#">Back to the homepage</a>
-		</div>
-	</div>
-</div>
-
-<script src="/static/js/lib/jquery.min.js"></script>
-<script src="/static/js/lib/underscore.js"></script>
-<script src="/static/front/peek.js"></script>
-
-<div id="deposit-banner">
-	<div id="deposit-banner-title">
-	 <h2>Share Your Work</h2>
-	</div>
-	<nav class="how-to-deposit">
-		<ul class="deposit-options-list">
-				<li class="deposit-option">
-				<a href="/forms/open-access-carolina">
-					<div class="deposit-icons"><i class="fa fa-file-text-o"></i></div>
-					<h2>Open Access Articles</h2>
-				</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/studentPapers">
-					<div class="deposit-icons"><i class="fa fa-graduation-cap"></i></div>
-					<h2>Student<br>Papers</h2>
+<main>
+	<div class="collection-links">
+		<div class="collection-link-row">
+			<a href="record/uuid:5bfe6a08-67d9-4d90-9e50-eeaf86aad37e">
+				<img src="/static/front/nc-collection.png" alt="North Carolina Collection" aria-hidden="true">
+				<span>North Carolina Collection</span>
 			</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/forms/posters">
-				<div class="deposit-icons"><i class="fa fa-line-chart"></i></div>
-				<h2>Posters &amp; Presentations</h2>
-				</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/forms/dataset">
-				<div class="deposit-icons"><i class="fa fa-table"></i></div>
-				<h2>Open Access Datasets</h2>
-				</a>
-			</li>
-			</ul>
-	</nav>
-	</div>
-	
-<div id="front">
-
-	<div class="row">
-	<div id="front-points">
-		<h2>Long-term Preservation</h2>
-			<p>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</p>
-			<h2>Accessible &amp; Searchable</h2>
-			<p>We ensure your work is accessible and searchable on our website and indexed in search engines.</p>
-			<h2>You Decide Who Gets Access</h2>
-			<p>We offer a range of access controls including embargoes and granting access to specific groups on campus.</p>
-			<h2>Support for Larger Collections</h2>
-			<p>We offer deposit and preservation support for larger UNC digital collections. <a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact us</a> to deposit your collection.</p>
-				</div>
-		
-		
-	</div>
-
-	<hr>
-
-	<div class="row">
-		<div class="half">
-			<h2>What’s in the repository?</h2>
-
-			<p>
-				<a href="search?types=Collection"><c:out value="${collectionsCount}"/> collections</a>, including
-				<a href="search?format=text"><c:out value="${formatCounts.text}"/> texts</a>,
-				<a href="search?format=image"><c:out value="${formatCounts.image}"/> images</a>,
-				<a href="search?format=dataset"><c:out value="${formatCounts.dataset}"/> datasets</a>,
-				<a href="search?format=audio"><c:out value="${formatCounts.audio}"/> audio files</a>, and
-				<a href="search?format=video"><c:out value="${formatCounts.video}"/> videos</a>.
-			</p>
-			
-			<p>
-				Material from <a href="browse/dept/"><c:out value="${departmentsCount}"/> UNC-Chapel Hill departments</a>,
-				from <a href="search?dept=department+of+anthropology">Anthropology</a>
-				to <a href="search?dept=curriculum+in+toxicology">Toxicology</a>.
-			</p>
+			<a href="record/uuid:9ee8de0d-59ae-4c67-9686-78a79ebc93b1">
+				<img src="/static/front/university-archives.png" alt="University Archives" aria-hidden="true">
+				<span>University Archives</span>
+			</a>
 		</div>
-
-		<div class="half" id="front-collections">
-			<h2>A Few of Our Collections</h2>
-
-      <div class="coll-container">
-        <a href="record/uuid:bded4944-f033-4015-af0f-3d39595f4d30">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/aapaa.jpg" alt="African American Performance Art Archive thumbnail"></div>
-            <div class="coll-title">African American Performance Art Archive</div>
-          </div>
-        </a>
-        <a href="record/uuid:1add9fbc-f5c4-49a8-848e-96a52e3ade9c">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/azoria.jpg" alt="Azoria Project Archive thumbnail"></div>
-            <div class="coll-title">Azoria Project Archive</div>
-          </div>
-        </a>
-        <a href="record/uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/bmc.png" alt="BioMed Central thumbnail"></div>
-            <div class="coll-title">BioMed Central</div>
-          </div>
-        </a>
-        <a href="record/uuid:cbbc2cc1-c538-4e28-b567-55db61b7942e">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/cpj.png" alt="Carolina Planning Journal thumbnail"></div>
-            <div class="coll-title">Carolina Planning Journal</div>
-          </div>
-        </a>
-        <a href="record/uuid:a012aad2-1ab1-43b2-b5ab-0e14740e5e07">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/etds.png" alt="Electronic Theses and Dissertations thumbnail"></div>
-            <div class="coll-title">Electronic Theses and Dissertations</div>
-          </div>
-        </a>
-        <a href="record/uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/popl.png" alt="Program on Public Life thumbnail"></div>
-            <div class="coll-title">Program on Public Life</div>
-          </div>
-        </a>
-        <a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/rla.png" alt="Research Laboratories of Archaeology thumbnail"></div>
-            <div class="coll-title">Research Laboratories of Archaeology</div>
-          </div>
-        </a>
-        <a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab">
-          <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/sfc.png" alt="Southern Folklife Collection Digital Files thumbnail"></div>
-            <div class="coll-title">Southern Folklife Collection Digital Files</div>
-          </div>
-        </a>
-      </div>
+		<div class="collection-link-row">
+			<a href="record/uuid:c59291a6-ad7a-4ad4-b89d-e2fe8acac744">
+				<img src="/static/front/southern-historical-collection.png" alt="Southern Historical Collection" aria-hidden="true">
+				<span>Southern Historical Collection</span>
+			</a>
+			<a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab">
+				<img src="/static/front/southern-folklife-collection.png" alt="Southern Folklife Collection" aria-hidden="true">
+				<span>Southern Folklife Collection</span>
+			</a>
+		</div>
+		<div class="collection-link-row">
+			<a href="record/uuid:6f98967f-df96-452d-a202-0c99d1b7d951">
+				<img src="/static/front/rare-book-collection.png" alt="Rare Book Collection" aria-hidden="true">
+				<span>Rare Book Collection</span>
+			</a>
 		</div>
 	</div>
-
-	<hr>
-
-	<div id="front-case-study" class="row">		
-		<div class="case-study">
-			<h2><i>Case Study:</i> ${ wpRssItem.title }</h2>
-			${ wpRssItem.encoded }
+	<div class="info-row">
+		<div class="info container">
+			<h3>What's in the repository?</h3>
+			<div class="info-icons">
+				<div><a href="search?format=image"><i class="fas fa-image"></i><c:out value="${formatCounts.image}"/> images</a></div>
+				<div><a href="search?format=video"><i class="fas fa-video"></i><c:out value="${formatCounts.video}"/> video files</a></div>
+				<div><a href="search?format=audio"><i class="fas fa-music"></i><c:out value="${formatCounts.audio}"/> audio files</a></div>
+				<div><a href="search?format=text"><i class="fas fa-file-alt"></i><c:out value="${formatCounts.text}"/> texts</a></div>
+			</div>
+			<p>Interested in seeing more?</p>
+			<p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson/shc">Wilson Special Collections Library</a> website.</p>
 		</div>
 	</div>
-
-</div>
+</main>

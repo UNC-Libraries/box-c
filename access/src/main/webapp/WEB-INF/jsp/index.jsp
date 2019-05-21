@@ -35,7 +35,7 @@
 <c:set var="currentRelativeUrl" scope="request" value="${currentUrl}"/>
 <c:set var="currentAbsoluteUrl" scope="request" value="${pageContext.request.scheme}://${pageContext.request.serverName}${currentRelativeUrl}"/>
 
-<c:url var="contactUrl" scope="request" value="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">
+<c:url var="contactUrl" scope="request" value="https://library.unc.edu/wilson/contact/">
 	<c:param name="refer" value="${currentAbsoluteUrl}"/>
 </c:url>
 
