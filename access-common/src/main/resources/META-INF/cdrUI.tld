@@ -4,7 +4,7 @@
 	version="2.1">
 	<tlib-version>1.0</tlib-version>
 	<short-name>cdr</short-name>
-	<uri>http://cdr.lib.unc.edu/cdrUI</uri>
+	<uri>http://dcr.lib.unc.edu/cdrUI</uri>
 	<function>
 		<name>containsAny</name>
 		<function-class>edu.unc.lib.dl.acl.util.AccessGroupSet</function-class>

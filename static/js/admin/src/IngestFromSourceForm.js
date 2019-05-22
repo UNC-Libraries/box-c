@@ -228,7 +228,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					return false;
 				}
 				
-				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'http://cdr.unc.edu/DirectoryIngest';
+				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'http://dcr.unc.edu/DirectoryIngest';
 				
 				var info = {
 					sourceId : candidate.sourceId,

@@ -20,7 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
-<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
+<%@ taglib prefix="cdr" uri="http://dcr.lib.unc.edu/cdrUI"%>
 <div class="onecol full_record_top">
 	<div class="contentarea">
 		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
