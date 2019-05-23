@@ -7,15 +7,15 @@
                 </browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :records="displayList"
+                <browse-sort :records="record_list"
                              @sort-ordering="sortOrdering">
                 </browse-sort>
             </div>
         </div>
         <div class="columns">
             <div class="column is-10 spacing">
-                <p :class="{ no_results: numberOfRecords === 0}">
-                    There are <strong>{{ numberOfRecords }}</strong> {{ childTypeText }} in this level.
+                <p :class="{ no_results: record_count === 0}">
+                    There are <strong>{{ record_count }}</strong> {{ childTypeText }} in this level.
                 </p>
             </div>
             <div class="column is-2">
@@ -25,7 +25,7 @@
         <div class="columns">
             <div class="column is-12">
                 <ul v-if="numberOfRecords > 0">
-                    <li class="column" :class="column_size" v-for="record in displayList"
+                    <li class="column" :class="column_size" v-for="record in record_list"
                         :key="record.id">
                         <a :href="record.uri">
                             <i class="fa" :class="recordType(record.type)"></i>
@@ -37,9 +37,8 @@
             </div>
         </div>
         <pagination :per-page="recordsPerPage"
-                    :number-of-records="numberOfRecords"
-                    :page-base-url="container_metadata.uri"
-                    @pagination-records-to-display="pageToDisplay">
+                    :number-of-records="record_count"
+                    :page-base-url="container_metadata.uri">
         </pagination>
     </div>
 </template>
@@ -73,7 +72,7 @@
             return {
                 column_size: 'is-3',
                 container_metadata: {},
-                pagination_settings: {},
+                record_count: 0,
                 record_list: []
             }
         },
@@ -85,13 +84,6 @@
                 } else {
                     return 'items';
                 }
-            },
-
-            displayList() {
-                return this.record_list.slice(
-                    this.pagination_settings.start,
-                    this.pagination_settings.end
-                );
             },
 
             numberOfRecords() {
@@ -143,14 +135,6 @@
                 this.record_list = sorted_records;
             },
 
-            /**
-             * Updates which page to show from the results of Pagination component custom event
-             * @param pagination_settings
-             */
-            pageToDisplay(pagination_settings) {
-                this.pagination_settings = pagination_settings;
-            },
-
             retrieveData() {
                 let self = this;
                 fetch(this.browsePath)
@@ -158,6 +142,7 @@
                         return response.json();
                     }).then(function(data) {
                         self.container_metadata = data.container;
+                        self.record_count = data.resultCount;
                         self.record_list = data.metadata;
                 });
             }

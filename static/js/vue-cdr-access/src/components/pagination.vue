@@ -27,20 +27,49 @@
         data() {
             return {
                 currentPage: 1,
+                startRecord: 1,
                 totalPages: 1
             }
         },
 
         methods: {
             setPage() {
-                let params = window.location.search;
-                let page_number = params.split('=');
+                let params = this._urlParams();
 
-                if (page_number.length > 1 && page_number[1] <= this.totalPages) {
-                    this.currentPage = parseInt(page_number[1]);
+                if (params.page <= this.totalPages) {
+                    this.currentPage = parseInt(params.page);
                 } else {
                     this.currentPage = 1;
                 }
+            },
+
+            _urlParams() {
+                let params = window.location.search;
+                let params_list = params.split('&');
+
+                if (params_list.length === 1 && params_list[0] === '') {
+                    this.startRecord = 1;
+
+                    return {
+                        page: this.currentPage,
+                        rows: this.perPage,
+                        start: this.startRecord
+                    };
+                }
+
+                let page_params = {};
+                params_list.forEach((p) => {
+                   let param = p.split('=');
+                   let key = param[0].replace('?', '');
+
+                   if (key === 'start') {
+                       this.startRecord = +param[1];
+                   }
+
+                   page_params[key] = param[1]
+                });
+
+                return page_params;
             },
 
             setPageTotal() {
@@ -48,23 +77,12 @@
             },
 
             pageUrl(page_number) {
-                return `${this.pageBaseUrl}?page=${page_number}`
-            },
-
-            // Should work with a zero based index
-            currentPageRecordSet() {
-                let  start_record = (this.perPage * this.currentPage) - this.perPage;
-                this.$emit('pagination-records-to-display', {
-                    start: start_record,
-                    end: start_record + this.perPage,
-                    totalPages: this.totalPages
-                });
+                return `${this.pageBaseUrl}?page=${page_number}&start=${(parseInt(page_number ) - 1) + (this.perPage - 1)}&rows=${this.perPage}`
             },
 
             vueEventsWrapper() {
                 this.setPageTotal();
                 this.setPage();
-                this.currentPageRecordSet();
             }
         },
 
@@ -79,7 +97,7 @@
 </script>
 
 <style scoped lang="scss">
-    .pagination ul {
+    .pagination {
         ul {
             display: inline;
 
