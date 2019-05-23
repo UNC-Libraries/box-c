@@ -53,7 +53,7 @@ Error: ${message}
   </#if>
 </#if>
 
-Thank you for contributing to the Carolina Digital Repository, a service of the University of North Carolina at Chapel Hill Libraries.
+Thank you for contributing to the Digital Collections Repository, a service of the University of North Carolina at Chapel Hill Libraries.
 
-    Carolina Digital Repository:    ${irBaseUrl}
+    Digital Collections Repository:    ${irBaseUrl}
       UNC Chapel Hill Libraries:    http://www.lib.unc.edu/

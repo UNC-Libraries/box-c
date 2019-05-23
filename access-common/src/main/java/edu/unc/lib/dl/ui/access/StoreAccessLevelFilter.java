@@ -37,7 +37,7 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
  * Stores global access level information. This information is only suitable for informing UI decisions and access to
- * CDR application level information, not in place of FRACAS.  Optionally, it will also deny access if the filter does
+ * DCR application level information, not in place of FRACAS.  Optionally, it will also deny access if the filter does
  * not determine the user to be an admin.
  *
  * @author bbpennel

@@ -366,7 +366,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
                         .getPID());
             } else {
                 throw new IllegalRepositoryStateException(
-                        "The repository object should be in the parent tree for every CDR object.");
+                        "The repository object should be in the parent tree for every DCR object.");
             }
             for (String step = ContentModelHelper.Administrative_PID.REPOSITORY
                     .getPID().getURI(); parent2child.containsKey(step); step = parent2child

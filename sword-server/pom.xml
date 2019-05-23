@@ -8,9 +8,9 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <packaging>jar</packaging>
-    <name>CDR SWORD Server</name>
-    <url>http://cdr.lib.unc.edu/</url>
-    <description>CDR SWORD Server implementation</description>
+    <name>DCR SWORD Server</name>
+    <url>http://dcr.lib.unc.edu/</url>
+    <description>DCR SWORD Server implementation</description>
     <developers>
         <developer>
             <id>bbpennel</id>

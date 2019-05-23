@@ -24,7 +24,7 @@ Your item was successfully ingested into the repository in this location:
   ${obj.label!"No label set!"} - ${irBaseUrl}record?id=${obj.pid}
 </#list>
 
-Thank you for contributing to the Carolina Digital Repository, a service of the University of North Carolina at Chapel Hill Libraries.
+Thank you for contributing to the Digital Collections Repository, a service of the University of North Carolina at Chapel Hill Libraries.
 
-    Carolina Digital Repository:    ${irBaseUrl}
+    Digital Collections Repository:    ${irBaseUrl}
       UNC Chapel Hill Libraries:    http://www.lib.unc.edu/

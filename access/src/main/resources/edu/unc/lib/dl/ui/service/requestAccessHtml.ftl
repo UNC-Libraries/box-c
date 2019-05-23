@@ -22,7 +22,7 @@
   </title>
 </head>
 <body>
-  <h3>Carolina Digital Repository</h3>
+  <h3>Digital Collections Repository</h3>
   <p>A request for access was sent by ${form.personalName!}</p>
   <table>
   	<#if form.requestedId?has_content>

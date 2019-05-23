@@ -123,7 +123,7 @@ public class XMLImportJobTest {
         assertEquals("The import file contains XML errors", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -143,7 +143,7 @@ public class XMLImportJobTest {
         assertEquals("Import file could not be found on the server", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -171,7 +171,7 @@ public class XMLImportJobTest {
         assertEquals("File is not a bulk-metadata-update doc", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class XMLImportJobTest {
         assertNotNull(dataMap.get("updated"));
         assertNotNull(dataMap.get("updatedCount"));
         verify(msg).setSubject(subjectCaptor.capture());
-        assertTrue(subjectCaptor.getValue().startsWith("CDR Metadata update completed"));
+        assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
     }
 
     private File createTempImportFile() throws IOException {
