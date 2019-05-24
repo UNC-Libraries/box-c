@@ -38,7 +38,8 @@
         </div>
         <pagination :per-page="recordsPerPage"
                     :number-of-records="record_count"
-                    :page-base-url="container_metadata.uri">
+                    :page-base-url="container_metadata.uri"
+                    @pagination-records-to-display="pageToDisplay">
         </pagination>
     </div>
 </template>
@@ -72,6 +73,7 @@
             return {
                 column_size: 'is-3',
                 container_metadata: {},
+                page_to_show: '',
                 record_count: 0,
                 record_list: []
             }
@@ -135,9 +137,27 @@
                 this.record_list = sorted_records;
             },
 
+            /**
+             * Updates which page to show from the results of Pagination component custom event
+             * @param pagination_settings
+             */
+            pageToDisplay(pagination_settings) {
+                this.page_to_show = pagination_settings;
+                this.retrieveData();
+            },
+
             retrieveData() {
                 let self = this;
-                fetch(this.browsePath)
+                let which_page;
+
+                if (this.page_to_show !== '') {
+                   let  base_url = this.browsePath.split('?')[0];
+                    which_page = `${base_url}${this.page_to_show}`;
+                } else {
+                    which_page = this.browsePath;
+                }
+
+                fetch(which_page)
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {

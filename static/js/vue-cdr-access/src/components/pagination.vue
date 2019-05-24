@@ -2,12 +2,12 @@
     <div class="columns pagination">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next" :href="pageUrl(currentPage - 1)">&lt;&lt;</a></li>
+                <li v-if="currentPage !== 1"><a class="back-next" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
                 <li v-else class="no-link">&lt;&lt;</li>
                 <li v-for="page in totalPages">
-                    <a :href="pageUrl(page)" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
+                    <a @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
-                <li v-if="currentPage < totalPages"><a class="back-next" :href="pageUrl(currentPage + 1)">&gt;&gt;</a></li>
+                <li v-if="currentPage < totalPages"><a class="back-next" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
                 <li v-else class="no-link">&gt;&gt;</li>
             </ul>
         </div>
@@ -38,36 +38,29 @@
 
                 if (params.page <= this.totalPages) {
                     this.currentPage = parseInt(params.page);
-                } else {
-                    this.currentPage = 1;
                 }
             },
 
             _urlParams() {
                 let params = window.location.search;
                 let params_list = params.split('&');
-
-                if (params_list.length === 1 && params_list[0] === '') {
-                    this.startRecord = 1;
-
-                    return {
-                        page: this.currentPage,
-                        rows: this.perPage,
-                        start: this.startRecord
-                    };
-                }
-
                 let page_params = {};
-                params_list.forEach((p) => {
-                   let param = p.split('=');
-                   let key = param[0].replace('?', '');
 
-                   if (key === 'start') {
-                       this.startRecord = +param[1];
-                   }
+                if (params_list.length > 1) {
+                    params_list.forEach((p) => {
+                        let param = p.split('=');
+                        let key = param[0].replace('?', '');
 
-                   page_params[key] = param[1]
-                });
+                        if (key === 'start') {
+                            this.currentPage = '';
+                            this.startRecord = +param[1];
+                        }
+
+                        page_params[key] = param[1]
+                    });
+                } else {
+                    page_params['page'] = this.currentPage;
+                }
 
                 return page_params;
             },
@@ -77,21 +70,22 @@
             },
 
             pageUrl(page_number) {
-                return `${this.pageBaseUrl}?page=${page_number}&start=${(parseInt(page_number ) - 1) + (this.perPage - 1)}&rows=${this.perPage}`
-            },
+                let start_record = (parseInt(page_number ) - 1) + (this.perPage - 1);
+                let new_params = `?page=${page_number}&start=${start_record}&rows=${this.perPage}`;
 
-            vueEventsWrapper() {
-                this.setPageTotal();
-                this.setPage();
+                // Can use the commented out version if data returned from the server is fixed to not return the server name
+                // let new_url = `${this.pageBaseUrl}${new_params}`;
+                let new_url = `${this.pageBaseUrl.replace('milford', 'cdr-qa-fe4-fes')}${new_params}`;
+
+                this.currentPage = page_number;
+
+                window.history.pushState(null, page_number, new_url);
+                this.$emit('pagination-records-to-display', new_params);
             }
         },
 
-        mounted() {
-            this.vueEventsWrapper();
-        },
-
         updated() {
-            this.vueEventsWrapper();
+            this.setPageTotal();
         }
     }
 </script>
