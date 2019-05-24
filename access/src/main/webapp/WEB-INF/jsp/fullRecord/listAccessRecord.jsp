@@ -20,7 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
-<%@ taglib prefix="cdr" uri="http://dcr.lib.unc.edu/cdrUI"%>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <c:set var="defaultWebData" value="${briefObject.defaultWebData}"/>
 <c:set var="defaultWebObjectID">
 	<c:forEach items="${briefObject.datastreamObjects}" var="datastream">

@@ -16,7 +16,7 @@
 
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="cdr" uri="http://dcr.lib.unc.edu/cdrUI" %>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <c:forEach items="${resultResponse.resultList}" var="metadata" varStatus="status">
 	<div id="entry${metadata.id}" class="browseitem">
 		<c:set var="thumbnailUrl" value="/services/api/thumb/${metadata.id}/large"/>
