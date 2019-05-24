@@ -4,7 +4,7 @@
 	<atom:updated>2011-04-28T18:55:32.220Z</atom:updated>
 	<atom:author>
 		<atom:name>Greg Jansen</atom:name>
-		<atom:uri>http://cdr.lib.unc.edu/schema/message#author</atom:uri>
+		<atom:uri>http://cdr.lib.unc.edu.lib.unc.edu/schema/message#author</atom:uri>
 	</atom:author>
 	<atom:title type="text">add</atom:title>
 	<atom:summary type="text">uuid:7c740ac5-5685-4be1-9008-9a8be5f54744</atom:summary>

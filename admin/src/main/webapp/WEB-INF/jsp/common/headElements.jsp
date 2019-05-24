@@ -24,8 +24,8 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
 
-<meta name="description" content="Carolina Digital Repository" />
-<meta name="keywords" content="Carolina Digital Repository" />
+<meta name="description" content="Digital Collections Repository" />
+<meta name="keywords" content="Digital Collections Repository" />
 <meta name="robots" content="noindex, nofollow" />
 
 <link rel="shortcut icon" href="/static/images/favicon.ico" type="image/x-icon" />

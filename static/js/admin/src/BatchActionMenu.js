@@ -34,7 +34,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'
 				var items = {};
 				if (resultObject.isContainer)
 					items["openContainer"] = {name : "Open"};
-				items["viewInCDR"] = {name : "View in CDR"};
+				items["viewInDCR"] = {name : "View in DCR"};
 				if (resultObject.metadata.type == 'Collection') {
 					items["sepbrowse"] = "";
 					items["viewTrash"] = {name : "View trash for this collection"};
@@ -70,7 +70,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'
 				return {
 					callback: function(key, options) {
 						switch (key) {
-							case "viewInCDR" :
+							case "viewInDCR" :
 								window.open(URLUtilities.getAccessUrl() + "record/" + metadata.id,'_blank');
 								break;
 							case "openContainer" :

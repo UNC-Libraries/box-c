@@ -14,11 +14,8 @@ $black: #151515;
   }
 }
 
-* {
-  font-family: 'Open Sans', sans-serif;
-}
-
 body {
+  font-family: 'Open Sans', sans-serif;
 }
 
 .logo-row {
@@ -62,7 +59,6 @@ body {
 }
 
 .navbar {
-  box-shadow: 2px 2px 2px 0 #071730;
   a {
     color: white;
   }
@@ -258,5 +254,31 @@ footer {
     &:hover, &:active {
       color: $unc-blue;
     }
+  }
+}
+
+.homepage-menu-row {
+  box-shadow: 2px 2px 2px 0 #071730;
+}
+
+#csearch_inputwrap {
+  height: 31px;
+}
+
+#fpsearch_inputwrap {
+  height: 27px;
+  padding: 0 2px 2px 0;
+}
+
+.fpsearch_search_within {
+  input {
+    margin: 4px;
+  }
+}
+
+/* Restrict banner size for static HTML files */
+#titlelink {
+  img {
+    max-width: 250px;
   }
 }

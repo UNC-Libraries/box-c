@@ -24,12 +24,19 @@
 	<div class="logo-row">
 		<div class="logo container">
 			<a href="">
-				<img src="static/front/university-libraries-logo.png" alt="University Libraries Logo">
+				<img src="static/images/university-libraries-logo.png" alt="University Libraries Logo">
 				<h1>Digital Collections Repository</h1>
 			</a>
 		</div>
 	</div>
-	<nav class="menu-row navbar" role="navigation">
+	<c:choose>
+		<c:when test="${isHomepage}">
+			<nav class="menu-row navbar homepage-menu-row" role="navigation">
+		</c:when>
+		<c:otherwise>
+			<nav class="menu-row navbar" role="navigation">
+		</c:otherwise>
+	</c:choose>
 		<div class="container">
 			<div class="navbar-brand">
 				<a role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
@@ -92,7 +99,7 @@
 		<div class="search container">
 			<form method="get" action="basicSearch" class="search">
 				<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
-				<label for="hsearch_text">Search the Carolina Digital Repository</label>
+				<label for="hsearch_text">Search the Digital Collections Repository</label>
 				<input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
 				<button type="submit" class="button">Search</button>
 			</form>

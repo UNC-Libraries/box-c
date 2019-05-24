@@ -1,6 +1,6 @@
 {
     "tag:cdr.lib.unc.edu,2013:/cdr_projects/":{
-        "name":"CDR Projects",
+        "name":"DCR Projects",
         "mappings":[
             "file:/Volume/projects/cdr/staging",
             "file:/mnt/projects/cdr/staging"

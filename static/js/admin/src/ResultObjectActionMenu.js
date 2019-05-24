@@ -106,7 +106,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (resultObject.isContainer)
 			isContainerFlag = true;
 			items["openContainer"] = {name : "Open"};
-		items["viewInCDR"] = {name : "View in CDR"};
+		items["viewInDCR"] = {name : "View in DCR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
 		if (dataFile) {
 			items["viewFile"] = {name : "View File"
@@ -183,7 +183,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		return {
 			callback: function(key, options) {
 				switch (key) {
-					case "viewInCDR" :
+					case "viewInDCR" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "record/" + metadata.id,

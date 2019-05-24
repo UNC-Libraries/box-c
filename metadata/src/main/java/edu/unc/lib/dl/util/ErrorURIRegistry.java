@@ -16,11 +16,11 @@
 package edu.unc.lib.dl.util;
 
 public class ErrorURIRegistry {
-	public static final String INVALID_INGEST_PACKAGE = "http://cdr.lib.unc.edu/sword/error/InvalidIngestPackage";
-	public static final String INGEST_EXCEPTION = "http://cdr.lib.unc.edu/sword/error/IngestException";
-	public static final String UPDATE_EXCEPTION = "http://cdr.lib.unc.edu/sword/error/UpdateException";
-	public static final String RETRIEVAL_EXCEPTION = "http://cdr.lib.unc.edu/sword/error/RetrievalException";
-	public static final String UNSUPPORTED_PACKAGE_TYPE = "http://cdr.lib.unc.edu/sword/error/UnsupportedPackageType";
-	public static final String INSUFFICIENT_PRIVILEGES = "http://cdr.lib.unc.edu/sword/error/InsufficientPrivileges";
-	public static final String RESOURCE_NOT_FOUND = "http://cdr.lib.unc.edu/sword/error/ResourceNotFound";
+	public static final String INVALID_INGEST_PACKAGE = "http://dcr.lib.unc.edu/sword/error/InvalidIngestPackage";
+	public static final String INGEST_EXCEPTION = "http://dcr.lib.unc.edu/sword/error/IngestException";
+	public static final String UPDATE_EXCEPTION = "http://dcr.lib.unc.edu/sword/error/UpdateException";
+	public static final String RETRIEVAL_EXCEPTION = "http://dcr.lib.unc.edu/sword/error/RetrievalException";
+	public static final String UNSUPPORTED_PACKAGE_TYPE = "http://dcr.lib.unc.edu/sword/error/UnsupportedPackageType";
+	public static final String INSUFFICIENT_PRIVILEGES = "http://dcr.lib.unc.edu/sword/error/InsufficientPrivileges";
+	public static final String RESOURCE_NOT_FOUND = "http://dcr.lib.unc.edu/sword/error/ResourceNotFound";
 }

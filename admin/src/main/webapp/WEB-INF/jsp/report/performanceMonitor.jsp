@@ -19,7 +19,7 @@
 <div class="row">
 	<div class="col-md-12">
 		<p id="loader" class="text-center">Loading...</p>
-		<h3 class="text-center dim">CDR Performance Metrics</h3>
+		<h3 class="text-center dim">DCR Performance Metrics</h3>
 	</div>
 </div>
 <div class="row dim">
