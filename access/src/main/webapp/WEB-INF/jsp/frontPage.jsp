@@ -41,39 +41,11 @@
 <script src="/static/js/lib/underscore.js"></script>
 <script src="/static/front/peek.js"></script>
 
-<div id="deposit-banner">
-	<div id="deposit-banner-title">
-	 <h2>Share Your Work</h2>
-	</div>
-	<nav class="how-to-deposit">
-		<ul class="deposit-options-list">
-				<li class="deposit-option">
-				<a href="/forms/open-access-carolina">
-					<div class="deposit-icons"><i class="fa fa-file-text-o"></i></div>
-					<h2>Open Access Articles</h2>
-				</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/studentPapers">
-					<div class="deposit-icons"><i class="fa fa-graduation-cap"></i></div>
-					<h2>Student<br>Papers</h2>
-			</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/forms/posters">
-				<div class="deposit-icons"><i class="fa fa-line-chart"></i></div>
-				<h2>Posters &amp; Presentations</h2>
-				</a>
-			</li>
-			<li class="deposit-option">
-				<a href="/forms/dataset">
-				<div class="deposit-icons"><i class="fa fa-table"></i></div>
-				<h2>Open Access Datasets</h2>
-				</a>
-			</li>
-			</ul>
-	</nav>
-	</div>
+<div id="forms-takedown-banner">
+	<p>Deposits via forms to the Carolina Digital Repository have been paused while we transition to a new platform.
+		We expect to resume form deposits on June 5, 2019.
+	</p>
+</div>
 	
 <div id="front">
 

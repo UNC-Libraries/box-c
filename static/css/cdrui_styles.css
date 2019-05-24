@@ -1278,73 +1278,10 @@ div.deposit-icons {
 
 /*Student Papers Landing Page*/
 
-#student-papers-heading h2 {
-	font-family: "Avenir Next", "Arial", "Helvetica", sans-serif;
-	font-weight: 600;
-	font-size: 28px;
-	text-align: center;
-	color: #000;
-	margin: 32px 0 24px;
-}
-
-#student-papers-options {
-	text-align: center;
-}
-
-#student-papers-options h3 {
-	font-family: "Avenir Next";
-	font-weight: 600;
-	font-size: 24px;
-	text-align: center;
-	color: #000;
-	margin: 32px 0;
-}
-
-#student-papers-options h4 {
-	font-family: "Avenir Next";
-	font-weight: 600;
-	font-size: 18px;
-	text-align: center;
-	color: #000;
-	display: inline;
-}
-
-#student-papers-options .button {
-	text-align: center;
-	margin: 50px 0;
-}
-
-#student-papers-options .button a {
-	text-decoration: none;
-	color: #fff;
-	background: #1d759f;
-	padding: 10px 35px 11px 20px;
-	border-radius: 28px;
-	position: relative;
-	white-space: nowrap;
-	text-decoration: none !important;
-	font-family: helvetica;
-	font-size: 18px;
-}
-
-#student-papers-options .button a:after {
-	content: "";
-	display: block;
-	width: 14px;
-	height: 22px;
-	background: url(/static/front/chevron-small-white.png);
-	position: absolute;
-	top: 50%;
-	margin-top: -11px;
-	right: 12px;
-}
-
-#student-papers-options form {
-	margin: 32px 0;
-}
-
-#student-papers-options form label {
-	display: inline-block;
-	float: none;
-	font-size: 16px;
+#forms-takedown-banner p {
+    font-size: 24px;
+    line-height: 29px;
+    border: 1px lightgrey;
+    background-color: cornsilk;
+    padding: 25px;
 }
