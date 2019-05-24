@@ -75,7 +75,8 @@
                 container_metadata: {},
                 page_to_show: '',
                 record_count: 0,
-                record_list: []
+                record_list: [],
+                sort_order: ''
             }
         },
 
@@ -131,10 +132,11 @@
 
             /**
              * Updates list with results of BrowseSort component custom event
-             * @param sorted_records
+             * @param sort_order
              */
-            sortOrdering(sorted_records) {
-                this.record_list = sorted_records;
+            sortOrdering(sort_order) {
+                this.sort_order = sort_order;
+                this.retrieveData();
             },
 
             /**
@@ -151,10 +153,14 @@
                 let which_page;
 
                 if (this.page_to_show !== '') {
-                   let  base_url = this.browsePath.split('?')[0];
+                    let  base_url = this.browsePath.split('?')[0];
                     which_page = `${base_url}${this.page_to_show}`;
                 } else {
                     which_page = this.browsePath;
+                }
+
+                if (this.sort_order !== '') {
+                    which_page += `&${this.sort_order}`;
                 }
 
                 fetch(which_page)
