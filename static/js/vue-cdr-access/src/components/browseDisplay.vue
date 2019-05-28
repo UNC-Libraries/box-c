@@ -36,8 +36,7 @@
                 </ul>
             </div>
         </div>
-        <pagination :per-page="rows"
-                    :number-of-records="record_count"
+        <pagination :number-of-records="record_count"
                     :page-base-url="container_metadata.uri"
                     @pagination-records-to-display="pageToDisplay">
         </pagination>

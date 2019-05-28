@@ -23,12 +23,12 @@
 
         props: {
             numberOfRecords: Number,
-            perPage: Number,
             pageBaseUrl: String
         },
 
         data() {
             return {
+                perPage: 20,
                 startRecord: 1,
                 totalPages: 1
             }
