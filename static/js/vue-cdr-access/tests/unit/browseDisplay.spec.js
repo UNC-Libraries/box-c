@@ -1,8 +1,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import browseDisplay from '@/components/browseDisplay.vue'
-import pagination from '@/components/pagination.vue'
+
+
+import VueRouter from 'vue-router'
 
 const localVue = createLocalVue();
+localVue.use(VueRouter);
+const router = new VueRouter();
 let wrapper;
 
 describe('browseDisplay.vue', () => {
@@ -11,10 +15,7 @@ describe('browseDisplay.vue', () => {
 
         wrapper = shallowMount(browseDisplay, {
             localVue,
-            propsData: {
-                path: '/listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a',
-                recordsPerPage: 20
-            },
+            router,
             methods: { retrieveData }
         });
 

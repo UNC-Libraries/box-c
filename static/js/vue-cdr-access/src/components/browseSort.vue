@@ -11,11 +11,13 @@
 </template>
 
 <script>
+    import {utils} from "../utils/helper_methods";
+
     export default {
         name: 'browseSort',
 
         props: {
-            records: Array
+            pageBaseUrl: ''
         },
 
         data() {
@@ -30,19 +32,11 @@
                     this.sort_order = 'title,normal';
                 }
 
-                let sorted = `sort=${encodeURIComponent(this.sort_order)}`;
-                let old_url = window.location.href;
-                let old_params = window.location.search;
-                let new_url;
+                let params = utils.urlParams();
+                params.sort = this.sort_order;
 
-                if (old_params !== '') {
-                    let new_params = (/sort=/.test(old_params)) ? old_params.replace(/sort=.*?/, sorted) : `&${sorted}`;
-                    new_url = `${old_url}${new_params}`;
-                } else {
-                    new_url = `${old_url}?${sorted}`
-                }
-                window.history.pushState(null, 'sort order', new_url);
-                this.$emit('sort-ordering', sorted);
+                this.$router.push({ name: 'browseDisplay', params: params , query:  params });
+                this.$emit('sort-ordering');
                 this.sort_order = '';
             }
         }

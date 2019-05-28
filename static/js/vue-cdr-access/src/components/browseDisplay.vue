@@ -7,7 +7,7 @@
                 </browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :records="record_list"
+                <browse-sort :page-base-url="container_metadata.uri"
                              @sort-ordering="sortOrdering">
                 </browse-sort>
             </div>
@@ -36,7 +36,7 @@
                 </ul>
             </div>
         </div>
-        <pagination :per-page="recordsPerPage"
+        <pagination :per-page="rows"
                     :number-of-records="record_count"
                     :page-base-url="container_metadata.uri"
                     @pagination-records-to-display="pageToDisplay">
@@ -50,6 +50,7 @@
     import modalMetadata from './modalMetadata.vue';
     import pagination from './pagination.vue';
     import debounce from 'lodash.debounce';
+    import {utils} from "../utils/helper_methods";
 
     export default {
         name: 'browseDisplay',
@@ -61,11 +62,13 @@
             pagination
         },
 
-        props: {
-            browsePath: String,
-            recordsPerPage: {
-                type: Number,
-                default: 20
+        watch: {
+            '$route.query.page': function (d) {
+                this.retrieveData();
+            },
+
+            '$route.query.sort': function (d) {
+                this.retrieveData();
             }
         },
 
@@ -73,10 +76,8 @@
             return {
                 column_size: 'is-3',
                 container_metadata: {},
-                page_to_show: '',
                 record_count: 0,
-                record_list: [],
-                sort_order: ''
+                record_list: []
             }
         },
 
@@ -135,7 +136,6 @@
              * @param sort_order
              */
             sortOrdering(sort_order) {
-                this.sort_order = sort_order;
                 this.retrieveData();
             },
 
@@ -144,26 +144,15 @@
              * @param pagination_settings
              */
             pageToDisplay(pagination_settings) {
-                this.page_to_show = pagination_settings;
                 this.retrieveData();
             },
 
             retrieveData() {
                 let self = this;
-                let which_page;
+                let params = utils.urlParams();
+                let param_string = utils.formatParamsString(params);
 
-                if (this.page_to_show !== '') {
-                    let  base_url = this.browsePath.split('?')[0];
-                    which_page = `${base_url}${this.page_to_show}`;
-                } else {
-                    which_page = this.browsePath;
-                }
-
-                if (this.sort_order !== '') {
-                    which_page += `&${this.sort_order}`;
-                }
-
-                fetch(which_page)
+                fetch(`listJson/${location.pathname.split('/')[2]}${param_string}`)
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {
