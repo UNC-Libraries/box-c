@@ -35,8 +35,7 @@
                 let params = utils.urlParams();
                 params.sort = this.sort_order;
 
-                this.$router.push({ name: 'browseDisplay', params: params , query:  params });
-                this.$emit('sort-ordering');
+                this.$router.push({ name: 'browseDisplay', query:  params });
                 this.sort_order = '';
             }
         }

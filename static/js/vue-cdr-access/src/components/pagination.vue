@@ -56,8 +56,7 @@
                 params.start = start_record;
                 params.rows = this.perPage + ''; // Need to be converted to a string
 
-                this.$router.push({ name: 'browseDisplay', params: params, query: params });
-                this.$emit('pagination-records-to-display');
+                this.$router.push({ name: 'browseDisplay', query: params });
             }
         },
 

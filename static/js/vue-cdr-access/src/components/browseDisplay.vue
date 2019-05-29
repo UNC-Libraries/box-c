@@ -7,8 +7,7 @@
                 </browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :page-base-url="container_metadata.uri"
-                             @sort-ordering="sortOrdering">
+                <browse-sort :page-base-url="container_metadata.uri">
                 </browse-sort>
             </div>
         </div>
@@ -37,8 +36,7 @@
             </div>
         </div>
         <pagination :number-of-records="record_count"
-                    :page-base-url="container_metadata.uri"
-                    @pagination-records-to-display="pageToDisplay">
+                    :page-base-url="container_metadata.uri">
         </pagination>
     </div>
 </template>
@@ -62,11 +60,7 @@
         },
 
         watch: {
-            '$route.query.page': function (d) {
-                this.retrieveData();
-            },
-
-            '$route.query.sort': function (d) {
+            '$route.query'(d) {
                 this.retrieveData();
             }
         },
@@ -128,22 +122,6 @@
             browseSearching(search_results) {
                 this.container_metadata = search_results.container;
                 this.record_list = search_results.metadata;
-            },
-
-            /**
-             * Updates list with results of BrowseSort component custom event
-             * @param sort_order
-             */
-            sortOrdering(sort_order) {
-                this.retrieveData();
-            },
-
-            /**
-             * Updates which page to show from the results of Pagination component custom event
-             * @param pagination_settings
-             */
-            pageToDisplay(pagination_settings) {
-                this.retrieveData();
             },
 
             retrieveData() {
