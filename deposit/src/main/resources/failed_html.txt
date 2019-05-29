@@ -35,7 +35,7 @@
   
   <p>For details, see the <a href="{{baseUrl}}/admin/statusMonitor">status monitor</a>.</p>
   
-  <p>Thank you for contributing to the <a href="{{baseUrl}}">Carolina Digital Repository</a>, a service of the <a href="http://www.lib.unc.edu/">University of North Carolina at Chapel Hill Libraries</a>.</p>
+  <p>Thank you for contributing to the <a href="{{baseUrl}}">Digital Collections Repository</a>, a service of the <a href="http://www.lib.unc.edu/">University of North Carolina at Chapel Hill Libraries</a>.</p>
 
 </body>
 </html>

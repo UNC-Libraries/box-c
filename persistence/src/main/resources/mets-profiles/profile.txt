@@ -1,6 +1,6 @@
 
 [[PageOutline]]
-= Submission Profile for Carolina Digital Repository = #
+= Submission Profile for Digital Collections Repository = #
 
 == URL: [http://cdr.unc.edu/METS/profiles/Simple | http://cdr.unc.edu/METS/profiles/Simple] == #
 
@@ -23,14 +23,14 @@ There are no related profiles.
  
 		
 == Controlled Vocabularies ==	
-CDR <structMap> TYPE AttributesCarolina Digital RepositoryValues:BasicContext:
+CDR <structMap> TYPE AttributesDigital Collections RepositoryValues:BasicContext:
                 This is the vocabulary for the TYPE attribute on the <structMap>
                     element.
             
                 If a <structMap> type is omitted then Basic is implied.  Basic
                     <structMap>s are the only TYPE supported so far in this profile.
                     They can be used to represent Disks, Folders and Files.
-            CDR <div> TYPE AttributesCarolina Digital RepositoryValues:DiskFolderFileReferenceContext:
+            CDR <div> TYPE AttributesDigital Collections RepositoryValues:DiskFolderFileReferenceContext:
                 This is the vocabulary for the TYPE attribute on the <div>
                 element.
             
@@ -50,7 +50,7 @@ CDR <structMap> TYPE AttributesCarolina Digital RepositoryValues:BasicContext:
                 Reference is used to include a div from a separate structMap, with a potentially
                     different object model, within a Disk or Folder. The reference MUST make use of
                     a structLink to associate the Reference with the other div.
-            CDR <file> USE AttributesCarolina Digital RepositoryValues:MasterDiskImageThumbnailContext:
+            CDR <file> USE AttributesDigital Collections RepositoryValues:MasterDiskImageThumbnailContext:
                 This is the vocabulary for the USE attribute on each <file>.
             
                 These use values give files a specific role within an object.

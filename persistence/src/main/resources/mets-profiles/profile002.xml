@@ -8,7 +8,7 @@
     info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
     http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd">
     <URI LOCTYPE="URL">http://cdr.unc.edu/METS/profiles/Simple</URI>
-    <title>Submission Profile for Carolina Digital Repository</title>
+    <title>Submission Profile for Digital Collections Repository</title>
     <abstract>This profile specifies how METS documents for submissions to the Carolina Digital
         Repository should be encoded. This profile alone can describe annotated file structures, but
         may be extended to include more complex objects, such as multi-file media objects or paged
@@ -30,7 +30,7 @@
     <controlled_vocabularies>
         <vocabulary>
             <name>CDR &lt;structMap&gt; TYPE Attributes</name>
-            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <maintenance_agency>Digital Collections Repository</maintenance_agency>
             <values>
                 <value>Basic</value>
             </values>
@@ -46,7 +46,7 @@
         </vocabulary>
         <vocabulary>
             <name>CDR &lt;div&gt; TYPE Attributes</name>
-            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <maintenance_agency>Digital Collections Repository</maintenance_agency>
             <values>
                 <value>Disk</value>
                 <value>Folder</value>
@@ -79,7 +79,7 @@
         </vocabulary>
         <vocabulary>
             <name>CDR &lt;file&gt; USE Attributes</name>
-            <maintenance_agency>Carolina Digital Repository</maintenance_agency>
+            <maintenance_agency>Digital Collections Repository</maintenance_agency>
             <values>
                 <value>Master</value>
                 <value>DiskImage</value>

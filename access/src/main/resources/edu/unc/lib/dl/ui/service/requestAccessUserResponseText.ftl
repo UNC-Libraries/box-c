@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-Carolina Digital Repository
+Digital Collections Repository
 
 Thank you for your interest, ${form.personalName!}.  This email is to confirm that your request for access has been sent.
 You will receive an update on the status of your request within two business days.

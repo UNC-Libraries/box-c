@@ -650,12 +650,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         Document svrl = this.getSchematronValidator().validate(source, "vocabularies-mods");
         if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
             PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
-                    "The supplied MODS metadata meets all CDR vocabulary requirements.", null);
+                    "The supplied MODS metadata meets all DCR vocabulary requirements.", null);
         } else {
             PremisEventLogger.addDetailedOutcome(event, "MODS is not valid",
-                    "The supplied MODS metadata does not meet CDR vocabulary requirements.", svrl.detachRootElement());
+                    "The supplied MODS metadata does not meet DCR vocabulary requirements.", svrl.detachRootElement());
             IngestException e = new IngestException(
-                    "The supplied descriptive metadata (MODS) does not meet CDR vocabulary requirements.");
+                    "The supplied descriptive metadata (MODS) does not meet DCR vocabulary requirements.");
             e.setErrorXML(logger.getAllEvents());
             throw e;
         }
@@ -1228,7 +1228,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                             "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)", containerPid,
                             "MD_DESCRIPTIVE");
                     PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
-                            "The supplied MODS metadata meets all CDR vocabulary requirements.", null);
+                            "The supplied MODS metadata meets all DCR vocabulary requirements.", null);
                 }
                 Element modsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(
                         ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),

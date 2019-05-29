@@ -22,7 +22,7 @@
   </title>
 </head>
 <body>
-  <h3>Carolina Digital Repository</h3>
+  <h3>Digital Collections Repository</h3>
   <p>Feedback from ${form.personalName!}</p>
   <table>
   	<tr>
