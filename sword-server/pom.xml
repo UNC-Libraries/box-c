@@ -9,7 +9,7 @@
     </parent>
     <packaging>jar</packaging>
     <name>DCR SWORD Server</name>
-    <url>http://dcr.lib.unc.edu/</url>
+    <url>http://cdr.lib.unc.edu/</url>
     <description>DCR SWORD Server implementation</description>
     <developers>
         <developer>
