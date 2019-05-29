@@ -191,6 +191,7 @@ public class XMLImportJobTest {
         assertNotNull(dataMap.get("updated"));
         assertNotNull(dataMap.get("updatedCount"));
         verify(msg).setSubject(subjectCaptor.capture());
+        System.out.println("WHAT " + subjectCaptor.getValue());
         assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
     }
 

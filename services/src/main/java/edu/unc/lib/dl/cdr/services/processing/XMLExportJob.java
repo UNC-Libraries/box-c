@@ -207,6 +207,6 @@ public class XMLExportJob implements Runnable {
         String emailBody = "The XML metadata for " + request.getPids().size() +
                 " object(s) requested for export by " + this.user + " is attached.\n";
 
-        emailHandler.sendEmail(toAddress, "CDR Metadata Export", emailBody, "xml_export.zip", mdExportFile);
+        emailHandler.sendEmail(toAddress, "DCR Metadata Export", emailBody, "xml_export.zip", mdExportFile);
     }
 }

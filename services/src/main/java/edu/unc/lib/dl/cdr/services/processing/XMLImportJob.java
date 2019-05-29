@@ -367,7 +367,7 @@ public class XMLImportJob implements Runnable {
             try {
                 xmlReader.close();
             } catch (XMLStreamException e) {
-                log.error("Failed to close XML Reader during CDR metadata update", e);
+                log.error("Failed to close XML Reader during DCR metadata update", e);
             }
         }
     }
@@ -404,10 +404,10 @@ public class XMLImportJob implements Runnable {
 
             if (failed.size() > 0) {
                 data.put("issues", true);
-                msg.setSubject("CDR Metadata update completed with issues:" + importFile.getAbsolutePath());
+                msg.setSubject("DCR Metadata update completed with issues:" + importFile.getAbsolutePath());
                 msg.addTo(fromAddress);
             } else {
-                msg.setSubject("CDR Metadata update completed: " + importFile.getPath());
+                msg.setSubject("DCR Metadata update completed: " + importFile.getPath());
             }
 
             String html = completeTemplate.execute(data);
@@ -430,7 +430,7 @@ public class XMLImportJob implements Runnable {
                 msg.addTo(userEmail);
             }
 
-            msg.setSubject("CDR Metadata update failed");
+            msg.setSubject("DCR Metadata update failed");
 
             Map<String, Object> data = new HashMap<>();
             data.put("fileName", importFile.getPath());
