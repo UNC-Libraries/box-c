@@ -18,7 +18,7 @@
                 </p>
             </div>
             <div class="column is-2">
-                <modal-metadata v-if="container_metadata !== ''" :metadata="container_metadata" :title="container_name"></modal-metadata>
+                <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             </div>
         </div>
         <div class="columns">
@@ -62,10 +62,6 @@
         watch: {
             '$route.query'(d) {
                 this.retrieveData();
-            },
-
-            uuid(d) {
-                this.retrieveContainerMetadata();
             }
         },
 
@@ -143,17 +139,6 @@
                         self.record_count = data.resultCount;
                         self.record_list = data.metadata;
                         self.container_name = data.container.title;
-                });
-            },
-
-            retrieveContainerMetadata() {
-                let self = this;
-
-                fetch(`record/${this.uuid}/fullObject`)
-                    .then(function(response) {
-                        return response.text();
-                    }).then(function(data) {
-                        self.container_metadata = data;
                 });
             }
         },

@@ -21,7 +21,7 @@
 
                             <div class="modal-body">
                                 <slot name="body">
-                                    {{ metadata }}
+                                    <div v-html="metadata"></div>
                                 </slot>
                             </div>
                         </div>
@@ -37,14 +37,21 @@
         name: 'modalMetadata',
 
         props: {
-            metadata: Object,
+            uuid: '',
             title: ''
         },
 
         data() {
             return {
+                metadata: '',
                 showModal: false
             };
+        },
+
+        watch: {
+            uuid(d) {
+                this.retrieveContainerMetadata();
+            }
         },
 
         methods: {
@@ -54,6 +61,17 @@
                     month: 'long',
                     day: 'numeric',
                     year: 'numeric'
+                });
+            },
+
+            retrieveContainerMetadata() {
+                let self = this;
+
+                fetch(`record/${this.uuid}/fullObject`)
+                    .then(function(response) {
+                        return response.text();
+                    }).then(function(data) {
+                    self.metadata = data;
                 });
             }
         }

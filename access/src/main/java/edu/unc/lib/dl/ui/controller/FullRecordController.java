@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -36,7 +37,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -103,12 +111,15 @@ public class FullRecordController extends AbstractSolrSearchController {
 
     @RequestMapping(value = "/{pid}/fullObject", method = RequestMethod.GET)
     @ResponseBody
-    public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        return getFullObjectView(pid, model, request);
+    public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
+                                          HttpServletResponse response) {
+        response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
+        return getFullObjectView(pid);
     }
 
 
-    public String getFullObjectView(String pidString, Model model, HttpServletRequest request) {
+    public String getFullObjectView(String pidString) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
