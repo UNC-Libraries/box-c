@@ -150,12 +150,6 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						title: "Serial Title",
 						description: 'Template with standard fields to describe serial titles',
 						icon_class: 'fa fa-newspaper-o'
-					},
-					{
-						filename: 'student_papers.xml',
-						title: "Student Paper",
-						description: 'Standard fields for student paper descriptions',
-						icon_class: 'fa fa-university'
 					}
 				],
 				cancelFunction: function() {
