@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +31,6 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -49,9 +47,6 @@ import java.util.Map;
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
-
-    @Autowired
-    private ChildrenCountService childrenCountService;
 
     @RequestMapping("/search/{pid}")
     public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
