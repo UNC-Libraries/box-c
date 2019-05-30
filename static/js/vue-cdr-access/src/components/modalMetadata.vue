@@ -78,7 +78,7 @@
     }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
     .modal-mask {
         position: fixed;
         z-index: 9998;
@@ -132,6 +132,18 @@
     .modal-body {
         margin: 20px 0;
         text-align: center;
+
+        table {
+            td {
+                font-size: 18px;
+                padding-bottom: 5px;
+                padding-left: 15px;
+
+                p {
+                    font-size: 18px;
+                }
+            }
+        }
     }
 
     /*
