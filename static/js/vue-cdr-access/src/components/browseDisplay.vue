@@ -18,7 +18,7 @@
                 </p>
             </div>
             <div class="column is-2">
-                <modal-metadata  v-if="numberOfRecords > 0" :metadata="container_metadata"></modal-metadata>
+                <modal-metadata v-if="container_metadata !== ''" :metadata="container_metadata" :title="container_name"></modal-metadata>
             </div>
         </div>
         <div class="columns">
@@ -62,15 +62,21 @@
         watch: {
             '$route.query'(d) {
                 this.retrieveData();
+            },
+
+            uuid(d) {
+                this.retrieveContainerMetadata();
             }
         },
 
         data() {
             return {
                 column_size: 'is-3',
-                container_metadata: {},
+                container_name: '',
+                container_metadata: '',
                 record_count: 0,
-                record_list: []
+                record_list: [],
+                uuid: ''
             }
         },
 
@@ -120,7 +126,7 @@
              * @param search_results
              */
             browseSearching(search_results) {
-                this.container_metadata = search_results.container;
+                this.container_name = search_results.title;
                 this.record_list = search_results.metadata;
             },
 
@@ -128,14 +134,26 @@
                 let self = this;
                 let params = utils.urlParams();
                 let param_string = utils.formatParamsString(params);
+                this.uuid = location.pathname.split('/')[2];
 
-                fetch(`listJson/${location.pathname.split('/')[2]}${param_string}`)
+                fetch(`listJson/${this.uuid}${param_string}`)
                     .then(function(response) {
                         return response.json();
                     }).then(function(data) {
-                        self.container_metadata = data.container;
                         self.record_count = data.resultCount;
                         self.record_list = data.metadata;
+                        self.container_name = data.container.title;
+                });
+            },
+
+            retrieveContainerMetadata() {
+                let self = this;
+
+                fetch(`record/${this.uuid}/fullObject`)
+                    .then(function(response) {
+                        return response.text();
+                    }).then(function(data) {
+                        self.container_metadata = data;
                 });
             }
         },
