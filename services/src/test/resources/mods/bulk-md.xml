@@ -57,7 +57,7 @@
   <language>
     <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
   </language>
-  <abstract>This is a test collection created to test the admin functionality of the Carolina Digital Repository.</abstract>
+  <abstract>This is a test collection created to test the admin functionality of the Digital Collections Repository.</abstract>
   <note type="short description">This is a test collection.</note>
   <subject>
     <topic>Subject 1</topic>

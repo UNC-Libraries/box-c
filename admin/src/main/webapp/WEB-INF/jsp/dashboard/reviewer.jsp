@@ -19,7 +19,7 @@
 <div class="contentarea">
 	<div class="description_text descriptivearea">
 		<p>
-			Welcome, <c:out value="${pageContext.request.remoteUser}"/>. You are viewing the Carolina Digital Repository's administrative interface.
+			Welcome, <c:out value="${pageContext.request.remoteUser}"/>. You are viewing the Digital Collections Repository's administrative interface.
 		</p>
 		<p>
 			To begin editing or adding to resources you are permitted to work with, start by <a href="list/">browsing</a> or by searching for specific items:
@@ -37,7 +37,7 @@
 			<input type="submit" value="Search" class="search_submit">
 		</form>
 		<p>
-			If you have any questions about the interface or the Carolina Digital Repository in general, please do not hesitate to <a href="https://${pageContext.request.serverName}/contact">contact us</a>.
+			If you have any questions about the interface or the Digital Collections Repository in general, please do not hesitate to <a href="https://${pageContext.request.serverName}/contact">contact us</a>.
 		</p>
 		<h1>Collection overview</h1>
 		<p>

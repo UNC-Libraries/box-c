@@ -46,13 +46,13 @@
         <div class="column is-12">
             <h2><c:out value="${briefObject.title}" /> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Subjects:</strong>
-                <c:choose>
-                    <c:when test="${not empty briefObject['abstractText']}">
-                        <c:out value="${briefObject.subject}" />
-                    </c:when>
-                    <c:otherwise>
-                        There are no subjects listed for this record
-                    </c:otherwise>
+            <c:choose>
+                <c:when test="${not empty briefObject['abstractText']}">
+                    <c:out value="${briefObject.subject}" />
+                </c:when>
+                <c:otherwise>
+                    There are no subjects listed for this record
+                </c:otherwise>
             </c:choose>
                 <c:out value="${briefObject.subject}" />
             </p>

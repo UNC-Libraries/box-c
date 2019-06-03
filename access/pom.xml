@@ -10,7 +10,7 @@
     <packaging>war</packaging>
     <name>CDR Access</name>
     <url>http://cdr-dev.lib.unc.edu/</url>
-    <description>Application for accessing the Carolina Digital Repository</description>
+    <description>Application for accessing the Digital Collections Repository</description>
     <build>
         <finalName>ROOT</finalName>
         <resources>

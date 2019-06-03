@@ -61,7 +61,7 @@
             </plugin>
     </plugins>
     </build>
-    <description>Application for accessing the Carolina Digital Repository</description>
+    <description>Application for accessing the Digital Collections Repository</description>
     <dependencies>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

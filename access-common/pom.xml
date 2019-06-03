@@ -6,7 +6,7 @@
     <version>4.0-SNAPSHOT</version>
   </parent>
   <artifactId>access-common</artifactId>
-  <name>CDR Common Access Components</name>
+  <name>DCR Common Access Components</name>
   
   <dependencies>
         <!-- Logging -->
@@ -110,7 +110,7 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- CDR -->
+        <!-- DCR -->
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>solr-search</artifactId>
