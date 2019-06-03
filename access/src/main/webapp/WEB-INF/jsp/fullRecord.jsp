@@ -32,7 +32,7 @@
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
-		<c:import url="fullRecord/browseView.jsp" />
+		<c:import url="fullRecord/adminUnit.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
 		<script>

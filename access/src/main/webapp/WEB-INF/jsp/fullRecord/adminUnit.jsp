@@ -82,5 +82,5 @@
             </div>
         </div>
     </div>
-    <c:import url="browseView.jsp" />
+    <c:import url="fullRecord/browseView.jsp" />
 </div>
