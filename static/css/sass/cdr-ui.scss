@@ -444,6 +444,32 @@ p.no-search-results {
 
 /* Collection Page */
 
+.browse-header {
+  background-color: $light-gray;
+  color: darkblue;
+  display: inline-flex !important;
+  margin: 0;
+  width: 100%;
+
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 15px;
+
+    span {
+      color: gray;
+      font-size: 20px;
+      margin-left: 10px;
+    }
+  }
+
+  p {
+    color: black;
+    font-size: 18px;
+    margin-left: 15px;
+  }
+}
+
 .search-query-text.collection-list {
   margin-bottom: 0;
 }

@@ -422,6 +422,29 @@ p.no-search-results {
 }
 
 /* Collection Page */
+.browse-header {
+  background-color: #E1E1E1;
+  color: darkblue;
+  display: inline-flex !important;
+  margin: 0;
+  width: 100%;
+}
+.browse-header h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 15px;
+}
+.browse-header h2 span {
+  color: gray;
+  font-size: 20px;
+  margin-left: 10px;
+}
+.browse-header p {
+  color: black;
+  font-size: 18px;
+  margin-left: 15px;
+}
+
 .search-query-text.collection-list {
   margin-bottom: 0;
 }
