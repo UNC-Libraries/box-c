@@ -50,7 +50,7 @@
             },
 
             pageUrl(page_number) {
-                let start_record = (parseInt(page_number ) - 1) + (this.perPage - 1);
+                let start_record = this.perPage * (parseInt(page_number ) - 1);
                 let params = utils.urlParams();
                 params.page = page_number;
                 params.start = start_record;
