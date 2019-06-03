@@ -31,6 +31,6 @@
 		If you do not already have permission and would like to request access, please <a href="https://${pageContext.request.serverName}/external?page=contact">contact us</a>.
 	</p>
 	<p>  
-		If you have accessed this page by accident and wish to view our collections instead, they can be accessed via the main <a href="https://${pageContext.request.serverName}/">Carolina Digital Repository</a> website. 
+		If you have accessed this page by accident and wish to view our collections instead, they can be accessed via the main <a href="https://${pageContext.request.serverName}/">Digital Collections Repository</a> website.
 	</p>
 </div>

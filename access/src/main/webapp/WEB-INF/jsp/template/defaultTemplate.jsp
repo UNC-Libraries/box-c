@@ -26,7 +26,7 @@
 	<base href="${url}" />
 	<%@ include file="../../html/headElements.html"%>
 	<title>
-		Carolina Digital Repository<c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
+		Digital Collections Repository<c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
 	</title>
 </head>
 <body>

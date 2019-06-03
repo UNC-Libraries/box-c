@@ -182,7 +182,7 @@ public class DepositEmailHandler {
                 message.addTo(getAdministratorEmail());
             }
 
-            message.setSubject("CDR deposit failed");
+            message.setSubject("DCR deposit failed");
             message.setFrom(getAdministratorEmail());
             message.setText(text, html);
 
@@ -242,7 +242,7 @@ public class DepositEmailHandler {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
 
             message.addTo(depositorEmail);
-            message.setSubject("CDR deposit complete");
+            message.setSubject("DCR deposit complete");
             message.setFrom(getAdministratorEmail());
             message.setText(text, html);
 

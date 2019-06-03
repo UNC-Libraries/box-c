@@ -5,8 +5,8 @@
     <artifactId>cdr</artifactId>
     <packaging>pom</packaging>
     <version>4.0-SNAPSHOT</version>
-    <name>Carolina Digital Repository</name>
-    <description>The Carolina Digital Repository (CDR) is a repository for material in electronic formats produced by members of the University of North Carolina at Chapel Hill community. Its chief purpose is to provide for the long-term preservation of such materials. By preservation we mean the ability to ingest the material, index and search it, replicate it, and keep it safe from alteration.</description>
+    <name>Digital Collections Repository</name>
+    <description>The Digital Collections Repository (DCR) is a repository for material in electronic formats produced by members of the University of North Carolina at Chapel Hill community. Its chief purpose is to provide for the long-term preservation of such materials. By preservation we mean the ability to ingest the material, index and search it, replicate it, and keep it safe from alteration.</description>
     <url>http://cdr.unc.edu</url>
     <inceptionYear>2008</inceptionYear>
     <organization>

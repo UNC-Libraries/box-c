@@ -87,7 +87,7 @@ public interface DigitalObjectManager {
 
     /**
      * Updates the descriptive metadata for an object. The supplied file must be
-     * valid MODS XML and conform with additional CDR MODS requirements.
+     * valid MODS XML and conform with additional DCR MODS requirements.
      *
      * @param pid
      *            PID of the object to update

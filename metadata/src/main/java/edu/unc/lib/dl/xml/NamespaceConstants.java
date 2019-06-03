@@ -42,7 +42,7 @@ public final class NamespaceConstants {
     public static final String CDR_BASEMODEL_URI = "info:fedora/cdr-model:";
 
     /**
-     * The CDR (Carolina Digital Repository) namespace prefix.
+     * The CDR (Digital Collections Repository) namespace prefix.
      */
     public static final String CDR_PREFIX = "cdr";
 

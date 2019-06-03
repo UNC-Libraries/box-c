@@ -11,7 +11,7 @@
 # limitations under the License.
 
 #-----------------------------------------------------------------------
-CDR, cdr, Carolina Digital Repository
+CDR, cdr, Digital Collections Repository
 RLA, rla, Research Laboratories of Archaeology
 POPL, popl, Program on Public Life
 SFC, sfc, Southern Folklife Collection

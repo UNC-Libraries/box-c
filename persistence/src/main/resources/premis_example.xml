@@ -3,7 +3,7 @@
     xsi:schemaLocation="info:lc/xmlns/premis-v2 file:/home/count0/workspace/cdr-irods/src/main/resources/premis.xsd"
     version="2.0">
 
-    <!-- At present there are two kinds of PREMIS data that are available directly from the CDR.  The first kind of 
+    <!-- At present there are two kinds of PREMIS data that are available directly from the DCR.  The first kind of
         PREMIS elements available below describe our objects and their relationships.  The information about all of
         these objects is recorded in Fedora Object XML and the iRODS catalog.  See the storage notes below for details. -->
     <!-- Each semantic grouping will be annotated in the following fashion: -->
@@ -132,7 +132,7 @@
        WORKFLOW: The MODS record is made during DDA plugin processing from a variety of sources, including Droid and Java
         I/O.  It is placed in this particular Fedora object datastream by ingest processing. -->
     <object xsi:type="bitstream">
-        <!-- The datastream ID for MODS is always "MD_DESCRIPTIVE", a CDR standard. -->
+        <!-- The datastream ID for MODS is always "MD_DESCRIPTIVE", a DCR standard. -->
         <objectIdentifier>
             <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
             <objectIdentifierValue>uuid:2fadcb3b-3b25-4397-b9c0-7938ed5eecf5+MD_DESCRIPTIVE+MD_DESCRIPTIVE.0</objectIdentifierValue>
@@ -146,7 +146,7 @@
             <!-- ORIGIN: Fedora; STORAGE: FOXML; WORKFLOW: Current size of the bitstream, taken from Fedora API. -->
             <size>1599</size>
             
-            <!-- ORIGIN: DDA plugin; STORAGE: FOXML; WORKFLOW: This format is CDR standard for descriptive metadata. -->
+            <!-- ORIGIN: DDA plugin; STORAGE: FOXML; WORKFLOW: This format is DCR standard for descriptive metadata. -->
             <format>
                 <formatDesignation>
                     <!-- format here was originally placed in FOXML by ingest code -->
@@ -181,7 +181,7 @@
         <objectIdentifier>
             <objectIdentifierType>Fedora Datastream PID</objectIdentifierType>
             
-            <!-- The datastream ID for the data file is "DATA_FILE", part of the CDR "File" content model. -->
+            <!-- The datastream ID for the data file is "DATA_FILE", part of the DCR "File" content model. -->
             <objectIdentifierValue>uuid:2fadcb3b-3b25-4397-b9c0-7938ed5eecf5+DATA_FILE+DATA_FILE.0</objectIdentifierValue>
         </objectIdentifier>
         <objectCharacteristics>
@@ -386,7 +386,7 @@
         <eventOutcomeInformation>
             <eventOutcome>MODS is valid</eventOutcome>
             <eventOutcomeDetail>
-                <eventOutcomeDetailNote>The supplied MODS metadata meets CDR vocabulary
+                <eventOutcomeDetailNote>The supplied MODS metadata meets DCR vocabulary
                     requirements.</eventOutcomeDetailNote>
             </eventOutcomeDetail>
         </eventOutcomeInformation>
@@ -470,7 +470,7 @@
     </event>
 
     <event>
-        <!-- object was moved (reparented), performed and recorded by CDR admin code -->
+        <!-- object was moved (reparented), performed and recorded by DCR admin code -->
         <eventIdentifier>
             <eventIdentifierType>URN</eventIdentifierType>
             <eventIdentifierValue>urn:uuid:eae49355-10dc-4f9f-ab26-ac3e4c98b96d</eventIdentifierValue>

@@ -125,11 +125,11 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
         Element event = uip.getEventLogger().logEvent(Type.VALIDATION, message, uip.getPID(), "MD_DESCRIPTIVE");
         if (!schematronValidator.hasFailedAssertions(svrl)) {
             PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
-                    "The supplied MODS metadata meets CDR vocabulary requirements.", null);
+                    "The supplied MODS metadata meets DCR vocabulary requirements.", null);
         } else {
             Element detailExtension = svrl.detachRootElement();
             PremisEventLogger.addDetailedOutcome(event, "MODS is not valid",
-                    "The supplied MODS metadata does not meet CDR vocabulary requirements.", detailExtension);
+                    "The supplied MODS metadata does not meet DCR vocabulary requirements.", detailExtension);
             StringBuilder validationOutput = new StringBuilder();
             List<?> failedList = detailExtension.getChildren("failed-assert",
                     JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS);
