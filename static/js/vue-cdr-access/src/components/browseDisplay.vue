@@ -15,6 +15,9 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There are <strong>{{ record_count }}</strong> {{ childTypeText }} in this level.
+                    <span class="imgs-only" v-if="container_metadata.type === 'Collection'">
+                        Show images only? <input title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+                    </span>
                 </p>
             </div>
             <div class="column is-2">
@@ -22,10 +25,9 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-12">
-                <ul v-if="numberOfRecords > 0">
-                    <li class="column" :class="column_size" v-for="record in record_list"
-                        :key="record.id">
+            <div class="column is-12" >
+                <ul class="column is-12" v-for="records in chunkedRecords">
+                    <li v-for="record in records" class="column" :class="column_size">
                         <a :href="record.uri">
                             <i class="fa" :class="recordType(record.type)"></i>
                             <div class="record-count">{{ recordCountFormat(record.counts.child) }}</div>
@@ -47,6 +49,7 @@
     import modalMetadata from './modalMetadata.vue';
     import pagination from './pagination.vue';
     import debounce from 'lodash.debounce';
+    import chunk from 'lodash.chunk';
     import {utils} from "../utils/helper_methods";
 
     export default {
@@ -70,6 +73,7 @@
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: '',
+                images_only: false,
                 record_count: 0,
                 record_list: [],
                 uuid: ''
@@ -82,6 +86,16 @@
                     return 'collections';
                 } else {
                     return 'items';
+                }
+            },
+
+            chunkedRecords() {
+                if (this.column_size === 'is-4') {
+                    return chunk(this.record_list, 3);
+                } else if (this.column_size === 'is-6') {
+                    return chunk(this.record_list, 2);
+                } else {
+                    return chunk(this.record_list, 4);
                 }
             },
 
@@ -124,6 +138,7 @@
             browseSearching(search_results) {
                 this.container_name = search_results.title;
                 this.record_list = search_results.metadata;
+                this.container_metadata = search_results.container;
             },
 
             retrieveData() {
@@ -139,6 +154,7 @@
                         self.record_count = data.resultCount;
                         self.record_list = data.metadata;
                         self.container_name = data.container.title;
+                        self.container_metadata = data.container;
                 });
             }
         },
@@ -155,6 +171,8 @@
 </script>
 
 <style scoped lang="scss">
+    $unc-blue: #4B9CD3;
+
     .browse-records-display {
         .columns {
             display: inline-flex;
@@ -193,16 +211,27 @@
             text-align: center;
         }
 
+        .imgs-only {
+            color: $unc-blue;
+
+            .checkbox {
+                height: 50px;
+                vertical-align: middle;
+                width: 40px;
+            }
+        }
+
         .record-count {
             color: white;
             font-size: 40px;
             margin-bottom: 35px;
             margin-left: -15px;
-            margin-top: -45px;
+            margin-top: -65px;
         }
 
         .record-title {
             margin-left: -15px;
+            margin-top: 65px;
         }
 
         @media screen and (max-width: 768px) {
