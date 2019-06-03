@@ -47,7 +47,7 @@
             <h2><c:out value="${briefObject.title}" /> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Subjects:</strong>
                 <c:choose>
-                    <c:when test="${not empty briefObject['abstractText']}">
+                    <c:when test="${not empty briefObject.subject}">
                         <c:out value="${briefObject.subject}" />
                     </c:when>
                     <c:otherwise>
