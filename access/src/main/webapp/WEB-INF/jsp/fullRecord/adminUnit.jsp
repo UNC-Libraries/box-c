@@ -48,13 +48,14 @@
             <p><strong>Subjects:</strong>
                 <c:choose>
                     <c:when test="${not empty briefObject.subject}">
-                        <c:out value="${briefObject.subject}" />
+                        <c:forEach var="subject" items="${briefObject.subject}">
+                            <c:out value="${subject}"/>
+                        </c:forEach>
                     </c:when>
                     <c:otherwise>
                         There are no subjects listed for this record
                     </c:otherwise>
                 </c:choose>
-                <c:out value="${briefObject.subject}" />
             </p>
             <div class="column is-3">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
@@ -67,13 +68,22 @@
                 <c:choose>
                     <c:when test="${not empty briefObject.abstractText}">
                         <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
-                        <p>
-                            <c:out value="${truncatedAbstract}" />
-                            <c:if test="${fn:length(briefObject.abstractText) > 250}">
-                                (<a href="<c:out value='${fullRecordUrl}' />">Read more</a>)
-                            </c:if>
-                        </p>
-                        <p><c:out value="${briefObject['abstractText']}" /></p>
+                        <c:choose>
+                            <c:when test="${fn:length(briefObject.abstractText) > 250}">
+                                <div id="show-abstract">
+                                    <p id="truncated-abstract"><c:out value="${truncatedAbstract}" />
+                                        (<a href="#">Read more</a>)</p>
+                                    <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" />
+                                        (<a href="#">Read less</a>)</p>
+                                </div>
+                            </c:when>
+                            <c:when test="${fn:length(briefObject.abstractText) > 250}">
+                                <p><c:out value="${briefObject.abstractText}" /></p>
+                            </c:when>
+                            <c:otherwise>
+                                <p><c:out value="${briefObject.abstractText}" /></p>
+                            </c:otherwise>
+                        </c:choose>
                     </c:when>
                     <c:otherwise>
                         <p>There is no description available for this record.</p>
@@ -82,5 +92,18 @@
             </div>
         </div>
     </div>
+    <script>
+        (function() {
+            var clicked = document.getElementById('show-abstract');
+            var partial_abstract = document.getElementById('truncated-abstract').classList;
+            var full_abstract = document.getElementById('full-abstract').classList;
+
+            clicked.addEventListener('click', function (e) {
+                e.preventDefault();
+                partial_abstract.toggle('hidden');
+                full_abstract.toggle('hidden');
+            });
+        })();
+    </script>
     <c:import url="fullRecord/browseView.jsp" />
 </div>
