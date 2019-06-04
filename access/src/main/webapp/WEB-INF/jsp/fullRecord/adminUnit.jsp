@@ -70,12 +70,9 @@
                         <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
                         <c:choose>
                             <c:when test="${fn:length(briefObject.abstractText) > 250}">
-                                <div id="show-abstract">
-                                    <p id="truncated-abstract"><c:out value="${truncatedAbstract}" />
-                                        (<a href="#">Read more</a>)</p>
-                                    <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" />
-                                        (<a href="#">Read less</a>)</p>
-                                </div>
+                                <p id="truncated-abstract"><c:out value="${truncatedAbstract}" />...</p>
+                                <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" /></p>
+                                <p><a id="show-abstract" href="#">Read more</a></p>
                             </c:when>
                             <c:when test="${fn:length(briefObject.abstractText) > 250}">
                                 <p><c:out value="${briefObject.abstractText}" /></p>
@@ -102,6 +99,7 @@
                 e.preventDefault();
                 partial_abstract.toggle('hidden');
                 full_abstract.toggle('hidden');
+                this.innerText = partial_abstract.contains('hidden') ? 'Read less' : 'Read more';
             });
         })();
     </script>
