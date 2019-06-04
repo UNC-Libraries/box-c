@@ -35,6 +35,7 @@
                         </a>
                     </li>
                 </ul>
+                <p class="spacing" v-if="images_only && chunkedRecords.length === 0">There are no image records to display.</p>
             </div>
         </div>
         <pagination :number-of-records="record_count"
@@ -90,13 +91,25 @@
             },
 
             chunkedRecords() {
+                let records = this.imagesOnly;
+
                 if (this.column_size === 'is-4') {
-                    return chunk(this.record_list, 3);
+                    return chunk(records, 3);
                 } else if (this.column_size === 'is-6') {
-                    return chunk(this.record_list, 2);
+                    return chunk(records, 2);
                 } else {
-                    return chunk(this.record_list, 4);
+                    return chunk(records, 4);
                 }
+            },
+
+            imagesOnly() {
+                if (this.images_only) {
+                    return this.record_list.filter((d) => {
+                       return 'datastream' in d && /image/.test(d.datastream[1]);
+                    });
+                }
+
+                return this.record_list;
             },
 
             numberOfRecords() {
@@ -187,6 +200,10 @@
 
         div, p {
             font-size: 1.4rem;
+        }
+
+        p.spacing {
+            margin-bottom: 50px;
         }
 
         i {
