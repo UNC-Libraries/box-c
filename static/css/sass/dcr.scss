@@ -96,34 +96,36 @@ body {
   }
 }
 
-.search {
-  @include mobile-margin;
-  display: flex;
-  align-items: center;
-  padding: 6px 0;
-  label {
-    position: absolute;
-    width: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-  }
-  input {
-    width: 100%;
-    padding: 8px;
-    font-size: 1rem;
-  }
-  button {
-    margin: 0 12px 0 12px;
-  }
-  a {
-    flex-shrink: 0;
-    color: white;
-    font-size: 16px;
-    &:hover, &:active {
-      color: $unc-blue;
+header {
+  .search {
+    @include mobile-margin;
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    label {
+      position: absolute;
+      width: 0;
+      height: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+    }
+    button {
+      margin: 0 12px 0 12px;
+    }
+    a {
+      flex-shrink: 0;
+      color: white;
+      font-size: 16px;
+      &:hover, &:active {
+        color: $unc-blue;
+      }
     }
   }
 }
