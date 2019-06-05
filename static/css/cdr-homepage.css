@@ -65,15 +65,15 @@ body {
   .banner a.button {
     background-color: #4B9CD3; }
 
-.search {
+header .search {
   display: flex;
   align-items: center;
   padding: 6px 0; }
   @media only screen and (max-width: 1088px) {
-    .search {
+    header .search {
       margin-left: 16px;
       margin-right: 16px; } }
-  .search label {
+  header .search label {
     position: absolute;
     width: 0;
     height: 0;
@@ -81,17 +81,17 @@ body {
     padding: 0;
     border: 0;
     overflow: hidden; }
-  .search input {
+  header .search input {
     width: 100%;
     padding: 8px;
     font-size: 1rem; }
-  .search button {
+  header .search button {
     margin: 0 12px 0 12px; }
-  .search a {
+  header .search a {
     flex-shrink: 0;
     color: white;
     font-size: 16px; }
-    .search a:hover, .search a:active {
+    header .search a:hover, header .search a:active {
       color: #4B9CD3; }
 
 .collection-links {
@@ -200,10 +200,18 @@ footer {
 .homepage-menu-row {
   box-shadow: 2px 2px 2px 0 #071730; }
 
+#csearch_inputwrap {
+  height: 31px; }
+
 #fpsearch_inputwrap {
+  height: 27px;
   padding: 0 2px 2px 0; }
 
 .fpsearch_search_within input {
   margin: 4px; }
+
+/* Restrict banner size for static HTML files */
+#titlelink img {
+  max-width: 250px; }
 
 /*# sourceMappingURL=cdr-homepage.css.map */
