@@ -31,8 +31,6 @@ import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
-import edu.unc.lib.dl.ui.util.HeaderMenuSettings;
-import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
 /**
@@ -48,9 +46,6 @@ public class RefreshMappingsController {
     private XSLViewResolver xslViewResolver;
 
     @Autowired
-    private HeaderMenuSettings headerMenuSettings;
-
-    @Autowired
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     @RequestMapping(method = RequestMethod.GET)
@@ -61,29 +56,16 @@ public class RefreshMappingsController {
         }
 
         try {
-            LookupMappingsSettings.updateMappings();
-        } catch (Exception e) {
-            response.getWriter().append("Failed to refresh mappings, check logs.");
-            LOG.error("Failed to refresh mappings", e);
-        }
-
-        try {
             xslViewResolver.refreshViews();
         } catch (Exception e) {
             response.getWriter().append("Failed to refresh transform mappings, check logs.");
             LOG.error("Failed to refresh transform mappings", e);
         }
 
-        headerMenuSettings.init();
-
         response.getWriter().append("Mappings refresh was successful.");
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {
         this.xslViewResolver = xslViewResolver;
-    }
-
-    public void setHeaderMenuSettings(HeaderMenuSettings headerMenuSettings) {
-        this.headerMenuSettings = headerMenuSettings;
     }
 }

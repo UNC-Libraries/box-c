@@ -68,7 +68,7 @@
 
 <style scoped lang="scss">
     .pagination {
-        margin-bottom: 25px;
+        margin-bottom: 1px;
 
         ul {
             display: inline;
