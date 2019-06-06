@@ -15,9 +15,8 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <span class="imgs-only" v-if="container_metadata.type === 'Collection'">
-                        Show images only? <input title="show images only" class="checkbox" type="checkbox" v-model="images_only">
-                    </span>
+                    There are <strong>{{ record_count }}</strong> {{ childTypeText }} in this level.
+                    <browse-images :container_type="container_metadata.type"></browse-images>
                 </p>
             </div>
             <div class="column is-2">
@@ -35,7 +34,7 @@
                         </a>
                     </li>
                 </ul>
-                <p class="spacing" v-if="images_only && chunkedRecords.length === 0">There are no image records to display.</p>
+                <p class="spacing" v-if="chunkedRecords.length === 0">No records were found.</p>
             </div>
         </div>
         <pagination :number-of-records="record_count"
@@ -45,6 +44,7 @@
 </template>
 
 <script>
+    import browseImages from "./browseImages";
     import browseSearch from './browseSearch.vue';
     import browseSort from './browseSort.vue';
     import modalMetadata from './modalMetadata.vue';
@@ -57,6 +57,7 @@
         name: 'browseDisplay',
 
         components: {
+            browseImages,
             browseSearch,
             browseSort,
             modalMetadata,
@@ -74,7 +75,6 @@
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: '',
-                images_only: false,
                 record_count: 0,
                 record_list: [],
                 uuid: ''
@@ -91,25 +91,13 @@
             },
 
             chunkedRecords() {
-                let records = this.imagesOnly;
-
                 if (this.column_size === 'is-4') {
-                    return chunk(records, 3);
+                    return chunk(this.record_list, 3);
                 } else if (this.column_size === 'is-6') {
-                    return chunk(records, 2);
+                    return chunk(this.record_list, 2);
                 } else {
-                    return chunk(records, 4);
+                    return chunk(this.record_list, 4);
                 }
-            },
-
-            imagesOnly() {
-                if (this.images_only) {
-                    return this.record_list.filter((d) => {
-                       return 'datastream' in d && /image/.test(d.datastream[1]);
-                    });
-                }
-
-                return this.record_list;
             },
 
             numberOfRecords() {
@@ -169,6 +157,7 @@
             retrieveData() {
                 let self = this;
                 let params = utils.urlParams();
+
                 let param_string = utils.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
@@ -196,8 +185,6 @@
 </script>
 
 <style scoped lang="scss">
-    $unc-blue: #4B9CD3;
-
     .browse-records-display {
         .columns {
             display: inline-flex;
@@ -238,16 +225,6 @@
 
         .spacing {
             text-align: center;
-        }
-
-        .imgs-only {
-            color: $unc-blue;
-
-            .checkbox {
-                height: 50px;
-                vertical-align: middle;
-                width: 40px;
-            }
         }
 
         .record-count {

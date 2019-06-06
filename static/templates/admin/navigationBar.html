@@ -4,7 +4,7 @@ var pageRows = pageNavigation.pageRows;
 var pageStart = pageNavigation.pageStart;
 var pageUrl = resultUrl;
 
-var totalPages = Math.ceil(resultCount / pageRows);
+var totalPageCount = Math.ceil(resultCount / pageRows);
 
 var currentPage = pageStart / pageRows + 1;
 var sideGap = 10 / 2;
@@ -16,11 +16,11 @@ if (leftGap < 1) {
 	leftGap = 1;
 }
 
-if (rightGap > totalPages) {
-	leftGap -= (rightGap - totalPages);
+if (rightGap > totalPageCount) {
+	leftGap -= (rightGap - totalPageCount);
 	if (leftGap < 1)
 		leftGap = 1;
-	rightGap = totalPages;
+	rightGap = totalPageCount;
 }
 
 var pageEndCount = resultCount;
@@ -36,7 +36,7 @@ if (resultCount > 1) {
 %>
 <p class="navigation_bar">
 	<span class="navigation_results_shown">Showing <%= showingRange %><span class="bold"><%= resultCount %></span> result<%= (resultCount != 1)? 's' : '' %></span>
-	<% if (totalPages > 1) { %>
+	<% if (totalPageCount > 1) { %>
 	<span class="navigation_pages">
 		<%
 		for (var pageNumber = leftGap; pageNumber <= rightGap; pageNumber++) { 

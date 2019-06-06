@@ -7,7 +7,7 @@ const utils = {
         // Set default params that can be updated
         let page_params = {
             page: 1,
-            rows: 20,
+            rows: 1,
             start: 0,
             sort: 'title,normal'
         };
@@ -19,6 +19,7 @@ const utils = {
             params_list.forEach((p) => {
                 let param = p.split('=');
                 let key = param[0].replace('?', '');
+
                 page_params[key] = decodeURIComponent(param[1])
             });
         }
