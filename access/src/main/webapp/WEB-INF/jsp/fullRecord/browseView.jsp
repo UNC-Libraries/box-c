@@ -15,15 +15,7 @@
     limitations under the License.
 
 --%>
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page trimDirectiveWhitespaces="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-
-<div class="contentarea">
-    <div class="collinfo_metadata">
-        <div id="app"></div>
-    </div>
+<div class="collinfo_metadata">
+    <div id="app"></div>
 </div>
 <script src="static/js/vue-access.js"></script>
