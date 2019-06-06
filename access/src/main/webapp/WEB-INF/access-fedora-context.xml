@@ -41,7 +41,6 @@
             value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
         <property name="lorisPath" value="${loris.base.url}" />
         <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
-        <property name="externalContentPath" value="${external.base.url}" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

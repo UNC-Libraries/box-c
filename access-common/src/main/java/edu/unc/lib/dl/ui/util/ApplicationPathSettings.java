@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author count0
  *
  */
@@ -35,7 +35,6 @@ public class ApplicationPathSettings {
     private String lorisPath;
     private String solrPath;
     private URL solrURL;
-    private String externalContentPath;
 
     public String getLorisPath() {
         return lorisPath;
@@ -70,12 +69,6 @@ public class ApplicationPathSettings {
         } catch (MalformedURLException e) {
             LOG.error("Failed to set solr path to " + solrPath, e);
         }
-    }
-    public String getExternalContentPath() {
-        return externalContentPath;
-    }
-    public void setExternalContentPath(String externalContentPath) {
-        this.externalContentPath = externalContentPath;
     }
     public URL getFedoraURL() {
         return fedoraURL;
