@@ -79,7 +79,6 @@
         <property name="exposedContextBeanNames">
             <list>
                 <value>searchSettings</value>
-                <value>externalContentSettings</value>
                 <value>accessGroupConstants</value>
                 <value>accessBaseUrl</value>
                 <value>adminBaseUrl</value>

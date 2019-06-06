@@ -14,7 +14,7 @@
         <div class="columns">
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
-                    There are <strong>{{ record_count }}</strong> {{ childTypeText }} in this level.
+                    There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
                 </p>
             </div>
             <div class="column is-2">
@@ -79,9 +79,9 @@
         computed: {
             childTypeText() {
                 if (this.container_metadata.type === 'AdminUnit') {
-                    return 'collections';
+                    return 'collection';
                 } else {
-                    return 'items';
+                    return 'item';
                 }
             },
 
@@ -115,6 +115,18 @@
                 } else {
                     this.column_size = 'is-6';
                 }
+            },
+
+            noteWording(word) {
+                if (this.record_count === 1) {
+                    if (word === 'are') {
+                        return 'is';
+                    }
+
+                    return word;
+                }
+
+                return `${word}s`;
             },
 
             /**
