@@ -83,7 +83,6 @@
 		<property name="exposedContextBeanNames">
 			<list>
 				<value>searchSettings</value>
-				<value>externalContentSettings</value>
 				<value>fedoraUtil</value>
 				<value>accessGroupConstants</value>
 				<value>accessBaseUrl</value>

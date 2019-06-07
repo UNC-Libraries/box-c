@@ -49,17 +49,6 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<!-- Utils -->
-
-	<bean id="externalContentSettings" class="edu.unc.lib.dl.ui.util.ExternalContentSettings">
-		<property name="properties" ref="externalContentProperties" />
-	</bean>
-
-	<bean id="lookupMappingsSettings" class="edu.unc.lib.dl.ui.util.LookupMappingsSettings"
-		init-method="init">
-		<property name="sourcePaths" value="#{externalContentSettings.list('mapping')}" />
-	</bean>
-
 	<!-- Beans -->
 	
 	<bean id="gaTrackingID" class="java.lang.String">
@@ -77,19 +66,6 @@
 			value="${forms.base.url}" />
 	</bean>
 
-	<!-- Properties objects -->
-	<util:properties id="externalContentProperties"
-		location="classpath:externalContent.properties">
-		<prop key="external.base.url">${external.base.url}</prop>
-	</util:properties>
-	
-	<util:properties id="headerMenuProperties"
-		location="classpath:mappings/headerMenu.properties" />
-	
-	<bean name="headerMenuSettings" class="edu.unc.lib.dl.ui.util.HeaderMenuSettings" init-method="init">
-		<property name="properties" ref="headerMenuProperties" />
-	</bean>
-
 	<!-- Import controllers -->
 	<bean
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
@@ -102,9 +78,7 @@
 	<bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
 		<property name="exposedContextBeanNames">
 			<list>
-				<value>headerMenuSettings</value>
 				<value>searchSettings</value>
-				<value>externalContentSettings</value>
 				<value>fedoraUtil</value>
 				<value>accessGroupConstants</value>
 				<value>gaTrackingID</value>
@@ -119,7 +93,6 @@
 	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
-		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
 		<property name="views">
 			<map>
 				<entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>
@@ -143,7 +116,6 @@
 		<property name="beans">
 			<map>
 				<entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
-				<entry key="cdr-access:name=headerMenuSettings" value-ref="headerMenuSettings" />
 			</map>
 		</property>
 		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>

@@ -85,7 +85,6 @@
 		<property name="solrPath"
 			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
 		<property name="lorisPath" value="${loris.base.url}" />
-		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
 	<bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />

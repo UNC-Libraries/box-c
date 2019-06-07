@@ -59,15 +59,6 @@
 	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
 		<property name="properties" ref="solrProperties" />
 	</bean>
-
-	<bean id="externalContentSettings" class="edu.unc.lib.dl.ui.util.ExternalContentSettings">
-		<property name="properties" ref="externalContentProperties" />
-	</bean>
-
-	<bean id="lookupMappingsSettings" class="edu.unc.lib.dl.ui.util.LookupMappingsSettings"
-		init-method="init">
-		<property name="sourcePaths" value="#{externalContentSettings.list('mapping')}" />
-	</bean>
 	
 	<bean id="accessSettings" class="edu.unc.lib.dl.ui.util.AccessControlSettings">
 		<property name="properties" ref="accessProperties" />
@@ -122,10 +113,6 @@
 		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
 		</prop>
 	</util:properties>
-	<util:properties id="externalContentProperties"
-		location="classpath:externalContent.properties">
-		<prop key="external.base.url">${external.base.url}</prop>
-	</util:properties>
 	<util:properties id="accessProperties" location="classpath:accessControl.properties">
 		<prop key="access.group.admin">${access.group.admin}</prop>
 	</util:properties>
@@ -161,7 +148,6 @@
 		<property name="exposedContextBeanNames">
 			<list>
 				<value>searchSettings</value>
-				<value>externalContentSettings</value>
 				<value>fedoraUtil</value>
 				<value>accessGroupConstants</value>
 			</list>
@@ -173,7 +159,6 @@
 	</bean>
 
 	<bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
-		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
 		<property name="views">
 			<map>
 				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/fullRecord.xsl"/>

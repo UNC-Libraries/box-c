@@ -24,3 +24,5 @@ velocity.log
 dump.rdb
 services-camel
 **/target
+.sass-cache
+static/**/*.css.map
