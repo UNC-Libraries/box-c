@@ -168,7 +168,6 @@
                         self.record_count = data.resultCount;
                         self.record_list = data.metadata;
                         self.container_name = data.container.title;
-                        self.container_metadata = data.container;
                 });
             }
         },

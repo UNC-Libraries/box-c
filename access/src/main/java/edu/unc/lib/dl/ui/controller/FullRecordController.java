@@ -109,7 +109,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         return getFullRecord(id, model, request);
     }
 
-    @RequestMapping(value = "/{pid}/fullObject", method = RequestMethod.GET)
+    @RequestMapping(value = "/{pid}/metadataView", method = RequestMethod.GET)
     @ResponseBody
     public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
                                           HttpServletResponse response) {

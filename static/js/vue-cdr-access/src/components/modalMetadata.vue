@@ -67,11 +67,11 @@
             retrieveContainerMetadata() {
                 let self = this;
 
-                fetch(`record/${this.uuid}/fullObject`)
+                fetch(`record/${this.uuid}/metadataView`)
                     .then(function(response) {
                         return response.text();
                     }).then(function(data) {
-                    self.metadata = data;
+                        self.metadata = data;
                 });
             }
         }
