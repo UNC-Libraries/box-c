@@ -7,7 +7,7 @@ const utils = {
         // Set default params that can be updated
         let page_params = {
             page: 1,
-            rows: 1,
+            rows: 20,
             start: 0,
             sort: 'title,normal'
         };
