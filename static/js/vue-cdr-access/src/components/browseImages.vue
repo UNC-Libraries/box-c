@@ -28,16 +28,22 @@
             images_only() {
                 let params = utils.urlParams();
 
-                if (this.images_only) {
+                if (this.images_only && !utils.paramExists('format', params)) {
                     params.page = 1;
                     params.start = 0;
                     params.format = 'image';
-                } else {
+                }
+
+                if (!this.images_only) {
                     delete params.format;
                 }
 
                 this.$router.push({ name: 'browseDisplay', query: params });
             }
+        },
+
+        mounted() {
+            this.images_only = utils.paramExists('format', utils.urlParams());
         }
     }
 </script>
