@@ -27,8 +27,11 @@
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <a :href="record.uri">
-                            <i class="fa" :class="recordType(record.type)"></i>
-                            <div class="record-count">{{ recordCountFormat(record.counts.child) }}</div>
+                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url">
+                            <i v-else class="fa" :class="recordType(record.type)"></i>
+                            <div class="record-count" :class="{ thumbnail: hasThumbnail(record.thumbnail_url) }">
+                                <div>{{ recordCountFormat(record.counts.child) }}</div>
+                            </div>
                             <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
@@ -141,6 +144,10 @@
                 return `${word}s`;
             },
 
+            hasThumbnail(thumb) {
+              return thumb !== undefined && thumb !== '';
+            },
+
             /**
              * Updates list with results of BrowseSearch component custom event
              * @param search_results
@@ -235,6 +242,22 @@
         .record-title {
             margin-left: -15px;
             margin-top: 65px;
+        }
+
+        .thumbnail {
+            background-color: rgba(192, 192, 192, 0.4);
+            height: 40%;
+            margin: -95px 0 0 17%;
+            width: 60%;
+
+            div {
+                margin-top: 30px;
+            }
+        }
+
+        img {
+            margin: 0 auto;
+            width: 85%;
         }
 
         @media screen and (max-width: 768px) {
