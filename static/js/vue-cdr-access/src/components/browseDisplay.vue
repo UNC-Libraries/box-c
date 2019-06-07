@@ -15,7 +15,6 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    There are <strong>{{ record_count }}</strong> {{ childTypeText }} in this level.
                     <browse-images :container_type="container_metadata.type"></browse-images>
                 </p>
             </div>
@@ -133,11 +132,9 @@
             },
 
             noteWording(word) {
-                if (this.record_count === 1) {
-                    if (word === 'are') {
-                        return 'is';
-                    }
-
+                if (this.record_count === 1 && word === 'are') {
+                    return 'is';
+                } else if (word === 'are') {
                     return word;
                 }
 
@@ -168,6 +165,7 @@
                         self.record_count = data.resultCount;
                         self.record_list = data.metadata;
                         self.container_name = data.container.title;
+                        self.container_metadata = data.container;
                 });
             }
         },
