@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -41,7 +42,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -106,7 +109,17 @@ public class FullRecordController extends AbstractSolrSearchController {
         return getFullRecord(id, model, request);
     }
 
-    public String getFullRecord(String pidString, Model model, HttpServletRequest request) {
+    @RequestMapping(value = "/{pid}/metadataView", method = RequestMethod.GET)
+    @ResponseBody
+    public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
+                                          HttpServletResponse response) {
+        response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
+        return getFullObjectView(pid);
+    }
+
+
+    public String getFullObjectView(String pidString) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -114,19 +127,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         aclService.assertHasAccess("Insufficient permissions to access full record",
                 pid, principals, Permission.viewMetadata);
 
-        // Retrieve the objects record from Solr
         SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
-        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
-        if (briefObject == null) {
-            throw new InvalidRecordRequestException();
-        }
-        // Get path information.
-        model.addAttribute("briefObject", briefObject);
-
-        Date embargoUntil = briefObject.getActiveEmbargo();
-        if (embargoUntil != null) {
-            model.addAttribute("embargoDate", embargoUntil);
-        }
 
         // Retrieve the objects description from Fedora
         String fullObjectView = null;
@@ -148,6 +149,35 @@ public class FullRecordController extends AbstractSolrSearchController {
             LOG.error("Failed to render full record view for {}", idRequest.getId(), e);
         } catch (JDOMException | IOException e) {
             LOG.error("Failed to parse MODS document for {}", idRequest.getId(), e);
+        }
+
+        if (fullObjectView == null) {
+            return "No metadata is available for this item";
+        }
+
+        return fullObjectView;
+    }
+
+    public String getFullRecord(String pidString, Model model, HttpServletRequest request) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+
+        aclService.assertHasAccess("Insufficient permissions to access full record",
+                pid, principals, Permission.viewMetadata);
+
+        // Retrieve the objects record from Solr
+        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
+        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+        if (briefObject == null) {
+            throw new InvalidRecordRequestException();
+        }
+        // Get path information.
+        model.addAttribute("briefObject", briefObject);
+
+        Date embargoUntil = briefObject.getActiveEmbargo();
+        if (embargoUntil != null) {
+            model.addAttribute("embargoDate", embargoUntil);
         }
 
         // Get additional information depending on the type of object since the user has access
@@ -187,8 +217,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("hasFacetFields", hasFacets);
             model.addAttribute("facetFields", resultResponse.getFacetFields());
         }
-
-        model.addAttribute("fullObjectView", fullObjectView);
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {

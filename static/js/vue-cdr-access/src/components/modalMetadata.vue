@@ -13,7 +13,7 @@
                             <div class="modal-header columns">
                                 <slot name="header">
                                     <div class="column is-12">
-                                        <h3>{{ metadata.title }}</h3>
+                                        <h3>{{ title }}</h3>
                                         <button class="button is-small" @click="showModal = false">Close</button>
                                     </div>
                                 </slot>
@@ -21,10 +21,7 @@
 
                             <div class="modal-body">
                                 <slot name="body">
-                                    <ul>
-                                        <li><strong>Created</strong>: {{ formatDate(metadata.added) }}</li>
-                                        <li><strong>Last Updated</strong>: {{ formatDate(metadata.updated) }}</li>
-                                    </ul>
+                                    <div v-html="metadata"></div>
                                 </slot>
                             </div>
                         </div>
@@ -40,13 +37,21 @@
         name: 'modalMetadata',
 
         props: {
-            metadata: Object
+            uuid: '',
+            title: ''
         },
 
         data() {
             return {
+                metadata: '',
                 showModal: false
             };
+        },
+
+        watch: {
+            uuid(d) {
+                this.retrieveContainerMetadata();
+            }
         },
 
         methods: {
@@ -57,12 +62,23 @@
                     day: 'numeric',
                     year: 'numeric'
                 });
+            },
+
+            retrieveContainerMetadata() {
+                let self = this;
+
+                fetch(`record/${this.uuid}/metadataView`)
+                    .then(function(response) {
+                        return response.text();
+                    }).then(function(data) {
+                        self.metadata = data;
+                });
             }
         }
     }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
     .modal-mask {
         position: fixed;
         z-index: 9998;
@@ -115,13 +131,17 @@
 
     .modal-body {
         margin: 20px 0;
+        text-align: center;
 
-        ul {
-            display: block;
-            text-align: left;
+        table {
+            td {
+                font-size: 18px;
+                padding-bottom: 5px;
+                padding-left: 15px;
 
-            li {
-                margin-bottom: 10px;
+                p {
+                    font-size: 18px;
+                }
             }
         }
     }
