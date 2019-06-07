@@ -233,10 +233,13 @@
 
         .record-count {
             color: white;
-            font-size: 40px;
             margin-bottom: 35px;
             margin-left: -15px;
             margin-top: -65px;
+
+            div {
+                font-size: 40px;
+            }
         }
 
         .record-title {
