@@ -267,24 +267,25 @@
 
         .thumbnail {
             background-color: rgba(192, 192, 192, 0.4);
-            left: 55px;
             height: 100px;
-            top: -40px;
+            float: none;
+            margin: -145px auto 0 auto;
             width: 200px;
 
             div {
                 margin-top: 40px;
+                padding-top: 45px;
             }
         }
 
         .thumbnail + .record-title {
-            margin-left: 0;
-            text-align: center;
+            margin-left: 10px;
+            margin-top: 75px
         }
 
         img {
-            margin: 0 auto;
             height: 100px;
+            margin-left: 15px;
             width: 200px;
         }
 
