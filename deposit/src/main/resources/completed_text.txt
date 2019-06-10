@@ -16,12 +16,12 @@
 
 }}
 
-CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
+DCR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
 
 {{#ingestedObjects}}{{ingestedObjects}} item(s) successfully deposited.
 
 {{/ingestedObjects}}
-{{#isOpen}}Your materials are now available in the CDR:
+{{#isOpen}}Your materials are now available in the DCR:
 
 {{baseUrl}}/record/{{objectPid}}
 
