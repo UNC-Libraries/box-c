@@ -77,6 +77,7 @@
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: '',
+                is_collection: false,
                 record_count: 0,
                 record_list: [],
                 uuid: ''
@@ -148,6 +149,12 @@
               return thumb !== undefined && thumb !== '';
             },
 
+            updateUrl() {
+                let params = utils.urlParams();
+                params.types = 'Work';
+                this.$router.push({ name: 'browseDisplay', query: params });
+            },
+
             /**
              * Updates list with results of BrowseSearch component custom event
              * @param search_results
@@ -161,6 +168,10 @@
             retrieveData() {
                 let self = this;
                 let params = utils.urlParams();
+
+                if (this.is_collection) {
+                    params.types = 'Work';
+                }
 
                 let param_string = utils.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
@@ -178,6 +189,13 @@
         },
 
         mounted() {
+            // Small hack to check outside of Vue controlled DOM to see if we're on the collections browse page
+            this.is_collection = document.getElementById('is-collection') !== null;
+
+            if (this.is_collection) {
+                this.updateUrl();
+            }
+
             this.retrieveData();
             window.addEventListener('resize', debounce(this.numberOfColumns), 300);
         },
@@ -249,18 +267,25 @@
 
         .thumbnail {
             background-color: rgba(192, 192, 192, 0.4);
-            height: 40%;
-            margin: -95px 0 0 17%;
-            width: 60%;
+            left: 55px;
+            height: 100px;
+            top: -40px;
+            width: 200px;
 
             div {
-                margin-top: 30px;
+                margin-top: 40px;
             }
+        }
+
+        .thumbnail + .record-title {
+            margin-left: 0;
+            text-align: center;
         }
 
         img {
             margin: 0 auto;
-            width: 85%;
+            height: 100px;
+            width: 200px;
         }
 
         @media screen and (max-width: 768px) {
