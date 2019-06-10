@@ -50,7 +50,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
     public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
             SwordConfiguration config, String depositor, String owner) throws SwordError {
         if (log.isDebugEnabled()) {
-            log.debug("Preparing to perform a CDR METS deposit to " + destination.getPid());
+            log.debug("Preparing to perform a DCR METS deposit to " + destination.getPid());
             log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
         }
 

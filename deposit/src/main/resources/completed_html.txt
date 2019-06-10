@@ -18,19 +18,19 @@
 <html>
 <head>
   <title>
-    CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
+    DCR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
   </title>
 </head>
 <body>
 
   <img style="float: right;" alt="UNC Libraries logo" src="{{baseUrl}}/static/images/email_logo.png"/>
 
-  <h3>CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}</h3>
+  <h3>DCR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}</h3>
   
   {{#ingestedObjects}}<p>{{ingestedObjects}} item(s) successfully deposited.</p>{{/ingestedObjects}}
   
   {{#isOpen}}
-  <p>Your materials are now available in the CDR:</p>
+  <p>Your materials are now available in the DCR:</p>
   <p><a href="{{baseUrl}}/record/{{objectPid}}">{{baseUrl}}/record/{{objectPid}}</a></p>
   {{/isOpen}}
   
