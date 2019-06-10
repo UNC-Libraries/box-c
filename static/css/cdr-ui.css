@@ -88,18 +88,18 @@ a {
   background-color: #4B9CD3;
 }
 
-.search {
+header .search {
   display: flex;
   align-items: center;
   padding: 6px 0;
 }
 @media only screen and (max-width: 1088px) {
-  .search {
+  header .search {
     margin-left: 16px;
     margin-right: 16px;
   }
 }
-.search label {
+header .search label {
   position: absolute;
   width: 0;
   height: 0;
@@ -108,20 +108,20 @@ a {
   border: 0;
   overflow: hidden;
 }
-.search input {
+header .search input {
   width: 100%;
   padding: 8px;
   font-size: 1rem;
 }
-.search button {
+header .search button {
   margin: 0 12px 0 12px;
 }
-.search a {
+header .search a {
   flex-shrink: 0;
   color: white;
   font-size: 16px;
 }
-.search a:hover, .search a:active {
+header .search a:hover, header .search a:active {
   color: #4B9CD3;
 }
 
