@@ -811,7 +811,7 @@
 						<xsl:when test="$groupKey = 'preceding'">
 							<xsl:attribute name="title">Information about a predecessor to this resource</xsl:attribute>
 							<xsl:text>Related:</xsl:text> <br/>
-							<xsl:value-of>Preceeding resource</xsl:value-of>
+							<xsl:value-of>Preceding resource</xsl:value-of>
 						</xsl:when>
 						<xsl:when test="$groupKey = 'succeeding'">
 							<xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
