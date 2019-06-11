@@ -53,7 +53,7 @@
     import pagination from './pagination.vue';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
-    import {utils} from "../utils/helper_methods";
+    import routeUtils from '../mixins/routeUtils';
 
     export default {
         name: 'browseDisplay',
@@ -71,6 +71,8 @@
                 this.retrieveData();
             }
         },
+
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -150,8 +152,7 @@
             },
 
             updateUrl() {
-                let params = utils.urlParams();
-                params.types = 'Work';
+                let params = this.urlParams({ types: 'Work' });
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
@@ -167,13 +168,13 @@
 
             retrieveData() {
                 let self = this;
-                let params = utils.urlParams();
+                let params = this.urlParams();
 
                 if (this.is_collection) {
                     params.types = 'Work';
                 }
 
-                let param_string = utils.formatParamsString(params);
+                let param_string = this.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
                 fetch(`listJson/${this.uuid}${param_string}`)

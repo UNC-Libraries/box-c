@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import {utils} from "../utils/helper_methods";
+    import routeUtils from '../mixins/routeUtils';
 
     export default {
         name: 'browseImages',
@@ -13,6 +13,8 @@
         props: {
             container_type: String
         },
+
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -26,16 +28,20 @@
             },
 
             images_only() {
-                let params = utils.urlParams();
+                let params = this.urlParams();
 
-                if (this.images_only && !utils.paramExists('format', params)) {
-                    params.page = 1;
-                    params.start = 0;
-                    params.format = 'image';
+                if (this.images_only && !this.paramExists('format', params)) {
+                    params = this.urlParams({
+                        page: 1,
+                        start: 0,
+                        format: 'image'
+                    });
                 }
 
                 if (!this.images_only) {
-                    delete params.format;
+                    params = this.urlParams({
+                        format: 'delete'
+                    });
                 }
 
                 this.$router.push({ name: 'browseDisplay', query: params });
@@ -43,7 +49,7 @@
         },
 
         mounted() {
-            this.images_only = utils.paramExists('format', utils.urlParams());
+            this.images_only = this.paramExists('format', this.urlParams());
         }
     }
 </script>
