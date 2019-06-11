@@ -47,7 +47,7 @@ export default {
         },
 
         /**
-         * Check to see if a parameter is in the $route.query object
+         * Check to see if a parameter is in the url query
          * @param param
          * @param params
          * @returns {boolean}

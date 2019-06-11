@@ -91,6 +91,7 @@
 
             pageUrl(page_number) {
                 if (page_number === undefined) page_number = 1;
+
                 let start_record = this.rows_per_page * (parseInt(page_number) - 1);
                 let update_params = {
                     start: start_record,
