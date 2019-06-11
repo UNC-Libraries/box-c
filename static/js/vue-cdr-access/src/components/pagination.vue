@@ -21,7 +21,7 @@
 </template>
 
 <script>
-    import {utils} from '../utils/helper_methods';
+    import routeUtils from '../mixins/routeUtils';
     import isEmpty from 'lodash.isempty';
     import range from 'lodash.range';
 
@@ -32,6 +32,8 @@
             numberOfRecords: Number,
             pageBaseUrl: String
         },
+
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -91,10 +93,11 @@
             pageUrl(page_number) {
                 if (page_number === undefined) page_number = 1;
                 let start_record = this.perPage * (parseInt(page_number) - 1);
-                let params = utils.urlParams();
-                params.page = page_number;
-                params.start = start_record;
-                params.rows = this.perPage + ''; // Need to be converted to a string
+                let params = this.urlParams({
+                    page: page_number,
+                    start: start_record,
+                    rows: this.perPage + ''
+                });
 
                 this.$router.push({ name: 'browseDisplay', query: params });
             }
