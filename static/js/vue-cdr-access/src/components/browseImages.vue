@@ -28,23 +28,17 @@
             },
 
             images_only() {
-                let params = this.urlParams();
-
-                if (this.images_only && !this.paramExists('format', params)) {
-                    params = this.urlParams({
-                        page: 1,
-                        start: 0,
-                        format: 'image'
-                    });
-                }
+                let update_params = {
+                    page: 1,
+                    start: 0,
+                    format: 'image'
+                };
 
                 if (!this.images_only) {
-                    params = this.urlParams({
-                        format: 'delete'
-                    });
+                    delete update_params.format;
                 }
 
-                this.$router.push({ name: 'browseDisplay', query: params });
+                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
             }
         },
 
