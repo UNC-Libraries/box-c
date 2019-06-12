@@ -5,26 +5,28 @@ export default {
         /**
          * Put URL parameters into an object
          * Set default params, if none are present that can be updated
-         * @returns {{[p: string]: string | (string | null)[]} | {start: number, page: number, sort: string, rows: number}}
+         * @param params_to_update
+         * @returns {({} & Dictionary<string | (string | null)[]>) | {start: number, page: number, sort: string, rows: number}}
          */
         urlParams(params_to_update = {}) {
-            let  page_params = {
-                page: 1,
-                rows: 20,
-                start: 0,
-                sort: 'title,normal'
-            };
+            let route_params = Object.assign({}, this.$route.query);
+            let page_params;
 
-            if (!isEmpty(params_to_update)) {
-                Object.keys(params_to_update).forEach(key => {
-                    page_params[key] = params_to_update[key];
-                });
+            if (isEmpty(this.$route.query)) {
+                page_params = {
+                    page: 1,
+                    rows: 20,
+                    start: 0,
+                    sort: 'title,normal'
+                };
+            } else if (!isEmpty(params_to_update)) {
+                page_params = Object.assign(route_params, params_to_update);
 
-                if ('format' in Object.keys(params_to_update) && params_to_update.format === 'delete') {
+                if (!this.paramExists('format', params_to_update)) {
                     delete page_params.format;
                 }
             } else {
-                page_params = this.$route.query;
+                page_params = route_params;
             }
 
             return page_params;
