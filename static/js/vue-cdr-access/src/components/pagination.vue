@@ -93,13 +93,13 @@
             pageUrl(page_number) {
                 if (page_number === undefined) page_number = 1;
                 let start_record = this.perPage * (parseInt(page_number) - 1);
-                let params = this.urlParams({
+                let update_params = this.addFormat({
                     page: page_number,
                     start: start_record,
                     rows: this.perPage + ''
                 });
 
-                this.$router.push({ name: 'browseDisplay', query: params });
+                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
             }
         },
 
