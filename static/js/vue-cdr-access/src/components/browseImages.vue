@@ -60,9 +60,10 @@
         color: $unc-blue;
 
         .checkbox {
-            height: 50px;
+            height: 40px;
+            width: 50px;
             vertical-align: middle;
-            width: 40px;
+            zoom: .6; /* Needed for webkit browsers */
         }
     }
 </style>
