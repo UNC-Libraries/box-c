@@ -1,6 +1,13 @@
 <template>
+<<<<<<< HEAD
     <span class="imgs-only" v-if="container_type === 'Collection'">
         Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+=======
+    <span class="imgs-only">
+        <span v-if="container_type === 'Collection'">
+            Show images only? <input title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+        </span>
+>>>>>>> 298109f84... Add tests for image browse
     </span>
 </template>
 
@@ -18,7 +25,8 @@
 
         data() {
             return {
-                images_only: false
+                images_only: false,
+                update_params: {}
             }
         },
 
@@ -27,7 +35,7 @@
                 this.images_only = 'format' in d;
             }
         },
-
+        
         methods: {
             update_images() {
                 let update_params = {
