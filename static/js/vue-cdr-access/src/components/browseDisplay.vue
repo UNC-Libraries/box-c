@@ -2,13 +2,10 @@
     <div class="browse-records-display">
         <div v-if="numberOfRecords > 0" class="columns">
             <div class="column is-10">
-                <browse-search :record-id="container_metadata.id"
-                               @browse-query-results="browseSearching">
-                </browse-search>
+                <browse-search></browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :page-base-url="container_metadata.uri">
-                </browse-sort>
+                <browse-sort></browse-sort>
             </div>
         </div>
         <div class="columns">
@@ -154,16 +151,6 @@
             updateUrl() {
                 let params = this.urlParams({ types: 'Work' });
                 this.$router.push({ name: 'browseDisplay', query: params });
-            },
-
-            /**
-             * Updates list with results of BrowseSearch component custom event
-             * @param search_results
-             */
-            browseSearching(search_results) {
-                this.container_name = search_results.title;
-                this.record_list = search_results.metadata;
-                this.container_metadata = search_results.container;
             },
 
             retrieveData() {
