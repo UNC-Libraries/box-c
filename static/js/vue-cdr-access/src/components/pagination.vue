@@ -102,6 +102,10 @@
             }
         },
 
+        mounted() {
+            this.setPageTotal();
+        },
+
         updated() {
             this.setPageTotal();
         }
