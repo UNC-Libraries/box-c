@@ -327,7 +327,7 @@ public class ExportXMLController {
 			try {
 				MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
 
-				helper.setSubject("CDR Metadata Export");
+				helper.setSubject("DCR Metadata Export");
 				helper.setFrom("cdr@listserv.unc.edu");
 				helper.setText("The XML metadata for " + request.getPids().size() + " object(s) requested for export by "
 						+ this.user + " is attached.\n");

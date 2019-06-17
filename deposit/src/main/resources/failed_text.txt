@@ -16,7 +16,7 @@
 
 }}
 
-CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}
+DCR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}
 
 There was an error processing your deposit.
 {{#errorMessage}}

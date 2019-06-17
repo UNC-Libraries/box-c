@@ -21,7 +21,7 @@
 	metadata-complete="true"
 	version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
 	
-	<display-name>CDR Access</display-name>
+	<display-name>DCR Access</display-name>
 	
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
