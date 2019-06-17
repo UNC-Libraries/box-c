@@ -59,7 +59,7 @@
                 <div><a href="search?format=text"><i class="fas fa-file-alt"></i><c:out value="${formatCounts.text}"/> texts</a></div>
             </div>
             <p>Interested in seeing more?</p>
-            <p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson/shc">Wilson Special Collections Library</a> website.</p>
+            <p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
         </div>
     </div>
 </main>

@@ -49,12 +49,12 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		var recordUrl = module.config().recordUrl;
 		var menuEntries = [{
 			insertPath : ["View"],
-			label : "View in CDR",
+			label : "View in DCR",
 			enabled : true,
 			binding : null,
 			action : recordUrl
 		}, {
-			label : "View in CDR",
+			label : "View in DCR",
 			enabled : true, 
 			itemClass : "header_menu_link",
 			action : recordUrl
