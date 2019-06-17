@@ -9,26 +9,17 @@ export default {
          * @returns {({} & Dictionary<string | (string | null)[]>) | {start: number, page: number, sort: string, rows: number}}
          */
         urlParams(params_to_update = {}) {
-            let route_params = Object.assign({}, this.$route.query);
-            let page_params;
-
-            if (isEmpty(this.$route.query)) {
-                page_params = {
+            let defaults = {
                     page: 1,
                     rows: 20,
                     start: 0,
                     sort: 'title,normal'
                 };
-            } else {
-                page_params = route_params;
-            }
+            let route_params = Object.assign(defaults, this.$route.query);
+            let page_params;
 
             if (!isEmpty(params_to_update)) {
                 page_params = Object.assign(route_params, params_to_update);
-
-                if (!this.paramExists('format', params_to_update)) {
-                    delete page_params.format;
-                }
             }
 
             return page_params;
