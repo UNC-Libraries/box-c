@@ -35,9 +35,9 @@
 	
 	if (resultCount == null || searchState == null)
 		return;
-	long totalPages = resultCount / searchState.getRowsPerPage();
+	long totalPageCount = resultCount / searchState.getRowsPerPage();
 	if (resultCount % searchState.getRowsPerPage() > 0)
-		totalPages++;
+		totalPageCount++;
 	long currentPage = searchState.getStartRow() / searchState.getRowsPerPage() + 1;
 	
 	long sideGap = searchSettings.pagesToDisplay / 2;
@@ -48,17 +48,17 @@
 		right -= left;
 		left = 1;
 	}
-	if (right > totalPages){
-		left -= (right - totalPages);
+	if (right > totalPageCount){
+		left -= (right - totalPageCount);
 		if (left < 1)
 			left = 1;
-		right = totalPages;
+		right = totalPageCount;
 	}
 	
 	pageContext.setAttribute("left", left);
 	pageContext.setAttribute("right", right);
 	pageContext.setAttribute("currentPage", currentPage);
-	pageContext.setAttribute("totalPages", totalPages);
+	pageContext.setAttribute("totalPageCount", totalPageCount);
 }
 %>
 
@@ -104,7 +104,7 @@
 					</c:otherwise>
 				</c:choose>
 			</c:forEach>
-			<c:if test="${right != totalPages}">
+			<c:if test="${right != totalPageCount}">
 				...
 			</c:if>
 			<c:choose>

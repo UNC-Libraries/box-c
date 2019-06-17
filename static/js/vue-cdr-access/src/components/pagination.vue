@@ -4,10 +4,16 @@
             <ul v-if="numberOfRecords > 0">
                 <li v-if="pageFromUrl !== 1"><a class="back-next" @click.prevent="pageUrl(pageFromUrl - 1)" href="#">&lt;&lt;</a></li>
                 <li v-else class="no-link">&lt;&lt;</li>
-                <li v-for="page in totalPages">
-                    <a @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: pageFromUrl === page }">{{ page }}</a>
+                <li v-if="pageFromUrl >= pageLimit - 1"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
+                                             :class="{ current: pageFromUrl === 1 }">1</a> ...</li>
+                <li v-for="(page, index) in currentPages">
+                    <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: pageFromUrl === page }">{{ page }}</a>
                 </li>
-                <li v-if="pageFromUrl < totalPages"><a class="back-next" @click.prevent="pageUrl(pageFromUrl + 1)" href="#">&gt;&gt;</a></li>
+                <li v-if="totalPageCount > pageLimit && (pageFromUrl < totalPageCount - pageOffset)">
+                    ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
+                           :class="{ current: pageFromUrl === totalPageCount }">{{totalPageCount }}</a>
+                </li>
+                <li v-if="pageFromUrl < totalPageCount"><a class="back-next" @click.prevent="pageUrl(pageFromUrl + 1)" href="#">&gt;&gt;</a></li>
                 <li v-else class="no-link">&gt;&gt;</li>
             </ul>
         </div>
@@ -17,6 +23,7 @@
 <script>
     import {utils} from '../utils/helper_methods';
     import isEmpty from 'lodash.isempty';
+    import range from 'lodash.range';
 
     export default {
         name: 'pagination',
@@ -28,9 +35,11 @@
 
         data() {
             return {
+                pageLimit: 5,
+                pageOffset: 2,
                 perPage: 20,
                 startRecord: 1,
-                totalPages: 1
+                totalPageCount: 1
             }
         },
 
@@ -41,16 +50,47 @@
                }
 
                return parseInt(this.$route.query.page);
+            },
+
+            currentPages() {
+                let page_list = range(1, this.totalPageCount + 1);
+
+                if (this.totalPageCount > this.pageLimit) {
+                    let current_page = this.pageFromUrl;
+                    let end_offset = 1;
+                    let slice_offset = 3;
+                    let slice_start;
+                    let slice_end;
+
+                    if (current_page === 1 || current_page === 2) { // first pages
+                        slice_start = 0;
+                        slice_end = this.pageLimit;
+                    } else if (current_page === this.totalPageCount) { // last page
+                        slice_start = current_page - this.pageLimit;
+                        slice_end = this.totalPageCount;
+                    } else if (current_page === this.totalPageCount - end_offset) { // next to last page
+                        slice_start = (current_page - this.pageLimit) + end_offset;
+                        slice_end = this.totalPageCount;
+                    } else { // all other pages
+                        slice_start = current_page - slice_offset;
+                        slice_end = current_page + this.pageOffset;
+                    }
+
+                    return page_list.slice(slice_start, slice_end);
+                }
+
+                return page_list;
             }
         },
 
         methods: {
             setPageTotal() {
-                this.totalPages = Math.ceil(this.numberOfRecords / this.perPage);
+                this.totalPageCount = Math.ceil(this.numberOfRecords / this.perPage);
             },
 
             pageUrl(page_number) {
-                let start_record = (parseInt(page_number ) - 1) + (this.perPage - 1);
+                if (page_number === undefined) page_number = 1;
+                let start_record = this.perPage * (parseInt(page_number) - 1);
                 let params = utils.urlParams();
                 params.page = page_number;
                 params.start = start_record;
