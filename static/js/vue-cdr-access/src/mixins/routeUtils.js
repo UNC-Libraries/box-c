@@ -49,19 +49,6 @@ export default {
          */
         paramExists(param, params) {
             return `${param}` in params;
-        },
-
-        /**
-         * Add format to component params
-         * @param update_params
-         * @returns {*}
-         */
-        addFormat(update_params) {
-            if (this.paramExists('format', this.$route.query)) {
-                update_params.format = this.$route.query.format;
-            }
-
-            return update_params;
         }
     }
 }

@@ -34,9 +34,7 @@
                     this.sort_order = 'title,normal';
                 }
 
-                let update_params = this.addFormat({ sort: this.sort_order });
-
-                this.$router.push({ name: 'browseDisplay', query:  this.urlParams(update_params) });
+                this.$router.push({ name: 'browseDisplay', query:  this.urlParams({ sort: this.sort_order }) });
                 this.sort_order = '';
             }
         }
