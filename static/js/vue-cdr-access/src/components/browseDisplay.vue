@@ -51,9 +51,9 @@
     import browseSort from './browseSort.vue';
     import modalMetadata from './modalMetadata.vue';
     import pagination from './pagination.vue';
+    import routeUtils from '../mixins/routeUtils';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
-    import routeUtils from '../mixins/routeUtils';
 
     export default {
         name: 'browseDisplay',
