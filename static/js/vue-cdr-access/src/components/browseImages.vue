@@ -1,6 +1,6 @@
 <template>
     <span class="imgs-only" v-if="container_type === 'Collection'">
-        Show images only? <input title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+        Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
     </span>
 </template>
 
@@ -27,18 +27,24 @@
                 this.images_only = 'format' in d;
             },
 
-            images_only() {
+        },
+
+        methods: {
+            update_images() {
                 let update_params = {
                     page: 1,
-                    start: 0,
-                    format: 'image'
+                    start: 0
                 };
 
+                let url_params = this.urlParams(update_params);
+
                 if (!this.images_only) {
-                    delete update_params.format;
+                    url_params.format = 'image';
+                } else {
+                    delete url_params.format;
                 }
 
-                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
+                this.$router.push({ name: 'browseDisplay', query: url_params });
             }
         },
 

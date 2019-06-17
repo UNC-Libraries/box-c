@@ -16,13 +16,12 @@ export default {
                     sort: 'title,normal'
                 };
             let route_params = Object.assign(defaults, this.$route.query);
-            let page_params;
 
             if (!isEmpty(params_to_update)) {
-                page_params = Object.assign(route_params, params_to_update);
+                route_params = Object.assign(route_params, params_to_update);
             }
 
-            return page_params;
+            return route_params;
         },
 
         /**
