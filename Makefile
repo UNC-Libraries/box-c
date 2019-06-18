@@ -52,10 +52,14 @@ build-access:
 	echo "});" >> static/js/cdr-access.js
 
 	cat /dev/null > static/js/vue-access.js
-	cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js > static/js/vue-access.js
+	# Uncomment line in production mode
+	# cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js > static/js/vue-access.js
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-access.js
-	cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
+	# Comment out line in production mode
+	cat static/js/vue-cdr-access/dist/app.js > static/js/vue-access.js
+	# Uncomment line in production mode
+	# cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
 
 	cat \
 		static/js/public/src/*.js \
@@ -68,7 +72,8 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
-		static/js/vue-cdr-access/dist/css/app*.css \
+		# Uncomment line in production mode
+		# static/js/vue-cdr-access/dist/css/app*.css \
 		> static/css/cdr_access.css
 
 SUSPEND = "n"

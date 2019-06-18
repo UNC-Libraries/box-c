@@ -11,7 +11,7 @@
 </template>
 
 <script>
-    import {utils} from "../utils/helper_methods";
+    import routeUtils from '../mixins/routeUtils';
 
     export default {
         name: 'browseSort',
@@ -19,6 +19,8 @@
         props: {
             pageBaseUrl: ''
         },
+
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -32,10 +34,7 @@
                     this.sort_order = 'title,normal';
                 }
 
-                let params = utils.urlParams();
-                params.sort = this.sort_order;
-
-                this.$router.push({ name: 'browseDisplay', query:  params });
+                this.$router.push({ name: 'browseDisplay', query:  this.urlParams({ sort: this.sort_order }) });
                 this.sort_order = '';
             }
         }

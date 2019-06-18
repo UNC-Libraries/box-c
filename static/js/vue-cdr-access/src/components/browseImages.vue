@@ -1,11 +1,11 @@
 <template>
     <span class="imgs-only" v-if="container_type === 'Collection'">
-        Show images only? <input title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+        Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
     </span>
 </template>
 
 <script>
-    import {utils} from "../utils/helper_methods";
+    import routeUtils from '../mixins/routeUtils';
 
     export default {
         name: 'browseImages',
@@ -13,6 +13,8 @@
         props: {
             container_type: String
         },
+
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -23,27 +25,30 @@
         watch: {
             '$route.query'(d) {
                 this.images_only = 'format' in d;
-            },
+            }
+        },
 
-            images_only() {
-                let params = utils.urlParams();
+        methods: {
+            update_images() {
+                let update_params = {
+                    start: 0
+                };
 
-                if (this.images_only && !utils.paramExists('format', params)) {
-                    params.page = 1;
-                    params.start = 0;
-                    params.format = 'image';
+                let url_params = this.urlParams(update_params);
+                this.images_only = !this.images_only;
+
+                if (this.images_only) {
+                    url_params.format = 'image';
+                } else {
+                    delete url_params.format;
                 }
 
-                if (!this.images_only) {
-                    delete params.format;
-                }
-
-                this.$router.push({ name: 'browseDisplay', query: params });
+                this.$router.push({ name: 'browseDisplay', query: url_params });
             }
         },
 
         mounted() {
-            this.images_only = utils.paramExists('format', utils.urlParams());
+            this.images_only = this.paramExists('format', this.urlParams());
         }
     }
 </script>
