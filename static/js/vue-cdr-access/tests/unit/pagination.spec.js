@@ -29,7 +29,6 @@ describe('pagination.vue', () => {
         wrapper.setData({
             pageLimit: 5,
             pageOffset: 2,
-            perPage: 20,
             startRecord: 1,
             totalPageCount: 1
         });
@@ -40,7 +39,7 @@ describe('pagination.vue', () => {
     });
 
     it("calculates the pages to display", () => {
-        expect(wrapper.vm.currentPages).toEqual([1, 2, 3, 4, 5]);
+        expect(wrapper.vm.currentPageList).toEqual([1, 2, 3, 4, 5]);
     });
 
     it("displays a list of pages if the user is on the first page and there are <= pages than the page limit", () => {
@@ -54,8 +53,8 @@ describe('pagination.vue', () => {
 
     it("updates the page when a page is selected", () => {
         wrapper.findAll('.page-number').at(3).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.page).toEqual(4);
-        expect(wrapper.vm.currentPages).toEqual([2, 3, 4, 5, 6]);
+        expect(wrapper.vm.currentPage).toEqual(4);
+        expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);
     });
 
     it("updates the start record when a page is selected", () => {

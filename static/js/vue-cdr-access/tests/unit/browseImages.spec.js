@@ -42,7 +42,6 @@ describe('browseImages.vue', () => {
         expect(wrapper.vm.images_only).toBe(true);
         expect(wrapper.vm.$router.currentRoute.query).toEqual({
             format: "image",
-            page: 1,
             rows: 20,
             sort: "title,normal",
             start: 0
@@ -56,7 +55,6 @@ describe('browseImages.vue', () => {
 
         expect(wrapper.vm.images_only).toBe(false);
         expect(wrapper.vm.$router.currentRoute.query).toEqual({
-            page: 1,
             rows: 20,
             sort: "title,normal",
             start: 0
