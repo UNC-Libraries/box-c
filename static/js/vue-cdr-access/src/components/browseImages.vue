@@ -25,8 +25,7 @@
         watch: {
             '$route.query'(d) {
                 this.images_only = 'format' in d;
-            },
-
+            }
         },
 
         methods: {
@@ -36,6 +35,7 @@
                 };
 
                 let url_params = this.urlParams(update_params);
+                this.images_only = !this.images_only;
 
                 if (this.images_only) {
                     url_params.format = 'image';
