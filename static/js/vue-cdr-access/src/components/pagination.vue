@@ -39,7 +39,6 @@
             return {
                 pageLimit: 5,
                 pageOffset: 2,
-                perPage: 20,
                 startRecord: 1,
                 totalPageCount: 1
             }
@@ -51,7 +50,7 @@
                    return 1;
                }
 
-               return Math.ceil(parseInt(this.$route.query.start) / this.perPage) + 1;
+               return Math.ceil(parseInt(this.$route.query.start) / this.rows_per_page) + 1;
             },
 
             currentPageList() {
@@ -87,15 +86,15 @@
 
         methods: {
             setPageTotal() {
-                this.totalPageCount = Math.ceil(this.numberOfRecords / this.perPage);
+                this.totalPageCount = Math.ceil(this.numberOfRecords / this.rows_per_page);
             },
 
             pageUrl(page_number) {
                 if (page_number === undefined) page_number = 1;
-                let start_record = this.perPage * (parseInt(page_number) - 1);
+                let start_record = this.rows_per_page * (parseInt(page_number) - 1);
                 let update_params = {
                     start: start_record,
-                    rows: this.perPage + ''
+                    rows: this.rows_per_page + ''
                 };
 
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });

@@ -1,6 +1,12 @@
 import isEmpty from 'lodash.isempty';
 
 export default {
+    data() {
+        return {
+            rows_per_page: 20
+        }
+    },
+
     methods: {
         /**
          * Put URL parameters into an object
@@ -10,7 +16,7 @@ export default {
          */
         urlParams(params_to_update = {}) {
             let defaults = {
-                    rows: 20,
+                    rows: this.rows_per_page,
                     start: 0,
                     sort: 'title,normal'
                 };
