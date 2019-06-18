@@ -3,7 +3,7 @@ import isEmpty from 'lodash.isempty';
 export default {
     data() {
         return {
-            rows_per_page: 20
+            rows_per_page: this.$route.query.rows || 20
         }
     },
 
