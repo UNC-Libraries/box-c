@@ -38,7 +38,7 @@
 
                 let url_params = this.urlParams(update_params);
 
-                if (!this.images_only) {
+                if (this.images_only) {
                     url_params.format = 'image';
                 } else {
                     delete url_params.format;
