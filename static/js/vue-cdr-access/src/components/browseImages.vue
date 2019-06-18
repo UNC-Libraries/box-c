@@ -32,7 +32,6 @@
         methods: {
             update_images() {
                 let update_params = {
-                    page: 1,
                     start: 0
                 };
 

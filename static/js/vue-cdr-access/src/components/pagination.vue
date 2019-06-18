@@ -2,18 +2,18 @@
     <div class="columns pagination">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="pageFromUrl !== 1"><a class="back-next" @click.prevent="pageUrl(pageFromUrl - 1)" href="#">&lt;&lt;</a></li>
+                <li v-if="currentPage !== 1"><a class="back-next" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
                 <li v-else class="no-link">&lt;&lt;</li>
-                <li v-if="pageFromUrl >= pageLimit - 1"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
-                                             :class="{ current: pageFromUrl === 1 }">1</a> ...</li>
-                <li v-for="(page, index) in currentPages">
-                    <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: pageFromUrl === page }">{{ page }}</a>
+                <li v-if="currentPage >= pageLimit - 1"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
+                                                           :class="{ current: currentPage === 1 }">1</a> ...</li>
+                <li v-for="(page, index) in currentPageList">
+                    <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
-                <li v-if="totalPageCount > pageLimit && (pageFromUrl < totalPageCount - pageOffset)">
+                <li v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
                     ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
-                           :class="{ current: pageFromUrl === totalPageCount }">{{totalPageCount }}</a>
+                           :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
                 </li>
-                <li v-if="pageFromUrl < totalPageCount"><a class="back-next" @click.prevent="pageUrl(pageFromUrl + 1)" href="#">&gt;&gt;</a></li>
+                <li v-if="currentPage < totalPageCount"><a class="back-next" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
                 <li v-else class="no-link">&gt;&gt;</li>
             </ul>
         </div>
@@ -46,19 +46,19 @@
         },
 
         computed: {
-            pageFromUrl() {
-               if (isEmpty(this.$route.query)) {
+            currentPage() {
+               if (isEmpty(this.$route.query) || parseInt(this.$route.query.start) === 0) {
                    return 1;
                }
 
-               return parseInt(this.$route.query.page);
+               return Math.ceil(parseInt(this.$route.query.start) / this.perPage) + 1;
             },
 
-            currentPages() {
+            currentPageList() {
                 let page_list = range(1, this.totalPageCount + 1);
 
                 if (this.totalPageCount > this.pageLimit) {
-                    let current_page = this.pageFromUrl;
+                    let current_page = this.currentPage;
                     let end_offset = 1;
                     let slice_offset = 3;
                     let slice_start;
@@ -93,11 +93,10 @@
             pageUrl(page_number) {
                 if (page_number === undefined) page_number = 1;
                 let start_record = this.perPage * (parseInt(page_number) - 1);
-                let update_params = this.addFormat({
-                    page: page_number,
+                let update_params = {
                     start: start_record,
                     rows: this.perPage + ''
-                });
+                };
 
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
             }

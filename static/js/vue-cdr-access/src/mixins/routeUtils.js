@@ -10,7 +10,6 @@ export default {
          */
         urlParams(params_to_update = {}) {
             let defaults = {
-                    page: 1,
                     rows: 20,
                     start: 0,
                     sort: 'title,normal'
