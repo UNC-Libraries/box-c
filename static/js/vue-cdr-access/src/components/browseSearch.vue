@@ -25,7 +25,7 @@
 
         methods: {
             getResults() {
-                let update_params = this.addFormat({ anywhere: encodeURIComponent(this.search_query) });
+                let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
                 this.search_query = '';
             }
