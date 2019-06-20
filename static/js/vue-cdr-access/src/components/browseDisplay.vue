@@ -1,6 +1,6 @@
 <template>
     <div class="browse-records-display">
-        <div v-if="numberOfRecords > 0" class="columns">
+        <div v-if="record_list.length > 0" class="columns">
             <div class="column is-10">
                 <browse-search></browse-search>
             </div>
@@ -101,10 +101,6 @@
                 } else {
                     return chunk(this.record_list, 4);
                 }
-            },
-
-            numberOfRecords() {
-                return this.record_list.length;
             }
         },
 

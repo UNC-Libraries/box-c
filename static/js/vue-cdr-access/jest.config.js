@@ -22,10 +22,10 @@ module.exports = {
   testMatch: [
     '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)'
   ],
-  testURL: 'http://localhost/',
   watchPlugins: [
     'jest-watch-typeahead/filename',
     'jest-watch-typeahead/testname'
   ],
-  automock: false
-}
+  automock: false,
+  testURL: 'https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a'
+};
