@@ -33,6 +33,8 @@
 </template>
 
 <script>
+    import get from 'axios';
+
     export default {
         name: 'modalMetadata',
 
@@ -55,9 +57,12 @@
         },
 
         methods: {
-            async retrieveContainerMetadata() {
-                const response = await fetch(`record/${this.uuid}/metadataView`);
-                this.metadata = await response.text();
+            retrieveContainerMetadata() {
+                get(`record/${this.uuid}/metadataView`).then((response) => {
+                    this.metadata = response.data;
+                }).catch(function (error) {
+                    console.log(error);
+                });
             }
         }
     }

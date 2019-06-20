@@ -50,6 +50,7 @@
     import pagination from './pagination.vue';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
+    import get from 'axios';
     import routeUtils from '../mixins/routeUtils';
 
     export default {
@@ -75,7 +76,7 @@
             return {
                 column_size: 'is-3',
                 container_name: '',
-                container_metadata: '',
+                container_metadata: {},
                 is_collection: false,
                 record_count: 0,
                 record_list: [],
@@ -154,7 +155,6 @@
             },
 
             retrieveData() {
-                let self = this;
                 let params = this.urlParams();
 
                 if (this.is_collection) {
@@ -164,14 +164,13 @@
                 let param_string = this.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
-                fetch(`listJson/${this.uuid}${param_string}`)
-                    .then(function(response) {
-                        return response.json();
-                    }).then(function(data) {
-                        self.record_count = data.resultCount;
-                        self.record_list = data.metadata;
-                        self.container_name = data.container.title;
-                        self.container_metadata = data.container;
+                get(`listJson/${this.uuid}${param_string}`).then((response) => {
+                    this.record_count = response.data.resultCount;
+                    this.record_list = response.data.metadata;
+                    this.container_name = response.data.container.title;
+                    this.container_metadata = response.data.container;
+                }).catch(function (error) {
+                    console.log(error);
                 });
             }
         },
