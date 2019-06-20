@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import VueRouter from 'vue-router';
-import fetchMock from 'fetch-mock';
-import flushPromises from 'flush-promises';
+import moxios from 'moxios'
 import modalMetadata from '@/components/modalMetadata.vue';
 
 const localVue = createLocalVue();
@@ -18,6 +17,8 @@ let btn;
 
 describe('modalMetadata.vue', () => {
     beforeEach(() => {
+        moxios.install();
+
         wrapper = shallowMount(modalMetadata, {
             localVue,
             router,
@@ -28,15 +29,22 @@ describe('modalMetadata.vue', () => {
         });
 
         btn = wrapper.find('#show-modal');
-        fetchMock.get('*', response);
+        moxios.stubRequest(`record/${updated_uuid}/metadataView`, {
+            status: 200,
+            responseText: {
+                data: response
+            }
+        });
     });
 
-    it("updates the metadata when the record uuid changes", async () => {
-        // Trigger prop update to call fetch request
+    it("updates the metadata when the record uuid changes", () => {
+        // Trigger prop update to call xhr request
         wrapper.setProps({ uuid: updated_uuid });
 
-        await flushPromises();
-        expect(wrapper.vm.metadata).toEqual(response);
+        moxios.wait(() => {
+            expect(wrapper.vm.metadata).toEqual(response);
+            done();
+        });
     });
 
     it("is hidden by default", () => {
@@ -49,19 +57,17 @@ describe('modalMetadata.vue', () => {
         expect(record.text()).toBe(title);
     });
 
-    it("displays metadata when triggered", async () => {
-        // Trigger prop update to call fetch request
-        wrapper.setProps({ uuid: updated_uuid });
+    it("displays metadata when triggered", () => {
+        wrapper.setData({ metadata: response });
 
         // Trigger modal open
         btn.trigger('click');
 
-        await flushPromises();
         const record = wrapper.find('table');
         expect(record.html()).toBe(wrapper.vm.metadata);
     });
 
     afterEach(() => {
-        fetchMock.restore();
+        moxios.uninstall();
     })
 });
