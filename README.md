@@ -7,6 +7,10 @@ git clone https://github.com/UNC-Libraries/Carolina-Digital-Repository
 git submodule update --init --recursive
 # Install SASS parser to build CSS
 gem install sass
+# Install Homebrew, if not already installed
+See https://brew.sh/ for instructions.
+# Install Node.js to build JavaScript and run JavaScript tests
+brew install node
 # Build the project
 mvn clean install -DskipTests
 ```
@@ -22,7 +26,7 @@ Running Tests
 
 All tests run automatically in Travis.
 All Java tests run automatically when building the project.
-Javascript test don't run on a maven build, but can be run manually using the NPM command below.
+JavaScript test don't run on a maven build, but can be run manually using the NPM command below.
 
 ```
 # Java Tests
