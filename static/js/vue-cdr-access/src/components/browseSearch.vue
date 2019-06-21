@@ -10,12 +10,12 @@
 </template>
 
 <script>
+    import routeUtils from '../mixins/routeUtils';
+
     export default {
         name: 'browseSearch',
 
-        props: {
-            recordId: String
-        },
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -25,14 +25,9 @@
 
         methods: {
             getResults() {
-                let self = this;
-
-                fetch(`/listJson/${this.recordId}?anywhere=${encodeURI(this.search_query)}`)
-                    .then(function(response) {
-                        return response.json();
-                    }).then(function(data) {
-                        self.$emit('browse-query-results', data);
-                });
+                let update_params = { anywhere: encodeURIComponent(this.search_query) };
+                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
+                this.search_query = '';
             }
         }
     };

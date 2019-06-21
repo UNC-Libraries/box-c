@@ -21,7 +21,7 @@
 
                             <div class="modal-body">
                                 <slot name="body">
-                                    <div v-html="metadata"></div>
+                                    <div id="response-text" v-html="metadata"></div>
                                 </slot>
                             </div>
                         </div>
@@ -33,6 +33,8 @@
 </template>
 
 <script>
+    import get from 'axios';
+
     export default {
         name: 'modalMetadata',
 
@@ -55,23 +57,11 @@
         },
 
         methods: {
-            formatDate(date_text) {
-                let date = new Date(date_text);
-                return date.toLocaleString(undefined, {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-            },
-
             retrieveContainerMetadata() {
-                let self = this;
-
-                fetch(`record/${this.uuid}/metadataView`)
-                    .then(function(response) {
-                        return response.text();
-                    }).then(function(data) {
-                        self.metadata = data;
+                get(`record/${this.uuid}/metadataView`).then((response) => {
+                    this.metadata = response.data;
+                }).catch(function (error) {
+                    console.log(error);
                 });
             }
         }

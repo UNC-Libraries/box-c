@@ -16,3 +16,18 @@ Eclipse IDE Developer Setup
 A version of Eclipse with m2e is required
 
 To set the environment variable you'll need for running unit tests in Eclipse, go to Preferences > Java > Installed JREs. Select your JRE and click Edit, then type  ```-Dfcrepo.baseUri=http://example.com/rest```` in the Default VM Arguments box in the Default VM Arguments box
+
+Running Tests
+-------------
+
+All tests run automatically in Travis.
+All Java tests run automatically when building the project.
+Javascript test don't run on a maven build, but can be run manually using the NPM command below.
+
+```
+# Java Tests
+mvn clean install
+
+# JavaScript Tests
+npm --prefix static/js/vue-cdr-access run test:unit
+```

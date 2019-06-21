@@ -16,10 +16,6 @@
     export default {
         name: 'browseSort',
 
-        props: {
-            pageBaseUrl: ''
-        },
-
         mixins: [routeUtils],
 
         data() {

@@ -1,14 +1,11 @@
 <template>
     <div class="browse-records-display">
-        <div v-if="numberOfRecords > 0" class="columns">
+        <div v-if="record_list.length > 0" class="columns">
             <div class="column is-10">
-                <browse-search :record-id="container_metadata.id"
-                               @browse-query-results="browseSearching">
-                </browse-search>
+                <browse-search></browse-search>
             </div>
             <div class="column is-2">
-                <browse-sort :page-base-url="container_metadata.uri">
-                </browse-sort>
+                <browse-sort></browse-sort>
             </div>
         </div>
         <div class="columns">
@@ -53,6 +50,7 @@
     import pagination from './pagination.vue';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
+    import get from 'axios';
     import routeUtils from '../mixins/routeUtils';
 
     export default {
@@ -78,7 +76,7 @@
             return {
                 column_size: 'is-3',
                 container_name: '',
-                container_metadata: '',
+                container_metadata: {},
                 is_collection: false,
                 record_count: 0,
                 record_list: [],
@@ -103,10 +101,6 @@
                 } else {
                     return chunk(this.record_list, 4);
                 }
-            },
-
-            numberOfRecords() {
-                return this.record_list.length;
             }
         },
 
@@ -156,18 +150,7 @@
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
-            /**
-             * Updates list with results of BrowseSearch component custom event
-             * @param search_results
-             */
-            browseSearching(search_results) {
-                this.container_name = search_results.title;
-                this.record_list = search_results.metadata;
-                this.container_metadata = search_results.container;
-            },
-
             retrieveData() {
-                let self = this;
                 let params = this.urlParams();
 
                 if (this.is_collection) {
@@ -177,14 +160,13 @@
                 let param_string = this.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
-                fetch(`listJson/${this.uuid}${param_string}`)
-                    .then(function(response) {
-                        return response.json();
-                    }).then(function(data) {
-                        self.record_count = data.resultCount;
-                        self.record_list = data.metadata;
-                        self.container_name = data.container.title;
-                        self.container_metadata = data.container;
+                get(`listJson/${this.uuid}${param_string}`).then((response) => {
+                    this.record_count = response.data.resultCount;
+                    this.record_list = response.data.metadata;
+                    this.container_name = response.data.container.title;
+                    this.container_metadata = response.data.container;
+                }).catch(function (error) {
+                    console.log(error);
                 });
             }
         },

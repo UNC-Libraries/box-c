@@ -1,6 +1,8 @@
 <template>
-    <span class="imgs-only" v-if="container_type === 'Collection'">
-        Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+    <span class="imgs-only">
+        <span v-if="container_type === 'Collection'">
+            Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
+        </span>
     </span>
 </template>
 
@@ -18,7 +20,8 @@
 
         data() {
             return {
-                images_only: false
+                images_only: false,
+                update_params: {}
             }
         },
 
@@ -60,9 +63,10 @@
         color: $unc-blue;
 
         .checkbox {
-            height: 50px;
+            height: 40px;
+            width: 50px;
             vertical-align: middle;
-            width: 40px;
+            zoom: .6; /* Needed for webkit browsers */
         }
     }
 </style>
