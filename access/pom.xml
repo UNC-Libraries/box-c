@@ -81,14 +81,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
+                <!-- <configuration>
                     <webResources>
                         <resource>
                             <filtering>true</filtering>
                             <directory>../etc</directory>
                         </resource>
                     </webResources>
-                </configuration>
+                </configuration> -->
             </plugin>
             
             <plugin>
