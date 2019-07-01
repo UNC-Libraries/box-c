@@ -213,10 +213,6 @@
     </bean>
     
     <!-- Access related beans -->
-    <bean id="contextUrl" class="java.lang.String">
-        <constructor-arg
-            value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
-    </bean>
     
     <bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
         <property name="queryLayer" ref="queryLayer" />
