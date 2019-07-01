@@ -62,7 +62,7 @@
     
     <bean id="swordUrl" class="java.lang.String">
         <constructor-arg
-            value="${admin.services.url}${services.context}/sword/" />
+            value="${services.base.url}sword/" />
     </bean>
     
     <bean id="swordUsername" class="java.lang.String">
