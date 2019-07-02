@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
+import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
@@ -51,7 +53,7 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("direct:process.enhancement")
             .routeId("ProcessEnhancement")
-            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
+            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains '" + EVENT_CREATE + "'"))
                 .log("Performing enhancements for ${headers[org.fcrepo.jms.identifier]}")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
                 .removeHeaders("CamelHttp*")
