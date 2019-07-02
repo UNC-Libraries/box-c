@@ -27,6 +27,9 @@
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
         <constructor-arg value="${fcrepo.baseUrl}" />
+        <constructor-arg value="${fcrepo.auth.host}" />
+        <constructor-arg value="${fcrepo.auth.user}" />
+        <constructor-arg value="${fcrepo.auth.password}" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -184,9 +187,9 @@
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
-        <property name="authUsername" value="${fcrepo.authUsername}"/>
-        <property name="authPassword" value="${fcrepo.authPassword}"/>
-        <property name="authHost" value="${fcrepo.authHost}"/>
+        <property name="authUsername" value="${fcrepo.auth.user}"/>
+        <property name="authPassword" value="${fcrepo.auth.password}"/>
+        <property name="authHost" value="${fcrepo.auth.host}"/>
         <property name="baseUrl" value="${fcrepo.baseUrl}"/>
     </bean>
 
