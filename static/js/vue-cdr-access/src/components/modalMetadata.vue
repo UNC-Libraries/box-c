@@ -112,6 +112,7 @@
 
         h3 {
             font-size: 2rem;
+            line-height: 2rem;
             margin-top: 0;
             text-align: center;
             text-transform: capitalize;
