@@ -23,8 +23,8 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
 <c:choose>
-    <c:when test="${not empty briefObject.countMap}">
-        <c:set var="childCount" value="${briefObject.countMap.child}"/>
+    <c:when test="${not empty parentBriefObject.countMap}">
+        <c:set var="childCount" value="${parentBriefObject.countMap.child}"/>
     </c:when>
     <c:otherwise>
         <c:set var="childCount" value="0"/>
@@ -39,24 +39,23 @@
         <c:set var="pluralCount" value="items"/>
     </c:otherwise>
 </c:choose>
-
 <c:url var="fullRecordUrl" scope="page" value="record/${briefObject.id}"/>
 <div class="contentarea">
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${briefObject.title}"/> (<c:out value="${childCount}"/>)</h2>
-            <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+            <h2><c:out value="${parentBriefObject.title}"/> (<c:out value="${childCount}"/>)</h2>
+            <p><strong>Date Deposited:</strong> <c:out value="${parentBriefObject.dateCreated}"/></p>
             <c:choose>
-                <c:when test="${not empty briefObject.abstractText}">
-                    <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
+                <c:when test="${not empty parentBriefObject.abstractText}">
+                    <c:set var="truncatedAbstract" value="${cdr:truncateText(parentBriefObject.abstractText, 250)}"/>
                     <c:choose>
-                        <c:when test="${fn:length(briefObject.abstractText) > 250}">
+                        <c:when test="${fn:length(parentBriefObject.abstractText) > 250}">
                             <p id="truncated-abstract"><c:out value="${truncatedAbstract}"/>...</p>
-                            <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}"/></p>
+                            <p id="full-abstract" class="hidden"><c:out value="${parentBriefObject.abstractText}"/></p>
                             <p><a id="show-abstract" href="#">Read more</a></p>
                         </c:when>
                         <c:otherwise>
-                            <p><c:out value="${briefObject.abstractText}"/></p>
+                            <p><c:out value="${parentBriefObject.abstractText}"/></p>
                         </c:otherwise>
                     </c:choose>
                 </c:when>

@@ -172,6 +172,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
         }
+
         // Get path information.
         model.addAttribute("briefObject", briefObject);
 
@@ -216,6 +217,17 @@ public class FullRecordController extends AbstractSolrSearchController {
 
             model.addAttribute("hasFacetFields", hasFacets);
             model.addAttribute("facetFields", resultResponse.getFacetFields());
+        }
+
+        if (resourceType.equals(searchSettings.resourceTypeFolder)) {
+            String parentCollection = briefObject.getParentCollection();
+            SimpleIdRequest parentIdRequest = new SimpleIdRequest(parentCollection, principals);
+            BriefObjectMetadataBean parentBriefObject = queryLayer.getObjectById(parentIdRequest);
+            if (parentBriefObject == null) {
+                throw new InvalidRecordRequestException();
+            }
+
+            model.addAttribute("parentBriefObject", parentBriefObject);
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
