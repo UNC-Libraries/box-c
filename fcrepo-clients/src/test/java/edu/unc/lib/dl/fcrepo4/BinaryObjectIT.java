@@ -70,4 +70,22 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
         assertTrue(obj.getResource().hasProperty(RDF.type, Fcrepo4Repository.Binary));
     }
+
+    @Test
+    public void testGetParent() throws Exception {
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+
+        String bodyString = "Test text";
+        String filename = "test.txt";
+        String mimetype = "text/plain";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+
+        BinaryObject binObj = fileObj.addOriginalFile(contentStream, filename, mimetype, null, null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        RepositoryObject parent = binObj.getParent();
+        assertEquals("Parent of the binary must match the file object which created it",
+                parent.getPid(), fileObj.getPid());
+    }
 }

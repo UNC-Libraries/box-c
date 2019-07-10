@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.rdf.PcdmModels.memberOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -63,7 +64,8 @@ public class FolderObjectIT extends AbstractFedoraIT {
         assertObjectExists(child.getPid());
         assertTrue(child.getTypes().contains(Cdr.Folder.getURI()));
 
-        obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
+        assertTrue("Added child must be a member of the folder",
+                child.getResource().hasProperty(memberOf, obj.getResource()));
     }
 
     @Test
@@ -81,15 +83,18 @@ public class FolderObjectIT extends AbstractFedoraIT {
         assertEquals("Work Title", work.getResource()
                 .getProperty(DcElements.title).getString());
 
-        obj.getResource().hasProperty(PcdmModels.hasMember, work.getResource());
+        assertTrue("Added child must be a member of the folder",
+                work.getResource().hasProperty(memberOf, obj.getResource()));
     }
 
     @Test
-    public void getMembersTest() {
+    public void getMembersTest() throws Exception {
         FolderObject obj = repoObjFactory.createFolderObject(null);
 
         WorkObject child1 = obj.addWork();
         FolderObject child2 = obj.addFolder();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> members = obj.getMembers();
         assertEquals("Incorrect number of members", 2, members.size());
@@ -99,5 +104,15 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
         assertNotNull(member1);
         assertNotNull(member2);
+    }
+
+    @Test
+    public void getParentTest() throws Exception {
+        FolderObject obj = repoObjFactory.createFolderObject(null);
+        FolderObject child = obj.addFolder();
+
+        RepositoryObject parent = child.getParent();
+        assertEquals("Parent returned by the child must match the folder it was created in",
+                parent.getPid(), obj.getPid());
     }
 }

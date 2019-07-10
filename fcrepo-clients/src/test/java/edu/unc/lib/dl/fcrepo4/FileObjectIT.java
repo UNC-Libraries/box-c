@@ -142,6 +142,21 @@ public class FileObjectIT extends AbstractFedoraIT {
         repoObjLoader.getFileObject(objPid);
     }
 
+    @Test
+    public void testGetParent() throws Exception {
+        WorkObject work = repoObjFactory.createWorkObject(null);
+
+        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
+        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+                    origMd5Checksum);
+
+        treeIndexer.indexAll(baseAddress);
+
+        RepositoryObject parent = fileObj.getParent();
+        assertEquals("Parent of the file must match the work it was created in",
+                parent.getPid(), work.getPid());
+    }
+
     private void verifyOriginalFile(BinaryObject origObj) {
         verifyFile(origObj, origFilename, origMimetype, origBodyString);
     }

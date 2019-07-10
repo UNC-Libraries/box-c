@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -33,6 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -61,6 +63,11 @@ public class AbstractFedoraIT {
     protected TransactionManager txManager;
     @Autowired
     protected RepositoryObjectDriver driver;
+
+    @Autowired
+    protected Model queryModel;
+    @Autowired
+    protected RepositoryObjectTreeIndexer treeIndexer;
 
     @Before
     public void init_() {
