@@ -107,6 +107,27 @@ public class FolderObjectIT extends AbstractFedoraIT {
     }
 
     @Test
+    public void addChildToTwoFoldersTest() throws Exception {
+        FolderObject folder1 = repoObjFactory.createFolderObject(null);
+        FolderObject folder2 = repoObjFactory.createFolderObject(null);
+
+        FolderObject child = folder1.addFolder();
+
+        // Add the child to the second folder, effectively moving it
+        folder2.addMember(child);
+
+        treeIndexer.indexAll(baseAddress);
+
+        List<ContentObject> members1 = folder1.getMembers();
+        assertEquals("Incorrect number of members", 0, members1.size());
+
+        List<ContentObject> members2 = folder2.getMembers();
+        assertEquals("Incorrect number of members", 1, members2.size());
+
+        assertEquals(child.getPid(), members2.get(0).getPid());
+    }
+
+    @Test
     public void getParentTest() throws Exception {
         FolderObject obj = repoObjFactory.createFolderObject(null);
         FolderObject child = obj.addFolder();

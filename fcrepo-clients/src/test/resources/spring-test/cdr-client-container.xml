@@ -76,6 +76,13 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
     
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="100" />
+        <property name="queryService" ref="sparqlQueryService" />
+    </bean>
+    
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
     </bean>

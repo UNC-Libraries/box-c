@@ -15,10 +15,13 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,9 +47,8 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
-import edu.unc.lib.dl.util.URIUtil;
-
 /**
  *
  * @author bbpennel
@@ -61,6 +63,8 @@ public class RepositoryObjectFactoryTest {
     private RepositoryObjectCacheLoader objectCacheLoader;
     @Mock
     private RepositoryObjectDriver driver;
+    @Mock
+    private SparqlUpdateService sparqlUpdateService;
     @Mock
     private FcrepoClient fcrepoClient;
     @Mock
@@ -82,6 +86,7 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory = new RepositoryObjectFactory();
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
+        repoObjFactory.setSparqlUpdateService(sparqlUpdateService);
         pidMinter = new RepositoryPIDMinter();
         repoObjFactory.setPidMinter(pidMinter);
         linkHeaders = new ArrayList<>();
@@ -195,15 +200,17 @@ public class RepositoryObjectFactoryTest {
         ContentObject parent = mock(ContentObject.class);
         when(parent.getPid()).thenReturn(parentPid);
         when(parent.getUri()).thenReturn(parentPid.getRepositoryUri());
+        when(parent.getResource()).thenReturn(createResource(parentPid.getRepositoryPath()));
 
+        Model memberModel = ModelFactory.createDefaultModel();
         PID memberPid = pidMinter.mintContentPid();
         ContentObject member = mock(ContentObject.class);
         when(member.getPid()).thenReturn(memberPid);
+        when(member.getModel()).thenReturn(memberModel);
+        when(member.getMetadataUri()).thenReturn(memberPid.getRepositoryUri());
 
         repoObjFactory.addMember(parent, member);
 
-        URI parentUri = parentPid.getRepositoryUri();
-        URI containerUri = URI.create(URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER));
-        verify(ldpFactory).createIndirectProxy(containerUri, parentUri, memberPid.getRepositoryUri());
+        verify(sparqlUpdateService).executeUpdate(eq(memberPid.getRepositoryPath()), anyString());
     }
 }

@@ -29,7 +29,9 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
@@ -41,10 +43,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.RepositoryPremisLogger;
+import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
@@ -177,15 +179,18 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     * Retrieves parent container of the current object
-     * @param child
-     * @param membershipRelation
-     * @return
+     * Retrieves the parent container of the provided object following a parent to child relationship
+     *
+     * @param child repository object to retrieve the parent of.
+     * @param membershipRelation parent to child membership relation to use to
+     *            find the parent container.
+     * @return PID for the parent container
+     * @throws OrphanedObjectException thrown if the object does not have a
+     *             parent container.
      */
-    public PID fetchContainer(PID child, Resource membershipRelation) {
-        Resource relationship = (membershipRelation != null) ? membershipRelation : PcdmModels.hasMember;
-
-        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }", relationship, child.getURI());
+    public PID fetchContainer(RepositoryObject child, Property membershipRelation) {
+        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
+                membershipRelation, child.getPid().getURI());
 
         try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
             ResultSet results = qexec.execSelect();
@@ -204,32 +209,61 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     * Retrieves parent container of the current object
-     * @param child
-     * @return
+     * Produces a list of PIDs for objects which are members of the provided object.
+     *
+     * @param obj the object
+     * @return a List of PIDs for member objects of the provided object.
      */
-    public PID fetchContainer(PID child) {
-        return fetchContainer(child, null);
+    public List<PID> listMembers(RepositoryObject obj) {
+        PID pid = obj.getPid();
+        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
+                PcdmModels.memberOf, pid.getURI());
+        List<PID> members = new ArrayList<>();
+
+        try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
+            ResultSet results = qexec.execSelect();
+
+            for (; results.hasNext();) {
+                QuerySolution soln = results.nextSolution();
+                Resource res = soln.getResource("pid");
+
+                if (res != null) {
+                    members.add(PIDs.get(res.getURI()));
+                }
+            }
+        }
+
+        return members;
     }
 
     /**
-     * Retrieves parent object of the current object
-     * @param obj
-     * @return
+     * Retrieves parent object of the provided object
+     * @param obj object to get the parent of.
+     * @return RepositoryObject for the parent object of the provided object.
+     * @throws OrphanedObjectException thrown if no parent object found for the object.
+     * @throws ObjectTypeMismatchException thrown if object is not of a type eligible to have a parent.
      */
     public RepositoryObject getParentObject(RepositoryObject obj) {
-        Resource resourceType = null;
-        final Model model = obj.getModel();
+        PID parentPid = null;
 
-        if (model.containsResource(Fcrepo4Repository.Binary)) {
-            resourceType = PcdmModels.hasFile;
-        } else if (model.containsResource(Fcrepo4Repository.Container)) {
-            resourceType = PcdmModels.hasMember;
+        if (obj instanceof BinaryObject) {
+            parentPid = fetchContainer(obj, PcdmModels.hasFile);
+        } else if (obj instanceof ContentObject) {
+            // For resources in the membership hierarchy, use reverse membership
+            Statement memberOf = obj.getResource().getProperty(PcdmModels.memberOf);
+            if (memberOf != null) {
+                parentPid = PIDs.get(memberOf.getObject().toString());
+            }
+        } else {
+            throw new ObjectTypeMismatchException("Unable to get parent object for " + obj.getPid()
+                    + ", resources of type " + obj.getClass().getName() + " are not eligible.");
         }
 
-        PID pid = fetchContainer(obj.getPid(), resourceType);
+        if (parentPid == null) {
+            throw new OrphanedObjectException("Cannot find a parent container for object " + obj.getPid());
+        }
 
-        return repositoryObjectLoader.getRepositoryObject(pid);
+        return repositoryObjectLoader.getRepositoryObject(parentPid);
     }
 
     /**

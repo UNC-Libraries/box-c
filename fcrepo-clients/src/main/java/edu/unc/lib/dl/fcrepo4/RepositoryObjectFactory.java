@@ -454,7 +454,7 @@ public class RepositoryObjectFactory {
      * @param member
      */
     public void addMember(ContentObject parent, ContentObject member) {
-        createMemberLink(parent, member.getPid().getRepositoryUri());
+        createExclusiveRelationship(member, PcdmModels.memberOf, parent.getResource());
     }
 
     /**
@@ -616,10 +616,6 @@ public class RepositoryObjectFactory {
 
             // Add PREMIS event container
             addEventContainer(createdUri);
-
-            // Add the container for member objects
-            ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
-                    RepositoryPathConstants.MEMBER_CONTAINER);
 
             return createdUri;
 
