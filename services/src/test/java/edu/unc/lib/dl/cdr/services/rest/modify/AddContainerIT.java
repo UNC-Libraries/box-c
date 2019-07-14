@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -42,11 +44,15 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -61,25 +67,44 @@ import edu.unc.lib.dl.rdf.DcElements;
 public class AddContainerIT extends AbstractAPIIT {
 
     @Autowired
+    private String baseAddress;
+    @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
+    @Autowired
+    private RepositoryObjectTreeIndexer treeIndexer;
+
+    private ContentRootObject contentRoot;
+
+    @Before
+    public void initRoot() {
+        try {
+            repositoryObjectFactory.createContentRootObject(
+                    getContentRootPid().getRepositoryUri(), null);
+        } catch (FedoraException e) {
+            // Ignore failure as the content root will already exist after first test
+        }
+        contentRoot = repositoryObjectLoader.getContentRootObject(getContentRootPid());
+    }
 
     @Test
     public void testAddCollectionToAdminUnit() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
 
         AdminUnit parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
-
-        assertChildContainerNotAdded(parent);
+        contentRoot.addMember(parent);
+        treeIndexer.indexAll(baseAddress);
 
         String label = "collection_label";
-        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID())
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getId())
                 .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
-        assertChildContainerAdded(parent, label);
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(parent, label, CollectionObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -88,10 +113,79 @@ public class AddContainerIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testAddAdminUnit() throws Exception {
+        String label = "admin_label";
+        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + CONTENT_ROOT_ID)
+                .param("label", label))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(contentRoot, label, AdminUnit.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(CONTENT_ROOT_ID, respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+    }
+
+    @Test
+    public void testAddFolder() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "folder_label";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+                .param("label", label))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(collObj, label, FolderObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(collObj.getPid().getId(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+    }
+
+    @Test
+    public void testAddWork() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "work_label";
+        MvcResult result = mvc.perform(post("/edit/create/work/" + collObj.getPid().getId())
+                .param("label", label))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(collObj, label, WorkObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(collObj.getPid().getId(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+    }
+
+    @Test
     public void testAddAdminUnitToCollection() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
 
         CollectionObject parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
+        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerNotAdded(parent);
 
@@ -100,6 +194,8 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("label", label))
             .andExpect(status().isInternalServerError())
             .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         assertChildContainerNotAdded(parent);
 
@@ -132,19 +228,16 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
-    private void assertChildContainerAdded(ContentContainerObject parent, String label) {
-        // Refresh the model
-        parent = repositoryObjectLoader.getAdminUnit(parent.getPid());
+    private void assertChildContainerAdded(ContentContainerObject parent, String label, Class<?> memberClass) {
         List<ContentObject> members = parent.getMembers();
-        if (members.size() != 0) {
-            assertTrue(members.get(0) instanceof ContentContainerObject);
+        if (members.size() > 0) {
+            ContentObject member = members.stream()
+                    .filter(m -> m.getResource().hasProperty(DcElements.title, label))
+                    .findFirst().get();
+            assertTrue(memberClass.isInstance(member));
         } else {
             fail("No child container was added to parent");
         }
-        ContentContainerObject childContainer = (ContentContainerObject) members.get(0);
-        Model childModel = childContainer.getModel();
-        assertTrue(childModel.contains(childModel.getResource(childContainer.getUri().toString()), DcElements.title,
-                label));
     }
 
     private void assertChildContainerNotAdded(ContentContainerObject parent) {

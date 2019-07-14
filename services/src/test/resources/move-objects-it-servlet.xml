@@ -44,7 +44,6 @@
         <property name="operationMetrics" ref="operationMetrics" />
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="transactionManager" ref="transactionManager" />
-        <property name="proxyService" ref="destroyProxyService" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

@@ -96,7 +96,6 @@
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
         <property name="operationMetrics" ref="activityMetricsClient" />
-        <property name="proxyService" ref="destroyProxyService" />
     </bean>
     
     <bean id="destroyObjectsService"

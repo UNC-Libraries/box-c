@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -46,27 +45,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.test.AclModelBuilder;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -106,8 +108,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
-    private Model queryServiceModel;
-    @Autowired VerifyObjectsAreInFedoraService verificationService;
+    private RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired
+    private VerifyObjectsAreInFedoraService verificationService;
 
     @Before
     public void init() throws Exception {
@@ -131,7 +134,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "verificationService", verificationService);
         job.init();
 
-        createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
         // Create a destination folder where deposits will be ingested to
         setupDestination();
 
@@ -141,19 +143,26 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         techmdDir.mkdir();
     }
 
-    private void setupDestination() {
-        PID contentPid = PIDs.get(RepositoryPathConstants.CONTENT_ROOT_ID);
-        Resource contentResc = createResource(contentPid.getRepositoryPath());
-        PID unitPid = pidMinter.mintContentPid();
-        Resource unitResc = createResource(unitPid.getRepositoryPath());
+    private void setupDestination() throws Exception {
+        PID rootPid = RepositoryPaths.getContentRootPid();
+        try {
+            repoObjFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
+        } catch (FedoraException e) {
+        }
+        ContentRootObject rootObj = repoObjLoader.getContentRootObject(rootPid);
 
+        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        CollectionObject collObj = repoObjFactory.createCollectionObject(
+                new AclModelBuilder("Coll").addCanIngest(INGESTOR_PRINC).model);
         FolderObject destFolder = repoObjFactory.createFolderObject(null);
-        destinationPid = destFolder.getPid();
-        Resource destResc = createResource(destinationPid.getRepositoryPath());
 
-        queryServiceModel.add(contentResc, PcdmModels.hasMember, unitResc);
-        queryServiceModel.add(unitResc, PcdmModels.hasMember, destResc);
-        queryServiceModel.add(destResc, CdrAcl.canIngest, INGESTOR_PRINC);
+        rootObj.addMember(unitObj);
+        unitObj.addMember(collObj);
+        collObj.addMember(destFolder);
+
+        treeIndexer.indexAll(baseAddress);
+
+        destinationPid = destFolder.getPid();
 
         Map<String, String> status = new HashMap<>();
         status.put(DepositField.containerId.name(), destinationPid.getRepositoryPath());
@@ -165,7 +174,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
      * Test that a single folder can be created
      */
     @Test
-    public void ingestEmptyFolderTest() {
+    public void ingestEmptyFolderTest() throws Exception {
         String label = "testfolder";
 
         // Construct the deposit model, containing a deposit with one empty folder
@@ -183,6 +192,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Execute the ingest job
         job.run();
+
+        treeIndexer.indexAll(baseAddress);
 
         // Verify that the destination has the folder added to it
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
@@ -235,6 +246,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
+
+        treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
@@ -328,6 +341,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
+        treeIndexer.indexAll(baseAddress);
+
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
@@ -372,6 +387,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             // expected, lets continue
         }
 
+        treeIndexer.indexAll(baseAddress);
+
         // Check that the folder and first child successfully made it in
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
@@ -390,6 +407,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Second run of job
         job.run();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
@@ -445,6 +464,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
+        treeIndexer.indexAll(baseAddress);
+
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
 
@@ -464,7 +485,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
-    public void addDescriptionTest() throws IOException {
+    public void addDescriptionTest() throws Exception {
         File modsFolder = job.getDescriptionDir();
         modsFolder.mkdir();
 
@@ -489,6 +510,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
+        treeIndexer.indexAll(baseAddress);
+
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
@@ -498,7 +521,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
-    public void noDescriptionAddedTest() {
+    public void noDescriptionAddedTest() throws Exception {
         PID folderPid = pidMinter.mintContentPid();
 
         String label = "testfolder";
@@ -518,6 +541,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
+        treeIndexer.indexAll(baseAddress);
+
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
@@ -527,7 +552,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
-    public void addPremisEventsTest() throws IOException {
+    public void addPremisEventsTest() throws Exception {
         File premisEventsDir = job.getEventsDirectory();
         premisEventsDir.mkdir();
 
@@ -566,6 +591,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
+        treeIndexer.indexAll(baseAddress);
+
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
         List<PremisEventObject> events = folder.getPremisLog().getEvents();
         // there should be three events total: the ingestion event, plus the two added in the test
@@ -575,7 +602,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
-    public void onlyIngestionEventAddedTest() throws IOException {
+    public void onlyIngestionEventAddedTest() throws Exception {
         File premisEventsDir = job.getEventsDirectory();
         premisEventsDir.mkdir();
 
@@ -600,6 +627,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
+
+        treeIndexer.indexAll(baseAddress);
 
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
         List<PremisEventObject> events = folder.getPremisLog().getEvents();

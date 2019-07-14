@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.persist.services.move;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MEMBER_CONTAINER;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertEquals;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +41,6 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
-import org.fcrepo.client.DeleteBuilder;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.After;
 import org.junit.Before;
@@ -69,6 +66,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -79,12 +77,10 @@ import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  *
@@ -102,8 +98,6 @@ public class MoveObjectsServiceTest {
     @Mock
     private TransactionManager transactionManager;
     @Mock
-    private SparqlQueryService sparqlQueryService;
-    @Mock
     private FcrepoClient fcrepoClient;
     @Mock
     private OperationsMessageSender operationsMessageSender;
@@ -111,8 +105,6 @@ public class MoveObjectsServiceTest {
     private ObjectPathFactory objectPathFactory;
     @Mock
     private ActivityMetricsClient operationMetrics;
-    @Mock
-    private DestroyProxyService proxyService;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -134,11 +126,9 @@ public class MoveObjectsServiceTest {
     @Mock
     private QuerySolution mockQuerySolution;
     @Mock
-    private Resource mockProxyResource;
-    @Mock
     private Resource mockParentResource;
     @Mock
-    private DeleteBuilder mockDeleteBuilder;
+    private FolderObject mockParent;
     @Mock
     private ObjectPath destObjPath;
     @Mock
@@ -160,9 +150,9 @@ public class MoveObjectsServiceTest {
         service.setOperationsMessageSender(operationsMessageSender);
         service.setObjectPathFactory(objectPathFactory);
         service.setOperationMetrics(operationMetrics);
-        service.setProxyService(proxyService);
 
         sourcePid = makePid();
+        when(mockParent.getPid()).thenReturn(sourcePid);
 
         destPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockDestObj);
@@ -175,13 +165,9 @@ public class MoveObjectsServiceTest {
             }
         }).when(mockTx).cancel(any(Exception.class));
 
-        when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExec);
         when(mockQueryExec.execSelect()).thenReturn(mockResultSet);
         when(mockResultSet.nextSolution()).thenReturn(mockQuerySolution);
-        when(mockQuerySolution.getResource("proxyuri")).thenReturn(mockProxyResource);
         when(mockQuerySolution.getResource("parent")).thenReturn(mockParentResource);
-
-        when(fcrepoClient.delete(any(URI.class))).thenReturn(mockDeleteBuilder);
 
         when(mockAgent.getUsername()).thenReturn("user");
         when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
@@ -210,7 +196,7 @@ public class MoveObjectsServiceTest {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSet.class), eq(Permission.move));
 
-        service.moveObjects(mockAgent, destPid, asList(makeMoveObject()));
+        service.moveObjects(mockAgent, destPid, asList(makeMoveObject(mockParent)));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -225,7 +211,7 @@ public class MoveObjectsServiceTest {
     public void testNoPermissionToMoveObject() throws Exception {
         expectedException.expectCause(isA(AccessRestrictionException.class));
 
-        PID movePid = makeMoveObject();
+        PID movePid = makeMoveObject(mockParent);
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(movePid), any(AccessGroupSet.class), eq(Permission.move));
@@ -235,17 +221,9 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveObject() throws Exception {
-        String proxyUri = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy";
-
-        when(mockResultSet.hasNext()).thenReturn(true, false);
-        when(mockProxyResource.getURI()).thenReturn(proxyUri);
-        when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
-        when(proxyService.destroyProxy(any(PID.class))).thenReturn(sourcePid.getRepositoryPath());
-
-        List<PID> movePids = asList(makeMoveObject());
+        List<PID> movePids = asList(makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(proxyService).destroyProxy(movePids.get(0));
         verify(mockDestObj).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
@@ -303,18 +281,9 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveMultipleObjects() throws Exception {
-        String proxyUri1 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy1";
-        String proxyUri2 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy2";
-
-        when(mockResultSet.hasNext()).thenReturn(true, true, false);
-        when(mockProxyResource.getURI()).thenReturn(proxyUri1, proxyUri2);
-        when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
-        when(proxyService.destroyProxy(any(PID.class))).thenReturn(sourcePid.getRepositoryPath());
-
-        List<PID> movePids = asList(makeMoveObject(), makeMoveObject());
+        List<PID> movePids = asList(makeMoveObject(mockParent), makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(proxyService, times(2)).destroyProxy(any(PID.class));
         verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
@@ -373,10 +342,11 @@ public class MoveObjectsServiceTest {
         service.moveObjects(mockAgent, destPid, asList(makePid()));
     }
 
-    private PID makeMoveObject() {
+    private PID makeMoveObject(ContentContainerObject parent) {
         PID movePid = makePid();
         WorkObject moveObj = mock(WorkObject.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
+        when(moveObj.getParent()).thenReturn(parent);
         return movePid;
     }
 

@@ -70,8 +70,8 @@ public class AddContainerService {
      * @param containerType the type of new container to be created
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, String label, Resource containerType) {
-        notNull(parentPid);
-        notNull(containerType);
+        notNull(parentPid, "A parent pid must be provided");
+        notNull(containerType, "A type must be provided for the next container");
 
         ContentContainerObject child = null;
         FedoraTransaction tx = txManager.startTransaction();
@@ -110,10 +110,10 @@ public class AddContainerService {
             parent.addMember(child);
 
             child.getPremisLog()
-            .buildEvent(Premis.Creation)
-            .addImplementorAgent(agent.getUsernameUri())
-            .addEventDetail("Container added at destination " + parentPid)
-            .write();
+                .buildEvent(Premis.Creation)
+                .addImplementorAgent(agent.getUsernameUri())
+                .addEventDetail("Container added at destination " + parentPid)
+                .write();
         } catch (Exception e) {
             tx.cancel(e);
         } finally {

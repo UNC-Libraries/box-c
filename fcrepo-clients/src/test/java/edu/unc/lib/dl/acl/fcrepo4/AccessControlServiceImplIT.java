@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -23,10 +22,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,8 +40,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  *
@@ -125,6 +120,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     }
 
     private void initStructure() throws Exception {
+        // Only create once
         if (contentRoot != null) {
             return;
         }
@@ -360,42 +356,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
                 aclService.hasAccess(collObj2.getPid(), principals, Permission.ingest));
         assertTrue("Manager should be able to modify restricted work in all contained collections",
                 aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.editDescription));
-    }
-
-    public static class AclModelBuilder {
-        public Model model;
-        private Resource resc;
-
-        public AclModelBuilder(String title) {
-            model = createDefaultModel();
-            resc = model.getResource("");
-            resc.addProperty(DC.title, title);
-        }
-
-        public AclModelBuilder addUnitOwner(String princ) {
-            return addProp(CdrAcl.unitOwner, princ);
-        }
-
-        public AclModelBuilder addCanManage(String princ) {
-            return addProp(CdrAcl.canManage, princ);
-        }
-
-        public AclModelBuilder addCanAccess(String princ) {
-            return addProp(CdrAcl.canAccess, princ);
-        }
-
-        public AclModelBuilder addCanViewOriginals(String princ) {
-            return addProp(CdrAcl.canViewOriginals, princ);
-        }
-
-        public AclModelBuilder addPatronAccess(String value) {
-            return addProp(CdrAcl.patronAccess, value);
-        }
-
-        private AclModelBuilder addProp(Property prop, String princ) {
-            resc.addProperty(prop, princ);
-            return this;
-        }
     }
 
     private List<PID> getAllContentObjects() {

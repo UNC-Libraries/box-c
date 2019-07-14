@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,7 +42,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -58,9 +57,11 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 public class SetAsPrimaryObjectIT extends AbstractAPIIT {
 
     @Autowired
+    private String baseAddress;
+    @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    private Model queryModel;
+    private RepositoryObjectTreeIndexer treeIndexer;
 
     private WorkObject parent;
     private PID parentPid;
@@ -78,6 +79,8 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + fileObjPid.getUUID()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         assertPrimaryObjectSet(parent, fileObj);
 
@@ -100,6 +103,8 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
             .andExpect(status().isForbidden())
             .andReturn();
 
+        treeIndexer.indexAll(baseAddress);
+
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
@@ -120,13 +125,15 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
                 .andExpect(status().isInternalServerError())
                 .andReturn();
 
-            assertPrimaryObjectNotSet(parent);
+        treeIndexer.indexAll(baseAddress);
 
-            // Verify response from api
-            Map<String, Object> respMap = getMapFromResponse(result);
-            assertEquals(folderObjPid.getUUID(), respMap.get("pid"));
-            assertEquals("setAsPrimaryObject", respMap.get("action"));
-            assertTrue(respMap.containsKey("error"));
+        assertPrimaryObjectNotSet(parent);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(folderObjPid.getUUID(), respMap.get("pid"));
+        assertEquals("setAsPrimaryObject", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
     }
 
     @Test
@@ -151,6 +158,8 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        treeIndexer.indexAll(baseAddress);
+
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
@@ -172,6 +181,8 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
             .andExpect(status().isForbidden())
             .andReturn();
 
+        treeIndexer.indexAll(baseAddress);
+
         assertPrimaryObjectSet(parent, fileObj);
 
         // Verify response from api
@@ -191,8 +202,6 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
     }
 
     private void addFileObjAsMember() {
-        queryModel.getResource(parentPid.getRepositoryPath())
-                .addProperty(PcdmModels.hasMember, fileObj.getResource());
         parent.addMember(fileObj);
     }
 

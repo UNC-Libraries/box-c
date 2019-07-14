@@ -47,16 +47,20 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
@@ -79,6 +83,8 @@ import edu.unc.lib.dl.test.TestHelper;
 })
 public class DestroyObjectsJobIT {
 
+    @Autowired
+    private String baseAddress;
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
     @Autowired
@@ -108,7 +114,7 @@ public class DestroyObjectsJobIT {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase(baseAddress);
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
 
@@ -237,7 +243,20 @@ public class DestroyObjectsJobIT {
     }
 
     private List<PID> createContentTree() throws Exception {
+        PID contentRootPid = RepositoryPaths.getContentRootPid();
+        try {
+            repoObjFactory.createContentRootObject(
+                    contentRootPid.getRepositoryUri(), null);
+        } catch (FedoraException e) {
+            // Ignore failure as the content root will already exist after first test
+        }
+        ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+
         CollectionObject collection = repoObjFactory.createCollectionObject(null);
+        adminUnit.addMember(collection);
         FolderObject folder = repoObjFactory.createFolderObject(null);
         FolderObject folder2 = repoObjFactory.createFolderObject(null);
         collection.addMember(folder);
@@ -250,7 +269,7 @@ public class DestroyObjectsJobIT {
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
         FileObject file = work.addDataFile(contentStream, filename, mimetype, null, null);
 
-        treeIndexer.indexAll(collection.getModel());
+        treeIndexer.indexAll(baseAddress);
 
         objsToDestroy.add(folder.getPid());
         objsToDestroy.add(work.getPid());

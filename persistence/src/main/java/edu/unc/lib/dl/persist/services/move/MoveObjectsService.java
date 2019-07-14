@@ -33,7 +33,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -55,7 +54,6 @@ public class MoveObjectsService {
     private boolean asynchronous;
     private ExecutorService moveExecutor;
     private ActivityMetricsClient operationMetrics;
-    private DestroyProxyService proxyService;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -89,7 +87,6 @@ public class MoveObjectsService {
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
         job.setOperationMetrics(operationMetrics);
-        job.setProxyService(proxyService);
 
         if (asynchronous) {
             log.info("User {} is queueing move operation {} of {} objects to destination {}",
@@ -186,11 +183,4 @@ public class MoveObjectsService {
     public void setMoveExecutor(ExecutorService moveExecutor) {
         this.moveExecutor = moveExecutor;
     }
-
-    /**
-    * @param proxyService the proxyService to set
-    */
-   public void setProxyService(DestroyProxyService proxyService) {
-       this.proxyService = proxyService;
-   }
 }
