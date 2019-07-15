@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.enhancements;
 
 import static edu.unc.lib.dl.rdf.Cdr.AdminUnit;
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
+import static edu.unc.lib.dl.rdf.Cdr.ContentRoot;
 import static edu.unc.lib.dl.rdf.Cdr.DescriptiveMetadata;
 import static edu.unc.lib.dl.rdf.Cdr.FileObject;
 import static edu.unc.lib.dl.rdf.Cdr.Folder;
@@ -96,6 +97,7 @@ public class EnhancementRouter extends RouteBuilder {
                     + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Folder.getURI() + "'"
                     + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Collection.getURI() + "'"
                     + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + AdminUnit.getURI() + "'"
+                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + ContentRoot.getURI() + "'"
                     ))
             // Filter out descriptive md separately because camel simple filters don't support basic () operators
             .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '"

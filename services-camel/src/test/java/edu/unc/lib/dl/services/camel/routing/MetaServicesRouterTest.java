@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +116,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static Map<String, Object> createEvent(final String identifier, final String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
-        headers.put(EVENT_TYPE, "ResourceCreation");
+        headers.put(EVENT_TYPE, EVENT_CREATE);
         headers.put(IDENTIFIER, identifier);
         headers.put(RESOURCE_TYPE, String.join(",", type));
 

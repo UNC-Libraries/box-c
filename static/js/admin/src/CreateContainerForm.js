@@ -33,7 +33,7 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	CreateContainerForm.prototype.getContainerType = function (resultObject) {
 		var parentType = resultObject.type;
 
-		if (parentType === "RootObject") {
+		if (parentType === "ContentRoot") {
 			return "AdminUnit";
 		} else if (parentType === "AdminUnit") {
 			return "Collection";

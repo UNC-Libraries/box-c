@@ -28,7 +28,7 @@
 
     <bean id="swordPath" class="java.lang.String">
         <constructor-arg
-            value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
+            value="${services.base.url}sword" />
     </bean>
 
     <bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
@@ -81,7 +81,7 @@
     <bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl">
         <property name="authType" value="Basic"/>
         <property name="swordPath" ref="swordPath"/>
-        <property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
+        <property name="basePath" value="${services.base.url}"/>
         <property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
         <property name="swordVersion" value="${sword.version}"/>
         <property name="generatorVersion" value="${project.version}"/>

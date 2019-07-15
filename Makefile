@@ -72,9 +72,9 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
-		# Uncomment line in production mode
-		# static/js/vue-cdr-access/dist/css/app*.css \
 		> static/css/cdr_access.css
+		# Reinsert and uncomment line in production mode
+		# static/js/vue-cdr-access/dist/css/app*.css
 
 SUSPEND = "n"
 

@@ -28,11 +28,17 @@ public class FcrepoClientFactory {
     private static final Logger log = LoggerFactory.getLogger(FcrepoClientFactory.class);
 
     private String baseUri;
+    private String authHost;
+    private String authUser;
+    private String authPassword;
 
     private static FcrepoClientFactory instance;
 
-    private FcrepoClientFactory(String base) {
+    private FcrepoClientFactory(String base, String host, String user, String password) {
         baseUri = base;
+        authHost = host;
+        authUser = user;
+        authPassword = password;
     }
 
     /**
@@ -45,12 +51,27 @@ public class FcrepoClientFactory {
      *         previously constructed factory.
      */
     public static FcrepoClientFactory factory(String baseUri) {
+        return factory(baseUri, null, null, null);
+    }
+
+    /**
+     * Return a new FcrepoClientFactory with the given baseUri and authentication
+     * enabled by default. Otherwise the existing factory is returned.
+     *
+     * @param baseUri base uri for the repository
+     * @param host host name to provide as the authentication scope
+     * @param user user name for authentication
+     * @param password password for authentication
+     * @return a new FcrepoClientFactory with the given baseUri or the
+     *         previously constructed factory.
+     */
+    public static FcrepoClientFactory factory(String baseUri, String host, String user, String password) {
         if (baseUri == null) {
             throw new IllegalArgumentException("A base URI is required to construct a factory");
         }
 
         if (instance == null) {
-            instance = new FcrepoClientFactory(baseUri);
+            instance = new FcrepoClientFactory(baseUri, host, user, password);
         } else {
             log.warn("Requested to construct a factory when a previous instance has "
                     + "already been initialized (current base uri: {0}, requested {1}), ignoring.",
@@ -91,8 +112,13 @@ public class FcrepoClientFactory {
      * @return
      */
     public FcrepoClient makeClient() {
-        return TransactionalFcrepoClient.client(baseUri)
-                .throwExceptionOnFailure()
-                .build();
+        if (authHost == null) {
+            return TransactionalFcrepoClient.client(baseUri)
+                    .throwExceptionOnFailure()
+                    .build();
+        } else {
+            return makeAuthenticatedClient(authHost, authUser, authPassword);
+        }
+
     }
 }

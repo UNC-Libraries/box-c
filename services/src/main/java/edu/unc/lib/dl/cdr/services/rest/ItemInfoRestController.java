@@ -57,9 +57,6 @@ public class ItemInfoRestController implements ServletContextAware {
     @Resource
     private SolrQueryLayerService solrSearchService;
 
-    @Resource(name = "contextUrl")
-    protected String contextUrl = null;
-
     @RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
     public @ResponseBody
     BriefObjectMetadataBean getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {

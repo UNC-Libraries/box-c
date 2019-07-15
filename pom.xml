@@ -55,7 +55,7 @@
         <cdr.version>4.0-SNAPSHOT</cdr.version>
         <fcrepo.version>3.8.0</fcrepo.version>
         <fcrepo4.version>5.0.1</fcrepo4.version>
-        <fcrepo-indexing-triplestore.version>4.7.1</fcrepo-indexing-triplestore.version>
+        <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamavj.version>0.3</clamavj.version>
         
         <spring.version>4.3.20.RELEASE</spring.version>
@@ -120,8 +120,8 @@
         <jena.version>3.9.0</jena.version>
         <jena.fuseki.version>3.8.0</jena.fuseki.version>
         
-        <fcrepo-camel.version>4.5.0</fcrepo-camel.version>
-        <camel.version>2.22.1</camel.version>
+        <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
+        <camel.version>2.22.5</camel.version>
         <tika.version>1.19.1</tika.version>
         
         <maven.failsafe.version>2.22.1</maven.failsafe.version>

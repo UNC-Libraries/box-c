@@ -12,7 +12,7 @@
     <url>http://cdr-dev.lib.unc.edu/</url>
     <description>Application for accessing the Digital Collections Repository</description>
     <build>
-        <finalName>ROOT</finalName>
+        <finalName>access</finalName>
         <resources>
             <resource>
                 <filtering>false</filtering>
@@ -81,14 +81,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
+                <!-- <configuration>
                     <webResources>
                         <resource>
                             <filtering>true</filtering>
                             <directory>../etc</directory>
                         </resource>
                     </webResources>
-                </configuration>
+                </configuration> -->
             </plugin>
             
             <plugin>
