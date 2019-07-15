@@ -147,8 +147,7 @@
             },
 
             updateUrl() {
-                let type = this.is_collection ? 'Work' : 'Folder,File';
-                let params = this.urlParams({ types: type });
+                let params = this.urlParams({ types: 'Work' });
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 

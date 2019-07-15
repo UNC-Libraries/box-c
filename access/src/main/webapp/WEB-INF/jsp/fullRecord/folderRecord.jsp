@@ -43,7 +43,7 @@
 <div class="contentarea">
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${parentBriefObject.title}"/> (<c:out value="${childCount}"/>)</h2>
+            <h2><c:out value="${parentBriefObject.title}"/></h2>
             <p><strong>Date Deposited:</strong> <c:out value="${parentBriefObject.dateCreated}"/></p>
             <c:choose>
                 <c:when test="${not empty parentBriefObject.abstractText}">
