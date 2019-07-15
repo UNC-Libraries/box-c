@@ -37,11 +37,11 @@ import org.fcrepo.client.FcrepoResponse;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -68,7 +68,6 @@ public class DestroyObjectsJob implements Runnable {
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
-    private DestroyProxyService proxyService;
     private ObjectPathFactory pathFactory;
     private FcrepoClient fcrepoClient;
 
@@ -78,24 +77,20 @@ public class DestroyObjectsJob implements Runnable {
 
     @Override
     public void run() {
-        // TODO Reenable once fcrepo 5.0.2 is released with FCREPO-2975
-//        FedoraTransaction tx = txManager.startTransaction();
+        FedoraTransaction tx = txManager.startTransaction();
         try (Timer.Context context = timer.time()) {
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
-                    // remove containment relation from obj's parent
-                    proxyService.destroyProxy(pid);
                     // purge tree with repoObj as root from repository
                     destroyTree(repoObj);
                 }
            }
         } catch (Exception e) {
-            throw new TransactionCancelledException("Delete failed", e);
-//             tx.cancel(e);
-//        } finally {
-//             tx.close();
+             tx.cancel(e);
+        } finally {
+             tx.close();
         }
     }
 
@@ -209,10 +204,6 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
-    }
-
-    public void setProxyService(DestroyProxyService proxyService) {
-        this.proxyService = proxyService;
     }
 
     public void setPathFactory(ObjectPathFactory pathFactory) {

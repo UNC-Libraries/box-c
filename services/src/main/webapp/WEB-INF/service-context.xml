@@ -81,11 +81,6 @@
         <constructor-arg ref="jedisPool" />
     </bean>
     
-    <bean id="destroyProxyService" class="edu.unc.lib.dl.persist.services.destroy.DestroyProxyService">
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-    
     <bean id="moveObjectsService"
         class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />

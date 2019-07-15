@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -38,7 +37,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -92,9 +90,6 @@ public class DestroyObjectsJobIT {
     @Autowired
     private TransactionManager txManager;
     @Autowired
-    @Spy
-    private DestroyProxyService spyProxyService;
-    @Autowired
     private ObjectPathFactory pathFactory;
     @Mock
     private ObjectPath path;
@@ -134,7 +129,6 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
-        verify(spyProxyService).destroyProxy(fileObjPid);
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource stoneResc = stoneFile.getResource();
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
@@ -157,7 +151,6 @@ public class DestroyObjectsJobIT {
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
         PID folderObjPid = objsToDestroy.get(0);
-        verify(spyProxyService).destroyProxy(folderObjPid);
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
@@ -185,8 +178,6 @@ public class DestroyObjectsJobIT {
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
         PID folderObj1Pid = objsToDestroy.get(0);
-        verify(spyProxyService).destroyProxy(folderObj1Pid);
-        verify(spyProxyService).destroyProxy(folderObj2Pid);
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
@@ -218,8 +209,6 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
-        verify(spyProxyService).destroyProxy(folderObjPid);
-
         assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
@@ -236,7 +225,6 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
-        verify(spyProxyService).destroyProxy(fileObjPid);
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(stoneFile.getPremisLog().listEvents().contains(eventPid));
@@ -283,7 +271,6 @@ public class DestroyObjectsJobIT {
     private void initializeJob(List<PID> objsToDestroy) {
         job = new DestroyObjectsJob(objsToDestroy);
         job.setPathFactory(pathFactory);
-        job.setProxyService(spyProxyService);
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
         job.setTransactionManager(txManager);
