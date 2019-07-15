@@ -78,6 +78,7 @@
                 container_name: '',
                 container_metadata: {},
                 is_collection: false,
+                is_folder: false,
                 record_count: 0,
                 record_list: [],
                 uuid: ''
@@ -153,7 +154,7 @@
             retrieveData() {
                 let params = this.urlParams();
 
-                if (this.is_collection) {
+                if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
                 }
 
@@ -174,8 +175,9 @@
         mounted() {
             // Small hack to check outside of Vue controlled DOM to see if we're on the collections browse page
             this.is_collection = document.getElementById('is-collection') !== null;
+            this.is_folder = document.getElementById('is-folder') !== null;
 
-            if (this.is_collection) {
+            if (this.is_collection || this.is_folder) {
                 this.updateUrl();
             }
 

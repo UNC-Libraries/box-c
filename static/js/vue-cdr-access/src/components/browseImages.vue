@@ -1,6 +1,6 @@
 <template>
     <span class="imgs-only">
-        <span v-if="container_type === 'Collection'">
+        <span v-if="container_type === 'Collection' || container_type === 'Folder'">
             Show images only? <input @click="update_images" title="show images only" class="checkbox" type="checkbox" v-model="images_only">
         </span>
     </span>
