@@ -155,11 +155,7 @@
             retrieveData() {
                 let params = this.urlParams();
 
-                if (this.is_collection) {
-                    params.types = 'Work';
-                }
-
-                if (this.is_folder) {
+                if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
                 }
 
