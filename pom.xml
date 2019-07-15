@@ -54,7 +54,7 @@
         
         <cdr.version>4.0-SNAPSHOT</cdr.version>
         <fcrepo.version>3.8.0</fcrepo.version>
-        <fcrepo4.version>5.0.1</fcrepo4.version>
+        <fcrepo4.version>5.0.2</fcrepo4.version>
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamavj.version>0.3</clamavj.version>
         
