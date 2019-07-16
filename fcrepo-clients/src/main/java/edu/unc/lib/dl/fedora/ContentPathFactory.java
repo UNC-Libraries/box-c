@@ -47,11 +47,12 @@ public class ContentPathFactory {
 
     private SparqlQueryService queryService;
 
-    private final static String ANCESTORS_QUERY = "SELECT ?start " +
-            "WHERE " +
-            "  {  ?mid (<%1$s>|<%2$s>)* <%3$s> . " +
-            "   ?start (<%1$s>|<%2$s>)+ ?mid " +
-            "  }" +
+    private final static String ANCESTORS_QUERY =
+            "SELECT ?start " +
+            "WHERE {" +
+            "  <%2$s> <%1$s>* ?mid . " +
+            "   ?mid <%1$s>+ ?start " +
+            "}" +
             "GROUP BY ?start " +
             "ORDER BY DESC(COUNT(?mid))";
 
@@ -71,7 +72,18 @@ public class ContentPathFactory {
      */
     public List<PID> getAncestorPids(PID pid) {
         try {
-            return ancestorCache.get(pid.getRepositoryPath());
+            if (pid.getComponentPath() == null) {
+                return new ArrayList<>(ancestorCache.get(pid.getRepositoryPath()));
+            } else {
+                // Get the PID of the parent by removing the component path
+                PID parentPid = PIDs.get(pid.getId());
+                List<PID> ancestors = new ArrayList<>(ancestorCache.get(parentPid.getRepositoryPath()));
+                // Add the parent into the ancestors, if any were returned
+                if (ancestors.size() > 0) {
+                    ancestors.add(parentPid);
+                }
+                return ancestors;
+            }
         } catch (ExecutionException e) {
             throw new ServiceException(e);
         }
@@ -91,12 +103,11 @@ public class ContentPathFactory {
 
     private class AncestorCacheLoader extends CacheLoader<String, List<PID>> {
 
+        @Override
         public List<PID> load(String key) {
-
             List<PID> results = new ArrayList<>();
 
-            String queryString = String.format(ANCESTORS_QUERY, PcdmModels.hasFile.getURI(),
-                    PcdmModels.hasMember.getURI(), key);
+            String queryString = String.format(ANCESTORS_QUERY, PcdmModels.memberOf.getURI(), key);
 
             try (QueryExecution qExecution = queryService.executeQuery(queryString)) {
                 ResultSet resultSet = qExecution.execSelect();

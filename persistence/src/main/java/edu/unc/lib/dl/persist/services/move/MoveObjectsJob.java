@@ -43,7 +43,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -68,7 +67,6 @@ public class MoveObjectsJob implements Runnable {
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
     private ActivityMetricsClient operationMetrics;
-    private DestroyProxyService proxyService;
 
     private AgentPrincipals agent;
     private PID destinationPid;
@@ -140,16 +138,16 @@ public class MoveObjectsJob implements Runnable {
                 + objPid, objPid, agent.getPrincipals(), Permission.move);
 
         ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
+        // Store the pid of the current parent as the move source for this object
+        PID sourcePid = moveContent.getParent().getPid();
+        addPidToSource(objPid, sourcePid);
 
-        String sourcePath = proxyService.destroyProxy(objPid);
-        // Store the pid of the content container owning this proxy as a move source
-        addPidToSource(objPid, sourcePath);
-
+        // Add the object to its destination, which clears the previous parent as well
         destContainer.addMember(moveContent);
     }
 
-    private void addPidToSource(PID pid, String sourcePath) {
-        String sourceId = PIDs.get(sourcePath).getId();
+    private void addPidToSource(PID pid, PID sourcePid) {
+        String sourceId = sourcePid.getId();
         Collection<PID> pidsForSource = sourceToPid.get(sourceId);
         if (pidsForSource == null) {
             pidsForSource = new ArrayList<>();
@@ -249,12 +247,5 @@ public class MoveObjectsJob implements Runnable {
      */
     public String getMoveId() {
         return moveId;
-    }
-
-    /**
-     * @param proxyService the proxyService to set
-     */
-    public void setProxyService(DestroyProxyService proxyService) {
-        this.proxyService = proxyService;
     }
 }

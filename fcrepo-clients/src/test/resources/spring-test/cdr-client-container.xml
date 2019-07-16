@@ -58,18 +58,29 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="fusekiQueryURL" class="java.lang.String">
-        <constructor-arg value="http://localhost:8080/fuseki/test" />
+    <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
-        <property name="fusekiQueryURL" ref="fusekiQueryURL" />
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl">
+        <constructor-arg ref="queryModel" />
+    </bean>
+    
+    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
+        <constructor-arg ref="queryModel" />
+        <constructor-arg ref="fcrepoClient" />
     </bean>
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+    
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="100" />
+        <property name="queryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

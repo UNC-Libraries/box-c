@@ -23,21 +23,12 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.riot.Lang;
-import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,8 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -78,13 +68,13 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 public class MoveObjectsIT extends AbstractAPIIT {
 
     @Autowired
+    private String baseAddress;
+    @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
-    private Model queryModel;
-    @Autowired
-    private FcrepoClient fcrepoClient;
+    private RepositoryObjectTreeIndexer treeIndexer;
 
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
@@ -123,13 +113,13 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         addSourceMembers(pid);
 
-        indexAll();
-
         MvcResult result = mvc.perform(post("/edit/move")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
@@ -147,13 +137,13 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         addSourceMembers(movePid, stayPid);
 
-        indexAll();
-
         MvcResult result = mvc.perform(post("/edit/move")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
@@ -174,13 +164,13 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         addSourceMembers(pid1, pid2);
 
-        indexAll();
-
         MvcResult result = mvc.perform(post("/edit/move")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
@@ -202,13 +192,13 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         List<PID> movePids = asList(pid1, pid2);
 
-        indexAll();
-
         MvcResult result = mvc.perform(post("/edit/move")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(makeRequestBody(movePids)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
@@ -241,7 +231,6 @@ public class MoveObjectsIT extends AbstractAPIIT {
     }
 
     private void assertObjectsRemovedFromSource(List<PID> movePids, ContentContainerObject source) {
-        sourceContainer.setEtag(null);
         List<ContentObject> sourceMembers = source.getMembers();
         for (PID movePid : movePids) {
             assertFalse("Source contained moved object", sourceMembers.stream().
@@ -257,31 +246,5 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsBytes(moveRequest);
-    }
-
-    private void indexAll() throws Exception {
-        queryModel.removeAll();
-
-        indexTree(rootObj.getModel());
-    }
-
-    private void indexTree(Model model) throws Exception {
-        queryModel.add(model);
-
-        indexRelated(model, Ldp.contains);
-        indexRelated(model, PcdmModels.hasMember);
-    }
-
-    private void indexRelated(Model model, Property relationProp) throws Exception {
-        NodeIterator containedIt = model.listObjectsOfProperty(relationProp);
-        while (containedIt.hasNext()) {
-            RDFNode contained = containedIt.next();
-            URI rescUri = URI.create(contained.asResource().getURI());
-            try (FcrepoResponse resp = fcrepoClient.get(rescUri).perform()) {
-                Model childModel = ModelFactory.createDefaultModel();
-                childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
-                indexTree(childModel);
-            }
-        }
     }
 }

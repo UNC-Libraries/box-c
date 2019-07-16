@@ -159,8 +159,6 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
-            assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
@@ -182,8 +180,6 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
-            assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
@@ -206,8 +202,6 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
-            assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
@@ -228,8 +222,6 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
-            assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 

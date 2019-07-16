@@ -48,6 +48,7 @@ import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -90,6 +91,8 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work = new WorkObject(pid, driver, repoObjFactory);
 
+        when(fileObj.getParent()).thenReturn(work);
+
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
         when(driver.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
@@ -126,7 +129,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        resc.addProperty(PcdmModels.hasMember, primaryResc);
+        when(fileObj.getResource()).thenReturn(primaryResc);
 
         work.setPrimaryObject(primaryPid);
 
@@ -136,10 +139,33 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
     @Test(expected = InvalidRelationshipException.class)
     public void setPrimaryObjectToNonMemberTest() {
+        PID anotherPid =  makePid();
+        WorkObject anotherWork = mock(WorkObject.class);
+        when(anotherWork.getPid()).thenReturn(anotherPid);
+
+        // Assign the file object to a different parent
+        when(fileObj.getParent()).thenReturn(anotherWork);
+
         PID primaryPid = makePid();
 
         try {
             work.setPrimaryObject(primaryPid);
+        } finally {
+            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
+                    eq(Cdr.primaryObject), any(Resource.class));
+        }
+    }
+
+    @Test(expected = InvalidOperationForObjectType.class)
+    public void setPrimaryObjectToInvalidTypeTest() {
+        PID anotherPid =  makePid();
+        WorkObject anotherWork = mock(WorkObject.class);
+        when(anotherWork.getPid()).thenReturn(anotherPid);
+
+        when(driver.getRepositoryObject(eq(anotherPid))).thenReturn(anotherWork);
+
+        try {
+            work.setPrimaryObject(anotherPid);
         } finally {
             verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
                     eq(Cdr.primaryObject), any(Resource.class));

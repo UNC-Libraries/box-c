@@ -77,6 +77,8 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
         obj.addDataFile(contentStream, filename, mimetype, null, null);
 
+        treeIndexer.indexAll(baseAddress);
+
         List<ContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
 
@@ -112,6 +114,8 @@ public class WorkObjectIT extends AbstractFedoraIT {
         InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
 
         FileObject supp = obj.addDataFile(contentStreamS, filenameS, null, null, null);
+
+        treeIndexer.indexAll(baseAddress);
 
         // Retrieve the primary object and verify it
         FileObject primaryResult = obj.getPrimaryObject();
@@ -182,6 +186,16 @@ public class WorkObjectIT extends AbstractFedoraIT {
         } else {
             verifyContent(b0, b1, sourceMdBodyString, modsBodyString);
         }
+    }
+
+    @Test
+    public void getParentTest() throws Exception {
+        FolderObject obj = repoObjFactory.createFolderObject(null);
+        WorkObject child = obj.addWork();
+
+        RepositoryObject parent = child.getParent();
+        assertEquals("Parent returned by the child must match the folder it was created in",
+                obj.getPid(), parent.getPid());
     }
 
     private void verifyContent(BinaryObject sourceMdBin, BinaryObject modsBin,

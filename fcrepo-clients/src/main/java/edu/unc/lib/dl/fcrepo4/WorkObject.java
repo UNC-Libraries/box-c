@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-
 import java.io.InputStream;
 
 import org.apache.jena.rdf.model.Model;
@@ -31,7 +29,6 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  * A repository object which represents a single work, and should contain one or
@@ -71,20 +68,20 @@ public class WorkObject extends ContentContainerObject {
      * @param primaryPid
      */
     public void setPrimaryObject(PID primaryPid) {
-        RepositoryObject repoObj = driver.getRepositoryObject(primaryPid);
-        if (!(repoObj instanceof FileObject)) {
+        RepositoryObject primaryObj = driver.getRepositoryObject(primaryPid);
+        if (!(primaryObj instanceof FileObject)) {
             throw new InvalidOperationForObjectType("Cannot set " + primaryPid.getUUID()
-                    + " as primary object, since objects of type " + repoObj.getClass().getName()
+                    + " as primary object, since objects of type " + primaryObj.getClass().getName()
                     + " are not eligible.");
         }
-        // Check that the file object is contained by this work
-        Resource resc = getResource();
-        Resource primaryResc = createResource(primaryPid.getRepositoryPath());
-        if (!resc.hasProperty(PcdmModels.hasMember, primaryResc)) {
+        // Verify that the intended primary object is a child of this work
+        RepositoryObject parent = primaryObj.getParent();
+        if (!parent.getPid().equals(getPid())) {
             throw new InvalidRelationshipException("Primary object must be a member of the Work");
         }
+
         // Add the relation
-        repoObjFactory.createExclusiveRelationship(this, Cdr.primaryObject, primaryResc);
+        repoObjFactory.createExclusiveRelationship(this, Cdr.primaryObject, primaryObj.getResource());
     }
 
     /**

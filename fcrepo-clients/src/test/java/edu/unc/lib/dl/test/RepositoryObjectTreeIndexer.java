@@ -27,7 +27,6 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  * Test utility which indexes a tree of repository objects into a single model.
@@ -44,17 +43,45 @@ public class RepositoryObjectTreeIndexer {
         this.fcrepoClient = fcrepoClient;
     }
 
+    /**
+     * Clears the index and then repopulates it with the resource specified by
+     * baseUri and all resources which it contains.
+     *
+     * @param baseUri uri of the resource to index from.
+     * @throws Exception
+     */
+    public void indexAll(String baseUri) throws Exception {
+        try (FcrepoResponse resp = fcrepoClient.get(URI.create(baseUri)).perform()) {
+            Model rescModel = createModel(resp.getBody());
+            indexAll(rescModel);
+        }
+    }
+
+    /**
+     * Clears the index and then repopulates it with the triples contained by
+     * the provided model, and recursively any resources referenced by contains
+     * statements.
+     *
+     * @param model Model to begin indexing from.
+     * @throws Exception
+     */
     public void indexAll(Model model) throws Exception {
         queryModel.removeAll();
 
         indexTree(model);
     }
 
+    /**
+     * Indexes the provided model and recursively any resources referenced by
+     * contains statements.
+     *
+     * @param model Model to index
+     * @throws Exception
+     */
     private void indexTree(Model model) throws Exception {
         queryModel.add(model);
 
         indexRelated(model, Ldp.contains);
-        indexRelated(model, PcdmModels.hasMember);
     }
 
     private void indexRelated(Model model, Property relationProp) throws Exception {

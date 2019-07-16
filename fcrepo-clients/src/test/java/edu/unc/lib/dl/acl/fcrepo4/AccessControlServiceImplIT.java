@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static java.lang.Integer.parseInt;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -24,71 +22,62 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.jena.fuseki.embedded.FusekiServer;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.sparql.core.DatasetImpl;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  *
  * @author bbpennel
  *
  */
-public class AccessControlServiceImplIT {
-
-    private static final String FUSEKI_PORT = System
-            .getProperty("fuseki.dynamic.test.port", "48080");
-
-    private static final String FUSEKI_BASE_URI =
-            "http://localhost:" + FUSEKI_PORT + "/fuseki/test";
-
+public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private static final long CACHE_MAX_SIZE = 100l;
     private static final long CACHE_TIME_TO_LIVE = 100l;
 
-    private static final String ADMIN_UNIT_1_PATH =
-            "http://example.com/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230";
-    private static final String COLL_1_PATH =
-            "http://example.com/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8";
-    private static final String COLL_1_WORK_1_PATH =
-            "http://example.com/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37";
-    private static final String COLL_1_FOLDER_1_PATH =
-            "http://example.com/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915";
-    private static final String COLL_1_WORK_2_PATH =
-            "http://example.com/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812";
-    private static final String COLL_2_PATH =
-            "http://example.com/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff";
-    private static final String COLL_2_WORK_1_PATH =
-            "http://example.com/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336";
-    private static final String COLL_2_WORK_2_PATH =
-            "http://example.com/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1";
-    private static final String COLL_3_PATH =
-            "http://example.com/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e";
-    private static final String ADMIN_UNIT_2_PATH =
-            "http://example.com/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40";
+    private static ContentRootObject contentRoot;
+    private static AdminUnit adminUnit1;
+    private static CollectionObject collObj1;
+    private static FolderObject collObj1Folder1;
+    private static WorkObject collObj1Folder1Work1;
+    private static WorkObject collObj1Work2;
+    private static CollectionObject collObj2;
+    private static FolderObject collObj2Folder1;
+    private static WorkObject collObj2Folder1Work1;
+    private static WorkObject collObj2Work2;
+    private static CollectionObject collObj3;
+    private static AdminUnit adminUnit2;
 
     private static final String EVERYONE_PRINC = "everyone";
 
     private static final String UNIT_OWNER_PRINC = "adminUser";
 
+    private static final String UNIT2_OWNER_PRINC = "adminUser2";
+
     private static final String VIEWER_PRINC = "uarms-viewer";
 
     private static final String UNIT_MANAGER_PRINC = "wilsontech";
 
+    private static final String STAFF_PRINC = "rdm";
+
+    @Autowired
     private ContentPathFactory pathFactory;
 
     private ObjectAclFactory aclFactory;
@@ -101,47 +90,14 @@ public class AccessControlServiceImplIT {
 
     private AccessControlServiceImpl aclService;
 
+    @Autowired
     private SparqlQueryService sparqlService;
-
-    private static FusekiServer server;
-
-    private static Model fusekiModel;
-
-    @BeforeClass
-    public static void setupFuseki() {
-        fusekiModel = createDefaultModel();
-        String structurePath = AccessControlServiceImplIT.class
-                .getResource("/acl/acl-example-structure.ttl").toString();
-        fusekiModel.read(structurePath);
-        Dataset ds = new DatasetImpl(fusekiModel);
-        server = FusekiServer.create().setPort(parseInt(FUSEKI_PORT))
-                .setContextPath("/fuseki")
-                .add("/test", ds, false)
-                .build();
-        server.start();
-    }
-
-    @AfterClass
-    public static void tearDownFuseki() throws Exception {
-        server.stop();
-    }
 
     @Before
     public void init() throws Exception {
-        TestHelper.setContentBase("http://example.com/rest");
-
-        sparqlService = new FusekiSparqlQueryServiceImpl();
-        ((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
-
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("/acl/config.properties"));
         globalPermissionEvaluator = new GlobalPermissionEvaluator(properties);
-
-        pathFactory = new ContentPathFactory();
-        pathFactory.setCacheMaxSize(CACHE_MAX_SIZE);
-        pathFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
-        pathFactory.setQueryService(sparqlService);
-        pathFactory.init();
 
         aclFactory = new ObjectAclFactory();
         aclFactory.setQueryService(sparqlService);
@@ -159,6 +115,79 @@ public class AccessControlServiceImplIT {
         aclService = new AccessControlServiceImpl();
         aclService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         aclService.setPermissionEvaluator(permissionEvaluator);
+
+        initStructure();
+    }
+
+    private void initStructure() throws Exception {
+        // Only create once
+        if (contentRoot != null) {
+            return;
+        }
+
+        repoObjFactory.createContentRootObject(
+                RepositoryPaths.getContentRootPid().getRepositoryUri(), null);
+        contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
+
+        adminUnit1 = repoObjFactory.createAdminUnit(
+                new AclModelBuilder("Admin Unit 1")
+                    .addUnitOwner(UNIT_OWNER_PRINC)
+                    .addCanManage(UNIT_MANAGER_PRINC)
+                    .model);
+        contentRoot.addMember(adminUnit1);
+
+        collObj1 = repoObjFactory.createCollectionObject(
+                new AclModelBuilder("Coll1 Public Collection")
+                    .addCanViewOriginals(EVERYONE_PRINC)
+                    .model);
+        adminUnit1.addMember(collObj1);
+
+        collObj1Folder1 = repoObjFactory.createFolderObject(
+                new AclModelBuilder("Folder No Patron PubColl")
+                    .addPatronAccess("none")
+                    .model);
+        collObj1.addMember(collObj1Folder1);
+
+        collObj1Folder1Work1 = collObj1Folder1.addWork(
+                new AclModelBuilder("Work Unmodified in Folder No Patron").model);
+
+        collObj1Work2 = repoObjFactory.createWorkObject(
+                new AclModelBuilder("Work Unmodified PubColl").model);
+        collObj1.addMember(collObj1Work2);
+
+        // Staff only collection
+        collObj2 = repoObjFactory.createCollectionObject(
+                new AclModelBuilder("Staff Only Collection")
+                    .addCanAccess(VIEWER_PRINC)
+                    .addCanManage(STAFF_PRINC)
+                    .model);
+        adminUnit1.addMember(collObj2);
+
+        collObj2Folder1 = repoObjFactory.createFolderObject(
+                new AclModelBuilder("Folder No Patron Staff Only Coll")
+                    .addPatronAccess("none")
+                    .model);
+        collObj2.addMember(collObj2Folder1);
+
+        collObj2Folder1Work1 = collObj2Folder1.addWork(
+                new AclModelBuilder("Work Unmodified in Folder in Staff Coll").model);
+
+        collObj2Work2 = repoObjFactory.createWorkObject(
+                new AclModelBuilder("Work Unmodified Staff Coll").model);
+        collObj2.addMember(collObj2Work2);
+
+        // Unit staff only collection
+        adminUnit2 = repoObjFactory.createAdminUnit(
+                new AclModelBuilder("Admin Unit 2")
+                    .addUnitOwner(UNIT2_OWNER_PRINC)
+                    .model);
+        contentRoot.addMember(adminUnit2);
+
+        collObj3 = repoObjFactory.createCollectionObject(
+                new AclModelBuilder("Unit Staff Only Collection").model);
+        adminUnit2.addMember(collObj3);
+
+        treeIndexer.indexAll(baseAddress);
     }
 
     @Test
@@ -176,7 +205,7 @@ public class AccessControlServiceImplIT {
     @Test
     public void hasGlobalDescribeAccess() {
 
-        final AccessGroupSet principals = new AccessGroupSet("rdm");
+        final AccessGroupSet principals = new AccessGroupSet(STAFF_PRINC);
 
         // Ensure that global describe group can describe everywhere but not destroy
         getAllContentObjects().forEach(pid -> {
@@ -201,151 +230,136 @@ public class AccessControlServiceImplIT {
 
     @Test
     public void localHigherPermissionOverridesGlobal() {
-        final AccessGroupSet principals = new AccessGroupSet("rdm");
+        final AccessGroupSet principals = new AccessGroupSet(STAFF_PRINC);
 
-        PID collPid = PIDs.get(COLL_2_PATH);
         assertTrue("canManage role on collection 2 should override global canDescribe",
-                aclService.hasAccess(collPid, principals, Permission.markForDeletion));
+                aclService.hasAccess(collObj2.getPid(), principals, Permission.markForDeletion));
     }
 
     @Test
     public void unitHasPatronPermissionTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID unitPid = PIDs.get(ADMIN_UNIT_1_PATH);
 
         assertTrue("Everyone should be able to view unit",
-                aclService.hasAccess(unitPid, principals, Permission.viewMetadata));
+                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.viewMetadata));
     }
 
     @Test
     public void everyoneHasAccessToPublicWorkTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_1_WORK_1_PATH);
 
         assertTrue("Everyone should be able to access unrestricted work",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj1Work2.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void assertEveryoneCanAccess() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_1_WORK_1_PATH);
 
-        aclService.assertHasAccess(null, pid, principals, Permission.viewOriginal);
+        aclService.assertHasAccess(null, collObj1Work2.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test(expected = AccessRestrictionException.class)
     public void assertEveryoneCannotAccess() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_1_WORK_2_PATH);
 
-        aclService.assertHasAccess(null, pid, principals, Permission.viewOriginal);
+        aclService.assertHasAccess(null, collObj1Folder1Work1.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test
     public void everyoneCannotAccessRestrictedFolderTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_1_FOLDER_1_PATH);
 
         assertFalse("Everyone should not be able to access staff only folder",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj1Folder1.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void everyoneCannotAccessWorkInheritedFromFolderTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_1_WORK_2_PATH);
 
         assertFalse("Everyone should not be able to access work in a staff only folder",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void everyoneCannotAccessRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_2_PATH);
 
         assertFalse("Everyone should not be able to access staff only collection",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj2.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void everyoneCannotAccessWorkInRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
-        PID pid = PIDs.get(COLL_2_WORK_1_PATH);
 
         assertFalse("Everyone should not be able to work in restricted collection",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj2Folder1Work1.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void staffViewerCanAccessStaffOnlyWorkInRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
-        PID pid = PIDs.get(COLL_2_WORK_2_PATH);
 
         assertTrue("Staff user should be able to access patron restricted work",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void staffViewerCannotModifyCollectionTest() {
         final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
-        PID pid = PIDs.get(COLL_2_PATH);
 
         assertFalse("Staff user should not be able to modify collection",
-                aclService.hasAccess(pid, principals, Permission.editDescription));
+                aclService.hasAccess(collObj2.getPid(), principals, Permission.editDescription));
     }
 
     @Test
     public void collStaffCannotViewOtherColl() {
         final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
-        PID pid = PIDs.get(COLL_3_PATH);
 
         assertFalse("Collection assigned staff user should not be able to access a different collection",
-                aclService.hasAccess(pid, principals, Permission.viewOriginal));
+                aclService.hasAccess(collObj3.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test
     public void unitOwnerHasAccessTest() {
         final AccessGroupSet principals = new AccessGroupSet(UNIT_OWNER_PRINC);
-        PID unitPid = PIDs.get(ADMIN_UNIT_1_PATH);
 
         assertTrue("Unit owner should be able to create collections in unit",
-                aclService.hasAccess(unitPid, principals, Permission.createCollection));
+                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection));
         assertTrue("Unit owner should be able to modify contained collection",
-                aclService.hasAccess(PIDs.get(COLL_1_PATH), principals, Permission.ingest));
+                aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest));
         assertTrue("Unit owner should be able to modify restricted work",
-                aclService.hasAccess(PIDs.get(COLL_2_WORK_2_PATH), principals, Permission.destroy));
+                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.destroy));
     }
 
     @Test
     public void unitOwnerCannotModifyOtherUnitTest() {
         final AccessGroupSet principals = new AccessGroupSet(UNIT_OWNER_PRINC);
-        PID unitPid = PIDs.get(ADMIN_UNIT_2_PATH);
 
         assertFalse("Unit owner 1 should not be able to create collections in another unit",
-                aclService.hasAccess(unitPid, principals, Permission.createCollection));
+                aclService.hasAccess(adminUnit2.getPid(), principals, Permission.createCollection));
     }
 
     @Test
     public void unitManagerHasAccessTest() {
         final AccessGroupSet principals = new AccessGroupSet(UNIT_MANAGER_PRINC);
-        PID unitPid = PIDs.get(ADMIN_UNIT_1_PATH);
 
         assertTrue("Manager should be able to modify unit",
-                aclService.hasAccess(unitPid, principals, Permission.editDescription));
+                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.editDescription));
         assertFalse("Manager should not be able to create collections in unit",
-                aclService.hasAccess(unitPid, principals, Permission.createCollection));
+                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection));
         assertTrue("Manager should be able to modify contained collection",
-                aclService.hasAccess(PIDs.get(COLL_1_PATH), principals, Permission.ingest));
+                aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest));
         assertTrue("Manager should be able to modify all contained collections",
-                aclService.hasAccess(PIDs.get(COLL_3_PATH), principals, Permission.ingest));
+                aclService.hasAccess(collObj2.getPid(), principals, Permission.ingest));
         assertTrue("Manager should be able to modify restricted work in all contained collections",
-                aclService.hasAccess(PIDs.get(COLL_2_WORK_2_PATH), principals, Permission.editDescription));
+                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.editDescription));
     }
 
     private List<PID> getAllContentObjects() {
-        return fusekiModel.listResourcesWithProperty(RDF.type).toList().stream()
+        return queryModel.listResourcesWithProperty(RDF.type).toList().stream()
                 .map(p -> PIDs.get(p.getURI()))
                 .collect(Collectors.toList());
     }

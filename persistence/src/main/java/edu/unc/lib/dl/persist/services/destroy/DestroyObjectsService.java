@@ -54,8 +54,6 @@ public class DestroyObjectsService {
     @Autowired
     private TransactionManager txManager;
     @Autowired
-    private DestroyProxyService proxyService;
-    @Autowired
     private ObjectPathFactory pathFactory;
     @Autowired
     private FcrepoClient fcrepoClient;
@@ -97,7 +95,6 @@ public class DestroyObjectsService {
         DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
         job.setFcrepoClient(fcrepoClient);
         job.setPathFactory(pathFactory);
-        job.setProxyService(proxyService);
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
         job.setTransactionManager(txManager);
@@ -133,14 +130,6 @@ public class DestroyObjectsService {
      */
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
-    }
-
-    /**
-     *
-     * @param proxyService the proxy service to set
-     */
-    public void setProxyService(DestroyProxyService proxyService) {
-        this.proxyService = proxyService;
     }
 
     /**

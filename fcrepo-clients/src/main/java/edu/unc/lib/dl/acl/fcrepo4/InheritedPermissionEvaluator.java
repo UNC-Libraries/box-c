@@ -17,7 +17,6 @@ package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.classifyPrincipals;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,7 +110,7 @@ public class InheritedPermissionEvaluator {
     }
 
     private List<PID> getObjectPath(PID pid) {
-        List<PID> path = new ArrayList<>(pathFactory.getAncestorPids(pid));
+        List<PID> path = pathFactory.getAncestorPids(pid);
         // TODO prevent further processing if the object was an orphan
         // Add the target to the end of the path so it will be evaluated too
         path.add(pid);
