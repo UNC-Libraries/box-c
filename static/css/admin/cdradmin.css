@@ -2,6 +2,10 @@ html {
 	background-color: #ffffff;
 }
 
+body {
+	font-family: verdana, sans-serif;
+}
+
 #pagewrap {
 	min-width: 960px;
 	width: inherit;
