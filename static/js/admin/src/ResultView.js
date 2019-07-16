@@ -154,10 +154,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				dataType : 'json',
 				cache: false,
 				success : function(data) {
-					if (this.addMenu) {
-						$("#add_menu").remove();
-					}
-					
 					self.resultData = data;
 					
 					self.resultTableView.render(data);
@@ -223,7 +219,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {
-					this.addMenu.setContainer(container).init();
+					this.addMenu.setContainer(container).refresh();
 				} else {
 					this.addMenu = new AddMenu({
 						container : container,
