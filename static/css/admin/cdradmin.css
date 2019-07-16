@@ -490,3 +490,8 @@ div.in-admin-iframe,
 .admin-forms.in-admin-iframe {
     display: none;
 }
+
+.context-menu-list li {
+	margin: 0;
+	text-indent: 0;
+}
