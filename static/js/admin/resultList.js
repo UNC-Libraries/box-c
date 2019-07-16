@@ -35,7 +35,6 @@ require.config({
 		"CreateSimpleObjectForm" : "cdr-admin",
 		"ResultObjectActionMenu" : "cdr-admin",
 		"ActionEventHandler" : "cdr-admin",
-		"MoveActionMonitor" : "cdr-admin",
 		"AddMenu" : "cdr-admin",
 		"contextMenu" : "admin/lib/jquery.contextMenu",
 		"detachplus" : "cdr-admin",
