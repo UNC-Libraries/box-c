@@ -31,7 +31,7 @@
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 	<div id="browse-display-type" class="display-wrapper">
 		<p>How would you like to browse?</p>
-		<a href="#" class="display-note-btn" title="Dean's stuff">?</a>
+		<a href="#" class="display-note-btn">?<div class="arrow"></div><span class="browse-tip">I want to browse stuff</span></a>
 		<button id="gallery-display" class="button is-light">Gallery</button>
 		<button id="structure-display" class="button is-light">Structured</button>
 	</div>

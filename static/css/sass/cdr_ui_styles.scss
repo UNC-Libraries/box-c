@@ -236,19 +236,48 @@ p.no-search-results {
 .display-wrapper {
   display: inline-flex;
   justify-content: right;
-  margin-left: 25px;
-  margin-top: 15px;
-  padding-right: 25px;
+  margin: 15px 25px 0 25px;
+  padding-right: 45px;
   width: 100%;
 
   p, a {
     font-size: 20px;
   }
 
-  a:hover {
-    background-color: $light-gray;
-    border-color: $light-gray;
-    text-decoration: none;
+  a {
+    &:hover {
+      opacity: .8;
+      text-decoration: none;
+
+      span.browse-tip, .arrow {
+        display: block;
+        opacity: 1;
+      }
+
+      span.browse-tip {
+        background-color: black;
+        border: 1px solid black;
+        border-radius: 5px;
+        font-size: 16px;
+        margin: 0 0 10px -65px;
+        padding: 10px;
+        text-align: left;
+        width: 150px;
+      }
+    }
+
+    .arrow {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 10px solid black;
+      margin: 5px 2px 0 2px;
+    }
+
+    span.browse-tip, .arrow {
+      display: none;
+    }
   }
 
   .button.is-light {

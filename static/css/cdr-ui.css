@@ -468,18 +468,42 @@ p.no-search-results {
 .display-wrapper {
   display: inline-flex;
   justify-content: right;
-  margin-left: 25px;
-  margin-top: 15px;
-  padding-right: 25px;
+  margin: 15px 25px 0 25px;
+  padding-right: 45px;
   width: 100%;
 }
 .display-wrapper p, .display-wrapper a {
   font-size: 20px;
 }
 .display-wrapper a:hover {
-  background-color: #E1E1E1;
-  border-color: #E1E1E1;
+  opacity: .8;
   text-decoration: none;
+}
+.display-wrapper a:hover span.browse-tip, .display-wrapper a:hover .arrow {
+  display: block;
+  opacity: 1;
+}
+.display-wrapper a:hover span.browse-tip {
+  background-color: black;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 16px;
+  margin: 0 0 10px -65px;
+  padding: 10px;
+  text-align: left;
+  width: 150px;
+}
+.display-wrapper a .arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid black;
+  margin: 5px 2px 0 2px;
+}
+.display-wrapper a span.browse-tip, .display-wrapper a .arrow {
+  display: none;
+  transition: display .5s ease;
 }
 .display-wrapper .button.is-light {
   border: 1px solid darkgray;
