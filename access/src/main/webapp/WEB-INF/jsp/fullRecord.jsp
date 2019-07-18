@@ -29,6 +29,12 @@
 </c:if>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
+	<div id="browse-display-type" class="display-wrapper">
+		<p>How would you like to browse?</p>
+		<a href="#" class="display-note-btn" title="Dean's stuff">?</a>
+		<button id="gallery-display" class="button is-light">Gallery</button>
+		<button id="structure-display" class="button is-light">Structured</button>
+	</div>
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
 	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
@@ -59,3 +65,4 @@
 	<c:set var="collectionName" value="(no collection)" />
 </c:if>
 <c:set var="gaCommands" scope="request">${gaCommands} ga('unc.send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
+<script type="text/javascript" src="/static/js/public/browseViewType"></script>

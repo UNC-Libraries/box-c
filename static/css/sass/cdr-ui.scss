@@ -495,6 +495,49 @@ p.no-search-results {
   }
 }
 
+/* Full record page */
+.display-wrapper {
+  display: inline-flex;
+  justify-content: right;
+  margin-left: 25px;
+  margin-top: 15px;
+  padding-right: 25px;
+  width: 100%;
+
+  p, a {
+    font-size: 20px;
+  }
+
+  a:hover {
+    background-color: $light-gray;
+    border-color: $light-gray;
+    text-decoration: none;
+  }
+
+  .button.is-light {
+    border: 1px solid darkgray;
+  }
+
+  button {
+    margin-left: 10px;
+    margin-top: -10px;
+  }
+
+  .display-note-btn {
+    background-color: $unc-blue;
+    border: 1px solid $unc-blue;
+    border-radius: 100%;
+    color: white;
+    font-weight: bold;
+    height: 25px;
+    margin-left: 5px;
+    margin-top: -5px;
+    padding: 4px 5px;
+    text-align: center;
+    width: 25px;
+  }
+}
+
 /* Work page */
 
 

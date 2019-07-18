@@ -464,6 +464,44 @@ p.no-search-results {
   margin-bottom: 50px;
 }
 
+/* Full record page */
+.display-wrapper {
+  display: inline-flex;
+  justify-content: right;
+  margin-left: 25px;
+  margin-top: 15px;
+  padding-right: 25px;
+  width: 100%;
+}
+.display-wrapper p, .display-wrapper a {
+  font-size: 20px;
+}
+.display-wrapper a:hover {
+  background-color: #E1E1E1;
+  border-color: #E1E1E1;
+  text-decoration: none;
+}
+.display-wrapper .button.is-light {
+  border: 1px solid darkgray;
+}
+.display-wrapper button {
+  margin-left: 10px;
+  margin-top: -10px;
+}
+.display-wrapper .display-note-btn {
+  background-color: #4B9CD3;
+  border: 1px solid #4B9CD3;
+  border-radius: 100%;
+  color: white;
+  font-weight: bold;
+  height: 25px;
+  margin-left: 5px;
+  margin-top: -5px;
+  padding: 4px 5px;
+  text-align: center;
+  width: 25px;
+}
+
 /* Work page */
 /* DataTables  */
 #child-files_wrapper div {
