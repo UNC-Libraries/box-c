@@ -5,6 +5,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		this.options = $.extend({}, options);
 		this.container = this.options.container;
 		this.init();
+		this.refresh();
 	};
 	
 	AddMenu.prototype.getMenuItems = function() {
@@ -13,44 +14,30 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 
 		if (canIngest) {
 			var self = this;
-
-			items["ingestPackage"] = {
-				name : "Add Ingest Package",
-				visible: function(key, opt){
-					return self.allowIngestInto(self);
-				}
-			};
-			items["ingestSource"] = {
-				name : "Add from File Server",
-				visible: function(key, opt){
-					return self.allowIngestInto(self);
-				}
-			};
-			if ((canIngest && (this.container.type === "Folder" || this.container.type === "Collection")) ||
-				($.inArray('createCollection', this.container.permissions) !== -1 && this.container.type === "AdminUnit") ||
-				($.inArray('createAdminUnit', this.container.permissions) !== -1 && this.container.type === "ContentRoot")
+			var folderOrCollection = this.container.type === "Folder" || this.container.type === "Collection";
+			var workOrFile = this.container.type === "Work" || this.container.type === "File";
+			
+			if (folderOrCollection
+				|| (this.container.type === "AdminUnit" && $.inArray('createCollection', this.container.permissions) !== -1)
+				|| (this.container.type === "ContentRoot" && $.inArray('createAdminUnit', this.container.permissions) !== -1)
 			) {
 				items["addContainer"] = {
-					name : "Add " + CreateContainerForm.prototype.getContainerType(this.container),
-					visible: function(key, opt) {
-						return self.allowIngestInto(self);
-					}
+					name : "Add " + CreateContainerForm.prototype.getContainerType(this.container)
 				};
 			}
-			items["addWork"] = {name : "Add Work",
-				visible: function(key, opt){
-					return self.allowIngestInto(self);
-				}
-			};
-			items["addFile"] = {name : "Add File",
-				visible: function(key, opt){
-					if (self.container.type === "Work") {
-						return true;
-					}
-					return false;
-				}
-			};
-
+			
+			if (folderOrCollection) {
+				items["addWork"] = { name : "Add Work" };
+			}
+			
+			if (this.container.type == "Work") {
+				items["addFile"] = { name : "Add File" };
+			}
+			
+			if (!workOrFile) {
+				items["ingestPackage"] = { name : "Add Ingest Package" }
+				items["ingestSource"] = { name : "Add from File Server" }
+			}
 		}
 		if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
 			items["importMetadata"] = {name : "Import MODS"};
@@ -58,79 +45,84 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		
 		return items;
 	};
-
-	AddMenu.prototype.allowIngestInto = function(self) {
-		if (self.container.type === "Work" || self.container.type === "File") {
-			return false;
-		}
-		return true;
-	};
 	
 	AddMenu.prototype.setContainer = function(container) {
 		this.container = container;
 		return this;
 	};
 	
+	AddMenu.prototype.refresh = function() {
+		var items = this.getMenuItems();
+		if ($.isEmptyObject(items)) {
+			$(this.options.selector).hide();
+			return;
+		} else {
+			$(this.options.selector).show();
+		}
+	}
+	
 	AddMenu.prototype.init = function() {
 		var self = this;
-		
-		var items = self.getMenuItems();
-		if ($.isEmptyObject(items))
-			return;
 		
 		this.menu = $.contextMenu({
 			selector: this.options.selector,
 			trigger: 'left',
-			className: 'add_to_container_menu', 
-			events : {
-				show: function() {
-					this.addClass("active");
-				},
-				hide: function() {
-					this.removeClass("active");
+			build: function($triggerEvent, e) {
+				var items = self.getMenuItems();
+				
+				return {
+					className: 'add_to_container_menu', 
+					events : {
+						show: function() {
+							this.addClass("active");
+						},
+						hide: function() {
+							this.removeClass("active");
+						}
+					},
+					items: items,
+					callback : function(key, options) {
+						switch (key) {
+							case "addContainer" :
+								new CreateContainerForm({
+									alertHandler : self.options.alertHandler
+								}).open(self.container);
+								break;
+							case "ingestPackage" :
+								new IngestPackageForm({
+									alertHandler : self.options.alertHandler
+								}).open(self.container.id);
+								break;
+							case "ingestSource" :
+								new IngestFromSourceForm({
+									alertHandler : self.options.alertHandler
+								}).open(self.container.id);
+								break;
+							case "addWork" :
+								new CreateWorkObjectForm({
+									alertHandler : self.options.alertHandler
+								}).open(self.container.id);
+								break;
+							case "addFile" :
+								new AddFileForm({
+									alertHandler : self.options.alertHandler
+								}).open(self.container.id);
+								break;
+							case "importMetadata" :
+								new ImportMetadataXMLForm({
+									alertHandler : self.options.alertHandler
+								}).open();
+								break;
+						}
+					},
+					position : function(options, x, y) {
+						options.$menu.position({
+							my : "right top",
+							at : "right bottom",
+							of : options.$trigger
+						});
+					}
 				}
-			},
-			items: items,
-			callback : function(key, options) {
-				switch (key) {
-					case "addContainer" :
-						new CreateContainerForm({
-							alertHandler : self.options.alertHandler
-						}).open(self.container);
-						break;
-					case "ingestPackage" :
-						new IngestPackageForm({
-							alertHandler : self.options.alertHandler
-						}).open(self.container.id);
-						break;
-					case "ingestSource" :
-						new IngestFromSourceForm({
-							alertHandler : self.options.alertHandler
-						}).open(self.container.id);
-						break;
-					case "addWork" :
-						new CreateWorkObjectForm({
-							alertHandler : self.options.alertHandler
-						}).open(self.container.id);
-						break;
-					case "addFile" :
-						new AddFileForm({
-							alertHandler : self.options.alertHandler
-						}).open(self.container.id);
-						break;
-					case "importMetadata" :
-						new ImportMetadataXMLForm({
-							alertHandler : self.options.alertHandler
-						}).open();
-						break;
-				}
-			},
-			position : function(options, x, y) {
-				options.$menu.position({
-					my : "right top",
-					at : "right bottom",
-					of : options.$trigger
-				});
 			}
 		});
 	};

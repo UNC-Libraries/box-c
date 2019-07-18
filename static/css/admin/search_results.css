@@ -178,6 +178,7 @@
 	border: 1px solid #CCD;
 	border-radius: 4px;
 	background-color: #E5EFFF;
+	display: none;
 }
 
 #add_menu.active {

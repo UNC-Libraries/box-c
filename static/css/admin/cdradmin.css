@@ -2,6 +2,10 @@ html {
 	background-color: #ffffff;
 }
 
+body {
+	font-family: verdana, sans-serif;
+}
+
 #pagewrap {
 	min-width: 960px;
 	width: inherit;
@@ -489,4 +493,9 @@ h1 {
 div.in-admin-iframe,
 .admin-forms.in-admin-iframe {
     display: none;
+}
+
+.context-menu-list li {
+	margin: 0;
+	text-indent: 0;
 }

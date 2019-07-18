@@ -1,6 +1,6 @@
 define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'MoveActionMonitor', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, MoveActionMonitor, ResultTableView) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ResultTableView) {
 	$.widget("cdr.resultView", {
 		options : {
 			url : null,
@@ -86,7 +86,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					formsBaseUrl : this.options.formsBaseUrl
 				}
 			});
-			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);
 			
 			// Register event to update the window when results have rendered
 			$(document).on("cdrResultsRendered", $.proxy(this.postRender, this));
@@ -154,10 +153,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				dataType : 'json',
 				cache: false,
 				success : function(data) {
-					if (this.addMenu) {
-						$("#add_menu").remove();
-					}
-					
 					self.resultData = data;
 					
 					self.resultTableView.render(data);
@@ -182,13 +177,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		
 		postRender : function () {
 			var self = this;
-			
-			this.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
-			if (!this.moveMonitor.active) {
-				this.moveMonitor.activate();
-			} else {
-				this.moveMonitor.refreshMarked();
-			}
 			
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
@@ -223,7 +211,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {
-					this.addMenu.setContainer(container).init();
+					this.addMenu.setContainer(container).refresh();
 				} else {
 					this.addMenu = new AddMenu({
 						container : container,
