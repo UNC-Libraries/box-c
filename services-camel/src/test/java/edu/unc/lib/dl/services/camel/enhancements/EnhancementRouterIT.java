@@ -201,7 +201,7 @@ public class EnhancementRouterIT {
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        FileObject descObj = fileObj.setDescription(new ByteArrayInputStream(FILE_CONTENT.getBytes()));
+        BinaryObject descObj = fileObj.setDescription(new ByteArrayInputStream(FILE_CONTENT.getBytes()));
 
         Map<String, Object> headers = createEvent(descObj.getPid(),
                 Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());

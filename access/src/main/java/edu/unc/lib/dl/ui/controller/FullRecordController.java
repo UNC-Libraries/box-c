@@ -134,7 +134,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         try {
             ContentObject contentObj = (ContentObject) repositoryObjectLoader.getRepositoryObject(pid);
 
-            BinaryObject modsObj = contentObj.getMODS();
+            BinaryObject modsObj = contentObj.getDescription();
             if (modsObj != null) {
                 SAXBuilder builder = new SAXBuilder();
                 Document modsDoc = builder.build(modsObj.getBinaryStream());

@@ -41,11 +41,14 @@ public abstract class RepositoryPathConstants {
 
     public static final String DATA_FILE_FILESET = "datafs";
 
-    public static final String MEMBER_CONTAINER = "member";
+    public static final String METADATA_CONTAINER = "md";
 
     // Named objects
 
     public static final String ORIGINAL_FILE = "original_file";
+
+    public static final String MD_DESCRIPTIVE_FILE = "md_descriptive";
+    public static final String MD_SOURCE_FILE = "md_source";
 
     public static final String CONTENT_ROOT_ID = "collections";
 

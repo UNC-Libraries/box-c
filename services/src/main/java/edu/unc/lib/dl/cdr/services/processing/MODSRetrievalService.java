@@ -65,7 +65,7 @@ public class MODSRetrievalService {
 
         try (Timer.Context context = timer.time()) {
             ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-            BinaryObject mods = obj.getMODS();
+            BinaryObject mods = obj.getDescription();
 
             if (mods != null) {
                 try (InputStream modsStream = mods.getBinaryStream()) {

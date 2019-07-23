@@ -33,7 +33,6 @@ import org.apache.jena.vocabulary.DC;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -146,46 +145,43 @@ public class WorkObjectIT extends AbstractFedoraIT {
         WorkObject obj = repoObjFactory.createWorkObject(null);
         String bodyString = "some MODS content";
         InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
-        FileObject fileObj = obj.setDescription(modsStream);
+        BinaryObject modsObj = obj.setDescription(modsStream);
 
-        assertObjectExists(obj.getMODS().getPid());
-        List<BinaryObject> binObjs = fileObj.getBinaryObjects();
-        assertEquals(1, binObjs.size());
-        assertObjectExists(binObjs.get(0).getPid());
+        assertObjectExists(obj.getDescription().getPid());
+        assertObjectExists(modsObj.getPid());
         // make sure content is added to MODS
-        String respString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
+        String respString = new BufferedReader(new InputStreamReader(modsObj.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
         assertEquals("Original content did not match submitted value", bodyString, respString);
     }
 
     @Test
     public void addSourceMdTest() throws Exception {
+        // Setup work with MODS and source description
         WorkObject anotherObj = repoObjFactory.createWorkObject(null);
         String sourceProfile = "some source md";
         String sourceMdBodyString = "source md content";
         String modsBodyString = "MODS content";
         InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
         InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
-        FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream);
-        // tests that getDescription returns FileObject containing source md and mods
-        assertObjectExists(anotherObj.getDescription().getPid());
-        assertNotNull(anotherObj.getMODS());
-        List<BinaryObject> binObjs = fileObj.getBinaryObjects();
-        assertEquals(2, binObjs.size());
+        BinaryObject modsObj = anotherObj.setDescription(modsStream);
+        BinaryObject sourceObj = anotherObj.addSourceMetadata(sourceMdStream, sourceProfile);
 
-        BinaryObject b0 = binObjs.get(0);
-        BinaryObject b1 = binObjs.get(1);
-        PID pid0 = b0.getPid();
-        PID pid1 = b1.getPid();
-        // tests that mods and source md binaries were created
-        assertObjectExists(pid0);
-        assertObjectExists(pid1);
-        // make sure content is added to source md and mods binaries
-        if (pid0.equals((anotherObj.getMODS().getPid()))) {
-            verifyContent(b1, b0, sourceMdBodyString, modsBodyString);
-        } else {
-            verifyContent(b0, b1, sourceMdBodyString, modsBodyString);
-        }
+        // tests that listDescriptions returns binary objects for source md and mods
+        List<BinaryObject> descs = anotherObj.listMetadata();
+        assertTrue("Result must contain mods object", descs.contains(modsObj));
+        assertTrue("Result must contain source md object", descs.contains(sourceObj));
+
+        assertObjectExists(modsObj.getPid());
+        assertObjectExists(sourceObj.getPid());
+
+        String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceObj.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Source content did not match submitted value", sourceMdBodyString, sourceMdRespString);
+
+        String modsRespString = new BufferedReader(new InputStreamReader(modsObj.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("MODS content did not match submitted value", modsBodyString, modsRespString);
     }
 
     @Test
@@ -196,16 +192,5 @@ public class WorkObjectIT extends AbstractFedoraIT {
         RepositoryObject parent = child.getParent();
         assertEquals("Parent returned by the child must match the folder it was created in",
                 obj.getPid(), parent.getPid());
-    }
-
-    private void verifyContent(BinaryObject sourceMdBin, BinaryObject modsBin,
-            String sourceMdBodyString, String modsBodyString) {
-        String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceMdBin.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", sourceMdBodyString, sourceMdRespString);
-
-        String modsRespString = new BufferedReader(new InputStreamReader(modsBin.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", modsBodyString, modsRespString);
     }
 }

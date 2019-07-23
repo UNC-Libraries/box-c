@@ -122,7 +122,7 @@ public class XMLExportJob implements Runnable {
             return;
         }
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        BinaryObject mods = obj.getMODS();
+        BinaryObject mods = obj.getDescription();
 
         try {
             Document objectDoc = new Document();

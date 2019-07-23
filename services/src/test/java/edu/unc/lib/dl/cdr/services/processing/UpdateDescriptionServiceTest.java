@@ -43,8 +43,8 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
@@ -90,7 +90,7 @@ public class UpdateDescriptionServiceTest {
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("username");
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(obj);
-        when(obj.setDescription(eq(modsStream))).thenReturn(mock(FileObject.class));
+        when(obj.setDescription(eq(modsStream))).thenReturn(mock(BinaryObject.class));
         when(messageSender.sendUpdateDescriptionOperation(anyString(), any(Collection.class)))
                 .thenReturn("message_id");
 

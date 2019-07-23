@@ -115,7 +115,7 @@ public class XMLImportJobIT {
     @Test
     public void testMODSGetsUpdated() throws Exception {
         populateFedora("uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad");
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
         assertModsNotUpdated(originalMods);
         importFile = createTempImportFile("src/test/resources/mods/update-work-mods.xml");
         createJob();
@@ -124,7 +124,7 @@ public class XMLImportJobIT {
 
         verify(mailSender).send(any(MimeMessage.class));
 
-        InputStream updatedMods = workObj.getMODS().getBinaryStream();
+        InputStream updatedMods = workObj.getDescription().getBinaryStream();
 
         assertModsUpdated(updatedMods);
     }
@@ -137,8 +137,8 @@ public class XMLImportJobIT {
         WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
         anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
 
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
-        InputStream anotherOriginalMods = anotherWorkObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
+        InputStream anotherOriginalMods = anotherWorkObj.getDescription().getBinaryStream();
         assertModsNotUpdated(originalMods);
         assertModsNotUpdated(anotherOriginalMods);
 
@@ -148,8 +148,8 @@ public class XMLImportJobIT {
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        InputStream updatedMods = workObj.getMODS().getBinaryStream();
-        InputStream anotherUpdatedMods = anotherWorkObj.getMODS().getBinaryStream();
+        InputStream updatedMods = workObj.getDescription().getBinaryStream();
+        InputStream anotherUpdatedMods = anotherWorkObj.getDescription().getBinaryStream();
         assertModsUpdated(updatedMods);
         assertModsNotUpdated(anotherUpdatedMods);
     }
@@ -162,8 +162,8 @@ public class XMLImportJobIT {
         WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
         anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
 
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
-        InputStream anotherOriginalMods = anotherWorkObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
+        InputStream anotherOriginalMods = anotherWorkObj.getDescription().getBinaryStream();
         assertModsNotUpdated(originalMods);
         assertModsNotUpdated(anotherOriginalMods);
 
@@ -173,8 +173,8 @@ public class XMLImportJobIT {
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        InputStream updatedMods = workObj.getMODS().getBinaryStream();
-        InputStream anotherUpdatedMods = anotherWorkObj.getMODS().getBinaryStream();
+        InputStream updatedMods = workObj.getDescription().getBinaryStream();
+        InputStream anotherUpdatedMods = anotherWorkObj.getDescription().getBinaryStream();
         assertModsUpdated(updatedMods);
         assertModsUpdated(anotherUpdatedMods);
     }
@@ -182,7 +182,7 @@ public class XMLImportJobIT {
     @Test
     public void testUpdateFileMissingBulkMetadataTag() throws Exception {
         populateFedora("uuid:bf0091e0-192d-46f9-a8ad-8b0dc82f33be");
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
         importFile = createTempImportFile("src/test/resources/mods/bad-update-work-mods.xml");
         createJob();
 
@@ -196,7 +196,7 @@ public class XMLImportJobIT {
     @Test
     public void testUpdateFileMissingUpdateTag() throws Exception {
         populateFedora("uuid:bf0091e0-203e-46f9-a8ad-8b0dc82f33be");
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
         importFile = createTempImportFile("src/test/resources/mods/no-update-mods.xml");
         createJob();
 
@@ -209,7 +209,7 @@ public class XMLImportJobIT {
     @Test
     public void testUpdateFileHasXMLErrors() throws Exception {
         populateFedora("uuid:ca0091e0-192d-46f9-a8ad-8b0dc82f33cf");
-        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream originalMods = workObj.getDescription().getBinaryStream();
         importFile = createTempImportFile("src/test/resources/mods/bad-xml.xml");
         createJob();
 

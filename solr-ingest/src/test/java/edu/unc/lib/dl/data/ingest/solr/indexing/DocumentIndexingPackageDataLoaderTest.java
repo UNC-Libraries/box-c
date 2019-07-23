@@ -79,7 +79,7 @@ public class DocumentIndexingPackageDataLoaderTest {
                 "src/test/resources/datastream/inventoryMods.xml"));
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
-        when(contentObj.getMODS()).thenReturn(modsBinary);
+        when(contentObj.getDescription()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(modsStream);
 
         Element modsElement = dataLoader.loadMods(dip);
@@ -94,7 +94,7 @@ public class DocumentIndexingPackageDataLoaderTest {
     public void testLoadNoMods() throws Exception {
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
-        when(contentObj.getMODS()).thenReturn(null);
+        when(contentObj.getDescription()).thenReturn(null);
 
         Element modsElement = dataLoader.loadMods(dip);
 
@@ -108,7 +108,7 @@ public class DocumentIndexingPackageDataLoaderTest {
         InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
-        when(contentObj.getMODS()).thenReturn(modsBinary);
+        when(contentObj.getDescription()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
 
         dataLoader.loadMods(dip);

@@ -79,7 +79,7 @@ public class DocumentIndexingPackageDataLoader {
 
     public Element loadMods(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject contentObj = getContentObject(dip);
-        BinaryObject modsBinary = contentObj.getMODS();
+        BinaryObject modsBinary = contentObj.getDescription();
 
         if (modsBinary == null) {
             return null;

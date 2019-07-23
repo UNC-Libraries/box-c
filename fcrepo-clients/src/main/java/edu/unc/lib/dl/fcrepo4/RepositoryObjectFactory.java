@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +42,7 @@ import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
@@ -286,6 +288,9 @@ public class RepositoryObjectFactory {
             // Add PREMIS event container
             addEventContainer(createdUri);
 
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
+
             // Add the manifests container
             ldpFactory.createDirectFileSet(createdUri, RepositoryPathConstants.DATA_FILE_FILESET);
 
@@ -470,18 +475,6 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a link between a parent object and a member object.
-     *
-     * @param parentUri
-     * @param memberUri
-     * @throws FedoraException
-     */
-    public void createMemberLink(RepositoryObject parent, URI memberUri) throws FedoraException {
-        String memberContainer = URIUtil.join(parent.getUri(), RepositoryPathConstants.MEMBER_CONTAINER);
-        ldpFactory.createIndirectProxy(URI.create(memberContainer), parent.getUri(), memberUri);
-    }
-
-    /**
      * Creates a triple in Fedora by replacing the current property with the given property parameter
      * @param repoObj repository object to update the properties of.
      * @param property the property to update
@@ -614,6 +607,9 @@ public class RepositoryObjectFactory {
 
             URI createdUri = response.getLocation();
 
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
+
             // Add PREMIS event container
             addEventContainer(createdUri);
 
@@ -624,6 +620,10 @@ public class RepositoryObjectFactory {
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+    }
+
+    private void addMetadataContainer(URI parentUri) throws FedoraException, IOException {
+        ldpFactory.createDirectContainer(parentUri, IanaRelation.describedby, METADATA_CONTAINER);
     }
 
     private void addEventContainer(URI parentUri) throws FedoraException, IOException {
