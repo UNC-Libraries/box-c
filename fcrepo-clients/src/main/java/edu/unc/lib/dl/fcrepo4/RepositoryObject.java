@@ -265,4 +265,14 @@ public abstract class RepositoryObject {
         }
         return remoteEtag.equals(getEtag());
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof RepositoryObject) {
+            RepositoryObject repoObj = (RepositoryObject) object;
+            return repoObj.getPid().equals(pid);
+        } else {
+            return false;
+        }
+    }
 }
