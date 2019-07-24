@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,11 +28,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.InputStreamEntity;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoLink;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
@@ -165,6 +169,17 @@ public class TransactionalFcrepoClient extends FcrepoClient {
         org.apache.http.Header contentTypeHeader = request.getFirstHeader("Content-Type");
         if (contentTypeHeader == null) {
             return false;
+        }
+        // Skip rewrite of binary objects/non-rdf sources
+        Header[] links = request.getHeaders("Link");
+        if (links != null && links.length > 0) {
+            for (Header link: links) {
+                FcrepoLink fcrepoLink = FcrepoLink.valueOf(link.getValue());
+                if (fcrepoLink.getRel().equals("type")
+                        && fcrepoLink.getUri().toString().equals(LDP_NON_RDF_SOURCE)) {
+                    return false;
+                }
+            }
         }
         String contentType = contentTypeHeader.getValue();
         // request method is POST, PUT, or PATCH AND has one of the whitelisted mimetypes

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,7 +31,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.tika.io.IOUtils;
 import org.fcrepo.client.FcrepoResponse;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -124,6 +127,41 @@ public class TransactionalFcrepoClientIT {
 
         try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
             assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        }
+    }
+
+    @Test
+    public void testBinaryRequestWithTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
+        txManager.setClient(fcrepoClient);
+
+        PID bodyPid = PIDs.get(UUID.randomUUID().toString());
+        String requestBody = "<" + bodyPid.getRepositoryPath() + "> <" + RDF.type.getURI() + "> \"Test\"";
+        InputStream requestStream = new ByteArrayInputStream(requestBody.getBytes());
+
+        // Create object in transaction, should return transaction location
+        FedoraTransaction tx = txManager.startTransaction();
+        URI objUri;
+        try (FcrepoResponse response = fcrepoClient.post(BASE_URI)
+                .body(requestStream, "application/n-triples")
+                .addInteractionModel(LDP_NON_RDF_SOURCE)
+                .perform()) {
+            objUri = response.getLocation();
+        }
+
+        assertTrue("Location must be within transaction",
+                objUri.toString().startsWith(tx.getTxUri().toString()));
+
+        tx.close();
+
+        String nonTxObjPath = objUri.toString().replaceFirst("/tx:[^/]+", "");
+        URI nonTxObjUri = URI.create(nonTxObjPath);
+        // Verify that the binary content was not rewritten with tx uris
+        try (FcrepoResponse response = fcrepoClient.get(nonTxObjUri).perform()) {
+            String respBody = IOUtils.toString(response.getBody());
+            assertTrue(respBody.contains(bodyPid.getRepositoryPath()));
         }
     }
 
