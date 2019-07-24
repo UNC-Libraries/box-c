@@ -19,28 +19,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
@@ -53,26 +42,16 @@ import edu.unc.lib.dl.util.ObjectPersistenceException;
  *
  */
 public class FilePremisLogger implements PremisLogger {
-
-    private static final Logger log = LoggerFactory.getLogger(FilePremisLogger.class);
-
     private File premisFile;
     private PID objectPid;
     private Model model;
 
     private RepositoryPIDMinter pidMinter;
-    private RepositoryObjectLoader repoObjLoader;
-    private RepositoryObjectDriver repoObjDriver;
-    private RepositoryObjectFactory repoObjFactory;
 
-    public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
-            RepositoryObjectFactory repoObjFactory, RepositoryObjectDriver repoObjDriver) {
+    public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter) {
         this.objectPid = pid;
         this.premisFile = file;
         this.pidMinter = pidMinter;
-        this.repoObjLoader = repoObjLoader;
-        this.repoObjFactory = repoObjFactory;
-        this.repoObjDriver = repoObjDriver;
     }
 
     /**
@@ -99,8 +78,7 @@ public class FilePremisLogger implements PremisLogger {
      */
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return new PremisEventBuilder(pidMinter.mintPremisEventPid(objectPid),
-                eventType, new Date(), this);
+        return buildEvent(eventType, null);
     }
 
     /**
@@ -114,16 +92,24 @@ public class FilePremisLogger implements PremisLogger {
         // Add the event to the model for this event log
         Model model = getModel().add(eventResc.getModel());
 
+        // Add in hasEvent link
+        model.getResource(objectPid.getRepositoryPath()).addProperty(Premis.hasEvent, eventResc);
+
         if (premisFile != null) {
             // Persist the log to file
             try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
-                RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
+                RDFDataMgr.write(rdfFile, model, RDFFormat.NTRIPLES);
             } catch (IOException e) {
                 throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
             }
         }
 
         return this;
+    }
+
+    @Override
+    public PremisLogger createLog(InputStream contentStream) {
+        throw new NotImplementedException("Method is not implemented");
     }
 
     /**
@@ -140,73 +126,14 @@ public class FilePremisLogger implements PremisLogger {
 
         if (premisFile != null && premisFile.exists()) {
             InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
-            model.read(in, null, Lang.TURTLE.getName());
+            model.read(in, null, Lang.NTRIPLES.getName());
         }
 
         return model;
     }
 
     @Override
-    public List<PID> listEvents() {
-        List<PID> eventPids = new ArrayList<>();
-
-        // Find all of the individual events and turn their identifiers into pids
-        for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
-            Resource eventResc = eventIt.nextResource();
-            PID eventPid = PIDs.get(eventResc.getURI());
-
-            eventPids.add(eventPid);
-        }
-
-        return eventPids;
-    }
-
-    @Override
-    public List<PremisEventObject> getEvents() {
-        List<PremisEventObject> events = new ArrayList<>();
-        ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType);
-        // Find all of the events and construct a list of PremisEventObjects from them.
-        try {
-            gatherAllObjectsForEvents(eventIt, events);
-        } finally {
-            eventIt.close();
-        }
-
-        log.debug("Retrieved {} events from file log for object {}",
-                events.size(), objectPid.getQualifiedId());
-        return events;
-    }
-
-    private void gatherAllObjectsForEvents(ResIterator eventIt, List<PremisEventObject> events) {
-            while (eventIt.hasNext()) {
-                Resource eventResc = eventIt.nextResource();
-                PID eventPid = PIDs.get(eventResc.getURI());
-                // Construct a model for just this event
-                Model eventModel = ModelFactory.createDefaultModel();
-                StmtIterator stmtIt = eventResc.listProperties();
-                // Add all statements with this resc as subject to the model
-                eventModel.add(stmtIt);
-                stmtIt.close();
-                // Get a fresh iterator to check all objects of all the triples for properties
-                stmtIt = eventResc.listProperties();
-                while (stmtIt.hasNext()) {
-                    RDFNode objNode = stmtIt.next().getObject();
-                    if (objNode.isResource()) {
-                        StmtIterator objIt = objNode.asResource().listProperties();
-                        // Add statements to the event's model for any objects that have properties
-                        if (objIt != null) {
-                            eventModel.add(objIt);
-                            objIt.close();
-                        }
-                    }
-                }
-                stmtIt.close();
-                // Construct the event object with a presupplied model
-                PremisEventObject event = new PremisEventObject(eventPid,
-                        repoObjDriver, repoObjFactory);
-                event.storeModel(eventModel);
-
-                events.add(event);
-        }
+    public Model getEventsModel() {
+        return getModel();
     }
 }

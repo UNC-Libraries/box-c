@@ -15,13 +15,11 @@
  */
 package edu.unc.lib.dl.event;
 
+import java.io.InputStream;
 import java.util.Date;
-import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Logs and provides access to PREMIS events for a repository object
@@ -54,16 +52,16 @@ public interface PremisLogger {
     public PremisLogger writeEvent(Resource eventResc);
 
     /**
-     * Return a list of PID objects for each event in this logger
+     * Creates the log for this logger from the given inputstream if
+     * it does not exist.
      *
-     * @return
+     * @param contentStream contents of the log
+     * @return this logger
      */
-    public List<PID> listEvents();
+    public PremisLogger createLog(InputStream contentStream);
 
     /**
-     * Return a list of PremisEventObjects for each event in this logger
-     *
-     * @return
+     * @return a model containing the events in this logger.
      */
-    public List<PremisEventObject> getEvents();
+    public Model getEventsModel();
 }
