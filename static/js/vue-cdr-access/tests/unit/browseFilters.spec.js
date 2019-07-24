@@ -40,7 +40,7 @@ describe('browseFilters.vue', () => {
     });
 
     it("does not display a checkbox for non-collections", () => {
-        wrapper.setProps({containerType: 'AdminUnit' });
+        wrapper.setProps({browseType: 'structure-display', containerType: 'AdminUnit' });
         expect(wrapper.find('.filter-format').contains('.checkbox')).toBe(false);
     });
 

@@ -1,6 +1,6 @@
 <template>
     <span class="filter-format">
-        <span v-if="containerType === 'Collection' || containerType === 'Folder' || browseType ==='structure-display'">
+        <span v-if="containerType === 'Collection' || containerType === 'Folder'">
             {{ noteText }}? <input @click="updateFilter" :title="noteText" class="checkbox" type="checkbox" v-model="filtered">
         </span>
     </span>
