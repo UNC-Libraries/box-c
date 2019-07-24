@@ -48,8 +48,9 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="pidMinter" ref="pidMinter" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">

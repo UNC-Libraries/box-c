@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.RepositoryPremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -68,6 +68,8 @@ public class RepositoryObjectDriver {
     private FcrepoClient client;
 
     private SparqlQueryService sparqlQueryService;
+
+    private PremisLoggerFactory premisLoggerFactory;
 
     protected RepositoryPIDMinter pidMinter;
 
@@ -303,8 +305,7 @@ public class RepositoryObjectDriver {
     }
 
     public PremisLogger getPremisLog(RepositoryObject repoObj) {
-        return new RepositoryPremisLogger(
-                repoObj, pidMinter, repositoryObjectLoader, repositoryObjectFactory);
+        return premisLoggerFactory.createPremisLogger(repoObj);
     }
 
     public void setClient(FcrepoClient client) {
@@ -339,5 +340,12 @@ public class RepositoryObjectDriver {
      */
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
         this.pidMinter = pidMinter;
+    }
+
+    /**
+     * @param premisLoggerFactory the premisLoggerFactory to set
+     */
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 }

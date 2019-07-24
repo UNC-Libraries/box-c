@@ -50,7 +50,6 @@
     <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
         <property name="pidMinter" ref="pidMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="repoObjDriver" ref="repositoryObjectDriver" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
     </bean>
     
