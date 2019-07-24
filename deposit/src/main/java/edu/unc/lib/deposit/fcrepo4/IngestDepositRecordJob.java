@@ -16,6 +16,8 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -41,6 +44,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
+import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -83,7 +87,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         // Add ingestion event to PREMIS log
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
         premisDepositLogger.buildEvent(Premis.Ingestion)
-                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getPid(),
+                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
                         aipObjResc.getProperty(DcElements.title).getObject().toString())
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
                 .addAuthorizingAgent(DepositField.depositorName.name())
@@ -92,8 +96,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         // Create the deposit record object in Fedora
         DepositRecord depositRecord;
         try {
-            depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel)
-                    .addPremisEvents(premisDepositLogger.getEvents());
+            depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel);
+            addPremisEvents(depositRecord);
 
             // Add manifest files
             List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
@@ -150,5 +154,19 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         }
 
         return aipObjResc;
+    }
+
+    private void addPremisEvents(RepositoryObject obj) {
+        File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".ttl");
+        if (!premisFile.exists()) {
+            return;
+        }
+
+        PremisLogger repoPremisLogger = obj.getPremisLog();
+        try {
+            repoPremisLogger.createLog(new FileInputStream(premisFile));
+        } catch (FileNotFoundException e) {
+            throw new ObjectPersistenceException("Cannot find premis file " + premisFile, e);
+        }
     }
 }

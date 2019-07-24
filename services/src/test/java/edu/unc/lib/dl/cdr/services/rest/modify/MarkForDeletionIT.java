@@ -41,7 +41,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -188,8 +187,8 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         Resource resc = repoObj.getResource();
         assertTrue(resc.getProperty(CdrAcl.markedForDeletion).getBoolean());
 
-        PremisEventObject event = repoObj.getPremisLog().getEvents().get(0);
-        assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
+        Model logModel = repoObj.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
     }
 
     private void assertNotMarkedForDeletion(PID pid) {

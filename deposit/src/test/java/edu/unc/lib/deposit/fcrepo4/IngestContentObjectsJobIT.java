@@ -54,7 +54,6 @@ import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -210,10 +209,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         String title = folder.getResource().getProperty(DC.title).getString();
         assertEquals("Folder title was not correctly set", label, title);
         // Verify that ingestion event gets added for folder
-        List<PremisEventObject> events = folder.getPremisLog().getEvents();
-        assertEquals(1, events.size());
-        assertEquals("ingested as PID: " + folder.getPid().getQualifiedId(), events.get(0).getResource()
-            .getProperty(Premis.hasEventDetail).getString());
+        Model logModel = folder.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventDetail,
+                "ingested as PID: " + folder.getPid().getQualifiedId()));
 
         assertClickCount(1);
     }
@@ -272,27 +270,26 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Verify the properties and content of the supplemental file
         assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
         // Verify that ingestion event gets added for work
-        List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
-        assertEquals(2, eventsWork.size());
-
-        assertNotNull(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid().getQualifiedId()));
-        assertNotNull(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container"));
+        Model workLogModel = mWork.getPremisLog().getEventsModel();
+        assertTrue(workLogModel.contains(null, Premis.hasEventDetail,
+                "ingested as PID: " + mWork.getPid().getQualifiedId()));
+        assertTrue(workLogModel.contains(null, Premis.hasEventDetail,
+                "added 2 child objects to this container"));
 
         // Verify that ingestion event gets added for primary object
-        List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
-        assertEquals(1, eventsPrimObj.size());
-        assertNotNull(findPremisEventByEventDetail(eventsPrimObj, "ingested as PID: " + mainPid.getQualifiedId()
-            + "\n ingested as filename: " + FILE1_LOC));
+        Model primLogModel = primaryObj.getPremisLog().getEventsModel();
+        assertTrue(primLogModel.contains(null, Premis.hasEventDetail,
+                "ingested as PID: " + mainPid.getQualifiedId()
+                + "\n ingested as filename: " + FILE1_LOC));
 
         // Verify that ingestion event gets added for supplementary object
-        List<PremisEventObject> eventsSupObj = supObj.getPremisLog().getEvents();
-        assertEquals(1, eventsSupObj.size());
-        assertNotNull(findPremisEventByEventDetail(eventsSupObj, "ingested as PID: " + supPid.getQualifiedId()
-            + "\n ingested as filename: " + FILE2_LOC));
+        Model supLogModel = supObj.getPremisLog().getEventsModel();
+        assertTrue(supLogModel.contains(null, Premis.hasEventDetail,
+                "ingested as PID: " + supPid.getQualifiedId()
+                + "\n ingested as filename: " + FILE2_LOC));
 
         assertClickCount(3);
     }
-
 
     /**
      * Ensure that deposit fails on a sha1 checksum mismatch for a single file deposit
@@ -574,8 +571,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         depBag.add(folderBag);
 
-        FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, pidMinter,
-                repoObjLoader, repoObjFactory, null);
+        FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, pidMinter);
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Event 1")
@@ -594,11 +590,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
-        List<PremisEventObject> events = folder.getPremisLog().getEvents();
-        // there should be three events total: the ingestion event, plus the two added in the test
-        assertEquals(3, events.size());
-        assertTrue(events.contains(findPremisEventByType(events, Premis.Normalization)));
-        assertTrue(events.contains(findPremisEventByType(events, Premis.VirusCheck)));
+
+        Model logModel = folder.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Ingestion));
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Normalization));
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.VirusCheck));
     }
 
     @Test
@@ -631,8 +627,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
-        List<PremisEventObject> events = folder.getPremisLog().getEvents();
-        assertEquals(1, events.size());
+
+        Model logModel = folder.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Ingestion));
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
@@ -645,10 +642,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertNotNull(binary.getSha1Checksum());
         }
         // md5 isn't required, so not all tests will need to ensure it isn't null
-        // TODO Reenable check once issue in fcrepo 4.7.4 is resolved
-//        if (md5 != null) {
-//            assertEquals("urn:md5:" + md5, binary.getMd5Checksum());
-//        }
+        if (md5 != null) {
+            assertEquals("urn:md5:" + md5, binary.getMd5Checksum());
+        }
         assertEquals(size, binary.getFilesize().longValue());
         assertEquals(mimetype, binary.getMimetype());
     }
@@ -700,15 +696,4 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         return fileObjPid;
 
     }
-
-    private PremisEventObject findPremisEventByType(List<PremisEventObject> objs, final Resource type) {
-        return objs.stream()
-                .filter(p -> p.getResource().getPropertyResourceValue(Premis.hasEventType).equals(type)).findAny().get();
-    }
-
-    private PremisEventObject findPremisEventByEventDetail(List<PremisEventObject> objs, final String message) {
-        return objs.stream()
-                .filter(p -> p.getResource().hasProperty(Premis.hasEventDetail, message)).findAny().get();
-    }
-
 }
