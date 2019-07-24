@@ -54,6 +54,15 @@ export default {
          */
         paramExists(param, params) {
             return `${param}` in params;
+        },
+
+        /**
+         * Check if folders should be added to the types parameter
+         * @param field
+         * @returns {*|boolean}
+         */
+        foldersOnly(field) {
+            return /Folder/.test(field);
         }
     }
 }
