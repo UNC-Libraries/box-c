@@ -72,16 +72,6 @@ public class RepositoryObjectLoaderTest {
     }
 
     @Test
-    public void getPremisEventTest() {
-        PID parentPid = pidMinter.mintContentPid();
-        PID eventPid = pidMinter.mintPremisEventPid(parentPid);
-
-        when(objectCacheLoader.load(eq(eventPid))).thenReturn(mock(PremisEventObject.class));
-
-        assertNotNull(repoObjLoader.getPremisEventObject(eventPid));
-    }
-
-    @Test
     public void getBinaryTest() {
         PID pid = getBinaryPid();
 

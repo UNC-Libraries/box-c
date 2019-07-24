@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,13 +36,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
-import edu.unc.lib.dl.event.FilePremisLogger;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  *
@@ -130,38 +125,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String respString2 = new BufferedReader(new InputStreamReader(manifest2.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
         assertEquals("Manifest content did not match submitted value", bodyString2, respString2);
-    }
-
-    public void addPremisEventsTest() throws Exception {
-        PID pid = pidMinter.mintDepositRecordPid();
-        Model model = getDepositRecordModel();
-
-        String details = "Event details";
-        // Prep the events prior to ingest
-        PremisLogger logger = new FilePremisLogger(pid, null, pidMinter, repoObjLoader, repoObjFactory, driver);
-        logger.buildEvent(Premis.Ingestion)
-                .addAuthorizingAgent(SoftwareAgent.depositService.toString())
-                .addEventDetail("Event details")
-                .write();
-        logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(SoftwareAgent.clamav.toString())
-                .write();
-
-        // Push the events out to repository
-        DepositRecord record = repoObjFactory.createDepositRecord(pid, model)
-            .addPremisEvents(logger.getEvents());
-
-        // Retrieve all the events added to this object
-        List<PremisEventObject> events = record.getPremisLog().getEvents();
-        Collections.sort(events);
-
-        // Verify that they were added correctly
-        Resource ingestEvent = events.get(0).getResource();
-        assertTrue(ingestEvent.hasProperty(Premis.hasEventType, Premis.VirusCheck));
-        assertEquals(details, ingestEvent.getProperty(Premis.hasEventDetail));
-
-        // Check that the second event has the right type
-        assertTrue(events.get(1).getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
     }
 
     @Test

@@ -118,14 +118,6 @@ public class RepositoryObjectLoader {
         return (BinaryObject) repoObj;
     }
 
-    public PremisEventObject getPremisEventObject(PID pid) {
-        RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof PremisEventObject)) {
-            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a premis event");
-        }
-        return (PremisEventObject) repoObj;
-    }
-
     public DepositRecord getDepositRecord(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof DepositRecord)) {
