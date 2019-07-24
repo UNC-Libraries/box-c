@@ -69,7 +69,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             String manifestPath = path + "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
             assertTrue("Manifest container not created",
                     respResc.hasProperty(Ldp.contains, createResource(manifestPath)));
-            String eventPath = path + "/" + RepositoryPathConstants.EVENTS_CONTAINER;
+            String eventPath = path + "/" + RepositoryPathConstants.METADATA_CONTAINER;
             assertTrue("Event container not created", respResc.hasProperty(Ldp.contains, createResource(eventPath)));
         }
     }
@@ -135,7 +135,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             // Verify that subcontainers were created
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.DATA_FILE_FILESET))));
         }
@@ -158,7 +158,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
         }
     }
 
@@ -179,7 +179,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
         }
     }
 
@@ -201,7 +201,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Collection));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
         }
     }
 
@@ -221,7 +221,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
         }
     }
 

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,7 +45,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;
@@ -96,8 +96,8 @@ public class RepositoryObjectFactory {
             ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
                 RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
 
-            // Add the premis event container
-            addEventContainer(createdUri);
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
 
         } catch (IOException e) {
             throw new FedoraException("Unable to create deposit record at " + path, e);
@@ -285,8 +285,6 @@ public class RepositoryObjectFactory {
                 .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
                 .perform()) {
             URI createdUri = response.getLocation();
-            // Add PREMIS event container
-            addEventContainer(createdUri);
 
             // Add container for metadata objects
             addMetadataContainer(createdUri);
@@ -332,8 +330,13 @@ public class RepositoryObjectFactory {
         URI resultUri;
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
-        try (FcrepoResponse response = getClient().post(path).slug(slug).body(content, mimetype).filename(filename)
-                .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
+        try (FcrepoResponse response = getClient().post(path).slug(slug)
+                .body(content, mimetype)
+                .addInteractionModel(LDP_NON_RDF_SOURCE)
+                .filename(filename)
+                .digestSha1(sha1Checksum)
+                .digestMd5(md5Checksum)
+                .perform()) {
             resultUri = response.getLocation();
             describedBy = response.getLinkHeaders("describedby").get(0);
         } catch (IOException e) {
@@ -398,8 +401,13 @@ public class RepositoryObjectFactory {
          }
          URI updatePath = URI.create(URIUtil.join(path, slug));
 
-         try (FcrepoResponse response = getClient().put(updatePath).body(content, mimetype).filename(filename)
-                 .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
+         try (FcrepoResponse response = getClient().put(updatePath)
+                 .body(content, mimetype)
+                 .addInteractionModel(LDP_NON_RDF_SOURCE)
+                 .filename(filename)
+                 .digestSha1(sha1Checksum)
+                 .digestMd5(md5Checksum)
+                 .perform()) {
              describedBy = response.getLinkHeaders("describedby").get(0);
          } catch (IOException e) {
              throw new FedoraException("Unable to update binary at " + updatePath, e);
@@ -429,28 +437,6 @@ public class RepositoryObjectFactory {
          }
          return new BinaryObject(PIDs.get(updatePath), repoObjDriver, this);
      }
-
-    /**
-     * Creates an event for the specified object.
-     *
-     * @param eventPid
-     *            the PID of the event to add
-     * @param model
-     *            Model containing properties of this event. Must only contain
-     *            the properties for one event.
-     * @return URI of the event created
-     * @throws FedoraException
-     */
-    public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
-
-        URI createdUri = createOrTransformObject(eventPid.getRepositoryUri(), model);
-
-        return new PremisEventObject(PIDs.get(createdUri), repoObjDriver, this);
-    }
-
-    public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
-        return new PremisEventObject(pid, repoObjDriver, this).validateType();
-    }
 
     /**
      * Add a member to the parent object.
@@ -610,9 +596,6 @@ public class RepositoryObjectFactory {
             // Add container for metadata objects
             addMetadataContainer(createdUri);
 
-            // Add PREMIS event container
-            addEventContainer(createdUri);
-
             return createdUri;
 
         } catch (IOException e) {
@@ -624,10 +607,6 @@ public class RepositoryObjectFactory {
 
     private void addMetadataContainer(URI parentUri) throws FedoraException, IOException {
         ldpFactory.createDirectContainer(parentUri, IanaRelation.describedby, METADATA_CONTAINER);
-    }
-
-    private void addEventContainer(URI parentUri) throws FedoraException, IOException {
-        ldpFactory.createDirectContainer(parentUri, Premis.hasEvent, RepositoryPathConstants.EVENTS_CONTAINER);
     }
 
     private Model populateModelTypes(URI rescUri, Model model, List<Resource> types) {
