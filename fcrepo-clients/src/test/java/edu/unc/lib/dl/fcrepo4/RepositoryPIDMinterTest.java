@@ -59,6 +59,7 @@ public class RepositoryPIDMinterTest {
 
         assertEquals(RepositoryPathConstants.CONTENT_BASE, pid.getQualifier());
         assertTrue(pid.getQualifiedId().startsWith(RepositoryPathConstants.CONTENT_BASE));
+        assertTrue(pid.getRepositoryPath().matches(".*/event\\d+$"));
     }
 
 }

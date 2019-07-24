@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.EVENT_ID_PREFIX;
+
 import java.util.UUID;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -60,9 +62,8 @@ public class RepositoryPIDMinter {
      * @return
      */
     public PID mintPremisEventPid(PID parentPid) {
-        String uuid = UUID.randomUUID().toString();
-        String eventUrl = URIUtil.join(parentPid.getRepositoryPath(),
-                RepositoryPathConstants.EVENTS_CONTAINER, uuid);
+        String eventId = EVENT_ID_PREFIX + System.currentTimeMillis() + ((int)(Math.random() * 1000));
+        String eventUrl = URIUtil.join(parentPid.getRepositoryPath(), eventId);
         return PIDs.get(eventUrl);
     }
 
