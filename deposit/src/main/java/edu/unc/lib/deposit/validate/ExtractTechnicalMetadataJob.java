@@ -399,12 +399,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         // Store event for calculation of checksum
         PID pid = PIDs.get(objResc.getURI());
         PremisLogger premisDepositLogger = getPremisLogger(pid);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+        premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
                 .addEventDetail("Checksum for file is {0}", md5Value)
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-
-        premisDepositLogger.writeEvent(premisDepositEvent);
+                .write();
 
         // Add checksum to FITS report
         premisObjCharsEl.addContent(

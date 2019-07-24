@@ -17,12 +17,10 @@ package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
 
+import org.apache.jena.rdf.model.Model;
 import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -33,7 +31,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.METSProfile;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -82,12 +80,11 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 
         PID depositPID = getDepositPID();
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+        premisDepositLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
                         PackagingType.BAG_WITH_N3.getUri())
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
+                .write();
     }
 
 }

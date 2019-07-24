@@ -129,12 +129,11 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 
         PID depositPID = getDepositPID();
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+        premisDepositLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Normalized deposit package from {0} to {1}",
                         PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri())
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
+                .write();
     }
 
     private String retrieveChildrenMinusMetadata(Element aggregateEl, Document mets, List<Element> topChildren) {
