@@ -235,7 +235,7 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  justify-content: right;
+  justify-content: flex-end;
   margin: 15px 25px 0 25px;
   padding-right: 45px;
   width: 100%;
@@ -267,12 +267,12 @@ p.no-search-results {
     }
 
     .arrow {
-      width: 0;
-      height: 0;
       border-left: 5px solid transparent;
       border-right: 5px solid transparent;
       border-bottom: 10px solid black;
+      height: 0;
       margin: 5px 2px 0 2px;
+      width: 0;
     }
 
     span.browse-tip, .arrow {
