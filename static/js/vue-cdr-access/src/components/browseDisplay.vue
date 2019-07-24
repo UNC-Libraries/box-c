@@ -12,7 +12,7 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <browse-images :container_type="container_metadata.type"></browse-images>
+                    <browse-filters :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
                 </p>
             </div>
             <div class="column is-2">
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-    import browseImages from "./browseImages";
+    import browseFilters from "./browseFilters";
     import browseSearch from './browseSearch.vue';
     import browseSort from './browseSort.vue';
     import modalMetadata from './modalMetadata.vue';
@@ -57,7 +57,7 @@
         name: 'browseDisplay',
 
         components: {
-            browseImages,
+            browseFilters,
             browseSearch,
             browseSort,
             modalMetadata,
@@ -74,9 +74,11 @@
 
         data() {
             return {
+                browse_type: 'gallery-display',
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: {},
+                interval_check: '',
                 is_collection: false,
                 is_folder: false,
                 record_count: 0,
@@ -146,8 +148,20 @@
               return thumb !== undefined && thumb !== '';
             },
 
+            browseDisplayType() {
+                let saved_display = localStorage.getItem('dcr-browse-display');
+                if (saved_display !== null && this.browse_type !== saved_display) {
+                    this.browse_type = saved_display;
+                }
+            },
+
             updateUrl() {
-                let params = this.urlParams({ types: 'Work' });
+                let param_filters = { types: 'Work' };
+                if (this.foldersOnly(this.$route.query.types)) {
+                    param_filters.types = 'Work,Folder'
+                }
+
+                let params = this.urlParams(param_filters);
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
@@ -156,6 +170,10 @@
 
                 if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
+                }
+
+                if (this.foldersOnly(this.$route.query.types)) {
+                    params.types = 'Work,Folder'
                 }
 
                 let param_string = this.formatParamsString(params);
@@ -172,21 +190,28 @@
             }
         },
 
+        created() {
+            // Check if there's a saved browse type
+            this.browseDisplayType();
+        },
+
         mounted() {
-            // Small hack to check outside of Vue controlled DOM to see if we're on the collections browse page
+            // Small hack to check outside of Vue controlled DOM to see if we're on the collections or folder browse page
             this.is_collection = document.getElementById('is-collection') !== null;
             this.is_folder = document.getElementById('is-folder') !== null;
 
-            if (this.is_collection || this.is_folder) {
+            if (this.is_collection || this.is_folder || this.browse_type === 'structure-display') {
                 this.updateUrl();
             }
 
             this.retrieveData();
             window.addEventListener('resize', debounce(this.numberOfColumns), 300);
+            this.interval_check = window.setInterval(this.browseDisplayType, 1500);
         },
 
         beforeDestroy() {
             window.removeEventListener('resize', this.numberOfColumns);
+            window.clearInterval(this.interval_check);
         }
     };
 </script>

@@ -1,6 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import VueRouter from 'vue-router';
-import browseImages from '@/components/browseImages.vue';
+import browseFilters from '@/components/browseFilters.vue';
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);
@@ -16,9 +16,9 @@ const router = new VueRouter({
 let wrapper;
 let record;
 
-describe('browseImages.vue', () => {
+describe('browseFilters.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(browseImages, {
+        wrapper = shallowMount(browseFilters, {
             localVue,
             router,
             propsData: {
