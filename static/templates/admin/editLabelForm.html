@@ -1,9 +1,8 @@
 <iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
-<form id="edit_label_form" method="post" action="editlabel/<%= pid %>" enctype="multipart/form-data" target="upload_file_container" class="edit_form edit_label_form">
-	
+<form id="edit_label_form" class="edit_form edit_label_form">
 	<div class="form_field">
 		<label>Label</label>
-		<input name="label" size="40" value="<%= metadata.label %>"></input>
+		<input name="label" size="40" value="<%= metadata.title %>"></input>
 	</div>
 	
 	<div class="update_field">
