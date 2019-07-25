@@ -663,7 +663,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addPremisEvents(ContentObject obj) {
-        File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".ttl");
+        File premisFile = getPremisFile(obj.getPid());
         if (!premisFile.exists()) {
             return;
         }

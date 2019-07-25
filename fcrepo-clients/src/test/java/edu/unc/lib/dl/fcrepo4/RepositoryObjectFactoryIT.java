@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -135,7 +136,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
             // Verify that subcontainers were created
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
+                    createResource(getMetadataContainerUri(pid).toString())));
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.DATA_FILE_FILESET))));
         }
@@ -158,7 +159,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
+                    createResource(getMetadataContainerUri(pid).toString())));
         }
     }
 
@@ -179,7 +180,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
+                    createResource(getMetadataContainerUri(pid).toString())));
         }
     }
 
@@ -201,7 +202,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Collection));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
+                    createResource(getMetadataContainerUri(pid).toString())));
         }
     }
 
@@ -221,7 +222,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objPath, RepositoryPathConstants.METADATA_CONTAINER))));
+                    createResource(getMetadataContainerUri(pid).toString())));
         }
     }
 

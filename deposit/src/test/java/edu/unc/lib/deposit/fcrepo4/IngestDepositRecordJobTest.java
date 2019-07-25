@@ -94,7 +94,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
         File eventsDir = new File(depositDir, DepositConstants.EVENTS_DIR);
         eventsDir.mkdir();
-        FileUtils.writeStringToFile(new File(eventsDir, depositPid.getUUID() + ".ttl"), "loggin", "UTF-8");
+        FileUtils.writeStringToFile(new File(eventsDir, depositPid.getUUID() + ".nt"), "loggin", "UTF-8");
 
         Dataset dataset = TDBFactory.createDataset();
 

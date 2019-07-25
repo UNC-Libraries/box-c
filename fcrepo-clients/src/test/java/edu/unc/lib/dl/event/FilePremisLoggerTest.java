@@ -59,7 +59,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         depositUUID = UUID.randomUUID().toString();
         pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
         eventType = Premis.VirusCheck;
-        premisFile = File.createTempFile(depositUUID, ".ttl");
+        premisFile = File.createTempFile(depositUUID, ".nt");
         premisFile.deleteOnExit();
         premis = new FilePremisLogger(pid, premisFile, pidMinter);
         date = new Date();

@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MD_DESCRIPTIVE_FILE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -35,7 +35,6 @@ import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.IanaRelation;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Represents a generic repository object within the main content tree.
@@ -58,7 +57,7 @@ public abstract class ContentObject extends RepositoryObject {
      * @return the BinaryObject for the descriptive record
      */
     public BinaryObject setDescription(InputStream modsStream) {
-        URI mdURI = URI.create(URIUtil.join(pid.getRepositoryPath(), METADATA_CONTAINER));
+        URI mdURI = getMetadataContainerUri(pid);
 
         BinaryObject descObj = this.getDescription();
         if (descObj == null) {
@@ -100,7 +99,7 @@ public abstract class ContentObject extends RepositoryObject {
         Resource sourceResc = sourceModel.getResource("");
         sourceResc.addProperty(RDF.type, Cdr.SourceMetadata);
         sourceResc.addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
-        URI mdURI = URI.create(URIUtil.join(pid.getRepositoryPath(), METADATA_CONTAINER));
+        URI mdURI = getMetadataContainerUri(pid);
         BinaryObject srcObj = repoObjFactory.createBinary(mdURI, UUID.randomUUID().toString(), sourceMdStream,
                 null, "text/plain", null, null, sourceModel);
 

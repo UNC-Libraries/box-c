@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 
 import java.net.URI;
@@ -60,6 +61,16 @@ public class RepositoryPaths {
         } else {
             return pid.getRepositoryUri();
         }
+    }
+
+    /**
+     * Generate URI for the metadata container for the target object
+     *
+     * @param pid
+     * @return
+     */
+    public static URI getMetadataContainerUri(PID pid) {
+        return URI.create(URIUtil.join(pid.getRepositoryPath(), METADATA_CONTAINER));
     }
 
     public static String getServerUri() {

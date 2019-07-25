@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.event;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MD_EVENTS;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -83,9 +83,6 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisLogger writeEvent(Resource eventResc) {
-        // Generate URI for the metadata container for the target repo object
-        URI mdURI = URI.create(URIUtil.join(repoObject.getPid().getRepositoryPath(), METADATA_CONTAINER));
-
         Model eventModel = eventResc.getModel();
 
         // Add link from the object to this event
@@ -104,6 +101,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         if (s == null) {
             createLog(modelStream);
         } else {
+            URI mdURI = getMetadataContainerUri(repoObject.getPid());
             // Event log exists, append new events to it
             PID logPid = PIDs.get(URIUtil.join(mdURI, MD_EVENTS));
             BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
@@ -125,7 +123,7 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisLogger createLog(InputStream contentStream) {
-        URI mdURI = URI.create(URIUtil.join(repoObject.getPid().getRepositoryPath(), METADATA_CONTAINER));
+        URI mdURI = getMetadataContainerUri(repoObject.getPid());
 
         BinaryObject eventsObj = repoObjFactory.createBinary(mdURI, MD_EVENTS, contentStream,
                 "events.nt", "application/n-triples", null, null, null);
@@ -138,14 +136,10 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public Model getEventsModel() {
-        PID eventsPid = PIDs.get(URIUtil.join(getMetadataURI(), MD_EVENTS));
+        PID eventsPid = PIDs.get(URIUtil.join(getMetadataContainerUri(repoObject.getPid()), MD_EVENTS));
         BinaryObject eventsObj = repoObjLoader.getBinaryObject(eventsPid);
         Model model = RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
 
         return model;
-    }
-
-    private URI getMetadataURI() {
-        return URI.create(URIUtil.join(repoObject.getPid().getRepositoryPath(), METADATA_CONTAINER));
     }
 }

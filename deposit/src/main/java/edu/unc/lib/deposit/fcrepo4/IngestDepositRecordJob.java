@@ -157,7 +157,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
     }
 
     private void addPremisEvents(RepositoryObject obj) {
-        File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".ttl");
+        File premisFile = getPremisFile(obj.getPid());
         if (!premisFile.exists()) {
             return;
         }

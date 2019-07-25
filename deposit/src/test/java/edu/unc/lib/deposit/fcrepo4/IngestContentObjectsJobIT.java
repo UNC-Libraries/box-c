@@ -555,7 +555,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         PID folderObjPid = pidMinter.mintContentPid();
 
-        File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".ttl");
+        File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".nt");
         premisEventsFile.createNewFile();
 
         String label = "testfolder";
