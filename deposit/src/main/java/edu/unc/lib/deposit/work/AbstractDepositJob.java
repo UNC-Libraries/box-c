@@ -297,6 +297,10 @@ public abstract class AbstractDepositJob implements Runnable {
         }
     }
 
+    protected File getPremisFile(PID pid) {
+        return new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".nt");
+    }
+
     /**
      * Creates new PremisLogger object from which instances can build and write Premis events to a file
      *
@@ -304,7 +308,7 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return PremisLogger object
      */
     public PremisLogger getPremisLogger(PID pid) {
-        File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
+        File file = getPremisFile(pid);
 
         try {
             if (!file.exists()) {

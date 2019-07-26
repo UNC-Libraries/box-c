@@ -23,6 +23,12 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
+    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repoObjFactory" ref="repositoryObjectFactory" />
+    </bean>
+    
     <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
     
     <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
@@ -55,7 +61,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
     

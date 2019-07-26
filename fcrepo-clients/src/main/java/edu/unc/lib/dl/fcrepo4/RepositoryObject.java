@@ -106,21 +106,6 @@ public abstract class RepositoryObject {
     }
 
     /**
-     * Adds each event to this object.
-     *
-     * @param events
-     * @return this object
-     * @throws FedoraException
-     */
-    public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
-        for (PremisEventObject event: events) {
-            repoObjFactory.createPremisEvent(event.getPid(), event.getModel());
-        }
-
-        return this;
-    }
-
-    /**
      * Get the PREMIS event log for this object
      *
      * @return
@@ -264,5 +249,15 @@ public abstract class RepositoryObject {
             return false;
         }
         return remoteEtag.equals(getEtag());
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof RepositoryObject) {
+            RepositoryObject repoObj = (RepositoryObject) object;
+            return repoObj.getPid().equals(pid);
+        } else {
+            return false;
+        }
     }
 }

@@ -80,8 +80,19 @@ public class RDFModelUtil {
      * @return
      */
     public static Model createModel(InputStream inStream) {
+        return createModel(inStream, "TURTLE");
+    }
+
+    /**
+     * Returns a model built from the given input stream using the specified language
+     *
+     * @param inStream
+     * @param lang serialization language
+     * @return
+     */
+    public static Model createModel(InputStream inStream, String lang) {
         Model model = ModelFactory.createDefaultModel();
-        model.read(inStream, null, "TURTLE");
+        model.read(inStream, null, lang);
         return model;
     }
 

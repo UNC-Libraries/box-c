@@ -50,8 +50,6 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
@@ -162,9 +160,9 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Tombstone));
         assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Folder));
 
-        PremisEventObject event = repoObjLoader.getPremisEventObject(stoneFolder.getPremisLog().listEvents().get(0));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventDetail,
+        Model logModel = stoneFolder.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
+        assertTrue(logModel.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
     }
 
@@ -188,14 +186,14 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneFolder1.getModel().contains(stoneFolder1.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(stoneFolder2.getModel().contains(stoneFolder2.getResource(), RDF.type, Cdr.Tombstone));
 
-        PremisEventObject event = repoObjLoader.getPremisEventObject(stoneFolder1.getPremisLog().listEvents().get(0));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
-        assertTrue(event.getResource().hasProperty(Premis.hasEventDetail,
+        Model logModel1 = stoneFolder1.getPremisLog().getEventsModel();
+        assertTrue(logModel1.contains(null, Premis.hasEventType, Premis.Deletion));
+        assertTrue(logModel1.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
 
-        PremisEventObject event2 = repoObjLoader.getPremisEventObject(stoneFolder2.getPremisLog().listEvents().get(0));
-        assertTrue(event2.getResource().hasProperty(Premis.hasEventType, Premis.Deletion));
-        assertTrue(event2.getResource().hasProperty(Premis.hasEventDetail,
+        Model logModel2 = stoneFolder2.getPremisLog().getEventsModel();
+        assertTrue(logModel2.contains(null, Premis.hasEventType, Premis.Deletion));
+        assertTrue(logModel2.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
     }
 
@@ -219,7 +217,6 @@ public class DestroyObjectsJobIT {
         PID fileObjPid = objsToDestroy.get(2);
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
         Resource event = fileObj.getPremisLog().buildEvent(Premis.Ingestion, new Date(1L)).write();
-        PID eventPid = PIDs.get(event.getURI());
 
         initializeJob(Arrays.asList(fileObjPid));
 
@@ -227,7 +224,10 @@ public class DestroyObjectsJobIT {
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(stoneFile.getPremisLog().listEvents().contains(eventPid));
+
+        Model logModel = stoneFile.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
+        assertTrue(logModel.contains(event, Premis.hasEventType, Premis.Ingestion));
     }
 
     private List<PID> createContentTree() throws Exception {

@@ -146,6 +146,16 @@ public class FedoraPID extends PID {
     }
 
     @Override
+    public boolean equals(Object object) {
+        if (object instanceof PID) {
+            PID other = (PID) object;
+            return repositoryPath.equals(other.getRepositoryPath());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
     public int hashCode() {
         return repositoryPath.hashCode();
     }

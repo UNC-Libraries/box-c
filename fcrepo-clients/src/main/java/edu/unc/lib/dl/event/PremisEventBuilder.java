@@ -19,6 +19,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -67,7 +68,7 @@ public class PremisEventBuilder {
         premisObjResc.addProperty(Premis.hasEventType, eventType);
         try {
             premisObjResc.addProperty(Premis.hasEventDateTime,
-                    DateTimeUtil.formatDateToUTC(date));
+                    DateTimeUtil.formatDateToUTC(date), XSDDatatype.XSDdateTime);
         } catch (ParseException e) {
             log.error("Failed to format event date", e);
         }

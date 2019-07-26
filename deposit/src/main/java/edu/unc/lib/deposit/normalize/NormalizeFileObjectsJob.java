@@ -178,11 +178,10 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
 
     private void addPremisEvent(PID workPid, PID filePid) {
         PremisLogger premisDepositLogger = getPremisLogger(workPid);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Creation)
+        premisDepositLogger.buildEvent(Premis.Creation)
                 .addEventDetail("Work created to contain FileObject {0}",
                         filePid.getRepositoryPath())
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
+                .write();
     }
 }

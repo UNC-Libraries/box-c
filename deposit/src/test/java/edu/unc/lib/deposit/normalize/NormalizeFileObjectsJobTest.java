@@ -184,7 +184,6 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         // Check that premis event was added
         verify(mockPremisLogger).buildEvent(eq(Premis.Creation));
-        verify(mockPremisLogger).writeEvent(any(Resource.class));
     }
 
     @Test

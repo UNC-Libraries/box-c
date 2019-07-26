@@ -38,8 +38,8 @@ import edu.unc.lib.dl.rdf.Premis;
 public class TombstonePropertySelector extends SimpleSelector {
 
     static final List<Property> permittedPredicates = Arrays.asList(
-            Cdr.hasMessageDigest, Cdr.hasSize, DcElements.title, Ebucore.filename,
-            Ebucore.hasMimeType, Premis.hasOriginalName,
+            Cdr.hasMessageDigest, Cdr.hasSize, Cdr.hasEvents, DcElements.title,
+            Ebucore.filename, Ebucore.hasMimeType, Premis.hasOriginalName,
             Premis.hasMessageDigest, Premis.hasSize, RDF.type);
 
     /**

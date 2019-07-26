@@ -15,25 +15,33 @@
  */
 package edu.unc.lib.dl.event;
 
-import java.util.ArrayList;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MD_EVENTS;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.net.URI;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.riot.RDFFormat;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
+import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Logs PREMIS events for a repository object, which are persisted as PREMIS
@@ -49,8 +57,6 @@ public class RepositoryPremisLogger implements PremisLogger {
     private RepositoryObjectFactory repoObjFactory;
 
     private RepositoryObject repoObject;
-
-    private List<PremisEventObject> events;
 
     public RepositoryPremisLogger(RepositoryObject repoObject, RepositoryPIDMinter pidMinter,
             RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory) {
@@ -72,56 +78,68 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return new PremisEventBuilder(pidMinter.mintPremisEventPid(repoObject.getPid()),
-                eventType, new Date(), this);
+        return buildEvent(eventType, null);
     }
 
     @Override
     public PremisLogger writeEvent(Resource eventResc) {
         Model eventModel = eventResc.getModel();
-        PID eventPid = PIDs.get(eventResc.getURI());
 
+        // Add link from the object to this event
+        eventModel.add(repoObject.getResource(), Premis.hasEvent, eventResc);
+
+        // Stream the event RDF as NTriples
+        InputStream modelStream;
         try {
-            repoObjFactory.createPremisEvent(eventPid, eventModel);
-        } catch (FedoraException e) {
-            throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
+            modelStream = RDFModelUtil.streamModel(eventModel, RDFFormat.NTRIPLES);
+        } catch (IOException e) {
+            throw new ObjectPersistenceException("Failed to serialize event to RDF for " + repoObject.getPid(), e);
+        }
+
+        Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+        // Premis event log not created yet
+        if (s == null) {
+            createLog(modelStream);
+        } else {
+            URI mdURI = getMetadataContainerUri(repoObject.getPid());
+            // Event log exists, append new events to it
+            PID logPid = PIDs.get(URIUtil.join(mdURI, MD_EVENTS));
+            BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
+
+            InputStream newContentStream = new SequenceInputStream(
+                    new ByteArrayInputStream("\n".getBytes()),
+                    modelStream);
+
+            InputStream mergedStream = new SequenceInputStream(
+                    logObj.getBinaryStream(),
+                    newContentStream);
+
+            repoObjFactory.updateBinary(mdURI, MD_EVENTS, mergedStream, "events.nt",
+                    "application/n-triples", null, null, null);
         }
 
         return this;
     }
 
     @Override
-    public List<PID> listEvents() {
-        Model model = repoObject.getModel();
+    public PremisLogger createLog(InputStream contentStream) {
+        URI mdURI = getMetadataContainerUri(repoObject.getPid());
 
-        List<PID> pids = new ArrayList<>();
-        NodeIterator nodeIt = model.listObjectsOfProperty(Premis.hasEvent);
-        while (nodeIt.hasNext()) {
-            RDFNode node = nodeIt.nextNode();
-            if (node.isResource()) {
-                pids.add(PIDs.get(node.asResource().getURI()));
-            }
-        }
+        BinaryObject eventsObj = repoObjFactory.createBinary(mdURI, MD_EVENTS, contentStream,
+                "events.nt", "application/n-triples", null, null, null);
 
-        return pids;
-    }
+        // Link from the repository object to its event log
+        repoObjFactory.createRelationship(repoObject, Cdr.hasEvents, eventsObj.getResource());
 
-    private void retrieveAllEvents() {
-        List<PID> eventPids = listEvents();
-
-        for (PID pid : eventPids) {
-            events.add(repoObjLoader.getPremisEventObject(pid));
-        }
+        return this;
     }
 
     @Override
-    public List<PremisEventObject> getEvents() {
-        if (events == null) {
-            events = new ArrayList<>();
-            retrieveAllEvents();
-        }
+    public Model getEventsModel() {
+        PID eventsPid = PIDs.get(URIUtil.join(getMetadataContainerUri(repoObject.getPid()), MD_EVENTS));
+        BinaryObject eventsObj = repoObjLoader.getBinaryObject(eventsPid);
+        Model model = RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
 
-        return events;
+        return model;
     }
-
 }

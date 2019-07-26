@@ -131,11 +131,6 @@ public class DepositRecord extends RepositoryObject {
         return addPidsToList(Cdr.hasIngestedObject);
     }
 
-    @Override
-    public DepositRecord addPremisEvents(List<PremisEventObject> events) throws FedoraException {
-        return (DepositRecord) super.addPremisEvents(events);
-    }
-
     /**
      * Ensure that the object retrieved has the DepositRecord type
      */

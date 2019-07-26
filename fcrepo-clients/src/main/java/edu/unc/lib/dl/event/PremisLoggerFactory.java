@@ -18,7 +18,6 @@ package edu.unc.lib.dl.event;
 import java.io.File;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
@@ -35,10 +34,9 @@ public class PremisLoggerFactory {
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
-    private RepositoryObjectDriver repoObjDriver;
 
     public PremisLogger createPremisLogger(PID pid, File file) {
-        return new FilePremisLogger(pid, file, pidMinter, repoObjLoader, repoObjFactory, repoObjDriver);
+        return new FilePremisLogger(pid, file, pidMinter);
     }
 
     public PremisLogger createPremisLogger(RepositoryObject repoObject) {
@@ -65,12 +63,4 @@ public class PremisLoggerFactory {
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
     }
-
-    /**
-     * @param repoObjDriver the repoObjDriver to set
-     */
-    public void setRepoObjDriver(RepositoryObjectDriver repoObjDriver) {
-        this.repoObjDriver = repoObjDriver;
-    }
-
 }

@@ -78,7 +78,11 @@ public class Cdr {
     public static final Property hasMessageDigest = createProperty(
             "http://cdr.unc.edu/definitions/model#hasMessageDigest" );
 
+    /** Relationship indicating the resource containing the MODS description for this object */
    public static final Property hasMods = createProperty("http://cdr.unc.edu/definitions/model#hasMods");
+
+   /** Relationship indicating the resource containing the event log for this object */
+   public static final Property hasEvents = createProperty("http://cdr.unc.edu/definitions/model#hasEvents");
 
    /** The size (e.g., in bytes) of this binary object */
    public static final Property hasSize = createProperty(

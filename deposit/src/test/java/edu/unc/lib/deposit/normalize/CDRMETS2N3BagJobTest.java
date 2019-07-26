@@ -146,7 +146,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
             verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
             verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
             verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
-            verify(premisEventBuilder, times(5)).create();
+            verify(premisEventBuilder, times(5)).write();
         }
     }
 

@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,8 +43,8 @@ import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;
@@ -94,8 +96,8 @@ public class RepositoryObjectFactory {
             ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
                 RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
 
-            // Add the premis event container
-            addEventContainer(createdUri);
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
 
         } catch (IOException e) {
             throw new FedoraException("Unable to create deposit record at " + path, e);
@@ -283,8 +285,9 @@ public class RepositoryObjectFactory {
                 .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
                 .perform()) {
             URI createdUri = response.getLocation();
-            // Add PREMIS event container
-            addEventContainer(createdUri);
+
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
 
             // Add the manifests container
             ldpFactory.createDirectFileSet(createdUri, RepositoryPathConstants.DATA_FILE_FILESET);
@@ -327,8 +330,13 @@ public class RepositoryObjectFactory {
         URI resultUri;
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
-        try (FcrepoResponse response = getClient().post(path).slug(slug).body(content, mimetype).filename(filename)
-                .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
+        try (FcrepoResponse response = getClient().post(path).slug(slug)
+                .body(content, mimetype)
+                .addInteractionModel(LDP_NON_RDF_SOURCE)
+                .filename(filename)
+                .digestSha1(sha1Checksum)
+                .digestMd5(md5Checksum)
+                .perform()) {
             resultUri = response.getLocation();
             describedBy = response.getLinkHeaders("describedby").get(0);
         } catch (IOException e) {
@@ -393,8 +401,13 @@ public class RepositoryObjectFactory {
          }
          URI updatePath = URI.create(URIUtil.join(path, slug));
 
-         try (FcrepoResponse response = getClient().put(updatePath).body(content, mimetype).filename(filename)
-                 .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
+         try (FcrepoResponse response = getClient().put(updatePath)
+                 .body(content, mimetype)
+                 .addInteractionModel(LDP_NON_RDF_SOURCE)
+                 .filename(filename)
+                 .digestSha1(sha1Checksum)
+                 .digestMd5(md5Checksum)
+                 .perform()) {
              describedBy = response.getLinkHeaders("describedby").get(0);
          } catch (IOException e) {
              throw new FedoraException("Unable to update binary at " + updatePath, e);
@@ -426,28 +439,6 @@ public class RepositoryObjectFactory {
      }
 
     /**
-     * Creates an event for the specified object.
-     *
-     * @param eventPid
-     *            the PID of the event to add
-     * @param model
-     *            Model containing properties of this event. Must only contain
-     *            the properties for one event.
-     * @return URI of the event created
-     * @throws FedoraException
-     */
-    public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
-
-        URI createdUri = createOrTransformObject(eventPid.getRepositoryUri(), model);
-
-        return new PremisEventObject(PIDs.get(createdUri), repoObjDriver, this);
-    }
-
-    public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
-        return new PremisEventObject(pid, repoObjDriver, this).validateType();
-    }
-
-    /**
      * Add a member to the parent object.
      *
      * @param parent
@@ -467,18 +458,6 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
-    }
-
-    /**
-     * Creates a link between a parent object and a member object.
-     *
-     * @param parentUri
-     * @param memberUri
-     * @throws FedoraException
-     */
-    public void createMemberLink(RepositoryObject parent, URI memberUri) throws FedoraException {
-        String memberContainer = URIUtil.join(parent.getUri(), RepositoryPathConstants.MEMBER_CONTAINER);
-        ldpFactory.createIndirectProxy(URI.create(memberContainer), parent.getUri(), memberUri);
     }
 
     /**
@@ -614,8 +593,8 @@ public class RepositoryObjectFactory {
 
             URI createdUri = response.getLocation();
 
-            // Add PREMIS event container
-            addEventContainer(createdUri);
+            // Add container for metadata objects
+            addMetadataContainer(createdUri);
 
             return createdUri;
 
@@ -626,8 +605,8 @@ public class RepositoryObjectFactory {
         }
     }
 
-    private void addEventContainer(URI parentUri) throws FedoraException, IOException {
-        ldpFactory.createDirectContainer(parentUri, Premis.hasEvent, RepositoryPathConstants.EVENTS_CONTAINER);
+    private void addMetadataContainer(URI parentUri) throws FedoraException, IOException {
+        ldpFactory.createDirectContainer(parentUri, IanaRelation.describedby, METADATA_CONTAINER);
     }
 
     private Model populateModelTypes(URI rescUri, Model model, List<Resource> types) {

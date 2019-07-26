@@ -193,7 +193,7 @@ public class XMLExportServiceTest {
         InputStream modsIs = new FileInputStream(new File(
                 "src/test/resources/mods/valid-mods.xml"));
         when(modsObj.getBinaryStream()).thenReturn(modsIs);
-        when(contentObj.getMODS()).thenReturn(modsObj);
+        when(contentObj.getDescription()).thenReturn(modsObj);
 
         service.exportXml(username, group, request);
 

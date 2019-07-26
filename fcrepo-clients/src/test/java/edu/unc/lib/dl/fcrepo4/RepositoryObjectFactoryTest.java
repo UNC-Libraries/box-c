@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -46,7 +45,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 /**
@@ -173,25 +171,6 @@ public class RepositoryObjectFactoryTest {
         assertTrue(obj.getPid().getRepositoryPath().startsWith(binaryUri.toString()));
      // check to see that client creates FcrepoResponse
         verify(mockPostBuilder).perform();
-    }
-
-    @Test
-    public void createPremisEventTest() throws FcrepoOperationFailedException {
-
-        PID parentPid = pidMinter.mintContentPid();
-        PID eventPid = pidMinter.mintPremisEventPid(parentPid);
-        URI eventUri = eventPid.getRepositoryUri();
-        when(mockResponse.getLocation()).thenReturn(eventUri);
-
-        final Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource(eventPid.getRepositoryPath());
-        resc.addProperty(Premis.hasEventType, Premis.Ingestion);
-
-        PremisEventObject obj = repoObjFactory.createPremisEvent(eventPid, model);
-
-        assertEquals(eventPid, obj.getPid());
-        // check to see that client creates FcrepoResponse
-        verify(mockPutBuilder).perform();
     }
 
     @Test

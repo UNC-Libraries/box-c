@@ -37,7 +37,6 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.EntityTag;
 
 /**
@@ -118,9 +117,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
         Resource resc = model.getResource(pid.getRepositoryPath());
 
-        if (resc.hasProperty(Premis.hasEventType)) {
-            obj =  new PremisEventObject(pid, repositoryObjectDriver, repoObjFactory);
-        } else if (isContentPID(pid)) {
+        if (isContentPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.Tombstone)) {
                 obj = new Tombstone(pid, repositoryObjectDriver, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Work)) {

@@ -67,7 +67,6 @@ import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -82,6 +81,7 @@ import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
+import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -663,14 +663,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addPremisEvents(ContentObject obj) {
-        File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".ttl");
+        File premisFile = getPremisFile(obj.getPid());
         if (!premisFile.exists()) {
             return;
         }
-        PremisLogger premisLogger = getPremisLogger(obj.getPid());
-        List<PremisEventObject> events = premisLogger.getEvents();
-        // add premis events to fedora
-        obj.addPremisEvents(events);
+
+        PremisLogger repoPremisLogger = obj.getPremisLog();
+        try {
+            repoPremisLogger.createLog(new FileInputStream(premisFile));
+        } catch (FileNotFoundException e) {
+            throw new ObjectPersistenceException("Cannot find premis file " + premisFile, e);
+        }
     }
 
     private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc) throws IOException {
