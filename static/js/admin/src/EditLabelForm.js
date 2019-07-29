@@ -1,20 +1,26 @@
 define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/editLabelForm', 
-		'ModalLoadingOverlay', 'AbstractFileUploadForm', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, editLabelForm, ModalLoadingOverlay, AbstractFileUploadForm) {
+		'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, editLabelForm, ModalLoadingOverlay, AbstractForm) {
 	
 	var defaultOptions = {
 			title : 'Edit Label',
 			createFormTemplate : editLabelForm,
-			showUploadProgress : false
+			submitMethod: 'PUT'
 	};
 	
 	function EditLabelForm(options) {
-		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+		this.options = $.extend({}, defaultOptions, options);
 	};
 	
-	
 	EditLabelForm.prototype.constructor = EditLabelForm;
-	EditLabelForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+	EditLabelForm.prototype = Object.create( AbstractForm.prototype );
+	
+	EditLabelForm.prototype.preprocessForm = function(resultObject) {
+		var newLabel = $("input[name='label']", this.$form).val();
+		var pid = resultObject.metadata.id;
+
+		this.action_url = "/services/api/edit/label/" + pid + "?label=" + newLabel;
+	};
 	
 	EditLabelForm.prototype.validationErrors = function() {
 		var errors = [];
@@ -34,19 +40,15 @@ define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 		return "An error occurred while editing the label";
 	};
 	
-	
 	EditLabelForm.prototype.remove = function() {
-		AbstractFileUploadForm.prototype.remove.apply(this);
-		this.options.actionHandler.addEvent({
-			action : 'RefreshResult',
-			target : this.resultObject,
-			waitForUpdate : true
-		});
-		
-	};
-	
-	EditLabelForm.prototype.close = function() {
-		AbstractFileUploadForm.prototype.remove.apply(this);
+		AbstractForm.prototype.remove.apply(this);
+		if (this.submitSuccessful) {
+			this.options.actionHandler.addEvent({
+				action : 'RefreshResult',
+				target : this.resultObject,
+				waitForUpdate : true
+			});
+		}
 	};
 	
 	return EditLabelForm;

@@ -45,7 +45,9 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 		},
 		
 		pingError : function() {
-			this.options.checkError.apply(this.options.checkErrorTarget, arguments);
+			if (this.options.checkError) {
+				this.options.checkError.apply(this.options.checkErrorTarget, arguments);
+			}
 			if (this.pingId != null) {
 				clearInterval(this.pingId);
 				this.pingId = null;

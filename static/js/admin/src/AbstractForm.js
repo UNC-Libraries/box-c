@@ -25,6 +25,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			});
 			// Flag to track when the form has been submitted and needs to be locked
 			this.submitted = false;
+			this.submitSuccessful= false;
 
 			this.$form.submit($.proxy(this.submit, self));
 		};
@@ -78,6 +79,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 				if (this.status >= 400) {
 					self.options.alertHandler.alertHandler("error", self.getErrorMessage(data));
 				} else {
+					self.submitSuccessful = true;
 					// Ingest queueing was successful, let the user know and close the form
 					self.options.alertHandler.alertHandler("success", self.getSuccessMessage(data));
 					self.remove();
@@ -92,7 +94,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			// Make request to either the computed action url, or url retrieved from form
 			var action_url = this.action_url ? this.action_url : this.$form.find("form")[0].action;
 
-			this.xhr.open("POST", action_url);
+			this.xhr.open(this.options.submitMethod || "POST", action_url);
 			this.xhr.send(formData);
 		};
 
