@@ -61,7 +61,7 @@ export default {
          * @param field
          * @returns {*|boolean}
          */
-        foldersOnly(field) {
+        containsFolderType(field) {
             return /Folder/.test(field);
         }
     }

@@ -157,7 +157,7 @@
 
             updateUrl() {
                 let param_filters = { types: 'Work' };
-                if (this.foldersOnly(this.$route.query.types)) {
+                if (this.containsFolderType(this.$route.query.types)) {
                     param_filters.types = 'Work,Folder'
                 }
 
@@ -172,8 +172,12 @@
                     params.types = 'Work';
                 }
 
-                if (this.foldersOnly(this.$route.query.types)) {
+                if (this.browse_type === 'structure-display') {
                     params.types = 'Work,Folder'
+                }
+
+                if (this.containsFolderType(this.$route.query.types)) {
+                    params.types = 'Folder'
                 }
 
                 let param_string = this.formatParamsString(params);

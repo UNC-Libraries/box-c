@@ -29,7 +29,7 @@
 
         watch: {
             '$route.query'(d) {
-                this.filtered = 'format' in d || this.foldersOnly(d.types);
+                this.filtered = 'format' in d || this.containsFolderType(d.types);
             },
 
             browseType(d) {
@@ -63,6 +63,9 @@
                     url_params.types = 'Work';
                     url_params.format = 'image';
                 } else if (this.filtered && this.browseType === 'structure-display') {
+                    url_params.types = 'Folder';
+                    delete url_params.format;
+                } else if (this.browseType === 'structure-display') {
                     url_params.types = 'Work,Folder';
                     delete url_params.format;
                 } else {
@@ -75,7 +78,7 @@
         },
 
         mounted() {
-            this.filtered = this.paramExists('format', this.urlParams()) || this.foldersOnly(this.$route.query.types);
+            this.filtered = this.paramExists('format', this.urlParams()) || this.containsFolderType(this.$route.query.types);
         }
     }
 </script>
