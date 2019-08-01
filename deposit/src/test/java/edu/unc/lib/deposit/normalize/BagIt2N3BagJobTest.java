@@ -116,7 +116,8 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
         List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
                 absoluteSourcePath + "/manifest-md5.txt");
-        assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
+        assertTrue("Must contain all of the expected manifest files",
+                filePathCaptor.getAllValues().containsAll(capturedFilePaths));
 
         // Verify that files and their properties were added
         assertFileAdded(children.get("lorem.txt"), "fa5c89f3c88b81bfd5e821b0316569af",
