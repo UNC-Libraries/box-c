@@ -21,7 +21,7 @@ import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -58,7 +58,7 @@ public class RoleGroupFacet extends GenericFacet {
     @Override
     public void setValue(String value) {
         this.value = value;
-        if (this.value != null) {
+        if (this.value != null && !this.value.trim().isEmpty()) {
             String[] components = this.value.split("\\|");
             if (components.length < 2) {
                 throw new InvalidFacetException("Facet value " + value +
