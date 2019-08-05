@@ -1,9 +1,8 @@
-dist: trusty
 matrix:
   include:
     - language: java
       jdk:
-        - oraclejdk8
+        - openjdk8
       before_install:
         - gem install sass
       services:
