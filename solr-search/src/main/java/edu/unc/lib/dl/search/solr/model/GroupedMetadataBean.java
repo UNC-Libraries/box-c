@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -100,11 +99,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     @Override
     public Map<String, Collection<String>> getGroupRoleMap() {
         return this.representative.getGroupRoleMap();
-    }
-
-    @Override
-    public ObjectAccessControlsBean getAccessControlBean() {
-        return this.representative.getAccessControlBean();
     }
 
     @Override

@@ -45,8 +45,6 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  */
 public class SetContentTypeFilterTest {
 
-    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
-
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
@@ -69,8 +67,6 @@ public class SetContentTypeFilterTest {
     @Before
     public void setup() throws Exception {
         initMocks(this);
-
-        when(pid.getPid()).thenReturn(PID_STRING);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
