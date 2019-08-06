@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -39,13 +38,6 @@ public class AccessControlServiceImpl implements AccessControlService {
     private InheritedPermissionEvaluator permissionEvaluator;
 
     private GlobalPermissionEvaluator globalPermissionEvaluator;
-
-    @Deprecated
-    @Override
-    public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
-        // TODO stub
-        return null;
-    }
 
     @Override
     public boolean hasAccess(PID pid, AccessGroupSet principals, Permission permission) {
