@@ -15,26 +15,25 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.ServletContextAware;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -48,54 +47,43 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
  *
  */
 @Controller
-@RequestMapping(value = { "/status/item*", "/status/item" })
-public class ItemInfoRestController implements ServletContextAware {
+@RequestMapping(value = "/status/item" )
+public class ItemInfoRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ItemInfoRestController.class);
-    protected ServletContext servletContext = null;
 
-    @Resource
+    @Autowired
     private SolrQueryLayerService solrSearchService;
-
-    @RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
-    public @ResponseBody
-    BriefObjectMetadataBean getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {
-        response.setContentType("application/xml");
-        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, groupSet);
-        BriefObjectMetadataBean metadata = solrSearchService.getObjectById(idRequest);
-        return metadata;
-    }
 
     @RequestMapping(value = "{id}/solrRecord/version", method = RequestMethod.GET)
     public @ResponseBody
-    Long getItemLastIndexed(@PathVariable("id") String id) {
-        // For when group forwarding is enabled here
-        /* AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";")); */
-        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), groupSet);
+    ResponseEntity<Object> getVersion(@PathVariable("id") String id) {
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), principals);
         BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
         if (md == null || md.get_version_() == null) {
-            return null;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return md.get_version_();
+        return new ResponseEntity<>(md.get_version_(), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "solrRecord/version", method = RequestMethod.POST)
+    @RequestMapping(value = "solrRecord/version",
+            method = RequestMethod.POST,
+            produces = "application/json; charset=UTF-8")
     public @ResponseBody
-    Map<String, String> getItemsLastIndexed(@RequestParam("ids") String idsString) {
-        if (idsString == null) {
-            return null;
+    ResponseEntity<Object> getVersions(@RequestParam("ids") String idsString) {
+        if (idsString == null || idsString.trim().isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         List<String> ids = Arrays.asList(idsString.split("\n"));
 
-        // For when group forwarding is enabled here
-        /*AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";"));*/
-        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
+        LOG.debug("Requesting version numbers for {}", ids);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         List<String> resultFields = Arrays.asList("_version_");
 
-        IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
+        IdListRequest listRequest = new IdListRequest(ids, resultFields, principals);
         List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
         Map<String, String> results = new HashMap<>(listResults.size());
 
@@ -103,11 +91,6 @@ public class ItemInfoRestController implements ServletContextAware {
             results.put(result.getId(), Long.toString(result.get_version_()));
         }
 
-        return results;
-    }
-
-    @Override
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
+        return new ResponseEntity<>(results, HttpStatus.OK);
     }
 }
