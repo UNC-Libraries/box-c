@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,10 +44,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -57,13 +54,9 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.ContainerSettings;
-import edu.unc.lib.dl.model.ContainerSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
@@ -72,7 +65,6 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -260,68 +252,8 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("previousNext", previousNext);
         }
 
-//        if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
-//                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
-//            applyContainerSettings(pidString, principals, foxmlView, model, fullObjectView != null);
-//        }
-
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
-    }
-
-    // The default collection tab views which are retrieved if no settings are found
-    private static List<String> defaultViews =
-            Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
-
-    private static List<String> defaultViewsDescriptive =
-            Arrays.asList(ContainerView.DESCRIPTION.name(), ContainerView.STRUCTURE.name(),
-                    ContainerView.EXPORTS.name());
-
-    private void applyContainerSettings(String pid, AccessGroupSet principals, Document foxml, Model model,
-            boolean hasDescription) {
-        if (foxml == null) {
-            return;
-        }
-
-        ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
-
-        if (settings.getViews().size() == 0) {
-            // Only include the metadata tab by default if there is a descriptive record
-            if (hasDescription) {
-                settings.setViews(defaultViewsDescriptive);
-            } else {
-                settings.setViews(defaultViews);
-            }
-        }
-
-        if (settings.getDefaultView() == null) {
-            settings.setDefaultView(ContainerView.STRUCTURE.name());
-        }
-
-        // Populate department list
-        if (settings.getViews().contains(ContainerView.DEPARTMENTS.name())) {
-            SearchResultResponse result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
-            model.addAttribute("departmentFacets", result.getFacetFields().get(0));
-        }
-
-        // Populate file list
-        if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
-            SearchState searchState = stateFactory.createSearchState();
-            searchState.setResourceTypes(
-                    Arrays.asList(ResourceType.Work.name(), ResourceType.File.name()));
-            SearchRequest listContentsRequest = new SearchRequest();
-            listContentsRequest.setSearchState(searchState);
-            listContentsRequest.setRetrieveFacets(false);
-            listContentsRequest.setApplyCutoffs(false);
-            listContentsRequest.setRootPid(pid);
-            listContentsRequest.getSearchState().setRollup(true);
-
-            SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
-            childrenCountService.addChildrenCounts(contentListResponse.getResultList(), principals);
-            model.addAttribute("contentListResponse", contentListResponse);
-        }
-
-        model.addAttribute("containerSettings", settings);
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)

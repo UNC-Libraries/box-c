@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -208,9 +207,6 @@ public class SolrQueryLayerService extends SolrSearchService {
      * @return
      */
     public boolean hasAdminViewPermission(AccessGroupSet accessGroups) {
-        if (accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-            return true;
-        }
         StringBuilder query = new StringBuilder();
         String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
         query.append("adminGroup:(").append(joinedGroups).append(')');
@@ -314,30 +310,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         this.searchStateFactory = searchStateFactory;
     }
 
-    /**
-     * Get the number of departments represented in the collection
-     *
-     * @return the count, or -1 if there was an error retrieving the count
-     */
-    public int getDepartmentsCount(AccessGroupSet accessGroups) {
-        try {
-            StringBuilder queryBuilder = new StringBuilder("*:*");
-            addAccessRestrictions(queryBuilder, accessGroups);
-
-            SolrQuery query = new SolrQuery();
-            query.setQuery(queryBuilder.toString());
-            query.setRows(0);
-            query.addFacetField("department");
-            query.setFacetLimit(-1);
-
-            QueryResponse response = this.executeQuery(query);
-            return response.getFacetField("department").getValueCount();
-        } catch (SolrServerException | AccessRestrictionException e) {
-            LOG.error("Error retrieving department list", e);
-            return -1;
-        }
-    }
-
     public long getInvalidVocabularyCount(SearchRequest searchRequest) {
 
         if (searchRequest.getRootPid() != null) {
@@ -377,29 +349,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         }
 
         return null;
-    }
-
-    /**
-     * Get the total number of collections
-     *
-     * @return the count, or -1 if there was an error retrieving the count
-     */
-    public long getCollectionsCount(AccessGroupSet accessGroups) {
-        try {
-            StringBuilder queryBuilder = new StringBuilder("resourceType:Collection");
-            addAccessRestrictions(queryBuilder, accessGroups);
-
-            SolrQuery query = new SolrQuery();
-            query.setQuery(queryBuilder.toString());
-            query.setRows(0);
-
-            QueryResponse response = this.executeQuery(query);
-            return response.getResults().getNumFound();
-        } catch (SolrServerException | AccessRestrictionException e) {
-            LOG.error("Error retrieving collections counts", e);
-        }
-
-        return -1;
     }
 
     /**

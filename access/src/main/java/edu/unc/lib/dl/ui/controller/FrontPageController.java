@@ -43,8 +43,6 @@ public class FrontPageController extends AbstractSolrSearchController {
         AccessGroupSet groups = GroupsThreadStore.getGroups();
 
         // Retrieve collection stats
-        model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount(groups));
-        model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount(groups));
         model.addAttribute("formatCounts", this.queryLayer.getFormatCounts(groups));
         model.addAttribute("isHomepage", true);
 
