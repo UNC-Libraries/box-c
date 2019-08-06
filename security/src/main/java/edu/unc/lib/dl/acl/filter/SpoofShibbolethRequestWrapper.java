@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
+import static edu.unc.lib.dl.acl.util.RemoteUserUtil.REMOTE_USER;
+
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.Principal;
@@ -32,9 +34,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 /**
  * RequestWrapper which pulls shibboleth authentication spoofing cookies from the
  * request and uses them to override both the remote user and groups.
- * 
+ *
  * Only to be used for test instances.
- * 
+ *
  * @author bbpennel
  *
  */
@@ -57,7 +59,7 @@ public class SpoofShibbolethRequestWrapper extends HttpServletRequestWrapper {
         Cookie[] cookies = request.getCookies();
 
         if (cookies != null) {
-            values = new HashMap<String, String>();
+            values = new HashMap<>();
 
             for (Cookie c : cookies) {
                 if (c.getName().startsWith(SPOOF_COOKIE_PREFIX)) {
@@ -77,7 +79,7 @@ public class SpoofShibbolethRequestWrapper extends HttpServletRequestWrapper {
 
         String remoteUser = request.getRemoteUser();
         if (remoteUser == null) {
-            remoteUser = values.get("REMOTE_USER");
+            remoteUser = values.get(REMOTE_USER);
         }
 
         return remoteUser;
@@ -91,7 +93,7 @@ public class SpoofShibbolethRequestWrapper extends HttpServletRequestWrapper {
 
         String remoteUser = request.getRemoteUser();
         if (remoteUser == null) {
-            remoteUser = values.get("REMOTE_USER");
+            remoteUser = values.get(REMOTE_USER);
         }
 
         final String user = remoteUser;
