@@ -15,17 +15,13 @@
  */
 package edu.unc.lib.dl.util;
 
-import org.jdom2.Element;
-
 /**
  * @author bbpennel
  * @date Mar 24, 2014
  */
-public class DepositException extends Exception implements XMLAttachedException {
+public class DepositException extends Exception {
 
     private static final long serialVersionUID = -4065348103957132332L;
-
-    Element errorXML = null;
 
     public DepositException(String msg) {
         super(msg);
@@ -33,18 +29,5 @@ public class DepositException extends Exception implements XMLAttachedException 
 
     public DepositException(String msg, Throwable e) {
         super(msg, e);
-        if (e instanceof XMLAttachedException) {
-            this.errorXML = ((XMLAttachedException) e).getErrorXML();
-        }
     }
-
-    @Override
-    public Element getErrorXML() {
-        return errorXML;
-    }
-
-    public void setErrorXML(Element errorXML) {
-        this.errorXML = errorXML;
-    }
-
 }
