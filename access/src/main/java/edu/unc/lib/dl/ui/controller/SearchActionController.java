@@ -104,6 +104,17 @@ public class SearchActionController extends AbstractSolrSearchController {
         return formattedQuery.trim();
     }
 
+    @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody
+    Map<String, Object> searchJson(@PathVariable("pid") String pid, HttpServletRequest request,
+                                   HttpServletResponse response) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        return getResults(resultResponse, "search", request);
+    }
+
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request,
