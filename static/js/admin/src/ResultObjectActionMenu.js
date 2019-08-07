@@ -113,10 +113,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
 		}
-		if (metadata.type == 'Collection') {
-			items["sepbrowse"] = "";
-			items["viewTrash"] = {name : "View trash for this collection"};
-		}
 		
 		// Modification options
 		items["sepedit"] = "";
@@ -221,12 +217,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "list/" + metadata.id
-						});
-						break;
-					case "viewTrash" :
-						self.actionHandler.addEvent({
-							action : 'ChangeLocation',
-							url : "trash/" + metadata.id
 						});
 						break;
 					case "review" :
