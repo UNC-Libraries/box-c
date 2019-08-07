@@ -51,8 +51,8 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 import io.dropwizard.metrics5.Timer;
@@ -137,8 +137,8 @@ public class XMLImportJob implements Runnable {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
-        } catch (UpdateException e) {
-            log.error("Submitted document is not a bulk-metadata-update doc");
+        } catch (ServiceException e) {
+            log.error(e.getMessage());
             failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
             sendValidationFailureEmail(failed);
         } catch (FileNotFoundException e) {
@@ -222,11 +222,11 @@ public class XMLImportJob implements Runnable {
 
     }
 
-    private void processUpdates() throws XMLStreamException, UpdateException {
+    private void processUpdates() throws XMLStreamException, ServiceException {
         processUpdates(null, null);
     }
 
-    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, UpdateException {
+    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, ServiceException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
@@ -249,7 +249,7 @@ public class XMLImportJob implements Runnable {
                             if (element.getName().getLocalPart().equals(BULK_MD_TAG)) {
                                 state = DocumentState.IN_BULK;
                             } else {
-                                throw new UpdateException("Submitted document is not a bulk-metadata-update doc");
+                                throw new ServiceException("Submitted document is not a bulk-metadata-update doc");
                             }
                         }
                         break;
