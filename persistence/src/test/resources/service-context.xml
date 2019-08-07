@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd">
+	<!-- REMOTE BEANS (should be in separate file)
+	<import resource="remotes-context-test.xml"/>-->
+	<bean id="propertiesURI" class="java.lang.System" factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri"/>
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties"/>
+		<!-- default location for testing -->
+	</bean>
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" ref="propertiesURI"/>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+	
+	<bean id="jmsTemplate" factory-method="mock" class="org.mockito.Mockito">
+		<constructor-arg value="org.springframework.jms.core.JmsTemplate"/>
+	</bean>
+
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate"/>
+	</bean>
+	<!-- END OF REMOTE BEANS -->
+
+	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
+		init-method="loadSchemas">
+		<property name="schemas">
+			<map>
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}" 
+					value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch"/>
+				<entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
+				<entry key="vocabularies-mods"
+					value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}" 
+					value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch"/>
+			</map>
+		</property>
+	</bean>
+</beans>

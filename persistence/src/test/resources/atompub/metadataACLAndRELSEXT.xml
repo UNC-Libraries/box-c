@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cdr="http://cdr.lib.unc.edu/"
+	xmlns:acl="http://cdr.unc.edu/definitions/acl#">
+	<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
+	<updated>2012-03-07T17:17:08Z</updated>
+	<summary type="text">RELS-EXT</summary>
+
+	<acl:accessControl acl:published="false" />
+	
+	<cdr:datastream id="RELS-EXT">
+		<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+			xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#"
+			xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#"
+			xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+			<rdf:Description>
+				<ns6:hasModel rdf:resource="info:fedora/cdr-model:Collection" />
+				<ns6:hasModel rdf:resource="info:fedora/cdr-model:Container" />
+				<ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject" />
+				<ns6:hasModel rdf:resource="info:fedora/cdr-model:Simple" />
+			</rdf:Description>
+		</rdf:RDF>
+	</cdr:datastream>
+</entry>

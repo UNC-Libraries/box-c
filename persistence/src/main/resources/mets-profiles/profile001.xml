@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<METS_Profile xmlns="http://www.loc.gov/METS_Profile/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:METS="http://www.loc.gov/METS/"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xsi:schemaLocation="http://www.loc.gov/METS_Profile/ http://www.loc.gov/standards/mets/profile_docs/mets.profile.v1-2.xsd
+    http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
+    http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+    info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
+    http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd">
+    <URI LOCTYPE="URL">http://cdla.unc.edu/profiles/profile001.xml</URI>
+    <title>Submission Profile for CDLA Simple Content Model</title>
+    <abstract>This profile specifies how METS documents representing institutional repository
+        submissions prepared by the Digital Production Center in the Carolina Digital Library and
+        Archives should be encoded. This profile applies to simple file submissions not
+        multi-part items, such as paged items.  See the wiki page (https://intranet.lib.unc.edu/trac/cdl/wiki/SimpleContentModel)
+    	for more information about the Simple Content Model.</abstract>
+    <date>2008-06-12T15:00:00</date>
+    <contact>
+        <name>Gregory Jansen</name>
+        <institution>Carolina Digital Library and Archives, University of North Carolina at Chapel
+            Hill</institution>
+        <address>Wilson Library, UNC Campus, Chapel Hill, NC 27599</address>
+        <email>count0@email.unc.edu</email>
+    </contact>
+    <related_profile>There are no related profiles.</related_profile>
+    <extension_schema>
+        <name>PREMIS v2.0</name>
+        <URI>http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd</URI>
+        <context>This schema is used for the contents of the &lt;digiProvMD&gt; and
+            &lt;techMD&gt; elements within the &lt;amdSec&gt; elements.</context>
+        <note>PREMIS elements will be used to record administrative metadata. Minimal PREMIS will
+            include rights statements as well as digital provenance.  At a later date PREMIS may also be used in conjunction with
+            other technical metadata to record physical characteristics of datastreams. However,
+            this will not necessarily be required for the submission METS profile in the future as
+            such data may be generated.</note>
+    </extension_schema>
+    <extension_schema>
+        <name>MODS v3.3</name>
+        <URI>http://www.loc.gov/standards/mods/v3/mods-3-3.xsd</URI>
+        <note>MODS elements will be used to record descriptive metadata for each object.</note>
+    </extension_schema>
+    <description_rules>
+        <head>Collection and Container TYPEs</head>
+        <p>These &lt;div&gt; TYPEs can only include files that are marked for use as SURROGATEs.</p>
+        <head>Simple TYPE</head>
+        <p>These &lt;div&gt; TYPEs can have files that are marked for any use in the controlled vocabulary, but they can only have one file marked as a MASTER and one file marked as INDEX_TEXT.</p>
+    </description_rules>
+    <controlled_vocabularies>
+        <vocabulary>
+            <name>CDLA Content Models</name>
+            <maintenance_agency>Carolina Digital Library and Archives</maintenance_agency>
+            <values>
+                <value>Collection</value>
+                <value>Container</value>
+                <value>Simple</value>
+            </values>
+            <context>
+                <p>This is the vocabulary for the TYPE attribute on each &lt;div&gt;.</p>
+            </context>
+            <description>
+                <p>supported content types in this content model</p>
+            </description>
+        </vocabulary>
+        <vocabulary>
+            <name>CDLA File USE Attributes</name>
+            <maintenance_agency>Carolina Digital Library and Archives</maintenance_agency>
+            <values>
+                <value>MASTER</value>
+                <value>SERVICE</value>
+                <value>INDEX_TEXT</value>
+                <value>SURROGATE</value>
+            </values>
+            <context>
+                <p>This is the vocabulary for the USE attribute on each &lt;file&gt;.</p>
+            </context>
+            <description>
+            	<p>supported file usage patterns in this content model</p>
+            </description>
+        </vocabulary>
+    </controlled_vocabularies>
+    <structural_requirements>
+    	<metsRootElement>
+    		<requirement><p>A conforming METS document MUST have a PROFILE attribute indicating the following url:</p>
+    			<p>http://cdla.unc.edu/mets-profiles/simple_model.xml</p>
+    		</requirement>
+    	</metsRootElement>
+    	<metsHdr>
+    		<requirement><p>A conforming METS document MUST contain a &lt;metsHdr&gt; with at least one valid &lt;agent&gt; having the
+    			ROLE of CREATOR.</p></requirement>
+    	</metsHdr>
+        <dmdSec>
+            <requirement>
+                <p>A conforming METS document MUST contain one and only one &lt;dmdSec&gt;
+                    corresponding to each &lt;div&gt; of TYPE "Simple" in the structure map.</p>
+            </requirement>
+        	<requirement>
+        		<p>A conforming METS document MUST contain one and only one &lt;dmdSec&gt;
+        			corresponding to each &lt;div&gt; of TYPE "Collection" in the structure map.</p>
+        	</requirement>
+        	<requirement>
+        		<p>A conforming METS document MAY contain a &lt;dmdSec&gt;
+        			corresponding to ANY &lt;div&gt; of TYPE "Container" in the structure map.</p>
+        		<p>Any Container without a corresponding &lt;dmdSec&gt; MUST have a LABEL attribute.</p>
+        		<p>Container are not considered separate intellectual entities by this profile.  Instead they
+        		are the organizing partitions within a collection.</p>
+        	</requirement>
+            <requirement>
+                <p>A conforming METS document MUST use an &lt;xmlData&gt; with a
+                    &lt;mdWrap&gt; in each &lt;dmdSec&gt;. The &lt;xmlData&gt; must
+                    contain a MODS element that is valid according to the MODS extension schema.</p>
+            </requirement>
+        </dmdSec>
+    	<amdSec>
+    		<requirement RELATEDMAT="CollectionAMD">
+    			<p>A conforming METS document MUST contain a separate &lt;amdSec&gt; with a
+    				single &lt;digiprovMD&gt; subelement for each &lt;div&gt; of TYPE "Collection" in the
+    				structure map.</p>
+    		</requirement>
+            <requirement>
+                <p>A conforming METS document MUST contain a separate &lt;amdSec&gt; with a
+                    single &lt;digiprovMD&gt; subelement for each &lt;div&gt; of TYPE "Simple" in the
+                    structure map.</p>
+            </requirement>
+    		<requirement>
+    			<p>ALL &lt;digiprovMD&gt; MUST use an &lt;xmlData&gt; with a
+    				&lt;mdWrap&gt;. The &lt;xmlData&gt; must contain a PREMIS
+    				&lt;premis&gt; container that is valid according to the PREMIS extension
+    				schema.</p>
+    		</requirement>
+            <requirement>
+                <p>A conforming METS document MAY contain a separate &lt;amdSec&gt; with a
+                    single &lt;techMD&gt; for each &lt;file&gt; with a USE of "MASTER". 
+                    Each &lt;file&gt; with a corresponding &lt;techMD&gt; must reference
+                    it by means of an AMDID attribute which matches the ID of the amdSec.</p>
+            </requirement>
+            <requirement>
+                <p>ALL &lt;techMD&gt; MUST use an &lt;xmlData&gt; with a
+                    &lt;mdWrap&gt;. The &lt;xmlData&gt; must contain a PREMIS
+                    &lt;object&gt; container that is valid according to the PREMIS extension
+                schema.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain a &lt;rightsMD&gt; element or
+                    a &lt;sourceMD&gt; element. (These types of administrative metadata are
+                    recorded in the main &lt;premis&gt; container, which is placed within the
+                &lt;digiprovMD&gt;.</p>
+            </requirement>
+            <requirement>
+                <head>Repository Hierarchy Requirement</head>
+                <p>The entire submission package (SIP) MAY fall within a larger Container or Collection that is already in the repository.  (From these parent objects the deposited objects will eventually inherit some administrative properties, especially access controls.)  If the top &lt;div&gt; in the &lt;structMap&gt; is of TYPE "Collection" then the submission package stands alone as an ingest or update to a whole collection.</p>
+                <p>If the top &lt;div&gt; is anything but a "Collection" then it MUST have a corresponding &lt;digiprovMD&gt;, see &lt;amdSec&gt; requirements.  The &lt;premis&gt; must contain an &lt;object&gt; which contains a &lt;relationship&gt;.</p>
+            	<p>The PREMIS &lt;relationship&gt; MUST specify a info:fedora/fedora-system:def/relations-external#isPartOf relationship to a parent object in the repository.  The &lt;relationship&gt; MAY specify the correct sub-type relationships from the list below, but this is not required:</p>
+                <p>isSubsetOf (Container -> Container), isMemberOf (Simple -> Container), isMemberOfCollection (Container or Simple -> Collection)</p>
+            	<p>The &lt;relatedObjectIdentification&gt; may use a repository path.</p>
+                <p>An example using a repository path:
+                	<![CDATA[
+                    <relationship>
+						<relationshipType>info:fedora/fedora-system:def/relations-external#isPartOf</relationshipType>
+						<relationshipSubType>info:fedora/fedora-system:def/relations-external#isMemberOfCollection</relationshipSubType>
+						<relatedObjectIdentification>
+							<relatedObjectIdentifierType>http://www.lib.unc.edu/ir/definitions/ir-relsext-ontology.rdfs#repositoryPath</relatedObjectIdentifierType>
+							<relatedObjectIdentifierValue>candid/reconstruction/alumni</relatedObjectIdentifierValue>
+						</relatedObjectIdentification>
+					</relationship>]]>
+                </p>
+            	<!--<p>An example using a GUID:
+            		<![CDATA[
+                    <relationship>
+						<relationshipType>info:fedora/fedora-system:def/relations-external#isPartOf</relationshipType>
+						<relationshipSubType>info:fedora/fedora-system:def/relations-external#isMemberOfCollection</relationshipSubType>
+						<relatedObjectIdentification>http://www.lib.unc.edu/ir/definitions/ir-relsext-ontology.rdfs#
+							<relatedObjectIdentifierType>HANDLE</relatedObjectIdentifierType>
+							<relatedObjectIdentifierValue>http://lkjaljksda.edu/90209818.0912089123</relatedObjectIdentifierValue>
+						</relatedObjectIdentification>
+					</relationship>]]>
+            	</p>-->
+            </requirement>
+        </amdSec>
+        <fileSec>
+            <requirement>
+                <head>File Groups (&lt;fileGrp&gt;)</head>
+                <p>Files MAY be grouped together in a &lt;fileGrp&gt; so that they are sets
+                    of files that serve the same purpose. Examples include object surrogates,
+                    service files and master files.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST have either it's own USE attribute or be under a
+                    &lt;fileGrp&gt; that has a USE attribute. In both cases the USE
+                    attribute MUST match a value in the CDLA File USE vocabulary.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST contain a &lt;FLocat&gt; element with
+                    LOCTYPE of "URL" and an xlink:href attribute that points to a file within the SIP.
+                    Use the local "file:" protocol prefix. (For example, a file in the root
+                    Container of the archive is referenced by a URL such as "file:///foo.txt".)</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MUST have a correct MIMETYPE attribute.</p>
+            </requirement>
+            <requirement>
+                <p>Each &lt;file&gt; MAY have an MD5 checksum in the CHECKSUM attribute.  If a CHECKSUMTYPE attribute is given, then it MUST be "MD5".</p>
+            </requirement>
+        </fileSec>
+        <structMap>
+            <requirement>
+                <head>&lt;div&gt; Elements</head>
+                <p>The &lt;div&gt; elements in the METS structure map are used to record
+                    digital objects and their placement within the repository.</p>
+                <p>Note that at some point Collections and Containers will be used as the
+                    administrative domains within which their contents will be managed.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST have a TYPE attribute on every
+                    &lt;div&gt;.  The TYPE must be taken from the CDLA Content Models vocabulary.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MAY have an ID attribute unique to the document on
+                    every &lt;div&gt;.  If an ID attribute is included, then this will be used as the contextually
+                    unique slug for the object, which is used to construct a repository path and stable URL.</p>
+            	<p>Note that the repository path is used to uniquely identify objects inside the repository.  If 
+            	the repository path implied by the structure map is not unique, then your submission will need to be processed as an
+            	update, which is not yet implemented.  SIPs containing objects that would conflict with the repository paths of existing
+            	objects are rejected in their entirety.</p>
+            </requirement>
+            <requirement>
+                <p>A conforming METS document MUST have a LABEL attribute for each &lt;div&gt; of TYPE "Container".  This
+                will become the label property in Fedora and is used for display purposes within the context of the parent object.
+                Therefore LABEL attributes should only distinguish each Container from it's siblings and should assume the context of the parent Container.</p>
+            </requirement>
+        	<requirement>
+        		<p>A conforming METS document MUST NOT have a LABEL attribute for ANY &lt;div&gt; of TYPE "Collection" or "Simple".
+        		(display labels for these objects will be extracted from required MODS elements.)</p>
+        	</requirement>     
+        	<requirement>
+        		<p>A conforming METS document MUST NOT have an ORDER attribute for ANY &lt;div&gt;.</p>
+        		<p>A conforming METS document MUST NOT have an ORDERLABEL attribute for ANY &lt;div&gt;.</p>
+        	</requirement>      	
+        </structMap>
+    	
+        <structLink>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain a &lt;structLink&gt;
+                element.</p>
+            </requirement>
+        </structLink>
+        <behaviorSec>
+            <requirement>
+                <p>A conforming METS document MUST NOT contain a &lt;behaviorSec&gt;
+                    element.</p>
+            </requirement>
+        </behaviorSec>
+    </structural_requirements>
+
+    <technical_requirements>
+        <content_files>
+            <requirement>
+                <p>All files marked as USE MASTER or in a fileGrp marked as USE MASTER
+                    MUST comprise a single complete representation of the work.</p>
+            </requirement>
+            <!--<requirement>
+                <p>All master images referenced by a conforming METS document must be in ?????
+                    format with a bit-depth of ?? and employing the ????? colorspace. The images
+                    must contain a header element containing a copyright statement? The master
+                    images must not employ watermarking technology.</p>
+            </requirement>
+            <requirement>
+                <p>All web viewable derivative images referenced by a conforming METS document must
+                    be in the Portable Network Graphics version 1.2 format with a bit-depth of 16
+                    and employing the sRGB color space. The graphic must contain a tEXt chunk
+                    containing a copyright statement?</p>
+            </requirement>-->
+            <requirement>
+                <p>All surrogate images (thumbnails) referenced by a conforming METS document MUST be in the
+                    Portable Network Graphics version 1.2 format with a bit-depth between 8 and 16
+                    and employing the sRGB color space and a maximum resolution of 150 pixels on
+                    either the X or Y axis. The graphic MUST contain a tEXt chunk containing a
+                    copyright statement. Thumbnails images that are not rectangular in shape MUST
+                    have an alpha layer.  (example of an image physical requirement)</p>
+            </requirement>
+            <requirement>
+                <p>All files marked for USE as INDEX_TEXT MUST be encoded in UTF-8 text/plain format without
+                    markup.</p>
+            </requirement>
+        </content_files>
+        <behavior_files>
+            <requirement>
+                <p>There MUST not be any behaviors associated with a conforming document.</p>
+            </requirement>
+        </behavior_files>
+        <metadata_files>
+            <requirement>
+                <p>Any MODS XML embedded within a &lt;dmdSec&gt; MUST validate against the MODS extension schema specified above.</p>
+            </requirement>
+        	<requirement>
+        		<head>Minimal Descriptive Metadata for Simple Content</head>
+        		<p>A conforming METS document MUST have a &lt;mods&gt; corresponding to each &lt;div&gt; of TYPE Simple.  This &lt;mods&gt; MUST contain
+        		the following valid elements:</p>
+        		<p>
+        			TBD?!
+        		</p>
+        	</requirement>
+        	<requirement>
+        		<head>Minimal Descriptive Metadata for Collections</head>
+        		<p>A conforming METS document MUST have a &lt;mods&gt; corresponding to each &lt;div&gt; of TYPE Collection.  This &lt;mods&gt; MUST contain
+        			the following valid elements:</p>
+        		<p>
+        			TBD?!
+        		</p>
+        	</requirement>
+            <requirement>
+                <p>Any PREMIS XML embedded within an &lt;amdSec&gt; MUST validate against the PREMIS extension schema specified above.</p>
+            </requirement>
+        	<requirement>
+        		<head>Minimal Administrative Metadata for Collections and Simple Content</head>
+        		<p>A conforming METS document MUST have a &lt;premis&gt; corresponding to each &lt;div&gt; of TYPE Simple.  This &lt;premis&gt; MUST contain
+        			the following valid elements:</p>
+        		<p>rights..
+        			TBD?!
+        		</p>
+        	</requirement>
+        </metadata_files>
+    </technical_requirements>
+    <tool>
+        <description>
+            <p>There MUST NOT be any particular tools associated with a conforming document.</p>
+        </description>
+    </tool>
+    <Appendix NUMBER="1" ID="ex1">
+ <METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+ http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
+ http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+ info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
+ http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:METS="http://www.loc.gov/METS/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	PROFILE="http://cdla.unc.edu/mets-profiles/simple_model.xml">
+
+ 	<METS:metsHdr>
+ 		<METS:agent ROLE="CREATOR">
+ 			<METS:name>Greg Jansen</METS:name>
+ 		</METS:agent>
+ 	</METS:metsHdr>
+ 	
+ 	<METS:dmdSec ID="SlidesMODS">
+ 		<METS:mdWrap MDTYPE="MODS">
+ 			<METS:xmlData>
+ 				<mods xmlns="http://www.loc.gov/mods/v3">
+ 					<titleInfo>
+ 						<title>Digital Curation and Digital Preservation: An Introduction
+ 							(Presentation Slides)</title>
+ 					</titleInfo>
+ 					<genre>presentation slides</genre>
+ 					<name type="personal">
+ 						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+ 						<namePart>Hank, Carolyn</namePart>
+ 						<role>
+ 							<roleTerm>creator</roleTerm>
+ 						</role>
+ 					</name>
+ 					<name type="personal">
+ 						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+ 						<namePart>Tibbo, Helen</namePart>
+ 						<role>
+ 							<roleTerm>creator</roleTerm>
+ 						</role>
+ 					</name>
+ 					<originInfo>
+ 						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+ 						<dateCreated encoding="iso8601">20070510</dateCreated>
+ 						<place>
+ 							<placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+ 						</place>
+ 					</originInfo>
+ 					<language>
+ 						<languageTerm authority="iso639-2b">eng</languageTerm>
+ 					</language>
+ 					<physicalDescription>
+ 						<digitalOrigin>born digital</digitalOrigin>
+ 						<internetMediaType>application/vnd.ms-powerpoint</internetMediaType>
+ 					</physicalDescription>
+ 					<abstract>Slides from a half-day tutorial on digital curation and digital
+ 						preservation given June 19, 2007 at the ACM IEEE Joint Conference on Digital
+ 						Libraries (JCDL), held June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+ 					<subject ID="owofjwe">
+ 						<topic>Digital Curation</topic>
+ 					</subject>
+ 					<extension>
+ 						<rdf:RDF>
+ 							<rdf:Description rdf:about="#owofjwe">
+ 								<das:rank xmlns:das="foo">4</das:rank>
+ 							</rdf:Description>
+ 						</rdf:RDF>
+ 					</extension>
+ 					<subject>
+ 						<topic>Digital Preservation</topic>
+ 					</subject>
+ 					<!-- the following might be added during ingest
+ 						<identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+ 						<identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+ 				</mods>
+ 			</METS:xmlData>
+ 		</METS:mdWrap>
+ 	</METS:dmdSec>
+ 	
+ 	<METS:dmdSec ID="OverviewMODS">
+ 		<METS:mdWrap MDTYPE="MODS">
+ 			<METS:xmlData>
+ 				<mods xmlns="http://www.loc.gov/mods/v3">
+ 					<titleInfo>
+ 						<title>Digital Curation and Digital Preservation: An Introduction (Overview
+ 							Document)</title>
+ 					</titleInfo>
+ 					<genre>overview document</genre>
+ 					<name type="personal">
+ 						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+ 						<namePart>Hank, Carolyn</namePart>
+ 						<role>
+ 							<roleTerm>creator</roleTerm>
+ 						</role>
+ 					</name>
+ 					<name type="personal">
+ 						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+ 						<namePart>Tibbo, Helen</namePart>
+ 						<role>
+ 							<roleTerm>creator</roleTerm>
+ 						</role>
+ 					</name>
+ 					<originInfo>
+ 						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+ 						<dateCreated encoding="iso8601">20070510</dateCreated>
+ 						<place>
+ 							<placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+ 						</place>
+ 					</originInfo>
+ 					<language>
+ 						<languageTerm authority="iso639-2b">eng</languageTerm>
+ 					</language>
+ 					<physicalDescription>
+ 						<digitalOrigin>born digital</digitalOrigin>
+ 						<internetMediaType>application/vnd.ms-word</internetMediaType>
+ 					</physicalDescription>
+ 					<abstract>An overview, including agenda, objectives, and bibliography, from a
+ 						half-day tutorial on digital curation and digital preservation given June
+ 						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+ 						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+ 					<subject>
+ 						<topic>Digital Curation</topic>
+ 					</subject>
+ 					<subject>
+ 						<topic>Digital Preservation</topic>
+ 					</subject>
+ 					<!-- the following might be added during ingest
+ 						<identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+ 						<identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+ 				</mods>
+ 			</METS:xmlData>
+ 		</METS:mdWrap>
+ 	</METS:dmdSec>
+ 	
+ 	<METS:dmdSec ID="CollectionMODS">
+ 		<METS:mdWrap MDTYPE="MODS">
+ 			<METS:xmlData>
+ 				<mods xmlns="http://www.loc.gov/mods/v3">
+ 					<titleInfo>
+ 						<title>Works of Carolyn Hank</title>
+ 					</titleInfo>
+ 					<genre>scholar collection</genre>
+ 					<name type="personal">
+ 						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+ 						<affiliation>Carolina Digital Library and Archives, UNC Chapel Hill</affiliation>
+ 						<namePart>Hank, Carolyn</namePart>
+ 						<role>
+ 							<roleTerm>contributor</roleTerm>
+ 						</role>
+ 					</name>
+ 				</mods>
+ 			</METS:xmlData>
+ 		</METS:mdWrap>
+ 	</METS:dmdSec>
+ 	
+ 	<METS:amdSec ID="CollectionAMD">
+ 		<METS:digiprovMD ID="CollectionDPMD">
+ 			<METS:mdWrap MDTYPE="PREMIS">
+ 				<METS:xmlData>
+ 					<premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+ 						<object xsi:type="representation">
+ 							<objectIdentifier>
+ 								<objectIdentifierType/>
+ 								<objectIdentifierValue/>
+ 							</objectIdentifier>
+ 							<!-- This relationship element will be used to nest SIPs within containers -->
+ 							<!-- Collections do not require nesting -->
+ 							<!--							<relationship>
+ 								<relationshipType>info:fedora/fedora-system:def/relations-external#isPartOf</relationshipType>
+ 								<relationshipSubType>info:fedora/fedora-system:def/relations-external#isMemberOfCollection</relationshipSubType>
+ 								<relatedObjectIdentification>
+ 								<relatedObjectIdentifierType>HANDLE</relatedObjectIdentifierType>
+ 								<relatedObjectIdentifierValue>http://lkjaljksda.edu/90209818.0912089123</relatedObjectIdentifierValue>
+ 								</relatedObjectIdentification>
+ 								</relationship>-->
+ 							<!--<preservationLevel>
+ 								<preservationLevelValue></preservationLevelValue>
+ 								</preservationLevel>-->
+ 						</object>
+ 						<rights>
+ 							<rightsStatement>
+ 								<rightsStatementIdentifier>
+ 									<rightsStatementIdentifierType/>
+ 									<rightsStatementIdentifierValue/>
+ 								</rightsStatementIdentifier>
+ 								<rightsBasis/>
+ 							</rightsStatement>
+ 						</rights>
+ 						
+ 					</premis>
+ 				</METS:xmlData>
+ 			</METS:mdWrap>
+ 		</METS:digiprovMD>
+ 	</METS:amdSec>
+ 	
+ 	<METS:amdSec ID="SlidesAMD">
+ 		<METS:digiprovMD ID="SlidesDPMD">
+ 			<METS:mdWrap MDTYPE="PREMIS">
+ 				<METS:xmlData>
+ 					<premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+ 						<object xsi:type="representation">
+ 							<objectIdentifier>
+ 								<objectIdentifierType/>
+ 								<objectIdentifierValue/>
+ 							</objectIdentifier>
+ 						</object>
+ 						<rights>
+ 							<rightsStatement>
+ 								<rightsStatementIdentifier>
+ 									<rightsStatementIdentifierType/>
+ 									<rightsStatementIdentifierValue/>
+ 								</rightsStatementIdentifier>
+ 								<rightsBasis/>
+ 							</rightsStatement>
+ 						</rights>
+ 					</premis>
+ 				</METS:xmlData>
+ 			</METS:mdWrap>
+ 		</METS:digiprovMD>
+ 	</METS:amdSec>
+ 	
+ 	<METS:amdSec ID="OverviewAMD">
+ 		<METS:digiprovMD ID="OverviewDPMD">
+ 			<METS:mdWrap MDTYPE="PREMIS">
+ 				<METS:xmlData>
+ 					<premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+ 						<object xsi:type="representation">
+ 							<objectIdentifier>
+ 								<objectIdentifierType/>
+ 								<objectIdentifierValue/>
+ 							</objectIdentifier>
+ 						</object>
+ 						<rights>
+ 							<rightsStatement>
+ 								<rightsStatementIdentifier>
+ 									<rightsStatementIdentifierType/>
+ 									<rightsStatementIdentifierValue/>
+ 								</rightsStatementIdentifier>
+ 								<rightsBasis/>
+ 							</rightsStatement>
+ 						</rights>
+ 					</premis>
+ 				</METS:xmlData>
+ 			</METS:mdWrap>
+ 		</METS:digiprovMD>
+ 	</METS:amdSec>
+
+ 	<METS:fileSec>
+ 		<METS:fileGrp>
+ 			<METS:file USE="MASTER" ID="PPT" MIMETYPE="application/vnd.ms-powerpoint">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///slides_tutorial10_final.ppt"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="SERVICE">
+ 			<METS:file ID="PPTPDF" MIMETYPE="application/pdf">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///tutorial10_slides_19june2007.pdf"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="INDEX_TEXT">
+ 			<METS:file ID="PPTTXT" MIMETYPE="text/plain">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///slides.txt"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="MASTER">
+ 			<METS:file ID="DOC" MIMETYPE="application/vnd.ms-word">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///outline_june18_5pm_CH.doc"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="SERVICE">
+ 			<METS:file ID="DOCPDF" MIMETYPE="application/pdf">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///tutorial10_overview_19june2007.pdf"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="INDEX_TEXT">
+ 			<METS:file ID="DOCTXT" MIMETYPE="text/plain">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///overview.txt"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 		<METS:fileGrp USE="SURROGATE">
+ 			<METS:file ID="THUMB1" MIMETYPE="image/png">
+ 				<METS:FLocat LOCTYPE="URL" xlink:href="file:///hank_carolyn.png"/>
+ 			</METS:file>
+ 		</METS:fileGrp>
+ 	</METS:fileSec>
+
+ 	<METS:structMap>
+ 		<METS:div ID="carolyn" TYPE="Collection"
+ 			DMDID="CollectionMODS" ADMID="CollectionAMD">
+ 			<METS:fptr FILEID="THUMB1"/>
+ 			<METS:div ID="jcdl2007" LABEL="Digital Curation Tutorial (JCDL 2007)" TYPE="Container">
+ 				<METS:div ID="slides" TYPE="Simple"
+ 					DMDID="SlidesMODS" ADMID="SlidesAMD">
+ 					<METS:fptr FILEID="PPT"/>
+ 					<METS:fptr FILEID="PPTPDF"/>
+ 					<METS:fptr FILEID="PPTTXT"/>
+ 				</METS:div>
+ 				<METS:div ID="overview" TYPE="Simple"
+ 					DMDID="OverviewMODS" ADMID="OverviewAMD">
+ 					<METS:fptr FILEID="DOC"/>
+ 					<METS:fptr FILEID="DOCPDF"/>
+ 					<METS:fptr FILEID="DOCTXT"/>
+ 				</METS:div>
+ 			</METS:div>
+ 		</METS:div>
+ 	</METS:structMap>
+ 	
+</METS:mets>
+    </Appendix>
+</METS_Profile>

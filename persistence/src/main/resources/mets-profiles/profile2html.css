@@ -1,0 +1,16 @@
+span.xmlverb-default          { color: #333333; background-color: #ffffff;font-family: monospace }
+span.xmlverb-element-name     { color: #990000 }
+span.xmlverb-element-nsprefix { color: #666600 }
+span.xmlverb-attr-name        { color: #660000 }
+span.xmlverb-attr-content     { color: #000099; font-weight: bold }
+span.xmlverb-ns-name          { color: #666600 }
+span.xmlverb-ns-uri           { color: #330099 }
+span.xmlverb-text             { color: #000000; font-weight: bold; }
+span.xmlverb-comment          { color: #006600; font-style: italic }
+span.xmlverb-pi-name          { color: #006600; font-style: italic }
+span.xmlverb-pi-content       { color: #006666; font-style: italic }
+a.xmlverb-element-expander:link	{ text-decoration:none; font-weight:bold; font-size:120% }
+a.xmlverb-element-expander:visited	{ text-decoration:none; font-weight:bold; font-size:120% }
+a.xmlverb-element-expander:active	{ text-decoration:none; font-weight:bold; font-size:120% }
+a.xmlverb-element-expander:hover	{ text-decoration:none; font-weight:bold; font-size:120%; }
+span.xmlverb-element-container { font-family:monospace; font-size:10pt}

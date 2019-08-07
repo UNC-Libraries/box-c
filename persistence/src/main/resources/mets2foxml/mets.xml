@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!--<?oxygen SCHSchema="../workspace/cdr-common/src/main/resources/edu/unc/lib/dl/schematron/object-mods.sch"?>-->
+<METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xsi:schemaLocation="
+ http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
+ http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+ info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
+ http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:METS="http://www.loc.gov/METS/"
+	xmlns:premis="info:lc/xmlns/premis-v2" xmlns:acl="http://cdr.unc.edu/definitions/acl#"
+	PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+
+	<METS:metsHdr CREATEDATE="2009-07-16T22:56:00-05:00">
+		<METS:agent ROLE="CREATOR" TYPE="INDIVIDUAL">
+			<METS:name>Greg Jansen</METS:name>
+		</METS:agent>
+	</METS:metsHdr>
+
+	<METS:dmdSec ID="SlidesMODS">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation and Digital Preservation: An Introduction
+							(Presentation Slides)</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Tibbo, Helen</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+						<dateCreated encoding="iso8601">20070510</dateCreated>
+						<place>
+							<placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+						</place>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>20 slides</extent>
+						<digitalOrigin>born digital</digitalOrigin>
+						<internetMediaType>application/vnd.ms-powerpoint</internetMediaType>
+					</physicalDescription>
+					<abstract>Slides from a half-day tutorial on digital curation and digital
+						preservation given June 19, 2007 at the ACM IEEE Joint Conference on Digital
+						Libraries (JCDL), held June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject ID="owofjwe">
+						<topic>Digital Curation</topic>
+					</subject>
+					<extension>
+						<rdf:RDF>
+							<rdf:Description rdf:about="#owofjwe">
+								<das:rank xmlns:das="foo">4</das:rank>
+							</rdf:Description>
+						</rdf:RDF>
+					</extension>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+					<!-- the following might be added during ingest
+						<identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+						<identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="OverviewMODS">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation and Digital Preservation: An Introduction (Overview
+							Document)</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Tibbo, Helen</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+						<dateCreated encoding="iso8601">20070510</dateCreated>
+						<place>
+							<placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+						</place>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+						<digitalOrigin>born digital</digitalOrigin>
+						<internetMediaType>application/vnd.ms-word</internetMediaType>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+					<!-- the following might be added during ingest
+						<identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+						<identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="MODS2">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation Supplement</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="MODS4">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation Supplement</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="MODS5">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation Supplement</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="MODS6">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation Supplement</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="MODS7">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Digital Curation Supplement</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+					</originInfo>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<physicalDescription>
+						<extent>8 pages</extent>
+					</physicalDescription>
+					<abstract>An overview, including agenda, objectives, and bibliography, from a
+						half-day tutorial on digital curation and digital preservation given June
+						19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+						June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+					<subject>
+						<topic>Digital Curation</topic>
+					</subject>
+					<subject>
+						<topic>Digital Preservation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+
+	<METS:dmdSec ID="CollectionMODS">
+		<METS:mdWrap MDTYPE="MODS">
+			<METS:xmlData>
+				<mods xmlns="http://www.loc.gov/mods/v3">
+					<titleInfo>
+						<title>Works of Carolyn Hank</title>
+					</titleInfo>
+					<genre authority="local">http://purl.org/eprint/type/ConferencePaper</genre>
+					<name type="personal">
+						<affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+						<affiliation>Carolina Digital Library and Archives, UNC Chapel Hill</affiliation>
+						<namePart>Hank, Carolyn</namePart>
+						<role>
+							<roleTerm>creator</roleTerm>
+						</role>
+					</name>
+					<language>
+						<languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+					</language>
+					<originInfo>
+						<dateIssued keyDate="yes" encoding="iso8601">20070510</dateIssued>
+					</originInfo>
+					<subject>
+						<topic>digital curation</topic>
+					</subject>
+				</mods>
+			</METS:xmlData>
+		</METS:mdWrap>
+	</METS:dmdSec>
+	<METS:amdSec>
+		<METS:rightsMD ID="uuid_b217d43e-2e4b-4652-a88d-6e541bc1ba17"
+			CREATED="2011-03-27T15:12:42.752Z" STATUS="USER_EDITED">
+			<METS:mdWrap MDTYPE="OTHER">
+				<METS:xmlData>
+					<acl:accessControl acl:embargo-until="2017-03-27" acl:inherit="false">
+						<acl:grant acl:group="unc:lib:staff" acl:role="curator"/>
+						<acl:grant acl:group="unc:lib:researchers" acl:role="curator"/>
+						<acl:grant acl:group="unc:lib:faculty" acl:role="curator"/>
+						<acl:grant acl:group="unc:lib:classA" acl:role="patron"/>
+						<acl:grant acl:group="unc:lib:classB" acl:role="patron"/>
+						<acl:grant acl:group="unc:lib:classB" acl:role="patronus"/>
+						<acl:grant acl:group="" acl:role="patron"/>
+						<acl:grant acl:role="patron"/>
+					</acl:accessControl>
+				</METS:xmlData>
+			</METS:mdWrap>
+		</METS:rightsMD>
+	</METS:amdSec>
+	<!--	<METS:amdSec>
+		<METS:digiprovMD ID="WBADMIN">
+			<METS:mdWrap MDTYPE="PREMIS">
+				<METS:xmlData>
+					<premis:rights version="2.0">
+						<premis:rightsStatement>
+						 repository's rights to act 
+							<premis:rightsStatementIdentifier>
+								<premis:rightsStatementIdentifierType>URL</premis:rightsStatementIdentifierType>
+								<premis:rightsStatementIdentifierValue>http://cdr.unc.edu/agreements/deposit/2008/</premis:rightsStatementIdentifierValue>
+							</premis:rightsStatementIdentifier>
+							<premis:rightsBasis>copyright</premis:rightsBasis>
+							<premis:copyrightInformation>
+								<premis:copyrightStatus>Public Domain</premis:copyrightStatus>
+								<premis:copyrightJurisdiction>United States</premis:copyrightJurisdiction>
+							</premis:copyrightInformation>
+							<premis:licenseInformation>
+								<premis:licenseIdentifier>
+									<premis:licenseIdentifierType>URL</premis:licenseIdentifierType>
+									<premis:licenseIdentifierValue>http://creativecommons.org/licenses/by/3.0/us/</premis:licenseIdentifierValue>
+								</premis:licenseIdentifier>
+							</premis:licenseInformation>
+							<premis:rightsGranted>
+								<premis:act>all</premis:act>
+								<premis:termOfGrant>
+									<premis:startDate>2002-09-24</premis:startDate>
+								</premis:termOfGrant>
+							</premis:rightsGranted>
+						</premis:rightsStatement>
+					</premis:rights>
+				</METS:xmlData>
+			</METS:mdWrap>
+		</METS:digiprovMD>
+	</METS:amdSec>-->
+
+	<METS:fileSec>
+		<METS:fileGrp>
+			<METS:file ID="iso" USE="DiskImage" MIMETYPE="archive/iso9660"
+				CHECKSUM="thechecksum1lkj" CHECKSUMTYPE="MD5">
+				<METS:FLocat LOCTYPE="URL" xlink:href="disk.iso"/>
+			</METS:file>
+			<METS:file ID="sometopfile" USE="Master" MIMETYPE="text/plain">
+				<METS:FLocat LOCTYPE="URL" xlink:href="disk_top_readme.txt"/>
+			</METS:file>
+			<METS:file ID="refFile" USE="Master" MIMETYPE="text/plain">
+				<METS:FLocat LOCTYPE="URL" xlink:href="referenced.txt"/>
+			</METS:file>
+			<METS:file ID="f1" MIMETYPE="application/vnd.ms-powerpoint">
+				<METS:FLocat LOCTYPE="URL" xlink:href="slides_tutorial10_final.ppt"/>
+			</METS:file>
+			<METS:file ID="f2" MIMETYPE="application/pdf">
+				<METS:FLocat LOCTYPE="URL" xlink:href="tutorial10_slides_19june2007.pdf"/>
+			</METS:file>
+			<METS:file ID="f3" MIMETYPE="text/plain">
+				<METS:FLocat LOCTYPE="URL" xlink:href="slides.txt"/>
+			</METS:file>
+			<METS:file ID="f4" MIMETYPE="application/vnd.ms-word">
+				<METS:FLocat LOCTYPE="URL" xlink:href="outline_june18_5pm_CH.doc"/>
+			</METS:file>
+			<METS:file ID="f5" MIMETYPE="application/pdf">
+				<METS:FLocat LOCTYPE="URL"
+					xlink:href="file:\foo\bar\tutorial10_overview_19june2007.pdf"/>
+			</METS:file>
+			<METS:file ID="f6" MIMETYPE="text/plain">
+				<METS:FLocat LOCTYPE="URL" xlink:href="file:/foo/bar/overview.txt"/>
+			</METS:file>
+			<METS:file ID="f7" MIMETYPE="image/png">
+				<METS:FLocat LOCTYPE="URL" xlink:href="http://hank_carolyn.png"/>
+			</METS:file>
+			<METS:file ID="cover" MIMETYPE="image/png">
+				<METS:FLocat LOCTYPE="URL" xlink:href="http://hank_carolyn.png"/>
+			</METS:file>
+		</METS:fileGrp>
+	</METS:fileSec>
+
+	<!-- This structure map is in the default "base" model -->
+	<METS:structMap>
+		<METS:div ID="collA" ADMID="uuid_b217d43e-2e4b-4652-a88d-6e541bc1ba17" DMDID="CollectionMODS"
+			LABEL="Collection with ACL and Cover Image" TYPE="Collection">
+			<METS:div LABEL="Disk typed div with subdivs and fptr for iso" TYPE="Disk">
+				<METS:fptr FILEID="iso"/>
+				<METS:div>
+					<!-- TODO label to be extracted from file name -->
+					<METS:fptr FILEID="sometopfile"/>
+				</METS:div>
+				<METS:div LABEL="Folder 1 - typed with subdivs" TYPE="Folder">
+					<METS:div LABEL="File 1 - div typed as File" DMDID="SlidesMODS" TYPE="File">
+						<METS:fptr FILEID="f1"/>
+					</METS:div>
+					<METS:div LABEL="File 2 - div untyped with fptr" DMDID="MODS2">
+						<METS:fptr FILEID="f2"/>
+					</METS:div>
+				</METS:div>
+				<METS:div LABEL="Empty Folder - labeled div with no subdivs or fptrs"/>
+				<METS:div LABEL="Folder - untyped div with subdivs">
+					<METS:div LABEL="File 3 - untyped" DMDID="OverviewMODS">
+						<METS:fptr FILEID="f3"/>
+					</METS:div>
+					<METS:div LABEL="File 4 - untyped" DMDID="MODS4">
+						<METS:fptr FILEID="f4"/>
+					</METS:div>
+					<METS:div LABEL="File - untyped with ORDER 5" ORDER="5" DMDID="MODS5">
+						<METS:fptr FILEID="f5"/>
+					</METS:div>
+					<METS:div LABEL="File 6 - typed" TYPE="File" DMDID="MODS6">
+						<METS:fptr FILEID="f6"/>
+					</METS:div>
+					<METS:div ID="imageB" LABEL="File 7 - typed" TYPE="File" DMDID="MODS7">
+						<METS:fptr FILEID="f7"/>
+					</METS:div>
+				</METS:div>
+				<METS:div TYPE="AlphabetizedFolder" LABEL="AlphabetizedFolder - with subdivs">
+					<METS:div LABEL="File 3 - untyped" DMDID="OverviewMODS">
+						<METS:fptr FILEID="f3"/>
+					</METS:div>
+					<METS:div LABEL="File 4 - untyped" DMDID="MODS4">
+						<METS:fptr FILEID="f4"/>
+					</METS:div>
+					<METS:div LABEL="File - untyped with ORDER 5" ORDER="5" DMDID="MODS5">
+						<METS:fptr FILEID="f5"/>
+					</METS:div>
+					<METS:div LABEL="File 6 - typed" TYPE="File" DMDID="MODS6">
+						<METS:fptr FILEID="f6"/>
+					</METS:div>
+					<METS:div LABEL="File 7 - typed" TYPE="File" DMDID="MODS7">
+						<METS:fptr FILEID="f7"/>
+					</METS:div>
+				</METS:div>
+				<METS:div TYPE="Reference" ID="pointA"/>
+			</METS:div>
+		</METS:div>
+	</METS:structMap>
+
+	<METS:structMap TYPE="Basic">
+		<METS:div ID="pointB" TYPE="File">
+			<METS:fptr FILEID="refFile"/>
+		</METS:div>
+	</METS:structMap>
+
+	<METS:structLink>
+		<METS:smLink xlink:to="#pointB" xlink:from="#pointA" xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo"/>
+		<METS:smLink xlink:from="#collA" xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate" xlink:to="#imageB"/>
+	</METS:structLink>
+</METS:mets>

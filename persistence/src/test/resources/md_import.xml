@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bulkMetadata>
+<object pid="uuid:76240153-300b-4e90-9c55-94c64f4a24de">
+  <update type="MODS" lastModified="2011-12-15T14:18:02.741Z">
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ID="uuid_70990fed-e32a-4a3b-8422-6477e30d1a7a">
+  <mods:titleInfo>
+    <mods:title>Test Title</mods:title>
+  </mods:titleInfo>
+</mods:mods>
+  </update>
+</object>
+<object pid="uuid:fdd92f21-2428-4745-9174-38eccf5be43f" />
+<object pid="uuid:0af8f45e-cce8-40db-aa58-15c25b55395e" />
+<object pid="uuid:0b7b1a98-b7db-4114-b5f1-faa0de9dad0d" />
+<object pid="uuid:0778aa27-7c7a-4a54-b959-c39d2c7c44d7" />
+<object pid="uuid:d7e8f997-e9f5-4c8c-9869-c0898f7d08a9">
+  <update type="MODS" lastModified="2015-06-04T14:13:19.480Z">
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:originInfo>
+    <mods:dateCreated encoding="iso8601" keyDate="yes">1990-09-09</mods:dateCreated>
+  </mods:originInfo>
+</mods:mods>
+  </update>
+</object>
+<object pid="uuid:04a615c3-e29f-4346-9f2a-5a7e87ad21a0" />
+</bulkMetadata>

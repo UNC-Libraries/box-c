@@ -1,0 +1,17 @@
+<m:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:m="http://www.loc.gov/METS/">
+	<m:div TYPE="Container">
+		<m:div ID="uuid:child1" ORDER="1"></m:div>
+		<m:div ID="uuid:child2" ORDER="2"></m:div>
+		<m:div ID="uuid:child3" ORDER="3"></m:div>
+		<m:div ID="uuid:child4" ORDER="4"></m:div>
+		<m:div ID="uuid:child5" ORDER="5"></m:div>
+		<m:div ID="uuid:child6" ORDER="6"></m:div>
+		<m:div ID="uuid:child7" ORDER="7"></m:div>
+		<m:div ID="uuid:child8" ORDER="8"></m:div>
+		<m:div ID="uuid:child9" ORDER="9"></m:div>
+		<m:div ID="uuid:child10" ORDER="10"></m:div>
+		<m:div ID="uuid:child11" ORDER="11"></m:div>
+		<m:div ID="uuid:child12" ORDER="12"></m:div>
+	</m:div>
+</m:structMap>
