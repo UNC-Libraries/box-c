@@ -48,6 +48,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
 
     protected static String FORWARDING_ROLE = "group-forwarding";
+    private static final String FORWARDED_MAIL = "forwarded-mail";
 
     private boolean retainGroupsThreadStore;
 
