@@ -29,6 +29,27 @@
         </testResources>
 
         <plugins>
+            <!-- This can be removed once fedora 3 clients removed -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <id>access-source-generation</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/resources</schemaDirectory>
+                            <schemaFiles>fedora-types.xsd</schemaFiles>
+                            <packageName>edu.unc.lib.dl.fedora.types</packageName>
+                            <outputDirectory>src/jaxb/java/</outputDirectory>
+                            <staleFile>${project.build.directory}/.staleTypesFlag</staleFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
