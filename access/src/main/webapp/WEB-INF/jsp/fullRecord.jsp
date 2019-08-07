@@ -36,8 +36,10 @@
 				<p><strong>Gallery</strong> view shows you all the files only, without the folders that store the files.</p>
 				<p><strong>Structured</strong> view allows you to navigate one level at a time.</p>
 			</span></a>
-		<button id="gallery-display" class="button is-light">Gallery</button>
-		<button id="structure-display" class="button is-light">Structured</button>
+		<div id="browse-btns">
+			<button id="gallery-display" class="button is-light">Gallery</button>
+			<button id="structure-display" class="button is-light">Structured</button>
+		</div>
 	</div>
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
@@ -69,4 +71,3 @@
 	<c:set var="collectionName" value="(no collection)" />
 </c:if>
 <c:set var="gaCommands" scope="request">${gaCommands} ga('unc.send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
-<script type="text/javascript" src="/static/js/public/browseViewType"></script>

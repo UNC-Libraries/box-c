@@ -503,7 +503,7 @@ p.no-search-results {
   border-right: 5px solid transparent;
   border-bottom: 10px solid darkslategray;
   height: 0;
-  margin: 5px 2px 0 2px;
+  margin: 7px 2px 0 2px;
   width: 0;
 }
 .display-wrapper a span.browse-tip, .display-wrapper a .arrow {
@@ -511,6 +511,11 @@ p.no-search-results {
 }
 .display-wrapper .button.is-light {
   border: 1px solid darkgray;
+}
+.display-wrapper .button.is-selected {
+  background-color: slategray;
+  border: 1px solid black;
+  color: whitesmoke;
 }
 .display-wrapper button {
   margin-left: 10px;

@@ -52,6 +52,7 @@
     import chunk from 'lodash.chunk';
     import get from 'axios';
     import routeUtils from '../mixins/routeUtils';
+    import browseOptionUtils from "../mixins/browseOptionUtils";
 
     export default {
         name: 'browseDisplay',
@@ -70,15 +71,13 @@
             }
         },
 
-        mixins: [routeUtils],
+        mixins: [routeUtils, browseOptionUtils],
 
         data() {
             return {
-                browse_type: 'gallery-display',
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: {},
-                interval_check: '',
                 is_collection: false,
                 is_folder: false,
                 record_count: 0,
@@ -148,13 +147,6 @@
               return thumb !== undefined && thumb !== '';
             },
 
-            browseDisplayType() {
-                let saved_display = localStorage.getItem('dcr-browse-display');
-                if (saved_display !== null && this.browse_type !== saved_display) {
-                    this.browse_type = saved_display;
-                }
-            },
-
             updateUrl() {
                 let param_filters = { types: 'Work' };
                 if (this.containsFolderType(this.$route.query.types)) {
@@ -166,6 +158,7 @@
             },
 
             retrieveData() {
+                let search_method = 'searchJson';
                 let params = this.urlParams();
 
                 if (this.is_collection || this.is_folder) {
@@ -173,17 +166,20 @@
                 }
 
                 if (this.browse_type === 'structure-display') {
-                    params.types = 'Work,Folder'
+                    params.types = 'Work,Folder';
+                    delete params.format;
+                    search_method = 'listJson';
                 }
 
                 if (this.containsFolderType(this.$route.query.types)) {
-                    params.types = 'Folder'
+                    params.types = 'Folder';
+                    search_method = 'listJson';
                 }
 
                 let param_string = this.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
-                get(`listJson/${this.uuid}${param_string}`).then((response) => {
+                get(`${search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.container_name = response.data.container.title;
@@ -194,28 +190,24 @@
             }
         },
 
-        created() {
-            // Check if there's a saved browse type
-            this.browseDisplayType();
-        },
-
         mounted() {
             // Small hack to check outside of Vue controlled DOM to see if we're on the collections or folder browse page
             this.is_collection = document.getElementById('is-collection') !== null;
             this.is_folder = document.getElementById('is-folder') !== null;
 
-            if (this.is_collection || this.is_folder || this.browse_type === 'structure-display') {
+            if (this.is_collection || this.is_folder) {
                 this.updateUrl();
             }
 
-            this.retrieveData();
-            window.addEventListener('resize', debounce(this.numberOfColumns), 300);
-            this.interval_check = window.setInterval(this.browseDisplayType, 1500);
+            window.addEventListener('resize', debounce(this.numberOfColumns, 300));
+            this.setBrowseEvents();
+            window.addEventListener('load', this.setButtonColor);
         },
 
         beforeDestroy() {
             window.removeEventListener('resize', this.numberOfColumns);
-            window.clearInterval(this.interval_check);
+            this.clearBrowseEvents();
+            window.removeEventListener('unload', this.setButtonColor);
         }
     };
 </script>

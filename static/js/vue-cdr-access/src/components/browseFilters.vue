@@ -22,8 +22,7 @@
         data() {
             return {
                 browse_type_updated: false,
-                filtered: false,
-                update_params: {}
+                filtered: false
             }
         },
 
@@ -54,7 +53,7 @@
 
                 if (this.browse_type_updated) {
                     this.filtered = false;
-                    this.browse_type_updated = false; // reset browse change
+                    this.browse_type_updated = false;
                 } else {
                     this.filtered = !this.filtered;
                 }
@@ -63,9 +62,6 @@
                     url_params.types = 'Work';
                     url_params.format = 'image';
                 } else if (this.filtered && this.browseType === 'structure-display') {
-                    url_params.types = 'Folder';
-                    delete url_params.format;
-                } else if (this.browseType === 'structure-display') {
                     url_params.types = 'Work,Folder';
                     delete url_params.format;
                 } else {
@@ -73,6 +69,7 @@
                     delete url_params.format;
                 }
 
+                url_params.browse_type = this.browseType;
                 this.$router.push({ name: 'browseDisplay', query: url_params });
             }
         },

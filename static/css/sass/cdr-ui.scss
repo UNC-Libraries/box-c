@@ -540,7 +540,7 @@ p.no-search-results {
       border-right: 5px solid transparent;
       border-bottom: 10px solid darkslategray;
       height: 0;
-      margin: 5px 2px 0 2px;
+      margin: 7px 2px 0 2px;
       width: 0;
     }
 
@@ -551,6 +551,12 @@ p.no-search-results {
 
   .button.is-light {
     border: 1px solid darkgray;
+  }
+
+  .button.is-selected {
+    background-color: slategray;
+    border: 1px solid black;
+    color: whitesmoke;
   }
 
   button {
