@@ -15,36 +15,19 @@
  */
 package edu.unc.lib.dl.util;
 
-import org.jdom2.Element;
-
 /**
+ * Constant values for metadata profiles
+ *
  * @author bbpennel
- * @date Mar 24, 2014
+ * @date May 1, 2014
  */
-public class DepositException extends Exception implements XMLAttachedException {
+public class MetadataProfileConstants {
 
-    private static final long serialVersionUID = -4065348103957132332L;
+    public final static String PROQUEST_ETD = "proquest";
 
-    Element errorXML = null;
+    public final static String BIOMED_ARTICLE = "biomedcentral_article";
 
-    public DepositException(String msg) {
-        super(msg);
+    private MetadataProfileConstants() {
+
     }
-
-    public DepositException(String msg, Throwable e) {
-        super(msg, e);
-        if (e instanceof XMLAttachedException) {
-            this.errorXML = ((XMLAttachedException) e).getErrorXML();
-        }
-    }
-
-    @Override
-    public Element getErrorXML() {
-        return errorXML;
-    }
-
-    public void setErrorXML(Element errorXML) {
-        this.errorXML = errorXML;
-    }
-
 }
