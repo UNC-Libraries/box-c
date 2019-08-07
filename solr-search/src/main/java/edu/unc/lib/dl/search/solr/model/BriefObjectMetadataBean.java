@@ -28,10 +28,9 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -218,23 +217,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     }
 
     @Override
-    public Datastream getDefaultWebData() {
-        if (this.relationsMap == null) {
-            return null;
-        }
-        List<String> defaultWebDataValues = this.relationsMap.get(
-                ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
-        if (defaultWebDataValues == null) {
-            return null;
-        }
-        String defaultWebData = defaultWebDataValues.get(0);
-        if (defaultWebData == null) {
-            return null;
-        }
-        return this.getDatastreamObject(defaultWebData);
-    }
-
-    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("id: " + getId() + "\n");
@@ -306,7 +288,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     @Override
     public Date getActiveEmbargo() {
-        List<String> embargoUntil = getRelation(CDRProperty.embargoUntil.getPredicate());
+        List<String> embargoUntil = getRelation(CdrAcl.embargoUntil.getURI());
         if (embargoUntil != null) {
             Date result = null;
             Date dateNow = new Date();

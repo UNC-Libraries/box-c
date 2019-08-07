@@ -39,10 +39,6 @@
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="false" />
-    </bean>    
-    
-    <bean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants">
-        <property name="ADMIN_GROUP" value="${admin.access.groups}"/>
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />

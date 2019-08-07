@@ -48,7 +48,6 @@ import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
@@ -159,7 +158,7 @@ public class ExportController extends AbstractSolrSearchController {
         Datastream dataFileDatastream = null;
 
         if (ResourceType.File.equals(object.getResourceType())) {
-            dataFileDatastream = object.getDatastreamObject(ContentModelHelper.Datastream.DATA_FILE.toString());
+//            dataFileDatastream = object.getDatastreamObject(ContentModelHelper.Datastream.DATA_FILE.toString());
         }
 
         if (dataFileDatastream != null) {
@@ -182,19 +181,19 @@ public class ExportController extends AbstractSolrSearchController {
 
         // Container info: child count
 
-        if (object.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
-            Long childCount = object.getCountMap().get("child");
-
-            // If we don't have a childCount we will assume that the container contains zero
-            // items, because the Solr query asked for facet.mincount=1
-            if (childCount != null && childCount > 0) {
-                printer.print(childCount);
-            } else {
-                printer.print(new Long(0));
-            }
-        } else {
-            printer.print("");
-        }
+//        if (object.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
+//            Long childCount = object.getCountMap().get("child");
+//
+//            // If we don't have a childCount we will assume that the container contains zero
+//            // items, because the Solr query asked for facet.mincount=1
+//            if (childCount != null && childCount > 0) {
+//                printer.print(childCount);
+//            } else {
+//                printer.print(new Long(0));
+//            }
+//        } else {
+//            printer.print("");
+//        }
 
         // Description: does object have a MODS description?
 

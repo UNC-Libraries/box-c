@@ -79,7 +79,6 @@
         <property name="exposedContextBeanNames">
             <list>
                 <value>searchSettings</value>
-                <value>accessGroupConstants</value>
                 <value>accessBaseUrl</value>
                 <value>adminBaseUrl</value>
                 <value>formsBaseUrl</value>
@@ -146,11 +145,6 @@
     
     <bean id="depositsDirectory" class="java.io.File">
         <constructor-arg value="${batch.ingest.dir}" />
-    </bean>
-    
-    <bean id="depositBinCollector" class="edu.unc.lib.dl.admin.collect.DepositBinCollector"
-            init-method="init">
-        <property name="configPath" value="${repo.dir}/collector.json" />
     </bean>
     
     <util:map id="vocabHelperClassMap">

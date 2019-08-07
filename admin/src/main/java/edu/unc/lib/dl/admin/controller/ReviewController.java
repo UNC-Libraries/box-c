@@ -87,9 +87,6 @@ public class ReviewController extends AbstractSearchController {
         results.put("queryMethod", "review");
         results.put("resultOperation", "review");
 
-        long invalidVocabCount = queryLayer.getInvalidVocabularyCount(searchRequest);
-        results.put("invalidVocabCount", invalidVocabCount);
-
         if (resp.getSelectedContainer() != null) {
             results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
         }

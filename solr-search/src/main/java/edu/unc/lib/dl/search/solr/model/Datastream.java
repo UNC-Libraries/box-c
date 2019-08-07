@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
-
 /**
  *
  * @author bbpennel
@@ -31,7 +28,6 @@ public class Datastream {
     private String filename;
     private String extension;
     private String checksum;
-    private ContentModelHelper.Datastream datastreamClass;
 
     public Datastream(String owner, String name, Long filesize, String mimetype, String filename, String extension,
             String checksum) {
@@ -195,15 +191,5 @@ public class Datastream {
 
     public void setFilesize(Long filesize) {
         this.filesize = filesize;
-    }
-
-    public DatastreamCategory getDatastreamCategory() {
-        if (datastreamClass == null) {
-            this.datastreamClass = ContentModelHelper.Datastream.getDatastream(this.name);
-        }
-        if (datastreamClass == null) {
-            return null;
-        }
-        return datastreamClass.getCategory();
     }
 }

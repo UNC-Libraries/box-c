@@ -21,8 +21,7 @@ package edu.unc.lib.dl.xml;
  *
  */
 public enum METSProfile {
-    CDR_SIMPLE("http://cdr.unc.edu/METS/profiles/Simple"), DSPACE_SIP(
-            "DSpace METS SIP Profile 1.0");
+    CDR_SIMPLE("http://cdr.unc.edu/METS/profiles/Simple");
 
     private String name;
 
@@ -38,6 +37,7 @@ public enum METSProfile {
         return this.name.equals(name);
     }
 
+    @Override
     public String toString() {
         return name;
     }

@@ -77,8 +77,6 @@ public interface BriefObjectMetadata {
 
     public List<String> getRelation(String relationName);
 
-    public Datastream getDefaultWebData();
-
     public Boolean getIsPart();
 
     public List<String> getContentModel();

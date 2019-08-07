@@ -32,7 +32,7 @@ public class RedisWorkerConstants {
 
     public static enum DepositField {
         uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
-        fileName, resubmitDirName, resubmitFileName, isResubmit, depositMethod, containerId, payLoadOctets,
+        fileName, depositMethod, containerId, payLoadOctets,
         createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
         depositorEmail, packagingType, packageProfile, metsType, permissionGroups, depositMd5, depositSlug,
         errorMessage, stackTrace, excludeDepositRecord, publishObjects, fileMimetype, priority, sourcePath,
@@ -57,12 +57,12 @@ public class RedisWorkerConstants {
 
     /**
      * Deposit-level instructions that can be executed by a deposit supervisor.
-     * 
+     *
      * @author count0
      *
      */
     public static enum DepositAction {
-        register, pause, resume, cancel, destroy, resubmit;
+        register, pause, resume, cancel, destroy;
     }
 
     private RedisWorkerConstants() {

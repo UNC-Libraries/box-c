@@ -43,15 +43,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.CleanupDepositJob;
-import edu.unc.lib.deposit.PrepareResubmitJob;
 import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
-import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob;
-import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
@@ -244,18 +241,6 @@ public class DepositSupervisor implements WorkerListener {
                             if (depositStatusFactory.addSupervisorLock(uuid, id)) {
                                 try {
                                     resumeDeposit(uuid, fields);
-                                } finally {
-                                    depositStatusFactory.removeSupervisorLock(uuid);
-                                }
-                            }
-
-                        } else if (DepositAction.resubmit.name().equals(requestedActionName)) {
-
-                            LOG.info("Resubmitting job {}", uuid);
-
-                            if (depositStatusFactory.addSupervisorLock(uuid, id)) {
-                                try {
-                                    resubmitDeposit(uuid, fields);
                                 } finally {
                                     depositStatusFactory.removeSupervisorLock(uuid);
                                 }
@@ -481,13 +466,13 @@ public class DepositSupervisor implements WorkerListener {
                     jobUUID = j.getJobUUID();
                 }
 
-                if (t != null && t instanceof JobInterruptedException) {
+                if (t instanceof JobInterruptedException) {
                     LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
                     jobStatusFactory.interrupted(jobUUID);
                     return;
                 }
 
-                if (t != null && t instanceof FedoraTimeoutException) {
+                if (t instanceof FedoraTimeoutException) {
                     LOG.warn("Fedora timed out for job {} in deposit {},"
                             + " will resume after delay", jobUUID, depositUUID);
                     jobStatusFactory.failed(jobUUID);
@@ -569,13 +554,6 @@ public class DepositSupervisor implements WorkerListener {
             throws DepositFailedException {
         LOG.debug("Got completed job names: {}", successfulJobs);
 
-        // Resubmit deposit
-        if (status.get(DepositField.resubmitFileName.name()) != null) {
-            if (!successfulJobs.contains(PrepareResubmitJob.class.getName())) {
-                return makeJob(PrepareResubmitJob.class, depositUUID);
-            }
-        }
-
         // Package integrity check
         if (status.get(DepositField.depositMd5.name()) != null) {
             if (!successfulJobs.contains(PackageIntegrityCheckJob.class
@@ -600,11 +578,6 @@ public class DepositSupervisor implements WorkerListener {
             // we need to add N3 packaging to this bag
             if (packagingType.equals(PackagingType.METS_CDR.getUri())) {
                 conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
-            } else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
-                    || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())) {
-                conversion = makeJob(BioMedToN3BagJob.class, depositUUID);
-            } else if (packagingType.equals(PackagingType.PROQUEST_ETD.getUri())) {
-                conversion = makeJob(Proquest2N3BagJob.class, depositUUID);
             } else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
                 conversion = makeJob(Simple2N3BagJob.class, depositUUID);
             } else if (packagingType.equals(PackagingType.BAGIT.getUri())) {
@@ -634,10 +607,8 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(ValidateContentModelJob.class, depositUUID);
         }
 
-        // Perform vocabulary enforcement for package types that retain the original metadata
-//        if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
-//                || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
-//                || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
+        // Perform vocabulary enforcement for package types that include metadata
+//        if (packagingType.equals(PackagingType.METS_CDR.getUri())
 //                && !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
 //            return makeJob(VocabularyEnforcementJob.class, depositUUID);
 //        }
@@ -780,27 +751,6 @@ public class DepositSupervisor implements WorkerListener {
             depositStatusFactory.setState(uuid, DepositState.queued);
         } catch (DepositFailedException e) {
             LOG.error("Failed to resume deposit " + uuid, e);
-            depositStatusFactory.fail(uuid);
-        }
-    }
-
-    private void resubmitDeposit(String uuid, Map<String, String> status) {
-        try {
-            depositStatusFactory.clearActionRequest(uuid);
-
-            if (status.get(DepositField.resubmitFileName.name()) == null) {
-                throw new DepositFailedException("Can't resubmit a deposit without a new ingest file.");
-            }
-
-            // Clear out all jobs for this deposit
-            jobStatusFactory.deleteAll(uuid);
-            depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
-
-            queueNextJob(null, uuid, status, Arrays.<String>asList(), new Long(0));
-
-            depositStatusFactory.setState(uuid, DepositState.queued);
-        } catch (DepositFailedException e) {
-            LOG.error("Failed to resubmit deposit " + uuid, e);
             depositStatusFactory.fail(uuid);
         }
     }

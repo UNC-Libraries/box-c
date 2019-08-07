@@ -177,11 +177,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     }
 
     @Override
-    public Datastream getDefaultWebData() {
-        return this.representative.getDefaultWebData();
-    }
-
-    @Override
     public Boolean getIsPart() {
         return this.representative.getIsPart();
     }

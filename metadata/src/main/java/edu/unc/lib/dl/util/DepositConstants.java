@@ -30,8 +30,6 @@ public class DepositConstants {
     public static final String AIPS_DIR = "aips";
     public static final String DATA_DIR = "data";
     public static final String TECHMD_DIR = "techmd";
-    public static final String RESUBMIT_DIR_PREFIX = "resubmit-";
-    public static final String RESUBMIT_BACKUP_DIR = "resubmit-backup";
     public static final String FILE_LOCATOR_URI = "http://cdr.lib.unc.edu/schema/bag#locator";
 
     private DepositConstants() {

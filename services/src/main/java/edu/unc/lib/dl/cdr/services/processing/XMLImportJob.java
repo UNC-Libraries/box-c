@@ -53,7 +53,6 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 import io.dropwizard.metrics5.Timer;
 
@@ -282,7 +281,7 @@ public class XMLImportJob implements Runnable {
                                             "Invalid import data, missing type attribute on update");
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
-                                    currentDs = Datastream.MD_DESCRIPTIVE.toString();
+                                    currentDs = MODS_TYPE;
                                 } else {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "Invalid import data, unsupported type in update tag");

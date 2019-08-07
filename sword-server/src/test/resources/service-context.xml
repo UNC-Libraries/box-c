@@ -63,16 +63,9 @@
                     value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
                 <entry key="vocabularies-mods"
                     value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch" />
             </map>
         </property>
     </bean>
-
-    <util:map id="virtualDatastreamMap" key-type="java.lang.String"
-        value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
-        <entry key="ACL" value="RELS_EXT" />
-    </util:map>
 
     <!-- SWORD config -->
 

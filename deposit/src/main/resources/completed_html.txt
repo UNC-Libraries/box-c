@@ -34,8 +34,6 @@
   <p><a href="{{baseUrl}}/record/{{objectPid}}">{{baseUrl}}/record/{{objectPid}}</a></p>
   {{/isOpen}}
   
-  {{#isEmbargoed}}<p>Your materials are embargoed until {{embargoUntil}}.</p>{{/isEmbargoed}}
-  
   {{#isClosed}}<p>Materials requiring review will be made accessible upon approval by the relevant department.</p>{{/isClosed}}
   
   <p>Thank you for contributing to the <a href="{{baseUrl}}">Digital Collections Repository</a>, a service of the <a href="http://www.lib.unc.edu/">University of North Carolina at Chapel Hill Libraries</a>.</p>

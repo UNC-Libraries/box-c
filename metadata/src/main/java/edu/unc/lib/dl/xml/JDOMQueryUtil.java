@@ -17,15 +17,11 @@ package edu.unc.lib.dl.xml;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -86,22 +82,5 @@ public class JDOMQueryUtil {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns a set of object PIDs retrieved from the provided RDF datastream
-     *
-     * @param rdfRoot
-     * @param relation
-     * @return
-     */
-    public static Set<PID> getRelationSet(final Element rdfRoot, final Relationship relation) {
-        List<Element> containsEls = rdfRoot.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren(
-                relation.name(), relation.getNamespace());
-        Set<PID> children = new HashSet<>();
-        for (Element containsEl : containsEls) {
-            children.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
-        }
-        return children;
     }
 }

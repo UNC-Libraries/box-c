@@ -15,12 +15,8 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,9 +35,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
@@ -94,34 +88,34 @@ public class VocabularyController extends AbstractSearchController {
         Set<VocabularyHelper> helpers = vocabularies.getHelpers(RepositoryPaths.getContentRootPid());
         if (helpers != null) {
             for (VocabularyHelper helper : helpers) {
-                String prefix = helper.getInvalidTermPrefix();
-                String queryTerm = CDRProperty.invalidTerm.getPredicate() + "|" + prefix;
-                SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest, queryTerm);
+//                String prefix = helper.getInvalidTermPrefix();
+//                String queryTerm = CDRProperty.invalidTerm.getPredicate() + "|" + prefix;
+//                SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest, queryTerm);
+//
+//                List<Map<String, Object>> vocabTypeResults = new ArrayList<>();
+//                String predicate = invalidTerm.getPredicate();
+//                for (BriefObjectMetadata record : resultResponse.getResultList()) {
+//                    Map<String, Object> data = new HashMap<>();
+//                    data.put("id", record.getId());
+//                    data.put("title", record.getTitle());
+//                    List<String> invalidTerms = record.getRelation(predicate);
+//                    List<String> resultTerms = new ArrayList<>();
+//                    for (String prefixedTerm : invalidTerms) {
+//                        String parts[] = prefixedTerm.split("\\|", 2);
+//                        if (parts[0].equals(prefix)) {
+//                            resultTerms.add(parts[1]);
+//                        }
+//                    }
+//                    data.put("invalidTerms", resultTerms);
+//
+//                    vocabTypeResults.add(data);
+//                }
 
-                List<Map<String, Object>> vocabTypeResults = new ArrayList<>();
-                String predicate = invalidTerm.getPredicate();
-                for (BriefObjectMetadata record : resultResponse.getResultList()) {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("id", record.getId());
-                    data.put("title", record.getTitle());
-                    List<String> invalidTerms = record.getRelation(predicate);
-                    List<String> resultTerms = new ArrayList<>();
-                    for (String prefixedTerm : invalidTerms) {
-                        String parts[] = prefixedTerm.split("\\|", 2);
-                        if (parts[0].equals(prefix)) {
-                            resultTerms.add(parts[1]);
-                        }
-                    }
-                    data.put("invalidTerms", resultTerms);
-
-                    vocabTypeResults.add(data);
-                }
-
-                vocabResults.put(helper.getInvalidTermPrefix(), vocabTypeResults);
+//                vocabResults.put(helper.getInvalidTermPrefix(), vocabTypeResults);
             }
         }
 
-        results.put("vocabTypes", vocabResults);
+//        results.put("vocabTypes", vocabResults);
         results.put("container", SerializationUtil.metadataToMap(selectedContainer, groups));
 
         return results;

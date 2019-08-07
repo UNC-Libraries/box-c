@@ -63,8 +63,6 @@
                     value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
                 <entry key="vocabularies-mods"
                     value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch" />
             </map>
         </property>
     </bean>
@@ -133,32 +131,6 @@
         </property>
     </bean>
 
-    <bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
-        factory-method="newTransformer" scope="prototype">
-        <constructor-arg>
-            <bean class="org.springframework.xml.transform.ResourceSource">
-                <constructor-arg>
-                    <value>classpath:epdcx2mods.xsl</value>
-                </constructor-arg>
-            </bean>
-        </constructor-arg>
-    </bean>
-    
-    <bean id="proquest2ModsTransformer" factory-bean="transformerFactory"
-        factory-method="newTransformer" scope="prototype">
-        <constructor-arg>
-            <bean class="org.springframework.xml.transform.ResourceSource">
-                <constructor-arg>
-                    <value>classpath:proquest-to-mods.xsl</value>
-                </constructor-arg>
-            </bean>
-        </constructor-arg>
-    </bean>
-
-    <bean id="PrepareResubmitJob" class="edu.unc.lib.deposit.PrepareResubmitJob"
-        scope="prototype">
-    </bean>
-
     <bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
         scope="prototype">
     </bean>
@@ -181,20 +153,8 @@
         <property name="metsSipSchema" ref="metsSipSchema" />
     </bean>
 
-    <bean id="BioMedToN3BagJob" class="edu.unc.lib.deposit.normalize.BioMedToN3BagJob"
-        scope="prototype">
-        <property name="schematronValidator" ref="schematronValidator" />
-        <property name="metsSipSchema" ref="metsSipSchema" />
-        <property name="epdcx2modsTransformer" ref="epdcx2modsTransformer" />
-    </bean>
-
     <bean id="Simple2N3BagJob" class="edu.unc.lib.deposit.normalize.Simple2N3BagJob"
         scope="prototype"/>
-        
-    <bean id="Proquest2N3BagJob" class="edu.unc.lib.deposit.normalize.Proquest2N3BagJob"
-        scope="prototype">
-        <property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
-    </bean>
     
     <bean id="NormalizeFileObjectsJob" class="edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob"
         scope="prototype">
