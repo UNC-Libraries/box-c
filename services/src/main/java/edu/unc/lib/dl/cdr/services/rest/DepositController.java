@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,6 +39,7 @@ import org.jdom2.input.StAXStreamBuilder;
 import org.jdom2.input.stax.DefaultStAXFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,9 +51,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -85,6 +89,9 @@ public class DepositController {
     @Resource
     private File batchIngestFolder;
 
+    @Autowired
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
+
     class MutableInt {
           int value = 0;
           public void increment () {
@@ -103,7 +110,7 @@ public class DepositController {
     public @ResponseBody
     Map<String, ? extends Object> getInfo() {
         LOG.debug("getInfo() called");
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         Map<String, MutableInt> counts = countWorkerStates();
         Map<String, MutableInt> countDepositStates = countDepositStates();
@@ -119,7 +126,7 @@ public class DepositController {
         result.put("id", "DEPOSIT");
         LOG.debug("getInfo() added counts: {}", result);
 
-        Map<String, Object> uris = new HashMap<String, Object>();
+        Map<String, Object> uris = new HashMap<>();
         result.put("uris", uris);
 
         for (DepositState s : DepositState.values()) {
@@ -132,7 +139,7 @@ public class DepositController {
 
     public @ResponseBody
     Map<String, MutableInt> countDepositStates() {
-        Map<String, MutableInt> result = new HashMap<String, MutableInt>();
+        Map<String, MutableInt> result = new HashMap<>();
         result.put(DepositState.cancelled.name(), new MutableInt());
         result.put(DepositState.failed.name(), new MutableInt());
         result.put(DepositState.finished.name(), new MutableInt());
@@ -200,7 +207,7 @@ public class DepositController {
 
         for (Map<String, String> deposit : deposits.values()) {
             if (state.name().equals(deposit.get(DepositField.state.name()))) {
-                Map<String, Object> depositResult = new HashMap<String, Object>();
+                Map<String, Object> depositResult = new HashMap<>();
                 String uuid = deposit.get(DepositField.uuid.name());
 
                 for (Entry<String, String> field : deposit.entrySet()) {
@@ -224,7 +231,7 @@ public class DepositController {
 
     private Map<String, Object> getDetails(String depositUUID) {
         Map<String, String> status = depositStatusFactory.get(depositUUID);
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         for (Entry<String, String> field : status.entrySet()) {
             result.put(field.getKey(), field.getValue());
@@ -294,10 +301,10 @@ public class DepositController {
                     "The deposit action is not recognized: " + action);
         }
         // permission check, admin group or depositor required
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
         String username = GroupsThreadStore.getUsername();
         Map<String, String> status = depositStatusFactory.get(uuid);
-        if (!groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
             if (username == null ||  !username.equals(status.get(DepositField.depositorName))) {
                 response.setStatus(403);
                 return;

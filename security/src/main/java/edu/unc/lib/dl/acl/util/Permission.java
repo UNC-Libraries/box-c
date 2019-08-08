@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.acl.util;
 
-import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
-
 /**
  * Permissions for user actions within the repository
  *
@@ -56,20 +54,6 @@ public enum Permission {
             if (permission.name().equals(permissionName)) {
                 return permission;
             }
-        }
-        return null;
-    }
-
-    public static Permission getPermissionByDatastreamCategory(DatastreamCategory category) {
-        switch (category) {
-            case DERIVATIVE:
-                return Permission.viewDerivative;
-            case METADATA:
-                return Permission.viewDescription;
-            case ORIGINAL:
-                return Permission.viewOriginal;
-            case ADMINISTRATIVE:
-                return Permission.viewAdminUI;
         }
         return null;
     }

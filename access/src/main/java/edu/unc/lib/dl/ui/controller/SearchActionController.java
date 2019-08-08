@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
@@ -33,10 +37,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.Map;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -69,7 +69,7 @@ public class SearchActionController extends AbstractSolrSearchController {
     }
 
     private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-        SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
+        doSearch(searchRequest, model, request);
         String queryText = formatQueryText(request);
 
         model.addAttribute("resultType", "searchResults");

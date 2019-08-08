@@ -26,13 +26,10 @@ import java.net.URISyntaxException;
 public enum PackagingType {
     METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
     SIMPLE_OBJECT("http://cdr.unc.edu/model/Simple"),
-    METS_DSPACE_SIP_2("http://purl.org/net/sword/terms/METSDSpaceSIP"),
-    METS_DSPACE_SIP_1("http://purl.org/net/sword-types/METSDSpaceSIP"),
     SIMPLE_ZIP("http://purl.org/net/sword/terms/SimpleZip"),
     ATOM("http://purl.org/net/sword/terms/Atom"),
     BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3"),
     BAGIT("http://purl.org/net/sword/package/BagIt"),
-    PROQUEST_ETD("http://proquest.com"),
     DIRECTORY("http://cdr.unc.edu/DirectoryIngest");
 
     private String uri;

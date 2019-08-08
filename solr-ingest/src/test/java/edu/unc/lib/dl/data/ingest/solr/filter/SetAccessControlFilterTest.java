@@ -48,8 +48,6 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  */
 public class SetAccessControlFilterTest {
 
-    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
-
     private static final String PRINC1 = "group1";
     private static final String PRINC2 = "group2";
 
@@ -73,8 +71,6 @@ public class SetAccessControlFilterTest {
     @Before
     public void setup() throws Exception {
         initMocks(this);
-
-        when(pid.getPid()).thenReturn(PID_STRING);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);

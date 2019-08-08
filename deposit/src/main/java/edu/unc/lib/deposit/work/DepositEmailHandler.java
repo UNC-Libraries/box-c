@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.work;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,18 +24,22 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
 import com.samskivert.mustache.Template;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -44,7 +47,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
- * 
+ *
  * @author mdaines
  *
  */
@@ -69,6 +72,8 @@ public class DepositEmailHandler {
     @Autowired
     private Dataset dataset;
 
+    @Autowired
+    private AccessControlService aclService;
     //@Autowired
     //private FedoraAccessControlService accessControlService;
 
@@ -160,7 +165,7 @@ public class DepositEmailHandler {
 
         Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
 
-        Map<String, Object> data = new HashMap<String, Object>();
+        Map<String, Object> data = new HashMap<>();
         data.putAll(status);
         data.put("baseUrl", this.getBaseUrl());
 
@@ -214,23 +219,20 @@ public class DepositEmailHandler {
             objectPid = status.get(DepositField.containerId.name());
         }
 
-        //ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
-        Date embargoUntil = null; //accessControls.getLastActiveEmbargoUntilDate();
-      //accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
-        boolean hasPatronRoleForPublicGroup = true;
+        AccessGroupSet publicPrincipals = new AccessGroupSet(AccessPrincipalConstants.PUBLIC_PRINC);
 
-        Map<String, Object> data = new HashMap<String, Object>();
+        boolean hasPatronRoleForPublicGroup = aclService.hasAccess(
+                PIDs.get(objectPid), publicPrincipals, Permission.viewOriginal);
+
+        Map<String, Object> data = new HashMap<>();
         data.putAll(status);
         data.put("baseUrl", this.getBaseUrl());
         data.put("objectPid", objectPid);
 
-        if (embargoUntil != null) {
-            data.put("embargoUntil", embargoDateFormat.format(embargoUntil));
-            data.put("isEmbargoed", new Boolean(true));
-        } else if (hasPatronRoleForPublicGroup) {
-            data.put("isOpen", new Boolean(true));
+        if (hasPatronRoleForPublicGroup) {
+            data.put("isOpen", true);
         } else {
-            data.put("isClosed", new Boolean(true));
+            data.put("isClosed", true);
         }
 
         String html = completedHtmlTemplate.execute(data);
@@ -264,7 +266,7 @@ public class DepositEmailHandler {
             String depositPid = depositPID.getURI();
             Bag depositBag = model.getBag(depositPid);
 
-            List<String> topLevelPids = new ArrayList<String>();
+            List<String> topLevelPids = new ArrayList<>();
             DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
 
             // There is a "main object" if the deposit has exactly one top-level object.

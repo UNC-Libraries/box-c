@@ -17,11 +17,15 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.abdera.i18n.iri.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.ServiceDocument;
 import org.swordapp.server.ServiceDocumentManager;
@@ -32,9 +36,14 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
@@ -50,6 +59,8 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
     private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
 
     private Collection<PackagingType> acceptedPackaging;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     @Override
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
@@ -69,7 +80,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
         if (sdUri != null) {
             try {
                 pidString = sdUri.substring(sdUri.lastIndexOf("/") + 1);
-                pid = new PID(pidString);
+                pid = PIDs.get(pidString);
             } catch (IndexOutOfBoundsException e) {
                 // Ignore, if there is no trailing / then no pid is set.
             }
@@ -81,7 +92,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
         assertHasAccess("Insufficient privileges to access the service document for " + pid.getRepositoryPath(),
                 pid, Permission.viewMetadata);
 
-        LOG.debug("Retrieving service document for " + pid);
+        LOG.debug("Retrieving service document for {}", pid);
 
         List<SwordCollection> collections;
         try {
@@ -113,39 +124,39 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
      */
     protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
             SwordConfigurationImpl config) throws IOException {
-//        String query = this.readFileAsString("immediateContainerChildren.sparql");
-//        query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
-//        List<SwordCollection> result = new ArrayList<>();
-//
-//        @SuppressWarnings({ "rawtypes", "unchecked" })
-//        List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query)
-//                .get("results")).get("bindings");
-//        for (Map<?, ?> binding : bindings) {
-//            SwordCollection collection = new SwordCollection();
-//            PID containerPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
-//            String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
-//
-//            // Check that the user has curator access to this collection
-//            if (hasAccess(auth, containerPID, Permission.addRemoveContents, config)) {
-//                collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
-//                        + containerPID.getPid());
-//                collection.setTitle(slug);
-//                collection.addAccepts("application/zip");
-//                collection.addAccepts("text/xml");
-//                collection.addAccepts("application/xml");
-//                for (PackagingType packaging : acceptedPackaging) {
-//                    collection.addAcceptPackaging(packaging.getUri());
-//                }
-//                collection.setMediation(true);
-//                //
-//                IRI iri = new IRI(config.getSwordPath() + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/"
-//                        + containerPID.getPid());
-//                collection.addSubService(iri);
-//                result.add(collection);
-//            }
-//        }
-//        return result;
-        return null;
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        ContentContainerObject containerObj;
+        if (repoObj instanceof ContentContainerObject) {
+            containerObj = (ContentContainerObject) repoObj;
+        } else {
+            return Collections.emptyList();
+        }
+
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+
+        return containerObj.getMembers().stream().map(child -> {
+            PID childPid = child.getPid();
+            if (!aclService.hasAccess(childPid, agent.getPrincipals(), Permission.ingest)) {
+                return (SwordCollection) null;
+            }
+
+            SwordCollection collection = new SwordCollection();
+            collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
+                      + childPid.getId());
+            collection.setTitle(childPid.getId());
+            collection.addAccepts("application/zip");
+            collection.addAccepts("text/xml");
+            collection.addAccepts("application/xml");
+            for (PackagingType packaging : acceptedPackaging) {
+                collection.addAcceptPackaging(packaging.getUri());
+            }
+            collection.setMediation(true);
+
+            IRI iri = new IRI(config.getSwordPath() + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/"
+                    + childPid.getId());
+            collection.addSubService(iri);
+            return collection;
+        }).collect(Collectors.toList());
     }
 
     public void setAcceptedPackaging(Map<PackagingType, DepositHandler> packageTypeHandlers) {

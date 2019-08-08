@@ -36,7 +36,6 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
@@ -82,12 +81,6 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
             log.warn("Failed to deposit", e);
             throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
                     "A problem occurred while attempting to parse your deposit: " + e.getMessage());
-        } catch (IngestException e) {
-            log.warn("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
-                    + deposit.getPackaging(), e);
-            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-                    "An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
-                            + deposit.getPackaging(), e);
         } catch (SwordError e) {
             throw e;
         } catch (Exception e) {

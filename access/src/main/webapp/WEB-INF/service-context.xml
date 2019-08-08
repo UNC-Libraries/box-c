@@ -97,6 +97,7 @@
             value="org.springframework.web.servlet.view.JstlView" />
         <property name="baseView" value="/WEB-INF/jsp/index" />
         <property name="subViewPrefix" value="" />
+        <property name="redirectHttp10Compatible" value="false" />
     </bean>
 
     <bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">

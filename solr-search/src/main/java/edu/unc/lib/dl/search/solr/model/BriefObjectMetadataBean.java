@@ -28,12 +28,9 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -57,7 +54,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     // Inverted map of the roleGroup, clustering roles into buckets by group
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
-    protected ObjectAccessControlsBean accessControlBean;
     protected Map<String, List<String>> relationsMap;
     private List<Tag> tags;
 
@@ -191,19 +187,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
         return groupRoleMap;
     }
 
-    public void setAccessControlBean(ObjectAccessControlsBean aclBean) {
-        this.accessControlBean = aclBean;
-    }
-
-    @Override
-    public ObjectAccessControlsBean getAccessControlBean() {
-        List<String> roleGroup = getRoleGroup();
-        if (this.accessControlBean == null && roleGroup != null) {
-            this.accessControlBean = new ObjectAccessControlsBeanImpl(pid, roleGroup);
-        }
-        return this.accessControlBean;
-    }
-
     @Override
     @Field
     public void setRelations(List<String> relations) {
@@ -231,23 +214,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
             return null;
         }
         return this.relationsMap.get(relationName);
-    }
-
-    @Override
-    public Datastream getDefaultWebData() {
-        if (this.relationsMap == null) {
-            return null;
-        }
-        List<String> defaultWebDataValues = this.relationsMap.get(
-                ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
-        if (defaultWebDataValues == null) {
-            return null;
-        }
-        String defaultWebData = defaultWebDataValues.get(0);
-        if (defaultWebData == null) {
-            return null;
-        }
-        return this.getDatastreamObject(defaultWebData);
     }
 
     @Override
@@ -322,7 +288,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     @Override
     public Date getActiveEmbargo() {
-        List<String> embargoUntil = getRelation(CDRProperty.embargoUntil.getPredicate());
+        List<String> embargoUntil = getRelation(CdrAcl.embargoUntil.getURI());
         if (embargoUntil != null) {
             Date result = null;
             Date dateNow = new Date();

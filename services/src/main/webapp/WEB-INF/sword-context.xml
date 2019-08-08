@@ -40,40 +40,8 @@
                 <entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
                 <entry key="vocabularies-mods"
                     value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}" 
-                    value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch"/>
             </map>
         </property>
-    </bean>
-    
-    <!-- Update processing -->
-    <bean id="uipPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
-        <property name="updateFilters">
-            <list>
-                <bean class="edu.unc.lib.dl.update.AtomDCToMODSFilter">
-                    <property name="schematronValidator" ref="schematronValidator" />
-                </bean>
-                <bean class="edu.unc.lib.dl.update.MODSValidationUIPFilter">
-                    <property name="schematronValidator" ref="schematronValidator" />
-                </bean>
-                <bean class="edu.unc.lib.dl.update.MODSVocabularyUIPFilter"/>
-                <bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
-                <bean class="edu.unc.lib.dl.update.AccessControlUIPFilter"/>
-            </list>
-        </property>
-    </bean>
-    
-    <util:map id="virtualDatastreamMap" key-type="java.lang.String" value-type="edu.unc.lib.dl.util.ContentModelHelper.Datastream">
-        <entry key="ACL" value="RELS_EXT"/>
-    </util:map>
-    
-    <bean id="fedoraUIPProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
-        <!-- <property name="digitalObjectManager" ref="digitalObjectManager"/> -->
-        <!-- <property name="accessClient" ref="accessClient"/>
-        <property name="aclService" ref="accessControlService"/> -->
-        <property name="pipeline" ref="uipPipeline"/>
-        <property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
-        <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
     
     <!-- SWORD config -->
@@ -108,7 +76,6 @@
     
     <!-- Deposit Handlers -->
     <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.CDRMETSDepositHandler" />
-    <bean id="dspaceMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.DSPACEMETSDepositHandler" />
     <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
     <bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
     
@@ -117,8 +84,6 @@
             <key><null/></key>
             <ref bean="atomPubEntryDepositHandler"/>
         </entry>
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="dspaceMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="dspaceMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
     </util:map>
@@ -139,8 +104,6 @@
     </bean>
     
     <bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
-        <property name="fedoraPath" value="${fcrepo.baseUrl}"/>
-        <property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
     </bean>
     
     <bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl">

@@ -26,9 +26,6 @@ CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
 {{baseUrl}}/record/{{objectPid}}
 
 {{/isOpen}}
-{{#isEmbargoed}}Your materials are embargoed until {{embargoUntil}}.
-
-{{/isEmbargoed}}
 {{#isClosed}}Materials requiring review will be made accessible upon approval by the relevant department.
 
 {{/isClosed}}

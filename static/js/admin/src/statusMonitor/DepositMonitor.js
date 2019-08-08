@@ -109,7 +109,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 			}
 		}
 		
-		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat, username : this.options.username, isAdmin : this.options.isAdmin}));
+		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat, username : this.options.username}));
 	};
 		
 	DepositMonitor.prototype.dateFormat = function(dateObject) {

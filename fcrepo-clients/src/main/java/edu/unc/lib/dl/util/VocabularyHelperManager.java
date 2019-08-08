@@ -15,12 +15,9 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.replaceInvalidTerms;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,10 +29,8 @@ import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
@@ -293,7 +288,8 @@ public class VocabularyHelperManager {
      * @return
      */
     public Set<VocabularyHelper> getHelpers(PID pid) {
-        return getHelpers(pid, null);
+        return null;
+//        return getHelpers(pid, null);
     }
 
     /**
@@ -304,80 +300,8 @@ public class VocabularyHelperManager {
      * @return
      */
     public Set<VocabularyHelper> getRemappingHelpers(PID pid) {
-        return getHelpers(pid, replaceInvalidTerms);
-    }
-
-    private Set<VocabularyHelper> getHelpers(PID pid, CDRProperty appLevel) {
         return null;
-//        synchronized (initialized) {
-//            if (!initialized) {
-//                init();
-//            }
-//        }
-//
-//        PID parentCollectionPID = queryService.fetchParentCollection(pid);
-//        if (parentCollectionPID == null) {
-//            List<URI> models = queryService.lookupContentModels(pid);
-//            if (models.contains(COLLECTION.getURI())) {
-//                parentCollectionPID = pid;
-//            }
-//        }
-//
-//        // Start helpers from the set of globals assigned to the collections object
-//        Set<VocabularyHelper> helpers = new HashSet<>();
-//        Set<VocabularyHelper> rootHelpers = pidToHelpers.get(collectionsPID.getURI());
-//        if (rootHelpers != null) {
-//            helpers.addAll(rootHelpers);
-//        }
-//
-//        if (parentCollectionPID != null) {
-//            Set<VocabularyHelper> parentHelpers = pidToHelpers.get(parentCollectionPID.getURI());
-//            if (parentHelpers != null) {
-//                helpers.addAll(parentHelpers);
-//            }
-//        }
-//
-//        if (appLevel != null && helpers != null) {
-//            filterHelperSet(parentCollectionPID, helpers, appLevel);
-//        }
-//
-//        if (log.isDebugEnabled()) {
-//            log.debug("Helpers found for {} with {}: {}", new Object[] { pid, appLevel, helpers });
-//        }
-//
-//        return helpers;
-    }
-
-    private void filterHelperSet(PID pid, Set<VocabularyHelper> helpers, CDRProperty appLevel) {
-        if (helpers == null) {
-            return;
-        }
-
-        Map<String, Set<String>> appLevelMap = pidToVocabApplication.get(RepositoryPaths.getContentRootPid().getURI());
-        if (pid != null) {
-            Map<String, Set<String>> collectionLevel = pidToVocabApplication.get(pid.getURI());
-            if (collectionLevel != null) {
-                if (appLevelMap == null) {
-                    appLevelMap = collectionLevel;
-                } else {
-                    appLevelMap.putAll(collectionLevel);
-                }
-            }
-        }
-
-        if (appLevelMap == null) {
-            return;
-        }
-
-        Iterator<VocabularyHelper> helperIt = helpers.iterator();
-        while (helperIt.hasNext()) {
-            VocabularyHelper helper = helperIt.next();
-
-            Set<String> appLevels = appLevelMap.get(helper.getVocabularyURI());
-            if (!appLevels.contains(appLevel.toString())) {
-                helperIt.remove();
-            }
-        }
+//        return getHelpers(pid, replaceInvalidTerms);
     }
 
     public VocabularyHelper getHelper(String vocabURI) {

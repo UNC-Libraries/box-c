@@ -27,8 +27,6 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
-import edu.unc.lib.dl.update.UpdateOperation;
-
 /**
  *
  * @author bbpennel
@@ -36,16 +34,10 @@ import edu.unc.lib.dl.update.UpdateOperation;
  */
 public class ContainerManagerImpl extends AbstractFedoraManager implements ContainerManager {
 
-    private DepositReceipt updateMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
-            SwordConfiguration config, UpdateOperation operation) throws SwordError, SwordServerException,
-    SwordAuthException {
-        throw new NotImplementedException("Operation not supported");
-    }
-
     @Override
     public DepositReceipt replaceMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
             SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
-        return updateMetadata(editIRI, deposit, auth, config, UpdateOperation.REPLACE);
+        throw new SwordServerException("Method not yet supported");
     }
 
     @Override
@@ -63,7 +55,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
     @Override
     public DepositReceipt addMetadata(String editIRI, Deposit deposit, AuthCredentials auth, SwordConfiguration config)
             throws SwordError, SwordServerException, SwordAuthException {
-        return updateMetadata(editIRI, deposit, auth, config, UpdateOperation.ADD);
+        throw new SwordServerException("Method not yet supported");
     }
 
     @Override

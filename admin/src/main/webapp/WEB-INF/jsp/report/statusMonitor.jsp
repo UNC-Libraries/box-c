@@ -24,8 +24,7 @@
 	var require = {
 		config: {
 		    statusMonitor : {
-		    	'username' : '<%= request.getRemoteUser() %>',
-		    	'isAdmin' : <%= edu.unc.lib.dl.acl.util.GroupsThreadStore.getGroups().contains(edu.unc.lib.dl.acl.util.AccessGroupConstants.ADMIN_GROUP) %>
+		    	'username' : '<%= request.getRemoteUser() %>'
 		    }
 		}
 	};

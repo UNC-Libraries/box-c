@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.UUID;
 
 import org.jdom2.Element;
 import org.junit.Before;
@@ -69,7 +68,6 @@ public class DocumentIndexingPackageDataLoaderTest {
         dataLoader = new DocumentIndexingPackageDataLoader();
         dataLoader.setRepositoryObjectLoader(repoObjLoader);
 
-        when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
         when(dip.getPid()).thenReturn(pid);
     }
 

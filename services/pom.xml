@@ -1,4 +1,4 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -17,13 +17,6 @@
                 <filtering>false</filtering>
                 <directory>src/main/resources</directory>
             </resource>
-            <resource>
-                <filtering>true</filtering>
-                <directory>../etc</directory>
-                <includes>
-                    <include>server.properties</include>
-                </includes>
-            </resource>
         </resources>
         <testResources>
             <testResource>
@@ -34,16 +27,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <filtering>true</filtering>
-                            <directory>../etc</directory>
-                            <include>server.properties</include>
-                            <include>acl-config.properties</include>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -151,11 +134,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-        </dependency>
-        <!-- 1.x distribution required by spring for the moment -->
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>

@@ -18,7 +18,6 @@ package edu.unc.lib.dl.util;
 import java.util.List;
 
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 /**
  * Resource Types
@@ -36,7 +35,6 @@ public enum ResourceType {
 
     private int displayOrder;
     private String uri;
-    private List<Model> contentModels;
 
     ResourceType(int displayOrder, String uri) {
         this.displayOrder = displayOrder;
@@ -51,10 +49,6 @@ public enum ResourceType {
         return this.name().equals(name);
     }
 
-    public List<Model> getContentModels() {
-        return contentModels;
-    }
-
     public static ResourceType getResourceTypeByUri(String uri) {
         for (ResourceType type : values()) {
             if (type.uri.equals(uri)) {
@@ -66,7 +60,7 @@ public enum ResourceType {
 
     /**
      * Gets the resourceType for rdf type uris
-     * 
+     *
      * @param uris
      * @return
      */
@@ -77,11 +71,6 @@ public enum ResourceType {
                 return type;
             }
         }
-        return null;
-    }
-
-    @Deprecated
-    public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
         return null;
     }
 }

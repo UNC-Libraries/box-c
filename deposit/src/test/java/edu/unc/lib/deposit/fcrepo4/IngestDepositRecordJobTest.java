@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,7 +50,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -112,29 +110,6 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         model.read(new File(n3File).getAbsolutePath());
         job.closeModel();
-    }
-
-    @Test
-    public void testProquestAggregateBag() throws Exception {
-
-        initializeJob(depositUUID, "src/test/resources/ingest-bags/fcrepo4/proquest-bag",
-                "src/test/resources/ingest-bags/fcrepo4/proquest-bag/everything.n3");
-
-        Map<String, String> depositStatus = new HashMap<>();
-        depositStatus.put(DepositField.fileName.name(), "proquest-bag");
-        depositStatus.put(DepositField.packagingType.name(), PackagingType.PROQUEST_ETD.getUri());
-
-        when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
-
-        job.run();
-
-        // Verifying that the deposit record was created correctly
-        Resource depositResc = getAIPResource();
-        assertEquals(PackagingType.PROQUEST_ETD.getUri(), depositResc.getProperty(Cdr.depositPackageType).getString());
-        assertEquals("Deposit record for proquest-bag", depositResc.getProperty(DcElements.title).getString());
-        assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
-
-        verify(premisLogger).createLog(any(InputStream.class));
     }
 
     @Test

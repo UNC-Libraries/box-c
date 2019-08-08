@@ -22,7 +22,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +58,6 @@ public class SetObjectTypeFilterTest {
     @Before
     public void setup() throws Exception {
         initMocks(this);
-
-        when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);

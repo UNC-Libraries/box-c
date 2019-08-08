@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -103,11 +102,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     }
 
     @Override
-    public ObjectAccessControlsBean getAccessControlBean() {
-        return this.representative.getAccessControlBean();
-    }
-
-    @Override
     public String getParentCollectionName() {
         return this.representative.getParentCollectionName();
     }
@@ -180,11 +174,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     @Override
     public List<String> getRelation(String relationName) {
         return this.representative.getRelation(relationName);
-    }
-
-    @Override
-    public Datastream getDefaultWebData() {
-        return this.representative.getDefaultWebData();
     }
 
     @Override

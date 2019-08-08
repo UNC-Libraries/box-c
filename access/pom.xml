@@ -19,76 +19,10 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
-        <testResources>
-            <testResource>
-                <filtering>true</filtering>
-                <directory>../etc</directory>
-                <includes>
-                    <include>server.properties</include>
-                </includes>
-            </testResource>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         <plugins>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <webApp>
-                        <webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
-                        <contextPath>/</contextPath>
-                        <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                        <extraClasspath>${basedir}/target/test-classes/</extraClasspath>
-                    </webApp>
-                    <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
-                            <contextPath>/static</contextPath>
-                            <resourceBase>${project.basedir}/../static</resourceBase>
-                            <handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
-                        </contextHandler>
-                        <contextHandler
-                            implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                            <war>../spoof/target/spoof.war</war>
-                            <contextPath>/spoof</contextPath>
-                        </contextHandler>
-                    </contextHandlers>
-                    <httpConnector>
-                        <port>8181</port>
-                    </httpConnector>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>server.properties.uri</name>
-                            <value>classpath:server.properties</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>acl.properties.uri</name>
-                            <value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>log.dir</name>
-                            <value>${project.basedir}/target/</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>fcrepo.baseUri</name>
-                            <value>http://localhost:8080/fcrepo/rest/</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <!-- <configuration>
-                    <webResources>
-                        <resource>
-                            <filtering>true</filtering>
-                            <directory>../etc</directory>
-                        </resource>
-                    </webResources>
-                </configuration> -->
             </plugin>
             
             <plugin>

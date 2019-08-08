@@ -98,31 +98,6 @@
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         </bean>
-
-    <!-- <bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
-    
-    <bean id="rollbackMoveJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="rollbackMoveJob" />
-        <property name="targetMethod" value="rollbackAllFailed" />
-    </bean>
-    
-    <bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
-        <property name="jobDetail" ref="rollbackMoveJobDetail" />
-        <property name="repeatCount" value="0"/>
-        <property name="repeatInterval" value="1"/>
-    </bean>
-    
-    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="triggers">
-            <list>
-                <ref bean="moveRollbackTrigger" />
-            </list>
-        </property>
-        <property name="autoStartup">
-            <value>true</value>
-        </property>
-        <property name="configLocation" value="classpath:quartz.properties"/>
-    </bean> -->
     
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
@@ -144,8 +119,6 @@
                     value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
                 <entry key="vocabularies-mods"
                     value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch" />
             </map>
         </property>
     </bean>

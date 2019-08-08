@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -45,8 +44,6 @@ public interface BriefObjectMetadata {
     public Datastream getDatastreamObject(String datastreamName);
 
     public Map<String, Collection<String>> getGroupRoleMap();
-
-    public ObjectAccessControlsBean getAccessControlBean();
 
     public void setCountMap(Map<String,Long> countMap);
 
@@ -79,8 +76,6 @@ public interface BriefObjectMetadata {
     public List<String> getRelations();
 
     public List<String> getRelation(String relationName);
-
-    public Datastream getDefaultWebData();
 
     public Boolean getIsPart();
 
