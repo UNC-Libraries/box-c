@@ -22,7 +22,8 @@
         data() {
             return {
                 browse_type_updated: false,
-                filtered: false
+                filtered: false,
+                update_params: {}
             }
         },
 
@@ -45,11 +46,12 @@
 
         methods: {
             updateFilter() {
-                let update_params = {
-                    start: 0
+                this.update_params = {
+                    start: 0,
+                    browse_type: this.browseType
                 };
 
-                let url_params = this.urlParams(update_params);
+                let url_params = this.urlParams(this.update_params);
 
                 if (this.browse_type_updated) {
                     this.filtered = false;
@@ -69,7 +71,6 @@
                     delete url_params.format;
                 }
 
-                url_params.browse_type = this.browseType;
                 this.$router.push({ name: 'browseDisplay', query: url_params });
             }
         },

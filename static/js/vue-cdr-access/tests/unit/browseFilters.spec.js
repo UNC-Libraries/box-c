@@ -59,7 +59,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work"
+            types: "Work",
+            browse_type: "gallery-display"
         });
 
         wrapper.setProps({browseType: 'structure-display' });
@@ -67,7 +68,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work"
+            types: "Work",
+            browse_type: "structure-display"
         });
         // Make sure field is reset to false
         expect(wrapper.vm.browse_type_updated).toBe(false);
@@ -80,7 +82,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work"
+            types: "Work",
+            browse_type: "gallery-display"
         });
     });
 
@@ -94,7 +97,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work"
+            types: "Work",
+            browse_type: "gallery-display"
         });
     });
 
@@ -109,7 +113,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work,Folder"
+            types: "Work,Folder",
+            browse_type: "structure-display"
         });
     });
 
@@ -121,7 +126,8 @@ describe('browseFilters.vue', () => {
             rows: 20,
             sort: "title,normal",
             start: 0,
-            types: "Work"
+            types: "Work",
+            browse_type: "structure-display"
         });
     });
 });

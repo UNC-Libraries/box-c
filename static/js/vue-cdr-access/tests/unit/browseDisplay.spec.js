@@ -51,14 +51,18 @@ const response = {
     "metadata": [...record_list, ...record_list, ...record_list, ...record_list] // Creates 8 returned records
 };
 
+// Mock setting of adding event listeners for browseOptionDisplayUtils.
+// They're looking for elements not controlled by Vue
+const setBrowseEvents = jest.fn();
+
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
         moxios.install();
-        localStorage.clear();
 
         wrapper = shallowMount(browseDisplay, {
             localVue,
-            router
+            router,
+            methods: {setBrowseEvents}
         });
 
         wrapper.setData({
@@ -130,19 +134,6 @@ describe('browseDisplay.vue', () => {
         });
         let two_per_row = [record_list, record_list, record_list, record_list];
         expect(wrapper.vm.chunkedRecords).toEqual(two_per_row);
-    });
-
-    it("gets the browse type from local storage", () => {
-        const KEY = 'dcr-browse-display';
-        const VALUE = 'structure-display';
-
-        wrapper.vm.browseDisplayType();
-        expect(localStorage.getItem(KEY)).toBe(null);
-        expect(wrapper.vm.browse_type).toBe('gallery-display');
-
-        localStorage.setItem(KEY, VALUE);
-        wrapper.vm.browseDisplayType();
-        expect(wrapper.vm.browse_type).toBe(VALUE);
     });
 
     afterEach(() => {
