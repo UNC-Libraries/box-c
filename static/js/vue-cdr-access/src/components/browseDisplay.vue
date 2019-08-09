@@ -67,6 +67,7 @@
 
         watch: {
             '$route.query'(d) {
+                this.browseTypeFromUrl();
                 this.retrieveData();
             }
         },
@@ -187,18 +188,22 @@
                 }).catch(function (error) {
                     console.log(error);
                 });
+            },
+
+            findPageType() {
+                // Small hack to check outside of Vue controlled DOM to see if we're on the collections or folder browse page
+                this.is_collection = document.getElementById('is-collection') !== null;
+                this.is_folder = document.getElementById('is-folder') !== null;
+
+                if (this.is_collection || this.is_folder) {
+                    this.updateUrl();
+                }
             }
         },
 
         mounted() {
-            // Small hack to check outside of Vue controlled DOM to see if we're on the collections or folder browse page
-            this.is_collection = document.getElementById('is-collection') !== null;
-            this.is_folder = document.getElementById('is-folder') !== null;
-
-            if (this.is_collection || this.is_folder) {
-                this.updateUrl();
-            }
-
+            this.findPageType();
+            this.browseTypeFromUrl();
             window.addEventListener('resize', debounce(this.numberOfColumns, 300));
             this.setBrowseEvents();
             window.addEventListener('load', this.setButtonColor);
@@ -207,7 +212,7 @@
         beforeDestroy() {
             window.removeEventListener('resize', this.numberOfColumns);
             this.clearBrowseEvents();
-            window.removeEventListener('unload', this.setButtonColor);
+            window.removeEventListener('load', this.setButtonColor);
         }
     };
 </script>

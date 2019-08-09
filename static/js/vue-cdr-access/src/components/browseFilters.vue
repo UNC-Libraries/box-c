@@ -46,6 +46,8 @@
 
         methods: {
             updateFilter() {
+                this.setStorageBrowseType();
+
                 this.update_params = {
                     start: 0,
                     browse_type: this.browseType
@@ -72,6 +74,10 @@
                 }
 
                 this.$router.push({ name: 'browseDisplay', query: url_params });
+            },
+
+            setStorageBrowseType() {
+                localStorage.setItem('dcr-browse-type', this.browseType);
             }
         },
 
