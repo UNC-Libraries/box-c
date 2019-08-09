@@ -54,6 +54,7 @@ const response = {
 // Mock setting of adding event listeners for browseOptionDisplayUtils.
 // They're looking for elements not controlled by Vue
 const setBrowseEvents = jest.fn();
+const setButtonColor = jest.fn();
 
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
@@ -62,7 +63,7 @@ describe('browseDisplay.vue', () => {
         wrapper = shallowMount(browseDisplay, {
             localVue,
             router,
-            methods: {setBrowseEvents}
+            methods: {setBrowseEvents, setButtonColor}
         });
 
         wrapper.setData({
@@ -91,6 +92,22 @@ describe('browseDisplay.vue', () => {
             expect(wrapper.vm.container_metadata).toEqual(response.container);
             done();
         });
+    });
+
+    it("uses the correct search method for gallery browse", () => {
+        wrapper.setData({
+            browse_type: 'gallery-display'
+        });
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+    });
+
+    it("uses the correct search method for structure browse", () => {
+        wrapper.setData({
+            browse_type: 'structure-display'
+        });
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('listJson');
     });
 
     it("updates the url withe parameters specified at page load", () => {

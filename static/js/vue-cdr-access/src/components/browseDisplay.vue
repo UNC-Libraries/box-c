@@ -83,6 +83,7 @@
                 is_folder: false,
                 record_count: 0,
                 record_list: [],
+                search_method: 'searchJson',
                 uuid: ''
             }
         },
@@ -159,7 +160,6 @@
             },
 
             retrieveData() {
-                let search_method = 'searchJson';
                 let params = this.urlParams();
 
                 if (this.is_collection || this.is_folder) {
@@ -169,18 +169,20 @@
                 if (this.browse_type === 'structure-display') {
                     params.types = 'Work,Folder';
                     delete params.format;
-                    search_method = 'listJson';
+                    this.search_method = 'listJson';
+                } else {
+                    this.search_method = 'searchJson';
                 }
 
                 if (this.containsFolderType(this.$route.query.types)) {
                     params.types = 'Folder';
-                    search_method = 'listJson';
+                    this.search_method = 'listJson';
                 }
 
                 let param_string = this.formatParamsString(params);
                 this.uuid = location.pathname.split('/')[2];
 
-                get(`${search_method}/${this.uuid}${param_string}`).then((response) => {
+                get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.container_name = response.data.container.title;

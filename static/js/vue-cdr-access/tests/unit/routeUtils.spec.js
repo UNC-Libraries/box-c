@@ -6,7 +6,7 @@ import routeUtils from '@/mixins/routeUtils.js';
 const localVue = createLocalVue();
 localVue.use(VueRouter);
 const router = new VueRouter();
-
+const gallery = 'gallery-display';
 let wrapper;
 
 describe('routeUtils', () => {
@@ -22,7 +22,8 @@ describe('routeUtils', () => {
         const defaults = {
             rows: 20,
             start: 0,
-            sort: 'title,normal'
+            sort: 'title,normal',
+            browse_type: gallery
         };
         expect(wrapper.vm.urlParams()).toMatchObject(defaults);
     });
@@ -31,7 +32,8 @@ describe('routeUtils', () => {
         let defaults = {
             rows: 20,
             start: 0,
-            sort: 'title,normal'
+            sort: 'title,normal',
+            browse_type: gallery
         };
 
         defaults.types = 'Work';
@@ -42,9 +44,10 @@ describe('routeUtils', () => {
         const defaults = {
             rows: 20,
             start: 0,
-            sort: 'title,normal'
+            sort: 'title,normal',
+            browse_type: gallery
         };
-        let formatted = '?rows=20&start=0&sort=title%2Cnormal';
+        let formatted = `?rows=20&start=0&sort=title%2Cnormal&browse_type=${gallery}`;
         expect(wrapper.vm.formatParamsString(defaults)).toEqual(formatted);
     });
 });
