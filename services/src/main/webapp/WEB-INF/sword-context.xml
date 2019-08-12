@@ -74,32 +74,6 @@
         <property name="acceptedPackaging" ref="packageHandlers" />
     </bean>
     
-    <!-- Deposit Handlers -->
-    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.CDRMETSDepositHandler" />
-    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
-    <bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
-    
-    <util:map id="packageHandlers">
-        <entry>
-            <key><null/></key>
-            <ref bean="atomPubEntryDepositHandler"/>
-        </entry>
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-    </util:map>
-    
-    <bean id="depositsDirectory" class="java.io.File">
-        <constructor-arg value="${batch.ingest.dir}" />
-    </bean>
-    
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
-        <property name="jedisPool" ref="jedisPool" />
-    </bean>
-    
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
-        <property name="jedisPool" ref="jedisPool" />
-    </bean>
-    
     <bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl">
     </bean>
     
