@@ -12,20 +12,15 @@ export default {
          * Put URL parameters into an object
          * Set default params, if none are present, that can be updated
          * @param params_to_update
-         * @param is_admin_unit
          * @returns {{start: number, sort: string, rows: (*|number), browse_type: string | string} & Dictionary<string | (string | null)[]>}
          */
-        urlParams(params_to_update = {}, is_admin_unit = false) {
+        urlParams(params_to_update = {}) {
             let defaults = {
                     rows: this.rows_per_page,
                     start: 0,
                     sort: 'title,normal',
                     browse_type: localStorage.getItem('dcr-browse-type') || 'gallery-display'
                 };
-
-            if (!is_admin_unit) {
-                delete defaults.browse_type;
-            }
 
             let route_params = Object.assign(defaults, this.$route.query);
 

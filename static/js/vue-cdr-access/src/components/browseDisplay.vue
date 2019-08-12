@@ -68,7 +68,7 @@
         watch: {
             '$route.query'(d) {
                 this.browseTypeFromUrl(this.is_admin_unit);
-                if (!this.is_loading) {
+                if (!this.is_page_loading) {
                     this.retrieveData();
                 }
             }
@@ -85,7 +85,7 @@
                 is_admin_unit: false,
                 is_collection: false,
                 is_folder: false,
-                is_loading: true,
+                is_page_loading: true,
                 record_count: 0,
                 record_list: [],
                 search_method: 'searchJson',
@@ -155,18 +155,22 @@
             },
 
             updateUrl() {
+                let params = this.urlParams();
+
                 if (this.is_admin_unit) {
                     this.default_work_type = 'Collection';
+                    delete params.format;
+                    delete params.browse_type;
                 } else if (this.containsFolderType(this.$route.query.types)) {
                     this.default_work_type = 'Work,Folder'
                 }
 
-                let params = this.urlParams({ types: this.default_work_type });
+                params.types = this.default_work_type;
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
             updateParams() {
-                let params = this.urlParams({}, this.is_admin_unit);
+                let params = this.urlParams();
 
                 if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
@@ -207,7 +211,7 @@
                     this.record_list = response.data.metadata;
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
-                    this.is_loading = false;
+                    this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);
                 });
