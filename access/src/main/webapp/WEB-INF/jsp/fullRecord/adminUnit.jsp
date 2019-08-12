@@ -42,7 +42,7 @@
 
 <c:url var="fullRecordUrl" scope="page" value="record/${briefObject.id}" />
 <div class="contentarea">
-    <div class="columns browse-header">
+    <div id="is-admin-unit" class="columns browse-header">
         <div class="column is-12">
             <h2><c:out value="${briefObject.title}" /> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Subjects:</strong>

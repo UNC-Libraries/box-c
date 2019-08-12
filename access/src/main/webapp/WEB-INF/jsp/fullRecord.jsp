@@ -29,7 +29,7 @@
 </c:if>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
-	<div id="browse-display-type" class="display-wrapper">
+	<div id="browse-display-type" class="display-wrapper hidden">
 		<p>How would you like to browse?</p>
 		<a href="#" class="display-note-btn">?<div class="arrow"></div>
 			<span class="browse-tip">
