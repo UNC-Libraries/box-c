@@ -55,6 +55,7 @@
     <bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
         <property name="depositService" ref="depositSubmissionService" />
         <property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
+        <property name="depositReportingUtil" ref="depositReportingUtil" />
     </bean>
     
     <bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" >

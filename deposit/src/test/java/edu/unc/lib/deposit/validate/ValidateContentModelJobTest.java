@@ -23,10 +23,15 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
@@ -38,10 +43,14 @@ import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  *
@@ -54,14 +63,30 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
     private Model model;
     private PID depositPid;
+    private PID destPid;
 
     private Bag depBag;
 
     @Mock
     private ContentObjectAccessRestrictionValidator aclValidator;
+    @Mock
+    private DepositStatusFactory depositStatusFactory;
+    @Mock
+    private RepositoryObjectLoader repoObjectLoader;
+    @Mock
+    private RepositoryObject destObj;
+    @Mock
+    private Resource destResc;
 
     @Before
     public void init() throws Exception {
+        destPid = makePid();
+
+        when(repoObjectLoader.getRepositoryObject(destPid)).thenReturn(destObj);
+        Model destModel = ModelFactory.createDefaultModel();
+        destResc = destModel.getResource(destPid.getRepositoryPath());
+        when(destObj.getResource()).thenReturn(destResc);
+
         Dataset dataset = TDBFactory.createDataset();
 
         job = new ValidateContentModelJob();
@@ -69,6 +94,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
+        job.setDepositStatusFactory(depositStatusFactory);
+        job.setRepositoryObjectLoader(repoObjectLoader);
         setField(job, "pidMinter", pidMinter);
         setField(job, "dataset", dataset);
         job.init();
@@ -76,6 +103,10 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         depositPid = job.getDepositPID();
         model = job.getWritableModel();
         depBag = model.createBag(depositPid.getRepositoryPath());
+
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.containerId.name(), destPid.getId());
+        when(depositStatusFactory.get(depositPid.getId())).thenReturn(depositStatus);
     }
 
     @Test
@@ -249,6 +280,40 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         objBag.add(childResc);
 
         depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void fileObjectToWorkDestinationTest() {
+        destResc.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+
+        depBag.add(childResc);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(aclValidator).validate(eq(childResc));
+    }
+
+    @Test(expected = JobFailedException.class)
+    public void fileObjectToFolderDestinationTest() {
+        destResc.addProperty(RDF.type, Cdr.Folder);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+
+        depBag.add(childResc);
 
         job.closeModel();
 

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
@@ -28,6 +29,7 @@ import org.springframework.web.util.UriUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -75,7 +77,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         // Create the main resource as a simple resource
         Resource mainResource = model.createResource(mainPID.getURI());
 
-        populateFileObject(model, mainResource, slug, filename, mimetype);
+        populateFileObject(mainResource, slug, filename, mimetype);
 
         // Store main resource as child of the deposit
         depositBag.add(mainResource);
@@ -94,7 +96,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
                 .write();
     }
 
-    private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,
+    private void populateFileObject(Resource mainResource, String alabel, String filename,
             String mimetype) {
         File contentFile = new File(this.getDataDirectory(), filename);
         if (!contentFile.exists()) {
@@ -105,15 +107,16 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         if (alabel == null) {
             alabel = contentFile.getName();
         }
-        model.add(mainResource, CdrDeposit.label, alabel);
-        model.add(mainResource, CdrDeposit.size, Long.toString(contentFile.length()));
+        mainResource.addLiteral(CdrDeposit.label, alabel);
+        mainResource.addLiteral(CdrDeposit.size, Long.toString(contentFile.length()));
         if (mimetype != null) {
-            model.add(mainResource, CdrDeposit.mimetype, mimetype);
+            mainResource.addLiteral(CdrDeposit.mimetype, mimetype);
         }
 
         // Reference the content file as the data file
-        model.add(mainResource, CdrDeposit.stagingLocation,
+        mainResource.addLiteral(CdrDeposit.stagingLocation,
                 DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
+        mainResource.addProperty(RDF.type, Cdr.FileObject);
     }
 
 }
