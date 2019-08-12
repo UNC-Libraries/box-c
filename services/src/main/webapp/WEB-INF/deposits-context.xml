@@ -22,13 +22,7 @@
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
     
-    <bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
-    
     <util:map id="packageHandlers">
-        <entry>
-            <key><null/></key>
-            <ref bean="atomPubEntryDepositHandler"/>
-        </entry>
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
     </util:map>

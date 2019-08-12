@@ -30,19 +30,6 @@
         <constructor-arg
             value="${services.base.url}sword" />
     </bean>
-
-    <bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
-        init-method="loadSchemas">
-        <property name="schemas">
-            <map>
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}" 
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch"/>
-                <entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
-                <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
-            </map>
-        </property>
-    </bean>
     
     <!-- SWORD config -->
 
@@ -66,7 +53,7 @@
     </bean>
     
     <bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
-        <property name="packageHandlers" ref="packageHandlers" />
+        <property name="depositService" ref="depositSubmissionService" />
         <property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
     </bean>
     
