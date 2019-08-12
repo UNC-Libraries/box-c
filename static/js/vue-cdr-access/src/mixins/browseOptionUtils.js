@@ -14,7 +14,7 @@ export default {
 
     data() {
         return {
-            browse_type: gallery_display
+            browse_type: 'gallery_display'
         }
     },
 
@@ -39,9 +39,17 @@ export default {
             }
         },
 
-        browseTypeFromUrl() {
+        displayBrowseButtons() {
+            document.getElementById('browse-display-type').classList.remove('hidden');
+        },
+
+        browseTypeFromUrl(is_admin_set = false) {
             let current_url_params = this.urlParams();
-            if ('browse_type' in current_url_params) {
+
+            if (is_admin_set) {
+                this.browse_type = null;
+                localStorage.removeItem('dcr-browse-type');
+            } else if ('browse_type' in current_url_params) {
                 this.browse_type = current_url_params.browse_type;
                 localStorage.setItem('dcr-browse-type', this.browse_type);
             } else {
@@ -55,7 +63,9 @@ export default {
                 }
             }
 
-            this.setButtonColor();
+            if (!is_admin_set) {
+                this.setButtonColor();
+            }
         },
 
         setBrowseEvents() {

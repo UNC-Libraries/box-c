@@ -12,7 +12,7 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <browse-filters :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
+                    <browse-filters v-if="!is_admin_unit" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
                 </p>
             </div>
             <div class="column is-2">
@@ -67,8 +67,10 @@
 
         watch: {
             '$route.query'(d) {
-                this.browseTypeFromUrl();
-                this.retrieveData();
+                this.browseTypeFromUrl(this.is_admin_unit);
+                if (!this.is_loading) {
+                    this.retrieveData();
+                }
             }
         },
 
@@ -79,8 +81,11 @@
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: {},
+                default_work_type: 'Work',
+                is_admin_unit: false,
                 is_collection: false,
                 is_folder: false,
+                is_loading: true,
                 record_count: 0,
                 record_list: [],
                 search_method: 'searchJson',
@@ -150,23 +155,33 @@
             },
 
             updateUrl() {
-                let param_filters = { types: 'Work' };
-                if (this.containsFolderType(this.$route.query.types)) {
-                    param_filters.types = 'Work,Folder'
+                if (this.is_admin_unit) {
+                    this.default_work_type = 'Collection';
+                } else if (this.containsFolderType(this.$route.query.types)) {
+                    this.default_work_type = 'Work,Folder'
                 }
 
-                let params = this.urlParams(param_filters);
+                let params = this.urlParams({ types: this.default_work_type });
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
-            retrieveData() {
-                let params = this.urlParams();
+            updateParams() {
+                let params = this.urlParams({}, this.is_admin_unit);
 
                 if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
                 }
 
-                if (this.browse_type === 'structure-display') {
+                if (this.is_admin_unit) {
+                    params.types = 'Collection';
+
+                    delete params.format;
+                    delete params.browse_type;
+                    localStorage.removeItem('dcr-browse-type');
+
+                    this.browse_type = null;
+                    this.search_method = 'listJson';
+                } else if (this.browse_type === 'structure-display') {
                     params.types = 'Work,Folder';
                     delete params.format;
                     this.search_method = 'listJson';
@@ -179,7 +194,12 @@
                     this.search_method = 'listJson';
                 }
 
-                let param_string = this.formatParamsString(params);
+                this.default_work_type = params.types;
+                return params;
+            },
+
+            retrieveData() {
+                let param_string = this.formatParamsString(this.updateParams());
                 this.uuid = location.pathname.split('/')[2];
 
                 get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
@@ -187,17 +207,28 @@
                     this.record_list = response.data.metadata;
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
+                    this.is_loading = false;
                 }).catch(function (error) {
                     console.log(error);
                 });
             },
 
             findPageType() {
-                // Small hack to check outside of Vue controlled DOM to see if we're on the collections or folder browse page
+                // Small hack to check outside of Vue controlled DOM to see what page type we're on
+                this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
                 this.is_collection = document.getElementById('is-collection') !== null;
                 this.is_folder = document.getElementById('is-folder') !== null;
 
-                if (this.is_collection || this.is_folder) {
+                /*
+                 * Show browse options for non admin unit pages
+                 * The options live outside Vue controlled DOM
+                 * See access/src/main/webapp/WEB-INF/jsp/fullRecord.jsp
+                 */
+                if (!this.is_admin_unit) {
+                    this.displayBrowseButtons();
+                }
+
+                if (this.is_admin_unit || this.is_collection || this.is_folder) {
                     this.updateUrl();
                 }
             }
@@ -205,7 +236,9 @@
 
         mounted() {
             this.findPageType();
-            this.browseTypeFromUrl();
+            this.browseTypeFromUrl(this.is_admin_unit);
+            this.retrieveData();
+
             window.addEventListener('resize', debounce(this.numberOfColumns, 300));
             this.setBrowseEvents();
             window.addEventListener('load', this.setButtonColor);
