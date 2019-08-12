@@ -228,7 +228,7 @@
                  * The options live outside Vue controlled DOM
                  * See access/src/main/webapp/WEB-INF/jsp/fullRecord.jsp
                  */
-                if (!this.is_admin_unit) {
+                if (this.is_collection || this.is_folder) {
                     this.displayBrowseButtons();
                 }
 
