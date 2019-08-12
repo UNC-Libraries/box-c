@@ -12,7 +12,7 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <browse-filters v-if="!is_admin_unit" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
+                    <browse-filters v-if="is_collection || is_folder" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
                 </p>
             </div>
             <div class="column is-2">
@@ -68,7 +68,7 @@
         watch: {
             '$route.query'(d) {
                 this.browseTypeFromUrl(this.is_admin_unit);
-                if (!this.is_page_loading) {
+                if (!this.is_page_loading && (this.applicablePage)) {
                     this.retrieveData();
                 }
             }
@@ -94,6 +94,10 @@
         },
 
         computed: {
+            applicablePage() {
+               return (this.is_admin_unit || this.is_collection || this.is_folder)
+            },
+
             childTypeText() {
                 if (this.container_metadata.type === 'AdminUnit') {
                     return 'collection';
@@ -232,7 +236,7 @@
                     this.displayBrowseButtons();
                 }
 
-                if (this.is_admin_unit || this.is_collection || this.is_folder) {
+                if (this.validPage) {
                     this.updateUrl();
                 }
             }
@@ -241,7 +245,10 @@
         mounted() {
             this.findPageType();
             this.browseTypeFromUrl(this.is_admin_unit);
-            this.retrieveData();
+
+            if (this.is_admin_unit || this.is_collection || this.is_folder) {
+                this.retrieveData();
+            }
 
             window.addEventListener('resize', debounce(this.numberOfColumns, 300));
             this.setBrowseEvents();
