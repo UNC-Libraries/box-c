@@ -236,7 +236,7 @@
                     this.displayBrowseButtons();
                 }
 
-                if (this.validPage) {
+                if (this.applicablePage) {
                     this.updateUrl();
                 }
             }
@@ -246,7 +246,7 @@
             this.findPageType();
             this.browseTypeFromUrl(this.is_admin_unit);
 
-            if (this.is_admin_unit || this.is_collection || this.is_folder) {
+            if (this.applicablePage) {
                 this.retrieveData();
             }
 
