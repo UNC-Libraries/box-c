@@ -51,9 +51,9 @@
 			</li>
 		</c:if>
 		<li class="topbar-menu-option">
-		<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
+		<a href="https://library.unc.edu/wilson/contact/?refer=https%3a%2f%2fdcr.lib.unc.edu%2f">Contact</a></li>
 		<li class="topbar-menu-option">
-			<a href="http://blogs.lib.unc.edu/cdr/">About</a>
+			<a href="https://adminliveunc.sharepoint.com/sites/DigitalCollectionsDocumentation">About</a>
 		</li>
 		<c:if test="${not empty pageContext.request.remoteUser}">
 			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
