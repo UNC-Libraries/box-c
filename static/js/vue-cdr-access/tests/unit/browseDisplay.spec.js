@@ -51,20 +51,29 @@ const response = {
     "metadata": [...record_list, ...record_list, ...record_list, ...record_list] // Creates 8 returned records
 };
 
+// Mock setting of methods for browseOptionDisplayUtils.
+// They're looking for elements not controlled by Vue
+const setBrowseEvents = jest.fn();
+const setButtonColor = jest.fn();
+const displayBrowseButtons = jest.fn();
+
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
         moxios.install();
 
         wrapper = shallowMount(browseDisplay, {
             localVue,
-            router
+            router,
+            methods: {setBrowseEvents, setButtonColor, displayBrowseButtons}
         });
 
         wrapper.setData({
             column_size: 'is-3',
             container_name: '',
             container_metadata: {},
-            is_collection: false,
+            is_admin_unit: false,
+            is_collection: true,
+            is_folder: false,
             record_count: 0,
             record_list: []
         });
@@ -87,13 +96,42 @@ describe('browseDisplay.vue', () => {
         });
     });
 
-    it("updates the url when collection only changes", () => {
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual(undefined);
-
+    it("uses the correct search method for gallery browse", () => {
         wrapper.setData({
+            browse_type: 'gallery-display'
+        });
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+    });
+
+    it("uses the correct search method for structure browse", () => {
+        wrapper.setData({
+            browse_type: 'structure-display'
+        });
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('listJson');
+    });
+
+    it("uses the correct parameters to find admin set children", () => {
+        wrapper.setData({
+            is_admin_unit: true
+        });
+
+        wrapper.vm.updateParams();
+        expect(wrapper.vm.search_method).toEqual('listJson');
+
+        wrapper.vm.updateUrl();
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
+    });
+
+
+    it("updates the url when work type changes", () => {
+        wrapper.setData({
+            is_admin_unit: false,
             is_collection: true
         });
 
+        wrapper.vm.updateParams();
         wrapper.vm.updateUrl();
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
     });

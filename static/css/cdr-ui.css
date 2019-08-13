@@ -464,6 +464,77 @@ p.no-search-results {
   margin-bottom: 50px;
 }
 
+/* Full record page */
+.display-wrapper {
+  display: inline-flex;
+  justify-content: flex-end;
+  margin: 15px 25px 0 25px;
+  padding-right: 45px;
+  width: 100%;
+}
+.display-wrapper p, .display-wrapper a {
+  font-size: 20px;
+}
+.display-wrapper a:hover {
+  opacity: .9;
+  text-decoration: none;
+  z-index: 100;
+}
+.display-wrapper a:hover span.browse-tip, .display-wrapper a:hover .arrow {
+  display: block;
+  opacity: 1;
+}
+.display-wrapper a:hover span.browse-tip {
+  background-color: white;
+  border: 1px solid darkslategray;
+  border-radius: 5px;
+  color: black;
+  font-weight: normal;
+  margin: 0 0 10px -65px;
+  padding: 10px;
+  text-align: left;
+  width: 240px;
+}
+.display-wrapper a:hover span.browse-tip p {
+  font-size: 14px;
+}
+.display-wrapper a .arrow {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid darkslategray;
+  height: 0;
+  margin: 7px 2px 0 2px;
+  width: 0;
+}
+.display-wrapper a span.browse-tip, .display-wrapper a .arrow {
+  display: none;
+}
+.display-wrapper .button.is-light {
+  border: 1px solid darkgray;
+}
+.display-wrapper .button.is-selected {
+  background-color: slategray;
+  border: 1px solid black;
+  color: whitesmoke;
+}
+.display-wrapper button {
+  margin-left: 10px;
+  margin-top: -10px;
+}
+.display-wrapper .display-note-btn {
+  background-color: #4B9CD3;
+  border: 1px solid #4B9CD3;
+  border-radius: 100%;
+  color: white;
+  font-weight: bold;
+  height: 25px;
+  margin-left: 5px;
+  margin-top: -5px;
+  padding: 4px 5px;
+  text-align: center;
+  width: 25px;
+}
+
 /* Work page */
 /* DataTables  */
 #child-files_wrapper div {

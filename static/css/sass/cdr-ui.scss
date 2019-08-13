@@ -495,6 +495,90 @@ p.no-search-results {
   }
 }
 
+/* Full record page */
+.display-wrapper {
+  display: inline-flex;
+  justify-content: flex-end;
+  margin: 15px 25px 0 25px;
+  padding-right: 45px;
+  width: 100%;
+
+  p, a {
+    font-size: 20px;
+  }
+
+  a {
+    &:hover {
+      opacity: .9;
+      text-decoration: none;
+      z-index: 100;
+
+      span.browse-tip, .arrow {
+        display: block;
+        opacity: 1;
+      }
+
+      span.browse-tip {
+        background-color: white;
+        border: 1px solid darkslategray;
+        border-radius: 5px;
+        color: black;
+        font-weight: normal;
+        margin: 0 0 10px -65px;
+        padding: 10px;
+        text-align: left;
+        width: 240px;
+
+        p {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .arrow {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-bottom: 10px solid darkslategray;
+      height: 0;
+      margin: 7px 2px 0 2px;
+      width: 0;
+    }
+
+    span.browse-tip, .arrow {
+      display: none;
+    }
+  }
+
+  .button.is-light {
+    border: 1px solid darkgray;
+  }
+
+  .button.is-selected {
+    background-color: slategray;
+    border: 1px solid black;
+    color: whitesmoke;
+  }
+
+  button {
+    margin-left: 10px;
+    margin-top: -10px;
+  }
+
+  .display-note-btn {
+    background-color: $unc-blue;
+    border: 1px solid $unc-blue;
+    border-radius: 100%;
+    color: white;
+    font-weight: bold;
+    height: 25px;
+    margin-left: 5px;
+    margin-top: -5px;
+    padding: 4px 5px;
+    text-align: center;
+    width: 25px;
+  }
+}
+
 /* Work page */
 
 

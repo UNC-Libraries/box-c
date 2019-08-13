@@ -12,14 +12,16 @@ export default {
          * Put URL parameters into an object
          * Set default params, if none are present, that can be updated
          * @param params_to_update
-         * @returns {({} & Dictionary<string | (string | null)[]>) | {start: number, page: number, sort: string, rows: number}}
+         * @returns {{start: number, sort: string, rows: (*|number), browse_type: string | string} & Dictionary<string | (string | null)[]>}
          */
         urlParams(params_to_update = {}) {
             let defaults = {
                     rows: this.rows_per_page,
                     start: 0,
-                    sort: 'title,normal'
+                    sort: 'title,normal',
+                    browse_type: localStorage.getItem('dcr-browse-type') || 'gallery-display'
                 };
+
             let route_params = Object.assign(defaults, this.$route.query);
 
             if (!isEmpty(params_to_update)) {
@@ -54,6 +56,15 @@ export default {
          */
         paramExists(param, params) {
             return `${param}` in params;
+        },
+
+        /**
+         * Check if folders should be added to the types parameter
+         * @param field
+         * @returns {*|boolean}
+         */
+        containsFolderType(field) {
+            return /Folder/.test(field);
         }
     }
 }

@@ -42,7 +42,7 @@
 
 <c:url var="fullRecordUrl" scope="page" value="record/${briefObject.id}" />
 <div class="contentarea">
-    <div class="columns browse-header">
+    <div id="is-admin-unit" class="columns browse-header">
         <div class="column is-12">
             <h2><c:out value="${briefObject.title}" /> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Subjects:</strong>
@@ -92,15 +92,17 @@
     <script>
         (function() {
             var clicked = document.getElementById('show-abstract');
-            var partial_abstract = document.getElementById('truncated-abstract').classList;
-            var full_abstract = document.getElementById('full-abstract').classList;
+            var partial_abstract = document.getElementById('truncated-abstract');
+            var full_abstract = document.getElementById('full-abstract');
 
-            clicked.addEventListener('click', function (e) {
-                e.preventDefault();
-                partial_abstract.toggle('hidden');
-                full_abstract.toggle('hidden');
-                this.innerText = partial_abstract.contains('hidden') ? 'Read less' : 'Read more';
-            });
+            if (partial_abstract !== null) {
+                clicked.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    partial_abstract.classList.toggle('hidden');
+                    full_abstract.classList.toggle('hidden');
+                    this.innerText = partial_abstract.classList.contains('hidden') ? 'Read less' : 'Read more';
+                });
+            }
         })();
     </script>
     <c:import url="fullRecord/browseView.jsp" />

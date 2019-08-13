@@ -12,7 +12,7 @@
             <div class="column is-10 spacing">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <browse-images :container_type="container_metadata.type"></browse-images>
+                    <browse-filters v-if="is_collection || is_folder" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
                 </p>
             </div>
             <div class="column is-2">
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-    import browseImages from "./browseImages";
+    import browseFilters from "./browseFilters";
     import browseSearch from './browseSearch.vue';
     import browseSort from './browseSort.vue';
     import modalMetadata from './modalMetadata.vue';
@@ -52,12 +52,13 @@
     import chunk from 'lodash.chunk';
     import get from 'axios';
     import routeUtils from '../mixins/routeUtils';
+    import browseOptionUtils from "../mixins/browseOptionUtils";
 
     export default {
         name: 'browseDisplay',
 
         components: {
-            browseImages,
+            browseFilters,
             browseSearch,
             browseSort,
             modalMetadata,
@@ -66,26 +67,37 @@
 
         watch: {
             '$route.query'(d) {
-                this.retrieveData();
+                this.browseTypeFromUrl(this.is_admin_unit);
+                if (!this.is_page_loading && (this.applicablePage)) {
+                    this.retrieveData();
+                }
             }
         },
 
-        mixins: [routeUtils],
+        mixins: [routeUtils, browseOptionUtils],
 
         data() {
             return {
                 column_size: 'is-3',
                 container_name: '',
                 container_metadata: {},
+                default_work_type: 'Work',
+                is_admin_unit: false,
                 is_collection: false,
                 is_folder: false,
+                is_page_loading: true,
                 record_count: 0,
                 record_list: [],
+                search_method: 'searchJson',
                 uuid: ''
             }
         },
 
         computed: {
+            applicablePage() {
+               return (this.is_admin_unit || this.is_collection || this.is_folder)
+            },
+
             childTypeText() {
                 if (this.container_metadata.type === 'AdminUnit') {
                     return 'collection';
@@ -147,46 +159,106 @@
             },
 
             updateUrl() {
-                let params = this.urlParams({ types: 'Work' });
+                let params = this.urlParams();
+
+                if (this.is_admin_unit) {
+                    this.default_work_type = 'Collection';
+                    delete params.format;
+                    delete params.browse_type;
+                } else if (this.containsFolderType(this.$route.query.types)) {
+                    this.default_work_type = 'Work,Folder'
+                }
+
+                params.types = this.default_work_type;
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
-            retrieveData() {
+            updateParams() {
                 let params = this.urlParams();
 
                 if (this.is_collection || this.is_folder) {
                     params.types = 'Work';
                 }
 
-                let param_string = this.formatParamsString(params);
+                if (this.is_admin_unit) {
+                    params.types = 'Collection';
+
+                    delete params.format;
+                    delete params.browse_type;
+                    localStorage.removeItem('dcr-browse-type');
+
+                    this.browse_type = null;
+                    this.search_method = 'listJson';
+                } else if (this.browse_type === 'structure-display') {
+                    params.types = 'Work,Folder';
+                    delete params.format;
+                    this.search_method = 'listJson';
+                } else {
+                    this.search_method = 'searchJson';
+                }
+
+                if (this.containsFolderType(this.$route.query.types)) {
+                    params.types = 'Folder';
+                    this.search_method = 'listJson';
+                }
+
+                this.default_work_type = params.types;
+                return params;
+            },
+
+            retrieveData() {
+                let param_string = this.formatParamsString(this.updateParams());
                 this.uuid = location.pathname.split('/')[2];
 
-                get(`listJson/${this.uuid}${param_string}`).then((response) => {
+                get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
+                    this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);
                 });
+            },
+
+            findPageType() {
+                // Small hack to check outside of Vue controlled DOM to see what page type we're on
+                this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
+                this.is_collection = document.getElementById('is-collection') !== null;
+                this.is_folder = document.getElementById('is-folder') !== null;
+
+                /*
+                 * Show browse options for non admin unit pages
+                 * The options live outside Vue controlled DOM
+                 * See access/src/main/webapp/WEB-INF/jsp/fullRecord.jsp
+                 */
+                if (this.is_collection || this.is_folder) {
+                    this.displayBrowseButtons();
+                }
+
+                if (this.applicablePage) {
+                    this.updateUrl();
+                }
             }
         },
 
         mounted() {
-            // Small hack to check outside of Vue controlled DOM to see if we're on the collections browse page
-            this.is_collection = document.getElementById('is-collection') !== null;
-            this.is_folder = document.getElementById('is-folder') !== null;
+            this.findPageType();
+            this.browseTypeFromUrl(this.is_admin_unit);
 
-            if (this.is_collection || this.is_folder) {
-                this.updateUrl();
+            if (this.applicablePage) {
+                this.retrieveData();
             }
 
-            this.retrieveData();
-            window.addEventListener('resize', debounce(this.numberOfColumns), 300);
+            window.addEventListener('resize', debounce(this.numberOfColumns, 300));
+            this.setBrowseEvents();
+            window.addEventListener('load', this.setButtonColor);
         },
 
         beforeDestroy() {
             window.removeEventListener('resize', this.numberOfColumns);
+            this.clearBrowseEvents();
+            window.removeEventListener('load', this.setButtonColor);
         }
     };
 </script>
