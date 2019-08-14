@@ -217,25 +217,37 @@ public class RepositoryObjectDriver {
      * @return a List of PIDs for member objects of the provided object.
      */
     public List<PID> listMembers(RepositoryObject obj) {
+        return listRelated(obj, PcdmModels.memberOf);
+    }
+
+    /**
+     * Produces a list of PIDs for objects which are related to the current object via
+     * the provided relationship property.
+     *
+     * @param obj the object
+     * @param relation relation predicate
+     * @return a List of PIDs for objects related by the given predicate
+     */
+    public List<PID> listRelated(RepositoryObject obj, Property relation) {
         PID pid = obj.getPid();
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
-                PcdmModels.memberOf, pid.getURI());
-        List<PID> members = new ArrayList<>();
+                relation, pid.getURI());
+        List<PID> related = new ArrayList<>();
 
         try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
             ResultSet results = qexec.execSelect();
 
-            for (; results.hasNext();) {
+            while (results.hasNext()) {
                 QuerySolution soln = results.nextSolution();
                 Resource res = soln.getResource("pid");
 
                 if (res != null) {
-                    members.add(PIDs.get(res.getURI()));
+                    related.add(PIDs.get(res.getURI()));
                 }
             }
         }
 
-        return members;
+        return related;
     }
 
     /**

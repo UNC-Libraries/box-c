@@ -20,11 +20,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -33,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -105,14 +102,6 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
                 String path = URI.create(manifestPath).getPath();
                 depositRecord.addManifest(new File(path), "text/plain");
             }
-
-            // Add references to deposited objects
-            Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
-            List<Resource> children = new ArrayList<>();
-            // walks through the bag and adds children to the list
-            DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
-            depositRecord.addIngestedObjects(children);
-
         } catch (IOException | FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);
         }

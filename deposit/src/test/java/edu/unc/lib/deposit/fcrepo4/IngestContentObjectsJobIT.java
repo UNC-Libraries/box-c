@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
@@ -111,6 +113,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
 
+    private DepositRecord depositRecord;
+
     @Before
     public void init() throws Exception {
 
@@ -140,6 +144,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         techmdDir = new File(depositDir, TECHMD_DIR);
         techmdDir.mkdir();
+
+        // Create deposit record for this deposit to reference
+        depositRecord = repoObjFactory.createDepositRecord(depositPid, null);
     }
 
     private void setupDestination() throws Exception {
@@ -214,6 +221,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 "ingested as PID: " + folder.getPid().getQualifiedId()));
 
         assertClickCount(1);
+
+        assertLinksToDepositRecord(folder);
     }
 
     /**
@@ -289,6 +298,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 + "\n ingested as filename: " + FILE2_LOC));
 
         assertClickCount(3);
+
+        assertLinksToDepositRecord(mWork, primaryObj);
     }
 
     /**
@@ -465,10 +476,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
         List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
+        List<RepositoryObject> deposited = new ArrayList<>();
 
         for (int i = 0; i < nestingDepth; i++) {
             assertEquals("Incorrect number of children", 1, members.size());
             FolderObject folder = (FolderObject) members.get(0);
+            deposited.add(folder);
             members = folder.getMembers();
         }
 
@@ -476,9 +489,13 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         WorkObject work = (WorkObject) members.get(0);
         FileObject primaryFile = work.getPrimaryObject();
         assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+        deposited.add(work);
+        deposited.add(primaryFile);
 
         // Nesting depth plus 2 for the final work and its file
         assertClickCount(nestingDepth + 2);
+
+        assertLinksToDepositRecord(deposited.toArray(new RepositoryObject[deposited.size()]));
     }
 
     @Test
@@ -515,6 +532,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
 
         assertNotNull(folderObj.getDescription());
+
+        assertLinksToDepositRecord(folderObj);
     }
 
     @Test
@@ -546,6 +565,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
 
         assertNull(folderObj.getDescription());
+
+        assertLinksToDepositRecord(folderObj);
     }
 
     @Test
@@ -595,6 +616,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Ingestion));
         assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Normalization));
         assertTrue(logModel.contains(null, Premis.hasEventType, Premis.VirusCheck));
+
+        assertLinksToDepositRecord(folder);
     }
 
     @Test
@@ -695,5 +718,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         return fileObjPid;
 
+    }
+
+    private void assertLinksToDepositRecord(RepositoryObject... depositedObjs) {
+        List<PID> linked = depositRecord.listDepositedObjects();
+
+        for (RepositoryObject deposited: depositedObjs) {
+            assertTrue("No original deposit link for " + deposited.getPid(),
+                    linked.contains(deposited.getPid()));
+        }
     }
 }

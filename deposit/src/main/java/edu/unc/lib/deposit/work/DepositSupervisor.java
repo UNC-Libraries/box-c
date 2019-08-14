@@ -637,15 +637,15 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(ExtractTechnicalMetadataJob.class, depositUUID);
         }
 
-        // Ingest all content objects to repository
-        if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
-            return makeJob(IngestContentObjectsJob.class, depositUUID);
-        }
-
         boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
         // Ingest the deposit record
         if (!excludeDepositRecord && !successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
             return makeJob(IngestDepositRecordJob.class, depositUUID);
+        }
+
+        // Ingest all content objects to repository
+        if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
+            return makeJob(IngestContentObjectsJob.class, depositUUID);
         }
 
         return null;

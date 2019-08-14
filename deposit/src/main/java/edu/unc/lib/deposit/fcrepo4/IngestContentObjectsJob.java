@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
@@ -121,6 +122,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
 
+    private boolean skipDepositLink;
+    private Resource depositResc;
+
     public IngestContentObjectsJob() {
         super();
     }
@@ -206,6 +210,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             getDepositStatusFactory().setIngestInprogress(getDepositUUID(), true);
         }
 
+        skipDepositLink = Boolean.parseBoolean(depositStatus.get(excludeDepositRecord.name()));
+        depositResc = createResource(getDepositPID().getRepositoryPath());
         // Ingest objects included in this deposit into the destination object
         try {
             ingestChildren((ContentContainerObject) destObj, depositBag, groupSet);
@@ -287,7 +293,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         WorkObject work = (WorkObject) parent;
-        FileObject obj = addFileToWork(work, childResc, true);
+        FileObject obj = addFileToWork(work, childResc);
 
         // Add ingestion event for file object
         addIngestionEventForChild(obj);
@@ -314,7 +320,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @return
      * @throws DepositException
      */
-    private FileObject addFileToWork(WorkObject work, Resource childResc, boolean addAipProperties)
+    private FileObject addFileToWork(WorkObject work, Resource childResc)
             throws DepositException {
         PID childPid = PIDs.get(childResc.getURI());
 
@@ -338,9 +344,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         Model aipModel = ModelFactory.createDefaultModel();
         Resource aResc = aipModel.getResource(childResc.getURI());
 
-        if (addAipProperties) {
-            addAclProperties(childResc, aResc);
-        }
+        addAclProperties(childResc, aResc);
+        populateAIPProperties(childResc, aResc);
 
         String filename = label != null ? label : file.getName();
 
@@ -605,6 +610,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         String label = getPropertyValue(dResc, CdrDeposit.label);
         if (label != null) {
             aResc.addProperty(DC.title, label);
+        }
+        if (!skipDepositLink) {
+            aResc.addProperty(Cdr.originalDeposit, depositResc);
         }
     }
 
