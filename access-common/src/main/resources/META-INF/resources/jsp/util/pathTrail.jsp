@@ -33,15 +33,23 @@
 	</c:otherwise>
 </c:choose>
 
-<span class="hierarchicalTrail">  
+<c:set var="breadcrumbSize" value="${objectPath.entries.size()}"/>
+<span class="hierarchicalTrail">
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!param.hideLast || !status.last}">
 			<c:if test="${!status.first}">
-				&gt; 
+				&raquo;
 			</c:if>
 			<c:choose>
-				<c:when test="${status.last && param.linkLast != true}">
+				<c:when test="${status.last}">
 					<c:out value="${pathEntry.name}" />
+				</c:when>
+				<c:when test="${breadcrumbSize > 3 && (status.index > 0 &&  status.index < breadcrumbSize - 2)}">
+					<c:if test="${status.index == 1}">
+						<a id="expand-breadcrumb" href="#">..</a>
+					</c:if>
+					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<a href="<c:out value="${shiftFacetUrl}"/>" class="full-crumb hidden"><c:out value="${pathEntry.name}" /></a>
 				</c:when>
 				<c:otherwise>
 					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
@@ -51,3 +59,21 @@
 		</c:if>
 	</c:forEach>
 </span>
+<script>
+	(function() {
+		var crumb_trail = document.getElementById('expand-breadcrumb');
+
+		if (crumb_trail !== null) {
+			crumb_trail.addEventListener('click', showFullCrumb);
+
+			function showFullCrumb(e) {
+				e.preventDefault();
+				crumb_trail.classList.add('hidden');
+				var full_crumb = document.querySelectorAll('.full-crumb');
+				full_crumb.forEach(function(crumb) {
+					crumb.classList.remove('hidden');
+				});
+			}
+		}
+	})();
+</script>
