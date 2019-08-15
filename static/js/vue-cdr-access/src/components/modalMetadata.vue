@@ -50,12 +50,6 @@
             };
         },
 
-        watch: {
-            uuid(d) {
-                this.uuid = d;
-            }
-        },
-
         methods: {
             showMetadata() {
                 this.retrieveContainerMetadata();
