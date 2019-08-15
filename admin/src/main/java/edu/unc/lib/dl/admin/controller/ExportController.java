@@ -73,6 +73,8 @@ public class ExportController extends AbstractSolrSearchController {
         response.addHeader("Content-Type", "text/csv");
 
         SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
 
         SearchState searchState = searchRequest.getSearchState();
         searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
@@ -116,7 +118,7 @@ public class ExportController extends AbstractSolrSearchController {
         // Vitals: object type, pid, title, path, label, depth
 
         printer.print(object.getResourceType());
-        printer.print(object.getPid());
+        printer.print(object.getId());
         printer.print(object.getTitle());
         printer.print(object.getAncestorNames());
 
@@ -132,8 +134,13 @@ public class ExportController extends AbstractSolrSearchController {
 
         // Status: deleted
 
-        printer.print(new Boolean(object.getStatus().contains("Deleted") ||
-                object.getStatus().contains("Parent Deleted")));
+        if (object.getStatus() != null) {
+            printer.print(object.getStatus().contains("Deleted") ||
+                    object.getStatus().contains("Parent Deleted"));
+        } else {
+            printer.print("");
+        }
+
 
         // Dates: added, updated
 
@@ -181,19 +188,12 @@ public class ExportController extends AbstractSolrSearchController {
 
         // Container info: child count
 
-//        if (object.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
-//            Long childCount = object.getCountMap().get("child");
-//
-//            // If we don't have a childCount we will assume that the container contains zero
-//            // items, because the Solr query asked for facet.mincount=1
-//            if (childCount != null && childCount > 0) {
-//                printer.print(childCount);
-//            } else {
-//                printer.print(new Long(0));
-//            }
-//        } else {
-//            printer.print("");
-//        }
+        Long childCount = object.getCountMap().get("child");
+        if (childCount > 0) {
+            printer.print(childCount.toString());
+        } else {
+            printer.print("");
+        }
 
         // Description: does object have a MODS description?
 
