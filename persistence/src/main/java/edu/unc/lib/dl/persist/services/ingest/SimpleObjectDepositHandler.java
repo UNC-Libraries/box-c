@@ -37,8 +37,8 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 
     @Override
     public PID doDeposit(PID destination, DepositData deposit) throws DepositException {
-        log.debug("Preparing to perform a Simple Object deposit to "
-                + destination.getQualifiedId());
+        log.debug("Preparing to perform a Simple Object deposit to {}",
+                destination.getQualifiedId());
 
         PID depositPID = pidMinter.mintDepositRecordPid();
 

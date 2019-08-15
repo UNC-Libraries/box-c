@@ -147,7 +147,9 @@ public class SimpleObjectDepositHandlerTest {
     public void testDepositsDirNotAvailable() throws Exception {
         depositsDir.delete();
 
-        DepositData deposit = new DepositData(null, FILENAME, MIMETYPE, SIMPLE_OBJECT, DEPOSIT_METHOD, depositingAgent);
+        InputStream fileStream = new ByteArrayInputStream(FILE_CONTENT.getBytes());
+
+        DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE, SIMPLE_OBJECT, DEPOSIT_METHOD, depositingAgent);
 
         depositHandler.doDeposit(destPid, deposit);
     }

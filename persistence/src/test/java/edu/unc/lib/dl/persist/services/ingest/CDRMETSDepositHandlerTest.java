@@ -152,7 +152,9 @@ public class CDRMETSDepositHandlerTest {
     public void testDepositsDirNotAvailable() throws Exception {
         depositsDir.delete();
 
-        DepositData deposit = new DepositData(null, FILENAME, MIMETYPE,
+        InputStream fileStream = getMETSInputStream();
+
+        DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE,
                 METS_CDR, DEPOSIT_METHOD, depositingAgent);
 
         depositHandler.doDeposit(destPid, deposit);
