@@ -17,9 +17,7 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
@@ -30,15 +28,20 @@ import org.swordapp.server.SwordAuthException;
 import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
-import org.swordapp.server.UriRegistry;
 
-import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.cdr.sword.server.deposit.DepositHandler;
+import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.ingest.DepositData;
+import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
+import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
+import edu.unc.lib.dl.util.UnsupportedPackagingTypeException;
 
 /**
  * Manager responsible for performing ingest of new objects or packages
@@ -49,51 +52,74 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
     private static Logger log = LoggerFactory.getLogger(CollectionDepositManagerImpl.class);
 
-    private Map<PackagingType, DepositHandler> packageHandlers;
+    private DepositSubmissionService depositService;
     private List<String> priorityDepositors;
+    private DepositReportingUtil depositReportingUtil;
 
     @Override
     public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
             SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 
-        log.debug("Preparing to do collection deposit to " + collectionURI);
+        log.debug("Preparing to do collection deposit to {}", collectionURI);
         if (collectionURI == null) {
             throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "No collection URI was provided");
         }
 
         String depositor = auth.getUsername();
         String owner = (auth.getOnBehalfOf() != null) ? auth.getOnBehalfOf() : depositor;
+        AgentPrincipals agentPrincipals = new AgentPrincipals(owner, GroupsThreadStore.getGroups());
 
         PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-        assertHasAccess("Insufficient privileges to deposit to container " + containerPID.getRepositoryPath(),
-                containerPID, Permission.ingest);
-
-        // Get the enum for the provided packaging type. Null can be a legitimate type
+        // Get the enum for the provided packaging type. Null could be a legitimate type
         PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
-        try {
-            DepositHandler depositHandler = packageHandlers.get(type);
-            // Check to see if the depositor is in the list to receive higher priority
-            Priority priority = priorityDepositors.contains(depositor) ? Priority.high : Priority.normal;
+        DepositData depositData = new DepositData(deposit.getInputStream(),
+                deposit.getFilename(),
+                deposit.getMimeType(),
+                type,
+                DepositMethod.SWORD13.getLabel(),
+                agentPrincipals);
 
-            return depositHandler.doDeposit(containerPID, deposit, type, priority, config, depositor, owner);
-        } catch (JDOMException e) {
-            log.warn("Failed to deposit", e);
-            throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-                    "A problem occurred while attempting to parse your deposit: " + e.getMessage());
-        } catch (SwordError e) {
-            throw e;
+        depositData.setSlug(deposit.getSlug());
+        depositData.setMd5(deposit.getMd5());
+        Priority priority = priorityDepositors.contains(depositor) ? Priority.high : Priority.normal;
+        depositData.setPriority(priority);
+
+        try {
+            PID depositPid = depositService.submitDeposit(containerPID, depositData);
+
+            return buildReceipt(depositPid, config);
+        } catch (AccessRestrictionException e) {
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403);
+        } catch (UnsupportedPackagingTypeException e) {
+            throw new SwordError(ErrorURIRegistry.INVALID_INGEST_PACKAGE, 400,
+                    "Unsupported deposit package type " + type);
         } catch (Exception e) {
             throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-                    "Unexpected exception occurred while attempting to perform a METS deposit", e);
+                    "Unexpected exception occurred while attempting to perform deposit", e);
         }
     }
 
-    public void setPackageHandlers(Map<PackagingType, DepositHandler> packageHandlers) {
-        this.packageHandlers = packageHandlers;
+    private DepositReceipt buildReceipt(PID depositPid, SwordConfiguration config) {
+        return depositReportingUtil.retrieveDepositReceipt(depositPid,
+                (SwordConfigurationImpl) config);
+    }
+
+    /**
+     * @param depositService the depositService to set
+     */
+    public void setDepositService(DepositSubmissionService depositService) {
+        this.depositService = depositService;
     }
 
     public void setPriorityDepositors(String depositors) {
         priorityDepositors = Arrays.asList(depositors.split(","));
+    }
+
+    /**
+     * @param depositReportingUtil the depositReportingUtil to set
+     */
+    public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
+        this.depositReportingUtil = depositReportingUtil;
     }
 }

@@ -30,19 +30,6 @@
         <constructor-arg
             value="${services.base.url}sword" />
     </bean>
-
-    <bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
-        init-method="loadSchemas">
-        <property name="schemas">
-            <map>
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}" 
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch"/>
-                <entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
-                <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
-            </map>
-        </property>
-    </bean>
     
     <!-- SWORD config -->
 
@@ -66,38 +53,13 @@
     </bean>
     
     <bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
-        <property name="packageHandlers" ref="packageHandlers" />
+        <property name="depositService" ref="depositSubmissionService" />
         <property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
+        <property name="depositReportingUtil" ref="depositReportingUtil" />
     </bean>
     
     <bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" >
         <property name="acceptedPackaging" ref="packageHandlers" />
-    </bean>
-    
-    <!-- Deposit Handlers -->
-    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.CDRMETSDepositHandler" />
-    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.SimpleObjectDepositHandler" />
-    <bean id="atomPubEntryDepositHandler" class="edu.unc.lib.dl.cdr.sword.server.deposit.AtomPubEntryDepositHandler" />
-    
-    <util:map id="packageHandlers">
-        <entry>
-            <key><null/></key>
-            <ref bean="atomPubEntryDepositHandler"/>
-        </entry>
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-    </util:map>
-    
-    <bean id="depositsDirectory" class="java.io.File">
-        <constructor-arg value="${batch.ingest.dir}" />
-    </bean>
-    
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
-        <property name="jedisPool" ref="jedisPool" />
-    </bean>
-    
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
-        <property name="jedisPool" ref="jedisPool" />
     </bean>
     
     <bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl">

@@ -166,6 +166,8 @@
     <bean id="ValidateContentModelJob" class="edu.unc.lib.deposit.validate.ValidateContentModelJob"
         scope="prototype">
         <property name="aclValidator" ref="aclValidator" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
     <bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"

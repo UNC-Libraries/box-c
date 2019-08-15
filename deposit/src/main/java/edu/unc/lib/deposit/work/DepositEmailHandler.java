@@ -276,9 +276,7 @@ public class DepositEmailHandler {
                 return null;
             }
         } finally {
-            if (this.dataset.isInTransaction()) {
-                this.dataset.end();
-            }
+            this.dataset.end();
         }
     }
 

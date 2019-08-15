@@ -78,7 +78,7 @@ public class ImportXMLIT extends AbstractAPIIT {
 
         MockMultipartFile importFile = createTempImportFile();
 
-        MvcResult result = mvc.perform(MockMvcRequestBuilders.fileUpload(URI.create("/edit/importXML"))
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/importXML"))
                 .file(importFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();

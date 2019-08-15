@@ -17,7 +17,7 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
@@ -78,13 +79,13 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
         job.run();
 
-        Model model = job.getWritableModel();
+        Model model = job.getReadOnlyModel();
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
-        Resource mainResource = (Resource) depositBag.iterator().next();
+        Resource mainResource = depositBag.iterator().next().asResource();
 
-        assertEquals("Folder label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
+        assertEquals("Label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
 
-        assertFalse("No RDF types assigned", mainResource.hasProperty(RDF.type));
+        assertTrue("Must have FileObject type", mainResource.hasProperty(RDF.type, Cdr.FileObject));
     }
 
     @Test(expected = JobFailedException.class)

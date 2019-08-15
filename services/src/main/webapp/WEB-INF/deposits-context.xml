@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    
+    <!-- Deposit Handlers -->
+    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler">
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositsDirectory" ref="depositsDirectory" />
+    </bean>
+    
+    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler">
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositsDirectory" ref="depositsDirectory" />
+    </bean>
+    
+    <util:map id="packageHandlers">
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+    </util:map>
+    
+    <bean id="depositsDirectory" class="java.io.File">
+        <constructor-arg value="${batch.ingest.dir}" />
+    </bean>
+    
+    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
+    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
+    <bean id="depositSubmissionService" class="edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService">
+        <property name="aclService" ref="aclService" />
+        <property name="packageHandlers" ref="packageHandlers" />
+    </bean>
+</beans>

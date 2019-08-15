@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Bag;
@@ -44,7 +45,12 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Verify that the content objects in this deposit are valid according to our schema and expected field usage.
@@ -58,6 +64,8 @@ public class ValidateContentModelJob extends AbstractDepositJob{
     private final Set<Resource> validObjectTypes;
 
     private ContentObjectAccessRestrictionValidator aclValidator;
+
+    private RepositoryObjectLoader repoObjLoader;
 
     private final Model cdrSchema;
     private final Reasoner reasoner;
@@ -97,8 +105,15 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
         validatePrimaryObjects(model);
 
+        // Retrieve the destination object so we can verify the model against where the deposit will land
+        Map<String, String> depositStatus = getDepositStatus();
+        String destinationPath = depositStatus.get(DepositField.containerId.name());
+        PID destPid = PIDs.get(destinationPath);
+        RepositoryObject parentObject = repoObjLoader.getRepositoryObject(destPid);
+
         // Validate each object in this deposit for ACL issues and others not covered by the schema
-        validateChildren(depositBag);
+        // Start with the destination object as the parent, iterating through the new resources in the bag
+        validateChildren(parentObject.getResource(), getChildIterator(depositBag));
     }
 
     private void validatePrimaryObjects(Model model) {
@@ -146,9 +161,8 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         }
     }
 
-    private void validateChildren(Resource parentResc) {
-        NodeIterator iterator = getChildIterator(parentResc);
-        if (iterator == null) {
+    private void validateChildren(Resource parentResc, NodeIterator childIterator) {
+        if (childIterator == null) {
             return;
         }
 
@@ -158,8 +172,8 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         }
 
         try {
-            while (iterator.hasNext()) {
-                Resource childResc = (Resource) iterator.next();
+            while (childIterator.hasNext()) {
+                Resource childResc = (Resource) childIterator.next();
 
                 Resource objType = getValidObjectTypeResc(childResc);
                 if (objType == null) {
@@ -173,11 +187,12 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                 // Verify that ACL assignments for this object are okay
                 aclValidator.validate(childResc);
 
+                NodeIterator iterator = getChildIterator(childResc);
                 // Validate any children of this resource
-                validateChildren(childResc);
+                validateChildren(childResc, iterator);
             }
         } finally {
-            iterator.close();
+            childIterator.close();
         }
     }
 
@@ -211,5 +226,12 @@ public class ValidateContentModelJob extends AbstractDepositJob{
      */
     public void setAclValidator(ContentObjectAccessRestrictionValidator aclValidator) {
         this.aclValidator = aclValidator;
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }

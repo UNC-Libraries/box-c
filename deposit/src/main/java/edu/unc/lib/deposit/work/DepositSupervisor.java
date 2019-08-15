@@ -35,7 +35,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -598,7 +597,8 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         // Normalize all fileObjects into Works
-        if (!successfulJobs.contains(NormalizeFileObjectsJob.class.getName())) {
+        if (!successfulJobs.contains(NormalizeFileObjectsJob.class.getName())
+                && !packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
             return makeJob(NormalizeFileObjectsJob.class, depositUUID);
         }
 
@@ -642,8 +642,9 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
         }
 
+        boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
         // Ingest the deposit record
-        if (!successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
+        if (!excludeDepositRecord && !successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
             return makeJob(IngestDepositRecordJob.class, depositUUID);
         }
 
@@ -758,24 +759,22 @@ public class DepositSupervisor implements WorkerListener {
     private void sendDepositCompleteEvent(String depositUUID) {
         Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
-        dataset.begin(ReadWrite.READ);
-        Model model = dataset.getNamedModel(depositPid.getRepositoryPath()).begin();
+        try {
+            Model model = dataset.getNamedModel(depositPid.getRepositoryPath()).begin();
 
-        Bag depositBag = model.getBag(depositPid.getRepositoryPath());
+            Bag depositBag = model.getBag(depositPid.getRepositoryPath());
 
-        PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
+            PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
 
-        List<String> added = new ArrayList<>();
-        DepositGraphUtils.walkChildrenDepthFirst(depositBag, added, true);
-        List<PID> addedPids = added.stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
+            List<String> added = new ArrayList<>();
+            DepositGraphUtils.walkChildrenDepthFirst(depositBag, added, true);
+            List<PID> addedPids = added.stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
 
-        if (dataset.isInTransaction()) {
-            dataset.commit();
+            // Send message indicating the deposit has completed
+            opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
+                    Arrays.asList(destPid), addedPids, null, depositUUID);
+        } finally {
             dataset.end();
         }
-
-        // Send message indicating the deposit has completed
-        opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
-                Arrays.asList(destPid), addedPids, null, depositUUID);
     }
 }
