@@ -15,6 +15,16 @@
     export default {
         name: 'browseSearch',
 
+        watch: {
+            '$route.query'(d) {
+                if ('anywhere' in d) {
+                    this.search_query = decodeURIComponent(d.anywhere);
+                } else {
+                    this.search_query = '';
+                }
+            }
+        },
+
         mixins: [routeUtils],
 
         data() {
@@ -27,6 +37,12 @@
             getResults() {
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
+            }
+        },
+
+        mounted() {
+            if ('anywhere' in this.$route.query) {
+                this.search_query = decodeURIComponent(this.$route.query.anywhere);
             }
         }
     };
