@@ -44,7 +44,7 @@
 <div class="contentarea">
     <div id="is-collection" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${briefObject.title}"/></h2>
+            <h2><i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/></h2>
             <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
             <c:choose>
                 <c:when test="${not empty briefObject.abstractText}">
