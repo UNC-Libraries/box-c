@@ -454,7 +454,7 @@ p.no-search-results {
   width: 100%;
 
   h2 {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: bold;
     margin: 15px;
 
@@ -660,6 +660,15 @@ p.no-search-results {
 
 #expand-breadcrumb {
   font-size: 24px;
+}
+
+p.collection-prefix {
+  color: #555;
+  font-style: italic;
+
+  i {
+    font-size: 24px;
+  }
 }
 
 .actionlink.view {
