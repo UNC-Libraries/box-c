@@ -1,7 +1,7 @@
 <template>
     <div class="browse-search field has-addons">
         <div class="control">
-            <input class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
+            <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
         </div>
         <div class="control">
             <button @click="getResults" class="button">Search</button>
@@ -15,6 +15,18 @@
     export default {
         name: 'browseSearch',
 
+        watch: {
+            // Checks for route changes and updates the search box text as needed, keeping it up
+            // to date on forward and backward navigation on the same page.
+            '$route.query'(d) {
+                if ('anywhere' in d) {
+                    this.search_query = decodeURIComponent(d.anywhere);
+                } else {
+                    this.search_query = '';
+                }
+            }
+        },
+
         mixins: [routeUtils],
 
         data() {
@@ -27,7 +39,13 @@
             getResults() {
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
-                this.search_query = '';
+            }
+        },
+
+        mounted() {
+            // Updates the search box text from the url parameter on page load
+            if ('anywhere' in this.$route.query) {
+                this.search_query = decodeURIComponent(this.$route.query.anywhere);
             }
         }
     };
