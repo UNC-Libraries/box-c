@@ -408,6 +408,15 @@ p.collection-prefix {
   }
 }
 
+p.collection-prefix {
+  color: #555;
+  font-style: italic;
+
+  i {
+    font-size: 24px;
+  }
+}
+
 .actionlink.view {
   max-width: 60px;
 

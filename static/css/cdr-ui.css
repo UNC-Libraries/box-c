@@ -617,6 +617,14 @@ p.collection-prefix i {
   font-size: 24px;
 }
 
+p.collection-prefix {
+  color: #555;
+  font-style: italic;
+}
+p.collection-prefix i {
+  font-size: 24px;
+}
+
 .actionlink.view {
   max-width: 60px;
 }
