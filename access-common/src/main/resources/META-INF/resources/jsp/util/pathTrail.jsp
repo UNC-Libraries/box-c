@@ -37,23 +37,36 @@
 <span class="hierarchicalTrail">
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!param.hideLast || !status.last}">
-			<c:if test="${!status.first}">
+			<c:if test="${status.index > 1}">
 				&raquo;
 			</c:if>
 			<c:choose>
-				<c:when test="${status.last}">
-					<c:out value="${pathEntry.name}" />
-				</c:when>
-				<c:when test="${breadcrumbSize > 3 && (status.index > 0 &&  status.index < breadcrumbSize - 2)}">
-					<c:if test="${status.index == 1}">
-						<a id="expand-breadcrumb" href="#">..</a>
+				<c:when test="${status.index <= 3}">
+					<c:if test="${status.index > 0}">
+						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+						<c:choose>
+							<c:when test="${status.index == 1}">
+								<a href="<c:out value="${shiftFacetUrl}"/>">Collections</a>
+							</c:when>
+							<c:otherwise>
+								<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
+							</c:otherwise>
+						</c:choose>
 					</c:if>
-					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-					<a href="<c:out value="${shiftFacetUrl}"/>" class="full-crumb hidden"><c:out value="${pathEntry.name}" /></a>
 				</c:when>
 				<c:otherwise>
-					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
+					<c:if test="${status.index == 4}">
+						<a id="expand-breadcrumb" href="#">&hellip;</a>
+					</c:if>
+					<c:choose>
+						<c:when test="${status.index == breadcrumbSize - 2}">
+							<span class="full-crumb hidden"><c:out value="${pathEntry.name}" /></span>
+						</c:when>
+						<c:otherwise>
+							<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+							<a href="<c:out value="${shiftFacetUrl}"/>" class="full-crumb hidden"><c:out value="${pathEntry.name}" /></a>
+						</c:otherwise>
+					</c:choose>
 				</c:otherwise>
 			</c:choose>
 		</c:if>
