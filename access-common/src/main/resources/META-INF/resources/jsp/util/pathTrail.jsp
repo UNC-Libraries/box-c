@@ -45,8 +45,14 @@
 					<c:if test="${status.index > 0}">
 						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 						<c:choose>
+							<c:when test="${status.index == 1 && status.index == breadcrumbSize - 1}">
+								<span>Collections</span>
+							</c:when>
 							<c:when test="${status.index == 1}">
 								<a href="<c:out value="${shiftFacetUrl}"/>">Collections</a>
+							</c:when>
+							<c:when test="${status.index == breadcrumbSize - 1}">
+								<span><c:out value="${pathEntry.name}" /></span>
 							</c:when>
 							<c:otherwise>
 								<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
