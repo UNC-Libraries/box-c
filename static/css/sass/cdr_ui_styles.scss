@@ -191,9 +191,9 @@ p.no-search-results {
   width: 100%;
 
   h2 {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: bold;
-    margin: 15px;
+    margin: 15px 15px 25px 15px;
 
     span {
       color: gray;
@@ -387,6 +387,15 @@ p.no-search-results {
 #full_record_trail {
   font-size: 14px;
   text-indent: 0;
+}
+
+p.collection-prefix {
+  color: #555;
+  font-style: italic;
+
+  i {
+    font-size: 24px;
+  }
 }
 
 .actionlink.view {
