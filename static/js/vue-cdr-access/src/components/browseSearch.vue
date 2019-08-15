@@ -1,7 +1,7 @@
 <template>
     <div class="browse-search field has-addons">
         <div class="control">
-            <input class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
+            <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
         </div>
         <div class="control">
             <button @click="getResults" class="button">Search</button>
@@ -27,7 +27,6 @@
             getResults() {
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
-                this.search_query = '';
             }
         }
     };
