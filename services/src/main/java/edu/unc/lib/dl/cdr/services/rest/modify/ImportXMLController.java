@@ -26,8 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,7 +55,7 @@ public class ImportXMLController {
      * @param xmlFile
      * @return response entity with result and response code
      */
-    @RequestMapping(value = "/edit/importXML", method = RequestMethod.POST)
+    @PostMapping(value = "/edit/importXML")
     public @ResponseBody ResponseEntity<Object> importXML(@RequestParam("file") MultipartFile xmlFile) {
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
@@ -69,7 +68,7 @@ public class ImportXMLController {
         result.put("user email", userEmail);
 
         try (InputStream importStream = xmlFile.getInputStream()) {
-            service.pushJobToQueue(result, importStream, agent, userEmail);
+            service.pushJobToQueue(importStream, agent, userEmail);
         } catch (IOException e) {
             log.error("Error creating or writing to import file: {}", e);
             result.put("error", e.getMessage());

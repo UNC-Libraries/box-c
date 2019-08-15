@@ -26,6 +26,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 /**
+ * Service for sending simple emails
  *
  * @author harring
  *
@@ -37,11 +38,12 @@ public class EmailHandler {
     private JavaMailSender mailSender;
 
     /**
+     * Send an email to the supplied address
      *
-     * @param toAddress
-     * @param subject
-     * @param body
-     * @param attachment
+     * @param toAddress recipient email address
+     * @param subject Subject line for the email
+     * @param body body content
+     * @param attachment optional file attachment
      */
     public void sendEmail(String toAddress, String subject, String body, String filename, File attachment) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -52,7 +54,9 @@ public class EmailHandler {
             helper.setFrom(fromAddress);
             helper.setText(body);
             helper.setTo(toAddress);
-            helper.addAttachment("xml_export.zip", attachment);
+            if (attachment != null) {
+                helper.addAttachment(filename, attachment);
+            }
             mailSender.send(mimeMessage);
             log.debug("Sending XML export email to {}", toAddress);
         } catch (MessagingException e) {
