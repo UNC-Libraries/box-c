@@ -1,6 +1,6 @@
 <template>
     <div class="meta-modal">
-        <button id="show-modal" class="button is-medium" @click="showModal = true">
+        <button id="show-modal" class="button is-medium" @click="showMetadata">
             <i class="fa fa-file-text-o" aria-hidden="true" title="Metadata"></i> Metadata
         </button>
 
@@ -50,18 +50,19 @@
             };
         },
 
-        watch: {
-            uuid(d) {
-                this.retrieveContainerMetadata();
-            }
-        },
-
         methods: {
+            showMetadata() {
+                this.retrieveContainerMetadata();
+            },
+
             retrieveContainerMetadata() {
                 get(`record/${this.uuid}/metadataView`).then((response) => {
                     this.metadata = response.data;
+                    this.showModal = true;
                 }).catch(function (error) {
                     console.log(error);
+                    this.metadata = '<p>Unable to retrieve metadata for this item</p>';
+                    this.showModal = true;
                 });
             }
         }

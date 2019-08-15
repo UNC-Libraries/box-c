@@ -37,9 +37,8 @@ describe('modalMetadata.vue', () => {
         });
     });
 
-    it("updates the metadata when the record uuid changes", () => {
-        // Trigger prop update to call xhr request
-        wrapper.setProps({ uuid: updated_uuid });
+    it("fetches the record metadata when the metadata button is clicked", () => {
+        btn.trigger('click');
 
         moxios.wait(() => {
             expect(wrapper.vm.metadata).toEqual(response);
@@ -53,18 +52,20 @@ describe('modalMetadata.vue', () => {
 
     it("displays a record title when triggered", () => {
         btn.trigger('click');
-        const record = wrapper.find('h3');
-        expect(record.text()).toBe(title);
+
+        moxios.wait(() => {
+            const record = wrapper.find('h3');
+            expect(record.text()).toBe(title);
+        });
     });
 
     it("displays metadata when triggered", () => {
-        wrapper.setData({ metadata: response });
-
-        // Trigger modal open
         btn.trigger('click');
 
-        const record = wrapper.find('table');
-        expect(record.html()).toBe(wrapper.vm.metadata);
+        moxios.wait(() => {
+            const record = wrapper.find('table');
+            expect(record.html()).toBe(wrapper.vm.metadata);
+        });
     });
 
     afterEach(() => {
