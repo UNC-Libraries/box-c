@@ -16,7 +16,8 @@
         name: 'browseSearch',
 
         watch: {
-            // Checks for route changes and updates the search box text as needed.
+            // Checks for route changes and updates the search box text as needed, keeping it up
+            // to date on forward and backward navigation on the same page.
             '$route.query'(d) {
                 if ('anywhere' in d) {
                     this.search_query = decodeURIComponent(d.anywhere);
@@ -42,7 +43,7 @@
         },
 
         mounted() {
-            // It updates the search box text as needed if the user reloads the page or moves back and forth via back/forward buttons on the same page.
+            // Updates the search box text from the url parameter on page load
             if ('anywhere' in this.$route.query) {
                 this.search_query = decodeURIComponent(this.$route.query.anywhere);
             }
