@@ -495,8 +495,20 @@ h1 {
 	text-decoration: underline;
 }
 
+.edit_desc_page {
+	margin-left: 20px;
+}
+
 .edit_desc_page .result_warning {
 	margin-top: 8px;
+}
+
+.admin-forms, .form_field {
+	text-align: center;
+}
+
+p.admin-forms {
+	margin-top: 15px;
 }
 
 div.in-admin-iframe,
