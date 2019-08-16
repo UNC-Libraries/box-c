@@ -375,6 +375,15 @@ h1 {
   font-size: 12px;
 }
 
+/* Description editing modal */
+.template-form .fa {
+	font-size: 37px;
+	float: left;
+	margin-right: 10px;
+	margin-bottom: 5px;
+	vertical-align: top;
+}
+
 /* Confirmation */
 .no_titlebar .ui-dialog-titlebar {
 	display: none;
