@@ -27,11 +27,11 @@ import edu.unc.lib.dl.rdf.Cdr;
 public enum ResourceType {
     AdminUnit(1, Cdr.AdminUnit.getURI()),
     Collection(2, Cdr.Collection.getURI()),
-    Folder(3, Cdr.Folder.getURI()),
-    Work(4, Cdr.Work.getURI()),
-    File(4, Cdr.FileObject.getURI()),
-    DepositRecord(5, Cdr.DepositRecord.getURI()),
-    ContentRoot(5, Cdr.ContentRoot.getURI());
+    Folder(6, Cdr.Folder.getURI()),
+    Work(10, Cdr.Work.getURI()),
+    File(20, Cdr.FileObject.getURI()),
+    DepositRecord(100, Cdr.DepositRecord.getURI()),
+    ContentRoot(100, Cdr.ContentRoot.getURI());
 
     private int displayOrder;
     private String uri;
