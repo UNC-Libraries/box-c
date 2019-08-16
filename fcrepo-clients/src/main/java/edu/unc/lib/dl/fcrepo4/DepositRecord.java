@@ -23,8 +23,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -105,30 +103,12 @@ public class DepositRecord extends RepositoryObject {
     }
 
     /**
-     * Establishes a relationship between the deposit record and each object
-     * that was added to the deposit.
-     * @param depositPID
-     * @param children
-     * @return the DepositRecord itself, to allow method chaining
-     */
-    public DepositRecord addIngestedObjects(List<Resource> children) {
-        Model triples = ModelFactory.createDefaultModel();
-        Resource res = triples.createResource(getPid().getURI());
-        for (Resource child : children) {
-            res.addProperty(Cdr.hasIngestedObject, child);
-        }
-        // SPARQL update
-        repoObjFactory.createRelationships(this, triples);
-        return this;
-    }
-
-    /**
      * Retrieves a list of pids for objects contained by this deposit record
      * @return
      * @throws FedoraException
      */
     public List<PID> listDepositedObjects() throws FedoraException {
-        return addPidsToList(Cdr.hasIngestedObject);
+        return this.driver.listRelated(this, Cdr.originalDeposit);
     }
 
     /**

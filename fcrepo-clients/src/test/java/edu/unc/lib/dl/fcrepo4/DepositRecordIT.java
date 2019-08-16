@@ -15,15 +15,15 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +33,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -132,24 +131,32 @@ public class DepositRecordIT extends AbstractFedoraIT {
         Model model = getDepositRecordModel();
         DepositRecord record = repoObjFactory.createDepositRecord(model);
 
-        URI obj1Uri;
-        URI obj2Uri;
-        try (FcrepoResponse response = client.post(URI.create(baseAddress)).perform()) {
-            obj1Uri = response.getLocation();
-        }
-        try (FcrepoResponse response = client.post(URI.create(baseAddress)).perform()) {
-            obj2Uri = response.getLocation();
-        }
-        Resource res1 = model.createResource(obj1Uri.toString());
-        Resource res2 = model.createResource(obj2Uri.toString());
+        repoObjFactory.createContentRootObject(getContentRootPid().getRepositoryUri(), null);
+        ContentRootObject rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        rootObj.addMember(adminUnit);
 
-        List<Resource> depositedObjs = new ArrayList<>();
-        depositedObjs.add(res1);
-        depositedObjs.add(res2);
+        CollectionObject coll = repoObjFactory.createCollectionObject(modelWithOriginalDeposit(record));
+        adminUnit.addMember(coll);
+        WorkObject work = repoObjFactory.createWorkObject(modelWithOriginalDeposit(record));
+        coll.addMember(work);
 
-        record.addIngestedObjects(depositedObjs);
+        treeIndexer.indexAll(baseAddress);
 
-        assertTrue(record.listDepositedObjects().size() == 2);
+        // Collection and work should have been part of this deposit
+        List<PID> depositedObjects = record.listDepositedObjects();
+        assertEquals(2, depositedObjects.size());
+        assertTrue(depositedObjects.contains(coll.getPid()));
+        assertTrue(depositedObjects.contains(work.getPid()));
+        assertFalse(depositedObjects.contains(adminUnit.getPid()));
+    }
+
+    private Model modelWithOriginalDeposit(DepositRecord record) {
+        Model refDepositModel = ModelFactory.createDefaultModel();
+        Resource subj = refDepositModel.getResource("");
+        subj.addProperty(Cdr.originalDeposit, record.getResource());
+
+        return refDepositModel;
     }
 
     private Model getDepositRecordModel() {
