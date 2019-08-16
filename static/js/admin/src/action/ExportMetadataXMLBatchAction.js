@@ -69,7 +69,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 			}
 			
 			$.ajax({
-				url : "/services/exportXML",
+				url : "/services/api/edit/exportXML",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",

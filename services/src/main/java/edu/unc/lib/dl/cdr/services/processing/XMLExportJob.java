@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -22,11 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.mail.MessagingException;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -52,12 +51,12 @@ import edu.unc.lib.persist.services.EmailHandler;
 import io.dropwizard.metrics5.Timer;
 
 
-    /**
-     * Job that performs the work of retrieving metadata documents and compiling them into the export document.
-     *
-     * @author bbpennel
-     * @author harring
-     */
+/**
+ * Job that performs the work of retrieving metadata documents and compiling them into the export document.
+ *
+ * @author bbpennel
+ * @author harring
+ */
 public class XMLExportJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(XMLExportJob.class);
 
@@ -65,12 +64,11 @@ public class XMLExportJob implements Runnable {
     private RepositoryObjectLoader repoObjLoader;
     private EmailHandler emailHandler;
 
-    private final int BUFFER_SIZE = 2048;
-    private final Charset utf8 = Charset.forName("UTF-8");
-    private final String separator = System.getProperty("line.separator");
-    private final byte[] separatorBytes = System.getProperty("line.separator").getBytes();
-    private final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + separator
-            + "<bulkMetadata>" + separator).getBytes(utf8);
+    private static final int BUFFER_SIZE = 2048;
+    private static final String SEPERATOR = System.getProperty("line.separator");
+    private static final byte[] SEPERATOR_BYTES = SEPERATOR.getBytes();
+    private static final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + SEPERATOR
+            + "<bulkMetadata>" + SEPERATOR).getBytes(UTF_8);
 
     private final String user;
     private final AccessGroupSet groups;
@@ -100,14 +98,12 @@ public class XMLExportJob implements Runnable {
                     addObjectToExport(pidString, xfop, xmlOutput);
                 }
 
-                xfop.write("</bulkMetadata>".getBytes(utf8));
+                xfop.write("</bulkMetadata>".getBytes(UTF_8));
             }
 
             sendEmail(zipit(mdExportFile), request.getEmail());
             log.info("Finished metadata export for {} objects in {}ms for user {}",
-                    new Object[] {request.getPids().size(), System.currentTimeMillis() - startTime, user});
-        } catch (MessagingException e) {
-            log.error("Failed to send export email to {}", request.getEmail(), e);
+                    request.getPids().size(), System.currentTimeMillis() - startTime, user);
         } catch (IOException e) {
             throw new ServiceException("Unable to write export file", e);
         }
@@ -136,21 +132,21 @@ public class XMLExportJob implements Runnable {
                     dsDoc = new SAXBuilder().build(modsStream);
                 }
 
-                objectEl.addContent(separator);
+                objectEl.addContent(SEPERATOR);
 
                 Element modsUpdateEl = new Element("update");
                 modsUpdateEl.setAttribute("type", "MODS");
                 modsUpdateEl.setAttribute("lastModified", obj.getLastModified().toString());
-                modsUpdateEl.addContent(separator);
+                modsUpdateEl.addContent(SEPERATOR);
                 modsUpdateEl.addContent(dsDoc.detachRootElement());
-                modsUpdateEl.addContent(separator);
+                modsUpdateEl.addContent(SEPERATOR);
                 objectEl.addContent(modsUpdateEl);
-                objectEl.addContent(separator);
+                objectEl.addContent(SEPERATOR);
             }
 
             xmlOutput.output(objectEl, xfop);
 
-            xfop.write(separatorBytes);
+            xfop.write(SEPERATOR_BYTES);
             xfop.flush();
         } catch (JDOMException e) {
             log.error("Failed to parse MODS document for {}", pid, e);
@@ -203,7 +199,7 @@ public class XMLExportJob implements Runnable {
         return mdExportZip;
     }
 
-    private void sendEmail(File mdExportFile, String toAddress) throws MessagingException {
+    private void sendEmail(File mdExportFile, String toAddress) {
         String emailBody = "The XML metadata for " + request.getPids().size() +
                 " object(s) requested for export by " + this.user + " is attached.\n";
 

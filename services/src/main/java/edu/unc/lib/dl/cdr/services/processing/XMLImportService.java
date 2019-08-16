@@ -21,12 +21,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import net.greghaines.jesque.Job;
@@ -41,11 +39,8 @@ import net.greghaines.jesque.client.Client;
 public class XMLImportService {
     private static final Logger log = LoggerFactory.getLogger(XMLImportService.class);
 
-    @Autowired
     private Client jesqueClient;
-    @Autowired
     private String bulkMetadataQueueName;
-    @Autowired
     private String dataDir;
 
     private Path storagePath;
@@ -56,8 +51,8 @@ public class XMLImportService {
         Files.createDirectories(storagePath);
     }
 
-    public void pushJobToQueue(Map<String, Object> result, InputStream importStream, AgentPrincipals agent,
-            String userEmail) throws IllegalArgumentException, IOException {
+    public void pushJobToQueue(InputStream importStream, AgentPrincipals agent,
+            String userEmail) throws IOException {
 
         File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
         FileUtils.copyInputStreamToFile(importStream, importFile);
@@ -65,7 +60,7 @@ public class XMLImportService {
         Job job = new Job(XMLImportJob.class.getName(), agent, userEmail, importFile.getAbsolutePath());
 
         jesqueClient.enqueue(bulkMetadataQueueName, job);
-        log.info("Job to import " + importFile.getName() + "has been queued for " + agent.getUsername());
+        log.info("Job to import {} has been queued for {}", importFile.getName(), agent.getUsername());
     }
 
     public void setClient(Client jesqueClient) {
