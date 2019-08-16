@@ -14,7 +14,7 @@ define('DestroyResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 		var targetIsCollection = this.context.target.metadata && this.context.target.metadata.type == "Collection";
 		
 		var options = {
-			workMethod: $.post,
+			workMethod: 'post',
 			workLabel: "Destroying...",
 			workPath: "/services/api/edit/destroy/{idPath}",
 			followupLabel: "Cleaning up...",
