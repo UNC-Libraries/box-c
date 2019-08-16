@@ -515,6 +515,11 @@
 }
 
 .xml_menu_container {
+	margin-right: 15px;
+}
+
+.xml_menu_container ul {
+	font-size: 12px;
 }
 
 .xml_submit_status {

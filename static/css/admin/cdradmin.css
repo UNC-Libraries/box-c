@@ -375,6 +375,15 @@ h1 {
   font-size: 12px;
 }
 
+/* Description editing modal */
+.template-form .fa {
+	font-size: 37px;
+	float: left;
+	margin-right: 10px;
+	margin-bottom: 5px;
+	vertical-align: top;
+}
+
 /* Confirmation */
 .no_titlebar .ui-dialog-titlebar {
 	display: none;
@@ -486,8 +495,20 @@ h1 {
 	text-decoration: underline;
 }
 
+.edit_desc_page {
+	margin-left: 20px;
+}
+
 .edit_desc_page .result_warning {
 	margin-top: 8px;
+}
+
+.admin-forms, .form_field {
+	text-align: center;
+}
+
+p.admin-forms {
+	margin-top: 15px;
 }
 
 div.in-admin-iframe,
