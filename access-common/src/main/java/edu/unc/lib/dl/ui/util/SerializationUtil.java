@@ -129,7 +129,6 @@ public class SerializationUtil {
 
         if (metadata.getId() != null) {
             result.put("id", metadata.getId());
-            result.put("uri", applicationPathSettings.getApiRecordPath() + metadata.getId());
         }
 
         if (metadata.getLabel() != null) {
