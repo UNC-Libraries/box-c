@@ -10,11 +10,11 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 	
 	ReindexResultAction.prototype._create = function(context) {
 		this.context = context;
-		
+
 		this.options = {
 				workLabel: "Updating...",
 				workPath: "/services/api/edit/solr/reindex/{idPath}?inplace=true",
-				workMethod: $.post,
+				workMethod: 'post',
 				followupLabel: "Updating...",
 				followupPath: "/services/api/status/item/{idPath}/solrRecord/version",
 				confirm: {
