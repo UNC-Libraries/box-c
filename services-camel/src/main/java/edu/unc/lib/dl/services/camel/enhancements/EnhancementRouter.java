@@ -74,7 +74,7 @@ public class EnhancementRouter extends RouteBuilder {
 
         from("direct:process.binary")
             .routeId("ProcessOriginalBinary")
-            .filter(simple("${headers[CamelFcrepoUri]} contains '/original_file'"
+            .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
