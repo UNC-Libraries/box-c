@@ -97,7 +97,6 @@ public class SerializationUtilTest extends Assert {
         Map<String, Object> jsonMap = getResultMap(json);
 
         assertEquals("uuid:test", jsonMap.get("id"));
-        assertEquals(API_PATH + "uuid:test", jsonMap.get("uri"));
         assertEquals("Test Item", jsonMap.get("title"));
         assertEquals(false, jsonMap.get("isPart"));
         assertEquals(1, ((List<String>) jsonMap.get("datastream")).size());
