@@ -12,7 +12,7 @@ define('DeleteResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Ajax
 		this.context = context;
 		
 		this.options = {
-			workMethod: $.post,
+			workMethod: "post",
 			followupPath: "/services/api/status/item/{idPath}/solrRecord/version"
 		};
 		

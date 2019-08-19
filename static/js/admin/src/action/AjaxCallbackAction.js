@@ -15,7 +15,7 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	AjaxCallbackAction.prototype.actionName = "Action";
 	
 	AjaxCallbackAction.prototype.defaultOptions = {
-			workMethod : $.get,
+			workMethod : "get",
 			workLabel : undefined,
 			workPath : "",
 			followup : true,
