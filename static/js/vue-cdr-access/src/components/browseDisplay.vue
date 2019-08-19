@@ -23,7 +23,7 @@
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <a :href="record.uri">
+                        <a :href="recordUrl(record.id)">
                             <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                             <div class="record-count" :class="{ thumbnail: hasThumbnail(record.thumbnail_url) }">
@@ -118,6 +118,9 @@
         },
 
         methods: {
+            recordUrl(id) {
+                return `/record/${id}`;
+            },
             recordCountFormat(number) {
                 return new Intl.NumberFormat().format(number);
             },
