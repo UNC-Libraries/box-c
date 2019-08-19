@@ -14,7 +14,7 @@ define('PublishAction', ['jquery', 'AjaxCallbackAction'], function($, AjaxCallba
 		
 		this.options = {
 			followupPath : "/services/api/status/item/{idPath}/solrRecord/version",
-			workMethod : $.post
+			workMethod : "post"
 		};
 		
 		this._configure();
