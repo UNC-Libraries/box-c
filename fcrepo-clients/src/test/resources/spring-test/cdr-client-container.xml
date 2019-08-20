@@ -45,7 +45,6 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
     
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">

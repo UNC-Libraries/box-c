@@ -59,9 +59,6 @@ public class RepositoryObjectLoader {
         cacheTimeToLive = timeToLive;
     }
 
-    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
-    }
-
     public AdminUnit getAdminUnit(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof AdminUnit)) {

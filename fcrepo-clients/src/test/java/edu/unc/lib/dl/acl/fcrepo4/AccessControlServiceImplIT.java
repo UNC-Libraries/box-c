@@ -36,11 +36,12 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
@@ -79,6 +80,8 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Autowired
     private ContentPathFactory pathFactory;
+    @Autowired
+    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
 
     private ObjectAclFactory aclFactory;
 
@@ -90,9 +93,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     private AccessControlServiceImpl aclService;
 
-    @Autowired
-    private SparqlQueryService sparqlService;
-
     @Before
     public void init() throws Exception {
         Properties properties = new Properties();
@@ -100,7 +100,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         globalPermissionEvaluator = new GlobalPermissionEvaluator(properties);
 
         aclFactory = new ObjectAclFactory();
-        aclFactory.setQueryService(sparqlService);
+        aclFactory.setRepositoryObjectCacheLoader(repositoryObjectCacheLoader);
         aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.init();
@@ -359,7 +359,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     }
 
     private List<PID> getAllContentObjects() {
-        return queryModel.listResourcesWithProperty(RDF.type).toList().stream()
+        return queryModel.listResourcesWithProperty(RDF.type, PcdmModels.Object).toList().stream()
                 .map(p -> PIDs.get(p.getURI()))
                 .collect(Collectors.toList());
     }

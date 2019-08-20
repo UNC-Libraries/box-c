@@ -17,6 +17,8 @@ package edu.unc.lib.dl.test;
 
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
+import java.util.Calendar;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -63,6 +65,11 @@ public class AclModelBuilder {
 
     public AclModelBuilder addPatronAccess(String value) {
         return addProp(CdrAcl.patronAccess, value);
+    }
+
+    public AclModelBuilder addEmbargoUntil(Calendar date) {
+        resc.addLiteral(CdrAcl.embargoUntil, date);
+        return this;
     }
 
     private AclModelBuilder addProp(Property prop, String princ) {

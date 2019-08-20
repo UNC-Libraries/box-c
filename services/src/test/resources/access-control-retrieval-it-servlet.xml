@@ -67,7 +67,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="500" />
         <property name="cacheTimeToLive" value="5000" />
-        <property name="queryService" ref="sparqlQueryService" />
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
      <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">

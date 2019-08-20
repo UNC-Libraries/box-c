@@ -16,8 +16,6 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static java.lang.Integer.parseInt;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -29,38 +27,30 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.jena.fuseki.embedded.FusekiServer;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.core.DatasetImpl;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  *
  * @author bbpennel
  *
  */
-public class ObjectPermissionEvaluatorIT {
-
-    private static final String FUSEKI_PORT = System
-            .getProperty("fuseki.dynamic.test.port", "48080");
-
-    private static final String FUSEKI_BASE_URI =
-            "http://localhost:" + FUSEKI_PORT + "/fuseki/test";
-
+public class ObjectPermissionEvaluatorIT extends AbstractFedoraIT {
     private final static String PRINC_GRP1 = "group1";
     private final static String PRINC_GRP2 = "group2";
 
@@ -69,30 +59,19 @@ public class ObjectPermissionEvaluatorIT {
 
     private ObjectAclFactory aclFactory;
 
-    private FusekiServer server;
-
-    private SparqlQueryService sparqlService;
-
-    private Model fusekiModel;
+    @Autowired
+    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
 
     private ObjectPermissionEvaluator objectPermissionEvaluator;
 
     private PID pid;
 
+    private static ContentRootObject contentRoot;
+
     @Before
     public void init() {
-        fusekiModel = createDefaultModel();
-        Dataset ds = new DatasetImpl(fusekiModel);
-        server = FusekiServer.create().setPort(parseInt(FUSEKI_PORT))
-                .setContextPath("/fuseki").add("/test", ds)
-                .build();
-        server.start();
-
-        sparqlService = new FusekiSparqlQueryServiceImpl();
-        ((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
-
         aclFactory = new ObjectAclFactory();
-        aclFactory.setQueryService(sparqlService);
+        aclFactory.setRepositoryObjectCacheLoader(repositoryObjectCacheLoader);
         aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.init();
@@ -101,16 +80,20 @@ public class ObjectPermissionEvaluatorIT {
         objectPermissionEvaluator.setAclFactory(aclFactory);
 
         pid = PIDs.get(UUID.randomUUID().toString());
-    }
 
-    @After
-    public void tearDownFuseki() throws Exception {
-        server.stop();
+        if (contentRoot == null) {
+            repoObjFactory.createContentRootObject(
+                    RepositoryPaths.getContentRootPid().getRepositoryUri(), null);
+            contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
+        }
     }
 
     @Test
     public void hasStaffPermission() {
-        createObject(pid).addLiteral(CdrAcl.canManage, PRINC_GRP1);
+        repoObjFactory.createAdminUnit(pid,
+                new AclModelBuilder("Admin Unit Staff Perm")
+                    .addCanManage(PRINC_GRP1)
+                    .model);
 
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
@@ -119,7 +102,10 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void doesNotHaveStaffPermission() {
-        createObject(pid).addLiteral(CdrAcl.canViewOriginals, PRINC_GRP1);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Orig Perm")
+                    .addCanViewOriginals(PRINC_GRP1)
+                    .model);
 
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
@@ -128,7 +114,10 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void getPatronPrincipalsTest() {
-        createObject(pid).addLiteral(CdrAcl.canViewOriginals, PRINC_GRP1);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Orig Perm")
+                    .addCanViewOriginals(PRINC_GRP1)
+                    .model);
 
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
@@ -141,8 +130,11 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void getPatronPrincipalsWithPermissionNoPatronRolesTest() throws Exception {
-        createObject(pid).addLiteral(CdrAcl.canManage, PRINC_GRP1)
-                .addLiteral(CdrAcl.canManage, PRINC_GRP2);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Double Manager")
+                    .addCanManage(PRINC_GRP1)
+                    .addCanManage(PRINC_GRP2)
+                    .model);
 
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
@@ -154,6 +146,8 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void hasPatronAccessNoModificationsTest() throws Exception {
+        repoObjFactory.createCollectionObject(pid, null);
+
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
         assertTrue(objectPermissionEvaluator
@@ -162,9 +156,11 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void hasPatronAccessNoneTest() throws Exception {
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View No Patron")
+                    .addPatronAccess(PatronAccess.none.name())
+                    .model);
         Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
-
-        createObject(pid).addLiteral(CdrAcl.patronAccess, PatronAccess.none.name());
 
         assertFalse(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewOriginal));
@@ -172,9 +168,11 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void hasPatronAccessAuthenticatedTest() throws Exception {
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Auth Patron")
+                    .addPatronAccess(PatronAccess.authenticated.name())
+                    .model);
         Set<String> principals = new HashSet<>(Arrays.asList(AUTHENTICATED_PRINC));
-
-        createObject(pid).addLiteral(CdrAcl.patronAccess, PatronAccess.authenticated.name());
 
         assertTrue(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewOriginal));
@@ -182,9 +180,12 @@ public class ObjectPermissionEvaluatorIT {
 
     @Test
     public void hasPatronAccessDeletedTest() throws Exception {
-        Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(pid.getRepositoryPath());
+        resc.addLiteral(CdrAcl.markedForDeletion, true);
+        repoObjFactory.createCollectionObject(pid, model);
 
-        createObject(pid).addLiteral(CdrAcl.markedForDeletion, true);
+        Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
         assertFalse(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewOriginal));
@@ -196,7 +197,10 @@ public class ObjectPermissionEvaluatorIT {
 
         // Set the embargo to tomorrow (via a calendar) so that it will not be expired
         GregorianCalendar tomorrow = GregorianCalendar.from(ZonedDateTime.now().plusDays(1));
-        createObject(pid).addLiteral(CdrAcl.embargoUntil, tomorrow);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Embargoed")
+                    .addEmbargoUntil(tomorrow)
+                    .model);
 
         assertFalse(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewOriginal));
@@ -208,7 +212,10 @@ public class ObjectPermissionEvaluatorIT {
 
         // Set the embargo to tomorrow (via a calendar) so that it will not be expired
         GregorianCalendar tomorrow = GregorianCalendar.from(ZonedDateTime.now().plusDays(1));
-        createObject(pid).addLiteral(CdrAcl.embargoUntil, tomorrow);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Embargoed")
+                    .addEmbargoUntil(tomorrow)
+                    .model);
 
         assertTrue(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewMetadata));
@@ -220,18 +227,12 @@ public class ObjectPermissionEvaluatorIT {
 
         // Set the embargo to tomorrow (via a calendar) so that it will not be expired
         GregorianCalendar yesterday = GregorianCalendar.from(ZonedDateTime.now().plusDays(-1));
-        createObject(pid).addLiteral(CdrAcl.embargoUntil, yesterday);
+        repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Coll View Embargoed")
+                    .addEmbargoUntil(yesterday)
+                    .model);
 
         assertTrue(objectPermissionEvaluator
                 .hasPatronAccess(pid, principals, Permission.viewOriginal));
-    }
-
-    private Resource createObject(PID pid) {
-        Resource resc = fusekiModel.getResource(pid.getRepositoryPath());
-
-        resc.addProperty(RDF.type, Fcrepo4Repository.Container);
-        resc.addProperty(RDF.type, Fcrepo4Repository.Resource);
-
-        return resc;
     }
 }
