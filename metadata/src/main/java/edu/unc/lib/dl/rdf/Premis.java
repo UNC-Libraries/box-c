@@ -112,6 +112,8 @@ public class Premis {
 
     public static final Property hasEventType = createProperty("http://www.loc.gov/premis/rdf/v1#hasEventType");
 
+    public static final Property hasFixity = createProperty("http://www.loc.gov/premis/rdf/v1#hasFixity");
+
     public static final Property hasMessageDigest = createProperty("http://www.loc.gov/premis/rdf/v1#hasMessageDigest");
 
     public static final Property hasOriginalName = createProperty("http://www.loc.gov/premis/rdf/v1#hasOriginalName");
@@ -234,6 +236,9 @@ public class Premis {
 
     public static final Resource Normalization = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/nor");
+
+    public static final Resource PolicyAssignment = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/poa");
 
     public static final Resource Replication = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/rep");
