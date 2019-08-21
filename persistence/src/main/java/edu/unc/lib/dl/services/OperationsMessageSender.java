@@ -243,43 +243,6 @@ public class OperationsMessageSender extends AbstractMessageSender {
     }
 
     /**
-     * Sends a Published operation message, indicating that the publication
-     * status of objects has changed.
-     *
-     * @param userid id of user who triggered the operation
-     * @param pids objects changed
-     * @param publish Subjects are published if true, unpublished if false
-     * @return id of operation message
-     */
-    public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
-        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
-                CDRActions.PUBLISH);
-
-        Element publishEl = new Element("publish", CDR_MESSAGE_NS);
-        contentEl.addContent(publishEl);
-
-        Element publishValueEl = new Element("value", CDR_MESSAGE_NS);
-        publishEl.addContent(publishValueEl);
-        if (publish) {
-            publishValueEl.setText("yes");
-        } else {
-            publishValueEl.setText("no");
-        }
-
-        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-        publishEl.addContent(subjects);
-        for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
-        }
-
-        Document msg = contentEl.getDocument();
-        sendMessage(msg);
-        LOG.debug("sent publish operation JMS message using JMS template: {}", this.getJmsTemplate());
-
-        return getMessageId(msg);
-    }
-
-    /**
      * Sends Edit Type operation message.
      *
      * @param userid id of user who triggered the operation
@@ -361,6 +324,33 @@ public class OperationsMessageSender extends AbstractMessageSender {
         Document msg = contentEl.getDocument();
         sendMessage(msg);
         LOG.debug("sent set-as-primary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
+
+        return getMessageId(msg);
+    }
+
+    /**
+     * Sends a message indicating that an action has occurred on a collection of objects
+     *
+     * @param userid id of user who triggered the operation
+     * @param pids objects affected.
+     * @return id of operation message
+     */
+    public String sendOperationMessage(String userid, CDRActions action, Collection<PID> pids) {
+        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
+                action);
+
+        Element editAclEl = new Element(action.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(editAclEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        editAclEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+        LOG.debug("sent publish operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }

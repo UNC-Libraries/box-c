@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder />
+    
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="200" />
+        <property name="cacheTimeToLive" value="2000" />
+        <property name="queryService" ref="sparqlQueryService" />
+    </bean>
+    
+    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="0" />
+        <property name="cacheTimeToLive" value="0" />
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+    </bean>
+    
+    <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
+        <property name="aclFactory" ref="objectAclFactory" />
+    </bean>
+    
+    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+        <property name="objectAclFactory" ref="objectAclFactory" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+    </bean>
+</beans>
