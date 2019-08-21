@@ -432,7 +432,7 @@ p.no-search-results {
 .browse-header h2 {
   font-size: 36px;
   font-weight: bold;
-  margin: 15px;
+  margin: 15px 15px 25px 15px;
 }
 .browse-header h2 span {
   color: gray;

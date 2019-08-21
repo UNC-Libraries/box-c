@@ -37,11 +37,23 @@
 <span class="hierarchicalTrail">
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!param.hideLast || !status.last}">
+
 			<c:if test="${status.index > 1}">
-				&raquo;
+				<c:choose>
+					<c:when test="${status.index <= 4 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
+						<span>&raquo;</span>
+					</c:when>
+					<c:otherwise>
+						<span class="full-crumb hidden">&raquo;</span>
+					</c:otherwise>
+				</c:choose>
 			</c:if>
+
 			<c:choose>
-				<c:when test="${status.index <= 3}">
+				<c:when test="${status.last || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
+					<span><c:out value="${pathEntry.name}" /></span>
+				</c:when>
+				<c:when test="${status.index <= 2 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 3)}">
 					<c:if test="${status.index > 0}">
 						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 						<c:choose>
@@ -61,20 +73,14 @@
 					</c:if>
 				</c:when>
 				<c:otherwise>
-					<c:if test="${status.index == 4}">
+					<c:if test="${status.index == 3}">
 						<a id="expand-breadcrumb" href="#">&hellip;</a>
 					</c:if>
-					<c:choose>
-						<c:when test="${status.index == breadcrumbSize - 2}">
-							<span class="full-crumb hidden"><c:out value="${pathEntry.name}" /></span>
-						</c:when>
-						<c:otherwise>
-							<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-							<a href="<c:out value="${shiftFacetUrl}"/>" class="full-crumb hidden"><c:out value="${pathEntry.name}" /></a>
-						</c:otherwise>
-					</c:choose>
+					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<a href="<c:out value="${shiftFacetUrl}"/>" class="full-crumb hidden"><c:out value="${pathEntry.name}" /></a>
 				</c:otherwise>
 			</c:choose>
+
 		</c:if>
 	</c:forEach>
 </span>
