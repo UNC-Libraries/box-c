@@ -40,7 +40,7 @@
 
 			<c:if test="${status.index > 0}">
 				<c:choose>
-					<c:when test="${status.index <= 4 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
+					<c:when test="${status.index <= 4 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 1)}">
 						<span>&raquo;</span>
 					</c:when>
 					<c:otherwise>
@@ -50,10 +50,10 @@
 			</c:if>
 
 			<c:choose>
-				<c:when test="${status.last || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
+				<c:when test="${status.last || (breadcrumbSize > 5 && status.index == breadcrumbSize - 1)}">
 					<span><c:out value="${pathEntry.name}" /></span>
 				</c:when>
-				<c:when test="${status.index <= 2 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 3)}">
+				<c:when test="${status.index <= 2 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
 					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 					<c:choose>
 						<c:when test="${status.index == 0 && status.index == breadcrumbSize - 1}">
