@@ -73,4 +73,12 @@ public class RoleAssignment {
     public void setRole(UserRole role) {
         this.role = role;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "RoleAssignment [principal=" + principal + ", role=" + role + "]";
+    }
 }

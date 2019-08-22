@@ -29,6 +29,8 @@ import java.util.Set;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
@@ -38,9 +40,11 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Premis;
@@ -55,13 +59,15 @@ import io.dropwizard.metrics5.Timer;
  *
  */
 public class StaffRoleAssignmentService {
-    private final static String NEWLINE = System.getProperty("line.separator");
+    private static final Logger log = LoggerFactory.getLogger(StaffRoleAssignmentService.class);
+    private static final String NEWLINE = System.getProperty("line.separator");
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private InheritedAclFactory aclFactory;
     private OperationsMessageSender operationsMessageSender;
+    private TransactionManager txManager;
 
     private static final Timer timer = TimerFactory.createTimerForClass(StaffRoleAssignmentService.class);
 
@@ -76,6 +82,9 @@ public class StaffRoleAssignmentService {
      */
     public String updateRoles(AgentPrincipals agent, PID target, Collection<RoleAssignment> assignments) {
         notNull(agent, "Must provide an agent for this operation");
+
+        FedoraTransaction tx = txManager.startTransaction();
+        log.info("Starting update of roles on {} to {}", target.getId(), assignments);
         try (Timer.Context context = timer.time()) {
             aclService.assertHasAccess("Insufficient privileges to assign staff roles for object " + target.getId(),
                     target, agent.getPrincipals(), assignStaffRoles);
@@ -104,6 +113,11 @@ public class StaffRoleAssignmentService {
             return operationsMessageSender.sendOperationMessage(agent.getUsername(),
                     CDRActions.EDIT_ACCESS_CONTROL,
                     Collections.singletonList(target));
+        } catch (RuntimeException e) {
+            tx.cancelAndIgnore();
+            throw e;
+        } finally {
+            tx.close();
         }
     }
 
@@ -197,5 +211,12 @@ public class StaffRoleAssignmentService {
      */
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
         this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    /**
+     * @param txManager the txManager to set
+     */
+    public void setTransactionManager(TransactionManager txManager) {
+        this.txManager = txManager;
     }
 }

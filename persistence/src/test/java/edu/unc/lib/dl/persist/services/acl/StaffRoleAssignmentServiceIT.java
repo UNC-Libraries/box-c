@@ -75,6 +75,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -120,6 +121,8 @@ public class StaffRoleAssignmentServiceIT {
     private OperationsMessageSender operationsMessageSender;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired
+    private TransactionManager txManager;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -144,6 +147,7 @@ public class StaffRoleAssignmentServiceIT {
         roleService.setOperationsMessageSender(operationsMessageSender);
         roleService.setRepositoryObjectLoader(repoObjLoader);
         roleService.setRepositoryObjectFactory(repoObjFactory);
+        roleService.setTransactionManager(txManager);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         try {
