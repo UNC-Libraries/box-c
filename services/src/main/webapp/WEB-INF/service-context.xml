@@ -357,6 +357,14 @@
         <property name="derivativeService" ref="derivativeService" />
     </bean>
     
+    <bean id="staffRoleAssignmentService" class="edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService">
+        <property name="aclService" ref="aclService" />
+        <property name="aclFactory" ref="uncachedInheritedAclFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+    
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
         <property name="arguments">
