@@ -20,8 +20,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:choose>
-	<c:when test="${not empty param.queryPath}"><c:set var="queryPath" value="${param.queryPath}"/></c:when>
-	<c:otherwise><c:set var="queryPath" value="search"/></c:otherwise>
+	<c:when test="${empty param.queryPath}"><c:set var="queryPath" value="search"/></c:when>
+	<c:otherwise><c:set var="queryPath" value="record"/></c:otherwise>
 </c:choose>
 
 <c:choose>
@@ -38,7 +38,7 @@
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
 		<c:if test="${!param.hideLast || !status.last}">
 
-			<c:if test="${status.index > 1}">
+			<c:if test="${status.index > 0}">
 				<c:choose>
 					<c:when test="${status.index <= 4 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 2)}">
 						<span>&raquo;</span>
@@ -54,23 +54,21 @@
 					<span><c:out value="${pathEntry.name}" /></span>
 				</c:when>
 				<c:when test="${status.index <= 2 || breadcrumbSize <= 5 || (breadcrumbSize > 5 && status.index == breadcrumbSize - 3)}">
-					<c:if test="${status.index > 0}">
-						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-						<c:choose>
-							<c:when test="${status.index == 1 && status.index == breadcrumbSize - 1}">
-								<span>Collections</span>
-							</c:when>
-							<c:when test="${status.index == 1}">
-								<a href="<c:out value="${shiftFacetUrl}"/>">Collections</a>
-							</c:when>
-							<c:when test="${status.index == breadcrumbSize - 1}">
-								<span><c:out value="${pathEntry.name}" /></span>
-							</c:when>
-							<c:otherwise>
-								<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
-							</c:otherwise>
-						</c:choose>
-					</c:if>
+					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<c:choose>
+						<c:when test="${status.index == 0 && status.index == breadcrumbSize - 1}">
+							<span>Collections</span>
+						</c:when>
+						<c:when test="${status.index == 0}">
+							<a href="<c:out value="/collections"/>">Collections</a>
+						</c:when>
+						<c:when test="${status.index == breadcrumbSize - 1}">
+							<span><c:out value="${pathEntry.name}" /></span>
+						</c:when>
+						<c:otherwise>
+							<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
+						</c:otherwise>
+					</c:choose>
 				</c:when>
 				<c:otherwise>
 					<c:if test="${status.index == 3}">
