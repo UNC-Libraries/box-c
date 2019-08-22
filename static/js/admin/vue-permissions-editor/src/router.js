@@ -10,8 +10,8 @@ export default new Router({
   routes: [
     {
       path: '/admin/list/:uuid',
-      name: 'permissions-modal',
-      component: () => import(/* webpackChunkName: "permissions-modal" */ modalEditor)
+      name: 'modalEditor',
+      component:  modalEditor
     }
   ]
 })

@@ -21,6 +21,7 @@ static/css/cdr_admin.css
 static/js/cdr-access.js
 static/css/cdr_access.css
 static/js/vue-access.js
+static/js/vue-permissions.js
 *.log*
 *.iml
 dump.rdb

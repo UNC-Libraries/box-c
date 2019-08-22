@@ -30,6 +30,8 @@
 	</title>
 </head>
 <body>
+<div id="permissions-app"></div>
+<script src="/static/js/vue-permissions.js"></script>
 <div id="pagewrap">
 	<div id="pagewrap_inside">
 		<c:import url="common/header.jsp" />
