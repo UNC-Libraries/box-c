@@ -27,11 +27,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +41,10 @@ import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -57,22 +58,22 @@ public class ObjectAclFactory implements AclFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ObjectAclFactory.class);
 
-    private LoadingCache<String, List<Entry<String, String>>> objAclCache;
+    private LoadingCache<PID, List<Entry<String, String>>> objAclCache;
     private long cacheTimeToLive;
     private long cacheMaxSize;
 
-    private SparqlQueryService queryService;
+    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
 
     private final List<String> roleUris;
 
     public ObjectAclFactory() {
-        List<String> roleUris = new ArrayList<>(UserRole.values().length);
+        List<String> uris = new ArrayList<>(UserRole.values().length);
 
         for (UserRole role : UserRole.values()) {
-            roleUris.add(role.getPropertyString());
+            uris.add(role.getPropertyString());
         }
 
-        this.roleUris = Collections.unmodifiableList(roleUris);
+        this.roleUris = Collections.unmodifiableList(uris);
     }
 
     public void init() {
@@ -85,7 +86,7 @@ public class ObjectAclFactory implements AclFactory {
     @Override
     public Map<String, Set<String>> getPrincipalRoles(PID pid) {
 
-        Map<String, Set<String>> result = getObjectAcls(pid).stream()
+        return getObjectAcls(pid).stream()
                 // Filter to only role assignments
                 .filter(p -> roleUris.contains(p.getKey()))
                 // Group up roles by principal
@@ -93,8 +94,6 @@ public class ObjectAclFactory implements AclFactory {
                         Entry<String, String>::getValue,
                         Collectors.mapping(Entry<String, String>::getKey, Collectors.toSet())
                     ));
-
-        return result;
     }
 
     @Override
@@ -132,14 +131,11 @@ public class ObjectAclFactory implements AclFactory {
 
         String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
         return getObjectAcls(pid).stream()
-                .filter(p -> deletedPropertyUri.equals(p.getKey()))
-                .findFirst()
-                .isPresent();
+                .anyMatch(p -> deletedPropertyUri.equals(p.getKey()));
     }
 
     private List<Entry<String, String>> getObjectAcls(PID pid) {
-        String pidString = pid.getRepositoryPath();
-        return objAclCache.getUnchecked(pidString);
+        return objAclCache.getUnchecked(pid);
     }
 
     public long getCacheTimeToLive() {
@@ -158,58 +154,45 @@ public class ObjectAclFactory implements AclFactory {
         this.cacheMaxSize = cacheMaxSize;
     }
 
-    public SparqlQueryService getQueryService() {
-        return queryService;
-    }
-
-    public void setQueryService(SparqlQueryService queryService) {
-        this.queryService = queryService;
+    /**
+     * @param repositoryObjectCacheLoader the repositoryObjectCacheLoader to set
+     */
+    public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader repositoryObjectCacheLoader) {
+        this.repositoryObjectCacheLoader = repositoryObjectCacheLoader;
     }
 
     /**
      * Loader for cache of ACL information about individual objects. Retrieves
-     * ACL properties from a SPARQL endpoint which are directly present on
-     * objects
+     * directly present ACLs according to fcrepo.
      *
      * @author bbpennel
      *
      */
-    private class ObjectAclCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
+    private class ObjectAclCacheLoader extends CacheLoader<PID, List<Entry<String, String>>> {
+        @Override
+        public List<Entry<String, String>> load(PID pid) {
+            List<Entry<String, String>> valueResults = new ArrayList<>();
 
-        private static final String ACL_QUERY = "SELECT ?pred ?obj"
-                + " WHERE { <%1$s> ?pred ?obj ."
-                + "   filter(strstarts(str(?pred), \"http://cdr.unc.edu/definitions/acl#\")) . }";
-
-        public List<Entry<String, String>> load(String key) {
-
-            String query = String.format(ACL_QUERY, key);
-
-            try (QueryExecution qExecution = queryService.executeQuery(query)) {
-                ResultSet resultSet = qExecution.execSelect();
-                List<Entry<String, String>> valueResults = new ArrayList<>();
-
-                // Read all results into a list of predicate object pairs
-                for (; resultSet.hasNext() ;) {
-                    QuerySolution soln = resultSet.nextSolution();
-                    Resource predicateRes = soln.getResource("pred");
-                    RDFNode valueNode = soln.get("obj");
-
-                    if (predicateRes != null && valueNode != null) {
-                        String predicateString = predicateRes.getURI();
-                        String valueString;
-                        if (valueNode.isLiteral()) {
-                            valueString = valueNode.asLiteral().getLexicalForm();
-                        } else {
-                            valueString = valueNode.asResource().getURI();
-                        }
-
-                        valueResults.add(new SimpleEntry<String, String>
-                                (predicateString, valueString));
+            RepositoryObject repoObj = repositoryObjectCacheLoader.load(pid);
+            Model model = repoObj.getModel();
+            StmtIterator it = model.listStatements();
+            while (it.hasNext()) {
+                Statement stmt = it.next();
+                Property property = stmt.getPredicate();
+                if (CdrAcl.NS.equals(property.getNameSpace())) {
+                    RDFNode valueNode = stmt.getObject();
+                    String valueString;
+                    if (valueNode.isLiteral()) {
+                        valueString = valueNode.asLiteral().getLexicalForm();
+                    } else {
+                        valueString = valueNode.asResource().getURI();
                     }
-                }
 
-                return valueResults;
+                    valueResults.add(new SimpleEntry<> (property.getURI(), valueString));
+                }
             }
+
+            return valueResults;
         }
     }
 }

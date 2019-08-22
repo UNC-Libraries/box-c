@@ -34,6 +34,7 @@ import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,8 +42,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.jena.rdf.model.Property;
 
 import edu.unc.lib.dl.rdf.CdrAcl;
 
@@ -88,13 +92,18 @@ public enum UserRole {
     private URI uri;
     private String predicate;
     private String propertyString;
+    private Property property;
     private Set<Permission> permissions;
     private Set<String> permissionNames;
     private Boolean isStaffRole;
 
+    private static List<UserRole> staffRoles;
+    private static List<UserRole> patronRoles;
+
     UserRole(String predicate, boolean isStaffRole, Permission... perms) {
         this.predicate = predicate;
         this.propertyString = CdrAcl.getURI() + predicate;
+        this.property = createProperty(propertyString);
         this.uri = URI.create(propertyString);
         this.isStaffRole = isStaffRole;
         this.permissions = new HashSet<>(Arrays.asList(perms));
@@ -159,10 +168,14 @@ public enum UserRole {
      *
      * @return
      */
-    public static Set<UserRole> getStaffRoles() {
-        return Arrays.stream(UserRole.values())
-            .filter(p -> p.isStaffRole != null && p.isStaffRole)
-            .collect(Collectors.toSet());
+    public static List<UserRole> getStaffRoles() {
+        if (staffRoles == null) {
+            staffRoles = Arrays.stream(UserRole.values())
+                    .filter(p -> p.isStaffRole != null && p.isStaffRole)
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+        return staffRoles;
     }
 
     /**
@@ -170,10 +183,14 @@ public enum UserRole {
      *
      * @return
      */
-    public static Set<UserRole> getPatronRoles() {
-        return Arrays.stream(UserRole.values())
-            .filter(p -> p.isStaffRole != null && !p.isStaffRole)
-            .collect(Collectors.toSet());
+    public static List<UserRole> getPatronRoles() {
+        if (patronRoles == null) {
+            patronRoles = Arrays.stream(UserRole.values())
+                    .filter(p -> p.isStaffRole != null && !p.isStaffRole)
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+        return patronRoles;
     }
 
     /**
@@ -199,6 +216,13 @@ public enum UserRole {
      */
     public String getPropertyString() {
         return this.propertyString;
+    }
+
+    /**
+     * @return the property
+     */
+    public Property getProperty() {
+        return property;
     }
 
     public URI getURI() {

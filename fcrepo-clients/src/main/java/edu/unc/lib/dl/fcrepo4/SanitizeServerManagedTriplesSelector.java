@@ -19,9 +19,8 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.created;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.createdBy;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.lastModified;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.lastModifiedBy;
-import static edu.unc.lib.dl.rdf.IanaRelation.describedby;
+import static edu.unc.lib.dl.rdf.Premis.hasFixity;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
-import static edu.unc.lib.dl.rdf.Premis.hasSize;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -31,6 +30,7 @@ import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Ldp;
+import edu.unc.lib.dl.rdf.Memento;
 
 /**
  * Selector which returns all triples which are not fcrepo server managed
@@ -40,29 +40,40 @@ import edu.unc.lib.dl.rdf.Ldp;
  *
  */
 public class SanitizeServerManagedTriplesSelector extends SimpleSelector {
+    private boolean allowRelaxed;
+
+    public SanitizeServerManagedTriplesSelector() {
+        allowRelaxed = false;
+    }
+
+    public SanitizeServerManagedTriplesSelector(boolean allowRelaxed) {
+        this.allowRelaxed = allowRelaxed;
+    }
 
     @Override
     public boolean selects(Statement s) {
         return !isServerManaged(s);
     }
 
-    private static boolean isServerManaged(Statement s) {
-        return (s.getPredicate().getNameSpace().equals(Fcrepo4Repository.NS) && !relaxedPredicate(s.getPredicate()))
-                || s.getPredicate().equals(describedby)
+    private boolean isServerManaged(Statement s) {
+        String ns = s.getPredicate().getNameSpace();
+        return (ns.equals(Fcrepo4Repository.NS) && !relaxedPredicate(s.getPredicate()))
+                || ns.equals(Memento.NS)
+                || s.getPredicate().equals(hasFixity)
                 || s.getPredicate().equals(hasMessageDigest)
-                || s.getPredicate().equals(hasSize)
+                || s.getPredicate().equals(Ldp.contains)
                 || (s.getPredicate().equals(RDF.type) && forbiddenType(s.getResource()));
     }
 
-    private static boolean forbiddenType(final Resource resource) {
-        return resource.getNameSpace().equals(Fcrepo4Repository.NS)
-            || resource.getURI().equals(Ldp.Container.getURI())
-            || resource.getURI().equals(Ldp.NonRdfSource.getURI())
-            || resource.getURI().equals(Ldp.RdfSource.getURI());
+    private boolean forbiddenType(final Resource resource) {
+        String ns = resource.getNameSpace();
+        return ns.equals(Fcrepo4Repository.NS)
+                || ns.equals(Memento.NS)
+                || ns.equals(Ldp.NS);
    }
 
-    private static boolean relaxedPredicate(final Property p) {
-        return (p.equals(created) || p.equals(createdBy)
+    private boolean relaxedPredicate(final Property p) {
+        return allowRelaxed && (p.equals(created) || p.equals(createdBy)
                 || p.equals(lastModifiedBy) || p.equals(lastModified));
     }
 }

@@ -20,8 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,24 +28,26 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  *
@@ -63,22 +64,16 @@ public class ObjectACLFactoryTest {
     private static final String USER_PRINC = "username";
 
     private static final String PID_BASE_URI = "http://example.com/content/";
+    private static final LocalDateTime TOMORROW = LocalDateTime.now().plusDays(1);
 
     private ObjectAclFactory aclFactory;
 
     @Mock
-    private SparqlQueryService queryService;
-
+    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
     @Mock
-    private QueryExecution mockQueryExec;
-    @Mock
-    private ResultSet mockResultSet;
-    @Mock
-    private QuerySolution mockQuerySoln;
-    @Mock
-    private RDFNode mockObjNode;
-    @Mock
-    private Literal mockObjLiteral;
+    private ContentObject repoObj;
+    private Model objModel;
+    private Resource objResc;
 
     private PID pid;
 
@@ -87,30 +82,22 @@ public class ObjectACLFactoryTest {
         initMocks(this);
 
         aclFactory = new ObjectAclFactory();
-        aclFactory.setQueryService(queryService);
+        aclFactory.setRepositoryObjectCacheLoader(repositoryObjectCacheLoader);
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
 
         aclFactory.init();
 
-        when(queryService.executeQuery(anyString())).thenReturn(mockQueryExec);
-        // Boilerplate to setup single query result interaction
-        when(mockQueryExec.execSelect()).thenReturn(mockResultSet);
-        when(mockResultSet.hasNext()).thenReturn(true, false);
-        when(mockResultSet.nextSolution()).thenReturn(mockQuerySoln);
-        when(mockQuerySoln.get(eq("obj"))).thenReturn(mockObjNode);
-        when(mockObjNode.isLiteral()).thenReturn(true);
-        when(mockObjNode.asLiteral()).thenReturn(mockObjLiteral);
-
         pid = makePid();
+        objModel = ModelFactory.createDefaultModel();
+        objResc = objModel.getResource(pid.getRepositoryPath());
+        when(repoObj.getModel()).thenReturn(objModel);
+        when(repositoryObjectCacheLoader.load(pid)).thenReturn(repoObj);
     }
 
     @Test
     public void getPrincipalRolesTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage, CdrAcl.embargoUntil);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP, "2050");
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
@@ -123,8 +110,6 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getPrincipalRoleNoPropertiesTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(false);
-
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
         assertEquals("No principals should be returned", 0, results.size());
@@ -132,9 +117,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getPrincipalRoleNoRolesTest() throws Exception {
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.embargoUntil);
-        when(mockObjLiteral.getLexicalForm()).thenReturn("2050");
+        objResc.addLiteral(CdrAcl.embargoUntil, TOMORROW);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
@@ -143,11 +126,9 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getMultiplePrincipalsTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, true, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage, CdrAcl.canDiscover, CdrAcl.unitOwner);
-        when(mockObjLiteral.getLexicalForm())
-                .thenReturn(MANAGE_GRP, PATRON_GRP, USER_PRINC);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canDiscover, PATRON_GRP);
+        objResc.addLiteral(CdrAcl.unitOwner, USER_PRINC);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
@@ -167,10 +148,8 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getPrincipalWithMultipleRolesTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage, CdrAcl.canDescribe);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canDescribe, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
@@ -184,8 +163,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void isMarkedForDeletionTest() throws Exception {
-        when(mockQuerySoln.getResource(eq("pred"))).thenReturn(CdrAcl.markedForDeletion);
-        when(mockObjLiteral.getLexicalForm()).thenReturn("true");
+        objResc.addLiteral(CdrAcl.markedForDeletion, true);
 
         boolean result = aclFactory.isMarkedForDeletion(pid);
 
@@ -194,8 +172,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void isMarkedForDeletionFalseTest() throws Exception {
-        when(mockQuerySoln.getResource(eq("pred"))).thenReturn(CdrAcl.patronAccess);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(PatronAccess.everyone.name());
+        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
 
         boolean result = aclFactory.isMarkedForDeletion(pid);
 
@@ -204,26 +181,20 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getEmbargoUntilTest() throws Exception {
-        String embargoValue = "2050-01-02";
-
-        when(mockResultSet.hasNext()).thenReturn(true, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage, CdrAcl.embargoUntil);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP, embargoValue);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.embargoUntil, TOMORROW);
 
         Date embargoDate = aclFactory.getEmbargoUntil(pid);
 
         assertNotNull(embargoDate);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
         SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd");
-        assertEquals(embargoValue, dt.format(embargoDate));
+        assertEquals(dtf.format(TOMORROW), dt.format(embargoDate));
     }
 
     @Test
     public void getNoEmbargoUntilTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Date embargoDate = aclFactory.getEmbargoUntil(pid);
 
@@ -232,10 +203,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getInvalidEmbargoUntilTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.embargoUntil);
-        when(mockObjLiteral.getLexicalForm()).thenReturn("notadate");
+        objResc.addLiteral(CdrAcl.embargoUntil, "notadate");
 
         Date embargoDate = aclFactory.getEmbargoUntil(pid);
 
@@ -244,8 +212,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getPatronAccessTest() throws Exception {
-        when(mockQuerySoln.getResource(eq("pred"))).thenReturn(CdrAcl.patronAccess);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(PatronAccess.everyone.name());
+        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
 
         PatronAccess access = aclFactory.getPatronAccess(pid);
 
@@ -254,8 +221,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void getPatronAccessNotSpecifiedTest() throws Exception {
-        when(mockQuerySoln.getResource(eq("pred"))).thenReturn(CdrAcl.canManage);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         PatronAccess access = aclFactory.getPatronAccess(pid);
 
@@ -264,20 +230,17 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void cacheValueUsedTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, false, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
         assertEquals("Incorrect number of principals returned", 1, results.size());
 
-        verify(queryService).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader).load(pid);
 
         // Second run, should not change the number of sparql invocations
         results = aclFactory.getPrincipalRoles(pid);
 
-        verify(queryService).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader).load(pid);
 
         assertEquals("Incorrect number of principals on second run", 1, results.size());
         Set<String> roles = results.get(MANAGE_GRP);
@@ -287,13 +250,10 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void cacheValueExpiredTest() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, false, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
-        verify(queryService).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader).load(pid);
         assertEquals("Incorrect number of principals returned", 1, results.size());
 
         // Wait for expiration time
@@ -303,15 +263,12 @@ public class ObjectACLFactoryTest {
         assertEquals("Incorrect number of principals returned", 1, results.size());
         assertEquals("Incorrect number of roles for principal", 1, results.get(MANAGE_GRP).size());
 
-        verify(queryService, times(2)).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader, times(2)).load(pid);
     }
 
     @Test
     public void multiplePidCaching() throws Exception {
-        when(mockResultSet.hasNext()).thenReturn(true, false, true, true, false);
-        when(mockQuerySoln.getResource(eq("pred")))
-                .thenReturn(CdrAcl.canManage, CdrAcl.canAccess, CdrAcl.canIngest);
-        when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP, PATRON_GRP, USER_PRINC);
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
         assertEquals("Incorrect number of principals returned for pid1", 1, results.size());
@@ -320,20 +277,28 @@ public class ObjectACLFactoryTest {
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
 
         PID pid2 = makePid();
+        Model model2 = ModelFactory.createDefaultModel();
+        Resource resc2 = model2.getResource(pid2.getRepositoryPath());
+        ContentObject repoObj2 = mock(ContentObject.class);
+        when(repoObj2.getModel()).thenReturn(model2);
+        when(repositoryObjectCacheLoader.load(pid2)).thenReturn(repoObj2);
+
+        resc2.addLiteral(CdrAcl.canAccess, PATRON_GRP);
+        resc2.addLiteral(CdrAcl.canIngest, USER_PRINC);
 
         results = aclFactory.getPrincipalRoles(pid2);
         assertEquals("Incorrect number of principals returned for pid2", 2, results.size());
         assertEquals("Incorrect number of roles for patron for pid2", 1, results.get(PATRON_GRP).size());
         assertEquals("Incorrect number of roles for user for pid2", 1, results.get(USER_PRINC).size());
 
-        verify(queryService, times(2)).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader, times(2)).load(any(PID.class));
 
         results = aclFactory.getPrincipalRoles(pid);
         assertEquals("Incorrect number of principals cached for pid1", 1, results.size());
         results = aclFactory.getPrincipalRoles(pid2);
         assertEquals("Incorrect number of principals cached for pid2", 2, results.size());
 
-        verify(queryService, times(2)).executeQuery(anyString());
+        verify(repositoryObjectCacheLoader, times(2)).load(any(PID.class));
     }
 
     private PID makePid() {
