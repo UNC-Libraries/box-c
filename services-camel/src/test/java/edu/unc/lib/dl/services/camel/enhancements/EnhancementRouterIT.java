@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -52,6 +53,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -150,7 +152,8 @@ public class EnhancementRouterIT {
                 .whenCompleted(3)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
 
         verify(solrIngestProcessor).process(any(Exchange.class));
     }
@@ -169,12 +172,40 @@ public class EnhancementRouterIT {
                 .whenCompleted(2)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         // Indexing not triggered on binary object
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testBinaryMetadataFile() throws Exception {
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        BinaryObject binObj = fileObj.addOriginalFile(new ByteArrayInputStream(FILE_CONTENT.getBytes()),
+                null, "image/png", null, null);
+
+        String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
+        PID mdPid = PIDs.get(mdId);
+
+        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        // Separate exchanges when multicasting
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(2)
+                .create();
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+
+        assertTrue("Processing message did not match expectations", result);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
@@ -191,7 +222,9 @@ public class EnhancementRouterIT {
                 .whenCompleted(1)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+
+        assertTrue("Processing message did not match expectations", result);
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
@@ -211,7 +244,9 @@ public class EnhancementRouterIT {
                 .whenCompleted(1)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+
+        assertTrue("Processing message did not match expectations", result);
 
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
