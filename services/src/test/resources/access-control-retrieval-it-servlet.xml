@@ -32,13 +32,6 @@
 
     <context:component-scan resource-pattern="**/AccessControlRetrievalController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
-    <bean id="aclRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService">
-        <property name="aclService" ref="aclService" />
-        <property name="objectAclFactory" ref="objectAclFactory" />
-	    <property name="inheritedAclFactory" ref="inheritedAclFactory" />
-	    <property name="repoObjLoader" ref="repositoryObjectLoader" />
-    </bean>
-    
     <!-- Access Retrieval App beans -->
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
         <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />

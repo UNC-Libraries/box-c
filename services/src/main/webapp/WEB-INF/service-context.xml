@@ -276,13 +276,6 @@
       <property name="modsValidator" ref="modsValidator" />
   </bean>
   
-  <bean id="accessControlRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService" >
-      <property name="aclService" ref="aclService" />
-      <property name="objectAclFactory" ref="objectAclFactory" />
-      <property name="inheritedAclFactory" ref="inheritedAclFactory" />
-      <property name="repoObjLoader" ref="repositoryObjectLoader" />
-  </bean>
-  
   <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">
     <property name="fromAddress" value="${repository.from.email}" />
     <property name="mailSender" ref="mailSender" />
