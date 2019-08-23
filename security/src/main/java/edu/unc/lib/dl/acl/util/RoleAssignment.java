@@ -37,13 +37,41 @@ public class RoleAssignment {
         setRole(role);
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+        result = prime * result + ((role == null) ? 0 : role.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof UserRole)) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
             return false;
         }
         RoleAssignment other = (RoleAssignment) obj;
-        return other.principal.equals(principal) && other.role.equals(role);
+        if (principal == null) {
+            if (other.principal != null) {
+                return false;
+            }
+        } else if (!principal.equals(other.principal)) {
+            return false;
+        }
+        return role == other.role;
     }
 
     /**
