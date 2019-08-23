@@ -15,22 +15,22 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
+import static edu.unc.lib.dl.acl.util.UserRole.canManage;
+import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
+import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
+import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
+import org.apache.activemq.util.ByteArrayInputStream;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,152 +38,324 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.test.AclModelBuilder;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
- * @author lfarrell
- * @author harring
+ * @author bbpennel
  *
  */
-
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
 })
-public class AccessControlRetrievalIT extends AbstractAPIIT {
+public class RetrieveStaffRolesIT extends AbstractAPIIT {
+    private static final String USER_PRINC = "user";
+    private static final String USER_NS_PRINC = USER_NAMESPACE + USER_PRINC;
+    private static final String GRP_PRINC = "group";
+    private static final String SUPER_GROUP_PRINC = "adminGroup";
+
+    private static final String origBodyString = "Original data";
+    private static final String origFilename = "original.txt";
+    private static final String origMimetype = "text/plain";
+
+    @Autowired
+    private String baseAddress;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    private Model queryModel;
-    @Autowired
     private RepositoryPIDMinter pidMinter;
+    @Autowired
+    private RepositoryObjectTreeIndexer treeIndexer;
 
     private ContentRootObject rootObj;
-    private AdminUnit unitObj;
-    private CollectionObject collObj;
-    private WorkObject workObj;
-    private FileObject fileObj;
-    private String uuid;
 
     @Before
     public void init_() throws Exception {
-        generateBaseStructure();
+        AccessGroupSet testPrincipals = new AccessGroupSet(GRP_PRINC);
+        GroupsThreadStore.storeUsername(USER_PRINC);
+        GroupsThreadStore.storeGroups(testPrincipals);
 
-        workObj = repositoryObjectFactory.createWorkObject(null);
-        collObj.addMember(workObj);
-
-        String contentText = "Content";
-        fileObj = workObj.addDataFile(new ByteArrayInputStream(contentText.getBytes()),
-                "text.txt", "text/plain", null, null);
-
-        workObj.setPrimaryObject(fileObj.getPid());
-        uuid = workObj.getPid().getId();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testGetPermissionsObjectWithChildren() throws Exception {
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
-
-        MvcResult result = mvc.perform(get("/acl/getPermissions/" + uuid))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
-
-        // check first-level response fields
-        Map<String,Object> respMap = getMapFromResponse(result);
-        assertRespMapHasRequiredFields(respMap, uuid);
-
-        // check access controls of parent
-        Map<String,Object> aclMap = (Map<String, Object>) respMap.get("accessControls");
-        assertHasCorrectAccessControls(aclMap, uuid);
-        assertTrue(aclMap.containsKey("memberPermissions"));
-
-        // check access controls of child
-        List<Map<String, Object>> memberPermissions = (List<Map<String, Object>>) aclMap.get("memberPermissions");
-        Map<String, Object> memPermsMap = memberPermissions.get(0);
-        assertHasCorrectAccessControls(memPermsMap, fileObj.getPid().getId());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testGetPermissionsObjectWithoutChildren() throws Exception {
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
-        String fileUuid = fileObj.getPid().getId();
-
-        MvcResult result = mvc.perform(get("/acl/getPermissions/" + fileUuid))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
-
-        Map<String,Object> respMap = getMapFromResponse(result);
-        assertRespMapHasRequiredFields(respMap, fileUuid);
-
-        Map<String,Object> aclMap = (Map<String, Object>) respMap.get("accessControls");
-        assertHasCorrectAccessControls(aclMap, fileUuid);
-        assertFalse(aclMap.containsKey("memberPermissions"));
-    }
-
-    private void assertRespMapHasRequiredFields(Map<String, Object> respMap, String uuid) {
-        assertEquals("retrieve acls", respMap.get("action"));
-        assertEquals(uuid, respMap.get("pid"));
-        assertTrue(respMap.containsKey("accessControls"));
-        assertTrue(respMap.containsKey("timestamp"));
-    }
-
-    @SuppressWarnings("unchecked")
-    private void assertHasCorrectAccessControls(Map<String, Object> aclMap, String uuid) {
-        assertEquals(uuid, aclMap.get("pid"));
-        assertEquals(false, aclMap.get("markForDeletion"));
-        assertNull(aclMap.get("inheritedEmbargo"));
-        assertNull(aclMap.get("embargo"));
-        assertEquals("parent", aclMap.get("patronAccess"));
-        assertEquals("parent", aclMap.get("inheritedPatronAccess"));
-        Map<String, Set<String>> principals = (Map<String, Set<String>>) aclMap.get("principals");
-        assertEquals(0, principals.size());
-        Map<String, Set<String>> inheritedPrincipals = (Map<String, Set<String>>) aclMap.get("inheritedPrincipals");
-        assertEquals(2, inheritedPrincipals.size());
-        assertTrue(inheritedPrincipals.containsKey("admin"));
-        assertTrue(inheritedPrincipals.containsKey("authenticated"));
-    }
-
-    private void indexObjectsInTripleStore(RepositoryObject... objs) {
-        for (RepositoryObject obj : objs) {
-            queryModel.add(obj.getModel());
-        }
-    }
-
-    private void generateBaseStructure() throws Exception {
         PID rootPid = pidMinter.mintContentPid();
         repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
         rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
-
-        PID unitPid = pidMinter.mintContentPid();
-        Model unitModel = ModelFactory.createDefaultModel();
-        Resource unitResc = unitModel.getResource(unitPid.getRepositoryPath());
-        unitResc.addProperty(CdrAcl.unitOwner, "admin");
-        unitObj = repositoryObjectFactory.createAdminUnit(unitPid, unitModel);
-        rootObj.addMember(unitObj);
-
-        PID collPid = pidMinter.mintContentPid();
-        Model collModel = ModelFactory.createDefaultModel();
-        Resource collResc = collModel.getResource(collPid.getRepositoryPath());
-        collResc.addProperty(CdrAcl.canAccess, AUTHENTICATED_PRINC);
-        collObj = repositoryObjectFactory.createCollectionObject(collPid, collModel);
-        unitObj.addMember(collObj);
     }
 
+    @After
+    public void teardown() throws Exception {
+        GroupsThreadStore.clearStore();
+    }
+
+    @Test
+    public void testInsufficientPermissions() throws Exception {
+        PID unitPid = pidMinter.mintContentPid();
+        // Creating admin unit with no permissions granted
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid, null);
+        rootObj.addMember(unit);
+        treeIndexer.indexAll(baseAddress);
+
+        mvc.perform(get("/acl/staff/" + unitPid.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testAsGlobalAdminNoAssigned() throws Exception {
+        AccessGroupSet testPrincipals = new AccessGroupSet(SUPER_GROUP_PRINC);
+        GroupsThreadStore.storeGroups(testPrincipals);
+
+        PID pid = pidMinter.mintContentPid();
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid, null);
+        rootObj.addMember(unit);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoInheritedRoles(respMap);
+        assertNoAssignedRoles(respMap);
+    }
+
+    @Test
+    public void testObjectNotFound() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+        treeIndexer.indexAll(baseAddress);
+
+        mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testAdminUnitWithManager() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        PID pid = unit.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoInheritedRoles(respMap);
+        assertHasAssignedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    @Test
+    public void testAdminUnitWithMultipleRoles() throws Exception {
+        PID unitPid = pidMinter.mintContentPid();
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid,
+                new AclModelBuilder("Admin Unit Can Manage")
+                .addCanManage(GRP_PRINC)
+                .addUnitOwner(USER_NS_PRINC)
+                .model);
+        rootObj.addMember(unit);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + unitPid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoInheritedRoles(respMap);
+        assertHasAssignedRole(GRP_PRINC, canManage, respMap);
+        assertHasAssignedRole(USER_PRINC, unitOwner, respMap);
+    }
+
+    @Test
+    public void testCollectionNoAssigned() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        PID pid = pidMinter.mintContentPid();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid, null);
+        unit.addMember(coll);
+
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    @Test
+    public void testCollectionWithAssignedStaffRole() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        PID pid = pidMinter.mintContentPid();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid,
+                new AclModelBuilder("Collection with access")
+                .addCanAccess(USER_NS_PRINC)
+                .model);
+        unit.addMember(coll);
+
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertHasAssignedRole(USER_PRINC, canAccess, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    @Test
+    public void testCollectionWithPatronRole() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        PID pid = pidMinter.mintContentPid();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid,
+                new AclModelBuilder("Collection with patron")
+                .addCanViewOriginals(USER_NS_PRINC)
+                .model);
+        unit.addMember(coll);
+
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    @Test
+    public void testFolderWithInheritedStaffRoles() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
+                new AclModelBuilder("Collection with access")
+                .addCanAccess(USER_NS_PRINC)
+                .model);
+        unit.addMember(coll);
+        PID pid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+        coll.addMember(folder);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasInheritedRole(USER_PRINC, canAccess, respMap);
+    }
+
+    @Test
+    public void testWork() throws Exception {
+        WorkObject work = setupWorkStructure();
+        PID pid = work.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    @Test
+    public void testFileObject() throws Exception {
+        WorkObject work = setupWorkStructure();
+        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
+        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, null, null);
+        PID pid = fileObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    private AdminUnit setupAdminUnitWithGroup() {
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(
+                new AclModelBuilder("Admin Unit Can Manage")
+                .addCanManage(GRP_PRINC)
+                .model);
+        rootObj.addMember(unit);
+        return unit;
+    }
+
+    private WorkObject setupWorkStructure() {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
+        unit.addMember(coll);
+        PID pid = pidMinter.mintContentPid();
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+        coll.addMember(work);
+        return work;
+    }
+
+    private void assertHasInheritedRole(String princ, UserRole role,
+            Map<String, List<RoleAssignment>> respMap) {
+        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES);
+        assertTrue("Response did not contain required inherited role " + princ + " " + role,
+                inherited.contains(new RoleAssignment(princ, role)));
+    }
+
+    private void assertHasAssignedRole(String princ, UserRole role,
+            Map<String, List<RoleAssignment>> respMap) {
+        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES);
+        assertTrue("Response did not contain required assigned role " + princ + " " + role,
+                assigned.contains(new RoleAssignment(princ, role)));
+    }
+
+    private void assertNoInheritedRoles(Map<String, List<RoleAssignment>> respMap) {
+        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES);
+        assertTrue("Inherited role map was expected to be empty", inherited.isEmpty());
+    }
+
+    private void assertNoAssignedRoles(Map<String, List<RoleAssignment>> respMap) {
+        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES);
+        assertTrue("Assigned role map was expected to be empty", assigned.isEmpty());
+    }
+
+    protected Map<String, List<RoleAssignment>> getRolesFromResponse(MvcResult result) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<Map<String, List<RoleAssignment>>>() {});
+    }
 }
