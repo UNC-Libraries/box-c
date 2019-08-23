@@ -77,6 +77,37 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+        <constructor-arg value="${fcrepo.baseUrl}" />
+        <constructor-arg value="${fcrepo.auth.host}" />
+        <constructor-arg value="${fcrepo.auth.user}" />
+        <constructor-arg value="${fcrepo.auth.password}" />
+    </bean>
+    
+    <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+            factory-bean="fcrepoClientFactory" factory-method="makeClient">
+    </bean>
+    
+    <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    </bean>
+    
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="pidMinter" ref="pidMinter" />
+    </bean>
+    
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+    </bean>
+    
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="cacheTimeToLive" value="1000" />
+        <property name="cacheMaxSize" value="50" />
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+    </bean>
+    
     <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
         <property name="aclFactory" ref="objectAclFactory" />
     </bean>
