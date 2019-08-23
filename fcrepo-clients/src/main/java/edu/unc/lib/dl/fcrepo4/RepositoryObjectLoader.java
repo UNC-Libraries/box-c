@@ -135,7 +135,12 @@ public class RepositoryObjectLoader {
         try {
             return repositoryObjCache.get(pid);
         } catch (UncheckedExecutionException | ExecutionException e) {
-            throw (FedoraException) e.getCause();
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else {
+                throw new FedoraException((Exception) cause);
+            }
         }
     }
 

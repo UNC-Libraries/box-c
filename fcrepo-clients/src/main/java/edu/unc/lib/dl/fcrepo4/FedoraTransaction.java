@@ -72,16 +72,12 @@ public class FedoraTransaction {
         txManager.keepTransactionAlive(txUri);
     }
 
+    public void cancelAndIgnore() {
+        cancelTx();
+    }
+
     public void cancel(Throwable t) {
-        if (isSub) {
-            // sub tx defers to root
-            FedoraTransaction.rootTxThread.get().cancel();
-        } else if (!isCancelled) {
-            isCancelled = true;
-            txUriThread.remove();
-            rootTxThread.remove();
-            txManager.cancelTransaction(txUri);
-        }
+        cancelTx();
         if (t instanceof TransactionCancelledException) {
             throw (TransactionCancelledException) t;
         } else {
@@ -93,4 +89,15 @@ public class FedoraTransaction {
         cancel(null);
     }
 
+    private void cancelTx() {
+        if (isSub) {
+            // sub tx defers to root
+            FedoraTransaction.rootTxThread.get().cancel();
+        } else if (!isCancelled) {
+            isCancelled = true;
+            txUriThread.remove();
+            rootTxThread.remove();
+            txManager.cancelTransaction(txUri);
+        }
+    }
 }
