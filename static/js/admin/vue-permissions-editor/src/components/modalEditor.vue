@@ -6,18 +6,18 @@
                     <div class="modal-mask">
                         <div class="modal-wrapper">
                             <div class="modal-container">
-
                                 <div class="modal-header columns">
                                     <slot name="header">
                                         <div class="column is-12">
-                                            <h3>{{ title }}</h3>
+                                            <h3><span>{{ permissionType }} Permission Settings for</span> {{ metadata.title }}</h3>
+                                            <i class="fa" :class="iconType"></i>
                                             <button class="button is-small" @click="showModal = false">Close</button>
                                         </div>
                                     </slot>
                                 </div>
                                 <div class="modal-body">
-                                    <patron-permissions v-if="permissionType === 'patron'"></patron-permissions>
-                                    <staff-permissions v-else></staff-permissions>
+                                    <patron-permissions v-if="permissionType === 'Patron'"></patron-permissions>
+                                    <staff-roles v-else :uuid="metadata.id"></staff-roles>
                                 </div>
                             </div>
                         </div>
@@ -29,19 +29,29 @@
 </template>
 
 <script>
-    import patronPermissions from './patronPermissions';
-    import staffPermissions from "./staffPermissions";
+    import patronRoles from './patronRoles';
+    import staffRoles from "./staffRoles";
 
     export default {
         name: 'modalEditor',
-        components: {patronPermissions, staffPermissions},
+        components: {patronRoles, staffRoles},
 
         data() {
             return {
+                metadata: {},
                 permissionType: '',
-                showModal: false,
-                title: ''
+                showModal: false
             };
+        },
+
+        computed: {
+            iconType() {
+                if (this.metadata.type === 'Collection') {
+                    return 'fa-archive';
+                } else {
+                    return '';
+                }
+            },
         },
 
         methods: {
@@ -53,6 +63,10 @@
 </script>
 
 <style lang="scss">
+    $unc-blue: #4B9CD3;
+    $light-gray: #E1E1E1;
+    $border-style: 1px solid $light-gray;
+
     .modal-mask {
         position: fixed;
         z-index: 9998;
@@ -92,15 +106,19 @@
 
         div {
             display: inline-flex;
+            width: 100%;
         }
 
         h3 {
-            font-size: 2rem;
-            line-height: 2rem;
+            font-size: 1.3rem;
+            line-height: 1.3rem;
             margin-top: 0;
             text-align: center;
-            text-transform: capitalize;
             width: 100%;
+
+            span {
+                color: black;
+            }
         }
     }
 
@@ -162,6 +180,21 @@
         .modal-header h3 {
             font-size: 1.3rem;
             width: 85%;
+        }
+    }
+    /** New stuff */
+    .modal-container {
+        background-color: $light-gray;
+
+        h3 {
+            color: $unc-blue;
+        }
+
+        .modal-body {
+            margin: 10px -30px -20px -30px;
+            text-align: center;
+            padding: 20px 0;
+            background-color: white;
         }
     }
 </style>

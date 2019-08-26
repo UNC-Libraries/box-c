@@ -191,9 +191,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["deleteResult"] = {name : 'Delete', disabled : metadata.isDeleted};
 		}
 
-		items["seppermission"] = "";
-		items["patronPermissions"] = {name : 'Patron permissions'};
-		items["staffPermissions"] = {name : 'Staff permissions'};
+		// Set/Update permission actions
+		if (metadata.type === 'AdminUnit' || metadata.type === 'Collection') {
+			items["seppermission"] = "";
+			items["patronPermissions"] = {name : 'Patron permissions'};
+			items["staffPermissions"] = {name : 'Staff permissions'};
+		}
 
 		// Get data object for vue permissions editor
 		var perms_editor_data = perms_editor.$children[0].$children[0].$data;
@@ -329,13 +332,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
 					case "patronPermissions" :
-						perms_editor_data.permissionType = 'patron';
-						perms_editor_data.title = metadata.title;
+						perms_editor_data.permissionType = 'Patron';
+						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
 						break;
 					case "staffPermissions":
-						perms_editor_data.permissionType = 'staff';
-						perms_editor_data.title = metadata.title;
+						perms_editor_data.permissionType = 'Staff';
+						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
 						break;
 				}

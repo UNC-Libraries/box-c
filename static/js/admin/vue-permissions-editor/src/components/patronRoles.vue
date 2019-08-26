@@ -1,16 +1,16 @@
 <template>
-    <div id="patron-permissions">
-        <h1>Set Patron Permissions</h1>
+    <div id="patron-roles">
+        <h1>Set Patron Roles</h1>
     </div>
 </template>
 
 <script>
     export default {
-        name: 'patronPermissions',
+        name: 'patronRoles',
 
         data() {
             return {
-                patron_permissions: []
+                patron_roles: []
             }
         }
     }
