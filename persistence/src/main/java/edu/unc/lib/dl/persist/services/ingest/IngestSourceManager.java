@@ -22,10 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,10 +32,6 @@ import java.util.zip.ZipFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
 
 import edu.unc.lib.dl.util.PackagingType;
 import gov.loc.repository.bagit.creator.BagCreator;
@@ -59,7 +51,6 @@ import gov.loc.repository.bagit.reader.BagReader;
  * @date Oct 22, 2015
  */
 public class IngestSourceManager {
-
     private static final Logger log = LoggerFactory.getLogger(IngestSourceManager.class);
 
     private List<IngestSourceConfiguration> configs;
@@ -68,54 +59,18 @@ public class IngestSourceManager {
 
     private BagReader reader = new BagReader();
 
-    public void init() throws JsonProcessingException, IOException {
-        final ObjectMapper mapper = new ObjectMapper();
-        final CollectionType type = mapper.getTypeFactory()
-                .constructCollectionType(List.class, IngestSourceConfiguration.class);
-        final File configFile = new File(configPath);
-        final Path path = configFile.toPath();
-        configs = mapper.readValue(configFile, type);
+    /**
+     * Initialize the manager, loading configuration and setting up watcher for config changes.
+     *
+     * @throws IOException
+     */
+    public void init() throws IOException {
+        IngestSourceConfigWatcher configWatcher = new IngestSourceConfigWatcher(configPath, this);
+        configWatcher.loadConfig();
 
         // Start separate thread for reloading configuration when it changes
-        Thread watchThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Monitor config file for changes to allow for reloading without restarts
-                try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
-                    // Register watcher on parent directory of config to detect file modifications
-                    path.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
-
-                    while (true) {
-                        final WatchKey wk = watchService.take();
-                        for (WatchEvent<?> event : wk.pollEvents()) {
-                            final Path changed = (Path) event.context();
-
-                            if (changed.toString().equals(configFile.getName())) {
-                                log.warn("Ingest source configuration has changed, reloading: {}",
-                                        configFile.getAbsolutePath());
-                                // Config file changed, reload the mappings
-                                synchronized (configs) {
-                                    configs = mapper.readValue(configFile, type);
-                                }
-                            }
-                        }
-
-                        // reset the key so that we can continue monitor for future events
-                        boolean valid = wk.reset();
-                        if (!valid) {
-                            break;
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    log.info("Interrupted watcher for updates to ingest source configuration");
-                } catch (IOException e) {
-                    log.error("Failed to establish watcher for ingest source configuration");
-                }
-            }
-
-        });
+        Thread watchThread = new Thread(configWatcher);
         watchThread.start();
-
     }
 
     /**
