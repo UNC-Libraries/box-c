@@ -1,7 +1,7 @@
 <template>
     <div id="staff-roles">
         <h1>Set Staff Roles</h1>
-        <table v-if="current_staff_roles.inherited.length > 0">
+        <table class="border" v-if="current_staff_roles.inherited.length > 0">
             <thead>
             <tr>
                 <th>Staff</th>
@@ -20,16 +20,16 @@
         <p v-else>There are no inherited staff permissions at this level</p>
 
         <h4>Add or remove staff permissions</h4>
-        <table v-if="current_staff_roles.assigned.length > 0">
-            <tr v-for="(assigned_staff_permission, index) in current_staff_roles.assigned" :key="index">
-                <td>{{ assigned_staff_permission.principal }}</td>
-                <td>{{ assigned_staff_permission.role }}</td>
-                <td>
+        <table v-if="updated_staff_roles.length > 0">
+            <tr v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
+                <td class="border">{{ updated_staff_role.principal }}</td>
+                <td class="border">{{ updated_staff_role.role }}</td>
+                <td class="btn">
                     <button class="btn-remove" @click="removeUser(index)">Remove</button>
                 </td>
             </tr>
         </table>
-        <staff-roles-form :current-roles="current_staff_roles.assigned" @add-user="updateUserList"></staff-roles-form>
+        <staff-roles-form @add-user="updateUserList"></staff-roles-form>
         <ul>
             <li><button @click="setRoles" type="submit">Save Changes</button></li>
             <li><button class="cancel" type="reset">Cancel</button></li>
@@ -57,6 +57,7 @@
             return {
                 current_staff_roles: { inherited: [], assigned: [] },
                 response_message: '',
+                updated_staff_roles: []
             }
         },
 
@@ -64,6 +65,7 @@
             getRoles() {
                 get(`/get/acl/staff/${this.uuid}`).then((response) => {
                     this.current_staff_roles = response.data;
+                    this.updated_staff_roles = this.current_staff_roles
                 }).catch((error) => {
                     this.response_message = `Unable load current staff roles for ${this.uuid}`;
                     console.log(error);
@@ -80,11 +82,11 @@
             },
 
             removeUser(index) {
-                this.current_staff_roles.assigned = this.current_staff_roles.assigned.splice(index, 1);
+                this.updated_staff_roles.splice(index, 1);
             },
 
             updateUserList(user) {
-                this.current_staff_roles.assigned.push(user);
+                this.updated_staff_roles.push(user);
             }
         },
 
@@ -101,7 +103,7 @@
         margin: 0 15px;
         text-align: left;
 
-        table, th, td {
+        .border, .border th, .border td {
             border: $border-style;
             border-collapse: collapse;
             padding: 5px 10px;
@@ -112,6 +114,7 @@
         }
 
         table {
+            margin-bottom: 25px;
             text-align: center;
             width: 100%;
         }
@@ -132,11 +135,22 @@
                 display: inline;
 
                 button {
-                    border: none;
                     font-size: 14px;
-                    padding: 5px 10px;
                 }
             }
+        }
+
+        button {
+            border: none;
+            padding: 5px 10px;
+        }
+
+        .btn {
+            text-align: left;
+        }
+
+        .btn-remove {
+            background-color: red;
         }
     }
 </style>

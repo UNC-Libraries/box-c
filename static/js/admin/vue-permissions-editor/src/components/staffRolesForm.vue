@@ -32,14 +32,12 @@
             }
         },
 
-        props: {
-          currentRoles: Array
-        },
-
         methods: {
             addUser() {
                 if (this.user_name !== '' && this.selected_role !== '') {
-                    this.$emit('add-user', { principal: this.user_name, role: this.selected_role});
+                    this.$emit('add-user', { principal: this.user_name, role: this.selected_role });
+                    this.user_name = '';
+                    this.selected_role = '';
                 } else {
                     this.error_message = 'Please add a user and role before submitting'
                 }
