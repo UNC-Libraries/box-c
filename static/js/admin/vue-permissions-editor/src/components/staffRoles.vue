@@ -23,9 +23,15 @@
         <table v-if="updated_staff_roles.length > 0">
             <tr v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
                 <td class="border">{{ updated_staff_role.principal }}</td>
-                <td class="border">{{ updated_staff_role.role }}</td>
+                <td class="border">
+                    <staff-roles-select
+                            :user="updated_staff_role"
+                            @staff-role-update="updateUserRole">
+                    </staff-roles-select>
+                </td>
                 <td class="btn">
-                    <button class="btn-remove" @click="removeUser(index)">Remove</button>
+                    <button v-if="updated_staff_role.type === 'new'" class="btn-remove" @click="removeUser(index)">Remove</button>
+                    <button v-else class="btn-revert" @click="removeUser(index)">Undo Add</button>
                 </td>
             </tr>
         </table>
@@ -39,6 +45,8 @@
 
 <script>
     import staffRolesForm from "./staffRolesForm";
+    import staffRolesSelect from "./staffRolesSelect";
+    import staffRoleList from "../mixins/staffRoleList";
     import get from 'axios';
     import post from 'axios';
 
@@ -46,8 +54,11 @@
         name: 'staffRoles',
 
         components: {
-            staffRolesForm
+            staffRolesForm,
+            staffRolesSelect
         },
+
+        mixins: [staffRoleList],
 
         props: {
             uuid: String
@@ -87,6 +98,14 @@
 
             updateUserList(user) {
                 this.updated_staff_roles.push(user);
+            },
+
+            updateUserRole(user) {
+                let user_index = this.updated_staff_roles.findIndex((u) => u.principal === user.principal);
+
+                if (user_index !== -1) {
+                    this.updated_staff_roles[user_index].role = user.role;
+                }
             }
         },
 
@@ -140,6 +159,12 @@
             }
         }
 
+        select {
+            border: 1px;
+            height: 34px;
+            width: 100%;
+        }
+
         button {
             border: none;
             padding: 5px 10px;
@@ -151,6 +176,10 @@
 
         .btn-remove {
             background-color: red;
+        }
+
+        .btn-revert {
+            background-color: gray;
         }
     }
 </style>

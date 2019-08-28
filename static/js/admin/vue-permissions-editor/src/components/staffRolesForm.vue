@@ -13,20 +13,16 @@
 </template>
 
 <script>
+    import staffRoleList from "../mixins/staffRoleList";
+
     export default {
         name: 'staffRolesForm',
+
+        mixins: [staffRoleList],
 
         data() {
             return {
                 error_message: '',
-                roles: [
-                    { text: 'can Access', value: 'canAccess' },
-                    { text: 'can Ingest', value: 'canIngest' },
-                    { text: 'can Describe', value: 'canDescribe' },
-                    { text: 'can Manage', value: 'canManage' },
-                    { text: 'unit owner', value: 'unitOwner' },
-                    { text: 'administrator', value: 'administrator' }
-                ],
                 selected_role: '',
                 user_name: ''
             }
@@ -35,7 +31,7 @@
         methods: {
             addUser() {
                 if (this.user_name !== '' && this.selected_role !== '') {
-                    this.$emit('add-user', { principal: this.user_name, role: this.selected_role });
+                    this.$emit('add-user', { principal: this.user_name, role: this.selected_role, type: 'new' });
                     this.user_name = '';
                     this.selected_role = '';
                 } else {

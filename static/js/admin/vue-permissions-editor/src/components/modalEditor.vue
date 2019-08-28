@@ -9,14 +9,14 @@
                                 <div class="modal-header columns">
                                     <slot name="header">
                                         <div class="column is-12">
-                                            <h3><span>{{ permissionType }} Permission Settings for</span> {{ metadata.title }}</h3>
+                                            <h3><span>{{ permissionType }} Role Settings for</span> {{ metadata.title }}</h3>
                                             <i class="fa" :class="iconType"></i>
-                                            <button class="button is-small" @click="showModal = false">Close</button>
+                                            <a class="close-icon" href="#" @click.prevent="showModal = false">X</a>
                                         </div>
                                     </slot>
                                 </div>
                                 <div class="modal-body">
-                                    <patron-permissions v-if="permissionType === 'Patron'"></patron-permissions>
+                                    <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
                                     <staff-roles v-else :uuid="metadata.id"></staff-roles>
                                 </div>
                             </div>
@@ -99,9 +99,15 @@
         width: 100%;
         text-align: center;
 
-        button {
+        a {
+            color: darkslategray;
             float: right;
-            margin: auto 0 auto auto;
+            font-size: 24px;
+            margin: 3px 0;
+
+            &:hover {
+                text-decoration: none;
+            }
         }
 
         div {
