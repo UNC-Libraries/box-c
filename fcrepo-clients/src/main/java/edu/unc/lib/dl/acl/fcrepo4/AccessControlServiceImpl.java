@@ -51,7 +51,7 @@ public class AccessControlServiceImpl implements AccessControlService {
                     permission, principals, pid, result);
         }
 
-        return permissionEvaluator.hasPermission(pid, principals, permission);
+        return result;
     }
 
     @Override
