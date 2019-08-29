@@ -1,0 +1,49 @@
+#modal-permissions-editor .border,
+#modal-permissions-editor .border th,
+#modal-permissions-editor .border td {
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+}
+
+#modal-permissions-editor table {
+    margin-bottom: 25px;
+    text-align: center;
+    width: 100%;
+}
+
+#modal-permissions-editor table .select-box {
+    padding: 0;
+}
+
+#modal-permissions-editor table.assigned  td {
+    font-size: 14px;
+    height: 20px;
+    width: 40px;
+}
+
+#modal-permissions-editor select {
+    border: 1px;
+    font-size: 14px;
+    text-align: center;
+}
+
+#modal-permissions-editor .btn {
+    text-align: left;
+}
+
+#modal-permissions-editor button {
+    margin-left: 15px;
+}
+
+#modal-permissions-editor input {
+    border: none;
+    line-height: 20px;
+}
+
+/* Overrides to css from fg-select module */
+#modal-permissions-editor .select-css {
+    border-radius: 0;
+    font-weight: normal;
+    line-height: 1.9;
+    padding: 0
+}

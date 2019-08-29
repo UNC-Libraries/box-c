@@ -103,6 +103,7 @@
             color: darkslategray;
             float: right;
             font-size: 24px;
+            font-weight: bold;
             margin: 3px 0;
 
             &:hover {
@@ -131,18 +132,6 @@
     .modal-body {
         margin: 20px 0;
         text-align: center;
-
-        table {
-            td {
-                font-size: 18px;
-                padding-bottom: 5px;
-                padding-left: 15px;
-
-                p {
-                    font-size: 18px;
-                }
-            }
-        }
     }
 
     /*

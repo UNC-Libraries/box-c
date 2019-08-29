@@ -20,10 +20,10 @@
         <p v-else>There are no inherited staff permissions at this level</p>
 
         <h4>Add or remove staff permissions</h4>
-        <table v-if="updated_staff_roles.length > 0">
-            <tr v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
+        <table class="assigned">
+            <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
                 <td class="border">{{ updated_staff_role.principal }}</td>
-                <td class="border">
+                <td class="border select-box">
                     <staff-roles-select
                             :user="updated_staff_role"
                             @staff-role-update="updateUserRole">
@@ -34,8 +34,9 @@
                     <button v-else class="btn-revert" @click="removeUser(index)">Undo Add</button>
                 </td>
             </tr>
+            <staff-roles-form @add-user="updateUserList" @form-error="updateErrorMsg"></staff-roles-form>
         </table>
-        <staff-roles-form @add-user="updateUserList"></staff-roles-form>
+        <p class="error">{{ response_message }}</p>
         <ul>
             <li><button @click="setRoles" type="submit">Save Changes</button></li>
             <li><button class="cancel" type="reset">Cancel</button></li>
@@ -74,7 +75,7 @@
 
         methods: {
             getRoles() {
-                get(`/get/acl/staff/${this.uuid}`).then((response) => {
+                get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
                     this.current_staff_roles = response.data;
                     this.updated_staff_roles = this.current_staff_roles
                 }).catch((error) => {
@@ -84,7 +85,7 @@
             },
 
             setRoles() {
-                post(`/edit/acl/staff/${this.uuid}`, this.current_staff_roles.assigned).then((response) => {
+                post(`/services/api/edit/acl/staff/${this.uuid}`, this.current_staff_roles.assigned).then((response) => {
                     this.response_message = `Staff roles successfully updated for ${this.uuid}`;
                 }).catch((error) => {
                     this.response_message = `Unable to update staff roles for ${this.uuid}`;
@@ -106,6 +107,10 @@
                 if (user_index !== -1) {
                     this.updated_staff_roles[user_index].role = user.role;
                 }
+            },
+
+            updateErrorMsg(msg) {
+                this.response_message = msg;
             }
         },
 
@@ -122,20 +127,13 @@
         margin: 0 15px;
         text-align: left;
 
-        .border, .border th, .border td {
-            border: $border-style;
-            border-collapse: collapse;
-            padding: 5px 10px;
+        table {
+            border-bottom: none;
+            margin-bottom: 0;
         }
 
         th, .cancel {
             background-color: gray;
-        }
-
-        table {
-            margin-bottom: 25px;
-            text-align: center;
-            width: 100%;
         }
 
         h4 {
@@ -159,19 +157,9 @@
             }
         }
 
-        select {
-            border: 1px;
-            height: 34px;
-            width: 100%;
-        }
-
         button {
             border: none;
             padding: 5px 10px;
-        }
-
-        .btn {
-            text-align: left;
         }
 
         .btn-remove {
@@ -180,6 +168,10 @@
 
         .btn-revert {
             background-color: gray;
+        }
+
+        .error {
+            color: red;
         }
     }
 </style>

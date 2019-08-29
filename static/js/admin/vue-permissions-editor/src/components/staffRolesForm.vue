@@ -1,15 +1,18 @@
 <template>
-    <div>
-        <form>
-            <input @focus="clearErrorMessage" type="text" placeholder="ONYEN/Group" v-model.trim="user_name">
-            <select @focus="clearErrorMessage" v-model="selected_role">
-                <option value="">--Role--</option>
-                <option v-for="role in roles" :value="role.value">{{ role.text }}</option>
-            </select>
-            <button class="btn-add" @click.prevent="addUser">Add</button>
-        </form>
-        <p class="error">{{ error_message }}</p>
-    </div>
+            <tr>
+                <td class="border">
+                    <input @focus="clearErrorMessage" type="text" placeholder="ONYEN/Group" v-model.trim="user_name">
+                </td>
+                <td class="border select-box">
+                    <select @focus="clearErrorMessage" v-model="selected_role" class="select-css">
+                        <option value="">--Role--</option>
+                        <option v-for="role in roles" :value="role.value">{{ role.text }}</option>
+                    </select>
+                </td>
+                <td class="btn">
+                    <button class="btn-add" @click.prevent="addUser">Add</button>
+                </td>
+            </tr>
 </template>
 
 <script>
@@ -22,7 +25,6 @@
 
         data() {
             return {
-                error_message: '',
                 selected_role: '',
                 user_name: ''
             }
@@ -35,12 +37,12 @@
                     this.user_name = '';
                     this.selected_role = '';
                 } else {
-                    this.error_message = 'Please add a user and role before submitting'
+                    this.$emit('form-error', 'Please add a user and role before submitting')
                 }
             },
 
             clearErrorMessage() {
-                this.error_message = '';
+                this.$emit('form-error', '');
             }
         }
     }
@@ -48,8 +50,17 @@
 
 <style scoped lang="scss">
     input, select {
-        margin-right: 10px;
         padding: 3px;
+        width: 100%;
+    }
+
+    input {
+        box-sizing: border-box;
+        display: table-cell;
+    }
+
+    #modal-permissions-editor .border {
+        padding: 0;
     }
 
     select {
@@ -62,7 +73,8 @@
 
     .error {
         color: red;
-        margin-top: 10px;
+        height: 1px;
+        margin-top: 15px;
     }
 
     button {
