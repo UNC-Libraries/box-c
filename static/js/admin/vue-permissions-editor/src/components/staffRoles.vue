@@ -36,7 +36,7 @@
             </tr>
             <staff-roles-form @add-user="updateUserList" @form-error="updateErrorMsg"></staff-roles-form>
         </table>
-        <p class="error">{{ response_message }}</p>
+        <p class="message" :class="{ error: is_error_message }">{{ response_message }}</p>
         <ul>
             <li><button @click="setRoles" type="submit">Save Changes</button></li>
             <li><button class="cancel" type="reset">Cancel</button></li>
@@ -48,8 +48,7 @@
     import staffRolesForm from "./staffRolesForm";
     import staffRolesSelect from "./staffRolesSelect";
     import staffRoleList from "../mixins/staffRoleList";
-    import get from 'axios';
-    import post from 'axios';
+    import axios from 'axios';
 
     export default {
         name: 'staffRoles',
@@ -68,6 +67,7 @@
         data() {
             return {
                 current_staff_roles: { inherited: [], assigned: [] },
+                is_error_message: false,
                 response_message: '',
                 updated_staff_roles: []
             }
@@ -75,20 +75,28 @@
 
         methods: {
             getRoles() {
-                get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
+                axios.get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
                     this.current_staff_roles = response.data;
-                    this.updated_staff_roles = this.current_staff_roles
+                    this.updated_staff_roles = this.current_staff_roles.assigned;
                 }).catch((error) => {
-                    this.response_message = `Unable load current staff roles for ${this.uuid}`;
+                    this.is_error_message = true;
+                    this.response_message = `Unable load current staff roles for: ${this.uuid}`;
                     console.log(error);
                 });
             },
 
             setRoles() {
-                post(`/services/api/edit/acl/staff/${this.uuid}`, this.current_staff_roles.assigned).then((response) => {
-                    this.response_message = `Staff roles successfully updated for ${this.uuid}`;
+                axios({
+                    method: 'put',
+                    url: `/services/api/edit/acl/staff/${this.uuid}`,
+                    data: JSON.stringify(this.updated_staff_roles),
+                    headers: {'content-type': 'application/json; charset=utf-8'}
+                }).then((response) => {
+                    this.is_error_message = false;
+                    this.response_message = `Staff roles successfully updated for: ${this.uuid}`;
                 }).catch((error) => {
-                    this.response_message = `Unable to update staff roles for ${this.uuid}`;
+                    this.is_error_message = true;
+                    this.response_message = `Unable to update staff roles for: ${this.uuid}`;
                     console.log(error);
                 });
             },
@@ -110,12 +118,13 @@
             },
 
             updateErrorMsg(msg) {
+                this.is_error_message = true;
                 this.response_message = msg;
             }
         },
 
         mounted() {
-          //  this.getRoles();
+            this.getRoles();
         }
     }
 </script>
@@ -168,6 +177,11 @@
 
         .btn-revert {
             background-color: gray;
+        }
+
+        .message {
+            height: 17px;
+            margin-top: 15px;
         }
 
         .error {
