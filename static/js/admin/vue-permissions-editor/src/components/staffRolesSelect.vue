@@ -1,7 +1,7 @@
 <template>
     <select v-model="selected_role" @change="selectedValue" class="select-css">
         <option value="">--Role--</option>
-        <option v-for="role in roles" :value="role.value">{{ role.text }}</option>
+        <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
     </select>
 </template>
 
@@ -14,6 +14,7 @@
         mixins: [staffRoleList],
 
         props: {
+            containerType: String,
             user: Object
         },
 

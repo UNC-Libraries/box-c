@@ -1,7 +1,7 @@
 <template ref="permsEditor">
     <div id="modal-permissions-editor">
         <div class="meta-modal">
-            <div v-if="showModal" @close="showModal = false">
+            <div v-if="showModal" @close="closeModal">
                 <transition name="modal">
                     <div class="modal-mask">
                         <div class="modal-wrapper">
@@ -11,13 +11,13 @@
                                         <div class="column is-12">
                                             <h3><span>{{ permissionType }} Role Settings for</span> {{ metadata.title }}</h3>
                                             <i class="fa" :class="iconType"></i>
-                                            <a class="close-icon" href="#" @click.prevent="showModal = false">X</a>
+                                            <a class="close-icon" href="#" @click.prevent="closeModal">X</a>
                                         </div>
                                     </slot>
                                 </div>
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
-                                    <staff-roles v-else :uuid="metadata.id"></staff-roles>
+                                    <staff-roles v-else :container-type="metadata.type" :uuid="metadata.id" @close-modal="closeModal"></staff-roles>
                                 </div>
                             </div>
                         </div>
@@ -55,8 +55,8 @@
         },
 
         methods: {
-            modalData() {
-
+            closeModal(action) {
+                this.showModal = false;
             }
         }
     }

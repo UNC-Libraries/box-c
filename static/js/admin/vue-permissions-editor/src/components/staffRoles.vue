@@ -25,6 +25,7 @@
                 <td class="border">{{ updated_staff_role.principal }}</td>
                 <td class="border select-box">
                     <staff-roles-select
+                            :container-type="containerType"
                             :user="updated_staff_role"
                             @staff-role-update="updateUserRole">
                     </staff-roles-select>
@@ -34,12 +35,12 @@
                     <button v-else class="btn-revert" @click="removeUser(index)">Undo Add</button>
                 </td>
             </tr>
-            <staff-roles-form @add-user="updateUserList" @form-error="updateErrorMsg"></staff-roles-form>
+            <staff-roles-form :container-type="containerType" @add-user="updateUserList" @form-error="updateErrorMsg"></staff-roles-form>
         </table>
         <p class="message" :class="{ error: is_error_message }">{{ response_message }}</p>
         <ul>
             <li><button @click="setRoles" type="submit">Save Changes</button></li>
-            <li><button class="cancel" type="reset">Cancel</button></li>
+            <li><button @click="showModal" class="cancel" type="reset">Cancel</button></li>
         </ul>
     </div>
 </template>
@@ -61,6 +62,7 @@
         mixins: [staffRoleList],
 
         props: {
+            containerType: String,
             uuid: String
         },
 
@@ -120,6 +122,10 @@
             updateErrorMsg(msg) {
                 this.is_error_message = true;
                 this.response_message = msg;
+            },
+
+            showModal() {
+                this.$emit('close-modal', false);
             }
         },
 

@@ -6,7 +6,7 @@
                 <td class="border select-box">
                     <select @focus="clearErrorMessage" v-model="selected_role" class="select-css">
                         <option value="">--Role--</option>
-                        <option v-for="role in roles" :value="role.value">{{ role.text }}</option>
+                        <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
                     </select>
                 </td>
                 <td class="btn">
@@ -22,6 +22,10 @@
         name: 'staffRolesForm',
 
         mixins: [staffRoleList],
+
+        props: {
+            containerType: String
+        },
 
         data() {
             return {

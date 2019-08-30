@@ -11,4 +11,14 @@ export default {
             ]
         }
     },
+
+    methods: {
+        containerRoles(container_type) {
+            if (container_type === 'AdminUnit') {
+                return this.roles;
+            } else {
+                return this.roles.slice(0, 4);
+            }
+        }
+    }
 }
