@@ -3,6 +3,17 @@
 #modal-permissions-editor .border td {
     border: 1px solid lightgray;
     border-collapse: collapse;
+    font-size: 14px;
+    height: 20px;
+    padding: 5px 10px;
+}
+
+#modal-permissions-editor .border th {
+    background-color: lightgray;
+}
+
+#modal-permissions-editor .inherited-permissions td {
+    background-color: #dcedff;
 }
 
 #modal-permissions-editor table {
@@ -16,8 +27,6 @@
 }
 
 #modal-permissions-editor table.assigned  td {
-    font-size: 14px;
-    height: 20px;
     width: 40px;
 }
 
@@ -35,11 +44,20 @@
     margin-left: 15px;
 }
 
+#modal-permissions-editor button:hover {
+    opacity: .7;
+}
+
 #modal-permissions-editor input {
     border: none;
     font-size: 14px;
     line-height: 20px;
     text-align: center;
+}
+
+#modal-permissions-editor .no-updates-allowed {
+    color: gray;
+    margin-top: 15px;
 }
 
 /* Overrides to css from fg-select module */

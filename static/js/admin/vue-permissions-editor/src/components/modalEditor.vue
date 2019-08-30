@@ -9,7 +9,7 @@
                                 <div class="modal-header columns">
                                     <slot name="header">
                                         <div class="column is-12">
-                                            <h3><span>{{ permissionType }} Role Settings for</span> {{ metadata.title }}</h3>
+                                            <h3><span>{{ permissionType }} Permission Settings for</span> {{ metadata.title }}</h3>
                                             <i class="fa" :class="iconType"></i>
                                             <a class="close-icon" href="#" @click.prevent="closeModal">X</a>
                                         </div>
@@ -17,7 +17,12 @@
                                 </div>
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
-                                    <staff-roles v-else :container-type="metadata.type" :uuid="metadata.id" @close-modal="closeModal"></staff-roles>
+                                    <staff-roles v-else
+                                                 :container-name="parentContainerName"
+                                                 :container-type="metadata.type"
+                                                 :uuid="metadata.id"
+                                                 @show-modal="closeModal">
+                                    </staff-roles>
                                 </div>
                             </div>
                         </div>
@@ -52,6 +57,14 @@
                     return '';
                 }
             },
+
+            parentContainerName() {
+                let record_index = this.metadata.objectPath.findIndex((container) => container.name === this.metadata.title);
+                if (record_index === -1) {
+                    return '';
+                }
+                return this.metadata.objectPath[record_index - 1].name;
+            }
         },
 
         methods: {
@@ -130,6 +143,8 @@
     }
 
     .modal-body {
+        border-bottom: 1px solid white;
+        border-radius: 5px;
         margin: 20px 0;
         text-align: center;
     }
@@ -186,10 +201,12 @@
         }
 
         .modal-body {
-            margin: 10px -30px -20px -30px;
-            text-align: center;
-            padding: 20px 0;
             background-color: white;
+            margin: 10px -30px -20px -30px;
+            max-height: 650px;
+            overflow: auto;
+            padding: 20px 0;
+            text-align: center;
         }
     }
 </style>
