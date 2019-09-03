@@ -28,6 +28,8 @@ build-admin:
 		static/js/admin/src/*.js \
 		static/js/admin/src/*/*.js \
 		>> static/js/cdr-admin.js
+
+	sass static/css/sass/cdr_vue_modal_styles.scss  static/css/cdr_vue_modal_styles.css --style "expanded"
 	
 	cat static/css/reset.css \
 		static/css/cdr_common.css \
@@ -39,6 +41,7 @@ build-admin:
 		static/css/admin/admin_forms.css \
 		static/css/admin/collector.css \
 		static/css/structure_browse.css \
+		static/css/cdr_vue_modal_styles.css \
 		> static/css/cdr_admin.css
 		# Reinsert and uncomment line in production mode
  		# static/js/admin/vue-permissions-editor/dist/css/app*.css
@@ -88,6 +91,7 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
+		static/css/cdr_vue_modal_styles.css \
 		> static/css/cdr_access.css
 		# Reinsert and uncomment line in production mode
 		# static/js/vue-cdr-access/dist/css/app*.css

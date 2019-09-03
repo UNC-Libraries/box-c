@@ -76,42 +76,11 @@
 </script>
 
 <style lang="scss">
+    /* Overrides of common Vue modal styles found here: cdr_ui_styles.scss */
     $unc-blue: #4B9CD3;
     $light-gray: #E1E1E1;
-    $border-style: 1px solid $light-gray;
-
-    .modal-mask {
-        position: fixed;
-        z-index: 9998;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, .5);
-        display: table;
-        transition: opacity .3s ease;
-    }
-
-    .modal-wrapper {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    .modal-container {
-        width: auto;
-        margin: 0 auto;
-        max-width: 720px;
-        padding: 20px 30px;
-        background-color: #fff;
-        border-radius: 5px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
-        transition: all .3s ease;
-    }
 
     .modal-header {
-        width: 100%;
-        text-align: center;
-
         a {
             color: darkslategray;
             float: right;
@@ -125,16 +94,12 @@
         }
 
         div {
-            display: inline-flex;
             width: 100%;
         }
 
         h3 {
             font-size: 1.3rem;
             line-height: 1.3rem;
-            margin-top: 0;
-            text-align: center;
-            width: 100%;
 
             span {
                 color: black;
@@ -142,57 +107,6 @@
         }
     }
 
-    .modal-body {
-        border-bottom: 1px solid white;
-        border-radius: 5px;
-        margin: 20px 0;
-        text-align: center;
-    }
-
-    /*
-     * The following styles are auto-applied to elements with
-     * transition="modal" when their visibility is toggled
-     * by Vue.js.
-     */
-
-    .modal-enter {
-        opacity: 0;
-    }
-
-    .modal-leave-active {
-        opacity: 0;
-    }
-
-    .modal-enter .modal-container,
-    .modal-leave-active .modal-container {
-        -webkit-transform: scale(1.1);
-        transform: scale(1.1);
-    }
-
-    .meta-modal {
-        button {
-            color: white;
-            background-color: #007FAE;
-
-            &:hover {
-                color: white;
-                opacity: .9;
-            }
-        }
-
-    }
-
-    @media screen and (max-width: 768px) {
-        .modal-container {
-            margin: 0 25px;
-        }
-
-        .modal-header h3 {
-            font-size: 1.3rem;
-            width: 85%;
-        }
-    }
-    /** New stuff */
     .modal-container {
         background-color: $light-gray;
 
@@ -202,11 +116,12 @@
 
         .modal-body {
             background-color: white;
+            border-bottom: 1px solid white;
+            border-radius: 5px;
             margin: 10px -30px -20px -30px;
             max-height: 650px;
             overflow: auto;
             padding: 20px 0;
-            text-align: center;
         }
     }
 </style>
