@@ -9,8 +9,10 @@
                                 <div class="modal-header columns">
                                     <slot name="header">
                                         <div class="column is-12">
-                                            <h3><span>{{ permissionType }} Permission Settings for</span> {{ metadata.title }}</h3>
-                                            <i class="fa" :class="iconType"></i>
+                                            <h3>
+                                                <span>{{ permissionType }} Permission Settings for</span>
+                                                {{ metadata.title }} <i class="fa" :class="iconType" aria-hidden="true"></i>
+                                            </h3>
                                             <a class="close-icon" href="#" @click.prevent="closeModal">X</a>
                                         </div>
                                     </slot>
@@ -53,6 +55,10 @@
             iconType() {
                 if (this.metadata.type === 'Collection') {
                     return 'fa-archive';
+                } else if (this.metadata.type === 'AdminUnit') {
+                    return 'fa-university';
+                } else if (this.metadata.type === 'Folder') {
+                    return 'fa-folder';
                 } else {
                     return '';
                 }

@@ -23,6 +23,7 @@
 <!--[if IE 8]>
 	<link rel="stylesheet" type="text/css" href="/static/css/cdrui_styles_ie8.css" />
 <![endif]-->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
 
 <meta name="description" content="Digital Collections Repository" />
 <meta name="keywords" content="Digital Collections Repository" />
