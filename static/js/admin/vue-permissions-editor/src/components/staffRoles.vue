@@ -3,7 +3,7 @@
         <h1 v-if="canSetPermissions">Set Staff Permissions</h1>
         <h1 v-else>Inherited Staff Permissions</h1>
 
-        <table class="border inherited-permissions" v-if="current_staff_roles.inherited.length > 0">
+        <table class="border inherited-permissions" v-if="current_staff_roles.inherited !== undefined && current_staff_roles.inherited.length > 0">
             <thead>
             <tr>
                 <th>Staff</th>
@@ -23,7 +23,7 @@
 
         <div v-if="canSetPermissions">
             <h4>Add or remove staff permissions</h4>
-            <table class="assigned">
+            <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
                     <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">{{ updated_staff_role.principal }}</td>
                     <td class="border select-box">
@@ -48,7 +48,7 @@
         <p class="no-updates-allowed" v-else>Go to previous level(s) to modify the staff permission settings.</p>
 
         <ul>
-            <li v-if="canSetPermissions"><button @click="setRoles" type="submit">Save Changes</button></li>
+            <li v-if="canSetPermissions"><button id="is-submitting" @click="setRoles" type="submit">Save Changes</button></li>
             <li><button @click="showModal" class="cancel" type="reset">Cancel</button></li>
         </ul>
     </div>
@@ -59,6 +59,7 @@
     import staffRolesSelect from "./staffRolesSelect";
     import staffRoleList from "../mixins/staffRoleList";
     import axios from 'axios';
+    import isEmpty from 'lodash.isempty';
 
     export default {
         name: 'staffRoles',
@@ -86,17 +87,17 @@
             }
         },
 
-        computed: {
+        methods: {
             canSetPermissions() {
                 return ['AdminUnit', 'Collection'].includes(this.containerType);
-            }
-        },
+            },
 
-        methods: {
             getRoles() {
                 axios.get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
-                    this.current_staff_roles = response.data;
-                    this.updated_staff_roles = this.current_staff_roles.assigned;
+                    if (!isEmpty(response.data)) {
+                        this.current_staff_roles = response.data;
+                        this.updated_staff_roles = response.data.assigned;
+                    }
                 }).catch((error) => {
                     this.is_error_message = true;
                     this.response_message = `Unable load current staff roles for: ${this.uuid}`;
