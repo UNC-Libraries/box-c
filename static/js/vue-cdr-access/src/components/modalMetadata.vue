@@ -70,5 +70,5 @@
 </script>
 
 <style lang="scss">
-/* See cdr_ui_styles.scss. Modal styles moved there so they can be used across Vue applications */
+/* See cdr_vue_modal_styles.scss. Modal styles moved there so they can be used across Vue applications */
 </style>
