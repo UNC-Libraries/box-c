@@ -94,7 +94,24 @@ describe('staffRoles.vue', () => {
         moxios.wait(() => {
             wrapper.vm.removeUser(0);
             expect(wrapper.vm.deleted_users).toEqual(response.assigned);
-            done()
+            done();
+        });
+    });
+
+    it("it updates button text based on context", () => {
+        moxios.wait(() => {
+            let button = wrapper.find('.btn button');
+            expect(button.text()).toEqual('Remove');
+
+            // Mark a previously assigned role for deletion
+            button.trigger('click');
+            expect(button.text()).toEqual('Undo Remove');
+
+            // Undo marking previously assigned role for deletion
+            button.trigger('click');
+            expect(button.text()).toEqual('Remove');
+
+            done();
         });
     });
 
