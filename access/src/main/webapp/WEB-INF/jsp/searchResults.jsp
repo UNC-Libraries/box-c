@@ -29,7 +29,6 @@
 			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
 			<c:import url="/jsp/util/pathTrail.jsp">
 				<c:param name="linkLast">true</c:param>
-				<c:param name="queryPath">list</c:param>
 				<c:param name="ignoreSearchState">true</c:param>
 			</c:import>
 		</c:if>

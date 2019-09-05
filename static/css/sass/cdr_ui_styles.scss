@@ -385,8 +385,18 @@ p.no-search-results {
 }
 
 #full_record_trail {
-  font-size: 14px;
+  border: 1px solid $light-gray;
+  background-color: $light-gray;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-left: 0;
+  padding: 12px;
   text-indent: 0;
+  width: 100%;
+}
+
+#expand-breadcrumb {
+  font-size: 24px;
 }
 
 .actionlink.view {
