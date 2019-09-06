@@ -1,0 +1,210 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.dl.cdr.services.rest.modify;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.ingest.DepositData;
+import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceConfiguration;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.util.DepositException;
+import edu.unc.lib.dl.util.DepositMethod;
+import edu.unc.lib.dl.util.PackagingType;
+
+/**
+ * Controller for interacting with ingest sources, including finding packages
+ * available for deposit, and submitting them.
+ *
+ * @author bbpennel
+ */
+@Controller
+public class IngestSourceController {
+    private static final Logger log = LoggerFactory.getLogger(IngestSourceController.class);
+
+    @Autowired
+    private AccessControlService aclService;
+
+    @Autowired
+    private IngestSourceManager sourceManager;
+
+    @Autowired
+    private DepositSubmissionService depositService;
+
+    @GetMapping(value = "/edit/ingestSources/list/{pid}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> listIngestSources(@PathVariable("pid") String pid) {
+        PID destination = PIDs.get(pid);
+
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        aclService.assertHasAccess("Insufficient permissions",
+                destination, agent.getPrincipals(), Permission.ingest);
+
+        Map<String, Object> results = new HashMap<>();
+        results.put("sources", sourceManager.listSources(destination));
+        results.put("candidates", sourceManager.listCandidates(destination));
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/edit/ingestSources/ingest/{pid}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> ingestFromSource(@PathVariable("pid") String pid,
+            @RequestBody List<IngestPackageDetails> packages) {
+
+        log.info("Request to ingest from source to {}", pid);
+        PID destination = PIDs.get(pid);
+        Map<String, Object> results = new HashMap<>();
+
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+
+        // Validate the packages requested for deposit
+        for (IngestPackageDetails packageDetails : packages) {
+            if (isBlank(packageDetails.getPackagePath())
+                    || packageDetails.getPackagingType() == null) {
+                results.put("error", "Package selected for deposit was missing either a path or packaging type");
+                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
+            }
+
+            // Verify that the package path is from within the allowed locations for the specified ingest source
+            if (!sourceManager.isPathValid(packageDetails.getPackagePath(), packageDetails.getSourceId())) {
+                results.put("error", "Invalid source path specified: " + packageDetails.getPackagePath());
+                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        // Build deposit entries and add to queue
+        for (IngestPackageDetails packageDetails : packages) {
+            IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
+            if (source == null) {
+                results.put("error", "Invalid source id provided: " + packageDetails.getSourceId());
+                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
+            }
+
+            Path candidatePath = Paths.get(source.getBase(), packageDetails.getPackagePath());
+
+            // Generate a filename if one was not provided
+            String filename = packageDetails.getLabel();
+            if (isBlank(filename)) {
+                filename = candidatePath.getFileName().toString();
+            }
+
+            DepositData deposit = new DepositData(candidatePath,
+                    null,
+                    packageDetails.getPackagingType(),
+                    DepositMethod.CDRAPI1.getLabel(),
+                    agent);
+            deposit.setSlug(filename);
+            deposit.setDepositorEmail(GroupsThreadStore.getEmail());
+
+            deposit.setAccessionNumber(packageDetails.getAccessionNumber());
+            deposit.setMediaId(packageDetails.getMediaId());
+
+            try {
+                depositService.submitDeposit(destination, deposit);
+            } catch (DepositException e) {
+                log.error("Failed to submit ingest source deposit to {}", pid, e);
+                results.put("error", e.getMessage());
+                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        return new ResponseEntity<>(results, HttpStatus.OK);
+    }
+
+    public static class IngestPackageDetails {
+        private String sourceId;
+        // Path is relative to the base for the source
+        private String packagePath;
+        private String label;
+        private PackagingType packagingType;
+        private String accessionNumber;
+        private String mediaId;
+
+        public String getSourceId() {
+            return sourceId;
+        }
+
+        public void setSourceId(String sourceId) {
+            this.sourceId = sourceId;
+        }
+
+        public String getPackagePath() {
+            return packagePath;
+        }
+
+        public void setPackagePath(String packagePath) {
+            this.packagePath = packagePath;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public PackagingType getPackagingType() {
+            return packagingType;
+        }
+
+        public void setPackagingType(PackagingType packagingType) {
+            this.packagingType = packagingType;
+        }
+
+        public String getAccessionNumber() {
+            return accessionNumber;
+        }
+
+        public void setAccessionNumber(String accessionNumber) {
+            this.accessionNumber = accessionNumber;
+        }
+
+        public String getMediaId() {
+            return mediaId;
+        }
+
+        public void setMediaId(String mediaId) {
+            this.mediaId = mediaId;
+        }
+    }
+}
