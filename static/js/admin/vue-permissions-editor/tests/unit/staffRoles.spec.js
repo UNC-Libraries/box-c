@@ -90,9 +90,9 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("removes assigned roles", (done) => {
+    it("removes assigned roles for previously assigned users", (done) => {
         moxios.wait(() => {
-            wrapper.vm.removeUser(0);
+            wrapper.vm.markUserForDeletion(0);
             expect(wrapper.vm.deleted_users).toEqual(response.assigned);
             done();
         });

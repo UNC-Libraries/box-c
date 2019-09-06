@@ -1,8 +1,9 @@
 <template>
-    <select v-model="selected_role" @change="selectedValue" class="select-css">
-        <option value="">--Role--</option>
-        <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
-    </select>
+    <div class="select-wrapper">
+        <select v-model="selected_role" @change="selectedValue" :class="{'marked-for-deletion': deletedUser}">
+            <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
+        </select>
+    </div>
 </template>
 
 <script>
@@ -14,6 +15,7 @@
         mixins: [staffRoleList],
 
         props: {
+            areDeleted: Array,
             containerType: String,
             user: Object
         },
@@ -30,6 +32,12 @@
             }
         },
 
+        computed: {
+            deletedUser() {
+                return this.areDeleted.find((u) => u.principal === this.user.principal);
+            }
+        },
+
         methods: {
            selectedValue() {
                this.$emit('staff-role-update', { principal: this.user.principal, role: this.selected_role });
@@ -38,5 +46,5 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 </style>

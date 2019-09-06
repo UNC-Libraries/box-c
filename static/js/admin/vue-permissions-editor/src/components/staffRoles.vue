@@ -26,22 +26,27 @@
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
                     <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">{{ updated_staff_role.principal }}</td>
-                    <td class="border select-box">
+                    <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
                         <staff-roles-select
                                 :container-type="containerType"
+                                :are-deleted="deleted_users"
                                 :user="updated_staff_role"
                                 @staff-role-update="updateUserRole">
                         </staff-roles-select>
                     </td>
                     <td class="btn">
-                        <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="removeUser(index)">Undo Add</button>
+                        <button v-if="updated_staff_role.type === 'new'" class="btn-revert" @click="fullyRemoveUser(index)">Undo Add</button>
                         <button v-else-if="checkUserRemoved(updated_staff_role)"
                                 class="btn-revert"
                                 @click="revertRemoveUser(updated_staff_role)">Undo Remove</button>
-                        <button v-else class="btn-remove" @click="removeUser(index)">Remove</button>
+                        <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
                     </td>
                 </tr>
-                <staff-roles-form :container-type="containerType" @add-user="updateUserList" @form-error="updateErrorMsg"></staff-roles-form>
+                <staff-roles-form
+                        :container-type="containerType"
+                        :is-submitting="is_submitting"
+                        @add-user="updateUserList"
+                        @form-error="updateErrorMsg"></staff-roles-form>
             </table>
             <p class="message" :class="{ error: is_error_message }">{{ response_message }}</p>
         </div>
@@ -82,6 +87,7 @@
                 current_staff_roles: { inherited: [], assigned: [] },
                 deleted_users: [],
                 is_error_message: false,
+                is_submitting: false,
                 response_message: '',
                 updated_staff_roles: []
             }
@@ -97,6 +103,8 @@
                     if (!isEmpty(response.data)) {
                         this.current_staff_roles = response.data;
                         this.updated_staff_roles = response.data.assigned;
+                    } else {
+                        console.log(response);
                     }
                 }).catch((error) => {
                     this.is_error_message = true;
@@ -106,21 +114,28 @@
             },
 
             setRoles() {
-                this.updated_staff_roles = this.removeDeletedAssignedRoles();
+                this.is_submitting = true;
 
-                axios({
-                    method: 'put',
-                    url: `/services/api/edit/acl/staff/${this.uuid}`,
-                    data: JSON.stringify(this.updated_staff_roles),
-                    headers: {'content-type': 'application/json; charset=utf-8'}
-                }).then((response) => {
-                    this.is_error_message = false;
-                    this.response_message = `Staff roles successfully updated for: ${this.uuid}`;
-                }).catch((error) => {
-                    this.is_error_message = true;
-                    this.response_message = `Unable to update staff roles for: ${this.uuid}`;
-                    console.log(error);
-                });
+                setTimeout(() => {
+                    this.updated_staff_roles = this.removeDeletedAssignedRoles();
+
+                    axios({
+                        method: 'put',
+                        url: `/services/api/edit/acl/staff/${this.uuid}`,
+                        data: JSON.stringify(this.updated_staff_roles),
+                        headers: {'content-type': 'application/json; charset=utf-8'}
+                    }).then((response) => {
+                        this.is_error_message = false;
+                        this.response_message = `Staff roles successfully updated for: ${this.uuid}`;
+                        this.is_submitting = false;
+                        setTimeout(this.showModal, 1500); // Close modal
+                    }).catch((error) => {
+                        this.is_error_message = true;
+                        this.response_message = `Unable to update staff roles for: ${this.uuid}`;
+                        this.is_submitting = false;
+                        console.log(error);
+                    });
+                }, 1000);
             },
 
             /**
@@ -134,15 +149,19 @@
             },
 
             findDeletedUserIndex(user) {
-                return this.deleted_users.findIndex((u) => u.principal === user.principal)
+                return this.deleted_users.findIndex((u) => u.principal === user.principal);
             },
 
             /**
              * Add user with already assigned permissions to list of user/permissions to delete
              * @param index
              */
-            removeUser(index) {
+            markUserForDeletion(index) {
                 this.deleted_users.push(this.updated_staff_roles[index]);
+            },
+
+            fullyRemoveUser(index) {
+                this.updated_staff_roles.splice(index, 1);
             },
 
             /**
@@ -261,10 +280,6 @@
 
         .error {
             color: red;
-        }
-
-        .marked-for-deletion {
-            text-decoration: line-through;
         }
     }
 </style>

@@ -1,13 +1,14 @@
 <template>
             <tr>
-                <td class="border">
+                <td class="border size">
                     <input @focus="clearErrorMessage" type="text" placeholder="ONYEN/Group" v-model.trim="user_name">
                 </td>
                 <td class="border select-box">
-                    <select @focus="clearErrorMessage" v-model="selected_role" class="select-css">
-                        <option value="">--Role--</option>
-                        <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
-                    </select>
+                    <div class="select-wrapper">
+                        <select v-model="selected_role">
+                            <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
+                        </select>
+                    </div>
                 </td>
                 <td class="btn">
                     <button class="btn-add" @click.prevent="addUser">Add</button>
@@ -24,25 +25,38 @@
         mixins: [staffRoleList],
 
         props: {
-            containerType: String
+            containerType: String,
+            isSubmitting: Boolean
+        },
+
+        watch: {
+            isSubmitting(submitting) {
+                if (submitting && this.user_name !== '') {
+                    this.emitEvent();
+                }
+            }
         },
 
         data() {
             return {
-                selected_role: '',
+                selected_role: 'canAccess',
                 user_name: ''
             }
         },
 
         methods: {
             addUser() {
-                if (this.user_name !== '' && this.selected_role !== '') {
-                    this.$emit('add-user', { principal: this.user_name, role: this.selected_role, type: 'new' });
-                    this.user_name = '';
-                    this.selected_role = '';
+                if (this.user_name !== '') {
+                    this.emitEvent();
                 } else {
-                    this.$emit('form-error', 'Please add a user and role before submitting')
+                    this.$emit('form-error', 'Please add a user before submitting')
                 }
+            },
+
+            emitEvent() {
+                this.$emit('add-user', { principal: this.user_name, role: this.selected_role, type: 'new' });
+                this.user_name = '';
+                this.selected_role = 'canAccess';
             },
 
             clearErrorMessage() {

@@ -30,31 +30,18 @@ describe('staffRolesForm.vue', () => {
         btn.trigger('click');
 
         expect(wrapper.vm.user_name).toEqual('');
-        expect(wrapper.vm.selected_role).toEqual('');
+        expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
-
 
     it("emits an error event when username is empty", () => {
         wrapper.findAll('option').at(4).setSelected();
         btn.trigger('click');
 
-        expect(wrapper.emitted()['form-error'][0]).toEqual(['Please add a user and role before submitting']);
+        expect(wrapper.emitted()['form-error'][0]).toEqual(['Please add a role before submitting']);
     });
 
     it("emits an event that clears the error text when the username input is focused", () => {
         wrapper.find('input').trigger('focus');
-        expect(wrapper.emitted()['form-error'][0]).toEqual(['']);
-    });
-
-    it("emits an error event when role is empty", () => {
-        wrapper.find('input').setValue('test_user');
-        btn.trigger('click');
-
-        expect(wrapper.emitted()['form-error'][0]).toEqual(['Please add a user and role before submitting']);
-    });
-
-    it("emits an event that clears the error text when the role select box is focused", () => {
-        wrapper.find('select').trigger('focus');
         expect(wrapper.emitted()['form-error'][0]).toEqual(['']);
     });
 });

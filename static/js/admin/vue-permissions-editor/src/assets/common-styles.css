@@ -5,39 +5,44 @@
     border-collapse: collapse;
     font-size: 14px;
     height: 20px;
-    padding: 5px 10px;
+    padding: 5px 0 5px 15px;
 }
 
 #modal-permissions-editor .border th {
-    background-color: lightgray;
+    background-color: #E8E8E8;
+    border: none;
+    border-bottom: 1px solid lightgray;
 }
 
 #modal-permissions-editor .inherited-permissions td {
-    background-color: #dcedff;
+    background-color: #DFEBEF;
+    border: none;
+    border-bottom: 1px solid lightgray;
 }
 
 #modal-permissions-editor table {
     margin-bottom: 25px;
-    text-align: center;
+    text-align: left;
     width: 100%;
 }
 
-#modal-permissions-editor table .select-box {
+#modal-permissions-editor .assigned-permissions td.border {
+    border-right: none;
+    border-bottom: 1px solid lightgray;
+}
+
+#modal-permissions-editor .assigned-permissions td.size {
+    max-width: 150px;
+}
+
+#modal-permissions-editor .assigned-permissions td.border.select-box {
+    border-left: none;
+    border-right: 1px solid lightgray;
     padding: 0;
 }
 
-#modal-permissions-editor table.assigned  td {
-    width: 40px;
-}
-
-#modal-permissions-editor select {
-    border: 1px;
-    font-size: 14px;
-    text-align: center;
-}
-
-#modal-permissions-editor .btn {
-    text-align: left;
+#modal-permissions-editor .btn button {
+    width: 100px;
 }
 
 #modal-permissions-editor button {
@@ -45,6 +50,7 @@
 }
 
 #modal-permissions-editor button:hover {
+    cursor: pointer;
     opacity: .7;
 }
 
@@ -52,7 +58,7 @@
     border: none;
     font-size: 14px;
     line-height: 20px;
-    text-align: center;
+    margin-left: 10px;
 }
 
 #modal-permissions-editor .no-updates-allowed {
@@ -60,10 +66,41 @@
     margin-top: 15px;
 }
 
-/* Overrides to css from fg-select module */
-#modal-permissions-editor .select-css {
-    border-radius: 0;
-    font-weight: normal;
-    line-height: 1.9;
-    padding: 0
+#modal-permissions-editor select {
+    background: #F4F4F4;
+    border: 1px solid #F0F3FB;
+    width: 100%;
+    padding: 6px;
+    font-size: 14px;
+    color: #3F3F3F;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+}
+
+#modal-permissions-editor .select-wrapper {
+    position: relative;
+}
+
+#modal-permissions-editor .select-wrapper:after {
+    font-family: "Font Awesome 5 Free";
+    content: '\f078';
+    font-size: 14px;
+    font-weight: 900;
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    color: #434B67;
+    pointer-events: none;
+}
+
+#modal-permissions-editor select::-ms-expand {
+    display: none;
+}
+
+#modal-permissions-editor .marked-for-deletion {
+    background-color: #f99;
+    text-decoration: line-through;
 }

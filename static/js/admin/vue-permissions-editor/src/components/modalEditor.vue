@@ -13,7 +13,11 @@
                                                 <span>{{ permissionType }} Permission Settings for</span>
                                                 {{ metadata.title }} <i class="fa" :class="iconType" aria-hidden="true"></i>
                                             </h3>
-                                            <a class="close-icon" href="#" @click.prevent="closeModal">X</a>
+
+                                            <button @click="closeModal" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-icon" role="button" aria-disabled="false" title="close">
+                                                <span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span>
+                                                <span class="ui-button-text">close</span>
+                                            </button>
                                         </div>
                                     </slot>
                                 </div>
@@ -87,16 +91,16 @@
     $light-gray: #E1E1E1;
 
     .modal-header {
-        a {
-            color: darkslategray;
-            float: right;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 3px 0;
+        background-image: linear-gradient(to bottom, #FAFAFA, #EBF5FA);
+        border-radius: 5px 5px 0 0;
+        margin: -20px 0 -20px -30px;
+        padding: 20px 30px;
 
-            &:hover {
-                text-decoration: none;
-            }
+        button {
+            background: #e6e6e6 50% 50% repeat-x;
+            border-color: $light-gray;
+            margin-top: -6px;
+            padding: 2px 5px;
         }
 
         div {
@@ -104,8 +108,8 @@
         }
 
         h3 {
-            font-size: 1.3rem;
-            line-height: 1.3rem;
+            font-size: 18px;
+            line-height: 18px;
 
             span {
                 color: black;
@@ -114,7 +118,9 @@
     }
 
     .modal-container {
-        background-color: $light-gray;
+        background-color: white;
+
+        max-width: 620px;
 
         h3 {
             color: $unc-blue;
@@ -122,8 +128,7 @@
 
         .modal-body {
             background-color: white;
-            border-bottom: 1px solid white;
-            border-radius: 5px;
+            border-radius: 0 0 5px 5px;
             margin: 10px -30px -20px -30px;
             max-height: 650px;
             overflow: auto;

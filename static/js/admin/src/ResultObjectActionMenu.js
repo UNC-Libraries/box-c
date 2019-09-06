@@ -240,9 +240,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							target : resultObject
 						});
 						break;
-					case "editAccess" :
-						self.editAccess(resultObject);
-						break;
 					case "addFile" :
 						new AddFileForm({
 							alertHandler : self.options.alertHandler
@@ -394,34 +391,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	ResultObjectActionMenu.prototype.setSelectedCount = function(selectedCount) {
 		this.selectedCount = selectedCount;
 	};
-	
-	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
-		var self = this;
-		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
-		dialog.dialog({
-			autoOpen: true,
-			width: 500,
-			height: 'auto',
-			maxHeight: 800,
-			minWidth: 500,
-			modal: true,
-			title: 'Access Control Settings',
-			close: function() {
-				self.actionHandler.addEvent({
-					action : 'RefreshResult',
-					target : resultObject,
-					waitForUpdate : true,
-					maxAttempts : 3
-				});
-				dialog.remove();
-				resultObject.unhighlight();
-			}
-		});
-		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
-			dialog.dialog('option', 'position', 'center');
-		});
-	};
-	
+
 	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
 		var editLabelForm = new EditLabelForm({
 			alertHandler : this.options.alertHandler,

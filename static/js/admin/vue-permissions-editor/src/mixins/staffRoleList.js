@@ -6,8 +6,7 @@ export default {
                 { text: 'can Ingest', value: 'canIngest' },
                 { text: 'can Describe', value: 'canDescribe' },
                 { text: 'can Manage', value: 'canManage' },
-                { text: 'unit owner', value: 'unitOwner' },
-                { text: 'administrator', value: 'administrator' }
+                { text: 'Unit Owner', value: 'unitOwner' },
             ]
         }
     },
