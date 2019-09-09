@@ -20,6 +20,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.ingest.DepositData;
@@ -59,6 +61,8 @@ import edu.unc.lib.dl.util.PackagingType;
 @Controller
 public class IngestSourceController {
     private static final Logger log = LoggerFactory.getLogger(IngestSourceController.class);
+    public static final String SOURCES_KEY = "sources";
+    public static final String CANDIDATES_KEY = "candidates";
 
     @Autowired
     private AccessControlService aclService;
@@ -78,11 +82,18 @@ public class IngestSourceController {
         aclService.assertHasAccess("Insufficient permissions",
                 destination, agent.getPrincipals(), Permission.ingest);
 
-        Map<String, Object> results = new HashMap<>();
-        results.put("sources", sourceManager.listSources(destination));
-        results.put("candidates", sourceManager.listCandidates(destination));
+        try {
+            Map<String, Object> results = new HashMap<>();
+            results.put(SOURCES_KEY, sourceManager.listSources(destination));
+            results.put(CANDIDATES_KEY, sourceManager.listCandidates(destination));
 
-        return new ResponseEntity<>(results, HttpStatus.OK);
+            return new ResponseEntity<>(results, HttpStatus.OK);
+        } catch (RepositoryException e) {
+            Map<String, Object> results = new HashMap<>();
+            results.put("error", e.getMessage());
+            log.warn("Failed to retrieve ingest sources due for {}", pid, e);
+            return new ResponseEntity<>(results, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping(value = "/edit/ingestSources/ingest/{pid}", produces = APPLICATION_JSON_UTF8_VALUE)
@@ -92,9 +103,16 @@ public class IngestSourceController {
 
         log.info("Request to ingest from source to {}", pid);
         PID destination = PIDs.get(pid);
-        Map<String, Object> results = new HashMap<>();
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
+        aclService.assertHasAccess("Insufficient permissions to ingest to " + pid,
+                destination, agent.getPrincipals(), Permission.ingest);
+
+        Map<String, Object> results = new HashMap<>();
+        results.put("action", "ingest");
+        results.put("destination", pid);
+
+        List<String> depositIds = new ArrayList<>();
 
         // Validate the packages requested for deposit
         for (IngestPackageDetails packageDetails : packages) {
@@ -139,13 +157,15 @@ public class IngestSourceController {
             deposit.setMediaId(packageDetails.getMediaId());
 
             try {
-                depositService.submitDeposit(destination, deposit);
+                depositIds.add(depositService.submitDeposit(destination, deposit).getId());
             } catch (DepositException e) {
                 log.error("Failed to submit ingest source deposit to {}", pid, e);
                 results.put("error", e.getMessage());
                 return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
             }
         }
+
+        results.put("depositIds", depositIds);
 
         return new ResponseEntity<>(results, HttpStatus.OK);
     }
@@ -154,10 +174,23 @@ public class IngestSourceController {
         private String sourceId;
         // Path is relative to the base for the source
         private String packagePath;
-        private String label;
         private PackagingType packagingType;
+        private String label;
         private String accessionNumber;
         private String mediaId;
+
+        public IngestPackageDetails() {
+        }
+
+        public IngestPackageDetails(String sourceId, String packagePath, PackagingType packagingType, String label,
+                String accessionNumber, String mediaId) {
+            this.sourceId = sourceId;
+            this.packagePath = packagePath;
+            this.packagingType = packagingType;
+            this.label = label;
+            this.accessionNumber = accessionNumber;
+            this.mediaId = mediaId;
+        }
 
         public String getSourceId() {
             return sourceId;

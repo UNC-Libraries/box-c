@@ -34,6 +34,7 @@
     <mvc:annotation-driven/>
 
     <context:component-scan resource-pattern="**/IngestController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    <context:component-scan resource-pattern="**/IngestSourceController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
     <bean id="depositSubmissionService" class="edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService">
         <property name="aclService" ref="aclService" />
@@ -44,7 +45,13 @@
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
+    
     <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler">
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+    </bean>
+    
+    <bean id="fileServerDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.FileServerDepositHandler">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
@@ -52,7 +59,18 @@
     <util:map id="packageHandlers">
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
+    
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManager">
+        <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${ingestSources.path}" />
+    </bean>
+    
+    <bean id="contentPathFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.fedora.ContentPathFactory" />
+    </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />

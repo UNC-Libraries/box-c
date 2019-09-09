@@ -9,6 +9,12 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
     
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManager"
+            init-method="init">
+        <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${ingestSources.path}" />
+    </bean>
+    
     <!-- Deposit Handlers -->
     <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
@@ -22,9 +28,17 @@
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
     
+    <bean id="fileServerDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.FileServerDepositHandler">
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="depositsDirectory" ref="depositsDirectory" />
+    </bean>
+    
     <util:map id="packageHandlers">
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
     <bean id="depositsDirectory" class="java.io.File">

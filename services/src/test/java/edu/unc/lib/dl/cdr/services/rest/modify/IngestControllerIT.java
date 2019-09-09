@@ -196,7 +196,7 @@ public class IngestControllerIT extends AbstractAPIIT {
 
         mvc.perform(multipart("/edit/ingest/" + destPid.getId())
                 .file(depositFile)
-                .param("type", PackagingType.DIRECTORY.getUri()))
+                .param("type", PackagingType.SIMPLE_ZIP.getUri()))
                 .andExpect(status().isBadRequest())
             .andReturn();
     }

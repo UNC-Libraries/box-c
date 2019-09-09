@@ -378,6 +378,17 @@ public class IngestSourceManagerTest {
         assertFalse(sourceMan.isPathValid("subPath/bag_with_files", "testsource"));
     }
 
+    @Test
+    public void testIsPathValidRelativePath() throws Exception {
+        addBagToSource(sourceFolderPath);
+
+        Path configPath = createConfigFile(asList(
+                createBasicConfig("testsource", destPid)));
+        initializeManager(configPath);
+
+        assertFalse(sourceMan.isPathValid("bag_with_files/..", "testsource"));
+    }
+
     private PID makePid() {
         return PIDs.get(UUID.randomUUID().toString());
     }

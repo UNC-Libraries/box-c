@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import java.nio.file.Paths;
+
 import edu.unc.lib.dl.util.PackagingType;
 
 /**
@@ -57,7 +59,7 @@ public class IngestSourceCandidate {
      * @param base the base to set
      */
     public void setBase(String base) {
-        this.base = base;
+        this.base = Paths.get(base).toAbsolutePath().toString();
     }
 
     /**
@@ -93,6 +95,10 @@ public class IngestSourceCandidate {
      */
     public PackagingType getPackagingType() {
         return packagingType;
+    }
+
+    public String getPackagingTypeUri() {
+        return packagingType.getUri();
     }
 
     /**
