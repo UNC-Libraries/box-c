@@ -26,14 +26,17 @@
 
         props: {
             containerType: String,
+            isCanceling: Boolean,
             isSubmitting: Boolean
         },
 
         watch: {
+            isCanceling(canceling) {
+                this.unAddedUser(canceling);
+            },
+
             isSubmitting(submitting) {
-                if (submitting && this.user_name !== '') {
-                    this.emitEvent();
-                }
+                this.unAddedUser(submitting);
             }
         },
 
@@ -45,6 +48,12 @@
         },
 
         methods: {
+            unAddedUser(should_add) {
+                if (should_add && this.user_name !== '') {
+                    this.emitEvent();
+                }
+            },
+
             addUser() {
                 if (this.user_name !== '') {
                     this.emitEvent();

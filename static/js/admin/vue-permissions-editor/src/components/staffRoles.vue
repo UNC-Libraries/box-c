@@ -45,6 +45,7 @@
                 <staff-roles-form
                         :container-type="containerType"
                         :is-submitting="is_submitting"
+                        :is-canceling="is_canceling"
                         @add-user="updateUserList"
                         @form-error="updateErrorMsg"></staff-roles-form>
             </table>
@@ -54,7 +55,7 @@
 
         <ul>
             <li v-if="canSetPermissions"><button id="is-submitting" @click="setRoles" type="submit">Save Changes</button></li>
-            <li><button @click="showModal" class="cancel" type="reset">Cancel</button></li>
+            <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
         </ul>
     </div>
 </template>
@@ -64,6 +65,7 @@
     import staffRolesSelect from "./staffRolesSelect";
     import staffRoleList from "../mixins/staffRoleList";
     import axios from 'axios';
+    import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
 
     export default {
@@ -86,23 +88,30 @@
             return {
                 current_staff_roles: { inherited: [], assigned: [] },
                 deleted_users: [],
+                is_canceling: false,
                 is_error_message: false,
                 is_submitting: false,
                 response_message: '',
+                unsaved_changes: false,
                 updated_staff_roles: []
             }
         },
 
-        methods: {
+        computed: {
             canSetPermissions() {
                 return ['AdminUnit', 'Collection'].includes(this.containerType);
-            },
+            }
+        },
 
+        methods: {
             getRoles() {
                 axios.get(`/services/api/acl/staff/${this.uuid}`).then((response) => {
                     if (!isEmpty(response.data)) {
                         this.current_staff_roles = response.data;
-                        this.updated_staff_roles = response.data.assigned;
+                        /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
+                           when a user is is added/updated */
+                        let update_roles = cloneDeep(response.data);
+                        this.updated_staff_roles = update_roles.assigned;
                     } else {
                         console.log(response);
                     }
@@ -211,8 +220,33 @@
                 this.response_message = msg;
             },
 
-            showModal() {
-                this.$emit('show-modal', false);
+            showModal(e) {
+                this.is_canceling = true;
+
+
+                setTimeout(() => {
+                    this.unsavedUpdates();
+
+                    if (e !== undefined && e.target.id === 'is-canceling' && this.unsaved_changes) {
+                        let message = 'There are unsaved permission updates. Are you sure you would like to exit?';
+                        if (window.confirm(message)) {
+                            this.$emit('show-modal', false);
+                        }
+                    } else {
+                        this.$emit('show-modal', false);
+                    }
+
+                    this.is_canceling = false;
+                }, 500);
+            },
+
+            unsavedUpdates() {
+                let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
+                    let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
+                    return (current_user === undefined || current_user.role !== user.role);
+                });
+
+                this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
             }
         },
 

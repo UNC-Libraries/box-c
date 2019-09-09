@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import 'fg-select-css/src/select-css.css'
 import './assets/common-styles.css'
 
 Vue.config.productionTip = false
