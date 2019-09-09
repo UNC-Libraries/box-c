@@ -40,15 +40,16 @@ const record_list = [
 ];
 
 const response = {
-    "container": {
-        "added": "2017-12-20T13:44:46.119Z",
-        "title": "Test Admin Unit",
-        "type": "AdminUnit",
-        "uri": "https://dcr.lib.unc.edu/record/73bc003c-9603-4cd9-8a65-93a22520ef6a",
-        "id": "73bc003c-9603-4cd9-8a65-93a22520ef6a",
-        "updated": "2017-12-20T13:44:46.264Z",
+    container: {
+        added: "2017-12-20T13:44:46.119Z",
+        title: "Test Admin Unit",
+        type: "AdminUnit",
+        uri: "https://dcr.lib.unc.edu/record/73bc003c-9603-4cd9-8a65-93a22520ef6a",
+        id: "73bc003c-9603-4cd9-8a65-93a22520ef6a",
+        updated: "2017-12-20T13:44:46.264Z",
     },
-    "metadata": [...record_list, ...record_list, ...record_list, ...record_list] // Creates 8 returned records
+    metadata: [...record_list, ...record_list, ...record_list, ...record_list], // Creates 8 returned records
+    resultCount: 8
 };
 
 // Mock setting of methods for browseOptionDisplayUtils.
@@ -75,22 +76,23 @@ describe('browseDisplay.vue', () => {
             is_collection: true,
             is_folder: false,
             record_count: 0,
-            record_list: []
+            record_list: [],
+            uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
         });
     });
 
-    it("retrieves data", () => {
-        moxios.stubRequest('listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?rows=20&start=0&sort=title%2Cnormal', {
+    it("retrieves data", (done) => {
+        wrapper.vm.retrieveData();
+        moxios.stubRequest(`searchJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&types=Work`, {
             status: 200,
-            responseText: {
-                data: response
-            }
+            response: JSON.stringify(response)
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.record_count).toEqual(8);
+            let request = moxios.requests.mostRecent();
+            expect(wrapper.vm.record_count).toEqual(response.resultCount);
             expect(wrapper.vm.record_list).toEqual(response.metadata);
-            expect(wrapper.vm.container_name).toEqual('Test Admin Unit');
+            expect(wrapper.vm.container_name).toEqual(response.container.title);
             expect(wrapper.vm.container_metadata).toEqual(response.container);
             done();
         });
