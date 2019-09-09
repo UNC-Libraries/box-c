@@ -74,8 +74,15 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         PID containerPID = createPID();
         Bag bagFolder = model.createBag(containerPID.getURI());
-        model.add(bagFolder, CdrDeposit.label,
-                status.get(DepositField.fileName.name()));
+        // Determine the label to use for this the root directory of the deposit package
+        String label = status.get(DepositField.depositSlug.name());
+        if (label == null) {
+            label = status.get(DepositField.fileName.name());
+        }
+        if (label == null) {
+            label = sourceFile.getName();
+        }
+        model.add(bagFolder, CdrDeposit.label, label);
         model.add(bagFolder, RDF.type, Cdr.Folder);
         depositBag.add(bagFolder);
 
