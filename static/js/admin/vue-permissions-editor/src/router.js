@@ -9,7 +9,7 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
-      path: '/admin/list/:uuid',
+      path: '/admin/list/:uuid?',
       name: 'modalEditor',
       component:  modalEditor
     }
