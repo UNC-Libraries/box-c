@@ -127,7 +127,7 @@ public class IngestSourceManager {
                                 throws IOException {
                             if (matcher.matches(dir)) {
                                 log.debug("Matched dir {} for source {}", dir, source.getId());
-                                addCandidate(candidates, dir, source, base);
+                                addCandidate(candidates, dir, source);
                                 return FileVisitResult.SKIP_SUBTREE;
                             }
                             return FileVisitResult.CONTINUE;
@@ -152,7 +152,7 @@ public class IngestSourceManager {
      * @throws IOException
      */
     private void addCandidate(List<IngestSourceCandidate> candidates, Path filePath,
-            IngestSourceConfiguration source, String base) throws IOException {
+            IngestSourceConfiguration source) throws IOException {
 
         // Only directory bags are candidates currently
         try {
@@ -163,8 +163,8 @@ public class IngestSourceManager {
             IngestSourceCandidate candidate = new IngestSourceCandidate();
 
             candidate.setSourceId(source.getId());
-            candidate.setBase(base);
-            candidate.setPatternMatched(Paths.get(base).relativize(filePath).toString());
+            candidate.setBase(source.getBase());
+            candidate.setPatternMatched(Paths.get(source.getBase()).relativize(filePath).toString());
 
             // If bag reader was able to parse, then process as a bag
             if (bagReader != null) {
