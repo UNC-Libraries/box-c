@@ -15,7 +15,13 @@
         mixins: [staffRoleList],
 
         props: {
-            areDeleted: Array,
+            areDeleted: {
+                type: Array,
+                default: () => {
+                    return [];
+                }
+
+            },
             containerType: String,
             user: Object
         },

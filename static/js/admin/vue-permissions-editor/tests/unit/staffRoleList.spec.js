@@ -10,8 +10,7 @@ const collection_roles = [
     { text: 'can Manage', value: 'canManage' }
 ];
 const all_roles = collection_roles.concat([
-    { text: 'unit owner', value: 'unitOwner' },
-    { text: 'administrator', value: 'administrator' }
+    { text: 'Unit Owner', value: 'unitOwner' }
 ]);
 let wrapper;
 
