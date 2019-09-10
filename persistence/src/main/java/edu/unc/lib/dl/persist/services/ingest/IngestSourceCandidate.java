@@ -97,15 +97,19 @@ public class IngestSourceCandidate {
         return packagingType;
     }
 
-    public String getPackagingTypeUri() {
-        return packagingType.getUri();
-    }
-
     /**
      * @param packagingType the packagingType to set
      */
     public void setPackagingType(PackagingType packagingType) {
         this.packagingType = packagingType;
+    }
+
+    public void setPackagingTypeUri(String uri) {
+        this.packagingType = PackagingType.getPackagingType(uri);
+    }
+
+    public String getPackagingTypeUri() {
+        return packagingType.getUri();
     }
 
     /**
