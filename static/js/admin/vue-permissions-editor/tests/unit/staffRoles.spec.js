@@ -8,7 +8,7 @@ const response = {
     inherited:[{ principal: 'test_admin', role: 'administrator' }],
     assigned:[{ principal: 'test_user', role: 'canIngest' }]
 };
-const update_response = { "action":"editStaffRoles" }
+const update_response = { "action":"editStaffRoles" };
 const user_role = { principal: 'test_user_2', role: 'canManage', type: 'new' };
 let wrapper;
 
@@ -20,7 +20,7 @@ describe('staffRoles.vue', () => {
             localVue,
             propsData: {
                 containerName: 'Test Unit',
-                containerType: 'AdminSet',
+                containerType: 'AdminUnit',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
             }
         });
@@ -29,6 +29,8 @@ describe('staffRoles.vue', () => {
             status: 200,
             response: JSON.stringify(response)
         });
+
+        global.confirm = jest.fn().mockReturnValue(true);
     });
 
     it("retrieves current staff roles data from the server", (done) => {
@@ -40,18 +42,19 @@ describe('staffRoles.vue', () => {
     });
 
     it("sends current staff roles to the server", (done) => {
-        wrapper.vm.setRoles();
+        wrapper.find('#is-submitting').trigger('click');
+
         moxios.stubOnce('put', `/services/api/edit/acl/staff/${wrapper.vm.uuid}`, {
             status: 200,
             response: update_response
         });
 
-        moxios.wait(() => {
+        setTimeout(() => {
             let request = moxios.requests.mostRecent();
             expect(request.config.method).toEqual('put');
             expect(JSON.parse(request.config.data)).toEqual(response.assigned);
-            done();
-        });
+            done()
+        }, 1000);
     });
 
     it("displays inherited staff roles", (done) => {
@@ -98,7 +101,7 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("it updates button text based on context", () => {
+    it("it updates button text based on context", (done) => {
         moxios.wait(() => {
             let button = wrapper.find('.btn button');
             expect(button.text()).toEqual('Remove');
@@ -115,19 +118,78 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("displays a submit button for admin units and collections", () => {
-        wrapper.vm.canSetPermissions();
-        let btn = wrapper.find('#is-submitting');
-        expect(btn.isVisible()).toBe(true);
+    it("displays roles form if the container is of the proper type", (done) => {
+        moxios.wait(() => {
+            wrapper.setProps({containerType: 'AdminUnit'});
+            expect(wrapper.find('.assigned').exists()).toBe(true);
 
-        wrapper.setProps({ containerType: 'Collection' });
-        wrapper.vm.canSetPermissions();
-        expect(btn.isVisible()).toBe(true)
+            wrapper.setProps({containerType: 'Collection'});
+            expect(wrapper.find('.assigned').exists()).toBe(true);
+            done();
+        });
     });
 
-    it("emits an event to close the modal if 'Cancel' is clicked", () => {
-        wrapper.find('.cancel').trigger('click');
-        expect(wrapper.emitted()['show-modal'][0]).toEqual([false]);
+    it("doesn't display roles form if the container isn't of the proper type", (done) => {
+        moxios.wait(() => {
+            wrapper.setProps({containerType: 'Folder'});
+            expect(wrapper.find('.assigned').exists()).toBe(false);
+
+            wrapper.setProps({containerType: 'Work'});
+            expect(wrapper.find('.assigned').exists()).toBe(false);
+
+            wrapper.setProps({containerType: 'File'});
+            expect(wrapper.find('.assigned').exists()).toBe(false);
+            done();
+        });
+    });
+
+    it("displays a submit button for admin units and collections", () => {
+        wrapper.setProps({containerType: 'AdminUnit'});
+        let btn = wrapper.find('#is-submitting');
+        expect(btn.isVisible()).toEqual(true);
+
+        wrapper.setProps({containerType: 'Collection'});
+        expect(btn.isVisible()).toEqual(true)
+    });
+
+    it("emits an event to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
+        moxios.wait(() => {
+            wrapper.find('#is-canceling').trigger('click');
+            expect(wrapper.emitted()['show-modal'][0]).toEqual([false]);
+            done();
+        });
+    });
+
+    it("prompts the user if 'Cancel' is clicked and there are unsaved changes", (done) => {
+        moxios.wait(() => {
+            wrapper.setData({
+                deleted_users: response.assigned
+            });
+            wrapper.find('#is-canceling').trigger('click');
+            expect(global.confirm).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    it("checks for un-saved user and permissions", (done) => {
+        moxios.wait(() => {
+            wrapper.vm.unsavedUpdates();
+            expect(wrapper.vm.unsaved_changes).toBe(false);
+
+            wrapper.setData({
+                deleted_users: response.assigned
+            });
+            wrapper.vm.unsavedUpdates();
+            expect(wrapper.vm.unsaved_changes).toBe(true);
+
+            wrapper.setData({
+                deleted_users: [],
+                updated_staff_roles: [{ principal: 'test_user', role: 'canMove' }]
+            });
+            wrapper.vm.unsavedUpdates();
+            expect(wrapper.vm.unsaved_changes).toBe(true);
+            done();
+        });
     });
 
     afterEach(() => {

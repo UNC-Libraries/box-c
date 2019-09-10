@@ -9,6 +9,7 @@ describe('staffRolesSelect.vue', () => {
         wrapper = shallowMount(staffRolesSelect, {
             localVue,
             propsData: {
+                areDeleted: [],
                 containerType: 'Collection',
                 user: { principal: 'test_user', role: 'canAccess' }
             }
@@ -21,7 +22,7 @@ describe('staffRolesSelect.vue', () => {
     });
 
     it("emits an event with updated user role when user role changes", () => {
-        wrapper.findAll('option').at(4).setSelected();
-        expect(wrapper.emitted()['staff-role-update'][0]).toEqual([{ principal: 'test_user', role: 'canManage' }]);
+        wrapper.findAll('option').at(2).setSelected();
+        expect(wrapper.emitted()['staff-role-update'][0]).toEqual([{ principal: 'test_user', role: 'canDescribe' }]);
     });
 });

@@ -1,7 +1,11 @@
 <template>
             <tr>
                 <td class="border size">
-                    <input @focus="clearErrorMessage" type="text" placeholder="ONYEN/Group" v-model.trim="user_name">
+                    <input @focus="clearErrorMessage"
+                           @focusout="userNameSet"
+                           type="text"
+                           placeholder="ONYEN/Group"
+                           v-model.trim="user_name">
                 </td>
                 <td class="border select-box">
                     <div class="select-wrapper">
@@ -54,6 +58,12 @@
                 }
             },
 
+            userNameSet() {
+                if (this.user_name !== '') {
+                    this.$emit('username-set', true);
+                }
+            },
+
             addUser() {
                 if (this.user_name !== '') {
                     this.emitEvent();
@@ -66,6 +76,7 @@
                 this.$emit('add-user', { principal: this.user_name, role: this.selected_role, type: 'new' });
                 this.user_name = '';
                 this.selected_role = 'canAccess';
+                this.$emit('username-set', false);
             },
 
             clearErrorMessage() {

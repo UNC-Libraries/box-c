@@ -21,7 +21,7 @@
         </table>
         <p v-else>There are no inherited staff permissions.</p>
 
-        <div v-if="canSetPermissions">
+        <div class="assigned" v-if="canSetPermissions">
             <h4>Add or remove staff permissions</h4>
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
@@ -46,6 +46,7 @@
                         :container-type="containerType"
                         :is-submitting="is_submitting"
                         :is-canceling="is_canceling"
+                        @username-set="addUserFilledOut"
                         @add-user="updateUserList"
                         @form-error="updateErrorMsg"></staff-roles-form>
             </table>
@@ -169,6 +170,10 @@
                 this.deleted_users.push(this.updated_staff_roles[index]);
             },
 
+            /**
+             * Fully purge a user without marking for deletion first
+             * @param index
+             */
             fullyRemoveUser(index) {
                 this.updated_staff_roles.splice(index, 1);
             },
@@ -204,6 +209,15 @@
             },
 
             /**
+             * Reacts to event that username has been filled out in the form.
+             * True on 'Add', false otherwise
+             * @param is_filled
+             */
+            addUserFilledOut(is_filled) {
+                this.unsaved_changes = is_filled;
+            },
+
+            /**
              * Update a current user's role
              * @param user
              */
@@ -220,33 +234,39 @@
                 this.response_message = msg;
             },
 
+            /**
+             * Emit a close modal event
+             * Checks if there are unsaved changes and asks user to confirm exit, if so.
+             * @param e
+             */
             showModal(e) {
-                this.is_canceling = true;
+                this.unsavedUpdates();
 
-
-                setTimeout(() => {
-                    this.unsavedUpdates();
-
-                    if (e !== undefined && e.target.id === 'is-canceling' && this.unsaved_changes) {
-                        let message = 'There are unsaved permission updates. Are you sure you would like to exit?';
-                        if (window.confirm(message)) {
-                            this.$emit('show-modal', false);
-                        }
-                    } else {
+                if (e !== undefined && e.target.id === 'is-canceling' && this.unsaved_changes) {
+                    let message = 'There are unsaved permission updates. Are you sure you would like to exit?';
+                    if (window.confirm(message)) {
                         this.$emit('show-modal', false);
                     }
+                } else {
+                    this.$emit('show-modal', false);
+                }
 
-                    this.is_canceling = false;
-                }, 500);
+                this.is_canceling = false;
             },
 
+            /**
+             * Checks for unsaved role updates
+             */
             unsavedUpdates() {
+                this.is_canceling = true;
                 let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
                     let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
                     return (current_user === undefined || current_user.role !== user.role);
                 });
 
-                this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
+                if (!this.unsaved_changes) {
+                    this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
+                }
             }
         },
 
