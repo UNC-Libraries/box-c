@@ -1,7 +1,7 @@
 <template ref="permsEditor">
     <div id="modal-permissions-editor">
         <div class="meta-modal">
-            <div v-if="showModal" @close="closeModal">
+            <div v-if="showModal">
                 <transition name="modal">
                     <div class="modal-mask">
                         <div class="modal-wrapper">
@@ -14,7 +14,7 @@
                                                 {{ metadata.title }} <i class="fa" :class="iconType" aria-hidden="true"></i>
                                             </h3>
 
-                                            <button @click="closeModal" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-icon" role="button" aria-disabled="false" title="close">
+                                            <button @click="closeModalCheck" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close close-icon" role="button" aria-disabled="false" title="close">
                                                 <span class="ui-button-icon-primary ui-icon ui-icon-closethick"></span>
                                                 <span class="ui-button-text">close</span>
                                             </button>
@@ -25,9 +25,11 @@
                                     <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
+                                                 :changes-check="checkForUnsavedChanges"
                                                  :container-name="parentContainerName"
                                                  :container-type="metadata.type"
                                                  :uuid="metadata.id"
+                                                 @reset-changes-check="resetChangesCheck"
                                                  @show-modal="closeModal">
                                     </staff-roles>
                                 </div>
@@ -51,9 +53,10 @@
         data() {
             return {
                 alertHandler: {},
+                checkForUnsavedChanges: false,
                 metadata: {},
                 permissionType: '',
-                showModal: false
+                showModal: false,
             };
         },
 
@@ -80,8 +83,16 @@
         },
 
         methods: {
-            closeModal(action) {
-                this.showModal = false;
+            closeModalCheck() {
+                this.checkForUnsavedChanges = true;
+            },
+
+            resetChangesCheck(check_changes) {
+                this.checkForUnsavedChanges = check_changes;
+            },
+
+            closeModal(display_modal) {
+                this.showModal = display_modal;
             }
         }
     }

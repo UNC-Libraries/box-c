@@ -45,7 +45,7 @@
                 <staff-roles-form
                         :container-type="containerType"
                         :is-submitting="is_submitting"
-                        :is-canceling="is_canceling"
+                        :is-canceling="is_closing_modal"
                         @username-set="addUserFilledOut"
                         @add-user="updateUserList"
                         @form-error="updateErrorMsg"></staff-roles-form>
@@ -81,6 +81,7 @@
 
         props: {
             alertHandler: Object,
+            changesCheck: Boolean,
             containerName: String,
             containerType: String,
             uuid: String
@@ -90,12 +91,20 @@
             return {
                 current_staff_roles: { inherited: [], assigned: [] },
                 deleted_users: [],
-                is_canceling: false,
+                is_closing_modal: false,
                 is_error_message: false,
                 is_submitting: false,
                 response_message: '',
                 unsaved_changes: false,
                 updated_staff_roles: []
+            }
+        },
+
+        watch: {
+            changesCheck(check) {
+                if (check) {
+                    this.showModal();
+                }
             }
         },
 
@@ -137,7 +146,6 @@
                         headers: {'content-type': 'application/json; charset=utf-8'}
                     }).then((response) => {
                         let response_msg = `Staff roles successfully updated for: ${this.uuid}`;
-                        this.is_submitting = false;
                         this.alertHandler.alertHandler('success', response_msg);
                         this.showModal();
                     }).catch((error) => {
@@ -238,12 +246,11 @@
             /**
              * Emit a close modal event
              * Checks if there are unsaved changes and asks user to confirm exit, if so.
-             * @param e
              */
-            showModal(e) {
+            showModal() {
                 this.unsavedUpdates();
 
-                if (e !== undefined && e.target.id === 'is-canceling' && this.unsaved_changes) {
+                if (!this.is_submitting && this.unsaved_changes) {
                     let message = 'There are unsaved permission updates. Are you sure you would like to exit?';
                     if (window.confirm(message)) {
                         this.$emit('show-modal', false);
@@ -252,14 +259,16 @@
                     this.$emit('show-modal', false);
                 }
 
-                this.is_canceling = false;
+                // Reset changes check in parent component
+                this.$emit('reset-changes-check', false);
+                this.is_closing_modal = false;
             },
 
             /**
              * Checks for unsaved role updates
              */
             unsavedUpdates() {
-                this.is_canceling = true;
+                this.is_closing_modal = true;
                 let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
                     let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
                     return (current_user === undefined || current_user.role !== user.role);
