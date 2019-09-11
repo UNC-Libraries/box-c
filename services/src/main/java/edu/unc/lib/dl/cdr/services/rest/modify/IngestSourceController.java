@@ -132,10 +132,6 @@ public class IngestSourceController {
         // Build deposit entries and add to queue
         for (IngestPackageDetails packageDetails : packages) {
             IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
-            if (source == null) {
-                results.put("error", "Invalid source id provided: " + packageDetails.getSourceId());
-                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
-            }
 
             Path candidatePath = Paths.get(source.getBase(), packageDetails.getPackagePath());
 
