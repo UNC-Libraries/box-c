@@ -158,6 +158,10 @@
             <groupId>com.samskivert</groupId>
             <artifactId>jmustache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>gov.loc</groupId>
+            <artifactId>bagit</artifactId>
+        </dependency>
         <!-- integration testing -->
         <dependency>
             <groupId>org.fcrepo</groupId>

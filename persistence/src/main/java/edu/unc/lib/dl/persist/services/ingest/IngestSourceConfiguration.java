@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.admin.collect;
+package edu.unc.lib.dl.persist.services.ingest;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Configuration for a ingest source
- * 
+ *
  * @author bbpennel
  * @date Oct 22, 2015
  */
@@ -30,6 +33,18 @@ public class IngestSourceConfiguration {
     private String base;
     private List<String> patterns;
     private List<String> containers;
+
+    public IngestSourceConfiguration() {
+    }
+
+    public IngestSourceConfiguration(String id, String name, String base, List<String> patterns,
+            List<PID> containers) {
+        this.id = id;
+        this.name = name;
+        this.base = base;
+        this.patterns = patterns;
+        this.containers = containers.stream().map(PID::getId).collect(Collectors.toList());
+    }
 
     public String getId() {
         return id;

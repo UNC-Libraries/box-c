@@ -53,11 +53,6 @@
         <property name="applicationPathSettings" ref="applicationPathSettings" />
     </bean>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.admin.collect.IngestSourceManager"
-            init-method="init">
-        <property name="configPath" value="${repo.dir}/ingestSources.json" />
-    </bean>
-    
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
     </bean>
