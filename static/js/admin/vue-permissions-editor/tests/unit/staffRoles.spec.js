@@ -24,6 +24,7 @@ describe('staffRoles.vue', () => {
                 },
                 containerName: 'Test Unit',
                 containerType: 'AdminUnit',
+                title: 'Test Stuff',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
             }
         });

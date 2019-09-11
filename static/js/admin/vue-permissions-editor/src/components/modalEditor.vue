@@ -29,6 +29,7 @@
                                                  :container-name="parentContainerName"
                                                  :container-type="metadata.type"
                                                  :uuid="metadata.id"
+                                                 :title="metadata.title"
                                                  @reset-changes-check="resetChangesCheck"
                                                  @show-modal="closeModal">
                                     </staff-roles>

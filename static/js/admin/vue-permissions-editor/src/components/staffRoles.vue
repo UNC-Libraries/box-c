@@ -55,7 +55,13 @@
         <p class="no-updates-allowed" v-else>Go to previous level(s) to modify the staff permission settings.</p>
 
         <ul>
-            <li v-if="canSetPermissions"><button id="is-submitting" @click="setRoles" type="submit">Save Changes</button></li>
+            <li v-if="canSetPermissions">
+                <button id="is-submitting"
+                        type="submit"
+                        @click="setRoles"
+                        :class="{'btn-disabled': is_submitting}"
+                        :disabled="is_submitting">Save Changes</button>
+            </li>
             <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
         </ul>
     </div>
@@ -84,6 +90,7 @@
             changesCheck: Boolean,
             containerName: String,
             containerType: String,
+            title: String,
             uuid: String
         },
 
@@ -126,7 +133,7 @@
                         console.log(response);
                     }
                 }).catch((error) => {
-                    let response_msg = `Unable load current staff roles for: ${this.uuid}`;
+                    let response_msg = `Unable load current staff roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
                 });
@@ -144,11 +151,11 @@
                         data: JSON.stringify(this.updated_staff_roles),
                         headers: {'content-type': 'application/json; charset=utf-8'}
                     }).then((response) => {
-                        let response_msg = `Staff roles successfully updated for: ${this.uuid}`;
+                        let response_msg = `Staff roles successfully updated for: ${this.title}`;
                         this.alertHandler.alertHandler('success', response_msg);
                         this.showModal();
                     }).catch((error) => {
-                        let response_msg = `Unable to update staff roles for: ${this.uuid}`;
+                        let response_msg = `Unable to update staff roles for: ${this.title}`;
                         this.is_submitting = false;
                         this.alertHandler.alertHandler('error', response_msg);
                         console.log(error);
@@ -352,6 +359,10 @@
 
         .btn-revert {
             background-color: gray;
+        }
+
+        .btn-disabled {
+            opacity: .3;
         }
 
         .message {
