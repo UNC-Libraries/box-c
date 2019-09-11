@@ -19,6 +19,9 @@ describe('staffRoles.vue', () => {
         wrapper = shallowMount(staffRoles, {
             localVue,
             propsData: {
+                alertHandler: {
+                    alertHandler: jest.fn() // This method lives outside of the Vue app
+                },
                 containerName: 'Test Unit',
                 containerType: 'AdminUnit',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
@@ -41,7 +44,7 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("sends current staff roles to the server", (done) => {
+   it("sends current staff roles to the server", (done) => {
         wrapper.find('#is-submitting').trigger('click');
 
         moxios.stubOnce('put', `/services/api/edit/acl/staff/${wrapper.vm.uuid}`, {
@@ -89,6 +92,19 @@ describe('staffRoles.vue', () => {
         moxios.wait(() => {
             wrapper.find(staffRolesForm).vm.$emit('add-user', user_role);
             expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.concat([user_role]));
+            done();
+        });
+    });
+
+    it("does not add a new user with roles if user already exists", (done) => {
+        moxios.wait(() => {
+            let current_staff_roles = response.assigned.concat([user_role]);
+            wrapper.setData({
+                updated_staff_roles: current_staff_roles
+            });
+
+            wrapper.find(staffRolesForm).vm.$emit('add-user', user_role);
+            expect(wrapper.vm.updated_staff_roles).toEqual(current_staff_roles);
             done();
         });
     });
@@ -152,10 +168,26 @@ describe('staffRoles.vue', () => {
         expect(btn.isVisible()).toEqual(true)
     });
 
+    it("emits an event to reset 'changesCheck' in parent component", () => {
+        wrapper.setProps({ changesCheck: true });
+        expect(wrapper.emitted()['reset-changes-check'][0]).toEqual([false]);
+    });
+
     it("emits an event to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
         moxios.wait(() => {
             wrapper.find('#is-canceling').trigger('click');
             expect(wrapper.emitted()['show-modal'][0]).toEqual([false]);
+            done();
+        });
+    });
+
+    it("does not prompt the user if 'Submit' is clicked and there are unsaved changes", (done) => {
+        moxios.wait(() => {
+            wrapper.setData({
+                deleted_users: response.assigned
+            });
+            wrapper.find('#is-submitting').trigger('click');
+            expect(global.confirm).toHaveBeenCalledTimes(0);
             done();
         });
     });

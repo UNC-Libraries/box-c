@@ -46,4 +46,6 @@ describe('modalEditor.vue', () => {
         const record = wrapper.find('h3');
         expect(record.text()).toContain(metadata.title);
     });
+
+   // See staffRoles.spec.js for tests on modal closure with and without unsaved changes
 });

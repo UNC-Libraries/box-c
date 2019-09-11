@@ -50,7 +50,7 @@
                         @add-user="updateUserList"
                         @form-error="updateErrorMsg"></staff-roles-form>
             </table>
-            <p class="message" :class="{ error: is_error_message }">{{ response_message }}</p>
+            <p class="message">{{ response_message }}</p>
         </div>
         <p class="no-updates-allowed" v-else>Go to previous level(s) to modify the staff permission settings.</p>
 
@@ -92,7 +92,6 @@
                 current_staff_roles: { inherited: [], assigned: [] },
                 deleted_users: [],
                 is_closing_modal: false,
-                is_error_message: false,
                 is_submitting: false,
                 response_message: '',
                 unsaved_changes: false,
@@ -157,6 +156,10 @@
                 }, 1000);
             },
 
+            userExists(user) {
+                return this.updated_staff_roles.findIndex((u) => u.principal === user.principal);
+            },
+
             /**
              * Remove users to be deleted from roles before submitting
              * @returns {[]|*[]}
@@ -214,7 +217,15 @@
              * @param user
              */
             updateUserList(user) {
-                this.updated_staff_roles.push(user);
+                if (this.userExists(user) === -1) {
+                    this.updated_staff_roles.push(user);
+                } else if (!this.is_submitting) {
+                    this.response_message = `User: ${user.principal} already exists. User not added.`;
+
+                    setTimeout(() => {
+                        this.response_message = '';
+                    }, 2000);
+                }
             },
 
             /**
@@ -231,7 +242,7 @@
              * @param user
              */
             updateUserRole(user) {
-                let user_index = this.updated_staff_roles.findIndex((u) => u.principal === user.principal);
+                let user_index = this.userExists(user);
 
                 if (user_index !== -1) {
                     this.updated_staff_roles[user_index].role = user.role;
@@ -239,7 +250,6 @@
             },
 
             updateErrorMsg(msg) {
-                this.is_error_message = true;
                 this.response_message = msg;
             },
 
@@ -345,12 +355,9 @@
         }
 
         .message {
+            color: red;
             height: 17px;
             margin-top: 15px;
-        }
-
-        .error {
-            color: red;
         }
     }
 </style>
