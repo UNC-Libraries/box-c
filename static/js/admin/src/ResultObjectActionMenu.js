@@ -134,8 +134,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		*/
-		if ($.inArray('assignStaffRoles', metadata.permissions) != -1) 
-			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			if (isContainerFlag) {
@@ -330,11 +328,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						perms_editor_data.permissionType = 'Patron';
 						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
+						perms_editor_data.alertHandler = self.options.alertHandler;
 						break;
 					case "staffPermissions":
 						perms_editor_data.permissionType = 'Staff';
 						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
+						perms_editor_data.alertHandler = self.options.alertHandler;
 						break;
 				}
 			},

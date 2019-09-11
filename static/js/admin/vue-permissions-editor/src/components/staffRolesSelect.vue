@@ -1,6 +1,6 @@
 <template>
     <div class="select-wrapper">
-        <select v-model="selected_role" @change="selectedValue" :class="{'marked-for-deletion': deletedUser}">
+        <select v-model="selected_role" @change="selectedValue" :disabled="deletedUser" :class="{'marked-for-deletion': deletedUser}">
             <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
         </select>
     </div>

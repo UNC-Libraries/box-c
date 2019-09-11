@@ -80,6 +80,7 @@
         mixins: [staffRoleList],
 
         props: {
+            alertHandler: Object,
             containerName: String,
             containerType: String,
             uuid: String
@@ -117,8 +118,8 @@
                         console.log(response);
                     }
                 }).catch((error) => {
-                    this.is_error_message = true;
-                    this.response_message = `Unable load current staff roles for: ${this.uuid}`;
+                    let response_msg = `Unable load current staff roles for: ${this.uuid}`;
+                    this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
                 });
             },
@@ -135,14 +136,14 @@
                         data: JSON.stringify(this.updated_staff_roles),
                         headers: {'content-type': 'application/json; charset=utf-8'}
                     }).then((response) => {
-                        this.is_error_message = false;
-                        this.response_message = `Staff roles successfully updated for: ${this.uuid}`;
+                        let response_msg = `Staff roles successfully updated for: ${this.uuid}`;
                         this.is_submitting = false;
-                        setTimeout(this.showModal, 1500); // Close modal
+                        this.alertHandler.alertHandler('success', response_msg);
+                        this.showModal();
                     }).catch((error) => {
-                        this.is_error_message = true;
-                        this.response_message = `Unable to update staff roles for: ${this.uuid}`;
+                        let response_msg = `Unable to update staff roles for: ${this.uuid}`;
                         this.is_submitting = false;
+                        this.alertHandler.alertHandler('error', response_msg);
                         console.log(error);
                     });
                 }, 1000);
@@ -292,7 +293,14 @@
             background-color: gray;
         }
 
+        h1 {
+            font-size: 18px;
+            font-weight: normal;
+        }
+
         h4 {
+            font-size: 14px;
+            font-weight: normal;
             margin-bottom: 10px;
             margin-top: 25px;
         }

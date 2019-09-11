@@ -24,6 +24,7 @@
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
                                     <staff-roles v-else
+                                                 :alert-handler="alertHandler"
                                                  :container-name="parentContainerName"
                                                  :container-type="metadata.type"
                                                  :uuid="metadata.id"
@@ -49,6 +50,7 @@
 
         data() {
             return {
+                alertHandler: {},
                 metadata: {},
                 permissionType: '',
                 showModal: false

@@ -102,5 +102,10 @@
 
 #modal-permissions-editor .marked-for-deletion {
     background-color: #f99;
+    opacity: .8;
     text-decoration: line-through;
+}
+
+#modal-permissions-editor select.marked-for-deletion {
+    border: none;
 }
