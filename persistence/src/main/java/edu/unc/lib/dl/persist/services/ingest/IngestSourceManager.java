@@ -119,7 +119,7 @@ public class IngestSourceManager {
 
             // Gathering candidates per pattern within a particular base directory
             for (String pattern : source.getPatterns()) {
-                final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + base + pattern);
+                final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + base + "/" + pattern);
                 try {
                     Files.walkFileTree(Paths.get(base), new SimpleFileVisitor<Path>() {
                         @Override
@@ -223,7 +223,7 @@ public class IngestSourceManager {
      */
     private boolean isPathValidForSource(Path path, IngestSourceConfiguration source) {
         for (String pattern : source.getPatterns()) {
-            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + source.getBase() + pattern);
+            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + source.getBase() + "/" + pattern);
             if (matcher.matches(path)) {
                 return true;
             }

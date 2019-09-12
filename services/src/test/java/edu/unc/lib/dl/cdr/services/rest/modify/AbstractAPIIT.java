@@ -87,4 +87,8 @@ public abstract class AbstractAPIIT {
         return mapper.readValue(result.getResponse().getContentAsString(), type);
     }
 
+    protected byte[] makeRequestBody(Object details) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsBytes(details);
+    }
 }

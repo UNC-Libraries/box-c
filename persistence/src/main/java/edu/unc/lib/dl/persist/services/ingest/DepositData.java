@@ -35,6 +35,8 @@ public class DepositData {
     private String mimeType;
     private String slug;
     private String md5;
+    private String accessionNumber;
+    private String mediaId;
     private Path filePath;
     private Priority priority;
     private AgentPrincipals depositingAgent;
@@ -216,5 +218,33 @@ public class DepositData {
      */
     public void setDepositorEmail(String depositorEmail) {
         this.depositorEmail = depositorEmail;
+    }
+
+    /**
+     * @return the accessionNumber
+     */
+    public String getAccessionNumber() {
+        return accessionNumber;
+    }
+
+    /**
+     * @param accessionNumber the accessionNumber to set
+     */
+    public void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
+    }
+
+    /**
+     * @return the mediaId
+     */
+    public String getMediaId() {
+        return mediaId;
+    }
+
+    /**
+     * @param mediaId the mediaId to set
+     */
+    public void setMediaId(String mediaId) {
+        this.mediaId = mediaId;
     }
 }

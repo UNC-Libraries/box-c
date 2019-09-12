@@ -35,9 +35,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
@@ -77,8 +74,15 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         PID containerPID = createPID();
         Bag bagFolder = model.createBag(containerPID.getURI());
-        model.add(bagFolder, CdrDeposit.label,
-                status.get(DepositField.fileName.name()));
+        // Determine the label to use for this the root directory of the deposit package
+        String label = status.get(DepositField.depositSlug.name());
+        if (label == null) {
+            label = status.get(DepositField.fileName.name());
+        }
+        if (label == null) {
+            label = sourceFile.getName();
+        }
+        model.add(bagFolder, CdrDeposit.label, label);
         model.add(bagFolder, RDF.type, Cdr.Folder);
         depositBag.add(bagFolder);
 
@@ -210,36 +214,28 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
         doc.addContent(mods);
 
-        if (status.containsKey(DepositField.extras.name())) {
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-                JsonNode node = mapper.readTree(status.get(DepositField.extras.name()));
+        if (status.containsKey(DepositField.accessionNumber.name())) {
+            String accessionNumber = status.get(DepositField.accessionNumber.name());
 
-                JsonNode accessionNode = node.get("accessionNumber");
-                if (accessionNode != null) {
-                    Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-                    identifier.setText(accessionNode.asText());
-                    identifier.setAttribute("type", "local");
-                    identifier.setAttribute("displayLabel", "Accession Identifier");
-                    mods.addContent(identifier);
-                }
+            Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+            identifier.setText(accessionNumber);
+            identifier.setAttribute("type", "local");
+            identifier.setAttribute("displayLabel", "Accession Identifier");
+            mods.addContent(identifier);
+        }
 
-                JsonNode mediaNode = node.get("mediaId");
-                if (mediaNode != null) {
-                    Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-                    identifier.setText(mediaNode.asText());
-                    identifier.setAttribute("type", "local");
-                    identifier.setAttribute("displayLabel", "Source Identifier");
-                    mods.addContent(identifier);
-                }
-            } catch (IOException e) {
-                failJob(e, "Failed to parse extras data for {0}", getDepositPID());
-                log.error("Failed to parse extras data for {0}", this.getDepositPID(), e);
-            }
+        if (status.containsKey(DepositField.mediaId.name())) {
+            String mediaId = status.get(DepositField.mediaId.name());
+
+            Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+            identifier.setText(mediaId);
+            identifier.setAttribute("type", "local");
+            identifier.setAttribute("displayLabel", "Source Identifier");
+            mods.addContent(identifier);
         }
 
         // Persist the MODS file to disk if there were any fields added
-        if (mods.getChildren().size() > 0) {
+        if (!mods.getChildren().isEmpty()) {
             final File modsFolder = getDescriptionDir();
             modsFolder.mkdirs();
             File modsFile = new File(modsFolder, containerPID.getUUID() + ".xml");

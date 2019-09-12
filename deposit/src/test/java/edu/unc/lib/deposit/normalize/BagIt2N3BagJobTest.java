@@ -81,7 +81,8 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         String sourcePath = "src/test/resources/paths/valid-bag";
         status.put(DepositField.sourcePath.name(), sourcePath);
         status.put(DepositField.fileName.name(), "Test File");
-        status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
+        status.put(DepositField.accessionNumber.name(), "123456");
+        status.put(DepositField.mediaId.name(), "789");
         String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
 
         job.run();
@@ -89,7 +90,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         Model model = job.getReadOnlyModel();
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
 
-        assertEquals(depositBag.size(), 1);
+        assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
@@ -97,12 +98,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         Resource folder = (Resource) bagFolder.iterator().next();
 
-        assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
+        assertEquals("Folder label was not set", "test", folder.getProperty(CdrDeposit.label).getString());
         assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
 
         Bag childrenBag = model.getBag(folder.getURI());
 
-        assertEquals(childrenBag.size(), 2);
+        assertEquals(2, childrenBag.size());
 
         // Put children into a map since we can't guarantee order from jena
         Map<String, Resource> children = new HashMap<>(2);

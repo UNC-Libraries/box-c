@@ -46,8 +46,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -298,11 +296,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         AdminUnit updated = repoObjLoader.getAdminUnit(pid);
         assertHasAssignment(USER_GROUPS, canManage, updated);
-    }
-
-    private byte[] makeRequestBody(List<RoleAssignment> assignments) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsBytes(assignments);
     }
 
     private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {

@@ -41,7 +41,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		loadingOverlay.open();
 		
 		$.ajax({
-			url : "listSources/" + this.pid,
+			url : "/services/api/edit/ingestSources/list/" + this.pid,
 			type : "GET",
 			cache: false
 		}).done(function(data){
@@ -72,7 +72,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		for (var i = 0; i < candidates.length; i++) {
 			var candidate = candidates[i];
 			candidateIndex.push(candidate.base + candidate.patternMatched);
-			if (candidate.packagingType == "http://purl.org/net/sword/package/BagIt") {
+			if (candidate.packagingTypeUri == "http://purl.org/net/sword/package/BagIt") {
 				candidate.type = "BagIt";
 			} else {
 				candidate.type = "Directory";
@@ -228,7 +228,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					return false;
 				}
 				
-				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'http://cdr.unc.edu/DirectoryIngest';
+				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'DIRECTORY';
 				
 				var info = {
 					sourceId : candidate.sourceId,
@@ -256,7 +256,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			
 			// Make request to server
 			$.ajax({
-				url : "ingestFromSource/" + self.pid,
+				url : "/services/api/edit/ingestSources/ingest/" + self.pid,
 				type : "POST",
 				contentType: "application/json",
 				cache: false,

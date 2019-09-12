@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,10 +76,7 @@ public class IngestSourceConfiguration {
     }
 
     public void setBase(String base) {
-        if (!base.endsWith("/")) {
-            base += "/";
-        }
-        this.base = base;
+        this.base = Paths.get(base).toAbsolutePath().toString();
     }
 
     public List<String> getContainers() {

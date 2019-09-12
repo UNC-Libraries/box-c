@@ -109,7 +109,9 @@ public abstract class AbstractDepositHandler implements DepositHandler {
     protected void registerDeposit(PID depositPid, PID destination, DepositData deposit,
             Map<String, String> extras) {
         Map<String, String> status = new HashMap<>();
-        status.putAll(extras);
+        if (extras != null) {
+            status.putAll(extras);
+        }
 
         AgentPrincipals agent = deposit.getDepositingAgent();
 
@@ -123,14 +125,17 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.depositMethod.name(), deposit.getDepositMethod());
         status.put(DepositField.packagingType.name(), deposit.getPackagingType().getUri());
         status.put(DepositField.depositMd5.name(), deposit.getMd5());
+        status.put(DepositField.accessionNumber.name(), deposit.getAccessionNumber());
+        status.put(DepositField.mediaId.name(), deposit.getMediaId());
         if (deposit.getFilename() != null) {
             // Resolve filename to just the name portion of the value, in case of modifiers
             String filename = Paths.get(deposit.getFilename()).getFileName().toString();
             status.put(DepositField.fileName.name(), filename);
         }
-        if (deposit.getSlug() != null) {
-            status.put(DepositField.depositSlug.name(), deposit.getSlug());
+        if (deposit.getFilePath() != null) {
+            status.put(DepositField.sourcePath.name(), deposit.getFilePath().toAbsolutePath().toString());
         }
+        status.put(DepositField.depositSlug.name(), deposit.getSlug());
         if (deposit.getPriority() != null) {
             status.put(DepositField.priority.name(), deposit.getPriority().name());
         }

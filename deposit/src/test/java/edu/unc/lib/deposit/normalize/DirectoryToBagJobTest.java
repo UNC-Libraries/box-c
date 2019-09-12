@@ -87,14 +87,15 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     public void testConversion() throws Exception {
         status.put(DepositField.sourcePath.name(), depositDirectory.getAbsolutePath());
         status.put(DepositField.fileName.name(), "Test File");
-        status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
+        status.put(DepositField.mediaId.name(), "789");
+        status.put(DepositField.accessionNumber.name(), "123456");
 
         job.run();
 
         Model model = job.getReadOnlyModel();
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
 
-        assertEquals(depositBag.size(), 1);
+        assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
@@ -105,14 +106,14 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
-        assertEquals(emptyBag.size(), 0);
+        assertEquals(0, emptyBag.size());
 
         Resource folder = getChildByLabel(bagFolder, "test");
         assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
 
         Bag childrenBag = model.getBag(folder.getURI());
 
-        assertEquals(childrenBag.size(), 1);
+        assertEquals(1, childrenBag.size());
 
         // Verify that file and its properties were added to work
         Resource file = getChildByLabel(childrenBag, "lorem.txt");
