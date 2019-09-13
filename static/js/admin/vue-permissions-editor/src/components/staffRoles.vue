@@ -50,7 +50,7 @@
                         @add-user="updateUserList"
                         @form-error="updateErrorMsg"></staff-roles-form>
             </table>
-            <p class="message">{{ response_message }}</p>
+            <p class="message" :class="{error: is_error_message}">{{ response_message }}</p>
         </div>
         <p class="no-updates-allowed" v-else>Go to previous level(s) to modify the staff permission settings.</p>
 
@@ -99,6 +99,7 @@
                 current_staff_roles: { inherited: [], assigned: [] },
                 deleted_users: [],
                 is_closing_modal: false,
+                is_error_message: true,
                 is_submitting: false,
                 response_message: '',
                 unsaved_changes: false,
@@ -145,6 +146,8 @@
 
             setRoles() {
                 this.updated_staff_roles = this.removeDeletedAssignedRoles();
+                this.is_error_message = false;
+                this.response_message = 'Saving permissions ..';
 
                 axios({
                     method: 'put',
@@ -152,11 +155,14 @@
                     data: JSON.stringify(this.updated_staff_roles),
                     headers: {'content-type': 'application/json; charset=utf-8'}
                 }).then((response) => {
-                    this.getRoles();
+                    this.getRoles(); // Reset role list so user can close modal without a prompt.
                     let response_msg = `Staff roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.unsaved_changes = false;
                     this.is_submitting = false;
+                    this.deleted_users = [];
+                    this.is_error_message = true; // Reset, as "save" is the only non-error status
+                    this.response_message = '';
                 }).catch((error) => {
                     let response_msg = `Unable to update staff roles for: ${this.title}`;
                     this.is_submitting = false;
@@ -292,14 +298,13 @@
              */
             unsavedUpdates() {
                 this.is_closing_modal = true;
+
                 let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
                     let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
                     return (current_user === undefined || current_user.role !== user.role);
                 });
 
-                if (!this.unsaved_changes) {
-                    this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
-                }
+                this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
             }
         },
 
@@ -373,9 +378,12 @@
         }
 
         .message {
-            color: red;
             height: 17px;
             margin-top: 15px;
+        }
+
+        .error {
+            color: red;
         }
     }
 </style>
