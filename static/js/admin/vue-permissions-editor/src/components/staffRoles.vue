@@ -58,7 +58,7 @@
             <li v-if="canSetPermissions">
                 <button id="is-submitting"
                         type="submit"
-                        @click="setRoles"
+                        @click="setSubmitting"
                         :class="{'btn-disabled': is_submitting}"
                         :disabled="is_submitting">Save Changes</button>
             </li>
@@ -139,28 +139,30 @@
                 });
             },
 
-            setRoles() {
+            setSubmitting() {
                 this.is_submitting = true;
+            },
 
-                setTimeout(() => {
-                    this.updated_staff_roles = this.removeDeletedAssignedRoles();
+            setRoles() {
+                this.updated_staff_roles = this.removeDeletedAssignedRoles();
 
-                    axios({
-                        method: 'put',
-                        url: `/services/api/edit/acl/staff/${this.uuid}`,
-                        data: JSON.stringify(this.updated_staff_roles),
-                        headers: {'content-type': 'application/json; charset=utf-8'}
-                    }).then((response) => {
-                        let response_msg = `Staff roles successfully updated for: ${this.title}`;
-                        this.alertHandler.alertHandler('success', response_msg);
-                        this.showModal();
-                    }).catch((error) => {
-                        let response_msg = `Unable to update staff roles for: ${this.title}`;
-                        this.is_submitting = false;
-                        this.alertHandler.alertHandler('error', response_msg);
-                        console.log(error);
-                    });
-                }, 1000);
+                axios({
+                    method: 'put',
+                    url: `/services/api/edit/acl/staff/${this.uuid}`,
+                    data: JSON.stringify(this.updated_staff_roles),
+                    headers: {'content-type': 'application/json; charset=utf-8'}
+                }).then((response) => {
+                    this.getRoles();
+                    let response_msg = `Staff roles successfully updated for: ${this.title}`;
+                    this.alertHandler.alertHandler('success', response_msg);
+                    this.unsaved_changes = false;
+                    this.is_submitting = false;
+                }).catch((error) => {
+                    let response_msg = `Unable to update staff roles for: ${this.title}`;
+                    this.is_submitting = false;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
             },
 
             userExists(user) {
@@ -242,6 +244,10 @@
              */
             addUserFilledOut(is_filled) {
                 this.unsaved_changes = is_filled;
+
+                if (this.is_submitting && !this.unsaved_changes) {
+                    this.setRoles();
+                }
             },
 
             /**
@@ -363,6 +369,7 @@
 
         .btn-disabled {
             opacity: .3;
+            cursor: not-allowed;
         }
 
         .message {

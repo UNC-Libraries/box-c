@@ -55,6 +55,8 @@
             unAddedUser(should_add) {
                 if (should_add && this.user_name !== '') {
                     this.emitEvent();
+                } else {
+                    this.$emit('username-set', false);
                 }
             },
 
