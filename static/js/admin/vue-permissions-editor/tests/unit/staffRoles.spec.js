@@ -45,20 +45,37 @@ describe('staffRoles.vue', () => {
         });
     });
 
-   it("sends current staff roles to the server", (done) => {
+    it("triggers a submission", () => {
+        expect(wrapper.vm.is_submitting).toBe(false);
         wrapper.find('#is-submitting').trigger('click');
+        expect(wrapper.vm.is_submitting).toBe(true);
+    });
 
-        moxios.stubOnce('put', `/services/api/edit/acl/staff/${wrapper.vm.uuid}`, {
-            status: 200,
-            response: update_response
-        });
+    it("sends current staff roles to the server", (done) => {
+        wrapper.find('#is-submitting').trigger('click');
+        wrapper.find(staffRolesForm).vm.$emit('username-set', false);
 
-        setTimeout(() => {
+        moxios.wait(() => {
             let request = moxios.requests.mostRecent();
             expect(request.config.method).toEqual('put');
             expect(JSON.parse(request.config.data)).toEqual(response.assigned);
-            done()
-        }, 1000);
+            done();
+        });
+    });
+
+    it("it adds un-added users and then sends current staff roles to the server", (done) => {
+        let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
+        let all_users = [...response.assigned, ...[added_user]];
+        wrapper.find('#is-submitting').trigger('click');
+        wrapper.find(staffRolesForm).vm.$emit('add-user', added_user);
+        wrapper.find(staffRolesForm).vm.$emit('username-set', false);
+
+        moxios.wait(() => {
+            let request = moxios.requests.mostRecent();
+            expect(request.config.method).toEqual('put');
+            expect(JSON.parse(request.config.data)).toEqual(all_users);
+            done();
+        });
     });
 
     it("displays inherited staff roles", (done) => {
@@ -76,7 +93,7 @@ describe('staffRoles.vue', () => {
                 current_staff_roles: { inherited: [], assigned: [] }
             });
             expect(wrapper.find('p').text()).toEqual('There are no inherited staff permissions.');
-           done()
+            done()
         });
     });
 
