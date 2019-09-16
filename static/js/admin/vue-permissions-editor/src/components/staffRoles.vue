@@ -29,9 +29,9 @@
             <transition name="slide">
             <div v-if="display_descriptions" class="role-description">
                 <ul id="role-list">
-                    <li><strong>can View</strong> - Can view/download restricted objects.</li>
-                    <li><strong>can Describe</strong> - Can edit individual MODS descriptions, can perform bulk MODS export and import.</li>
+                    <li><strong>can Access</strong> - Can view/download restricted objects.</li>
                     <li><strong>can Ingest</strong> - Can ingest new Works or files along with any supporting metadata files.</li>
+                    <li><strong>can Describe</strong> - Can edit individual MODS descriptions, can perform bulk MODS export and import.</li>
                     <li><strong>can Manage</strong> - Can arrange objects, can change patron access, can embargo, can mark for deletion, can ingest, can describe, can bulk update description.</li>
                     <li><strong>is Unit Owner</strong> - Can grant or remove staff roles, can create collections, can destroy objects, and all rights from "can Manage".</li>
                 </ul>
