@@ -22,7 +22,21 @@
         <p v-else>There are no inherited staff permissions.</p>
 
         <div class="assigned" v-if="canSetPermissions">
-            <h4>Add or remove staff permissions</h4>
+            <div>
+                <h4>Add or remove staff permissions</h4>
+                <div @click="showDescriptions" class="info">?</div>
+            </div>
+            <transition name="slide">
+            <div v-if="display_descriptions" class="role-description">
+                <ul id="role-list">
+                    <li><strong>can View</strong> - Can view/download restricted objects.</li>
+                    <li><strong>can Describe</strong> - Can edit individual MODS descriptions, can perform bulk MODS export and import.</li>
+                    <li><strong>can Ingest</strong> - Can ingest new Works or files along with any supporting metadata files.</li>
+                    <li><strong>can Manage</strong> - Can arrange objects, can change patron access, can embargo, can mark for deletion, can ingest, can describe, can bulk update description.</li>
+                    <li><strong>is Unit Owner</strong> - Can grant or remove staff roles, can create collections, can destroy objects, and all rights from "can Manage".</li>
+                </ul>
+            </div>
+            </transition>
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
                     <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">{{ updated_staff_role.principal }}</td>

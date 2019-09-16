@@ -1,6 +1,7 @@
 export default {
     data() {
         return {
+            display_descriptions: false,
             roles: [
                 { text: 'can Access', value: 'canAccess' },
                 { text: 'can Ingest', value: 'canIngest' },
@@ -18,6 +19,10 @@ export default {
             } else {
                 return this.roles.slice(0, 4);
             }
+        },
+
+        showDescriptions() {
+            this.display_descriptions = !this.display_descriptions;
         }
     }
 }
