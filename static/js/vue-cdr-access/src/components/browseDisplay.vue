@@ -9,7 +9,7 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-10 spacing">
+            <div class="column is-10">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
                     <browse-filters v-if="is_collection || is_folder" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
@@ -24,11 +24,8 @@
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <a :href="recordUrl(record.id)">
-                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url">
+                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
-                            <div class="record-count" :class="{ thumbnail: hasThumbnail(record.thumbnail_url) }">
-                                <div>{{ recordCountFormat(record.counts.child) }}</div>
-                            </div>
                             <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
@@ -120,9 +117,6 @@
         methods: {
             recordUrl(id) {
                 return `/record/${id}`;
-            },
-            recordCountFormat(number) {
-                return new Intl.NumberFormat().format(number);
             },
 
             recordType(type) {
@@ -309,38 +303,13 @@
             text-align: center;
         }
 
-        .record-count {
-            color: white;
-            margin-bottom: 35px;
-            margin-left: -15px;
-            margin-top: -65px;
-
-            div {
-                font-size: 40px;
-            }
-        }
-
         .record-title {
             margin-left: -15px;
             margin-top: 65px;
         }
 
-        .thumbnail {
-            background-color: rgba(192, 192, 192, 0.4);
-            height: 100px;
-            float: none;
-            margin: -145px auto 0 auto;
-            width: 200px;
-
-            div {
-                margin-top: 40px;
-                padding-top: 45px;
-            }
-        }
-
         .thumbnail + .record-title {
-            margin-left: 10px;
-            margin-top: 75px
+            margin-top: 225px;
         }
 
         img {

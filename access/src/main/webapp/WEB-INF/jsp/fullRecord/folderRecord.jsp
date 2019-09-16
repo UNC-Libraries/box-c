@@ -43,7 +43,16 @@
 <div class="contentarea">
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${parentBriefObject.title}"/></h2>
+            <c:import url="fullRecord/navigationBar.jsp" />
+            <h2><i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
+            <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+        </div>
+    </div>
+    <c:import url="fullRecord/browseView.jsp"/>
+    <div class="columns browse-header browse-header-bottom">
+        <div class="column is-12">
+            <p>Source Collection:</p>
+            <h2><i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${parentBriefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Date Deposited:</strong> <c:out value="${parentBriefObject.dateCreated}"/></p>
             <c:choose>
                 <c:when test="${not empty parentBriefObject.abstractText}">
@@ -65,5 +74,5 @@
             </c:choose>
         </div>
     </div>
-    <c:import url="fullRecord/browseView.jsp"/>
 </div>
+<script type="text/javascript" src="/static/js/public/abstractDisplay"></script>

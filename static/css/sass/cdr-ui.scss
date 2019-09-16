@@ -446,21 +446,26 @@ p.no-search-results {
 
 /* Collection Page */
 
+.browse-header.columns {
+  margin: 0;
+}
+
 .browse-header {
-  background-color: $light-gray;
+  background-color: #EBEBEB;
   color: darkblue;
   display: inline-flex !important;
-  margin: 0;
+  padding-top: 25px;
   width: 100%;
 
   h2 {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: bold;
     margin: 15px;
 
     span {
       color: gray;
       font-size: 20px;
+      font-weight: normal;
       margin-left: 10px;
     }
   }
@@ -468,8 +473,26 @@ p.no-search-results {
   p {
     color: black;
     font-size: 18px;
+    line-height: 22px;
     margin-left: 15px;
   }
+}
+
+#is-folder {
+  background-color: white;
+
+  #parent-collection {
+    background-color: #EBEBEB;
+  }
+
+  .bottomline {
+    border: none;
+    padding: 0;
+  }
+}
+
+.browse-header.browse-header-bottom {
+  padding-bottom: 25px;
 }
 
 .search-query-text.collection-list {
@@ -499,7 +522,7 @@ p.no-search-results {
 .display-wrapper {
   display: inline-flex;
   justify-content: flex-end;
-  margin: 15px 25px 0 25px;
+  margin: 15px 25px 10px 25px;
   padding-right: 45px;
   width: 100%;
 
@@ -647,13 +670,19 @@ p.no-search-results {
   }
 }
 
+.full_record {
+  .contentarea {
+    margin: 0;
+  }
+}
+
 #full_record_trail {
-  border: 1px solid $light-gray;
-  background-color: $light-gray;
+  border: 1px solid #E0E0E0;
+  background-color: #E0E0E0;
   border-radius: 5px;
-  font-size: 16px;
-  margin-left: 0;
-  padding: 12px;
+  font-size: 18px;
+  margin: 0 15px 50px 15px;
+  padding: 20px;
   text-indent: 0;
   width: 100%;
 }
@@ -679,6 +708,8 @@ table.dataTable {
 }
 
 .collinfo_metadata {
+  margin: 20px;
+
   h2 {
     font-size: 24px;
   }

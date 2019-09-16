@@ -44,7 +44,8 @@
 <div class="contentarea">
     <div id="is-collection" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${briefObject.title}"/></h2>
+            <c:import url="fullRecord/navigationBar.jsp" />
+            <h2><i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
             <c:choose>
                 <c:when test="${not empty briefObject.abstractText}">
@@ -66,5 +67,6 @@
             </c:choose>
         </div>
     </div>
+    <script type="text/javascript" src="/static/js/public/abstractDisplay"></script>
     <c:import url="fullRecord/browseView.jsp"/>
 </div>

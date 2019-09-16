@@ -41,7 +41,7 @@
 			<button id="structure-display" class="button is-light">Structured</button>
 		</div>
 	</div>
-<c:import url="fullRecord/navigationBar.jsp" />
+
 <c:choose>
 	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
 		<c:import url="fullRecord/adminUnit.jsp" />
