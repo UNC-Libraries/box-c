@@ -9,7 +9,7 @@
                 </td>
                 <td class="border select-box">
                     <div class="select-wrapper">
-                        <select v-model="selected_role">
+                        <select v-model="selected_role" @focus="clearErrorMessage">
                             <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
                         </select>
                     </div>

@@ -27,15 +27,15 @@
                 <div @click="showDescriptions" class="info">?</div>
             </div>
             <transition name="slide">
-            <div v-if="display_descriptions" class="role-description">
-                <ul id="role-list">
-                    <li><strong>can Access</strong> - Can view/download restricted objects.</li>
-                    <li><strong>can Ingest</strong> - Can ingest new Works or files along with any supporting metadata files.</li>
-                    <li><strong>can Describe</strong> - Can edit individual MODS descriptions, can perform bulk MODS export and import.</li>
-                    <li><strong>can Manage</strong> - Can arrange objects, can change patron access, can embargo, can mark for deletion, can ingest, can describe, can bulk update description.</li>
-                    <li><strong>is Unit Owner</strong> - Can grant or remove staff roles, can create collections, can destroy objects, and all rights from "can Manage".</li>
-                </ul>
-            </div>
+                <div v-if="display_descriptions" class="role-description">
+                    <ul id="role-list">
+                        <li><strong>can Access</strong> - Can view/download restricted objects.</li>
+                        <li><strong>can Ingest</strong> - Can ingest new Works or files along with any supporting metadata files.</li>
+                        <li><strong>can Describe</strong> - Can edit individual MODS descriptions, can perform bulk MODS export and import.</li>
+                        <li><strong>can Manage</strong> - Can arrange objects, can change patron access, can embargo, can mark for deletion, can ingest, can describe, can bulk update description.</li>
+                        <li><strong>is Unit Owner</strong> - Can grant or remove staff roles, can create collections, can destroy objects, and all rights from "can Manage".</li>
+                    </ul>
+                </div>
             </transition>
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
@@ -144,8 +144,6 @@
                            when a user is is added/updated */
                         let update_roles = cloneDeep(response.data);
                         this.updated_staff_roles = update_roles.assigned;
-                    } else {
-                        console.log(response);
                     }
                 }).catch((error) => {
                     let response_msg = `Unable load current staff roles for: ${this.title}`;
@@ -185,8 +183,9 @@
                 });
             },
 
-            userExists(user) {
-                return this.updated_staff_roles.findIndex((u) => u.principal === user.principal);
+            getUserIndex(user, use_update_list = true) {
+                let user_list = (use_update_list) ? this.updated_staff_roles : this.deleted_users;
+                return user_list.findIndex((u) => u.principal === user.principal);
             },
 
             /**
@@ -195,12 +194,8 @@
              */
             removeDeletedAssignedRoles() {
                 return this.updated_staff_roles.filter((user) => {
-                    return this.findDeletedUserIndex(user) === -1;
+                    return this.getUserIndex(user, false) === -1;
                 });
-            },
-
-            findDeletedUserIndex(user) {
-                return this.deleted_users.findIndex((u) => u.principal === user.principal);
             },
 
             /**
@@ -209,6 +204,7 @@
              */
             markUserForDeletion(index) {
                 this.deleted_users.push(this.updated_staff_roles[index]);
+                this.unsaved_changes = true;
             },
 
             /**
@@ -217,6 +213,7 @@
              */
             fullyRemoveUser(index) {
                 this.updated_staff_roles.splice(index, 1);
+                this.unsavedUpdates();
             },
 
             /**
@@ -224,18 +221,20 @@
              * @param user
              */
             checkUserRemoved(user) {
-                return this.findDeletedUserIndex(user) !== -1;
+                return this.getUserIndex(user, false) !== -1;
             },
 
             /**
-             * Remove user with already assigned permissions from list of users to delete upon form submission
+             * Remove user with already assigned permissions from list of users to delete
              * @param user
              * @returns {undefined|*}
              */
             revertRemoveUser(user) {
-                let user_index = this.findDeletedUserIndex(user) ;
+                let user_index = this.getUserIndex(user, false) ;
                 if (user_index !== -1) {
-                    return this.deleted_users.splice(user_index, 1)[0];
+                    let reverted_user = this.deleted_users.splice(user_index, 1)[0];
+                    this.unsavedUpdates();
+                    return reverted_user;
                 }
 
                 return undefined;
@@ -246,8 +245,9 @@
              * @param user
              */
             updateUserList(user) {
-                if (this.userExists(user) === -1) {
+                if (this.getUserIndex(user) === -1) {
                     this.updated_staff_roles.push(user);
+                    this.unsaved_changes = true;
                 } else if (!this.is_submitting) {
                     this.response_message = `User: ${user.principal} already exists. User not added.`;
 
@@ -275,10 +275,11 @@
              * @param user
              */
             updateUserRole(user) {
-                let user_index = this.userExists(user);
+                let user_index = this.getUserIndex(user);
 
                 if (user_index !== -1) {
                     this.updated_staff_roles[user_index].role = user.role;
+                    this.unsavedUpdates();
                 }
             },
 
@@ -291,6 +292,7 @@
              * Checks if there are unsaved changes and asks user to confirm exit, if so.
              */
             showModal() {
+                this.is_closing_modal = true;
                 this.unsavedUpdates();
 
                 if (!this.is_submitting && this.unsaved_changes) {
@@ -311,8 +313,6 @@
              * Checks for unsaved role updates
              */
             unsavedUpdates() {
-                this.is_closing_modal = true;
-
                 let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
                     let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
                     return (current_user === undefined || current_user.role !== user.role);

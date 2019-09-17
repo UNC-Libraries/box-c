@@ -12,6 +12,11 @@ export default new Router({
       path: '/admin/list/:uuid?',
       name: 'modalEditor',
       component:  modalEditor
+    },
+    {
+      path: '/admin/search/:uuid?',
+      name: 'modalEditorSearch',
+      component:  modalEditor
     }
   ]
 })

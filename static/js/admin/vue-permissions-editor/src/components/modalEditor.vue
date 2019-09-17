@@ -92,8 +92,8 @@
                 this.checkForUnsavedChanges = check_changes;
             },
 
-            closeModal(display_modal) {
-                this.showModal = display_modal;
+            closeModal() {
+                this.showModal = false;
             }
         }
     }

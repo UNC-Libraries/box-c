@@ -45,6 +45,13 @@ describe('staffRoles.vue', () => {
         });
     });
 
+    it("shows help text", () => {
+        expect(wrapper.find('#role-list').exists()).toBe(false);
+
+        wrapper.find('.info').trigger('click');
+        expect(wrapper.find('#role-list').isVisible()).toBe(true);
+    });
+
     it("triggers a submission", () => {
         expect(wrapper.vm.is_submitting).toBe(false);
         wrapper.find('#is-submitting').trigger('click');
