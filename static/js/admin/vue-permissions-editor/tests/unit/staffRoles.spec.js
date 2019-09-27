@@ -8,7 +8,7 @@ const response = {
     inherited:[{ principal: 'test_admin', role: 'administrator' }],
     assigned:[{ principal: 'test_user', role: 'canIngest' }]
 };
-const update_response = { "action":"editStaffRoles" };
+
 const user_role = { principal: 'test_user_2', role: 'canManage', type: 'new' };
 let wrapper;
 
@@ -73,8 +73,8 @@ describe('staffRoles.vue', () => {
     it("it adds un-added users and then sends current staff roles to the server", (done) => {
         let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
         let all_users = [...response.assigned, ...[added_user]];
-        wrapper.find('#is-submitting').trigger('click');
         wrapper.find(staffRolesForm).vm.$emit('add-user', added_user);
+        wrapper.find('#is-submitting').trigger('click');
         wrapper.find(staffRolesForm).vm.$emit('username-set', false);
 
         moxios.wait(() => {
@@ -140,6 +140,22 @@ describe('staffRoles.vue', () => {
             expect(wrapper.vm.deleted_users).toEqual(response.assigned);
             done();
         });
+    });
+
+    it("removes deleted users before submitting", (done) => {
+       moxios.wait(() => {
+           let first_user_role = { principal: 'testy', role: 'canManage' };
+
+           wrapper.setData({
+               deleted_users: [user_role],
+               updated_staff_roles: [first_user_role, user_role]
+           });
+
+           wrapper.vm.setRoles();
+
+           expect(wrapper.vm.updated_staff_roles).toEqual([first_user_role]);
+           done();
+       });
     });
 
     it("it updates button text based on context", (done) => {
