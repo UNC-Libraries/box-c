@@ -40,6 +40,7 @@ build-admin:
 		static/css/admin/search_results.css \
 		static/css/admin/admin_forms.css \
 		static/css/admin/collector.css \
+		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr_vue_modal_styles.css \
 		> static/css/cdr_admin.css
