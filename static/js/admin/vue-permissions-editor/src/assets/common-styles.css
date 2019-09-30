@@ -68,8 +68,10 @@
 #modal-permissions-editor select {
     background: #F4F4F4;
     border: 1px solid #F0F3FB;
+    border-radius: 0;
+    height: 100%;
     width: 100%;
-    padding: 6px;
+    padding: 10px;
     font-size: 14px;
     color: #3F3F3F;
     -webkit-appearance: none;
@@ -89,7 +91,7 @@
     font-size: 14px;
     font-weight: 900;
     position: absolute;
-    top: 9px;
+    top: 12px;
     right: 10px;
     color: #434B67;
     pointer-events: none;
