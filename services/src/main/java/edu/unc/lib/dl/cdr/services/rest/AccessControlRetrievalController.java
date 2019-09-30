@@ -16,12 +16,15 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -71,6 +74,19 @@ public class AccessControlRetrievalController {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
+    private static final List<String> ROLE_PRECEDENCE = asList(
+            UserRole.administrator.getPropertyString(),
+            UserRole.unitOwner.getPropertyString(),
+            UserRole.canManage.getPropertyString(),
+            UserRole.canDescribe.getPropertyString(),
+            UserRole.canIngest.getPropertyString(),
+            UserRole.canAccess.getPropertyString(),
+            UserRole.canViewOriginals.getPropertyString(),
+            UserRole.canViewAccessCopies.getPropertyString(),
+            UserRole.canViewMetadata.getPropertyString(),
+            UserRole.canDiscover.getPropertyString()
+            );
+
     @GetMapping(value = "/acl/staff/{id}", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public ResponseEntity<Object> getStaffRoles(@PathVariable("id") String id) {
@@ -95,11 +111,13 @@ public class AccessControlRetrievalController {
                     objectAclFactory.getPrincipalRoles(pid), true);
             RepositoryObject parent = repoObj.getParent();
             inherited = toRoleAssignmentList(parent.getPid(),
-                    objectAclFactory.getPrincipalRoles(parent.getPid()), true);
+                    deduplicateRoles(objectAclFactory.getPrincipalRoles(parent.getPid())),
+                    true);
         } else if (repoObj instanceof ContentObject) {
             assigned = Collections.emptyList();
             inherited = toRoleAssignmentList(pid,
-                    inheritedAclFactory.getPrincipalRoles(pid), true);
+                    deduplicateRoles(inheritedAclFactory.getPrincipalRoles(pid)),
+                    true);
         } else {
             result.put("error", "Cannot retrieve staff roles for object " + id
                     + " of type " + repoObj.getClass().getName());
@@ -110,6 +128,29 @@ public class AccessControlRetrievalController {
         result.put(ASSIGNED_ROLES, assigned);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * Deduplicates role assignments, so that a principal will only have one role.
+     * If more than one role is assigned to the same principal, the highest level
+     * role will be return.
+     *
+     * @param princToRoles
+     * @return
+     */
+    private Map<String, Set<String>> deduplicateRoles(Map<String, Set<String>> princToRoles) {
+        for (Entry<String, Set<String>> princEntry : princToRoles.entrySet()) {
+            Set<String> roles = princEntry.getValue();
+            if (roles.size() > 1) {
+                for (String preferred : ROLE_PRECEDENCE) {
+                    if (roles.contains(preferred)) {
+                        princEntry.setValue(new HashSet<>(asList(preferred)));
+                        break;
+                    }
+                }
+            }
+        }
+        return princToRoles;
     }
 
     private List<RoleAssignment> toRoleAssignmentList(PID pid, Map<String, Set<String>> princToRoles,

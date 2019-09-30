@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
+import static edu.unc.lib.dl.acl.util.UserRole.canIngest;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
@@ -274,6 +275,64 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, respMap);
         assertHasInheritedRole(USER_PRINC, canAccess, respMap);
+    }
+
+    /*
+     * Verify that a group assigned roles at the unit and collection level will favor
+     * the unit level assignment if it has higher level permissions.
+     */
+    @Test
+    public void testFolderFirstAssignmentPrecedence() throws Exception {
+        AdminUnit unit = setupAdminUnitWithGroup();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
+                new AclModelBuilder("Collection with access")
+                .addCanAccess(GRP_PRINC)
+                .model);
+        unit.addMember(coll);
+        PID pid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+        coll.addMember(folder);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+    }
+
+    /*
+     * Verify that a group assigned roles at the unit and collection level will favor
+     * the collection level assignment if it has higher level permissions.
+     */
+    @Test
+    public void testFolderOverrideParent() throws Exception {
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(
+                new AclModelBuilder("Admin Unit Group Can Access")
+                .addCanAccess(GRP_PRINC)
+                .model);
+        rootObj.addMember(unit);
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
+                new AclModelBuilder("Collection Group Can Ingest")
+                .addCanIngest(GRP_PRINC)
+                .model);
+        unit.addMember(coll);
+        PID pid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+        coll.addMember(folder);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canIngest, respMap);
     }
 
     @Test
