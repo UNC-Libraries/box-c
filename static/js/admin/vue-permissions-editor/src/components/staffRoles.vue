@@ -56,13 +56,24 @@
                         <button v-else class="btn-remove" @click="markUserForDeletion(index)">Remove</button>
                     </td>
                 </tr>
-                <staff-roles-form
-                        :container-type="containerType"
-                        :is-submitting="is_submitting"
-                        :is-canceling="is_closing_modal"
-                        @username-set="addUserFilledOut"
-                        @add-user="updateUserList"
-                        @form-error="updateErrorMsg"></staff-roles-form>
+                <tr>
+                    <td class="border size">
+                        <input @focus="updateErrorMsg('')"
+                               type="text"
+                               placeholder="ONYEN/Group"
+                               v-model.trim="user_name">
+                    </td>
+                    <td class="border select-box">
+                        <div class="select-wrapper">
+                            <select v-model="selected_role" @focus="updateErrorMsg('')">
+                                <option v-for="role in containerRoles(containerType)" :value="role.value">{{ role.text }}</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="btn">
+                        <button class="btn-add" @click.prevent="updateUserList">Add</button>
+                    </td>
+                </tr>
             </table>
             <p class="message" :class="{error: is_error_message}">{{ response_message }}</p>
         </div>
@@ -73,8 +84,8 @@
                 <button id="is-submitting"
                         type="submit"
                         @click="setSubmitting"
-                        :class="{'btn-disabled': is_submitting}"
-                        :disabled="is_submitting">Save Changes</button>
+                        :class="{'btn-disabled': enableSubmit}"
+                        :disabled="enableSubmit">Save Changes</button>
             </li>
             <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
         </ul>
@@ -82,7 +93,6 @@
 </template>
 
 <script>
-    import staffRolesForm from "./staffRolesForm";
     import staffRolesSelect from "./staffRolesSelect";
     import staffRoleList from "../mixins/staffRoleList";
     import axios from 'axios';
@@ -93,7 +103,6 @@
         name: 'staffRoles',
 
         components: {
-            staffRolesForm,
             staffRolesSelect
         },
 
@@ -116,8 +125,10 @@
                 is_error_message: true,
                 is_submitting: false,
                 response_message: '',
+                selected_role: 'canAccess',
                 unsaved_changes: false,
-                updated_staff_roles: []
+                updated_staff_roles: [],
+                user_name: ''
             }
         },
 
@@ -132,6 +143,10 @@
         computed: {
             canSetPermissions() {
                 return ['AdminUnit', 'Collection'].includes(this.containerType);
+            },
+
+            enableSubmit() {
+                return this.user_name === '' && !this.unsaved_changes;
             }
         },
 
@@ -154,6 +169,8 @@
 
             setSubmitting() {
                 this.is_submitting = true;
+                this.updateUserList();
+                this.setRoles();
             },
 
             setRoles() {
@@ -242,31 +259,23 @@
 
             /**
              * Add new user with new role
-             * @param user
              */
-            updateUserList(user) {
-                if (this.getUserIndex(user) === -1) {
+            updateUserList() {
+                let user = { principal: this.user_name, role: this.selected_role, type: 'new' };
+
+                if (this.user_name === '') {
+                    this.response_message = 'Please add a username before adding';
+                } else if (this.getUserIndex(user) === -1) {
                     this.updated_staff_roles.push(user);
                     this.unsaved_changes = true;
+                    this.user_name = '';
+                    this.selected_role = 'canAccess';
                 } else if (!this.is_submitting) {
                     this.response_message = `User: ${user.principal} already exists. User not added.`;
 
                     setTimeout(() => {
                         this.response_message = '';
                     }, 2000);
-                }
-            },
-
-            /**
-             * Reacts to event that username has been filled out in the form.
-             * True on 'Add', false otherwise
-             * @param is_filled
-             */
-            addUserFilledOut(is_filled) {
-                this.unsaved_changes = is_filled;
-
-                if (this.is_submitting && !this.unsaved_changes) {
-                    this.setRoles();
                 }
             },
 
@@ -318,7 +327,7 @@
                     return (current_user === undefined || current_user.role !== user.role);
                 });
 
-                this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0;
+                this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0 || this.user_name !== '';
             }
         },
 

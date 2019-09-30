@@ -1,6 +1,5 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import staffRoles from '@/components/staffRoles.vue'
-import staffRolesForm from '@/components/staffRolesForm';
 import moxios from "moxios";
 
 const localVue = createLocalVue();
@@ -10,6 +9,9 @@ const response = {
 };
 
 const user_role = { principal: 'test_user_2', role: 'canManage', type: 'new' };
+const updateUserList = jest.fn();
+const setRoles = jest.fn();
+
 let wrapper;
 
 describe('staffRoles.vue', () => {
@@ -53,19 +55,43 @@ describe('staffRoles.vue', () => {
     });
 
     it("triggers a submission", () => {
-        expect(wrapper.vm.is_submitting).toBe(false);
+        // Mount separately to mock methods to test that they're called
+        wrapper = shallowMount(staffRoles, {
+            localVue,
+            propsData: {
+                alertHandler: {
+                    alertHandler: jest.fn() // This method lives outside of the Vue app
+                },
+                containerName: 'Test Unit',
+                containerType: 'AdminUnit',
+                title: 'Test Stuff',
+                uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
+            },
+            methods: {updateUserList, setRoles}
+        });
+
+        // Add a new user
+        wrapper.find('input').setValue('test_user_71');
+        wrapper.findAll('option').at(2).setSelected();
+        wrapper.find('.btn-add').trigger('click');
+
         wrapper.find('#is-submitting').trigger('click');
-        expect(wrapper.vm.is_submitting).toBe(true);
+        expect(updateUserList).toHaveBeenCalled();
+        expect(setRoles).toHaveBeenCalled();
     });
 
     it("sends current staff roles to the server", (done) => {
+        // Add a new user to enable submit button
+        wrapper.find('input').setValue('test_user_7');
+        wrapper.findAll('option').at(2).setSelected();
+        wrapper.find('.btn-add').trigger('click');
+
         wrapper.find('#is-submitting').trigger('click');
-        wrapper.find(staffRolesForm).vm.$emit('username-set', false);
 
         moxios.wait(() => {
             let request = moxios.requests.mostRecent();
             expect(request.config.method).toEqual('put');
-            expect(JSON.parse(request.config.data)).toEqual(response.assigned);
+            expect(JSON.parse(request.config.data)).toEqual([...response.assigned, ...[{ principal: 'test_user_7', role: 'canDescribe', type: 'new'}]]);
             done();
         });
     });
@@ -73,9 +99,11 @@ describe('staffRoles.vue', () => {
     it("it adds un-added users and then sends current staff roles to the server", (done) => {
         let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
         let all_users = [...response.assigned, ...[added_user]];
-        wrapper.find(staffRolesForm).vm.$emit('add-user', added_user);
+
+        wrapper.setData({
+            user_name: 'dean'
+        });
         wrapper.find('#is-submitting').trigger('click');
-        wrapper.find(staffRolesForm).vm.$emit('username-set', false);
 
         moxios.wait(() => {
             let request = moxios.requests.mostRecent();
@@ -113,23 +141,59 @@ describe('staffRoles.vue', () => {
         });
     });
 
+    it("disables 'submit' by default", (done) => {
+        let btn = wrapper.find('#is-submitting');
+        let is_disabled = expect.stringContaining('disabled');
+        expect(btn.html()).toEqual(is_disabled);
+        done();
+    });
+
+    it("enables 'submit' button if user/role has been added or changed", (done) => {
+        let btn = wrapper.find('#is-submitting');
+        let is_disabled = expect.stringContaining('disabled');
+
+        // Add a user
+        wrapper.find('input').setValue('test_user_77');
+        wrapper.findAll('option').at(1).setSelected();
+        wrapper.find('.btn-add').trigger('click');
+
+        expect(btn.html()).not.toEqual(is_disabled);
+        done();
+    });
+
     it("adds new assigned roles", (done) => {
         moxios.wait(() => {
-            wrapper.find(staffRolesForm).vm.$emit('add-user', user_role);
+            wrapper.setData({
+                user_name: 'test_user_2',
+                selected_role: 'canManage'
+            });
+
+            wrapper.find('.btn-add').trigger('click');
             expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.concat([user_role]));
+            done();
+        });
+    });
+
+    it("resets the form after adding a user", (done) => {
+        moxios.wait(() => {
+            wrapper.find('input').setValue('test_user_11');
+            wrapper.findAll('option').at(2).setSelected();
+            wrapper.find('.btn-add').trigger('click');
+
+            expect(wrapper.vm.user_name).toEqual('');
+            expect(wrapper.vm.selected_role).toEqual('canAccess');
             done();
         });
     });
 
     it("does not add a new user with roles if user already exists", (done) => {
         moxios.wait(() => {
-            let current_staff_roles = response.assigned.concat([user_role]);
-            wrapper.setData({
-                updated_staff_roles: current_staff_roles
-            });
+            wrapper.find('input').setValue('test_user');
+            wrapper.findAll('option').at(2).setSelected();
+            wrapper.find('.btn-add').trigger('click');
 
-            wrapper.find(staffRolesForm).vm.$emit('add-user', user_role);
-            expect(wrapper.vm.updated_staff_roles).toEqual(current_staff_roles);
+            expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned);
+            expect(wrapper.vm.response_message).toEqual('User: test_user already exists. User not added.');
             done();
         });
     });
