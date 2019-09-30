@@ -68,5 +68,7 @@
         </div>
     </div>
     <script type="text/javascript" src="/static/js/public/abstractDisplay"></script>
-    <c:import url="fullRecord/browseView.jsp"/>
+    <div class="collection-info-bottom">
+        <c:import url="fullRecord/browseView.jsp"/>
+    </div>
 </div>

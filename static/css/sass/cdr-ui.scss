@@ -481,6 +481,13 @@ p.no-search-results {
 #is-folder {
   background-color: white;
 
+  #full_record_trail {
+    background-color: white;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
   #parent-collection {
     background-color: #EBEBEB;
   }
@@ -600,6 +607,11 @@ p.no-search-results {
     text-align: center;
     width: 25px;
   }
+}
+
+.collection-info-bottom {
+  margin: 50px;
+  padding: 5px;
 }
 
 /* Work page */
@@ -795,6 +807,10 @@ table.dataTable {
   #child-files_wrapper {
     overflow-x: scroll;
   }
+
+  .collection-info-bottom {
+    margin: 25px;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -876,5 +892,10 @@ table.dataTable {
 
   .facets {
     word-wrap: break-word;
+  }
+
+  .collection-info-bottom {
+    margin: 0;
+    word-break: break-all;
   }
 }

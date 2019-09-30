@@ -454,6 +454,12 @@ p.no-search-results {
 #is-folder {
   background-color: white;
 }
+#is-folder #full_record_trail {
+  background-color: white;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
 #is-folder #parent-collection {
   background-color: #EBEBEB;
 }
@@ -554,6 +560,11 @@ p.no-search-results {
   padding: 4px 5px;
   text-align: center;
   width: 25px;
+}
+
+.collection-info-bottom {
+  margin: 50px;
+  padding: 5px;
 }
 
 /* Work page */
@@ -719,6 +730,10 @@ table.dataTable tbody tr.odd {
   #child-files_wrapper {
     overflow-x: scroll;
   }
+
+  .collection-info-bottom {
+    margin: 25px;
+  }
 }
 @media screen and (max-width: 768px) {
   .facet-padding {
@@ -789,6 +804,11 @@ table.dataTable tbody tr.odd {
 
   .facets {
     word-wrap: break-word;
+  }
+
+  .collection-info-bottom {
+    margin: 0;
+    word-break: break-all;
   }
 }
 
