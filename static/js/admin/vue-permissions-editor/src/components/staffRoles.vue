@@ -176,7 +176,7 @@
             setRoles() {
                 this.updated_staff_roles = this.removeDeletedAssignedRoles();
                 this.is_error_message = false;
-                this.response_message = 'Saving permissions ..';
+                this.response_message = 'Saving permissions \u2026';
 
                 axios({
                     method: 'put',

@@ -198,9 +198,9 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("removes assigned roles for previously assigned users", (done) => {
+    it("marks user for deletion if user had previously assigned role", (done) => {
         moxios.wait(() => {
-            wrapper.vm.markUserForDeletion(0);
+            wrapper.find('.btn-remove').trigger('click');
             expect(wrapper.vm.deleted_users).toEqual(response.assigned);
             done();
         });
