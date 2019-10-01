@@ -31,9 +31,13 @@ public class RoleAssignment {
     public RoleAssignment() {
     }
 
-    public RoleAssignment(String principal, UserRole role, PID pid) {
+    public RoleAssignment(String principal, UserRole role) {
         setPrincipal(principal);
         setRole(role);
+    }
+
+    public RoleAssignment(String principal, UserRole role, PID pid) {
+        this(principal, role);
         setAssignedTo(pid.getId());
     }
 

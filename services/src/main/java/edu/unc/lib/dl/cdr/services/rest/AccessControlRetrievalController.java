@@ -16,16 +16,11 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
-import static java.util.Arrays.asList;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +38,6 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -74,22 +68,10 @@ public class AccessControlRetrievalController {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
-    private static final List<String> ROLE_PRECEDENCE = asList(
-            UserRole.administrator.getPropertyString(),
-            UserRole.unitOwner.getPropertyString(),
-            UserRole.canManage.getPropertyString(),
-            UserRole.canDescribe.getPropertyString(),
-            UserRole.canIngest.getPropertyString(),
-            UserRole.canAccess.getPropertyString(),
-            UserRole.canViewOriginals.getPropertyString(),
-            UserRole.canViewAccessCopies.getPropertyString(),
-            UserRole.canViewMetadata.getPropertyString(),
-            UserRole.canDiscover.getPropertyString()
-            );
-
     @GetMapping(value = "/acl/staff/{id}", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public ResponseEntity<Object> getStaffRoles(@PathVariable("id") String id) {
+        log.debug("Retrieving staff roles for {}", id);
         PID pid = PIDs.get(id);
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
@@ -103,26 +85,23 @@ public class AccessControlRetrievalController {
         List<RoleAssignment> assigned = null;
 
         if (repoObj instanceof AdminUnit) {
-            assigned = toRoleAssignmentList(pid,
-                    objectAclFactory.getPrincipalRoles(pid), true);
+            assigned = objectAclFactory.getStaffRoleAssignments(pid);
             inherited = Collections.emptyList();
         } else if (repoObj instanceof CollectionObject) {
-            assigned = toRoleAssignmentList(pid,
-                    objectAclFactory.getPrincipalRoles(pid), true);
+            assigned = objectAclFactory.getStaffRoleAssignments(pid);
             RepositoryObject parent = repoObj.getParent();
-            inherited = toRoleAssignmentList(parent.getPid(),
-                    deduplicateRoles(objectAclFactory.getPrincipalRoles(parent.getPid())),
-                    true);
+            inherited = inheritedAclFactory.getStaffRoleAssignments(parent.getPid());
         } else if (repoObj instanceof ContentObject) {
             assigned = Collections.emptyList();
-            inherited = toRoleAssignmentList(pid,
-                    deduplicateRoles(inheritedAclFactory.getPrincipalRoles(pid)),
-                    true);
+            inherited = inheritedAclFactory.getStaffRoleAssignments(pid);
         } else {
             result.put("error", "Cannot retrieve staff roles for object " + id
                     + " of type " + repoObj.getClass().getName());
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
+
+        stripUserPrefix(inherited);
+        stripUserPrefix(assigned);
 
         result.put(INHERITED_ROLES, inherited);
         result.put(ASSIGNED_ROLES, assigned);
@@ -130,52 +109,14 @@ public class AccessControlRetrievalController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    /**
-     * Deduplicates role assignments, so that a principal will only have one role.
-     * If more than one role is assigned to the same principal, the highest level
-     * role will be return.
-     *
-     * @param princToRoles
-     * @return
-     */
-    private Map<String, Set<String>> deduplicateRoles(Map<String, Set<String>> princToRoles) {
-        for (Entry<String, Set<String>> princEntry : princToRoles.entrySet()) {
-            Set<String> roles = princEntry.getValue();
-            if (roles.size() > 1) {
-                for (String preferred : ROLE_PRECEDENCE) {
-                    if (roles.contains(preferred)) {
-                        princEntry.setValue(new HashSet<>(asList(preferred)));
-                        break;
-                    }
-                }
+    // Trim user namespace off of user principals for the response
+    private void stripUserPrefix(List<RoleAssignment> assignments) {
+        for (RoleAssignment assignment: assignments) {
+            String princ = assignment.getPrincipal();
+            if (princ.startsWith(USER_NAMESPACE)) {
+                princ = princ.substring(USER_NAMESPACE.length());
+                assignment.setPrincipal(princ);
             }
         }
-        return princToRoles;
-    }
-
-    private List<RoleAssignment> toRoleAssignmentList(PID pid, Map<String, Set<String>> princToRoles,
-            boolean staffRoles) {
-        List<RoleAssignment> result = new ArrayList<>();
-        princToRoles.forEach((princ, roles) -> {
-            for (String roleString: roles) {
-                UserRole role = UserRole.getRoleByProperty(roleString);
-                if (role == null) {
-                    log.warn("Invalid role {} assigned to {}", roleString, pid.getId());
-                    continue;
-                }
-                // Skip over either staff or patrons roles, depending on what is being requested
-                if (staffRoles != role.isStaffRole()) {
-                    log.debug("Skipping role {} on object {}", roleString, pid.getId());
-                    continue;
-                }
-                // Trim user namespace off of user principals for the response
-                if (princ.startsWith(USER_NAMESPACE)) {
-                    princ = princ.substring(USER_NAMESPACE.length());
-                }
-                result.add(new RoleAssignment(princ, role));
-            }
-        });
-
-        return result;
     }
 }
