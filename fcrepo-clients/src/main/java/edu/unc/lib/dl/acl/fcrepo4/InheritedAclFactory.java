@@ -27,10 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -44,8 +46,8 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class InheritedAclFactory implements AclFactory {
 
-    private final static int UNIT_PATH_DEPTH = 0;
-    private final static int CONTENT_STARTING_DEPTH = 2;
+    private static final int UNIT_PATH_DEPTH = 0;
+    private static final int CONTENT_STARTING_DEPTH = 2;
 
     private ObjectAclFactory objectAclFactory;
 
@@ -85,7 +87,7 @@ public class InheritedAclFactory implements AclFactory {
                     patronPrincipals = getPatronPrincipals(inheritedPrincRoles.keySet());
                 }
                 // No patron principals, so no further changes can occur
-                if (patronPrincipals.size() == 0) {
+                if (patronPrincipals.isEmpty()) {
                     return inheritedPrincRoles;
                 }
 
@@ -103,6 +105,31 @@ public class InheritedAclFactory implements AclFactory {
         }
 
         return inheritedPrincRoles;
+    }
+
+    @Override
+    public List<RoleAssignment> getStaffRoleAssignments(PID pid) {
+        return getRoleAssignments(pid, true);
+    }
+
+    @Override
+    public List<RoleAssignment> getPatronRoleAssignments(PID pid) {
+        return getRoleAssignments(pid, false);
+    }
+
+    private List<RoleAssignment> getRoleAssignments(PID pid, boolean retrieveStaffRoles) {
+        List<PID> path = getPidPath(pid);
+
+        if (retrieveStaffRoles) {
+            return path.stream()
+                    .limit(2) // Only need to check the first two tiers for staff
+                    .flatMap(pathPid -> objectAclFactory.getStaffRoleAssignments(pathPid).stream())
+                    .collect(Collectors.toList());
+        } else {
+            return path.stream()
+                    .flatMap(pathPid -> objectAclFactory.getPatronRoleAssignments(pathPid).stream())
+                    .collect(Collectors.toList());
+        }
     }
 
     private void mergePrincipalRoles(Map<String, Set<String>> basePrincRoles, Map<String,
@@ -184,7 +211,7 @@ public class InheritedAclFactory implements AclFactory {
     private List<PID> getPidPath(PID pid) {
         List<PID> path = pathFactory.getAncestorPids(pid);
         // Looked up either the root or a unit, yielding no ancestors
-        if (path.size() < 1) {
+        if (path.isEmpty()) {
             return Collections.emptyList();
         }
         // Trim off the root object from the beginning of the path

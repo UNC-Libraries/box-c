@@ -16,12 +16,14 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,6 +52,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
@@ -57,7 +60,6 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class InheritedAclFactoryTest {
 
-    private static final String PATRON_PRINC = "everyone";
     private static final String MANAGE_PRINC = "manageGrp";
     private static final String OWNER_PRINC = "owner";
 
@@ -105,7 +107,7 @@ public class InheritedAclFactoryTest {
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
         assertPrincipalHasRoles("Assumed patron assignment should be present for unit",
-                princRoles, PATRON_PRINC, canViewOriginals);
+                princRoles, PUBLIC_PRINC, canViewOriginals);
     }
 
     @Test
@@ -187,11 +189,11 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> collPrincRoles = new HashMap<>();
         addPrincipalRoles(collPrincRoles, MANAGE_PRINC, canManage);
-        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        addPrincipalRoles(collPrincRoles, PUBLIC_PRINC, canViewMetadata);
         when(objectAclFactory.getPrincipalRoles(eq(collPid)))
                 .thenReturn(collPrincRoles);
 
-        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PUBLIC_PRINC), any(Permission.class)))
                 .thenReturn(true);
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
@@ -201,7 +203,7 @@ public class InheritedAclFactoryTest {
         assertPrincipalHasRoles("Incorrect inherited roles for the manger principal",
                 princRoles, MANAGE_PRINC, canManage);
         assertPrincipalHasRoles("Incorrect inherited patron roles for the patron principal",
-                princRoles, PATRON_PRINC, canViewMetadata);
+                princRoles, PUBLIC_PRINC, canViewMetadata);
         assertPrincipalHasRoles("Owner principal role not set correctly",
                 princRoles, OWNER_PRINC, unitOwner);
     }
@@ -212,7 +214,7 @@ public class InheritedAclFactoryTest {
         PID collPid = addPidToAncestors();
 
         Map<String, Set<String>> collPrincRoles = new HashMap<>();
-        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        addPrincipalRoles(collPrincRoles, PUBLIC_PRINC, canViewMetadata);
         when(objectAclFactory.getPrincipalRoles(eq(collPid)))
                 .thenReturn(collPrincRoles);
 
@@ -230,13 +232,13 @@ public class InheritedAclFactoryTest {
         PID collectionPid = addPidToAncestors();
 
         Map<String, Set<String>> collPrincRoles = new HashMap<>();
-        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        addPrincipalRoles(collPrincRoles, PUBLIC_PRINC, canViewMetadata);
         addPrincipalRoles(collPrincRoles, AUTHENTICATED_PRINC, canViewOriginals);
         when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
                 .thenReturn(collPrincRoles);
 
         // revoke one patron but not the other
-        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PUBLIC_PRINC), any(Permission.class)))
                 .thenReturn(false);
         when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC), any(Permission.class)))
                 .thenReturn(true);
@@ -254,20 +256,20 @@ public class InheritedAclFactoryTest {
         PID collectionPid = addPidToAncestors();
 
         Map<String, Set<String>> collPrincRoles = new HashMap<>();
-        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewOriginals);
+        addPrincipalRoles(collPrincRoles, PUBLIC_PRINC, canViewOriginals);
         when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
                 .thenReturn(collPrincRoles);
 
-        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewMetadata)))
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PUBLIC_PRINC), eq(Permission.viewMetadata)))
                 .thenReturn(true);
-        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewOriginal)))
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PUBLIC_PRINC), eq(Permission.viewOriginal)))
                 .thenReturn(false);
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
         assertEquals("Only one patron principal should be present", 1, princRoles.size());
         assertPrincipalHasRoles("Patron should be reduced to have view metadata role",
-                princRoles, PATRON_PRINC, canViewMetadata);
+                princRoles, PUBLIC_PRINC, canViewMetadata);
     }
 
     @Test
@@ -281,7 +283,7 @@ public class InheritedAclFactoryTest {
                 .thenReturn(unitPrincRoles);
 
         Map<String, Set<String>> collPrincRoles = new HashMap<>();
-        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        addPrincipalRoles(collPrincRoles, PUBLIC_PRINC, canViewMetadata);
         when(objectAclFactory.getPrincipalRoles(eq(pid)))
                 .thenReturn(collPrincRoles);
 
@@ -425,6 +427,152 @@ public class InheritedAclFactoryTest {
         assertEquals(0, princRoles.size());
     }
 
+    @Test
+    public void testGetStaffRoleAssignmentsDirectAssignment() {
+        PID unitPid = makePid();
+
+        mockObjStaffRoleAssignments(new RoleAssignment(OWNER_PRINC, UserRole.unitOwner, unitPid));
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(unitPid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = getAssignmentByPidAndRole(assignments, unitPid, UserRole.unitOwner);
+        assertEquals(OWNER_PRINC, assignment.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRoleAssignmentsInheritedAndDirectAssignment() {
+        PID unitPid = addPidToAncestors();
+        PID collPid = makePid();
+
+        mockObjStaffRoleAssignments(new RoleAssignment(OWNER_PRINC, UserRole.unitOwner, unitPid));
+        mockObjStaffRoleAssignments(new RoleAssignment(MANAGE_PRINC, UserRole.canManage, collPid));
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(collPid);
+        assertEquals(2, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPidAndRole(assignments, unitPid, UserRole.unitOwner);
+        assertEquals(OWNER_PRINC, assignment1.getPrincipal());
+
+        RoleAssignment assignment2 = getAssignmentByPidAndRole(assignments, collPid, UserRole.canManage);
+        assertEquals(MANAGE_PRINC, assignment2.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRoleAssignmentsInheritedOnFolder() {
+        PID unitPid = addPidToAncestors();
+        PID collPid = addPidToAncestors();
+        PID folderPid = makePid();
+
+        mockObjStaffRoleAssignments(new RoleAssignment(OWNER_PRINC, UserRole.unitOwner, unitPid));
+        mockObjStaffRoleAssignments(new RoleAssignment(MANAGE_PRINC, UserRole.canManage, collPid));
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(folderPid);
+        assertEquals(2, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPidAndRole(assignments, unitPid, UserRole.unitOwner);
+        assertEquals(OWNER_PRINC, assignment1.getPrincipal());
+
+        RoleAssignment assignment2 = getAssignmentByPidAndRole(assignments, collPid, UserRole.canManage);
+        assertEquals(MANAGE_PRINC, assignment2.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRoleAssignmentsNoAssignments() {
+        addPidToAncestors();
+        PID collPid = makePid();
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(collPid);
+        assertTrue(assignments.isEmpty());
+    }
+
+    @Test
+    public void testGetStaffRoleAssignmentsMultipleInheritedAndDirectAssignment() {
+        PID unitPid = addPidToAncestors();
+        PID collPid = makePid();
+
+        mockObjStaffRoleAssignments(
+                new RoleAssignment(OWNER_PRINC, UserRole.unitOwner, unitPid),
+                new RoleAssignment(MANAGE_PRINC, UserRole.canAccess, unitPid));
+        mockObjStaffRoleAssignments(new RoleAssignment(MANAGE_PRINC, UserRole.canManage, collPid));
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(collPid);
+        assertEquals(3, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPidAndRole(assignments, unitPid, UserRole.unitOwner);
+        assertEquals(OWNER_PRINC, assignment1.getPrincipal());
+
+        RoleAssignment assignment2 = getAssignmentByPidAndRole(assignments, unitPid, UserRole.canAccess);
+        assertEquals(MANAGE_PRINC, assignment2.getPrincipal());
+
+        RoleAssignment assignment3 = getAssignmentByPidAndRole(assignments, collPid, UserRole.canManage);
+        assertEquals(MANAGE_PRINC, assignment3.getPrincipal());
+    }
+
+    @Test
+    public void testGetPatronRoleAssignmentsDirect() {
+        addPidToAncestors();
+        PID collPid = makePid();
+
+        mockObjPatronRoleAssignments(new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, collPid));
+
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(collPid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = getAssignmentByPidAndRole(assignments, collPid, UserRole.canViewOriginals);
+        assertEquals(PUBLIC_PRINC, assignment.getPrincipal());
+    }
+
+    @Test
+    public void testGetPatronRoleAssignmentsInherited() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+        PID folderPid = makePid();
+
+        mockObjPatronRoleAssignments(new RoleAssignment(PUBLIC_PRINC, UserRole.canViewAccessCopies, collPid),
+                new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, collPid));
+        mockObjPatronRoleAssignments(new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, folderPid));
+
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(folderPid);
+        assertEquals(3, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPidAndRole(assignments, collPid, UserRole.canViewAccessCopies);
+        assertEquals(PUBLIC_PRINC, assignment1.getPrincipal());
+        RoleAssignment assignment2 = getAssignmentByPidAndRole(assignments, collPid, UserRole.canViewOriginals);
+        assertEquals(AUTHENTICATED_PRINC, assignment2.getPrincipal());
+
+        RoleAssignment assignment3 = getAssignmentByPidAndRole(assignments, folderPid, UserRole.canViewMetadata);
+        assertEquals(PUBLIC_PRINC, assignment3.getPrincipal());
+    }
+
+    @Test
+    public void testGetPatronRoleAssignmentsNone() {
+        addPidToAncestors();
+        PID collPid = makePid();
+
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(collPid);
+        assertTrue("No assignments should be returned", assignments.isEmpty());
+    }
+
+    private RoleAssignment getAssignmentByPidAndRole(List<RoleAssignment> assignments, PID pid, UserRole role) {
+        return assignments.stream()
+                .filter(a -> a.getRole().equals(role) && a.getAssignedTo().equals(pid.getId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void mockObjStaffRoleAssignments(RoleAssignment... assignments) {
+        PID pid = PIDs.get(assignments[0].getAssignedTo());
+        List<RoleAssignment> assigned = asList(assignments);
+        when(objectAclFactory.getStaffRoleAssignments(pid)).thenReturn(assigned);
+    }
+
+    private void mockObjPatronRoleAssignments(RoleAssignment... assignments) {
+        PID pid = PIDs.get(assignments[0].getAssignedTo());
+        List<RoleAssignment> assigned = asList(assignments);
+        when(objectAclFactory.getPatronRoleAssignments(pid)).thenReturn(assigned);
+    }
+
     private static void assertPrincipalHasRoles(String message, Map<String, Set<String>> princRoles,
             String principal, UserRole... expectedRoles) {
         try {
@@ -448,8 +596,12 @@ public class InheritedAclFactoryTest {
     }
 
     private PID addPidToAncestors() {
-        PID ancestor = PIDs.get(UUID.randomUUID().toString());
+        PID ancestor = makePid();
         ancestorPids.add(ancestor);
         return ancestor;
+    }
+
+    private PID makePid() {
+        return PIDs.get(UUID.randomUUID().toString());
     }
 }

@@ -16,10 +16,12 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -38,6 +40,22 @@ public interface AclFactory {
      * @return
      */
     public Map<String, Set<String>> getPrincipalRoles(PID pid);
+
+    /**
+     * Retrieve staff role assignments for the specified object
+     *
+     * @param pid identifier for the object
+     * @return List of RoleAssignments for all the staff roles assigned to the object
+     */
+    public List<RoleAssignment> getStaffRoleAssignments(PID pid);
+
+    /**
+     * Retrieve patron role assignments for the specified object
+     *
+     * @param pid identifier for the object
+     * @return List of RoleAssignments for all the patron roles assigned to the object
+     */
+    public List<RoleAssignment> getPatronRoleAssignments(PID pid);
 
     /**
      * Returns the patron access setting for this object if specified, otherwise

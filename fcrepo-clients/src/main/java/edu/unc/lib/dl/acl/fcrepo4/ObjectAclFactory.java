@@ -40,6 +40,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
@@ -94,6 +95,33 @@ public class ObjectAclFactory implements AclFactory {
                         Entry<String, String>::getValue,
                         Collectors.mapping(Entry<String, String>::getKey, Collectors.toSet())
                     ));
+    }
+
+    @Override
+    public List<RoleAssignment> getStaffRoleAssignments(PID pid) {
+        return getRoleAssignments(pid, true);
+    }
+
+    @Override
+    public List<RoleAssignment> getPatronRoleAssignments(PID pid) {
+        return getRoleAssignments(pid, false);
+    }
+
+    private List<RoleAssignment> getRoleAssignments(PID pid, boolean retrieveStaffRoles) {
+        Map<String, Set<String>> princToRoles = getPrincipalRoles(pid);
+
+        List<RoleAssignment> result = new ArrayList<>();
+        princToRoles.forEach((princ, roles) -> {
+            for (String roleString: roles) {
+                UserRole role = UserRole.getRoleByProperty(roleString);
+                // Skip over either staff or patrons roles, depending on what is being requested
+                if (retrieveStaffRoles == role.isStaffRole()) {
+                    result.add(new RoleAssignment(princ, role, pid));
+                }
+            }
+        });
+
+        return result;
     }
 
     @Override
