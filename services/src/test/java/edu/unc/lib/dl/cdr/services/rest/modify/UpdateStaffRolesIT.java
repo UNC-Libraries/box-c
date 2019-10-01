@@ -298,6 +298,24 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertHasAssignment(USER_GROUPS, canManage, updated);
     }
 
+    @Test
+    public void testAssignMultipleRolesToSamePrincipal() throws Exception {
+        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(unit);
+        PID pid = unit.getPid();
+
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(USER_NAME, canManage),
+                new RoleAssignment(USER_NAME, canAccess)
+                );
+
+        mvc.perform(put("/edit/acl/staff/" + pid.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(assignments)))
+                .andExpect(status().isBadRequest())
+            .andReturn();
+    }
+
     private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
         assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
