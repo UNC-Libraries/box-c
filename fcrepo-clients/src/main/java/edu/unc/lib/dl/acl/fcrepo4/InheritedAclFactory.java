@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
+import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
@@ -45,6 +49,7 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class InheritedAclFactory implements AclFactory {
+    private static final Logger log = LoggerFactory.getLogger(InheritedAclFactory.class);
 
     private static final int UNIT_PATH_DEPTH = 0;
     private static final int CONTENT_STARTING_DEPTH = 2;
@@ -55,6 +60,14 @@ public class InheritedAclFactory implements AclFactory {
 
     private ObjectPermissionEvaluator objectPermissionEvaluator;
 
+    private static final List<String> PATRON_ROLE_PRECEDENCE = asList(
+            UserRole.none.getPropertyString(),
+            UserRole.canViewMetadata.getPropertyString(),
+            UserRole.canViewAccessCopies.getPropertyString(),
+            UserRole.canViewOriginals.getPropertyString()
+            );
+
+
     @Override
     public Map<String, Set<String>> getPrincipalRoles(PID target) {
 
@@ -62,18 +75,16 @@ public class InheritedAclFactory implements AclFactory {
         List<PID> path = getPidPath(target);
 
         Map<String, Set<String>> inheritedPrincRoles = new HashMap<>();
-        Set<String> patronPrincipals = null;
 
         // Iterate through each step in the path except for the root content node
         int depth = 0;
         for (; depth < path.size(); depth++) {
             PID pathPid = path.get(depth);
 
+            Map<String, Set<String>> objectPrincipalRoles = objectAclFactory.getPrincipalRoles(pathPid);
+
             // For the first two objects (unit, collection), staff roles should be considered
             if (depth < CONTENT_STARTING_DEPTH) {
-
-                Map<String, Set<String>> objectPrincipalRoles = objectAclFactory.getPrincipalRoles(pathPid);
-
                 // Add this object's principals/roles to the result
                 mergePrincipalRoles(inheritedPrincRoles, objectPrincipalRoles);
 
@@ -82,17 +93,15 @@ public class InheritedAclFactory implements AclFactory {
                 if (inheritedPrincRoles.isEmpty()) {
                     return inheritedPrincRoles;
                 }
-                // Determine the set of patron principals to evaluate going forward
-                if (patronPrincipals == null) {
-                    patronPrincipals = getPatronPrincipals(inheritedPrincRoles.keySet());
-                }
-                // No patron principals, so no further changes can occur
-                if (patronPrincipals.isEmpty()) {
+
+                Set<String> inheritedPatronPrincipals = getPatronPrincipals(inheritedPrincRoles.keySet());
+                if (inheritedPatronPrincipals.isEmpty()) {
                     return inheritedPrincRoles;
                 }
 
-                // Evaluate remaining inherited patron roles
-                revokedPatronRoles(pathPid, inheritedPrincRoles, patronPrincipals);
+                // Merge any further patron role restrictions into the inherited roles
+                mergePatronPrincipalRoles(pathPid, inheritedPrincRoles,
+                        inheritedPatronPrincipals, objectPrincipalRoles);
             }
         }
 
@@ -145,6 +154,39 @@ public class InheritedAclFactory implements AclFactory {
                     basePrincRoles.put(principal, roles);
                 }
             });
+        }
+    }
+
+    private void mergePatronPrincipalRoles(PID pid,
+            Map<String, Set<String>> inheritedPrincRoles,
+            Set<String> inheritedPatronPrincipals,
+            Map<String, Set<String>> objectPrincipalRoles) {
+
+        // Discard any non-patron assignments at this depth
+        Set<String> objPatronPrincipals = getPatronPrincipals(objectPrincipalRoles.keySet());
+        // Discard principals that aren't also being inherited
+        objPatronPrincipals.retainAll(inheritedPatronPrincipals);
+
+        // No new patron assignments for principal we are following, skip
+        if (objPatronPrincipals.isEmpty()) {
+            return;
+        }
+
+        // If any incoming patron roles are stricter than inherited roles, then override
+        for (String patronPrincipal: objPatronPrincipals) {
+            Set<String> inheritedRoles = inheritedPrincRoles.get(patronPrincipal);
+            Set<String> objRoles = objectPrincipalRoles.get(patronPrincipal);
+
+            if (inheritedRoles.size() > 1 || objRoles.size() > 1) {
+                log.warn("Principal {} is assigned multiple roles on object {}", patronPrincipal, pid.getId());
+            }
+
+            int inheritedIndex = inheritedRoles.stream().mapToInt(PATRON_ROLE_PRECEDENCE::indexOf).min().getAsInt();
+            int objIndex = objRoles.stream().mapToInt(PATRON_ROLE_PRECEDENCE::indexOf).min().getAsInt();
+
+            if (objIndex < inheritedIndex) {
+                inheritedPrincRoles.put(patronPrincipal, objRoles);
+            }
         }
     }
 

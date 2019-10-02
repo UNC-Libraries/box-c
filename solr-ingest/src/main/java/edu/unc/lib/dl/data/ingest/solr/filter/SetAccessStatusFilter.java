@@ -26,6 +26,7 @@ import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
@@ -71,6 +72,8 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
 
         PID pid = dip.getPid();
         List<String> status = new ArrayList<>();
+
+        List<RoleAssignment> assignments = inheritedAclFactory.getPatronRoleAssignments(pid);
 
         PatronAccess inheritedAccess = inheritedAclFactory.getPatronAccess(pid);
         PatronAccess objAccess = objAclFactory.getPatronAccess(pid);

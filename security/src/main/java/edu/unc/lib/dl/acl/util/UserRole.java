@@ -41,8 +41,10 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,6 +70,7 @@ public enum UserRole {
     canView("canView", new Permission[] {
             Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
     // Patron roles
+    none("none", false),
     canDiscover("canDiscover", false),
     canViewMetadata("canViewMetadata", false, viewMetadata),
     canViewAccessCopies("canViewAccessCopies", false, viewMetadata, viewAccessCopies),
@@ -99,6 +102,8 @@ public enum UserRole {
 
     private static List<UserRole> staffRoles;
     private static List<UserRole> patronRoles;
+
+    private static Map<Permission, Set<UserRole>> permissionToRoles;
 
     UserRole(String predicate, boolean isStaffRole, Permission... perms) {
         this.predicate = predicate;
@@ -161,6 +166,20 @@ public enum UserRole {
             }
         }
         return roles;
+    }
+
+    public static Set<UserRole> getUserRolesWithPermission(Permission permission) {
+        if (permissionToRoles == null) {
+            permissionToRoles = new EnumMap<>(Permission.class);
+            for (Permission perm: Permission.values()) {
+                Set<UserRole> roles = Arrays.stream(UserRole.values())
+                        .filter(u -> u.getPermissions().contains(perm))
+                        .collect(Collectors.toSet());
+                permissionToRoles.put(perm, roles);
+            }
+        }
+
+        return permissionToRoles.get(permission);
     }
 
     /**
