@@ -266,6 +266,7 @@ $light-gray: #E1E1E1;
 $border-style: 1px solid $light-gray;
 $box-shadow-color: rgba(211,211,211,0.5);
 $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box-shadow-color;
+$display-width: calc(100% - 65px);
 
 /**
 *
@@ -447,7 +448,8 @@ p.no-search-results {
 /* Collection Page */
 
 .browse-header.columns {
-  margin: 0;
+  margin: 0 auto 0 20px;
+  width: $display-width;
 }
 
 .browse-header {
@@ -455,7 +457,7 @@ p.no-search-results {
   color: darkblue;
   display: inline-flex !important;
   padding-top: 25px;
-  width: 100%;
+  width: $display-width;
 
   h2 {
     font-size: 36px;
@@ -478,25 +480,7 @@ p.no-search-results {
   }
 }
 
-#is-folder {
-  background-color: white;
 
-  #full_record_trail {
-    background-color: white;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-  }
-
-  #parent-collection {
-    background-color: #EBEBEB;
-  }
-
-  .bottomline {
-    border: none;
-    padding: 0;
-  }
-}
 
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
@@ -610,7 +594,7 @@ p.no-search-results {
 }
 
 .collection-info-bottom {
-  margin: 50px;
+  margin: 20px;
   padding: 5px;
 }
 
@@ -693,7 +677,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
-  margin: 0 15px 50px 15px;
+  margin: 0 auto 50px auto;
   padding: 20px;
   text-indent: 0;
   width: 100%;

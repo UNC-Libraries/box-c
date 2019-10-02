@@ -269,12 +269,11 @@
 
         ul {
             display: inline-flex;
-            text-align: center;
             width: 100%;
         }
 
         div, p {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
         }
 
         p.spacing {
@@ -282,7 +281,7 @@
         }
 
         i {
-            font-size: 10rem;
+            font-size: 11rem;
         }
 
         button {
@@ -305,17 +304,11 @@
 
         .record-title {
             margin-left: -15px;
-            margin-top: 65px;
+            margin-top: 25px;
         }
 
         .thumbnail + .record-title {
-            margin-top: 225px;
-        }
-
-        img {
-            height: 100px;
-            margin-left: 15px;
-            width: 200px;
+            margin-top: 200px;
         }
 
         @media screen and (max-width: 768px) {

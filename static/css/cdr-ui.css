@@ -423,7 +423,8 @@ p.no-search-results {
 
 /* Collection Page */
 .browse-header.columns {
-  margin: 0;
+  margin: 0 auto 0 20px;
+  width: calc(100% - 65px);
 }
 
 .browse-header {
@@ -431,7 +432,7 @@ p.no-search-results {
   color: darkblue;
   display: inline-flex !important;
   padding-top: 25px;
-  width: 100%;
+  width: calc(100% - 65px);
 }
 .browse-header h2 {
   font-size: 36px;
@@ -449,23 +450,6 @@ p.no-search-results {
   font-size: 18px;
   line-height: 22px;
   margin-left: 15px;
-}
-
-#is-folder {
-  background-color: white;
-}
-#is-folder #full_record_trail {
-  background-color: white;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-}
-#is-folder #parent-collection {
-  background-color: #EBEBEB;
-}
-#is-folder .bottomline {
-  border: none;
-  padding: 0;
 }
 
 .browse-header.browse-header-bottom {
@@ -563,7 +547,7 @@ p.no-search-results {
 }
 
 .collection-info-bottom {
-  margin: 50px;
+  margin: 20px;
   padding: 5px;
 }
 
@@ -635,7 +619,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
-  margin: 0 15px 50px 15px;
+  margin: 0 auto 50px auto;
   padding: 20px;
   text-indent: 0;
   width: 100%;
