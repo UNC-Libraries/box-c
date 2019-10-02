@@ -15,7 +15,7 @@
             <tr v-for="inherited_staff_permission in current_staff_roles.inherited">
                 <td>{{ inherited_staff_permission.principal }}</td>
                 <td>{{ inherited_staff_permission.role }}</td>
-                <td>{{ containerName }}</td>
+                <td>{{ assignedToName(inherited_staff_permission) }}</td>
             </tr>
             </tbody>
         </table>
@@ -111,7 +111,7 @@
         props: {
             alertHandler: Object,
             changesCheck: Boolean,
-            containerName: String,
+            objectPath: Array,
             containerType: String,
             title: String,
             uuid: String
@@ -328,6 +328,19 @@
                 });
 
                 this.unsaved_changes = unsaved_staff_roles || this.deleted_users.length > 0 || this.user_name !== '';
+            },
+            
+            assignedToName(role_assignment) {
+                if (this.objectPath === undefined || this.objectPath === null) {
+                    return "--";
+                }
+                let assignedTo = role_assignment.assignedTo;
+                for (const pathObj of this.objectPath) {
+                    if (pathObj.pid === assignedTo) {
+                        return pathObj.name;
+                    }
+                }
+                return "--";
             }
         },
 

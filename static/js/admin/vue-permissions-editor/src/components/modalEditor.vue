@@ -26,7 +26,7 @@
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
                                                  :changes-check="checkForUnsavedChanges"
-                                                 :container-name="parentContainerName"
+                                                 :object-path="metadata.objectPath"
                                                  :container-type="metadata.type"
                                                  :uuid="metadata.id"
                                                  :title="metadata.title"
