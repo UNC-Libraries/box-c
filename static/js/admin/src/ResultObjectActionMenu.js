@@ -134,8 +134,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		*/
-		if ($.inArray('assignStaffRoles', metadata.permissions) != -1) 
-			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			if (isContainerFlag) {
@@ -190,7 +188,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["restoreResult"] = {name : 'Restore', disabled : !metadata.isDeleted};
 			items["deleteResult"] = {name : 'Delete', disabled : metadata.isDeleted};
 		}
-		
+
+		// Set/Update permission actions
+		items["seppermission"] = "";
+		items["patronPermissions"] = {name : 'Patron permissions'};
+		items["staffPermissions"] = {name : 'Staff permissions'};
+
+		// Get data object for vue permissions editor
+		var perms_editor_data = perms_editor.$children[0].$children[0].$data;
+
 		return {
 			callback: function(key, options) {
 				switch (key) {
@@ -231,9 +237,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 									'Unpublish' : 'Publish',
 							target : resultObject
 						});
-						break;
-					case "editAccess" :
-						self.editAccess(resultObject);
 						break;
 					case "addFile" :
 						new AddFileForm({
@@ -321,6 +324,18 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
+					case "patronPermissions" :
+						perms_editor_data.permissionType = 'Patron';
+						perms_editor_data.metadata = metadata;
+						perms_editor_data.showModal = true;
+						perms_editor_data.alertHandler = self.options.alertHandler;
+						break;
+					case "staffPermissions":
+						perms_editor_data.permissionType = 'Staff';
+						perms_editor_data.metadata = metadata;
+						perms_editor_data.showModal = true;
+						perms_editor_data.alertHandler = self.options.alertHandler;
+						break;
 				}
 			},
 			items : items
@@ -376,34 +391,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	ResultObjectActionMenu.prototype.setSelectedCount = function(selectedCount) {
 		this.selectedCount = selectedCount;
 	};
-	
-	ResultObjectActionMenu.prototype.editAccess = function(resultObject) {
-		var self = this;
-		var dialog = $("<div class='containingDialog'><img src='/static/images/admin/loading_large.gif'/></div>");
-		dialog.dialog({
-			autoOpen: true,
-			width: 500,
-			height: 'auto',
-			maxHeight: 800,
-			minWidth: 500,
-			modal: true,
-			title: 'Access Control Settings',
-			close: function() {
-				self.actionHandler.addEvent({
-					action : 'RefreshResult',
-					target : resultObject,
-					waitForUpdate : true,
-					maxAttempts : 3
-				});
-				dialog.remove();
-				resultObject.unhighlight();
-			}
-		});
-		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
-			dialog.dialog('option', 'position', 'center');
-		});
-	};
-	
+
 	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
 		var editLabelForm = new EditLabelForm({
 			alertHandler : this.options.alertHandler,

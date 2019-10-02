@@ -3,6 +3,20 @@ VERSION = ""
 build-all: build-admin build-access
 
 build-admin:
+	# Build vue permissions application files
+	npm --prefix static/js/admin/vue-permissions-editor install
+	npm --prefix static/js/admin/vue-permissions-editor run build
+
+	cat /dev/null > static/js/vue-permissions.js
+	# Uncomment line in production mode
+	# cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*.js > static/js/vue-permissions.js
+	# Add new line so app*.js doesn't get commented out
+	echo >> static/js/vue-permissions.js
+	# Comment out line in production mode
+	cat static/js/admin/vue-permissions-editor/dist/app.js > static/js/vue-permissions.js
+	# Uncomment line in production mode
+	# cat static/js/admin/vue-permissions-editor/dist/js/app*.js >> static/js/vue-permissions.js
+
 	cat static/js/lib/jquery.min.js > static/js/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-admin.js
 	cat static/js/lib/jquery-ui.min.js >> static/js/cdr-admin.js
@@ -14,6 +28,8 @@ build-admin:
 		static/js/admin/src/*.js \
 		static/js/admin/src/*/*.js \
 		>> static/js/cdr-admin.js
+
+	sass static/css/sass/cdr_vue_modal_styles.scss  static/css/cdr_vue_modal_styles.css --style "expanded"
 	
 	cat static/css/reset.css \
 		static/css/cdr_common.css \
@@ -24,8 +40,12 @@ build-admin:
 		static/css/admin/search_results.css \
 		static/css/admin/admin_forms.css \
 		static/css/admin/collector.css \
+		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
+		static/css/cdr_vue_modal_styles.css \
 		> static/css/cdr_admin.css
+		# Reinsert and uncomment line in production mode
+ 		# static/js/admin/vue-permissions-editor/dist/css/app*.css
 	
 ifneq ($(VERSION), "")
 	for i in static/js/admin/*.js; do \
@@ -72,6 +92,7 @@ build-access:
 		static/css/fluid_cap.css \
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
+		static/css/cdr_vue_modal_styles.css \
 		> static/css/cdr_access.css
 		# Reinsert and uncomment line in production mode
 		# static/js/vue-cdr-access/dist/css/app*.css
