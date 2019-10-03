@@ -117,7 +117,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(assignStaffRoles));
 
         List<RoleAssignment> assignments = asList(
-                new RoleAssignment(USER_NAME, canAccess));
+                new RoleAssignment(USER_NAME, canAccess, pid));
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -159,7 +159,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         PID pid = pidMinter.mintContentPid();
 
         List<RoleAssignment> assignments = asList(
-                new RoleAssignment(USER_NAME, canManage));
+                new RoleAssignment(USER_NAME, canManage, pid));
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -259,7 +259,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         PID pid = unit.getPid();
 
         List<RoleAssignment> assignments = asList(
-                new RoleAssignment(USER_NAME, canManage));
+                new RoleAssignment(USER_NAME, canManage, pid));
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -296,6 +296,24 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         AdminUnit updated = repoObjLoader.getAdminUnit(pid);
         assertHasAssignment(USER_GROUPS, canManage, updated);
+    }
+
+    @Test
+    public void testAssignMultipleRolesToSamePrincipal() throws Exception {
+        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(unit);
+        PID pid = unit.getPid();
+
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(USER_NAME, canManage),
+                new RoleAssignment(USER_NAME, canAccess)
+                );
+
+        mvc.perform(put("/edit/acl/staff/" + pid.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(assignments)))
+                .andExpect(status().isBadRequest())
+            .andReturn();
     }
 
     private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.acl.util;
 
+import edu.unc.lib.dl.fedora.PID;
+
 /**
  * Object representing the assignment of a single role to a single principal
  *
@@ -24,12 +26,9 @@ package edu.unc.lib.dl.acl.util;
 public class RoleAssignment {
     private String principal;
     private UserRole role;
+    private String assignedTo;
 
     public RoleAssignment() {
-    }
-
-    public RoleAssignment(String principal, String role) {
-        this(principal, UserRole.valueOf(role));
     }
 
     public RoleAssignment(String principal, UserRole role) {
@@ -37,21 +36,21 @@ public class RoleAssignment {
         setRole(role);
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+    public RoleAssignment(String principal, UserRole role, PID pid) {
+        this(principal, role);
+        setAssignedTo(pid.getId());
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((assignedTo == null) ? 0 : assignedTo.hashCode());
         result = prime * result + ((principal == null) ? 0 : principal.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -64,6 +63,13 @@ public class RoleAssignment {
             return false;
         }
         RoleAssignment other = (RoleAssignment) obj;
+        if (assignedTo == null) {
+            if (other.assignedTo != null) {
+                return false;
+            }
+        } else if (!assignedTo.equals(other.assignedTo)) {
+            return false;
+        }
         if (principal == null) {
             if (other.principal != null) {
                 return false;
@@ -102,11 +108,22 @@ public class RoleAssignment {
         this.role = role;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * @return get the id of the object this role is assigned to
      */
+    public String getAssignedTo() {
+        return assignedTo;
+    }
+
+    /**
+     * @param assignedTo the id of the object this role is assigned to
+     */
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
+    }
+
     @Override
     public String toString() {
-        return "RoleAssignment [principal=" + principal + ", role=" + role + "]";
+        return "RoleAssignment [principal=" + principal + ", role=" + role + ", assignedTo=" + assignedTo + "]";
     }
 }

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
+import static edu.unc.lib.dl.acl.util.UserRole.canIngest;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
@@ -164,7 +165,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoInheritedRoles(respMap);
-        assertHasAssignedRole(GRP_PRINC, canManage, respMap);
+        assertHasAssignedRole(GRP_PRINC, canManage, pid, respMap);
     }
 
     @Test
@@ -185,8 +186,8 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoInheritedRoles(respMap);
-        assertHasAssignedRole(GRP_PRINC, canManage, respMap);
-        assertHasAssignedRole(USER_PRINC, unitOwner, respMap);
+        assertHasAssignedRole(GRP_PRINC, canManage, unitPid, respMap);
+        assertHasAssignedRole(USER_PRINC, unitOwner, unitPid, respMap);
     }
 
     @Test
@@ -205,7 +206,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
     @Test
@@ -226,8 +227,8 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
-        assertHasAssignedRole(USER_PRINC, canAccess, respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasAssignedRole(USER_PRINC, canAccess, pid, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
     @Test
@@ -249,7 +250,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
     @Test
@@ -272,13 +273,46 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
-        assertHasInheritedRole(USER_PRINC, canAccess, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
+        assertHasInheritedRole(USER_PRINC, canAccess, coll.getPid(), respMap);
+    }
+
+    /*
+     * Verify that a group assigned roles at the unit and collection level will
+     * both show up with the correct pid
+     */
+    @Test
+    public void testFolderDuplicateRolesForPrincipal() throws Exception {
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(
+                new AclModelBuilder("Admin Unit Group Can Access")
+                .addCanAccess(GRP_PRINC)
+                .model);
+        rootObj.addMember(unit);
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
+                new AclModelBuilder("Collection Group Can Ingest")
+                .addCanIngest(GRP_PRINC)
+                .model);
+        unit.addMember(coll);
+        PID pid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+        coll.addMember(folder);
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+
+        assertNoAssignedRoles(respMap);
+        assertHasInheritedRole(GRP_PRINC, canAccess, unit.getPid(), respMap);
+        assertHasInheritedRole(GRP_PRINC, canIngest, coll.getPid(), respMap);
     }
 
     @Test
     public void testWork() throws Exception {
-        WorkObject work = setupWorkStructure();
+        AdminUnit unit = setupAdminUnitWithGroup();
+        WorkObject work = setupWorkStructure(unit);
         PID pid = work.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -289,12 +323,13 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
     @Test
     public void testFileObject() throws Exception {
-        WorkObject work = setupWorkStructure();
+        AdminUnit unit = setupAdminUnitWithGroup();
+        WorkObject work = setupWorkStructure(unit);
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
         FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, null, null);
         PID pid = fileObj.getPid();
@@ -307,7 +342,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
-        assertHasInheritedRole(GRP_PRINC, canManage, respMap);
+        assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
     private AdminUnit setupAdminUnitWithGroup() {
@@ -319,8 +354,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         return unit;
     }
 
-    private WorkObject setupWorkStructure() {
-        AdminUnit unit = setupAdminUnitWithGroup();
+    private WorkObject setupWorkStructure(AdminUnit unit) {
         CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = pidMinter.mintContentPid();
@@ -329,18 +363,18 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         return work;
     }
 
-    private void assertHasInheritedRole(String princ, UserRole role,
+    private void assertHasInheritedRole(String princ, UserRole role, PID pid,
             Map<String, List<RoleAssignment>> respMap) {
         List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES);
         assertTrue("Response did not contain required inherited role " + princ + " " + role,
-                inherited.contains(new RoleAssignment(princ, role)));
+                inherited.contains(new RoleAssignment(princ, role, pid)));
     }
 
-    private void assertHasAssignedRole(String princ, UserRole role,
+    private void assertHasAssignedRole(String princ, UserRole role, PID pid,
             Map<String, List<RoleAssignment>> respMap) {
         List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES);
         assertTrue("Response did not contain required assigned role " + princ + " " + role,
-                assigned.contains(new RoleAssignment(princ, role)));
+                assigned.contains(new RoleAssignment(princ, role, pid)));
     }
 
     private void assertNoInheritedRoles(Map<String, List<RoleAssignment>> respMap) {

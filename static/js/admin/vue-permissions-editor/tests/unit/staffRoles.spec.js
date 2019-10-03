@@ -24,7 +24,15 @@ describe('staffRoles.vue', () => {
                 alertHandler: {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
-                containerName: 'Test Unit',
+                objectPath: [{ 
+                    pid: 'collections',
+                    name: 'Content Collections Root',
+                    container: true
+                }, {
+                    pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
+                    name: 'Test Stuff',
+                    container: true
+                }],
                 containerType: 'AdminUnit',
                 title: 'Test Stuff',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
@@ -118,6 +126,59 @@ describe('staffRoles.vue', () => {
             let cells = wrapper.findAll('.inherited-permissions td');
             expect(cells.at(0).text()).toEqual(response.inherited[0].principal);
             expect(cells.at(1).text()).toEqual(response.inherited[0].role);
+            done();
+        });
+    });
+    
+    it("displays names of containers that roles are assigned to in inherited table", (done) => {
+        wrapper = shallowMount(staffRoles, {
+            localVue,
+            propsData: {
+                alertHandler: {
+                    alertHandler: jest.fn() // This method lives outside of the Vue app
+                },
+                objectPath: [{ 
+                    pid: 'collections',
+                    name: 'Content Collections Root',
+                    container: true
+                }, {
+                    pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
+                    name: 'Test Unit',
+                    container: true
+                }, {
+                    pid: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb',
+                    name: 'Test Collecton',
+                    container: true
+                }, {
+                    pid: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
+                    name: 'Some Subfolder',
+                    container: true
+                }],
+                containerType: 'Folder',
+                title: 'Some Subfolder',
+                uuid: '4f2be243-ce9e-4f26-91fc-08f1b592734d'
+            }
+        });
+        
+        const response = {
+            inherited:[{ principal: 'test_admin', role: 'unitOwner', assignedTo: '73bc003c-9603-4cd9-8a65-93a22520ef6a' },
+                { principal: 'test_manager', role: 'canManage', assignedTo: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb' }],
+            assigned:[]
+        };
+        
+        moxios.stubRequest(`/services/api/acl/staff/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(response)
+        });
+        
+        moxios.wait(() => {
+            let cells = wrapper.findAll('.inherited-permissions td');
+            expect(cells.at(0).text()).toEqual(response.inherited[0].principal);
+            expect(cells.at(1).text()).toEqual(response.inherited[0].role);
+            expect(cells.at(2).text()).toEqual('Test Unit');
+            expect(cells.at(3).text()).toEqual(response.inherited[1].principal);
+            expect(cells.at(4).text()).toEqual(response.inherited[1].role);
+            expect(cells.at(5).text()).toEqual('Test Collecton');
             done();
         });
     });

@@ -19,8 +19,10 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,7 @@ public class UpdateAccessControlController {
         result.put("action", "editStaffRoles");
         result.put("pid", pid.getId());
 
+        Set<String> alreadyAssignedPrincipals = new HashSet<>();
         for (RoleAssignment ra: assignments) {
             // Catch any incomplete role assignments
             if (isEmpty(ra.getPrincipal()) || ra.getRole() == null) {
@@ -75,6 +78,13 @@ public class UpdateAccessControlController {
             }
             // Expand user principal assignments into uris
             addUserPrefixIfMissing(ra);
+            // Disallow assigning multiple roles to one principal on the same object
+            if (alreadyAssignedPrincipals.contains(ra.getPrincipal())) {
+                result.put("error", "Cannot assigned multiple roles to the same principal");
+                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            } else {
+                alreadyAssignedPrincipals.add(ra.getPrincipal());
+            }
         }
 
         try {

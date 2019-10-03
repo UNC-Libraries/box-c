@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -38,12 +39,14 @@ import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fedora.PID;
@@ -299,6 +302,111 @@ public class ObjectACLFactoryTest {
         assertEquals("Incorrect number of principals cached for pid2", 2, results.size());
 
         verify(repositoryObjectCacheLoader, times(2)).load(any(PID.class));
+    }
+
+    @Test
+    public void testGetStaffRolesSingleRoleValid() {
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+
+        assertEquals(1, assignments.size());
+        RoleAssignment assignment = assignments.get(0);
+        assertEquals(pid.getId(), assignment.getAssignedTo());
+        assertEquals(CdrAcl.canManage, assignment.getRole().getProperty());
+        assertEquals(MANAGE_GRP, assignment.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRolesMultipleSamePrincipalValid() {
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canAccess, MANAGE_GRP);
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+
+        assertEquals(2, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByRole(assignments, CdrAcl.canManage);
+        assertEquals(pid.getId(), assignment1.getAssignedTo());
+        assertEquals(CdrAcl.canManage, assignment1.getRole().getProperty());
+        assertEquals(MANAGE_GRP, assignment1.getPrincipal());
+
+        RoleAssignment assignment2 = getAssignmentByRole(assignments, CdrAcl.canAccess);
+        assertEquals(pid.getId(), assignment2.getAssignedTo());
+        assertEquals(CdrAcl.canAccess, assignment2.getRole().getProperty());
+        assertEquals(MANAGE_GRP, assignment2.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRolesMultipleValid() {
+        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
+        objResc.addLiteral(CdrAcl.canAccess, USER_PRINC);
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+
+        assertEquals(2, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByRole(assignments, CdrAcl.canManage);
+        assertEquals(pid.getId(), assignment1.getAssignedTo());
+        assertEquals(CdrAcl.canManage, assignment1.getRole().getProperty());
+        assertEquals(MANAGE_GRP, assignment1.getPrincipal());
+
+        RoleAssignment assignment2 = getAssignmentByRole(assignments, CdrAcl.canAccess);
+        assertEquals(pid.getId(), assignment2.getAssignedTo());
+        assertEquals(CdrAcl.canAccess, assignment2.getRole().getProperty());
+        assertEquals(USER_PRINC, assignment2.getPrincipal());
+    }
+
+    @Test
+    public void testGetStaffRolesOnlyPatronAssignments() {
+        objResc.addLiteral(CdrAcl.canViewOriginals, USER_PRINC);
+
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+
+        assertTrue(assignments.isEmpty());
+    }
+
+    @Test
+    public void testGetStaffRolesNoAssignments() {
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+
+        assertTrue(assignments.isEmpty());
+    }
+
+    @Test
+    public void testGetPatronRolesSingleRoleValid() {
+        objResc.addLiteral(CdrAcl.canViewOriginals, USER_PRINC);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(pid);
+
+        assertEquals(1, assignments.size());
+        RoleAssignment assignment = assignments.iterator().next();
+        assertEquals(pid.getId(), assignment.getAssignedTo());
+        assertEquals(CdrAcl.canViewOriginals, assignment.getRole().getProperty());
+        assertEquals(USER_PRINC, assignment.getPrincipal());
+    }
+
+    @Test
+    public void testGetPatronRolesOnlyStaffAssignments() {
+        objResc.addLiteral(CdrAcl.canManage, USER_PRINC);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(pid);
+
+        assertTrue(assignments.isEmpty());
+    }
+
+    @Test
+    public void testGetPatronRolesNoAssignments() {
+        List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(pid);
+
+        assertTrue(assignments.isEmpty());
+    }
+
+    private RoleAssignment getAssignmentByRole(List<RoleAssignment> assignments, Property role) {
+        return assignments.stream()
+                .filter(a -> a.getRole().getProperty().equals(role))
+                .findFirst()
+                .orElse(null);
     }
 
     private PID makePid() {
