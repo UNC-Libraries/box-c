@@ -22,7 +22,10 @@
                                     </slot>
                                 </div>
                                 <div class="modal-body">
-                                    <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
+                                    <patron-roles v-if="permissionType === 'Patron'"
+                                                  :alert-handler="alertHandler"
+                                                  :container-type="metadata.type"
+                                                  :uuid="metadata.id"></patron-roles>
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
                                                  :changes-check="checkForUnsavedChanges"
