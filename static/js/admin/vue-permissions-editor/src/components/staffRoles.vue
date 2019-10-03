@@ -396,8 +396,7 @@
         }
 
         button {
-            border: none;
-            padding: 5px 10px;
+            margin-left: 15px;
         }
 
         .btn-remove {

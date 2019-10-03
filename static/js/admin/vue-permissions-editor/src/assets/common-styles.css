@@ -46,7 +46,8 @@
 }
 
 #modal-permissions-editor button {
-    margin-left: 15px;
+    border: none;
+    padding: 5px 10px;
 }
 
 #modal-permissions-editor button:hover {
