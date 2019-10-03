@@ -121,7 +121,7 @@ public class InheritedPermissionEvaluator {
             Permission permission) {
 
         // Patron permissions don't apply to units
-        if (path.size() <= UNIT_PATH_DEPTH) {
+        if (path.size() <= UNIT_PATH_DEPTH + 1) {
             return true;
         }
 

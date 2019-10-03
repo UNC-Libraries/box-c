@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canIngest;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewAccessCopies;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
@@ -32,6 +33,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -95,26 +98,12 @@ public class InheritedPermissionEvaluatorTest {
 
     @Test
     public void unitHasPatronPermissionTest() {
-
         assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
     }
 
     @Test
     public void unitPatronRequestingStaffTest() {
-
         assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.ingest));
-    }
-
-    private void mockFactoryPrincipalRoles(PID pid, String principal, UserRole... roles) {
-        Map<String, Set<String>> princRoles = objectAclFactory.getPrincipalRoles(pid);
-        if (princRoles == null || princRoles.isEmpty()) {
-            princRoles = new HashMap<>();
-            when(objectAclFactory.getPrincipalRoles(pid)).thenReturn(princRoles);
-        }
-
-        princRoles.put(principal, Arrays.stream(roles)
-                .map(UserRole::getPropertyString)
-                .collect(Collectors.toSet()));
     }
 
     @Test
@@ -254,15 +243,6 @@ public class InheritedPermissionEvaluatorTest {
         assertTrue(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.editDescription));
     }
 
-    /*
-     *  + collectionEmbargoedNoPatronViewOriginal
- + collectionEmbargoedHasPatronViewMetadata
- collectionExpiredEmbargoedHasPatronViewOriginal
- + collectionEmbargoedHasStaffPermission
- + collectionEmbargoedStaffPrincipalHasPatronPermission
-     */
-
-
     @Test
     public void collectionHasStaffPermission() {
 
@@ -292,6 +272,28 @@ public class InheritedPermissionEvaluatorTest {
     }
 
     @Test
+    public void collectionElevatesStaffPermission() {
+        PID unitPid = addPidToAncestors();
+
+        // Reassign staff a higher roll in the collection
+        mockFactoryPrincipalRoles(unitPid, STAFF_PRINC, canIngest);
+        mockFactoryPrincipalRoles(pid, STAFF_PRINC, canManage);
+
+        assertTrue(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.changePatronAccess));
+    }
+
+    @Test
+    public void collectionAttemptToReduceStaffPermission() {
+        PID unitPid = addPidToAncestors();
+
+        // Attempt to set reduced role for staff at the collection leve
+        mockFactoryPrincipalRoles(unitPid, STAFF_PRINC, canManage);
+        mockFactoryPrincipalRoles(pid, STAFF_PRINC, canIngest);
+
+        assertTrue(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.changePatronAccess));
+    }
+
+    @Test
     public void contentHasPatronPermission() {
 
         addPidToAncestors();
@@ -314,6 +316,17 @@ public class InheritedPermissionEvaluatorTest {
     }
 
     @Test
+    public void contentNoCollectionPatronsAddInPatronNoPermission() {
+
+        addPidToAncestors();
+        addPidToAncestors();
+
+        mockFactoryPrincipalRoles(pid, PATRON_PRINC, canViewMetadata);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
     public void contentRemovePatronAccess() {
         addPidToAncestors();
         PID collectionPid = addPidToAncestors();
@@ -325,11 +338,89 @@ public class InheritedPermissionEvaluatorTest {
     }
 
     @Test
-    public void contentRequestStaffPermission() {
+    public void contentAttemptToElevatePatronAccess() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PATRON_PRINC, canViewAccessCopies);
+        mockFactoryPrincipalRoles(pid, PATRON_PRINC, canViewOriginals);
+
+        assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewAccessCopies));
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewOriginal));
+    }
+
+    @Test
+    public void contentEmbargoedPermission() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        when(objectAclFactory.getEmbargoUntil(pid)).thenReturn(getNextYear());
+        mockFactoryPrincipalRoles(collectionPid, PATRON_PRINC, canViewOriginals);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewOriginal));
+        assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentInheritsEmbargoPermission() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        when(objectAclFactory.getEmbargoUntil(collectionPid)).thenReturn(getNextYear());
+        mockFactoryPrincipalRoles(collectionPid, PATRON_PRINC, canViewOriginals);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewOriginal));
+        assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentDeletedNoPatronPermissions() {
         addPidToAncestors();
         addPidToAncestors();
 
+        when(objectAclFactory.isMarkedForDeletion(pid)).thenReturn(true);
+        mockFactoryPrincipalRoles(pid, PATRON_PRINC, canViewMetadata);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentInheritsDeletedNoPatronPermissions() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        when(objectAclFactory.isMarkedForDeletion(collPid)).thenReturn(true);
+        mockFactoryPrincipalRoles(collPid, PATRON_PRINC, canViewMetadata);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentInheritStaffPermission() {
+        PID unitPid = addPidToAncestors();
+        addPidToAncestors();
+
+        mockFactoryPrincipalRoles(unitPid, STAFF_PRINC, canIngest);
+
+        assertTrue(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest));
+        assertTrue(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentIgnoreLocallyAssignedStaffPermission() {
+        addPidToAncestors();
+        addPidToAncestors();
+
+        mockFactoryPrincipalRoles(pid, STAFF_PRINC, canIngest);
+
         assertFalse(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest));
+    }
+
+    @Test(expected = OrphanedObjectException.class)
+    public void orphanedObjectFailure() {
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(Collections.emptyList());
+
+        evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest);
     }
 
     private PID addPidToAncestors() {
@@ -352,5 +443,17 @@ public class InheritedPermissionEvaluatorTest {
         c.setTime(dt);
         c.add(Calendar.DATE, -365);
         return c.getTime();
+    }
+
+    private void mockFactoryPrincipalRoles(PID pid, String principal, UserRole... roles) {
+        Map<String, Set<String>> princRoles = objectAclFactory.getPrincipalRoles(pid);
+        if (princRoles == null || princRoles.isEmpty()) {
+            princRoles = new HashMap<>();
+            when(objectAclFactory.getPrincipalRoles(pid)).thenReturn(princRoles);
+        }
+
+        princRoles.put(principal, Arrays.stream(roles)
+                .map(UserRole::getPropertyString)
+                .collect(Collectors.toSet()));
     }
 }
