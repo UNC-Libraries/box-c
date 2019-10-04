@@ -24,8 +24,11 @@
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"
                                                   :alert-handler="alertHandler"
+                                                  :changes-check="checkForUnsavedChanges"
                                                   :container-type="metadata.type"
-                                                  :uuid="metadata.id"></patron-roles>
+                                                  :uuid="metadata.id"
+                                                  @reset-changes-check="resetChangesCheck"
+                                                  @show-modal="closeModal"></patron-roles>
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
                                                  :changes-check="checkForUnsavedChanges"

@@ -95,6 +95,7 @@
 <script>
     import staffRolesSelect from "./staffRolesSelect";
     import staffRoleList from "../mixins/staffRoleList";
+    import displayModal from "../mixins/displayModal";
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
@@ -106,7 +107,7 @@
             staffRolesSelect
         },
 
-        mixins: [staffRoleList],
+        mixins: [staffRoleList, displayModal],
 
         props: {
             alertHandler: Object,
@@ -123,20 +124,9 @@
                 deleted_users: [],
                 is_closing_modal: false,
                 is_error_message: true,
-                is_submitting: false,
-                response_message: '',
                 selected_role: 'canAccess',
-                unsaved_changes: false,
                 updated_staff_roles: [],
                 user_name: ''
-            }
-        },
-
-        watch: {
-            changesCheck(check) {
-                if (check) {
-                    this.showModal();
-                }
             }
         },
 
@@ -303,18 +293,7 @@
             showModal() {
                 this.is_closing_modal = true;
                 this.unsavedUpdates();
-
-                if (!this.is_submitting && this.unsaved_changes) {
-                    let message = 'There are unsaved permission updates. Are you sure you would like to exit?';
-                    if (window.confirm(message)) {
-                        this.$emit('show-modal', false);
-                    }
-                } else {
-                    this.$emit('show-modal', false);
-                }
-
-                // Reset changes check in parent component
-                this.$emit('reset-changes-check', false);
+                this.displayModal();
                 this.is_closing_modal = false;
             },
 
@@ -362,7 +341,7 @@
             margin-bottom: 0;
         }
 
-        th, .cancel {
+        th {
             background-color: gray;
         }
 
@@ -378,43 +357,12 @@
             margin-top: 25px;
         }
 
-        ul {
-            border-top: $border-style;
-            list-style-type: none;
-            margin-top: 25px;
-            padding-top: 20px;
-            text-align: center;
-
-            li {
-                display: inline;
-                margin-left: 0;
-
-                button {
-                    font-size: 14px;
-                }
-            }
-        }
-
-        button {
-            margin-left: 15px;
-        }
-
         .btn-remove {
             background-color: red;
         }
 
         .btn-revert {
             background-color: gray;
-        }
-
-        .btn-disabled {
-            opacity: .3;
-            cursor: not-allowed;
-        }
-
-        .message {
-            height: 17px;
-            margin-top: 15px;
         }
 
         .error {

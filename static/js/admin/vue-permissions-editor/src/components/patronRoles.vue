@@ -1,36 +1,52 @@
 <template>
     <div id="patron-roles">
         <h1>Set Patron Access</h1>
-        <h3>Current Settings</h3>
+        <h3 v-if="hasParentRole || hasObjectRole">Current Settings</h3>
 
         <table v-if="hasParentRole || hasObjectRole" class="border inherited-permissions">
             <thead>
-            <tr>
-                <th></th>
-                <th>Who can access</th>
-                <th>What can be viewed</th>
-            </tr>
+                <tr>
+                    <th></th>
+                    <th>Who can access</th>
+                    <th>What can be viewed</th>
+                </tr>
             </thead>
             <tbody>
             <tr v-if="hasParentRole" v-for="inherited_role in display_roles.inherited">
                 <td>From parent</td>
                 <td>
                     {{ inherited_role.principal }}
-                    <i class="far fa-question-circle" :class="{hidden: nonPublicRole(inherited_role.principal )}"></i>
-                    <i class="far fa-check-circle" :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                    <i class="far fa-question-circle" :class="{hidden: nonPublicRole(inherited_role.principal)}"></i>
+                    <span class="permission-icons">
+                        <i class="far fa-check-circle"
+                           :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                    </span>
                 </td>
                 <td>
                     {{ displayRole(inherited_role.role) }}
-                    <i class="far fa-check-circle" :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                    <span class="permission-icons">
+                        <i class="far fa-circle"><span>E</span></i>
+                        <i class="far fa-check-circle"
+                           :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                    </span>
                 </td>
             </tr>
             <tr v-if="hasObjectRole" v-for="object_role in display_roles.current_object">
                 <td>This object</td>
                 <td>{{ object_role.principal }}
                     <i class="far fa-question-circle" :class="{hidden: nonPublicRole(object_role.principal)}"></i>
-                    <i class="far fa-check-circle" :class="{hidden: mostRestrictive(object_role.principal) === 'parent'}"></i>
+                    <span class="permission-icons">
+                        <i class="far fa-check-circle"
+                           :class="{hidden: mostRestrictive(object_role.principal) === 'parent'}"></i>
+                    </span>
                 </td>
-                <td>{{ displayRole(object_role.role) }} <i class="far fa-check-circle" :class="{hidden: mostRestrictive(object_role.principal)=== 'parent'}"></i></td>
+                <td>{{ displayRole(object_role.role) }}
+                    <span class="permission-icons">
+                        <i class="far fa-circle"><span>E</span></i>
+                        <i class="far fa-check-circle"
+                           :class="{hidden: mostRestrictive(object_role.principal)=== 'parent'}"></i>
+                    </span>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -39,21 +55,23 @@
         <ul class="set-patron-roles">
             <li>
                 <input @click="updateRoleList" id="patron" type="radio" v-model="user_type" value="patron"> Allow patron access
-                <ul>
-                    <li>
-                        <p class="patron">Public users</p>
-                        <div class="select-wrapper" :class="{'is-disabled': staff_only}">
-                            <select id="public" @change="updateRole" class="public-select" v-model="public_role" :disabled="staff_only">
-                                <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
+                <ul class="patron">
+                    <li class="public-role">
+                        <p>Public users</p>
+                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
+                            <select id="public" @change="updateRole" class="public-select" v-model="public_role" :disabled="shouldDisable">
+                                <template v-for="(role, index) in possibleRoles">
+                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
+                                </template>
                             </select>
                         </div>
                     </li>
                     <li>
                         <p>Onyen users</p>
-                        <div class="select-wrapper" :class="{'is-disabled': staff_only}">
-                            <select id="onyen" @change="updateRole" v-model="onyen_role" :disabled="staff_only">
+                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
+                            <select id="onyen" @change="updateRole" v-model="onyen_role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
-                                    <option v-if="index > 0"  :value="role.role">{{ role.text }}</option>
+                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
                             </select>
                         </div>
@@ -62,20 +80,39 @@
             </li>
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
+
         <embargo :uuid="uuid"></embargo>
+        <p class="message">{{ response_message }}</p>
+        <ul>
+            <li>
+                <button id="is-submitting"
+                        type="submit"
+                        @click="setRoles"
+                        :class="{'btn-disabled': !unsaved_changes}"
+                        :disabled="!unsaved_changes">Save Changes</button>
+            </li>
+            <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
+        </ul>
     </div>
 </template>
 
 <script>
     import embargo from "./embargo";
+    import displayModal from "../mixins/displayModal";
     import axios from 'axios';
+
+    const STAFF_ONLY_ROLE_TEXT = '\u2014';
 
     export default {
         name: 'patronRoles',
+
         components: {embargo},
+
+        mixins: [displayModal],
 
         props: {
             alertHandler: Object,
+            changesCheck: Boolean,
             containerType: String,
             uuid: String
         },
@@ -87,7 +124,6 @@
                 onyen_role: 'none',
                 public_role: 'none',
                 staff_only: false,
-                staff_only_role_text: '\u2014',
                 user_type: ''
             }
         },
@@ -102,11 +138,11 @@
                 }
 
                 return [
-                    { text: this.staff_only_role_text , role: this.staff_only_role_text }, // Only used by the display tables
-                    { text: 'have no access', role: 'none' },
-                    { text: 'can view metadata only', role: 'metadataOnly' },
-                    { text: 'can view access copies', role: 'accessCopies' },
-                    { text: `can view all of this ${container}`, role: 'allAccess' }
+                    { text: STAFF_ONLY_ROLE_TEXT , role: STAFF_ONLY_ROLE_TEXT }, // Only used by the display tables
+                    { text: 'No access', role: 'none' },
+                    { text: 'Metadata only', role: 'metadataOnly' },
+                    { text: 'Access copies', role: 'accessCopies' },
+                    { text: `All of this ${container}`, role: 'allAccess' }
                 ]
             },
 
@@ -120,16 +156,48 @@
 
             assignedPatronRoles() {
                 return [
-                    { principal: 'public', role: this.public_role },
-                    { principal: 'onyen', role: this.onyen_role }
+                    { principal: 'Patrons', role: this.public_role },
+                    { principal: 'Onyen', role: this.onyen_role }
                 ];
+            },
+
+            shouldDisable() {
+                return this.staff_only && this.user_type !== 'patron';
             }
         },
 
         methods: {
+            getRoles() {
+
+            },
+
+            setRoles() {
+                this.is_submitting = true;
+                this.response_message = 'Saving permissions \u2026';
+
+                setTimeout(() => {
+                    this.is_submitting = false;
+                    this.unsaved_changes = false;
+                    this.response_message = '';
+                }, 3000);
+            },
+
             displayRole(role) {
                 let selected_role = this.possibleRoles.find((r) => r.role === role);
                 return selected_role.text;
+            },
+
+            updateRoleList(e) {
+                this.unsaved_changes = true;
+                let type = e.target.id;
+
+                if (type === 'staff') {
+                    this.public_role = 'none';
+                    this.onyen_role = 'none';
+                }
+
+                this.updateDisplayRoles(type);
+                this.updatePatronRoles();
             },
 
             updateRole(e) {
@@ -143,21 +211,9 @@
                 }
             },
 
-            updateRoleList(e) {
-                let type = e.target.id;
-
-                if (type === 'staff') {
-                    this.public_role = 'none';
-                    this.onyen_role = 'none';
-                }
-
-                this.updateDisplayRoles(type);
-                this.updatePatronRoles();
-            },
-
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.current_object = [{ principal: 'staff', role: this.staff_only_role_text }]
+                    this.display_roles.current_object = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
                     this.display_roles.current_object = this.assignedPatronRoles;
                 }
@@ -224,12 +280,24 @@
             },
 
             nonPublicRole(text) {
-                return text !== 'public';
+                return text !== 'Patrons';
             },
 
             userIndex(principal) {
                 return this.display_roles.current_object.findIndex((role) => role.principal === principal);
             },
+
+            /**
+             * Wrap so it can share a watcher with patronRoles.vue
+             * See mixins/displayModal.js
+             */
+            showModal() {
+                this.displayModal();
+            }
+        },
+
+        mounted() {
+            this.getRoles();
         }
     }
 </script>
@@ -238,20 +306,6 @@
     #patron-roles {
         text-align: left;
         margin: 5px 25px;
-
-        li {
-            ul {
-                margin: 10px 15px;
-
-                li {
-                    display: inline-flex;
-
-                    p {
-                        margin: auto 20px auto auto;
-                    }
-                }
-            }
-        }
 
         .patron {
             margin-left: 15px;
@@ -262,6 +316,8 @@
             padding: 5px;
             width: 225px;
         }
+
+
 
         .public-select {
             margin-left: 10px;
@@ -275,6 +331,34 @@
             border-top: 1px dashed gray;
             list-style-type: none;
             padding-top: 25px;
+            text-align: left;
+
+            li {
+                ul {
+                    border-top: none;
+                    margin: 10px 15px;
+                    text-align: left;
+
+                    li {
+                        margin-left: 15px;
+                        display: inline-flex;
+
+                        p {
+                            margin: auto 20px auto auto;
+                        }
+                    }
+                }
+
+                .public-role {
+                    margin-left: 30px;
+                }
+            }
+        }
+
+        .patron {
+            margin-left: 35px;
+            margin-top: 15px;
+            padding: 0;
         }
 
         .select-wrapper::after {
@@ -284,15 +368,33 @@
 
         .fa-question-circle {
             color: gray;
+
+            &:hover {
+                cursor: pointer;
+            }
         }
 
         .fa-check-circle {
             color: limegreen;
+            margin-left: 10px;
+        }
+
+        .fa-circle {
+            color: red;
+
+            span {
+                font-size: 12px;
+                margin-left: -11px;
+            }
+        }
+
+        .permission-icons {
             float: right;
-            margin-right: 25px;
+            margin-right: 20px;
         }
 
         .is-disabled {
+            cursor: not-allowed;
             opacity: .5;
         }
     }
