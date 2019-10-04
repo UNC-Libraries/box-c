@@ -2,9 +2,9 @@
     <div id="set-embargo">
         <div class="embargo-details">
             <h3>Set Embargo</h3>
-            <p v-if="has_embargo">Embargo stuff</p>
+            <p v-if="has_embargo">{{ embargo_info.text }}</p>
             <p v-else>No embargo set for this object</p>
-            <button @click="addEmbargo" id="add-embargo">Add Embargo</button>
+            <button @click="changeEmbargo" id="add-embargo">{{ embargoText }}</button>
         </div>
     </div>
 </template>
@@ -19,23 +19,25 @@
 
         data() {
             return {
-                embargo_info: [],
+                embargo_info: { text: 'May 5 2099'},
                 has_embargo: false
+            }
+        },
+
+        computed: {
+            embargoText() {
+                return this.has_embargo ? 'Remove Embargo' : 'Add Embargo';
             }
         },
 
         methods: {
             getEmbargo() {
-
             },
 
-            addEmbargo() {
-                this.has_embargo = true;
+            changeEmbargo() {
+                this.has_embargo = !this.has_embargo;
+                this.$emit('embargo', this.embargo_info);
             },
-
-            removeEmbargo() {
-                this.has_embargo = false;
-            }
         },
 
         mounted() {
@@ -56,6 +58,7 @@
         #add-embargo {
             margin-left: 0;
             margin-top: 20px;
+            width: 115px;
         }
     }
 </style>
