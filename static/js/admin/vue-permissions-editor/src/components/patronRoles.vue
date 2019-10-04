@@ -59,7 +59,7 @@
                     <li class="public-role">
                         <p>Public users</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="public" @change="updateRole" class="public-select" v-model="public_role" :disabled="shouldDisable">
+                            <select id="public" @change="updateRole('patrons')" class="public-select" v-model="patrons_role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
@@ -69,7 +69,7 @@
                     <li>
                         <p>Onyen users</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="onyen" @change="updateRole" v-model="onyen_role" :disabled="shouldDisable">
+                            <select id="onyen" @change="updateRole('onyen')" v-model="onyen_role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
@@ -122,7 +122,7 @@
                 display_roles: { inherited: [], current_object: [] },
                 patron_roles: { inherited: [], current_object: [] },
                 onyen_role: 'none',
-                public_role: 'none',
+                patrons_role: 'none',
                 staff_only: false,
                 user_type: ''
             }
@@ -139,9 +139,9 @@
 
                 return [
                     { text: STAFF_ONLY_ROLE_TEXT , role: STAFF_ONLY_ROLE_TEXT }, // Only used by the display tables
-                    { text: 'No access', role: 'none' },
-                    { text: 'Metadata only', role: 'metadataOnly' },
-                    { text: 'Access copies', role: 'accessCopies' },
+                    { text: 'No Access', role: 'none' },
+                    { text: 'Metadata Only', role: 'metadataOnly' },
+                    { text: 'Access Copies', role: 'accessCopies' },
                     { text: `All of this ${container}`, role: 'allAccess' }
                 ]
             },
@@ -156,13 +156,13 @@
 
             assignedPatronRoles() {
                 return [
-                    { principal: 'Patrons', role: this.public_role },
+                    { principal: 'Patrons', role: this.patrons_role },
                     { principal: 'Onyen', role: this.onyen_role }
                 ];
             },
 
             shouldDisable() {
-                return this.staff_only && this.user_type !== 'patron';
+                return this.staff_only || this.user_type === '';
             }
         },
 
@@ -192,7 +192,7 @@
                 let type = e.target.id;
 
                 if (type === 'staff') {
-                    this.public_role = 'none';
+                    this.patrons_role = 'none';
                     this.onyen_role = 'none';
                 }
 
@@ -200,15 +200,14 @@
                 this.updatePatronRoles();
             },
 
-            updateRole(e) {
-                let role_type = e.target.id;
-                let user_index = this.userIndex(role_type);
+            updateRole(principal) {
+                let user_index = this.userIndex(principal);
 
-                if (user_index === -1) {
-                    this.updatePatronRoles();
-                } else {
-                    this.display_roles.current_object[user_index].role = this[`${role_type}_role`];
+                if (user_index !== -1) {
+                    this.display_roles.current_object[user_index].role = this[`${principal}_role`];
                 }
+
+                this.updatePatronRoles();
             },
 
             updateDisplayRoles(type) {
@@ -284,7 +283,7 @@
             },
 
             userIndex(principal) {
-                return this.display_roles.current_object.findIndex((role) => role.principal === principal);
+                return this.display_roles.current_object.findIndex((user) => user.principal.toLowerCase() === principal);
             },
 
             /**
