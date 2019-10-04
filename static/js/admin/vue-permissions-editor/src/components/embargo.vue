@@ -54,6 +54,7 @@
         }
 
         #add-embargo {
+            margin-left: 0;
             margin-top: 20px;
         }
     }
