@@ -19,15 +19,18 @@
                     <i class="far fa-question-circle" :class="{hidden: nonPublicRole(inherited_role.principal)}"></i>
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
-                           :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                           v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
                     </span>
                 </td>
                 <td>
                     {{ displayRole(inherited_role.role) }}
                     <span class="permission-icons">
-                        <i class="far fa-circle"><span>E</span></i>
+                        <i class="far fa-times-circle"></i>
+                        <i class="far fa-circle">
+                            <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'current_object'}">e</div>
+                        </i>
                         <i class="far fa-check-circle"
-                           :class="{hidden: mostRestrictive(inherited_role.principal) === 'current_object'}"></i>
+                           v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
                     </span>
                 </td>
             </tr>
@@ -37,14 +40,17 @@
                     <i class="far fa-question-circle" :class="{hidden: nonPublicRole(object_role.principal)}"></i>
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
-                           :class="{hidden: mostRestrictive(object_role.principal) === 'parent'}"></i>
+                           v-if="mostRestrictive(object_role.principal) === 'current_object'"></i>
                     </span>
                 </td>
                 <td>{{ displayRole(object_role.role) }}
                     <span class="permission-icons">
-                        <i class="far fa-circle"><span>E</span></i>
+                        <i class="far fa-times-circle"></i>
+                        <i class="far fa-circle">
+                            <div :class="{'custom-icon-offset': mostRestrictive(object_role.principal) === 'parent'}">e</div>
+                        </i>
                         <i class="far fa-check-circle"
-                           :class="{hidden: mostRestrictive(object_role.principal)=== 'parent'}"></i>
+                           v-if="mostRestrictive(object_role.principal) === 'current_object'"></i>
                     </span>
                 </td>
             </tr>
@@ -119,8 +125,9 @@
 
         data() {
             return {
-                display_roles: { inherited: [], current_object: [] },
-                patron_roles: { inherited: [], current_object: [] },
+                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
+                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
+                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
                 onyen_role: 'none',
                 patrons_role: 'none',
                 staff_only: false,
@@ -316,8 +323,6 @@
             width: 225px;
         }
 
-
-
         .public-select {
             margin-left: 10px;
         }
@@ -365,6 +370,10 @@
             top: 8px;
         }
 
+        .fa-times-circle {
+            color: red;
+        }
+
         .fa-question-circle {
             color: gray;
 
@@ -375,21 +384,30 @@
 
         .fa-check-circle {
             color: limegreen;
-            margin-left: 10px;
+            margin-left: 8px;
         }
 
         .fa-circle {
-            color: red;
+            margin-left: 4px;
 
-            span {
-                font-size: 12px;
-                margin-left: -11px;
+            div {
+                display: inline-block;
+                font-weight: bold;
+                margin-left: -10px;
+                position: relative;
+                top: -2px;
             }
         }
 
         .permission-icons {
             float: right;
             margin-right: 20px;
+            text-align: right;
+            width: 55px;
+        }
+
+        .custom-icon-offset {
+            margin-right: 4px;
         }
 
         .is-disabled {
