@@ -27,20 +27,20 @@
                     <span class="permission-icons">
                         <i class="far fa-times-circle"></i>
                         <i class="far fa-circle">
-                            <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'current_object'}">e</div>
+                            <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'assigned'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
                            v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
                     </span>
                 </td>
             </tr>
-            <tr v-if="hasObjectRole" v-for="object_role in display_roles.current_object">
+            <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned">
                 <td>This object</td>
                 <td>{{ object_role.principal }}
                     <i class="far fa-question-circle" :class="{hidden: nonPublicRole(object_role.principal)}"></i>
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
-                           v-if="mostRestrictive(object_role.principal) === 'current_object'"></i>
+                           v-if="mostRestrictive(object_role.principal) === 'assigned'"></i>
                     </span>
                 </td>
                 <td>{{ displayRole(object_role.role) }}
@@ -50,7 +50,7 @@
                             <div :class="{'custom-icon-offset': mostRestrictive(object_role.principal) === 'parent'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
-                           v-if="mostRestrictive(object_role.principal) === 'current_object'"></i>
+                           v-if="mostRestrictive(object_role.principal) === 'assigned'"></i>
                     </span>
                 </td>
             </tr>
@@ -125,9 +125,9 @@
 
         data() {
             return {
-                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
-                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
-                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], current_object: [] },
+                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
+                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
+                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
                 onyen_role: 'none',
                 patrons_role: 'none',
                 staff_only: false,
@@ -158,7 +158,7 @@
             },
 
             hasObjectRole() {
-                return this.display_roles.current_object.length > 0;
+                return this.display_roles.assigned.length > 0;
             },
 
             assignedPatronRoles() {
@@ -211,7 +211,7 @@
                 let user_index = this.userIndex(principal);
 
                 if (user_index !== -1) {
-                    this.display_roles.current_object[user_index].role = this[`${principal}_role`];
+                    this.display_roles.assigned[user_index].role = this[`${principal}_role`];
                 }
 
                 this.updatePatronRoles();
@@ -219,21 +219,21 @@
 
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.current_object = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    this.display_roles.assigned = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
-                    this.display_roles.current_object = this.assignedPatronRoles;
+                    this.display_roles.assigned = this.assignedPatronRoles;
                 }
             },
 
             updatePatronRoles() {
-                this.patron_roles.current_object = this.assignedPatronRoles;
+                this.patron_roles.assigned = this.assignedPatronRoles;
             },
 
             currentUserRoles(user = 'staff') {
                 let inherited = this.display_roles.inherited.find((u) => u.principal === user);
-                let current_object = this.display_roles.current_object.find((u) => u.principal === user);
+                let assigned = this.display_roles.assigned.find((u) => u.principal === user);
 
-                return { inherited: inherited, current_object: current_object };
+                return { inherited: inherited, assigned: assigned };
             },
 
             hasStaffOnly() {
@@ -241,8 +241,8 @@
 
                 if (current_users.inherited !== undefined) {
                     return 'parent';
-                } else if (current_users.current_object !== undefined) {
-                    return 'current_object'
+                } else if (current_users.assigned !== undefined) {
+                    return 'assigned'
                 } else {
                     return undefined;
                 }
@@ -250,10 +250,10 @@
 
             hasMultipleRoles(current_users) {
                 let inherited_role = this.possibleRoles.findIndex((r) => r.role === current_users.inherited.role);
-                let current_object_role = this.possibleRoles.findIndex((r) => r.role === current_users.current_object.role);
+                let assigned_role = this.possibleRoles.findIndex((r) => r.role === current_users.assigned.role);
 
-                if (current_object_role !== -1 && current_object_role < inherited_role) {
-                    return 'current_object';
+                if (assigned_role !== -1 && assigned_role < inherited_role) {
+                    return 'assigned';
                 } else {
                     return 'parent';
                 }
@@ -262,12 +262,12 @@
             hasRolesPriority(user) {
                 let current_users = this.currentUserRoles(user);
 
-                if (current_users.inherited === undefined && current_users.current_object === undefined) {
+                if (current_users.inherited === undefined && current_users.assigned === undefined) {
                     return 'none';
-                } else if (current_users.inherited !== undefined && current_users.current_object === undefined) {
+                } else if (current_users.inherited !== undefined && current_users.assigned === undefined) {
                     return 'parent';
-                } else if (current_users.inherited === undefined && current_users.current_object !== undefined) {
-                    return 'current_object';
+                } else if (current_users.inherited === undefined && current_users.assigned !== undefined) {
+                    return 'assigned';
                 } else {
                     return this.hasMultipleRoles(current_users);
                 }
@@ -290,7 +290,7 @@
             },
 
             userIndex(principal) {
-                return this.display_roles.current_object.findIndex((user) => user.principal.toLowerCase() === principal);
+                return this.display_roles.assigned.findIndex((user) => user.principal.toLowerCase() === principal);
             },
 
             /**
