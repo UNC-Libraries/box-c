@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -213,22 +214,9 @@ public class ObjectACLFactoryTest {
         assertNull(embargoDate);
     }
 
-    @Test
+    @Test(expected = NotImplementedException.class)
     public void getPatronAccessTest() throws Exception {
-        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
-
-        PatronAccess access = aclFactory.getPatronAccess(pid);
-
-        assertEquals("Incorrect patron access setting retrieved", PatronAccess.everyone, access);
-    }
-
-    @Test
-    public void getPatronAccessNotSpecifiedTest() throws Exception {
-        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
-
-        PatronAccess access = aclFactory.getPatronAccess(pid);
-
-        assertEquals("Default patron access expected", PatronAccess.parent, access);
+        aclFactory.getPatronAccess(pid);
     }
 
     @Test

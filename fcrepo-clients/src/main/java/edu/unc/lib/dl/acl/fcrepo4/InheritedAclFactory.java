@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
 import static java.util.Arrays.asList;
 
@@ -27,15 +28,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
@@ -52,13 +53,12 @@ public class InheritedAclFactory implements AclFactory {
     private static final Logger log = LoggerFactory.getLogger(InheritedAclFactory.class);
 
     private static final int UNIT_PATH_DEPTH = 0;
+    private static final int COLLECTION_PATH_DEPTH = 1;
     private static final int CONTENT_STARTING_DEPTH = 2;
 
     private ObjectAclFactory objectAclFactory;
 
     private ContentPathFactory pathFactory;
-
-    private ObjectPermissionEvaluator objectPermissionEvaluator;
 
     private static final List<String> PATRON_ROLE_PRECEDENCE = asList(
             UserRole.none.getPropertyString(),
@@ -67,6 +67,7 @@ public class InheritedAclFactory implements AclFactory {
             UserRole.canViewOriginals.getPropertyString()
             );
 
+    private static final int EMBARGO_ROLE_PRECEDENCE = 1;
 
     @Override
     public Map<String, Set<String>> getPrincipalRoles(PID target) {
@@ -87,20 +88,16 @@ public class InheritedAclFactory implements AclFactory {
             if (depth < CONTENT_STARTING_DEPTH) {
                 // Add this object's principals/roles to the result
                 mergePrincipalRoles(inheritedPrincRoles, objectPrincipalRoles);
-
-            } else {
-                // No roles left, and no more can be added, so further processing is not needed
-                if (inheritedPrincRoles.isEmpty()) {
-                    return inheritedPrincRoles;
-                }
-
+            }
+            if (depth >= COLLECTION_PATH_DEPTH) {
+                // No patron assignments with permissions inherited, nothing further may be added
                 Set<String> inheritedPatronPrincipals = getPatronPrincipals(inheritedPrincRoles.keySet());
-                if (inheritedPatronPrincipals.isEmpty()) {
-                    return inheritedPrincRoles;
+                if (!hasActivePatronRole(inheritedPatronPrincipals, inheritedPrincRoles)) {
+                    return removeNoneRoles(inheritedPrincRoles);
                 }
 
-                // Merge any further patron role restrictions into the inherited roles
-                mergePatronPrincipalRoles(pathPid, inheritedPrincRoles,
+                // Apply any further patron restrictions to inherited patron principals
+                adjustPatronPrincipalRoles(pathPid, inheritedPrincRoles,
                         inheritedPatronPrincipals, objectPrincipalRoles);
             }
         }
@@ -157,7 +154,16 @@ public class InheritedAclFactory implements AclFactory {
         }
     }
 
-    private void mergePatronPrincipalRoles(PID pid,
+    private boolean hasActivePatronRole(Set<String> patronPrincipals, Map<String, Set<String>> inheritedPrincRoles) {
+        if (patronPrincipals.isEmpty()) {
+            return false;
+        }
+
+        return patronPrincipals.stream()
+            .anyMatch(p -> !inheritedPrincRoles.get(p).contains(UserRole.none.getPropertyString()));
+    }
+
+    private void adjustPatronPrincipalRoles(PID pid,
             Map<String, Set<String>> inheritedPrincRoles,
             Set<String> inheritedPatronPrincipals,
             Map<String, Set<String>> objectPrincipalRoles) {
@@ -181,8 +187,17 @@ public class InheritedAclFactory implements AclFactory {
                 log.warn("Principal {} is assigned multiple roles on object {}", patronPrincipal, pid.getId());
             }
 
-            int inheritedIndex = inheritedRoles.stream().mapToInt(PATRON_ROLE_PRECEDENCE::indexOf).min().getAsInt();
-            int objIndex = objRoles.stream().mapToInt(PATRON_ROLE_PRECEDENCE::indexOf).min().getAsInt();
+            // Determine if the incoming role is more restrictive than the inherited role for this principal
+            String objRole = objRoles.iterator().next();
+            // Permission revoked, remove the principal
+            if (UserRole.none.equals(objRole)) {
+                inheritedPrincRoles.remove(patronPrincipal);
+                continue;
+            }
+
+            String inherited = inheritedRoles.iterator().next();
+            int inheritedIndex = PATRON_ROLE_PRECEDENCE.indexOf(inherited);
+            int objIndex = PATRON_ROLE_PRECEDENCE.indexOf(objRole);
 
             if (objIndex < inheritedIndex) {
                 inheritedPrincRoles.put(patronPrincipal, objRoles);
@@ -190,56 +205,52 @@ public class InheritedAclFactory implements AclFactory {
         }
     }
 
-    private void revokedPatronRoles(PID pid, Map<String, Set<String>> princRoles,
-            Set<String> patronPrincipals) {
-        // Check each remaining patron principal to see if it still has patron access
-        Iterator<String> patronIt = patronPrincipals.iterator();
-        while (patronIt.hasNext()) {
-            String patronPrinc = patronIt.next();
-            Set<String> roles = princRoles.get(patronPrinc);
-
-            // Patron access revoked for this principal, so remove it from inherited roles
-            if (!objectPermissionEvaluator.hasPatronAccess(pid, patronPrinc, Permission.viewMetadata)) {
-                patronIt.remove();
-                princRoles.remove(patronPrinc);
-            } else if (!roles.contains(UserRole.canViewMetadata.getPropertyString())
-                        && !objectPermissionEvaluator.hasPatronAccess(pid, patronPrinc, Permission.viewOriginal)) {
-                // Has metadata but not original permission, so downgrading
-                roles.clear();
-                roles.add(UserRole.canViewMetadata.getPropertyString());
+    private Map<String, Set<String>> removeNoneRoles(Map<String, Set<String>> princRoles) {
+        Iterator<Entry<String, Set<String>>> it = princRoles.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<String, Set<String>> assignment = it.next();
+            if (assignment.getValue().contains(UserRole.none.getPropertyString())) {
+                it.remove();
             }
         }
+        return princRoles;
     }
 
     @Override
-    public PatronAccess getPatronAccess(PID target) {
-        List<PID> pidPath = getPidPath(target);
-        if (pidPath.size() <= CONTENT_STARTING_DEPTH) {
-            return null;
+    public List<RoleAssignment> getPatronAccess(PID pid) {
+        if (isMarkedForDeletion(pid)) {
+            return Collections.emptyList();
         }
 
-        PatronAccess computedAccess = PatronAccess.parent;
-        for (int i = CONTENT_STARTING_DEPTH; i < pidPath.size(); i++) {
-            PID pathPid = pidPath.get(i);
-            // checks to see whether access is staff-only
-            PatronAccess access = objectAclFactory.getPatronAccess(pathPid);
-            if (PatronAccess.none.equals(access)) {
-                return PatronAccess.none;
+        boolean isEmbargoed = isEmbargoActive(getEmbargoUntil(pid));
+
+        Map<String, Set<String>> princRoles = getPrincipalRoles(pid);
+
+        List<RoleAssignment> result = new ArrayList<>();
+        Set<String> patronPrincipals = getPatronPrincipals(princRoles.keySet());
+        for (String princ: patronPrincipals) {
+            Set<String> roles = princRoles.get(princ);
+            String roleString = roles.iterator().next();
+            UserRole role = UserRole.getRoleByProperty(roleString);
+
+            if (isEmbargoed) {
+                int objIndex = PATRON_ROLE_PRECEDENCE.indexOf(roleString);
+                if (objIndex > EMBARGO_ROLE_PRECEDENCE) {
+                    role = UserRole.canViewMetadata;
+                }
             }
-            // checks to see whether access is on-campus only
-            if (PatronAccess.authenticated.equals(access)) {
-                computedAccess = access;
-            }
+
+            result.add(new RoleAssignment(princ, role));
         }
 
-        return computedAccess;
+        return result;
     }
 
     @Override
     public Date getEmbargoUntil(PID target) {
         return getPidPath(target).stream()
                 .map(p -> objectAclFactory.getEmbargoUntil(p))
-                .filter(p -> p != null)
+                .filter(Objects::nonNull)
                 .max(Comparator.naturalOrder())
                 .orElse(null);
     }
@@ -269,9 +280,5 @@ public class InheritedAclFactory implements AclFactory {
 
     public void setPathFactory(ContentPathFactory pathFactory) {
         this.pathFactory = pathFactory;
-    }
-
-    public void setObjectPermissionEvaluator(ObjectPermissionEvaluator objectPermissionEvaluator) {
-        this.objectPermissionEvaluator = objectPermissionEvaluator;
     }
 }

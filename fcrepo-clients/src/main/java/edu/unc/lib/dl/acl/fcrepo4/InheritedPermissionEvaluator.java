@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.classifyPrincipals;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -137,7 +137,7 @@ public class InheritedPermissionEvaluator {
 
             // Deny permission if the object is deleted or embargoed
             if (objectAclFactory.isMarkedForDeletion(pathPid) ||
-                    (!ignoreEmbargoes && hasActiveEmbargo(pathPid))) {
+                    (!ignoreEmbargoes && isEmbargoActive(objectAclFactory.getEmbargoUntil(pathPid)))) {
                 return false;
             }
 
@@ -217,17 +217,6 @@ public class InheritedPermissionEvaluator {
                 .stream()
                 .map(UserRole::getPropertyString)
                 .collect(Collectors.toSet());
-    }
-
-    private boolean hasActiveEmbargo(PID pid) {
-        Date embargoUntil = objectAclFactory.getEmbargoUntil(pid);
-        if (embargoUntil != null) {
-            Date currentDate = new Date();
-            if (currentDate.before(embargoUntil)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private List<PID> getObjectPath(PID pid) {
