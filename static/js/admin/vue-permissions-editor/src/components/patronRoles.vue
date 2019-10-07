@@ -16,7 +16,12 @@
                 <td>From parent</td>
                 <td>
                     {{ inherited_role.principal }}
-                    <i class="far fa-question-circle" :class="{hidden: nonPublicRole(inherited_role.principal)}"></i>
+                    <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(inherited_role.principal)}">
+                        <i class="far fa-question-circle"></i>
+                        <div class="arrow"></div>
+                        <span class="browse-tip">What this means</span>
+                    </a>
+
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
                            v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
@@ -37,7 +42,11 @@
             <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned">
                 <td>This object</td>
                 <td>{{ object_role.principal }}
-                    <i class="far fa-question-circle" :class="{hidden: nonPublicRole(object_role.principal)}"></i>
+                    <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(object_role.principal)}">
+                        <i class="far fa-question-circle"></i>
+                        <div class="arrow"></div>
+                        <span class="browse-tip">What this means<</span>
+                    </a>
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
                            v-if="mostRestrictive(object_role.principal) === 'assigned'"></i>
@@ -130,7 +139,6 @@
                 submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
                 onyen_role: 'none',
                 patrons_role: 'none',
-                staff_only: false,
                 user_type: ''
             }
         },
@@ -169,7 +177,7 @@
             },
 
             shouldDisable() {
-                return this.staff_only || this.user_type === '';
+                return this.user_type === 'staff' || this.user_type === '';
             }
         },
 
@@ -413,6 +421,39 @@
         .is-disabled {
             cursor: not-allowed;
             opacity: .5;
+        }
+
+        .arrow {
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid darkslategray;
+            height: 0;
+            margin: 2px 2px 0 60px;
+            width: 0;
+        }
+
+        .browse-tip, .arrow {
+            display: none;
+        }
+
+        a.display-note-btn:hover {
+            .arrow, .browse-tip {
+                display: block;
+                position: absolute;
+                z-index: 10009;
+            }
+
+            .browse-tip {
+                background-color: white;
+                border: 1px solid darkslategray;
+                border-radius: 5px;
+                color: black;
+                font-weight: normal;
+                margin: 10px 0 0 -65px;
+                padding: 10px;
+                text-align: left;
+                width: 240px;
+            }
         }
     }
 </style>
