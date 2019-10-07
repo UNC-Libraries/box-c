@@ -15,19 +15,20 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.canDescribe;
+import static edu.unc.lib.dl.acl.util.UserRole.canManage;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
@@ -64,8 +66,6 @@ public class SetAccessControlFilterTest {
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
 
-    private Map<String, Set<String>> principalRoles;
-
     private SetAccessControlFilter filter;
 
     @Before
@@ -75,16 +75,13 @@ public class SetAccessControlFilterTest {
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
 
-        principalRoles = new HashMap<>();
-        when(aclFactory.getPrincipalRoles(any(PID.class))).thenReturn(principalRoles);
-
         filter = new SetAccessControlFilter();
         filter.setAclFactory(aclFactory);
     }
 
     @Test
     public void testHasPatronPrincipal() throws Exception {
-        addPrincipalRoles(PRINC1, UserRole.canViewOriginals);
+        addPatronAccess(PUBLIC_PRINC, canViewOriginals);
 
         filter.filter(dip);
 
@@ -94,16 +91,16 @@ public class SetAccessControlFilterTest {
 
         verify(idb).setReadGroup(listCaptor.capture());
         assertPrincipalsPresent("Patron principal must have patron viewing rights",
-                listCaptor.getValue(), PRINC1);
+                listCaptor.getValue(), PUBLIC_PRINC);
 
         verify(idb).setRoleGroup(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(
-                UserRole.canViewOriginals.name() + "|" + PRINC1));
+                canViewOriginals.name() + "|" + PUBLIC_PRINC));
     }
 
     @Test
     public void testHasStaffPrincipal() throws Exception {
-        addPrincipalRoles(PRINC1, UserRole.canManage);
+        addStaffAssignments(PRINC1, canManage);
 
         filter.filter(dip);
 
@@ -117,7 +114,7 @@ public class SetAccessControlFilterTest {
 
         verify(idb).setRoleGroup(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(
-                UserRole.canManage.name() + "|" + PRINC1));
+                canManage.name() + "|" + PRINC1));
     }
 
     @Test
@@ -138,31 +135,34 @@ public class SetAccessControlFilterTest {
     }
 
     @Test
-    public void testHasMultiplePrincipals() throws Exception {
-        addPrincipalRoles(PRINC1, UserRole.canViewOriginals);
-        addPrincipalRoles(PRINC2, UserRole.canManage);
+    public void testHasMultipleStaffAndPatrons() throws Exception {
+        addPatronAccess(PUBLIC_PRINC, canViewMetadata);
+        addPatronAccess(AUTHENTICATED_PRINC, canViewOriginals);
+        addStaffAssignments(PRINC1, canDescribe);
+        addStaffAssignments(PRINC2, canManage);
 
         filter.filter(dip);
 
         verify(idb).setAdminGroup(listCaptor.capture());
-        assertPrincipalsPresent("Only staff principal should be granted admin rights",
-                listCaptor.getValue(), PRINC2);
-
-        verify(idb).setReadGroup(listCaptor.capture());
-        assertPrincipalsPresent("Both principals should be granted read rights",
+        assertPrincipalsPresent("Only staff principals should be granted admin rights",
                 listCaptor.getValue(), PRINC1, PRINC2);
 
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("All principals should be granted read rights",
+                listCaptor.getValue(), PUBLIC_PRINC, AUTHENTICATED_PRINC, PRINC1, PRINC2);
+
         verify(idb).setRoleGroup(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(
-                UserRole.canViewOriginals.name() + "|" + PRINC1));
-        assertTrue(listCaptor.getValue().contains(
-                UserRole.canManage.name() + "|" + PRINC2));
+        List<String> roleGroups = listCaptor.getValue();
+        assertEquals(4, roleGroups.size());
+        assertTrue(roleGroups.contains(canViewMetadata.name() + "|" + PUBLIC_PRINC));
+        assertTrue(roleGroups.contains(canViewOriginals.name() + "|" + AUTHENTICATED_PRINC));
+        assertTrue(roleGroups.contains(canDescribe.name() + "|" + PRINC1));
+        assertTrue(roleGroups.contains(canManage.name() + "|" + PRINC2));
     }
 
     @Test
     public void testPrincipalHasMultipleRoles() throws Exception {
-        addPrincipalRoles(PRINC1, UserRole.canViewOriginals,
-                UserRole.canDescribe, UserRole.canManage);
+        addStaffAssignments(PRINC1, canDescribe, canManage);
 
         filter.filter(dip);
 
@@ -176,13 +176,33 @@ public class SetAccessControlFilterTest {
 
         verify(idb).setRoleGroup(listCaptor.capture());
         assertEquals("Principal should appear with each role granted",
-                3, listCaptor.getValue().size());
+                2, listCaptor.getValue().size());
         assertTrue(listCaptor.getValue().contains(
-                UserRole.canViewOriginals.name() + "|" + PRINC1));
+                canManage.name() + "|" + PRINC1));
         assertTrue(listCaptor.getValue().contains(
-                UserRole.canManage.name() + "|" + PRINC1));
+                canDescribe.name() + "|" + PRINC1));
+    }
+
+    @Test
+    public void testHasMultiplePrincipals() throws Exception {
+        addPatronAccess(PUBLIC_PRINC, canViewOriginals);
+        addStaffAssignments(PRINC2, canManage);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertPrincipalsPresent("Only staff principal should be granted admin rights",
+                listCaptor.getValue(), PRINC2);
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("Both principals should be granted read rights",
+                listCaptor.getValue(), PUBLIC_PRINC, PRINC2);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(
-                UserRole.canDescribe.name() + "|" + PRINC1));
+                canViewOriginals.name() + "|" + PUBLIC_PRINC));
+        assertTrue(listCaptor.getValue().contains(
+                canManage.name() + "|" + PRINC2));
     }
 
     private void assertPrincipalsPresent(String message, List<String> values, String... principals) {
@@ -192,11 +212,23 @@ public class SetAccessControlFilterTest {
         }
     }
 
-    private void addPrincipalRoles(String principal, UserRole...roles) {
-        Set<String> roleStrings = Arrays.stream(roles)
-                .map(r -> r.getPropertyString())
-                .collect(Collectors.toSet());
+    private void addStaffAssignments(String principal, UserRole... roles) {
+        List<RoleAssignment> assignments = aclFactory.getStaffRoleAssignments(pid);
+        if (assignments.isEmpty()) {
+            assignments = new ArrayList<>();
+            when(aclFactory.getStaffRoleAssignments(pid)).thenReturn(assignments);
+        }
+        for (UserRole role: roles) {
+            assignments.add(new RoleAssignment(principal, role, pid));
+        }
+    }
 
-        principalRoles.put(principal, roleStrings);
+    private void addPatronAccess(String principal, UserRole role) {
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        if (assignments.isEmpty()) {
+            assignments = new ArrayList<>();
+            when(aclFactory.getPatronAccess(pid)).thenReturn(assignments);
+        }
+        assignments.add(new RoleAssignment(principal, role, pid));
     }
 }

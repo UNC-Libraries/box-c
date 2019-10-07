@@ -16,16 +16,15 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -41,17 +40,6 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
     private InheritedAclFactory aclFactory;
 
-    private final Set<String> staffRoleNames;
-
-    /**
-     * Construct an access control filter
-     */
-    public SetAccessControlFilter() {
-        staffRoleNames = UserRole.getStaffRoles().stream()
-                .map(r -> r.getPropertyString())
-                .collect(Collectors.toSet());
-    }
-
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Performing set access control filter on {}", dip.getPid());
@@ -59,37 +47,31 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         IndexDocumentBean idb = dip.getDocument();
 
         List<String> status = new ArrayList<>();
-        List<String> readPrincipals = new ArrayList<>();
-        List<String> staffPrincipals = new ArrayList<>();
-        Map<String, Set<String>> principalRoles = aclFactory.getPrincipalRoles(dip.getPid());
+        Set<String> readPrincipals = new HashSet<>();
+        Set<String> staffPrincipals = new HashSet<>();
+        List<String> roleGroups = new ArrayList<>();
 
-        List<String> denormalizedRolePrincipals = new ArrayList<>();
-        principalRoles.forEach((principal, roles) -> {
-            // Populate role -> principal field
-            roles.stream()
-                .map(role -> UserRole.getRoleByProperty(role))
-                .filter(role -> role != null)
-                .map(role -> (role.name() + "|" + principal))
-                .forEach(denormalizedRolePrincipals::add);
-
-            // Populate list of principals with read permissions with all roles
-            if (roles.stream()
-                    .findAny().isPresent()) {
-                readPrincipals.add(principal);
-            }
-
-            // Populate list of principals with staff permissions
-            if (roles.stream()
-                    .filter(r -> staffRoleNames.contains(r))
-                    .findAny().isPresent()) {
-                staffPrincipals.add(principal);
-            }
+        List<RoleAssignment> staffAssignments = aclFactory.getStaffRoleAssignments(dip.getPid());
+        staffAssignments.forEach(assignment -> {
+            addRoleGroup(roleGroups, assignment);
+            readPrincipals.add(assignment.getPrincipal());
+            staffPrincipals.add(assignment.getPrincipal());
         });
 
-        idb.setRoleGroup(denormalizedRolePrincipals);
-        idb.setAdminGroup(staffPrincipals);
-        idb.setReadGroup(readPrincipals);
+        List<RoleAssignment> patronAssignments = aclFactory.getPatronAccess(dip.getPid());
+        patronAssignments.forEach(assignment -> {
+            addRoleGroup(roleGroups, assignment);
+            readPrincipals.add(assignment.getPrincipal());
+        });
+
+        idb.setRoleGroup(roleGroups);
+        idb.setAdminGroup(new ArrayList<>(staffPrincipals));
+        idb.setReadGroup(new ArrayList<>(readPrincipals));
         idb.setStatus(status);
+    }
+
+    private void addRoleGroup(List<String> roleGroups, RoleAssignment assignment) {
+        roleGroups.add(assignment.getRole().name() + "|" + assignment.getPrincipal());
     }
 
     /**

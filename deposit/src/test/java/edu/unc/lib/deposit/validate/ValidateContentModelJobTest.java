@@ -255,20 +255,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test(expected = JobFailedException.class)
-    public void patronAccessResourceTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
-        objBag.addProperty(CdrAcl.patronAccess, createResource("http://example.com/resource"));
-
-        depBag.add(objBag);
-
-        job.closeModel();
-
-        job.run();
-    }
-
-    @Test(expected = JobFailedException.class)
     public void fileObjectBagTest() {
         PID objPid = makePid(CONTENT_BASE);
         Bag objBag = model.createBag(objPid.getRepositoryPath());

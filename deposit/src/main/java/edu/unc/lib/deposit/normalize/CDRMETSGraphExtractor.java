@@ -160,8 +160,7 @@ public class CDRMETSGraphExtractor {
                 "structMap", METS_NS);
         Element firstdiv = topContainer.getChild("div", METS_NS);
         if (firstdiv != null
-                && "bag".equals(firstdiv.getAttributeValue("TYPE")
-                        .toLowerCase())) {
+                && "bag".equalsIgnoreCase(firstdiv.getAttributeValue("TYPE"))) {
             topContainer = firstdiv;
         }
         Bag top = m.createBag(depositId.getURI());
@@ -177,14 +176,14 @@ public class CDRMETSGraphExtractor {
             // FIXME detect Baq or Seq from model
             Element div = divs.next();
             String type = div.getAttributeValue("TYPE");
-            if (type != null && "bag".equals(type.toLowerCase())) {
+            if (type != null && "bag".equalsIgnoreCase(type)) {
                 continue;
             }
             List<Element> children = div.getChildren("div",
                     METS_NS);
 
             if (type == null) {
-                if (children.size() > 0) {
+                if (!children.isEmpty()) {
                     type = "Folder";
                 } else {
                     type = "File";
@@ -240,15 +239,8 @@ public class CDRMETSGraphExtractor {
                             XSDDatatype.XSDdateTime);
                 }
 
-                String patronAccessVal = aclEl.getAttributeValue(
-                        "patronAccess", METS_ACL_NS);
-                if (patronAccessVal != null) {
-                    m.add(object, CdrAcl.patronAccess, patronAccessVal);
-                }
-
                 // add grants to groups
-                for (Object o : aclEl.getChildren("grant", METS_ACL_NS)) {
-                    Element grant = (Element) o;
+                for (Element grant : aclEl.getChildren("grant", METS_ACL_NS)) {
                     String role = grant.getAttributeValue("role", METS_ACL_NS);
                     String group = grant.getAttributeValue("group", METS_ACL_NS);
                     String roleURI = CdrAcl.NS + role;

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -46,7 +47,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
@@ -176,7 +176,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void isMarkedForDeletionFalseTest() throws Exception {
-        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
+        objResc.addLiteral(CdrAcl.canViewOriginals, PUBLIC_PRINC);
 
         boolean result = aclFactory.isMarkedForDeletion(pid);
 

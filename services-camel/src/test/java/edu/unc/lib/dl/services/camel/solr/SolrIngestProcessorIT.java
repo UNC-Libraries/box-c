@@ -35,7 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -155,7 +154,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         // Revoking patron access on the file
         Model fileModel = ModelFactory.createDefaultModel();
         Resource fileResc = fileModel.getResource("");
-        fileResc.addProperty(CdrAcl.patronAccess, PatronAccess.none.name());
+        fileResc.addProperty(CdrAcl.none, AUTHENTICATED_PRINC);
         String contentText = "Content";
         FileObject fileObj = workObj.addDataFile(new ByteArrayInputStream(contentText.getBytes()),
                 "text.txt", "text/plain", null, null, fileModel);

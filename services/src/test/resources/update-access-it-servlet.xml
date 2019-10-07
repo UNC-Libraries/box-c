@@ -59,13 +59,8 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
-    <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
-        <property name="aclFactory" ref="objectAclFactory" />
-    </bean>
-    
     <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
-        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
     </bean>
 </beans>

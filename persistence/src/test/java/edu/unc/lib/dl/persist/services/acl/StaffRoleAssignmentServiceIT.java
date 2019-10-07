@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
-import static edu.unc.lib.dl.acl.service.PatronAccess.authenticated;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
@@ -425,7 +425,7 @@ public class StaffRoleAssignmentServiceIT {
         contentRoot.addMember(unit);
         CollectionObject coll = repoObjFactory.createCollectionObject(pid,
                 new AclModelBuilder("Collection with patrons")
-                .addCanViewOriginals(authenticated.name())
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
         unit.addMember(coll);
         treeIndexer.indexAll(baseAddress);
@@ -439,7 +439,7 @@ public class StaffRoleAssignmentServiceIT {
 
         assertHasAssignment(GRP_PRINC, canManage, updated);
         // Ensure that existing patron role was not impacted
-        assertHasAssignment(authenticated.name(), canViewOriginals, updated);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, updated);
 
         assertMessageSent(pid);
 
@@ -447,7 +447,7 @@ public class StaffRoleAssignmentServiceIT {
         assertThat(eventDetail, containsString(
                 canManage.name() + ": " + GRP_PRINC));
         // Must not contain the patron assignment
-        assertThat(eventDetail, not(containsString(authenticated.name())));
+        assertThat(eventDetail, not(containsString(AUTHENTICATED_PRINC)));
     }
 
     private void assertNoStaffRoles(ContentObject obj) {

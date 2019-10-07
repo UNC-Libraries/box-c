@@ -63,8 +63,8 @@ public class AclModelBuilder {
         return addProp(CdrAcl.canViewOriginals, princ);
     }
 
-    public AclModelBuilder addPatronAccess(String value) {
-        return addProp(CdrAcl.patronAccess, value);
+    public AclModelBuilder addNoneRole(String princ) {
+        return addProp(CdrAcl.none, princ);
     }
 
     public AclModelBuilder addEmbargoUntil(Calendar date) {

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -44,7 +45,6 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -242,7 +242,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         // Construct model with extra properties to add to the data file
         Model extraProperties = ModelFactory.createDefaultModel();
         Resource dataResc = extraProperties.getResource("");
-        dataResc.addProperty(CdrAcl.patronAccess, PatronAccess.none.name());
+        dataResc.addProperty(CdrAcl.none, PUBLIC_PRINC);
 
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
@@ -257,7 +257,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         Model fileObjModel = modelCaptor.getValue();
 
         assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
-        assertTrue(fileObjModel.contains(null, CdrAcl.patronAccess, PatronAccess.none.name()));
+        assertTrue(fileObjModel.contains(null, CdrAcl.none, PUBLIC_PRINC));
 
         verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));

@@ -111,7 +111,7 @@ public abstract class AbstractSolrProcessorIT {
         PID collPid = pidMinter.mintContentPid();
         Model collModel = ModelFactory.createDefaultModel();
         Resource collResc = collModel.getResource(collPid.getRepositoryPath());
-        collResc.addProperty(CdrAcl.canAccess, AUTHENTICATED_PRINC);
+        collResc.addProperty(CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
         collObj = repositoryObjectFactory.createCollectionObject(collPid, collModel);
         unitObj.addMember(collObj);
     }

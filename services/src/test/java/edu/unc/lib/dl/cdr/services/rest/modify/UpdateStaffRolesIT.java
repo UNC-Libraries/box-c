@@ -62,6 +62,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  * @author bbpennel
@@ -82,6 +83,11 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private RepositoryPIDMinter pidMinter;
+
+    @Autowired
+    private String baseAddress;
+    @Autowired
+    private RepositoryObjectTreeIndexer treeIndexer;
 
     private ContentRootObject contentRoot;
 
@@ -113,6 +119,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
+        treeIndexer.indexAll(baseAddress);
+
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(assignStaffRoles));
 
@@ -138,6 +146,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         CollectionObject coll = repoObjFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = coll.getPid();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, unitOwner));
@@ -177,6 +187,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .model);
         contentRoot.addMember(unit);
 
+        treeIndexer.indexAll(baseAddress);
+
         List<RoleAssignment> assignments = Collections.emptyList();
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -200,6 +212,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
+        treeIndexer.indexAll(baseAddress);
+
         String assignments = "[ { \"no\" : \"thanks\" } ]";
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -215,6 +229,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
+        treeIndexer.indexAll(baseAddress);
+
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -226,6 +242,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment("", canManage));
@@ -243,6 +261,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
+        treeIndexer.indexAll(baseAddress);
+
         String assignments = "[ { \"principal\" : \"user\", \"role\" : \"dunno\" } ]";
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
@@ -257,6 +277,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canManage, pid));
@@ -281,6 +303,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
+        treeIndexer.indexAll(baseAddress);
+
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_GROUPS, canManage));
 
@@ -303,6 +327,8 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
+
+        treeIndexer.indexAll(baseAddress);
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canManage),
