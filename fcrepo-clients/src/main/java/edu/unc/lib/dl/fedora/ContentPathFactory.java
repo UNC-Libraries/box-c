@@ -17,17 +17,18 @@ package edu.unc.lib.dl.fedora;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -47,7 +48,7 @@ public class ContentPathFactory {
 
     private SparqlQueryService queryService;
 
-    private final static String ANCESTORS_QUERY =
+    private static final String ANCESTORS_QUERY =
             "SELECT ?start " +
             "WHERE {" +
             "  <%2$s> <%1$s>* ?mid . " +
@@ -55,6 +56,8 @@ public class ContentPathFactory {
             "}" +
             "GROUP BY ?start " +
             "ORDER BY DESC(COUNT(?mid))";
+
+    private static final String EXISTS_QUERY = "ASK { <%1$s> <%2$s> ?type }";
 
     public void init() {
         ancestorCache = CacheBuilder.newBuilder()
@@ -73,19 +76,16 @@ public class ContentPathFactory {
     public List<PID> getAncestorPids(PID pid) {
         try {
             if (pid.getComponentPath() == null) {
-                return new ArrayList<>(ancestorCache.get(pid.getRepositoryPath()));
+                return new ArrayList<>(ancestorCache.getUnchecked(pid.getRepositoryPath()));
             } else {
                 // Get the PID of the parent by removing the component path
                 PID parentPid = PIDs.get(pid.getId());
-                List<PID> ancestors = new ArrayList<>(ancestorCache.get(parentPid.getRepositoryPath()));
-                // Add the parent into the ancestors, if any were returned
-                if (ancestors.size() > 0) {
-                    ancestors.add(parentPid);
-                }
+                List<PID> ancestors = new ArrayList<>(ancestorCache.getUnchecked(parentPid.getRepositoryPath()));
+                ancestors.add(parentPid);
                 return ancestors;
             }
-        } catch (ExecutionException e) {
-            throw new ServiceException(e);
+        } catch (UncheckedExecutionException e) {
+            throw (RuntimeException) e.getCause();
         }
     }
 
@@ -103,10 +103,21 @@ public class ContentPathFactory {
 
     private class AncestorCacheLoader extends CacheLoader<String, List<PID>> {
 
+        private boolean objectExists(String key) {
+            String queryString = String.format(EXISTS_QUERY, key, RDF.type.getURI());
+
+            try (QueryExecution qExecution = queryService.executeQuery(queryString)) {
+                return qExecution.execAsk();
+            }
+        }
+
         @Override
         public List<PID> load(String key) {
-            List<PID> results = new ArrayList<>();
+            if (!objectExists(key)) {
+                throw new NotFoundException("Unable to find object " + key);
+            }
 
+            List<PID> results = new ArrayList<>();
             String queryString = String.format(ANCESTORS_QUERY, PcdmModels.memberOf.getURI(), key);
 
             try (QueryExecution qExecution = queryService.executeQuery(queryString)) {
