@@ -115,6 +115,8 @@
     import embargo from "./embargo";
     import displayModal from "../mixins/displayModal";
     import axios from 'axios';
+    import cloneDeep from 'lodash.clonedeep';
+    import isEmpty from 'lodash.isempty';
 
     const STAFF_ONLY_ROLE_TEXT = '\u2014';
 
@@ -134,9 +136,9 @@
 
         data() {
             return {
-                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
-                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
-                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [] },
+                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
+                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
+                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
                 onyen_role: 'none',
                 patrons_role: 'none',
                 user_type: ''
@@ -183,7 +185,18 @@
 
         methods: {
             getRoles() {
-
+                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
+                    if (!isEmpty(response.data)) {
+                        this.patron_roles = response.data;
+                        this.display_roles = cloneDeep(response.data);
+                        this.patrons_role = this.setCurrentObjectRole('Patrons');
+                        this.onyen_role = this.setCurrentObjectRole('Onyen');
+                    }
+                }).catch((error) => {
+                    let response_msg = `Unable load current patron roles for: ${this.title}`;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
             },
 
             setRoles() {
@@ -195,6 +208,20 @@
                     this.unsaved_changes = false;
                     this.response_message = '';
                 }, 3000);
+            },
+
+            setCurrentObjectRole(principal) {
+                let user_index = this.userIndex(principal);
+                let role_type = 'none';
+
+                if (this.userIndex('staff') !== -1) {
+                    this.user_type = 'staff';
+                } else if (user_index !== -1) {
+                    this.user_type = 'patron';
+                    role_type = this.display_roles.assigned[user_index].role;
+                }
+
+                return role_type;
             },
 
             displayRole(role) {
