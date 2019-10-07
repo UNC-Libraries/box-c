@@ -126,6 +126,15 @@ public class ContentObjectAccessRestrictionValidatorTest {
     }
 
     @Test
+    public void folderWithNoneRoleTest() throws Exception {
+        model.add(resc, RDF.type, Cdr.Folder);
+        model.add(resc, CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
+        model.add(resc, CdrAcl.none, PUBLIC_PRINC);
+
+        validator.validate(resc);
+    }
+
+    @Test
     public void validFileObjectTest() throws Exception {
         model.add(resc, RDF.type, Cdr.FileObject);
         model.add(resc, CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));

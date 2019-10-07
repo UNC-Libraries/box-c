@@ -115,8 +115,6 @@ public class InheritedPermissionEvaluatorTest {
 
     @Test
     public void unitNoStaffPermissions() {
-        mockFactoryPrincipalRoles(pid, STAFF_PRINC, canIngest);
-
         assertFalse(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.destroy));
     }
 
@@ -130,6 +128,13 @@ public class InheritedPermissionEvaluatorTest {
     @Test
     public void unitHasPatronPermission() {
         assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void unitHasPatronPermissionDeletedTest() {
+        when(objectAclFactory.isMarkedForDeletion(pid)).thenReturn(true);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
     }
 
     @Test

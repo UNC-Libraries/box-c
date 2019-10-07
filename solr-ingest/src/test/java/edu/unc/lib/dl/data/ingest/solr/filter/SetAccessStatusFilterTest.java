@@ -207,6 +207,8 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testParentHasStaffOnlyAccess() throws Exception {
+        addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
+
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());

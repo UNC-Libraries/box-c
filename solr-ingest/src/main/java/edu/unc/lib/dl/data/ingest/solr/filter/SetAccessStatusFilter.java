@@ -99,7 +99,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
 
         if (allPatronsRevoked(objPrincRoles)) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
-        } else if (inheritedAssignments.isEmpty()) {
+        } else if (!hasPatronAssignments(inheritedAssignments)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
         } else if (!restrictionsApplied && containsAssignment(PUBLIC_PRINC, canViewOriginals, inheritedAssignments)) {
             status.add(FacetConstants.PUBLIC_ACCESS);
@@ -125,5 +125,9 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
     private boolean containsAssignment(String principal, UserRole role, List<RoleAssignment> assignments) {
         return assignments.stream()
                 .anyMatch(p -> p.getPrincipal().equals(principal) && p.getRole().equals(role));
+    }
+
+    private boolean hasPatronAssignments(List<RoleAssignment> assignments) {
+        return assignments.stream().anyMatch(a -> a.getRole().isPatronRole());
     }
 }

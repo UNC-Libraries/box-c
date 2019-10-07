@@ -120,9 +120,9 @@ public class InheritedPermissionEvaluator {
     private boolean hasPatronPermission(List<PID> path, Set<String> agentPatronPrincipals,
             Permission permission) {
 
-        // Patron permissions don't apply to units
+        // Patron permissions don't apply to units, so grant permission unless deleted
         if (path.size() <= UNIT_PATH_DEPTH + 1) {
-            return true;
+            return !objectAclFactory.isMarkedForDeletion(path.get(UNIT_PATH_DEPTH));
         }
 
         // Determine which roles would grant the sought after permission
