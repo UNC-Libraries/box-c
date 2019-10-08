@@ -108,8 +108,13 @@ public class AccessControlRetrievalController {
         stripUserPrefix(inherited);
         stripUserPrefix(assigned);
 
-        result.put(INHERITED_ROLES, inherited);
-        result.put(ASSIGNED_ROLES, assigned);
+        Map<String, Object> inheritedInfo = new HashMap<>();
+        inheritedInfo.put(ROLES_KEY, inherited);
+        Map<String, Object> assignedInfo = new HashMap<>();
+        assignedInfo.put(ROLES_KEY, assigned);
+
+        result.put(INHERITED_ROLES, inheritedInfo);
+        result.put(ASSIGNED_ROLES, assignedInfo);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

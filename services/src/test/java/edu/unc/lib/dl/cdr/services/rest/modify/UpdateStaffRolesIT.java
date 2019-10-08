@@ -50,6 +50,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.cdr.services.rest.modify.UpdateAccessControlController.UpdateStaffRequest;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -100,7 +101,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isForbidden())
             .andReturn();
 
@@ -125,7 +126,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -144,7 +145,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isNotFound())
             .andReturn();
     }
@@ -164,7 +165,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -221,7 +222,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
     }
@@ -256,7 +257,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -281,7 +282,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -308,7 +309,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
     }
@@ -323,5 +324,12 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         Resource resc = obj.getResource();
         assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
+    }
+
+    private byte[] serializeAssignments(List<RoleAssignment> assignments) throws Exception {
+        UpdateStaffRequest updateRequest = new UpdateStaffRequest();
+        updateRequest.setRoles(assignments);
+
+        return makeRequestBody(updateRequest);
     }
 }
