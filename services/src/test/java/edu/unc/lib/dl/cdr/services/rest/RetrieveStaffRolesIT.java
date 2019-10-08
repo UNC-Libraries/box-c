@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,7 +34,6 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -50,17 +48,11 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -82,32 +74,12 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
 
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryPIDMinter pidMinter;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
-
-    private ContentRootObject rootObj;
-
     @Before
     public void init_() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSet(GRP_PRINC);
         GroupsThreadStore.storeUsername(USER_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
-
-        PID rootPid = getContentRootPid();
-        try {
-            repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
-        rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
+        setupContentRoot();
     }
 
     @After
@@ -120,7 +92,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         PID unitPid = pidMinter.mintContentPid();
         // Creating admin unit with no permissions granted
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid, null);
-        rootObj.addMember(unit);
+        contentRoot.addMember(unit);
         treeIndexer.indexAll(baseAddress);
 
         mvc.perform(get("/acl/staff/" + unitPid.getId()))
@@ -135,7 +107,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
         PID pid = pidMinter.mintContentPid();
         AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid, null);
-        rootObj.addMember(unit);
+        contentRoot.addMember(unit);
         treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + pid.getId()))
@@ -182,7 +154,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .addCanManage(GRP_PRINC)
                 .addUnitOwner(USER_NS_PRINC)
                 .model);
-        rootObj.addMember(unit);
+        contentRoot.addMember(unit);
         treeIndexer.indexAll(baseAddress);
 
         MvcResult result = mvc.perform(get("/acl/staff/" + unitPid.getId()))
@@ -293,7 +265,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Admin Unit Group Can Access")
                 .addCanAccess(GRP_PRINC)
                 .model);
-        rootObj.addMember(unit);
+        contentRoot.addMember(unit);
         CollectionObject coll = repositoryObjectFactory.createCollectionObject(
                 new AclModelBuilder("Collection Group Can Ingest")
                 .addCanIngest(GRP_PRINC)
@@ -356,7 +328,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Admin Unit Can Manage")
                 .addCanManage(GRP_PRINC)
                 .model);
-        rootObj.addMember(unit);
+        contentRoot.addMember(unit);
         return unit;
     }
 

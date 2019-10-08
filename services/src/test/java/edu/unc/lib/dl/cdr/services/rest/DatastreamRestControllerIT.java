@@ -54,7 +54,6 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
@@ -78,9 +77,6 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Autowired
     private AccessControlService accessControlService;
-
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
 
     @Autowired
     private DerivativeContentService derivativeContentService;

@@ -52,7 +52,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.persist.services.EmailHandler;
 
@@ -67,9 +66,6 @@ import edu.unc.lib.persist.services.EmailHandler;
     @ContextConfiguration("/export-xml-it-servlet.xml")
 })
 public class ExportXMLIT extends AbstractAPIIT {
-
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
 
     @Autowired
     private EmailHandler emailHandler;

@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.apache.tika.io.IOUtils;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -42,8 +41,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -57,11 +54,6 @@ import edu.unc.lib.dl.fedora.PID;
     @ContextConfiguration("/update-description-it-servlet.xml")
 })
 public class UpdateDescriptionIT extends AbstractAPIIT {
-
-    @Autowired
-    private RepositoryObjectLoader repoObjLoader;
-    @Autowired
-    private RepositoryObjectFactory repoFactory;
 
     @Test
     public void testUpdateDescription() throws Exception {
@@ -131,16 +123,16 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
     }
 
     private PID makeWorkObject() {
-        return repoFactory.createWorkObject(makePid(), null).getPid();
+        return repositoryObjectFactory.createWorkObject(makePid(), null).getPid();
     }
 
     private void assertDescriptionUpdated(PID objPid) {
-        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
+        ContentObject obj = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
         assertNotNull(obj.getDescription());
     }
 
     private void assertDescriptionNotUpdated(PID objPid) {
-        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
+        ContentObject obj = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
         assertNull(obj.getDescription());
     }
 
