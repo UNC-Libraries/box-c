@@ -138,7 +138,8 @@
             return {
                 display_roles: { inherited: [], assigned: [] },
                 patron_roles: { inherited: [], assigned: [] },
-                submit_roles: { inherited: [], assigned: [] },
+                submit_roles: [],
+                role_history: {},
                 object_embargo_info: {},
                 parent_embargo_info: {},
                 onyen_role: 'none',
@@ -259,12 +260,18 @@
                 let type = e.target.id;
 
                 if (type === 'staff') {
+                    this.role_history = Object.assign({}, { patron: this.patrons_role, onyen: this.onyen_role });
                     this.patrons_role = 'none';
                     this.onyen_role = 'none';
+                } else if (type === 'patron') {
+                    if (!isEmpty(this.role_history)) {
+                        this.patrons_role = this.role_history.patron;
+                        this.onyen_role = this.role_history.onyen;
+                    }
                 }
 
                 this.updateDisplayRoles(type);
-                this.updatePatronRoles();
+                this.updateSubmitRoles();
             },
 
             updateRole(principal) {
@@ -276,19 +283,19 @@
                     this.display_roles.assigned.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
-                this.updatePatronRoles();
+                this.updateSubmitRoles();
             },
 
             updateDisplayRoles(type) {
                 if (type === 'staff') {
                     this.display_roles.assigned = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
-                    this.display_roles.assigned = this.assignedPatronRoles;
+                    this.display_roles.assigned = this.displayRolesMerge(this.assignedPatronRoles);
                 }
             },
 
-            updatePatronRoles() {
-                this.patron_roles.assigned = this.assignedPatronRoles;
+            updateSubmitRoles() {
+                this.submit_roles = this.assignedPatronRoles;
             },
 
             currentUserRoles(user = 'Staff') {
