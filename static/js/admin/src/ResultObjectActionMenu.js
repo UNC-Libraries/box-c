@@ -191,7 +191,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		// Set/Update permission actions
 		items["seppermission"] = "";
-		items["patronPermissions"] = {name : 'Patron permissions'};
+
+		if (metadata.type !== 'AdminUnit') {
+			items["patronPermissions"] = {name : 'Patron permissions'};
+		}
+
 		items["staffPermissions"] = {name : 'Staff permissions'};
 
 		// Get data object for vue permissions editor

@@ -45,7 +45,7 @@
                     <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(object_role.principal)}">
                         <i class="far fa-question-circle"></i>
                         <div class="arrow"></div>
-                        <span class="browse-tip">What this means<</span>
+                        <span class="browse-tip">What this means</span>
                     </a>
                     <span class="permission-icons">
                         <i class="far fa-check-circle"
@@ -136,9 +136,9 @@
 
         data() {
             return {
-                display_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
-                patron_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
-                submit_roles: { inherited: [{ principal: 'Patrons', role: 'metadataOnly'}], assigned: [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }] },
+                display_roles: { inherited: [], assigned: [] },
+                patron_roles: { inherited: [], assigned: [] },
+                submit_roles: { inherited: [], assigned: [] },
                 onyen_role: 'none',
                 patrons_role: 'none',
                 user_type: ''
@@ -147,19 +147,16 @@
 
         computed: {
             possibleRoles() {
-                let container;
-                if (this.containerType === 'adminUnit') {
-                    container = 'admin unit';
-                } else {
-                    container = this.containerType.toLowerCase();
-                }
+                let container = this.containerType.toLowerCase();
 
                 return [
                     { text: STAFF_ONLY_ROLE_TEXT , role: STAFF_ONLY_ROLE_TEXT }, // Only used by the display tables
                     { text: 'No Access', role: 'none' },
-                    { text: 'Metadata Only', role: 'metadataOnly' },
-                    { text: 'Access Copies', role: 'accessCopies' },
-                    { text: `All of this ${container}`, role: 'allAccess' }
+                    { text: 'Can Discover', role: 'canDiscover' },
+                    { text: 'Metadata Only', role: 'canViewMetadata' },
+                    { text: 'Access Copies', role: 'canViewAccessCopies' },
+                    { text: 'Can View Originals', role: 'canViewOriginals' },
+                    { text: `All of this ${container}`, role: 'canAccess' }
                 ]
             },
 
@@ -179,26 +176,11 @@
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === '';
+                return this.user_type === 'Staff' || this.user_type === '';
             }
         },
 
         methods: {
-            getRoles() {
-                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                    if (!isEmpty(response.data)) {
-                        this.patron_roles = response.data;
-                        this.display_roles = cloneDeep(response.data);
-                        this.patrons_role = this.setCurrentObjectRole('Patrons');
-                        this.onyen_role = this.setCurrentObjectRole('Onyen');
-                    }
-                }).catch((error) => {
-                    let response_msg = `Unable load current patron roles for: ${this.title}`;
-                    this.alertHandler.alertHandler('error', response_msg);
-                    console.log(error);
-                });
-            },
-
             setRoles() {
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
@@ -210,11 +192,52 @@
                 }, 3000);
             },
 
+            getRoles() {
+                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
+                    if (!isEmpty(response.data)) {
+                        this.patron_roles = response.data;
+                        this.display_roles = cloneDeep(response.data);
+                    } else {
+                        let set_roles = [
+                            { principal: 'Patrons', role: 'canAccess' },
+                            { principal: 'Onyen', role: 'canAccess' }
+                        ];
+                        this.display_roles.inherited = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
+                        this.display_roles.assigned = set_roles;
+                        this.patron_roles.assigned = set_roles;
+                        this.submit_roles = set_roles;
+                    }
+
+                    // Set values for forms from retrieved data
+                    this.patrons_role = this.setCurrentObjectRole('Patrons');
+                    this.onyen_role = this.setCurrentObjectRole('Onyen');
+
+                    // Merge principals for display if role values are the same
+                    this.display_roles.inherited = this.displayRolesMerge(this.display_roles.inherited);
+                    this.display_roles.assigned = this.displayRolesMerge(this.display_roles.assigned);
+                }).catch((error) => {
+                    let response_msg = `Unable load current patron roles for: ${this.title}`;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
+            },
+
+            /**
+             *
+             */
+            displayRolesMerge(users) {
+                if (users.length === 2 && users[0].role === users[1].role) {
+                    return [{ principal: 'Patrons', role: users[0].role }];
+                }
+
+                return users;
+            },
+
             setCurrentObjectRole(principal) {
                 let user_index = this.userIndex(principal);
                 let role_type = 'none';
 
-                if (this.userIndex('staff') !== -1) {
+                if (this.userIndex('Staff') !== -1) {
                     this.user_type = 'staff';
                 } else if (user_index !== -1) {
                     this.user_type = 'patron';
@@ -247,6 +270,8 @@
 
                 if (user_index !== -1) {
                     this.display_roles.assigned[user_index].role = this[`${principal}_role`];
+                } else {
+                    this.display_roles.assigned.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
                 this.updatePatronRoles();
@@ -254,7 +279,7 @@
 
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.assigned = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    this.display_roles.assigned = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
                     this.display_roles.assigned = this.assignedPatronRoles;
                 }
@@ -264,11 +289,11 @@
                 this.patron_roles.assigned = this.assignedPatronRoles;
             },
 
-            currentUserRoles(user = 'staff') {
+            currentUserRoles(user = 'Staff') {
                 let inherited = this.display_roles.inherited.find((u) => u.principal === user);
                 let assigned = this.display_roles.assigned.find((u) => u.principal === user);
 
-                return { inherited: inherited, assigned: assigned };
+                return { inherited: inherited , assigned: assigned };
             },
 
             hasStaffOnly() {
@@ -325,7 +350,9 @@
             },
 
             userIndex(principal) {
-                return this.display_roles.assigned.findIndex((user) => user.principal.toLowerCase() === principal);
+                return this.display_roles.assigned.findIndex((user) => {
+                  return user.principal.toLowerCase() === principal.toLowerCase();
+                });
             },
 
             /**
