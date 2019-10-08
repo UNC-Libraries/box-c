@@ -16,8 +16,10 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,9 @@ public class AccessControlRetrievalController {
     private static final Logger log = LoggerFactory.getLogger(AccessControlRetrievalController.class);
     public static final String INHERITED_ROLES = "inherited";
     public static final String ASSIGNED_ROLES = "assigned";
+    public static final String ROLES_KEY = "roles";
+    public static final String EMBARGO_KEY = "embargo";
+    public static final String DELETED_KEY = "deleted";
 
     @Autowired
     private AccessControlService aclService;
@@ -68,7 +73,7 @@ public class AccessControlRetrievalController {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
-    @GetMapping(value = "/acl/staff/{id}", produces = "application/json; charset=UTF-8")
+    @GetMapping(value = "/acl/staff/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseEntity<Object> getStaffRoles(@PathVariable("id") String id) {
         log.debug("Retrieving staff roles for {}", id);
@@ -107,6 +112,72 @@ public class AccessControlRetrievalController {
         result.put(ASSIGNED_ROLES, assigned);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * Returns all details that impact patron access, including inherited and
+     * directly assigned patron roles, embargoes and deletion status.
+     *
+     * Inherited roles are computed to reflect inheritance decisions, embargoes and
+     * deletions.
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/acl/patron/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> getPatronAccess(@PathVariable("id") String id) {
+        log.debug("Retrieving patron access details for {}", id);
+        PID pid = PIDs.get(id);
+
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        aclService.assertHasAccess("Insufficient permissions to retrieve patron access for " + id,
+                pid, agent.getPrincipals(), Permission.viewHidden);
+
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> assignedInfo = new HashMap<>();
+        Map<String, Object> inheritedInfo = new HashMap<>();
+
+        if (repoObj instanceof AdminUnit) {
+            result.put("error", "Cannot retrieve patron access for a unit");
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        } else if (repoObj instanceof ContentObject) {
+            addAssignedPatronInfo(pid, assignedInfo);
+            addInheritedPatronInfo(repoObj, inheritedInfo);
+        } else {
+            result.put("error", "Cannot retrieve staff roles for object " + id
+                    + " of type " + repoObj.getClass().getName());
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+
+        result.put(INHERITED_ROLES, inheritedInfo);
+        result.put(ASSIGNED_ROLES, assignedInfo);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    private void addAssignedPatronInfo(PID pid, Map<String, Object> assignedInfo) {
+        assignedInfo.put(ROLES_KEY, objectAclFactory.getPatronRoleAssignments(pid));
+        assignedInfo.put(DELETED_KEY, objectAclFactory.isMarkedForDeletion(pid));
+        Date embargo = objectAclFactory.getEmbargoUntil(pid);
+        if (embargo != null) {
+            assignedInfo.put(EMBARGO_KEY, embargo);
+        }
+    }
+
+    private void addInheritedPatronInfo(RepositoryObject repoObj, Map<String, Object> inheritedInfo) {
+        RepositoryObject parent = repoObj.getParent();
+        PID pid = parent.getPid();
+        if (!(parent instanceof AdminUnit)) {
+            inheritedInfo.put(ROLES_KEY, inheritedAclFactory.getPatronAccess(pid));
+            Date embargo = inheritedAclFactory.getEmbargoUntil(pid);
+            if (embargo != null) {
+                inheritedInfo.put(EMBARGO_KEY, embargo);
+            }
+        }
+        inheritedInfo.put(DELETED_KEY, inheritedAclFactory.isMarkedForDeletion(pid));
     }
 
     // Trim user namespace off of user principals for the response
