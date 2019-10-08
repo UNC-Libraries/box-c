@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -39,7 +40,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -125,14 +125,8 @@ public class ObjectAclFactory implements AclFactory {
     }
 
     @Override
-    public PatronAccess getPatronAccess(PID pid) {
-
-        String patronPropertyUri = CdrAcl.patronAccess.getURI();
-        return getObjectAcls(pid).stream()
-                .filter(p -> patronPropertyUri.equals(p.getKey()))
-                .findFirst()
-                .map(p -> PatronAccess.valueOf(p.getValue()))
-                .orElse(PatronAccess.parent);
+    public List<RoleAssignment> getPatronAccess(PID pid) {
+        throw new NotImplementedException("Not implemented for ObjectAclFactory at this time");
     }
 
     @Override

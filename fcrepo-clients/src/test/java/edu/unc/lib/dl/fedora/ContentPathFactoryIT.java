@@ -79,6 +79,15 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         assertEquals(adminUnit.getPid(), ancestors.get(1));
     }
 
+    @Test(expected = NotFoundException.class)
+    public void testObjectNotFound() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+
+        treeIndexer.indexAll(baseAddress);
+
+        pathFactory.getAncestorPids(pid);
+    }
+
     @Test
     public void testGetFileAncestors() throws Exception {
         WorkObject work = repoObjFactory.createWorkObject(null);

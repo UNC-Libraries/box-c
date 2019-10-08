@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -45,7 +47,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
@@ -175,7 +176,7 @@ public class ObjectACLFactoryTest {
 
     @Test
     public void isMarkedForDeletionFalseTest() throws Exception {
-        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
+        objResc.addLiteral(CdrAcl.canViewOriginals, PUBLIC_PRINC);
 
         boolean result = aclFactory.isMarkedForDeletion(pid);
 
@@ -213,22 +214,9 @@ public class ObjectACLFactoryTest {
         assertNull(embargoDate);
     }
 
-    @Test
+    @Test(expected = NotImplementedException.class)
     public void getPatronAccessTest() throws Exception {
-        objResc.addLiteral(CdrAcl.patronAccess, PatronAccess.everyone.name());
-
-        PatronAccess access = aclFactory.getPatronAccess(pid);
-
-        assertEquals("Incorrect patron access setting retrieved", PatronAccess.everyone, access);
-    }
-
-    @Test
-    public void getPatronAccessNotSpecifiedTest() throws Exception {
-        objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
-
-        PatronAccess access = aclFactory.getPatronAccess(pid);
-
-        assertEquals("Default patron access expected", PatronAccess.parent, access);
+        aclFactory.getPatronAccess(pid);
     }
 
     @Test

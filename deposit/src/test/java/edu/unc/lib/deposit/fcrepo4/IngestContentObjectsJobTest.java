@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
@@ -64,7 +65,6 @@ import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
@@ -542,7 +542,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
-        folderBag.addProperty(CdrAcl.patronAccess, PatronAccess.authenticated.name());
+        folderBag.addProperty(CdrAcl.canViewMetadata, PUBLIC_PRINC);
 
         depBag.add(folderBag);
 
@@ -554,7 +554,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         Model aipModel = modelCaptor.getValue();
         Resource aipResc = aipModel.getResource(folderPid.getRepositoryPath());
-        assertTrue(aipResc.hasProperty(CdrAcl.patronAccess));
+        assertTrue(aipResc.hasProperty(CdrAcl.canViewMetadata));
     }
 
     @Test
@@ -568,7 +568,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         String mainMime = "application/pdf";
         PID mainPid = addFileObject(workBag, mainLoc, mainMime);
         model.getResource(mainPid.getRepositoryPath())
-                .addProperty(CdrAcl.patronAccess, PatronAccess.authenticated.name());
+                .addProperty(CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
 
         workBag.addProperty(Cdr.primaryObject,
                 model.getResource(mainPid.getRepositoryPath()));
@@ -593,7 +593,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         Resource fileAipResc = modelCaptor.getValue().getResource(mainPid.getRepositoryPath());
         assertTrue("File object did not contain assigned restriction",
-                fileAipResc.hasProperty(CdrAcl.patronAccess));
+                fileAipResc.hasProperty(CdrAcl.canViewOriginals));
     }
 
     @Test(expected=JobFailedException.class)

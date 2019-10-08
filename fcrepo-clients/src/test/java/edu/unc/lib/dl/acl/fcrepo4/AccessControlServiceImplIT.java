@@ -85,8 +85,6 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     private ObjectAclFactory aclFactory;
 
-    private ObjectPermissionEvaluator objectPermissionEvaluator;
-
     private InheritedPermissionEvaluator permissionEvaluator;
 
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -105,12 +103,9 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.init();
 
-        objectPermissionEvaluator = new ObjectPermissionEvaluator();
-        objectPermissionEvaluator.setAclFactory(aclFactory);
-
         permissionEvaluator = new InheritedPermissionEvaluator();
-        permissionEvaluator.setObjectPermissionEvaluator(objectPermissionEvaluator);
         permissionEvaluator.setPathFactory(pathFactory);
+        permissionEvaluator.setObjectAclFactory(aclFactory);
 
         aclService = new AccessControlServiceImpl();
         aclService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
@@ -144,7 +139,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
         collObj1Folder1 = repoObjFactory.createFolderObject(
                 new AclModelBuilder("Folder No Patron PubColl")
-                    .addPatronAccess("none")
+                    .addNoneRole(EVERYONE_PRINC)
                     .model);
         collObj1.addMember(collObj1Folder1);
 
@@ -165,7 +160,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
         collObj2Folder1 = repoObjFactory.createFolderObject(
                 new AclModelBuilder("Folder No Patron Staff Only Coll")
-                    .addPatronAccess("none")
+                    .addNoneRole(EVERYONE_PRINC)
                     .model);
         collObj2.addMember(collObj2Folder1);
 

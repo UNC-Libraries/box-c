@@ -13,18 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.service;
+package edu.unc.lib.dl.acl.util;
+
+import java.util.Date;
 
 /**
- * Allowed patron access values for the cdr-acl:patronAccess property which
- * designate modifications to patron group access levels
- * 
+ * Helper methods for interacting with embargoes
+ *
  * @author bbpennel
  *
  */
-public enum PatronAccess {
-    parent,
-    none,
-    everyone,
-    authenticated
+public class EmbargoUtil {
+
+    private EmbargoUtil() {
+    }
+
+    /**
+     * Returns true if the provided embargo end date is active based
+     * on the current date.
+     *
+     * @param embargoUntil
+     * @return true if the embargo is active.
+     */
+    public static boolean isEmbargoActive(Date embargoUntil) {
+        if (embargoUntil != null) {
+            Date currentDate = new Date();
+            if (currentDate.before(embargoUntil)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

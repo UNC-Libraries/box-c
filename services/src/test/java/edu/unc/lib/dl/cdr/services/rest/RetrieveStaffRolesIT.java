@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +57,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -99,8 +101,12 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         GroupsThreadStore.storeUsername(USER_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
 
-        PID rootPid = pidMinter.mintContentPid();
-        repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
+        PID rootPid = getContentRootPid();
+        try {
+            repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
+        } catch (FedoraException e) {
+            // Ignore failure as the content root will already exist after first test
+        }
         rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
     }
 
@@ -148,7 +154,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
 
         mvc.perform(get("/acl/staff/" + pid.getId()))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isNotFound())
                 .andReturn();
     }
 

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -22,12 +24,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +42,8 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
-import edu.unc.lib.dl.acl.service.PatronAccess;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
@@ -71,8 +76,6 @@ public class SetAccessStatusFilterTest {
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
 
-    private Map<String, Set<String>> principalRoles;
-
     private SetAccessStatusFilter filter;
 
     @Before
@@ -83,12 +86,6 @@ public class SetAccessStatusFilterTest {
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
-
-        principalRoles = new HashMap<>();
-
-        // default for test suite is parent access; changes made within test cases as required
-        when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
-        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
 
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
@@ -110,11 +107,15 @@ public class SetAccessStatusFilterTest {
     @Test
     public void testIsObjectEmbargoed() throws Exception {
 
-        when(objAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        when(objAclFactory.getEmbargoUntil(pid)).thenReturn(getNextYear());
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
@@ -122,20 +123,24 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testIsParentEmbargoed() throws Exception {
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
 
-        when(inheritedAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
+        when(inheritedAclFactory.getEmbargoUntil(pid)).thenReturn(getNextYear());
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
     }
 
     @Test
     public void testHasStaffOnlyAccess() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
 
-        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
@@ -146,8 +151,11 @@ public class SetAccessStatusFilterTest {
     @Test
     public void testHasPublicAccess() throws Exception {
 
-        principalRoles.put(AccessPrincipalConstants.PUBLIC_PRINC, new HashSet<String>());
-        when(inheritedAclFactory.getPrincipalRoles(any(PID.class))).thenReturn(principalRoles);
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
 
         filter.filter(dip);
 
@@ -157,9 +165,49 @@ public class SetAccessStatusFilterTest {
     }
 
     @Test
-    public void testParentHasStaffOnlyAccess() throws Exception {
+    public void testHasInheritedPublicAccess() throws Exception {
 
-        when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testHasPartialAccess() throws Exception {
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testHasMixedRevokedAccess() throws Exception {
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.none);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testParentHasStaffOnlyAccess() throws Exception {
+        addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
 
         filter.filter(dip);
 
@@ -169,16 +217,45 @@ public class SetAccessStatusFilterTest {
     }
 
     @Test
-    public void testNoStatusSet() throws Exception {
+    public void testNoAccessControlsSet() throws Exception {
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
-        assertFalse(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
     }
 
+    private void addPrincipalRoles(PID pid, String principal, UserRole... roles) {
+        Map<String, Set<String>> princRoles = objAclFactory.getPrincipalRoles(pid);
+        if (princRoles == null || princRoles.isEmpty()) {
+            princRoles = new HashMap<>();
+            when(objAclFactory.getPrincipalRoles(pid)).thenReturn(princRoles);
+        }
+
+        princRoles.put(principal, Arrays.stream(roles)
+                .map(UserRole::getPropertyString)
+                .collect(Collectors.toSet()));
+    }
+
+    private void addInheritedRoleAssignment(PID pid, String principal, UserRole role) {
+        List<RoleAssignment> assignments = inheritedAclFactory.getPatronAccess(pid);
+        if (assignments == null || assignments.isEmpty()) {
+            assignments = new ArrayList<>();
+            when(inheritedAclFactory.getPatronAccess(pid)).thenReturn(assignments);
+        }
+
+        assignments.add(new RoleAssignment(principal, role));
+    }
+
+    private Date getNextYear() {
+        Date dt = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(dt);
+        c.add(Calendar.DATE, 365);
+        return c.getTime();
+    }
 }

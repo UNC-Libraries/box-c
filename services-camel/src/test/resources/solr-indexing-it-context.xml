@@ -39,19 +39,14 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
-    <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
-        <property name="aclFactory" ref="objectAclFactory" />
-    </bean>
-    
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
-        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
         <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
     
     <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
-        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
     </bean>
     
     <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">

@@ -24,6 +24,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 
 /**
  *
@@ -37,5 +38,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleAccessRestriction(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Insufficient permissions";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = { NotFoundException.class })
+    protected ResponseEntity<Object> handleObjectNotFound(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Object not found";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 }

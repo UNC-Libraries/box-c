@@ -47,6 +47,12 @@ public class CdrAcl {
     public static final Property canAccess = createProperty(
             "http://cdr.unc.edu/definitions/acl#canAccess" );
 
+    /**
+     * Explicitly assign no role to the specified group or user.
+     */
+    public static final Property none = createProperty(
+            "http://cdr.unc.edu/definitions/acl#none" );
+
     /** Grants the specified group or user permission to add or edit descriptive records
      *  for this object and all of its children. Also has all of the rights granted
      *  by the canAccess role. Applies to cdr:Collection and cdr:AdminUnit objects.
@@ -116,21 +122,6 @@ public class CdrAcl {
      */
     public static final Property owner = createProperty(
             "http://cdr.unc.edu/definitions/acl#owner" );
-
-    /** Grants the specified category of users patron access to this object and its
-     *  children, unless further restricted by the child. Cannot exceed the level
-     *  of patron access granted on a parent object. Valid values are: "everyone",
-     *  "authenticated", "none", "parent". Applies to cdr:FileObject, cdr:AggregateWork,
-     *  cdr:Folder, and cdr:Collection objects.
-     */
-    public static final Property patronAccess = createProperty(
-            "http://cdr.unc.edu/definitions/acl#patronAccess" );
-
-    /** If true, restricts users with patron access to only be able to view metadata
-     *  records for this object and its children. Applies to cdr:Collection objects.
-     */
-    public static final Property patronsMetadataOnly = createProperty(
-            "http://cdr.unc.edu/definitions/acl#patronsMetadataOnly" );
 
     /** User granted ownership of an administrative unit. Has all access and administrative
      *  permissions, as well as permission to permanently destroy objects, create

@@ -21,20 +21,27 @@ import java.util.stream.Collectors;
 
 /**
  * Helper methods for classifying principals by category
- * 
+ *
  * @author bbpennel
  *
  */
-public abstract class PrincipalClassifier {
+public class PrincipalClassifier {
 
-    private final static Pattern PATRON_PRINC_PATTERN
-            = Pattern.compile("(everyone|authenticated|cdr:ip4:.*|cdr:ip6:.*)");
+    private PrincipalClassifier() {
+    }
+
+    private static final Pattern PATRON_PRINC_PATTERN
+            = Pattern.compile("(everyone|authenticated)");
+
+    public static boolean isPatronPrincipal(String principal) {
+        return PATRON_PRINC_PATTERN.matcher(principal).matches();
+    }
 
     /**
      * Given a set of principals, classifies each principal by whether it is
      * identifiably a patron or staff principal, adding the principals to
      * patronPrincipals or staffPrincipals accordingly.
-     * 
+     *
      * @param principals
      * @param patronPrincipals
      * @param staffPrincipals
@@ -53,7 +60,7 @@ public abstract class PrincipalClassifier {
     /**
      * Returns a set containing all patron principals found in the given set of
      * principals
-     * 
+     *
      * @param principals
      * @return
      */
