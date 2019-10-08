@@ -31,7 +31,7 @@
                     {{ displayRole(inherited_role.role) }}
                     <span class="permission-icons">
                         <i class="far fa-times-circle"></i>
-                        <i class="far fa-circle">
+                        <i class="far fa-circle" :class="{hidden: embargoed('parent')}">
                             <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'assigned'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -55,7 +55,7 @@
                 <td>{{ displayRole(object_role.role) }}
                     <span class="permission-icons">
                         <i class="far fa-times-circle"></i>
-                        <i class="far fa-circle">
+                        <i class="far fa-circle" :class="{hidden: embargoed('object')}">
                             <div :class="{'custom-icon-offset': mostRestrictive(object_role.principal) === 'parent'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -96,7 +96,7 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo :uuid="uuid"></embargo>
+        <embargo :uuid="uuid" @embargo-info="setEmbargo"></embargo>
         <p class="message">{{ response_message }}</p>
         <ul>
             <li>
@@ -139,6 +139,8 @@
                 display_roles: { inherited: [], assigned: [] },
                 patron_roles: { inherited: [], assigned: [] },
                 submit_roles: { inherited: [], assigned: [] },
+                object_embargo_info: {},
+                parent_embargo_info: {},
                 onyen_role: 'none',
                 patrons_role: 'none',
                 user_type: ''
@@ -193,7 +195,7 @@
             },
 
             getRoles() {
-                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
+               axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     if (!isEmpty(response.data)) {
                         this.patron_roles = response.data;
                         this.display_roles = cloneDeep(response.data);
@@ -349,10 +351,24 @@
                 return text !== 'Patrons';
             },
 
+            embargoed(type) {
+                return isEmpty(this[`${type}_embargo_info`]);
+            },
+
             userIndex(principal) {
                 return this.display_roles.assigned.findIndex((user) => {
                   return user.principal.toLowerCase() === principal.toLowerCase();
                 });
+            },
+
+            setEmbargo(embargo_info) {
+                this.object_embargo_info = embargo_info;
+
+                if (!isEmpty(embargo_info)) {
+                    this.display_roles.assigned = [{principal: 'Public', role: 'canViewMetadata'}];
+                } else {
+                    this.display_roles.assigned = this.assignedPatronRoles;
+                }
             },
 
             /**

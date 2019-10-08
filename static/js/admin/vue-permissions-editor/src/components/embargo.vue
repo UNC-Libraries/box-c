@@ -19,7 +19,7 @@
 
         data() {
             return {
-                embargo_info: { text: 'May 5 2099'},
+                embargo_info: {},
                 has_embargo: false
             }
         },
@@ -31,17 +31,11 @@
         },
 
         methods: {
-            getEmbargo() {
-            },
-
             changeEmbargo() {
                 this.has_embargo = !this.has_embargo;
-                this.$emit('embargo', this.embargo_info);
+                this.embargo_info = (!this.has_embargo) ? {} : { text: 'May 5 2099' };
+                this.$emit('embargo-info', this.embargo_info);
             },
-        },
-
-        mounted() {
-            this.getEmbargo();
         }
     }
 </script>
