@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
+import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ROLES_KEY;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -114,7 +115,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoInheritedRoles(respMap);
         assertNoAssignedRoles(respMap);
@@ -140,7 +141,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoInheritedRoles(respMap);
         assertHasAssignedRole(GRP_PRINC, canManage, pid, respMap);
@@ -161,7 +162,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoInheritedRoles(respMap);
         assertHasAssignedRole(GRP_PRINC, canManage, unitPid, respMap);
@@ -181,7 +182,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -203,7 +204,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertHasAssignedRole(USER_PRINC, canAccess, pid, respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -225,7 +226,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -248,7 +249,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -280,7 +281,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canAccess, unit.getPid(), respMap);
@@ -298,7 +299,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -317,7 +318,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, List<RoleAssignment>> respMap = getRolesFromResponse(result);
+        Map<String, Map<String, List<RoleAssignment>>> respMap = getRolesFromResponse(result);
 
         assertNoAssignedRoles(respMap);
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
@@ -342,32 +343,32 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     }
 
     private void assertHasInheritedRole(String princ, UserRole role, PID pid,
-            Map<String, List<RoleAssignment>> respMap) {
-        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES);
+            Map<String, Map<String, List<RoleAssignment>>> respMap) {
+        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES).get(ROLES_KEY);
         assertTrue("Response did not contain required inherited role " + princ + " " + role,
                 inherited.contains(new RoleAssignment(princ, role, pid)));
     }
 
     private void assertHasAssignedRole(String princ, UserRole role, PID pid,
-            Map<String, List<RoleAssignment>> respMap) {
-        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES);
+            Map<String, Map<String, List<RoleAssignment>>> respMap) {
+        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES).get(ROLES_KEY);
         assertTrue("Response did not contain required assigned role " + princ + " " + role,
                 assigned.contains(new RoleAssignment(princ, role, pid)));
     }
 
-    private void assertNoInheritedRoles(Map<String, List<RoleAssignment>> respMap) {
-        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES);
+    private void assertNoInheritedRoles(Map<String, Map<String, List<RoleAssignment>>> respMap) {
+        List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES).get(ROLES_KEY);
         assertTrue("Inherited role map was expected to be empty", inherited.isEmpty());
     }
 
-    private void assertNoAssignedRoles(Map<String, List<RoleAssignment>> respMap) {
-        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES);
+    private void assertNoAssignedRoles(Map<String, Map<String, List<RoleAssignment>>> respMap) {
+        List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES).get(ROLES_KEY);
         assertTrue("Assigned role map was expected to be empty", assigned.isEmpty());
     }
 
-    protected Map<String, List<RoleAssignment>> getRolesFromResponse(MvcResult result) throws Exception {
+    protected Map<String, Map<String, List<RoleAssignment>>> getRolesFromResponse(MvcResult result) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, List<RoleAssignment>>>() {});
+                new TypeReference<Map<String, Map<String, List<RoleAssignment>>>>() {});
     }
 }
