@@ -29,7 +29,6 @@ import java.util.Map;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -37,8 +36,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
@@ -54,9 +51,6 @@ import edu.unc.lib.dl.rdf.DcElements;
     @ContextConfiguration("/edit-label-it-servlet.xml")
 })
 public class EditLabelIT extends AbstractAPIIT {
-
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
 
     @Test
     public void testCreateLabelWhereNoneExists() throws UnsupportedOperationException, Exception {
@@ -106,7 +100,7 @@ public class EditLabelIT extends AbstractAPIIT {
     @Test
     public void testAuthorizationFailure() throws Exception {
         PID pid = makePid();
-        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+        repositoryObjectFactory.createFolderObject(pid, null);
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));

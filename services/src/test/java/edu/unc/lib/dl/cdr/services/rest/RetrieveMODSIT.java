@@ -33,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -41,7 +40,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -56,9 +54,6 @@ import edu.unc.lib.dl.fedora.PID;
     @ContextConfiguration("/retrieve-mods-it-servlet.xml")
 })
 public class RetrieveMODSIT extends AbstractAPIIT {
-
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
 
     @Test
     public void testRetrieveMODSFromWork() throws Exception {

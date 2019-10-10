@@ -3,7 +3,7 @@
         <h1 v-if="canSetPermissions">Set Staff Permissions</h1>
         <h1 v-else>Inherited Staff Permissions</h1>
 
-        <table class="border inherited-permissions" v-if="current_staff_roles.inherited !== undefined && current_staff_roles.inherited.length > 0">
+        <table class="border inherited-permissions" v-if="current_staff_roles.inherited !== undefined && current_staff_roles.inherited.roles.length > 0">
             <thead>
             <tr>
                 <th>Staff</th>
@@ -12,7 +12,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="inherited_staff_permission in current_staff_roles.inherited">
+            <tr v-for="inherited_staff_permission in current_staff_roles.inherited.roles">
                 <td>{{ inherited_staff_permission.principal }}</td>
                 <td>{{ inherited_staff_permission.role }}</td>
                 <td>{{ assignedToName(inherited_staff_permission) }}</td>
@@ -119,7 +119,7 @@
 
         data() {
             return {
-                current_staff_roles: { inherited: [], assigned: [] },
+                current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } },
                 deleted_users: [],
                 is_closing_modal: false,
                 is_error_message: true,
@@ -158,7 +158,7 @@
                         /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
                            when a user is is added/updated */
                         let update_roles = cloneDeep(response.data);
-                        this.updated_staff_roles = update_roles.assigned;
+                        this.updated_staff_roles = update_roles.assigned.roles;
                     }
                 }).catch((error) => {
                     let response_msg = `Unable load current staff roles for: ${this.title}`;
@@ -181,7 +181,7 @@
                 axios({
                     method: 'put',
                     url: `/services/api/edit/acl/staff/${this.uuid}`,
-                    data: JSON.stringify(this.updated_staff_roles),
+                    data: JSON.stringify( { roles: this.updated_staff_roles } ),
                     headers: {'content-type': 'application/json; charset=utf-8'}
                 }).then((response) => {
                     this.getRoles(); // Reset role list so user can close modal without a prompt.
@@ -323,7 +323,7 @@
              */
             unsavedUpdates() {
                 let unsaved_staff_roles = this.updated_staff_roles.some((user) => {
-                    let current_user = this.current_staff_roles.assigned.find((u) => user.principal === u.principal);
+                    let current_user = this.current_staff_roles.assigned.roles.find((u) => user.principal === u.principal);
                     return (current_user === undefined || current_user.role !== user.role);
                 });
 

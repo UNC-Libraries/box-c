@@ -61,7 +61,7 @@ public class UpdateAccessControlController {
     @PutMapping(value = "/edit/acl/staff/{id}", produces = "application/json; charset=UTF-8")
     @ResponseBody
     public ResponseEntity<Object> updateStaffRoles(@PathVariable("id") String id,
-            @RequestBody List<RoleAssignment> assignments) {
+            @RequestBody UpdateStaffRequest assignments) {
 
         PID pid = PIDs.get(id);
 
@@ -70,7 +70,7 @@ public class UpdateAccessControlController {
         result.put("pid", pid.getId());
 
         Set<String> alreadyAssignedPrincipals = new HashSet<>();
-        for (RoleAssignment ra: assignments) {
+        for (RoleAssignment ra: assignments.getRoles()) {
             // Catch any incomplete role assignments
             if (isEmpty(ra.getPrincipal()) || ra.getRole() == null) {
                 result.put("error", "Invalid role assignments");
@@ -89,7 +89,7 @@ public class UpdateAccessControlController {
 
         try {
             AgentPrincipals agent = AgentPrincipals.createFromThread();
-            String jobId = staffRoleService.updateRoles(agent, pid, assignments);
+            String jobId = staffRoleService.updateRoles(agent, pid, assignments.getRoles());
             result.put("job", jobId);
         } catch (InvalidAssignmentException e) {
             result.put("error", e.getMessage());
@@ -114,6 +114,18 @@ public class UpdateAccessControlController {
         String principal = ra.getPrincipal();
         if (!principal.matches("\\w+:.+")) {
             ra.setPrincipal(USER_NAMESPACE + principal);
+        }
+    }
+
+    public static class UpdateStaffRequest {
+        private List<RoleAssignment> roles;
+
+        public List<RoleAssignment> getRoles() {
+            return roles;
+        }
+
+        public void setRoles(List<RoleAssignment> roles) {
+            this.roles = roles;
         }
     }
 }

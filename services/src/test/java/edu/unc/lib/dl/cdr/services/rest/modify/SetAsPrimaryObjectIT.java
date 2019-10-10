@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -39,10 +38,8 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -55,13 +52,6 @@ import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
     @ContextConfiguration("/set-as-primary-object-it-servlet.xml")
 })
 public class SetAsPrimaryObjectIT extends AbstractAPIIT {
-
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
 
     private WorkObject parent;
     private PID parentPid;

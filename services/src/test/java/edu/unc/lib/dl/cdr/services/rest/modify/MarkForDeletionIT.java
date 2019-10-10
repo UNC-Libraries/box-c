@@ -34,7 +34,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -42,8 +41,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
@@ -59,11 +56,6 @@ import edu.unc.lib.dl.rdf.Premis;
     @ContextConfiguration("/mark-for-deletion-it-servlet.xml")
 })
 public class MarkForDeletionIT extends AbstractAPIIT {
-
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
 
     @Test
     public void testMarkSingle() throws Exception {

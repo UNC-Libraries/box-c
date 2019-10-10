@@ -59,6 +59,10 @@ public class AclModelBuilder {
         return addProp(CdrAcl.canAccess, princ);
     }
 
+    public AclModelBuilder addCanViewMetadata(String princ) {
+        return addProp(CdrAcl.canViewMetadata, princ);
+    }
+
     public AclModelBuilder addCanViewOriginals(String princ) {
         return addProp(CdrAcl.canViewOriginals, princ);
     }
@@ -69,6 +73,11 @@ public class AclModelBuilder {
 
     public AclModelBuilder addEmbargoUntil(Calendar date) {
         resc.addLiteral(CdrAcl.embargoUntil, date);
+        return this;
+    }
+
+    public AclModelBuilder markForDeletion() {
+        resc.addLiteral(CdrAcl.markedForDeletion, true);
         return this;
     }
 

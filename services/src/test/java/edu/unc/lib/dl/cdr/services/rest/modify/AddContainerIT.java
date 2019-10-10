@@ -17,7 +17,6 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -33,7 +32,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -44,15 +42,10 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -65,27 +58,9 @@ import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
     @ContextConfiguration("/add-container-it-servlet.xml")
 })
 public class AddContainerIT extends AbstractAPIIT {
-
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
-
-    private ContentRootObject contentRoot;
-
     @Before
     public void initRoot() {
-        try {
-            repositoryObjectFactory.createContentRootObject(
-                    getContentRootPid().getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
-        contentRoot = repositoryObjectLoader.getContentRootObject(getContentRootPid());
+        setupContentRoot();
     }
 
     @Test

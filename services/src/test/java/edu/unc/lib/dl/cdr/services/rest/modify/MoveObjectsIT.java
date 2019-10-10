@@ -32,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -45,14 +44,8 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
@@ -67,16 +60,6 @@ import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 })
 public class MoveObjectsIT extends AbstractAPIIT {
 
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
-
-    private ContentRootObject rootObj;
     private AdminUnit unitObj;
     private CollectionObject collObj;
     private ContentContainerObject sourceContainer;
@@ -84,23 +67,17 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
     @Before
     public void setup() {
+        setupContentRoot();
         createHierarchy();
     }
 
     private void createHierarchy() {
-        PID rootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-        }
-        rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
-
         unitObj = repositoryObjectFactory.createAdminUnit(null);
         collObj = repositoryObjectFactory.createCollectionObject(null);
         sourceContainer = repositoryObjectFactory.createFolderObject(null);
         destContainer = repositoryObjectFactory.createFolderObject(null);
 
-        rootObj.addMember(unitObj);
+        contentRoot.addMember(unitObj);
         unitObj.addMember(collObj);
         collObj.addMember(destContainer);
         collObj.addMember(sourceContainer);

@@ -41,7 +41,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -51,18 +50,12 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.cdr.services.rest.modify.UpdateAccessControlController.UpdateStaffRequest;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  * @author bbpennel
@@ -77,20 +70,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
     private static final String USER_URI = USER_NAMESPACE + USER_NAME;
     private static final String USER_GROUPS = "edu:lib:admin_grp";
 
-    @Autowired
-    private RepositoryObjectFactory repoObjFactory;
-    @Autowired
-    private RepositoryObjectLoader repoObjLoader;
-    @Autowired
-    private RepositoryPIDMinter pidMinter;
-
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
-
-    private ContentRootObject contentRoot;
-
     @Before
     public void setup() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
@@ -98,14 +77,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
 
-        PID contentRootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(
-                    contentRootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
-        contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        setupContentRoot();
     }
 
     @After
@@ -115,7 +87,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testInsufficientPermissions() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -129,7 +101,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isForbidden())
             .andReturn();
 
@@ -141,9 +113,9 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testInvalidUnitOwnerAssignment() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(null);
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = coll.getPid();
 
@@ -154,7 +126,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -173,7 +145,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isNotFound())
             .andReturn();
     }
@@ -181,7 +153,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
     @Test
     public void testNoAssignments() throws Exception {
         PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(pid,
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid,
                 new AclModelBuilder("Admin Unit Can Manage")
                 .addCanManage(USER_NAME)
                 .model);
@@ -193,7 +165,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -201,14 +173,14 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repoObjLoader.getAdminUnit(pid);
+        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
         // Verify that existing assignment was cleared
         assertNoAssignment(USER_NAME, canManage, updated);
     }
 
     @Test
     public void testInvalidRolesBody() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -225,7 +197,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testNoRolesBody() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -239,7 +211,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testNoPrincipal() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -250,14 +222,14 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
     }
 
     @Test
     public void testInvalidRole() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -274,7 +246,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testAssignRoles() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -285,7 +257,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -293,13 +265,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repoObjLoader.getAdminUnit(pid);
+        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
         assertHasAssignment(USER_URI, canManage, updated);
     }
 
     @Test
     public void testAssignGroup() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -310,7 +282,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -318,13 +290,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repoObjLoader.getAdminUnit(pid);
+        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
         assertHasAssignment(USER_GROUPS, canManage, updated);
     }
 
     @Test
     public void testAssignMultipleRolesToSamePrincipal() throws Exception {
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -337,7 +309,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(assignments)))
+                .content(serializeAssignments(assignments)))
                 .andExpect(status().isBadRequest())
             .andReturn();
     }
@@ -352,5 +324,12 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         Resource resc = obj.getResource();
         assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
+    }
+
+    private byte[] serializeAssignments(List<RoleAssignment> assignments) throws Exception {
+        UpdateStaffRequest updateRequest = new UpdateStaffRequest();
+        updateRequest.setRoles(assignments);
+
+        return makeRequestBody(updateRequest);
     }
 }

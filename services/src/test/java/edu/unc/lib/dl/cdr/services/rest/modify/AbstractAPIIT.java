@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,8 +39,14 @@ import com.fasterxml.jackson.databind.type.MapType;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -51,10 +58,22 @@ import edu.unc.lib.dl.test.TestHelper;
 @WebAppConfiguration
 public abstract class AbstractAPIIT {
 
+    @Autowired(required = false)
+    protected String baseAddress;
     @Autowired
     protected WebApplicationContext context;
     @Autowired
     protected AccessControlService aclService;
+    @Autowired(required = false)
+    protected RepositoryObjectFactory repositoryObjectFactory;
+    @Autowired(required = false)
+    protected RepositoryObjectLoader repositoryObjectLoader;
+    @Autowired(required = false)
+    protected RepositoryPIDMinter pidMinter;
+    @Autowired(required = false)
+    protected RepositoryObjectTreeIndexer treeIndexer;
+
+    protected ContentRootObject contentRoot;
 
     protected MockMvc mvc;
 
@@ -75,6 +94,16 @@ public abstract class AbstractAPIIT {
     @After
     public void tearDown() {
         GroupsThreadStore.clearStore();
+    }
+
+    protected void setupContentRoot() {
+        try {
+            repositoryObjectFactory.createContentRootObject(
+                    getContentRootPid().getRepositoryUri(), null);
+        } catch (FedoraException e) {
+            // Ignore failure as the content root will already exist after first test
+        }
+        contentRoot = repositoryObjectLoader.getContentRootObject(getContentRootPid());
     }
 
     protected PID makePid() {
