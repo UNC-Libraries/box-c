@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
+import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -46,6 +47,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -69,7 +71,13 @@ public class StaffRoleAssignmentService {
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
 
+    private ContentObjectAccessRestrictionValidator accessValidator;
+
     private static final Timer timer = TimerFactory.createTimerForClass(StaffRoleAssignmentService.class);
+
+    public StaffRoleAssignmentService() {
+        accessValidator = new ContentObjectAccessRestrictionValidator();
+    }
 
     /**
      * Replaces all staff role assignments for the target object with the provided list of assignments.
@@ -92,16 +100,12 @@ public class StaffRoleAssignmentService {
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
             // Verify that the target is a collection or admin unit
-            if (repoObj instanceof CollectionObject) {
-                // Ensure that unitOwner is not being set for collection object
-                if (containsUnitOwner(assignments)) {
-                    throw new InvalidAssignmentException("Cannot assign unit owner role on object " + target.getId()
-                        + " of type Collection");
-                }
-            } else if (!(repoObj instanceof AdminUnit)) {
+            if (!(repoObj instanceof CollectionObject || repoObj instanceof AdminUnit)) {
                 throw new InvalidAssignmentException("Cannot assign staff roles to  object " + target.getId()
-                    + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
+                        + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
+
+            assertOnlyStaffRoles(assignments);
 
             replaceStaffRoles(repoObj, assignments);
 
@@ -121,8 +125,10 @@ public class StaffRoleAssignmentService {
         }
     }
 
-    private boolean containsUnitOwner(Collection<RoleAssignment> assignments) {
-        return assignments.stream().anyMatch(a -> UserRole.unitOwner.equals(a.getRole()));
+    private void assertOnlyStaffRoles(Collection<RoleAssignment> assignments) {
+        if (assignments.stream().anyMatch(a -> a.getRole().isPatronRole())) {
+            throw new ServiceException("Only staff roles are applicable for this service");
+        }
     }
 
     private void replaceStaffRoles(RepositoryObject repoObj, Collection<RoleAssignment> assignments) {
@@ -139,6 +145,9 @@ public class StaffRoleAssignmentService {
         for (RoleAssignment assignment: assignments) {
             resc.addProperty(assignment.getRole().getProperty(), assignment.getPrincipal());
         }
+
+        // Verify that ACL assignments are valid before updating
+        accessValidator.validate(resc);
 
         // Push the updated model back to fedora
         repositoryObjectFactory.createOrTransformObject(repoObj.getUri(), model);
