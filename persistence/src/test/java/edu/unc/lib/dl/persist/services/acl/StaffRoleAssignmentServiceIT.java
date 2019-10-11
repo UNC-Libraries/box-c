@@ -55,7 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
@@ -93,7 +92,6 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
