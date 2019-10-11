@@ -14,18 +14,14 @@
             <tbody>
             <template v-if="hasParentRole" v-for="user in display_roles.inherited.roles">
                 <patron-display-row
-                        :deleted="display_roles.inherited.deleted"
                         :display-roles="display_roles"
-                        :embargoed="display_roles.inherited.embargoed"
                         :possible-roles="possibleRoles"
-                        type="parent"
+                        type="inherited"
                         :user="user"></patron-display-row>
             </template>
             <template v-if="hasObjectRole" v-for="user in display_roles.assigned.roles">
                 <patron-display-row
-                        :deleted="display_roles.assigned.deleted"
                         :display-roles="display_roles"
-                        :embargoed="display_roles.assigned.embargoed"
                         :possible-roles="possibleRoles"
                         type="assigned"
                         :user="user"></patron-display-row>
@@ -63,7 +59,7 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo :uuid="uuid" @embargo-info="setEmbargo"></embargo>
+        <embargo @embargo-info="setEmbargo"></embargo>
         <p class="message">{{ response_message }}</p>
         <ul>
             <li>
@@ -272,7 +268,7 @@
                     this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
-                this.dedupeDisplayRoles()
+                this.dedupeDisplayRoles();
                 this.updateSubmitRoles();
             },
 

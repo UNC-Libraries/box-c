@@ -17,8 +17,8 @@
         <td>
             {{ displayRole(user.role) }}
             <span class="permission-icons">
-                        <i class="far fa-times-circle" :class="{hidden: !deleted}"></i>
-                        <i class="far fa-circle" :class="{hidden: !embargoed}">
+                        <i class="far fa-times-circle" :class="{hidden: !hasAction.deleted}"></i>
+                        <i class="far fa-circle" :class="{hidden: !hasAction.embargoed}">
                             <div :class="{'custom-icon-offset': mostRestrictive(user.principal) !== type}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -33,12 +33,16 @@
         name: 'patronDisplayRow',
         
         props: {
-            deleted: Boolean,
             displayRoles: Object,
-            embargoed: Boolean,
             possibleRoles: Array,
             type: String,
             user: Object,
+        },
+
+        computed: {
+          hasAction() {
+              return this.displayRoles[this.type];
+          }
         },
         
         methods: {
@@ -57,7 +61,7 @@
                 let current_users = this.currentUserRoles();
 
                 if (current_users.inherited !== undefined) {
-                    return 'parent';
+                    return 'inherited';
                 } else if (current_users.assigned !== undefined) {
                     return 'assigned'
                 } else {
@@ -77,7 +81,7 @@
                 if (assigned_role !== -1 && assigned_role < inherited_role) {
                     return 'assigned';
                 } else {
-                    return 'parent';
+                    return 'inherited';
                 }
             },
 
@@ -87,7 +91,7 @@
                 if (current_users.inherited === undefined && current_users.assigned === undefined) {
                     return 'none';
                 } else if (current_users.inherited !== undefined && current_users.assigned === undefined) {
-                    return 'parent';
+                    return 'inherited';
                 } else if (current_users.inherited === undefined && current_users.assigned !== undefined) {
                     return 'assigned';
                 } else {
@@ -168,7 +172,7 @@
         border-right: 5px solid transparent;
         border-bottom: 10px solid darkslategray;
         height: 0;
-        margin: 2px 2px 0 60px;
+        margin: 2px 2px 0 48px;
         width: 0;
     }
 
