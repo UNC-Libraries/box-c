@@ -7,14 +7,14 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>Who can access</th>
+                    <th class="access-display">Who can access</th>
                     <th>What can be viewed</th>
                 </tr>
             </thead>
             <tbody>
             <tr v-if="hasParentRole" v-for="inherited_role in display_roles.inherited.roles">
                 <td>From parent</td>
-                <td>
+                <td class="access-display">
                     {{ inherited_role.principal }}
                     <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(inherited_role.principal)}">
                         <i class="far fa-question-circle"></i>
@@ -41,7 +41,7 @@
             </tr>
             <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned.roles">
                 <td>This object</td>
-                <td>{{ object_role.principal }}
+                <td class="access-display">{{ object_role.principal }}
                     <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(object_role.principal)}">
                         <i class="far fa-question-circle"></i>
                         <div class="arrow"></div>
@@ -427,6 +427,10 @@
 
         td:last-child {
             min-width: 225px;
+        }
+
+        .access-display {
+            max-width: 100px;
         }
 
         .patron {
