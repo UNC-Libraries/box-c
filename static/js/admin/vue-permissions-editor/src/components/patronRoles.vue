@@ -12,57 +12,24 @@
                 </tr>
             </thead>
             <tbody>
-            <tr v-if="hasParentRole" v-for="inherited_role in display_roles.inherited.roles">
-                <td>From parent</td>
-                <td class="access-display">
-                    {{ inherited_role.principal }}
-                    <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(inherited_role.principal)}">
-                        <i class="far fa-question-circle"></i>
-                        <div class="arrow"></div>
-                        <span class="browse-tip">What this means</span>
-                    </a>
-
-                    <span class="permission-icons">
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
-                    </span>
-                </td>
-                <td>
-                    {{ displayRole(inherited_role.role) }}
-                    <span class="permission-icons">
-                        <i class="far fa-times-circle" :class="{hidden: !display_roles.inherited.deleted}"></i>
-                        <i class="far fa-circle" :class="{hidden: hasEmbargo('parent')}">
-                            <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'assigned'}">e</div>
-                        </i>
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(inherited_role.principal) === 'parent'"></i>
-                    </span>
-                </td>
-            </tr>
-            <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned.roles">
-                <td>This object</td>
-                <td class="access-display">{{ object_role.principal }}
-                    <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(object_role.principal)}">
-                        <i class="far fa-question-circle"></i>
-                        <div class="arrow"></div>
-                        <span class="browse-tip">What this means</span>
-                    </a>
-                    <span class="permission-icons">
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(object_role.principal) === 'assigned'"></i>
-                    </span>
-                </td>
-                <td>{{ displayRole(object_role.role) }}
-                    <span class="permission-icons">
-                        <i class="far fa-times-circle" :class="{hidden: !display_roles.assigned.deleted}"></i>
-                        <i class="far fa-circle" :class="{hidden: hasEmbargo('object')}">
-                            <div :class="{'custom-icon-offset': mostRestrictive(object_role.principal) === 'parent'}">e</div>
-                        </i>
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(object_role.principal) === 'assigned'"></i>
-                    </span>
-                </td>
-            </tr>
+            <template v-if="hasParentRole" v-for="user in display_roles.inherited.roles">
+                <patron-display-row
+                        :deleted="display_roles.inherited.deleted"
+                        :display-roles="display_roles"
+                        :embargoed="display_roles.inherited.embargoed"
+                        :possible-roles="possibleRoles"
+                        type="parent"
+                        :user="user"></patron-display-row>
+            </template>
+            <template v-if="hasObjectRole" v-for="user in display_roles.assigned.roles">
+                <patron-display-row
+                        :deleted="display_roles.assigned.deleted"
+                        :display-roles="display_roles"
+                        :embargoed="display_roles.assigned.embargoed"
+                        :possible-roles="possibleRoles"
+                        type="assigned"
+                        :user="user"></patron-display-row>
+            </template>
             </tbody>
         </table>
         <p v-else>There are no current permissions assigned</p>
@@ -112,6 +79,7 @@
 </template>
 
 <script>
+    import patronDisplayRow from "./patronDisplayRow";
     import embargo from "./embargo";
     import displayModal from "../mixins/displayModal";
     import axios from 'axios';
@@ -123,7 +91,7 @@
     export default {
         name: 'patronRoles',
 
-        components: {embargo},
+        components: {patronDisplayRow, embargo},
 
         mixins: [displayModal],
 
@@ -179,7 +147,7 @@
 
             assignedPatronRoles() {
                 return [
-                    { principal: 'Patrons', role: this.patrons_role },
+                    { principal: 'Public', role: this.patrons_role },
                     { principal: 'Onyen', role: this.onyen_role }
                 ];
             },
@@ -221,7 +189,7 @@
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                    if (response.data.inherited.roles.length === 0 && response.data.assigned.roles.length === 0) {
                        let set_roles = [
-                           { principal: 'Patrons', role: 'canAccess' },
+                           { principal: 'Public', role: 'canAccess' },
                            { principal: 'Onyen', role: 'canAccess' }
                        ];
                        this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
@@ -238,7 +206,7 @@
                    }
 
                    // Set values for forms from retrieved data
-                   this.patrons_role = this.setCurrentObjectRole('Patrons');
+                   this.patrons_role = this.setCurrentObjectRole('Public');
                    this.onyen_role = this.setCurrentObjectRole('Onyen');
 
                    // Merge principals for display if role values are the same
@@ -256,7 +224,7 @@
              */
             displayRolesMerge(users) {
                 if (users.length === 2 && users[0].role === users[1].role) {
-                    return [{ principal: 'Patrons', role: users[0].role }];
+                    return [{ principal: 'Public', role: users[0].role }];
                 }
 
                 return users;
@@ -274,11 +242,6 @@
                 }
 
                 return role_type;
-            },
-
-            displayRole(role) {
-                let selected_role = this.possibleRoles.find((r) => r.role === role);
-                return selected_role.text;
             },
 
             updateRoleList(e) {
@@ -309,7 +272,7 @@
                     this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
-                this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
+                this.dedupeDisplayRoles()
                 this.updateSubmitRoles();
             },
 
@@ -317,76 +280,16 @@
                 if (type === 'staff') {
                     this.display_roles.assigned.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
-                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
+                    this.dedupeDisplayRoles();
                 }
+            },
+
+            dedupeDisplayRoles() {
+                this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
             },
 
             updateSubmitRoles() {
                 this.submit_roles = this.assignedPatronRoles;
-            },
-
-            currentUserRoles(user = 'Staff') {
-                let inherited = this.display_roles.inherited.roles.find((u) => u.principal === user);
-                let assigned = this.display_roles.assigned.roles.find((u) => u.principal === user);
-
-                return { inherited: inherited , assigned: assigned };
-            },
-
-            hasStaffOnly() {
-                let current_users = this.currentUserRoles();
-
-                if (current_users.inherited !== undefined) {
-                    return 'parent';
-                } else if (current_users.assigned !== undefined) {
-                    return 'assigned'
-                } else {
-                    return undefined;
-                }
-            },
-
-            hasMultipleRoles(current_users) {
-                let inherited_role = this.possibleRoles.findIndex((r) => r.role === current_users.inherited.role);
-                let assigned_role = this.possibleRoles.findIndex((r) => r.role === current_users.assigned.role);
-
-                if (assigned_role !== -1 && assigned_role < inherited_role) {
-                    return 'assigned';
-                } else {
-                    return 'parent';
-                }
-            },
-
-            hasRolesPriority(user) {
-                let current_users = this.currentUserRoles(user);
-
-                if (current_users.inherited === undefined && current_users.assigned === undefined) {
-                    return 'none';
-                } else if (current_users.inherited !== undefined && current_users.assigned === undefined) {
-                    return 'parent';
-                } else if (current_users.inherited === undefined && current_users.assigned !== undefined) {
-                    return 'assigned';
-                } else {
-                    return this.hasMultipleRoles(current_users);
-                }
-            },
-
-            mostRestrictive(user) {
-                // Check for staff roles. They supersede all other roles
-                let has_staff_only = this.hasStaffOnly();
-
-                if (has_staff_only !== undefined) {
-                    return has_staff_only;
-                }
-
-                // Check for other users/roles
-                return this.hasRolesPriority(user);
-            },
-
-            nonPublicRole(text) {
-                return text !== 'Patrons';
-            },
-
-            hasEmbargo(type) {
-                return isEmpty(this[`${type}_embargo_info`]);
             },
 
             userIndex(principal) {
@@ -397,11 +300,12 @@
 
             setEmbargo(embargo_info) {
                 this.object_embargo_info = embargo_info;
+                this.display_roles.assigned.embargoed = !this.display_roles.assigned.embargoed;
 
                 if (!isEmpty(embargo_info)) {
                     this.display_roles.assigned.roles = [{principal: 'Public', role: 'canViewMetadata'}];
                 } else {
-                    this.display_roles.assigned.roles = this.assignedPatronRoles;
+                    this.dedupeDisplayRoles();
                 }
             },
 
@@ -424,18 +328,6 @@
     #patron-roles {
         text-align: left;
         margin: 5px 25px;
-
-        td:last-child {
-            min-width: 225px;
-        }
-
-        .access-display {
-            max-width: 100px;
-        }
-
-        .patron {
-            margin-left: 15px;
-        }
 
         select {
             margin-left: 5px;
@@ -490,82 +382,9 @@
             top: 8px;
         }
 
-        .fa-times-circle {
-            color: red;
-        }
-
-        .fa-question-circle {
-            color: gray;
-
-            &:hover {
-                cursor: pointer;
-            }
-        }
-
-        .fa-check-circle {
-            color: limegreen;
-            margin-left: 8px;
-        }
-
-        .fa-circle {
-            margin-left: 4px;
-
-            div {
-                display: inline-block;
-                font-weight: bold;
-                margin-left: -10px;
-                position: relative;
-                top: -2px;
-            }
-        }
-
-        .permission-icons {
-            float: right;
-            margin-right: 20px;
-            text-align: right;
-            width: 55px;
-        }
-
-        .custom-icon-offset {
-            margin-right: 4px;
-        }
-
         .is-disabled {
             cursor: not-allowed;
             opacity: .5;
-        }
-
-        .arrow {
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 10px solid darkslategray;
-            height: 0;
-            margin: 2px 2px 0 60px;
-            width: 0;
-        }
-
-        .browse-tip, .arrow {
-            display: none;
-        }
-
-        a.display-note-btn:hover {
-            .arrow, .browse-tip {
-                display: block;
-                position: absolute;
-                z-index: 10009;
-            }
-
-            .browse-tip {
-                background-color: white;
-                border: 1px solid darkslategray;
-                border-radius: 5px;
-                color: black;
-                font-weight: normal;
-                margin: 10px 0 0 -65px;
-                padding: 10px;
-                text-align: left;
-                width: 240px;
-            }
         }
     }
 </style>
