@@ -13,10 +13,6 @@
     export default {
         name: 'embargo',
 
-        props: {
-            uuid: String,
-        },
-
         data() {
             return {
                 embargo_info: {},
