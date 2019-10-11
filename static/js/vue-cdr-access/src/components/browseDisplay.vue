@@ -9,7 +9,7 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-10">
+            <div class="column is-10 container-note">
                 <p :class="{ no_results: record_count === 0}">
                     There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
                     <browse-filters v-if="is_collection || is_folder" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
@@ -281,7 +281,7 @@
         }
 
         i {
-            font-size: 11rem;
+            font-size: 10rem;
         }
 
         button {

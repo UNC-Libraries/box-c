@@ -143,7 +143,7 @@ describe('browseDisplay.vue', () => {
             container_metadata: response.container
         });
 
-        expect(wrapper.find('.spacing p').text()).toContain('collection');
+        expect(wrapper.find('.container-note p').text()).toContain('collection');
     });
 
     it("chunks records into groups", () => {
