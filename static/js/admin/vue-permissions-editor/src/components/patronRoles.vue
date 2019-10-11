@@ -12,7 +12,7 @@
                 </tr>
             </thead>
             <tbody>
-            <tr v-if="hasParentRole" v-for="inherited_role in display_roles.inherited">
+            <tr v-if="hasParentRole" v-for="inherited_role in display_roles.inherited.roles">
                 <td>From parent</td>
                 <td>
                     {{ inherited_role.principal }}
@@ -30,8 +30,8 @@
                 <td>
                     {{ displayRole(inherited_role.role) }}
                     <span class="permission-icons">
-                        <i class="far fa-times-circle"></i>
-                        <i class="far fa-circle" :class="{hidden: embargoed('parent')}">
+                        <i class="far fa-times-circle" :class="{hidden: !display_roles.inherited.deleted}"></i>
+                        <i class="far fa-circle" :class="{hidden: hasEmbargo('parent')}">
                             <div :class="{'custom-icon-offset': mostRestrictive(inherited_role.principal) === 'assigned'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -39,7 +39,7 @@
                     </span>
                 </td>
             </tr>
-            <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned">
+            <tr v-if="hasObjectRole" v-for="object_role in display_roles.assigned.roles">
                 <td>This object</td>
                 <td>{{ object_role.principal }}
                     <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(object_role.principal)}">
@@ -54,8 +54,8 @@
                 </td>
                 <td>{{ displayRole(object_role.role) }}
                     <span class="permission-icons">
-                        <i class="far fa-times-circle"></i>
-                        <i class="far fa-circle" :class="{hidden: embargoed('object')}">
+                        <i class="far fa-times-circle" :class="{hidden: !display_roles.assigned.deleted}"></i>
+                        <i class="far fa-circle" :class="{hidden: hasEmbargo('object')}">
                             <div :class="{'custom-icon-offset': mostRestrictive(object_role.principal) === 'parent'}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -136,8 +136,14 @@
 
         data() {
             return {
-                display_roles: { inherited: [], assigned: [] },
-                patron_roles: { inherited: [], assigned: [] },
+                display_roles: {
+                    inherited: { roles: [], embargoed: false, deleted: false },
+                    assigned: { roles: [], embargoed: false, deleted: false }
+                },
+                patron_roles: {
+                    inherited: { roles: [], embargoed: false, deleted: false },
+                    assigned: { roles: [], embargoed: false, deleted: false }
+                },
                 submit_roles: [],
                 role_history: {},
                 object_embargo_info: {},
@@ -164,11 +170,11 @@
             },
 
             hasParentRole() {
-                return this.display_roles.inherited.length > 0;
+                return this.display_roles.inherited.roles.length > 0;
             },
 
             hasObjectRole() {
-                return this.display_roles.assigned.length > 0;
+                return this.display_roles.assigned.roles.length > 0;
             },
 
             assignedPatronRoles() {
@@ -184,6 +190,22 @@
         },
 
         methods: {
+            defaultPermission(perms) {
+                const options = [
+                    { field: 'roles', default: [] },
+                    { field: 'embargoed', default: false },
+                    { field: 'deleted', default: false }
+                ];
+
+                options.forEach((option) => {
+                    if (perms[option.field] === undefined) {
+                        perms[option.field] = option.default;
+                    }
+                });
+
+                return perms;
+            },
+
             setRoles() {
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
@@ -197,28 +219,32 @@
 
             getRoles() {
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                    if (!isEmpty(response.data)) {
-                        this.patron_roles = response.data;
-                        this.display_roles = cloneDeep(response.data);
-                    } else {
-                        let set_roles = [
-                            { principal: 'Patrons', role: 'canAccess' },
-                            { principal: 'Onyen', role: 'canAccess' }
-                        ];
-                        this.display_roles.inherited = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
-                        this.display_roles.assigned = set_roles;
-                        this.patron_roles.assigned = set_roles;
-                        this.submit_roles = set_roles;
-                    }
+                   if (response.data.inherited.roles.length === 0 && response.data.assigned.roles.length === 0) {
+                       let set_roles = [
+                           { principal: 'Patrons', role: 'canAccess' },
+                           { principal: 'Onyen', role: 'canAccess' }
+                       ];
+                       this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
+                       this.display_roles.assigned.roles = set_roles;
+                       this.patron_roles.assigned.roles = set_roles;
+                       this.submit_roles = set_roles;
+                   } else {
+                       let default_perms = {
+                           inherited: this.defaultPermission(response.data.inherited),
+                           assigned: this.defaultPermission(response.data.assigned)
+                       };
+                       this.patron_roles =  default_perms;
+                       this.display_roles = cloneDeep(default_perms);
+                   }
 
-                    // Set values for forms from retrieved data
-                    this.patrons_role = this.setCurrentObjectRole('Patrons');
-                    this.onyen_role = this.setCurrentObjectRole('Onyen');
+                   // Set values for forms from retrieved data
+                   this.patrons_role = this.setCurrentObjectRole('Patrons');
+                   this.onyen_role = this.setCurrentObjectRole('Onyen');
 
-                    // Merge principals for display if role values are the same
-                    this.display_roles.inherited = this.displayRolesMerge(this.display_roles.inherited);
-                    this.display_roles.assigned = this.displayRolesMerge(this.display_roles.assigned);
-                }).catch((error) => {
+                   // Merge principals for display if role values are the same
+                   this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
+                   this.display_roles.assigned.roles = this.displayRolesMerge(this.display_roles.assigned.roles);
+               }).catch((error) => {
                     let response_msg = `Unable load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
@@ -244,7 +270,7 @@
                     this.user_type = 'staff';
                 } else if (user_index !== -1) {
                     this.user_type = 'patron';
-                    role_type = this.display_roles.assigned[user_index].role;
+                    role_type = this.display_roles.assigned.roles[user_index].role;
                 }
 
                 return role_type;
@@ -278,9 +304,9 @@
                 let user_index = this.userIndex(principal);
 
                 if (user_index !== -1) {
-                    this.display_roles.assigned[user_index].role = this[`${principal}_role`];
+                    this.display_roles.assigned.roles[user_index].role = this[`${principal}_role`];
                 } else {
-                    this.display_roles.assigned.push({principal: principal, role: this[`${principal}_role`]})
+                    this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
                 this.updateSubmitRoles();
@@ -288,9 +314,9 @@
 
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.assigned = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    this.display_roles.assigned.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
-                    this.display_roles.assigned = this.displayRolesMerge(this.assignedPatronRoles);
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
                 }
             },
 
@@ -299,8 +325,8 @@
             },
 
             currentUserRoles(user = 'Staff') {
-                let inherited = this.display_roles.inherited.find((u) => u.principal === user);
-                let assigned = this.display_roles.assigned.find((u) => u.principal === user);
+                let inherited = this.display_roles.inherited.roles.find((u) => u.principal === user);
+                let assigned = this.display_roles.assigned.roles.find((u) => u.principal === user);
 
                 return { inherited: inherited , assigned: assigned };
             },
@@ -358,12 +384,12 @@
                 return text !== 'Patrons';
             },
 
-            embargoed(type) {
+            hasEmbargo(type) {
                 return isEmpty(this[`${type}_embargo_info`]);
             },
 
             userIndex(principal) {
-                return this.display_roles.assigned.findIndex((user) => {
+                return this.display_roles.assigned.roles.findIndex((user) => {
                   return user.principal.toLowerCase() === principal.toLowerCase();
                 });
             },
@@ -372,9 +398,9 @@
                 this.object_embargo_info = embargo_info;
 
                 if (!isEmpty(embargo_info)) {
-                    this.display_roles.assigned = [{principal: 'Public', role: 'canViewMetadata'}];
+                    this.display_roles.assigned.roles = [{principal: 'Public', role: 'canViewMetadata'}];
                 } else {
-                    this.display_roles.assigned = this.assignedPatronRoles;
+                    this.display_roles.assigned.roles = this.assignedPatronRoles;
                 }
             },
 
@@ -397,6 +423,10 @@
     #patron-roles {
         text-align: left;
         margin: 5px 25px;
+
+        td:last-child {
+            min-width: 225px;
+        }
 
         .patron {
             margin-left: 15px;
