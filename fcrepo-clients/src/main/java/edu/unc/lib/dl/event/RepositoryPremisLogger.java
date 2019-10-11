@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFFormat;
@@ -82,16 +83,18 @@ public class RepositoryPremisLogger implements PremisLogger {
     }
 
     @Override
-    public PremisLogger writeEvent(Resource eventResc) {
-        Model eventModel = eventResc.getModel();
-
-        // Add link from the object to this event
-        eventModel.add(repoObject.getResource(), Premis.hasEvent, eventResc);
+    public PremisLogger writeEvents(Resource... eventResources) {
+        Model logModel = ModelFactory.createDefaultModel();
+        for (Resource eventResc: eventResources) {
+            // Add link from the object to this event
+            logModel.add(repoObject.getResource(), Premis.hasEvent, eventResc);
+            logModel.add(eventResc.getModel());
+        }
 
         // Stream the event RDF as NTriples
         InputStream modelStream;
         try {
-            modelStream = RDFModelUtil.streamModel(eventModel, RDFFormat.NTRIPLES);
+            modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
         } catch (IOException e) {
             throw new ObjectPersistenceException("Failed to serialize event to RDF for " + repoObject.getPid(), e);
         }

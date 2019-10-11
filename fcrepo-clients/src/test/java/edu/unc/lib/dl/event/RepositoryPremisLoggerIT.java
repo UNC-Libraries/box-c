@@ -78,13 +78,16 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .addSoftwareAgent(SoftwareAgent.clamav.toString())
                 .write();
 
+        // Add two of the events together
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
         Resource event2Resc = logger.buildEvent(Premis.Ingestion, ingestDate)
                 .addEventDetail("Ingested")
-                .write();
+                .create();
 
         Resource event3Resc = logger.buildEvent(Premis.MessageDigestCalculation)
-                .write();
+                .create();
+
+        logger.writeEvents(event2Resc, event3Resc);
 
         // Make a new logger to make sure everything is clean
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, pidMinter,

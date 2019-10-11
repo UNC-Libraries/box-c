@@ -203,7 +203,7 @@ public class PremisEventBuilder {
      */
     public Resource write() {
         Resource resource = getResource();
-        premisLogger.writeEvent(resource);
+        premisLogger.writeEvents(resource);
         return resource;
     }
 

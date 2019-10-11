@@ -44,12 +44,12 @@ public interface PremisLogger {
     public PremisEventBuilder buildEvent(Resource eventType);
 
     /**
-     * Adds an event to this log
+     * Adds events to this log
      *
      * @param eventResc
      * @return
      */
-    public PremisLogger writeEvent(Resource eventResc);
+    public PremisLogger writeEvents(Resource... eventResc);
 
     /**
      * Creates the log for this logger from the given inputstream if
