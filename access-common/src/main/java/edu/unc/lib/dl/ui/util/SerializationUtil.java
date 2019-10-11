@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -203,17 +202,13 @@ public class SerializationUtil {
             result.put("counts", metadata.getCountMap());
         }
 
-        try {
-            if (metadata.getDateAdded() != null) {
-                String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
-                result.put("added", dateAdded);
-            }
-            if (metadata.getDateUpdated() != null) {
-                String dateUpdated = DateTimeUtil.formatDateToUTC(metadata.getDateUpdated());
-                result.put("updated", dateUpdated);
-            }
-        } catch (ParseException e) {
-            log.debug("Failed to parse date field for " + metadata.getId(), e);
+        if (metadata.getDateAdded() != null) {
+            String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
+            result.put("added", dateAdded);
+        }
+        if (metadata.getDateUpdated() != null) {
+            String dateUpdated = DateTimeUtil.formatDateToUTC(metadata.getDateUpdated());
+            result.put("updated", dateUpdated);
         }
 
         if (metadata.getDateCreated() != null) {
