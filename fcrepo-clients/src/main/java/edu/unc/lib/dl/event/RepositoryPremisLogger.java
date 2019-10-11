@@ -37,6 +37,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
@@ -140,9 +141,11 @@ public class RepositoryPremisLogger implements PremisLogger {
     @Override
     public Model getEventsModel() {
         PID eventsPid = PIDs.get(URIUtil.join(getMetadataContainerUri(repoObject.getPid()), MD_EVENTS));
-        BinaryObject eventsObj = repoObjLoader.getBinaryObject(eventsPid);
-        Model model = RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
-
-        return model;
+        try {
+            BinaryObject eventsObj = repoObjLoader.getBinaryObject(eventsPid);
+            return RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
+        } catch (NotFoundException e) {
+            return ModelFactory.createDefaultModel();
+        }
     }
 }
