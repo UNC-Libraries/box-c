@@ -309,6 +309,7 @@
                     this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
+                this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
                 this.updateSubmitRoles();
             },
 
