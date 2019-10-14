@@ -50,7 +50,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.cdr.services.rest.modify.UpdateAccessControlController.UpdateStaffRequest;
+import edu.unc.lib.dl.cdr.services.rest.modify.UpdateStaffAccessController.UpdateStaffRequest;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -63,7 +63,7 @@ import edu.unc.lib.dl.test.AclModelBuilder;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/update-access-it-servlet.xml")
+    @ContextConfiguration("/update-staff-it-servlet.xml")
 })
 public class UpdateStaffRolesIT extends AbstractAPIIT {
     private static final String USER_NAME = "adminuser";
@@ -99,16 +99,11 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canAccess, pid));
 
-        MvcResult result = mvc.perform(put("/edit/acl/staff/" + pid.getId())
+        mvc.perform(put("/edit/acl/staff/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(serializeAssignments(assignments)))
                 .andExpect(status().isForbidden())
             .andReturn();
-
-        Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(pid.getId(), respMap.get("pid"));
-        assertEquals("editStaffRoles", respMap.get("action"));
-        assertTrue(respMap.containsKey("error"));
     }
 
     @Test
@@ -133,7 +128,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
-        assertTrue(((String) respMap.get("error")).contains("Cannot assign unit owner"));
+        assertTrue(((String) respMap.get("error")).matches(".*contained invalid acl properties:[\\S\\s]+unitOwner"));
     }
 
     @Test

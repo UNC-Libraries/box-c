@@ -45,4 +45,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         String bodyOfResponse = "Object not found";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
+
+    @ExceptionHandler(value = { RuntimeException.class })
+    protected ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Uncaught error";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
+                HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
 }

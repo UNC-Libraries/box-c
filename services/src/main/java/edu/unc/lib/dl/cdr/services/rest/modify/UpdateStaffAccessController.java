@@ -17,12 +17,11 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +34,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService;
 
@@ -52,13 +48,13 @@ import edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService;
  *
  */
 @Controller
-public class UpdateAccessControlController {
-    private static final Logger log = LoggerFactory.getLogger(UpdateAccessControlController.class);
+public class UpdateStaffAccessController {
+    private static final Logger log = LoggerFactory.getLogger(UpdateStaffAccessController.class);
 
     @Autowired
     private StaffRoleAssignmentService staffRoleService;
 
-    @PutMapping(value = "/edit/acl/staff/{id}", produces = "application/json; charset=UTF-8")
+    @PutMapping(value = "/edit/acl/staff/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public ResponseEntity<Object> updateStaffRoles(@PathVariable("id") String id,
             @RequestBody UpdateStaffRequest assignments) {
@@ -69,7 +65,6 @@ public class UpdateAccessControlController {
         result.put("action", "editStaffRoles");
         result.put("pid", pid.getId());
 
-        Set<String> alreadyAssignedPrincipals = new HashSet<>();
         for (RoleAssignment ra: assignments.getRoles()) {
             // Catch any incomplete role assignments
             if (isEmpty(ra.getPrincipal()) || ra.getRole() == null) {
@@ -78,13 +73,6 @@ public class UpdateAccessControlController {
             }
             // Expand user principal assignments into uris
             addUserPrefixIfMissing(ra);
-            // Disallow assigning multiple roles to one principal on the same object
-            if (alreadyAssignedPrincipals.contains(ra.getPrincipal())) {
-                result.put("error", "Cannot assigned multiple roles to the same principal");
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-            } else {
-                alreadyAssignedPrincipals.add(ra.getPrincipal());
-            }
         }
 
         try {
@@ -95,15 +83,6 @@ public class UpdateAccessControlController {
             result.put("error", e.getMessage());
             log.debug("Invalid role assignment to {}", pid.getId(), e);
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-        } catch (AccessRestrictionException | AuthorizationException e) {
-            result.put("error", e.getMessage());
-            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-        } catch (NotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            result.put("error", "An unexpected problem occurred while setting staff roles");
-            log.error("Failed to update staff roles for {}", pid.getId(), e);
-            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         result.put("timestamp", System.currentTimeMillis());
