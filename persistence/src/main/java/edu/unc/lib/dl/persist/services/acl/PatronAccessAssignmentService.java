@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
 import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
 import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.Collection;
@@ -87,12 +88,16 @@ public class PatronAccessAssignmentService {
 
     public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
         notNull(agent, "Must provide an agent for this operation");
+        notNull(target, "Must provide the PID of the object to update");
+        notNull(accessDetails, "Must provide patron access details");
 
         FedoraTransaction tx = txManager.startTransaction();
         log.info("Starting update of patron access on {}", target.getId());
         try (Timer.Context context = timer.time()) {
             aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + target.getId(),
                     target, agent.getPrincipals(), changePatronAccess);
+
+            assertAssignmentsComplete(accessDetails);
 
             assertOnlyPatronRoles(accessDetails);
 
@@ -251,6 +256,20 @@ public class PatronAccessAssignmentService {
         }
 
         return details.toString();
+    }
+
+    private void assertAssignmentsComplete(PatronAccessDetails details) {
+        if (details.getRoles() == null) {
+            return;
+        }
+        for (RoleAssignment assignment: details.getRoles()) {
+            if (assignment.getRole() == null) {
+                throw new IllegalArgumentException("Assignment must provide a role");
+            }
+            if (isBlank(assignment.getPrincipal())) {
+                throw new IllegalArgumentException("Assignment must provide a principal");
+            }
+        }
     }
 
     private void assertOnlyPatronRoles(PatronAccessDetails details) {
