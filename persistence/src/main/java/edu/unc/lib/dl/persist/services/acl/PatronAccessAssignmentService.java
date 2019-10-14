@@ -144,7 +144,8 @@ public class PatronAccessAssignmentService {
      * @param assignments
      * @return Returns the premis event resource created to capture this event, or null if no patron roles changed.
      */
-    private Resource replacePatronRoles(RepositoryObject repoObj, AgentPrincipals agent, Model model, Collection<RoleAssignment> assignments) {
+    private Resource replacePatronRoles(RepositoryObject repoObj, AgentPrincipals agent, Model model,
+            Collection<RoleAssignment> assignments) {
         // Update a copy of the model for this object
         Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
 

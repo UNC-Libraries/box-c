@@ -359,7 +359,7 @@
         <property name="transactionManager" ref="transactionManager" />
     </bean>
     
-    <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService">
+    <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

@@ -21,7 +21,7 @@ import java.util.List;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 
 /**
- *
+ * Contains details which affect patron access to a resource.
  *
  * @author bbpennel
  *
