@@ -149,7 +149,7 @@
             },
 
             shouldDisable() {
-                return this.user_type === 'Staff' || this.user_type === '';
+                return this.user_type === 'staff' || this.user_type === '' || !isEmpty(this.object_embargo_info);
             }
         },
 
@@ -170,17 +170,6 @@
                 return perms;
             },
 
-            setRoles() {
-                this.is_submitting = true;
-                this.response_message = 'Saving permissions \u2026';
-
-                setTimeout(() => {
-                    this.is_submitting = false;
-                    this.unsaved_changes = false;
-                    this.response_message = '';
-                }, 3000);
-            },
-
             getRoles() {
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                    if (response.data.inherited.roles.length === 0 && response.data.assigned.roles.length === 0) {
@@ -199,6 +188,7 @@
                        };
                        this.patron_roles =  default_perms;
                        this.display_roles = cloneDeep(default_perms);
+                       this.submit_roles = cloneDeep(default_perms).assigned.roles;
                    }
 
                    // Set values for forms from retrieved data
@@ -210,6 +200,29 @@
                    this.display_roles.assigned.roles = this.displayRolesMerge(this.display_roles.assigned.roles);
                }).catch((error) => {
                     let response_msg = `Unable load current patron roles for: ${this.title}`;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
+            },
+
+            setRoles() {
+                this.is_submitting = true;
+                this.response_message = 'Saving permissions \u2026';
+
+                axios({
+                    method: 'put',
+                    url: `/services/api/edit/acl/patron/${this.uuid}`,
+                    data: JSON.stringify( { roles: this.submit_roles } ),
+                    headers: {'content-type': 'application/json; charset=utf-8'}
+                }).then((response) => {
+                    let response_msg = `Patron roles successfully updated for: ${this.title}`;
+                    this.alertHandler.alertHandler('success', response_msg);
+                    this.unsaved_changes = false;
+                    this.is_submitting = false;
+                    this.response_message = '';
+                }).catch((error) => {
+                    let response_msg = `Unable to update patron roles for: ${this.title}`;
+                    this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
                 });
@@ -268,6 +281,7 @@
                     this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
+                this.unsaved_changes = true;
                 this.dedupeDisplayRoles();
                 this.updateSubmitRoles();
             },
@@ -299,10 +313,15 @@
                 this.display_roles.assigned.embargoed = !this.display_roles.assigned.embargoed;
 
                 if (!isEmpty(embargo_info)) {
+                    this.unsaved_changes = true;
                     this.display_roles.assigned.roles = [{principal: 'Public', role: 'canViewMetadata'}];
+                    this.patrons_role = 'canViewMetadata';
+                    this.onyen_role = 'canViewMetadata';
                 } else {
                     this.dedupeDisplayRoles();
                 }
+
+                this.submit_roles = this.assignedPatronRoles();
             },
 
             /**
