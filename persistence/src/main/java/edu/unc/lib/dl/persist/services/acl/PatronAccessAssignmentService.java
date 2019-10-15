@@ -312,6 +312,7 @@ public class PatronAccessAssignmentService {
                 logger.writeEvents(rolesEvent);
             }
         } else {
+            // This method is only called if either roles or embargo event is non-null
             logger.writeEvents(embargoEvent);
         }
     }
