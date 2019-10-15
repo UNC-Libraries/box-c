@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ import edu.unc.lib.dl.fedora.NotFoundException;
  */
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(RestResponseEntityExceptionHandler.class);
 
     @ExceptionHandler(value = { AccessRestrictionException.class })
     protected ResponseEntity<Object> handleAccessRestriction(RuntimeException ex, WebRequest request) {
@@ -44,5 +47,18 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleObjectNotFound(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Object not found";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value = { IllegalArgumentException.class })
+    protected ResponseEntity<Object> handleIllegalArgumentException(RuntimeException ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(value = { RuntimeException.class })
+    protected ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Uncaught error";
+        log.error("Uncaught exception", ex);
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
+                HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 }

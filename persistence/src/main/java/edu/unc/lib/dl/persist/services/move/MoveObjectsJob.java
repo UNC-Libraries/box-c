@@ -17,7 +17,6 @@ package edu.unc.lib.dl.persist.services.move;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -159,11 +158,7 @@ public class MoveObjectsJob implements Runnable {
     private void logMoveAction() {
         Map<String, Object> logEntry = new HashMap<>();
         logEntry.put("event", "moved");
-        try {
-            logEntry.put("timestamp", DateTimeUtil.formatDateToUTC(new Date()));
-        } catch (ParseException e) {
-            log.error("Failed to parse date", e);
-        }
+        logEntry.put("timestamp", DateTimeUtil.formatDateToUTC(new Date()));
         logEntry.put("move_id", moveId);
         logEntry.put("user", agent.getUsername());
 

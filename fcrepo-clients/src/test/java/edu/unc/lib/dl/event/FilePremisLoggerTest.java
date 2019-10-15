@@ -85,7 +85,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
                 .create();
 
-        premis.writeEvent(premisBuilder);
+        premis.writeEvents(premisBuilder);
 
         InputStream in = new FileInputStream(this.premisFile);
         Model model = ModelFactory.createDefaultModel().read(in, null, "N-TRIPLES");

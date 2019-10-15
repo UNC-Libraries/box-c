@@ -88,17 +88,20 @@ public class FilePremisLogger implements PremisLogger {
      * @return
      */
     @Override
-    public PremisLogger writeEvent(Resource eventResc) {
-        // Add the event to the model for this event log
-        Model model = getModel().add(eventResc.getModel());
-
-        // Add in hasEvent link
-        model.getResource(objectPid.getRepositoryPath()).addProperty(Premis.hasEvent, eventResc);
+    public PremisLogger writeEvents(Resource... eventResources) {
+        Model logModel = getModel();
+        String pidString = objectPid.getRepositoryPath();
+        Resource objResc = logModel.getResource(pidString);
+        // Add the events to the model for this event log
+        for (Resource eventResc: eventResources) {
+            objResc.addProperty(Premis.hasEvent, eventResc);
+            logModel.add(eventResc.getModel());
+        }
 
         if (premisFile != null) {
             // Persist the log to file
             try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
-                RDFDataMgr.write(rdfFile, model, RDFFormat.NTRIPLES);
+                RDFDataMgr.write(rdfFile, logModel, RDFFormat.NTRIPLES);
             } catch (IOException e) {
                 throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
             }
@@ -122,7 +125,7 @@ public class FilePremisLogger implements PremisLogger {
             return model;
         }
 
-        Model model = ModelFactory.createDefaultModel();
+        model = ModelFactory.createDefaultModel();
 
         if (premisFile != null && premisFile.exists()) {
             InputStream in = FileManager.get().open(premisFile.getAbsolutePath());

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
@@ -55,7 +56,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
@@ -79,6 +79,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -93,7 +94,6 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -209,19 +209,21 @@ public class StaffRoleAssignmentServiceIT {
     @Test
     public void testEmptyAssignmentForObjectWithRoles() throws Exception {
         PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(pid,
-                new AclModelBuilder("Admin Unit Can Manage")
+        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(unit);
+        CollectionObject coll = repoObjFactory.createCollectionObject(pid,
+                new AclModelBuilder("Collection with existing acls")
                 .addCanManage(GRP_PRINC)
                 .addEmbargoUntil(TOMORROW)
                 .model);
-        contentRoot.addMember(unit);
+        unit.addMember(coll);
         treeIndexer.indexAll(baseAddress);
 
         Set<RoleAssignment> assignments = new HashSet<>();
 
         roleService.updateRoles(agent, pid, assignments);
 
-        AdminUnit updated = repoObjLoader.getAdminUnit(pid);
+        CollectionObject updated = repoObjLoader.getCollectionObject(pid);
 
         assertNoStaffRoles(updated);
         // Verify that non-staff role acl was not cleared
@@ -330,7 +332,7 @@ public class StaffRoleAssignmentServiceIT {
         assertThat(eventDetail, containsString(canManage.name() + ": " + USER_PRINC));
     }
 
-    @Test
+    @Test(expected = InvalidAssignmentException.class)
     public void testPrincipalWithMultipleRoles() throws Exception {
         PID pid = pidMinter.mintContentPid();
         AdminUnit unit = repoObjFactory.createAdminUnit(null);
@@ -344,17 +346,6 @@ public class StaffRoleAssignmentServiceIT {
                 new RoleAssignment(USER_PRINC, canAccess)));
 
         roleService.updateRoles(agent, pid, assignments);
-
-        CollectionObject updated = repoObjLoader.getCollectionObject(pid);
-
-        assertHasAssignment(USER_PRINC, canManage, updated);
-        assertHasAssignment(USER_PRINC, canAccess, updated);
-
-        assertMessageSent(pid);
-
-        String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertThat(eventDetail, containsString(canManage.name() + ": " + USER_PRINC));
-        assertThat(eventDetail, containsString(canAccess.name() + ": " + USER_PRINC));
     }
 
     @Test
@@ -448,6 +439,36 @@ public class StaffRoleAssignmentServiceIT {
                 canManage.name() + ": " + GRP_PRINC));
         // Must not contain the patron assignment
         assertThat(eventDetail, not(containsString(AUTHENTICATED_PRINC)));
+    }
+
+    @Test(expected = InvalidAssignmentException.class)
+    public void testAssignStaffRoleToPatronPrincipal() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(unit);
+        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+        unit.addMember(coll);
+        treeIndexer.indexAll(baseAddress);
+
+        Set<RoleAssignment> assignments = new HashSet<>(asList(
+                new RoleAssignment(PUBLIC_PRINC, canManage)));
+
+        roleService.updateRoles(agent, pid, assignments);
+    }
+
+    @Test(expected = ServiceException.class)
+    public void testAssignPatron() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+        AdminUnit unit = repoObjFactory.createAdminUnit(null);
+        contentRoot.addMember(unit);
+        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+        unit.addMember(coll);
+        treeIndexer.indexAll(baseAddress);
+
+        Set<RoleAssignment> assignments = new HashSet<>(asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+
+        roleService.updateRoles(agent, pid, assignments);
     }
 
     private void assertNoStaffRoles(ContentObject obj) {

@@ -22,15 +22,11 @@ import java.time.Instant;
 import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -45,20 +41,16 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     private RepositoryObject parentObject;
 
-    @Before
-    public void init() throws Exception {
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource("");
-        resc.addProperty(RDF.type, Cdr.DepositRecord);
-
-        parentObject = repoObjFactory.createDepositRecord(model);
-
+    private void initPremisLogger(RepositoryObject repoObj) {
         logger = new RepositoryPremisLogger(parentObject, pidMinter,
                 repoObjLoader, repoObjFactory);
     }
 
     @Test
     public void addEventTest() throws Exception {
+        parentObject = repoObjFactory.createDepositRecord(null);
+        initPremisLogger(parentObject);
+
         Resource eventResc = logger.buildEvent(Premis.VirusCheck)
                 .addSoftwareAgent(SoftwareAgent.clamav.toString())
                 .write();
@@ -74,17 +66,23 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     @Test
     public void addEventsTest() throws Exception {
+        parentObject = repoObjFactory.createDepositRecord(null);
+        initPremisLogger(parentObject);
+
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
                 .addSoftwareAgent(SoftwareAgent.clamav.toString())
                 .write();
 
+        // Add two of the events together
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
         Resource event2Resc = logger.buildEvent(Premis.Ingestion, ingestDate)
                 .addEventDetail("Ingested")
-                .write();
+                .create();
 
         Resource event3Resc = logger.buildEvent(Premis.MessageDigestCalculation)
-                .write();
+                .create();
+
+        logger.writeEvents(event2Resc, event3Resc);
 
         // Make a new logger to make sure everything is clean
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, pidMinter,
@@ -104,5 +102,15 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent1Resc));
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent2Resc));
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent3Resc));
+    }
+
+    @Test
+    public void getEventsModelForObjectWithoutLog() throws Exception {
+        parentObject = repoObjFactory.createCollectionObject(null);
+        initPremisLogger(parentObject);
+
+        Model eventsModel = parentObject.getPremisLog().getEventsModel();
+
+        assertTrue(eventsModel.isEmpty());
     }
 }

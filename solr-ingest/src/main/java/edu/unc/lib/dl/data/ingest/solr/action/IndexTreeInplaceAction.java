@@ -18,7 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import static edu.unc.lib.dl.data.ingest.solr.action.DeleteStaleChildren.STALE_TIMESTAMP;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,18 +56,14 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
     public void deleteStaleChildren(SolrUpdateRequest updateRequest) throws IndexingException {
         Map<String, String> params = new HashMap<>();
-        try {
-            long startTime = updateRequest.getTimeStarted();
-            Date startDate = new Date(startTime);
-            String dateString = DateTimeUtil.formatDateToUTC(startDate);
-            params.put(STALE_TIMESTAMP, dateString);
+        long startTime = updateRequest.getTimeStarted();
+        Date startDate = new Date(startTime);
+        String dateString = DateTimeUtil.formatDateToUTC(startDate);
+        params.put(STALE_TIMESTAMP, dateString);
 
-            // Queue cleanup action for objects in tree that were not updated during this operation
-            messageSender.sendIndexingOperation(updateRequest.getUserID(), updateRequest.getPid(),
-                    DELETE_CHILDREN_PRIOR_TO_TIMESTAMP);
-        } catch (ParseException e) {
-            log.error("Failed to issue cleanup, unable to format date", e);
-        }
+        // Queue cleanup action for objects in tree that were not updated during this operation
+        messageSender.sendIndexingOperation(updateRequest.getUserID(), updateRequest.getPid(),
+                DELETE_CHILDREN_PRIOR_TO_TIMESTAMP);
     }
 
     /**

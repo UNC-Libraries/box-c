@@ -51,14 +51,13 @@ public abstract class DateTimeUtil {
         }
     }
 
-    public static DateTime parseUTCToDateTime(String utcDate)
-            throws IllegalArgumentException {
+    public static DateTime parseUTCToDateTime(String utcDate) {
         DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
                 .parseDateTime(utcDate);
         return isoDT.withZone(DateTimeZone.forID("UTC"));
     }
 
-    public static String formatDateToUTC(Date date) throws ParseException {
+    public static String formatDateToUTC(Date date) {
         DateTime dateTime = new DateTime(date);
         return utcFormatter.print(dateTime);
     }

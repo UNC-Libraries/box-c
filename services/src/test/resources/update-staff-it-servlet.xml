@@ -30,7 +30,8 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/UpdateAccessControlController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    <context:component-scan resource-pattern="**/UpdateStaffAccessController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    <context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest.exceptions" />
     
     <bean id="staffRoleAssignmentService" class="edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
