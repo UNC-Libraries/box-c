@@ -4,7 +4,7 @@
         <td class="access-display">
             {{ user.principal }}
             <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
-                <i class="far fa-question-circle"></i>
+                <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow"></div>
                 <span class="browse-tip">What this means</span>
             </a>
