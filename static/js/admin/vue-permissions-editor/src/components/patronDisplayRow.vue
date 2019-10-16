@@ -18,7 +18,7 @@
             {{ displayRole(user.role) }}
             <span class="permission-icons">
                         <i class="far fa-times-circle" :class="{hidden: !hasAction.deleted}"></i>
-                        <i class="far fa-circle" :class="{hidden: !hasAction.embargoed}">
+                        <i class="far fa-circle" :class="{hidden: !hasAction.embargo > 0}">
                             <div :class="{'custom-icon-offset': mostRestrictive(user.principal) !== type}">e</div>
                         </i>
                         <i class="far fa-check-circle"
@@ -127,6 +127,10 @@
 
     .access-display {
         max-width: 100px;
+
+        span {
+            width: auto
+        }
     }
 
     .fa-times-circle {
