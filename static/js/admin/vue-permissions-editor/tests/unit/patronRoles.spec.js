@@ -6,12 +6,12 @@ const localVue = createLocalVue();
 const STAFF_ONLY_ROLE_TEXT = '\u2014';
 
 let response = {
-    inherited: { roles: [{ principal: 'Public', role: 'canAccess' }], deleted: false },
-    assigned: { roles: [{ principal: 'Public', role: 'canViewMetadata' }], deleted: false }
+    inherited: { roles: [{ principal: 'everyone', role: 'canAccess' }], deleted: false },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false }
 };
 let response_defaults = {
-    inherited: { roles: [{ principal: 'Public', role: 'canAccess' }], deleted: false, embargoed: false },
-    assigned: { roles: [{ principal: 'Public', role: 'canViewMetadata' }], deleted: false, embargoed: false }
+    inherited: { roles: [{ principal: 'everyone', role: 'canAccess' }], deleted: false, embargoed: '' },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false, embargoed: '' }
 };
 
 let empty_response = {
@@ -20,13 +20,13 @@ let empty_response = {
 };
 
 let empty_defaults = [
-        { principal: 'Public', role: 'canAccess' },
-        { principal: 'Onyen', role: 'canAccess' }
+        { principal: 'everyone', role: 'canAccess' },
+        { principal: 'authenticated', role: 'canAccess' }
 ];
 
 let same_roles = {
-    inherited: { roles: [{ principal: 'Public', role: 'canViewMetadata' }, {principal: 'Onyen', role: 'canAccess'}], deleted: false },
-    assigned: { roles: [{ principal: 'Public', role: 'canViewMetadata' }, { principal: 'Onyen', role: 'canViewMetadata'}], deleted: false }
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, {principal: 'authenticated', role: 'canAccess'}], deleted: false },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, { principal: 'authenticated', role: 'canViewMetadata'}], deleted: false }
 };
 
 let wrapper, selects;
@@ -74,10 +74,9 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public', role: 'canAccess' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canAccess' }]);
             expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
-            expect(wrapper.vm.submit_roles).toEqual(empty_defaults);
             done();
         });
     });
@@ -90,8 +89,8 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.patrons_role).toEqual('canViewMetadata');
-            expect(wrapper.vm.onyen_role).toEqual('none');
+            expect(wrapper.vm.everyone_role).toEqual('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toEqual('none');
             expect(wrapper.vm.user_type).toEqual('patron');
             done();
         });
@@ -127,23 +126,21 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.patrons_role).toBe('canViewMetadata');
-            expect(wrapper.vm.onyen_role).toBe('none');
-
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toBe('none');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual(response.assigned.roles);
-            expect(wrapper.vm.submit_roles).toEqual(response.assigned.roles);
 
             wrapper.find('#staff').trigger('click');
 
-            expect(wrapper.vm.patrons_role).toBe('none');
-            expect(wrapper.vm.onyen_role).toBe('none');
+            expect(wrapper.vm.everyone_role).toBe('none');
+            expect(wrapper.vm.authenticated_role).toBe('none');
 
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
                 {principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT}
             ]);
-            expect(wrapper.vm.submit_roles).toEqual([
-                {principal: 'Public', role: 'none'},
-                {principal: 'Onyen', role: 'none'}
+            expect(wrapper.vm.submit_roles.roles).toEqual([
+                {principal: 'everyone', role: 'none'},
+                {principal: 'authenticated', role: 'none'}
             ]);
             done();
         });
@@ -157,20 +154,19 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.patrons_role).toBe('canViewMetadata');
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual(response.assigned.roles);
-            expect(wrapper.vm.submit_roles).toEqual(response.assigned.roles);
 
             wrapper.findAll('#public option').at(1).setSelected();
 
             let updated_public_roles =  [
-                { principal: 'Public', role: 'canDiscover' },
-                { principal: 'Onyen', role: 'none' }
+                { principal: 'everyone', role: 'canDiscover' },
+                { principal: 'authenticated', role: 'none' }
             ];
 
-            expect(wrapper.vm.patrons_role).toBe('canDiscover');
+            expect(wrapper.vm.everyone_role).toBe('canDiscover');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual(updated_public_roles);
-            expect(wrapper.vm.submit_roles).toEqual(updated_public_roles);
+            expect(wrapper.vm.submit_roles.roles).toEqual(updated_public_roles);
 
             done();
         });
@@ -184,20 +180,19 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.onyen_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public', role: 'canViewMetadata' }]);
-            expect(wrapper.vm.submit_roles).toEqual(same_roles.assigned.roles);
+            expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canViewMetadata' }]);
 
-            wrapper.findAll('#onyen option').at(1).setSelected();
+            wrapper.findAll('#authenticated option').at(1).setSelected();
 
-            let updated_onyen_roles =  [
-                { principal: 'Public', role: 'canViewMetadata' },
-                { principal: 'Onyen', role: 'canDiscover' }
+            let updated_authenticated_roles =  [
+                { principal: 'everyone', role: 'canViewMetadata' },
+                { principal: 'authenticated', role: 'canDiscover' }
             ];
 
-            expect(wrapper.vm.onyen_role).toBe('canDiscover');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(updated_onyen_roles);
-            expect(wrapper.vm.submit_roles).toEqual(updated_onyen_roles);
+            expect(wrapper.vm.authenticated_role).toBe('canDiscover');
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(updated_authenticated_roles);
+            expect(wrapper.vm.submit_roles.roles).toEqual(updated_authenticated_roles);
 
             done();
         });
@@ -211,11 +206,10 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.patrons_role).toBe('canViewMetadata');
-            expect(wrapper.vm.onyen_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canViewMetadata' }]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(same_roles.assigned.roles);
-            expect(wrapper.vm.submit_roles).toEqual(same_roles.assigned.roles);
             done();
         });
     });
@@ -238,7 +232,7 @@ describe('patronRoles.vue', () => {
             let btn = wrapper.find('#is-submitting');
             let is_disabled = expect.stringContaining('disabled');
 
-            wrapper.findAll('#onyen option').at(1).setSelected();
+            wrapper.findAll('#authenticated option').at(1).setSelected();
             expect(btn.html()).not.toEqual(is_disabled);
             done();
         });

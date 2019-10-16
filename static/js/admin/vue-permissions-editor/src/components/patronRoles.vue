@@ -37,7 +37,7 @@
                     <li class="public-role">
                         <p>Public users</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="public" @change="updateRole('patrons')" class="public-select" v-model="patrons_role" :disabled="shouldDisable">
+                            <select id="public" @change="updateRole('patrons')" class="public-select" v-model="everyone_role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
@@ -45,9 +45,9 @@
                         </div>
                     </li>
                     <li>
-                        <p>Onyen users</p>
+                        <p>Authenticated users</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="onyen" @change="updateRole('onyen')" v-model="onyen_role" :disabled="shouldDisable">
+                            <select id="authenticated" @change="updateRole('authenticated')" v-model="authenticated_role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
@@ -59,7 +59,7 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo @embargo-info="setEmbargo"></embargo>
+        <embargo :current-embargo="display_roles.assigned.embargoed !== ''" @embargo-info="setEmbargo"></embargo>
         <p class="message">{{ response_message }}</p>
         <ul>
             <li>
@@ -101,19 +101,17 @@
         data() {
             return {
                 display_roles: {
-                    inherited: { roles: [], embargoed: false, deleted: false },
-                    assigned: { roles: [], embargoed: false, deleted: false }
+                    inherited: { roles: [], embargoed: '', deleted: false },
+                    assigned: { roles: [], embargoed: '', deleted: false }
                 },
                 patron_roles: {
-                    inherited: { roles: [], embargoed: false, deleted: false },
-                    assigned: { roles: [], embargoed: false, deleted: false }
+                    inherited: { roles: [], embargoed: '', deleted: false },
+                    assigned: { roles: [], embargoed: '', deleted: false }
                 },
-                submit_roles: [],
+                submit_roles: {},
                 role_history: {},
-                object_embargo_info: {},
-                parent_embargo_info: {},
-                onyen_role: 'none',
-                patrons_role: 'none',
+                authenticated_role: 'none',
+                everyone_role: 'none',
                 user_type: ''
             }
         },
@@ -143,13 +141,13 @@
 
             assignedPatronRoles() {
                 return [
-                    { principal: 'Public', role: this.patrons_role },
-                    { principal: 'Onyen', role: this.onyen_role }
+                    { principal: 'everyone', role: this.everyone_role },
+                    { principal: 'authenticated', role: this.authenticated_role }
                 ];
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === '' || !isEmpty(this.object_embargo_info);
+                return this.user_type === 'staff' || this.user_type === '' || this.display_roles.assigned.embargoed !== '';
             }
         },
 
@@ -157,7 +155,7 @@
             defaultPermission(perms) {
                 const options = [
                     { field: 'roles', default: [] },
-                    { field: 'embargoed', default: false },
+                    { field: 'embargoed', default: '' },
                     { field: 'deleted', default: false }
                 ];
 
@@ -174,13 +172,13 @@
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                    if (response.data.inherited.roles.length === 0 && response.data.assigned.roles.length === 0) {
                        let set_roles = [
-                           { principal: 'Public', role: 'canAccess' },
-                           { principal: 'Onyen', role: 'canAccess' }
+                           { principal: 'everyone', role: 'canAccess' },
+                           { principal: 'authenticated', role: 'canAccess' }
                        ];
+
                        this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
                        this.display_roles.assigned.roles = set_roles;
                        this.patron_roles.assigned.roles = set_roles;
-                       this.submit_roles = set_roles;
                    } else {
                        let default_perms = {
                            inherited: this.defaultPermission(response.data.inherited),
@@ -188,12 +186,11 @@
                        };
                        this.patron_roles =  default_perms;
                        this.display_roles = cloneDeep(default_perms);
-                       this.submit_roles = cloneDeep(default_perms).assigned.roles;
                    }
 
                    // Set values for forms from retrieved data
-                   this.patrons_role = this.setCurrentObjectRole('Public');
-                   this.onyen_role = this.setCurrentObjectRole('Onyen');
+                   this.everyone_role = this.setCurrentObjectRole('everyone');
+                   this.authenticated_role = this.setCurrentObjectRole('authenticated');
 
                    // Merge principals for display if role values are the same
                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
@@ -212,7 +209,7 @@
                 axios({
                     method: 'put',
                     url: `/services/api/edit/acl/patron/${this.uuid}`,
-                    data: JSON.stringify( { roles: this.submit_roles } ),
+                    data: JSON.stringify(this.submit_roles),
                     headers: {'content-type': 'application/json; charset=utf-8'}
                 }).then((response) => {
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
@@ -233,7 +230,7 @@
              */
             displayRolesMerge(users) {
                 if (users.length === 2 && users[0].role === users[1].role) {
-                    return [{ principal: 'Public', role: users[0].role }];
+                    return [{ principal: 'everyone', role: users[0].role }];
                 }
 
                 return users;
@@ -258,13 +255,13 @@
                 let type = e.target.id;
 
                 if (type === 'staff') {
-                    this.role_history = Object.assign({}, { patron: this.patrons_role, onyen: this.onyen_role });
-                    this.patrons_role = 'none';
-                    this.onyen_role = 'none';
+                    this.role_history = Object.assign({}, { patron: this.everyone_role, authenticated: this.authenticated_role });
+                    this.everyone_role = 'none';
+                    this.authenticated_role = 'none';
                 } else if (type === 'patron') {
                     if (!isEmpty(this.role_history)) {
-                        this.patrons_role = this.role_history.patron;
-                        this.onyen_role = this.role_history.onyen;
+                        this.everyone_role = this.role_history.patron;
+                        this.authenticated_role = this.role_history.authenticated;
                     }
                 }
 
@@ -299,7 +296,7 @@
             },
 
             updateSubmitRoles() {
-                this.submit_roles = this.assignedPatronRoles;
+                this.submit_roles.roles = this.assignedPatronRoles;
             },
 
             userIndex(principal) {
@@ -309,19 +306,20 @@
             },
 
             setEmbargo(embargo_info) {
-                this.object_embargo_info = embargo_info;
-                this.display_roles.assigned.embargoed = !this.display_roles.assigned.embargoed;
+                this.display_roles.assigned.embargoed = embargo_info;
 
-                if (!isEmpty(embargo_info)) {
+                if (embargo_info !== '') {
+                    this.everyone_role = 'canViewMetadata';
+                    this.authenticated_role = 'canViewMetadata';
+                    this.submit_roles.embargoed = embargo_info;
                     this.unsaved_changes = true;
-                    this.display_roles.assigned.roles = [{principal: 'Public', role: 'canViewMetadata'}];
-                    this.patrons_role = 'canViewMetadata';
-                    this.onyen_role = 'canViewMetadata';
+                    this.display_roles.assigned.roles = [{principal: 'everyone', role: 'canViewMetadata'}];
                 } else {
+                    delete this.submit_roles.embargoed;
                     this.dedupeDisplayRoles();
                 }
 
-                this.submit_roles = this.assignedPatronRoles();
+                this.updateSubmitRoles();
             },
 
             /**
