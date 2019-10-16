@@ -59,7 +59,7 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo :current-embargo="display_roles.assigned.embargoed !== ''" @embargo-info="setEmbargo"></embargo>
+        <embargo :current-embargo="timestampEmbargo" @embargo-info="setEmbargo"></embargo>
         <p class="message">{{ response_message }}</p>
         <ul>
             <li>
@@ -95,18 +95,19 @@
             alertHandler: Object,
             changesCheck: Boolean,
             containerType: String,
+            title: String,
             uuid: String
         },
 
         data() {
             return {
                 display_roles: {
-                    inherited: { roles: [], embargoed: '', deleted: false },
-                    assigned: { roles: [], embargoed: '', deleted: false }
+                    inherited: { roles: [], embargo: null, deleted: false },
+                    assigned: { roles: [], embargo: null, deleted: false }
                 },
                 patron_roles: {
-                    inherited: { roles: [], embargoed: '', deleted: false },
-                    assigned: { roles: [], embargoed: '', deleted: false }
+                    inherited: { roles: [], embargo: null, deleted: false },
+                    assigned: { roles: [], embargo: null, deleted: false }
                 },
                 submit_roles: {},
                 role_history: {},
@@ -147,7 +148,17 @@
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === '' || this.display_roles.assigned.embargoed !== '';
+                return this.user_type === 'staff' || this.user_type === '' || this.display_roles.assigned.embargo !== null;
+            },
+
+            timestampEmbargo() {
+                if (this.display_roles.assigned.embargo === null) {
+                    return 0;
+                } else if( typeof this.display_roles.assigned.embargo === 'string') {
+                    return new Date(this.display_roles.assigned.embargo).getMilliseconds();
+                } else {
+                    return this.display_roles.assigned.embargo;
+                }
             }
         },
 
@@ -155,7 +166,7 @@
             defaultPermission(perms) {
                 const options = [
                     { field: 'roles', default: [] },
-                    { field: 'embargoed', default: '' },
+                    { field: 'embargo', default: null },
                     { field: 'deleted', default: false }
                 ];
 
@@ -306,19 +317,18 @@
             },
 
             setEmbargo(embargo_info) {
-                this.display_roles.assigned.embargoed = embargo_info;
 
-                if (embargo_info !== '') {
+                if (embargo_info !== null) {
                     this.everyone_role = 'canViewMetadata';
                     this.authenticated_role = 'canViewMetadata';
-                    this.submit_roles.embargoed = embargo_info;
                     this.unsaved_changes = true;
                     this.display_roles.assigned.roles = [{principal: 'everyone', role: 'canViewMetadata'}];
                 } else {
-                    delete this.submit_roles.embargoed;
                     this.dedupeDisplayRoles();
                 }
 
+                this.display_roles.assigned.embargo = embargo_info;
+                this.submit_roles.embargo = embargo_info;
                 this.updateSubmitRoles();
             },
 

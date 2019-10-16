@@ -25,7 +25,7 @@
         name: 'embargo',
 
         props: {
-            currentEmbargo: Boolean
+            currentEmbargo: Number
         },
 
         data() {
@@ -35,7 +35,16 @@
                 fixed_embargo_date: '',
                 error_msg: '',
                 has_embargo: false,
-                show_form: false
+            }
+        },
+
+        watch: {
+            currentEmbargo(embargo) {
+                this.has_embargo = embargo > 0;
+
+                if (this.has_embargo) {
+                    this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
+                }
             }
         },
 
@@ -60,8 +69,12 @@
                 this.has_embargo = !this.has_embargo;
 
                 if (!this.has_embargo) {
-                    this.clearEmbargoInfo();
-                    this.$emit('embargo-info', '');
+                    if(window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
+                        this.clearEmbargoInfo();
+                        this.$emit('embargo-info', null);
+                    } else {
+                        this.has_embargo = true;
+                    }
                 } else if (this.custom_embargo_date !== '' && !isFuture(this.specifiedDate(this.custom_embargo_date))) {
                     this.error_msg = 'Please enter a future date';
                 } else if (this.fixed_embargo_date === '' && this.custom_embargo_date === '') {
@@ -79,7 +92,7 @@
             },
 
             updateCurrentEmbargo() {
-                if (this.has_embargo && this.embargo_ends_date !== '') {
+                if (this.has_embargo && this.custom_embargo_date !== '' && this.fixed_embargo_date !== '') {
                     this.$emit('embargo-info', this.embargo_ends_date);
                 }
             },
@@ -114,10 +127,6 @@
 
                 return null;
             }
-        },
-
-        mounted() {
-            this.has_embargo = this.currentEmbargo;
         }
     }
 </script>

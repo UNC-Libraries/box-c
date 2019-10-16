@@ -26,9 +26,11 @@
                                                   :alert-handler="alertHandler"
                                                   :changes-check="checkForUnsavedChanges"
                                                   :container-type="metadata.type"
+                                                  :title="metadata.title"
                                                   :uuid="metadata.id"
                                                   @reset-changes-check="resetChangesCheck"
-                                                  @show-modal="closeModal"></patron-roles>
+                                                  @show-modal="closeModal">
+                                    </patron-roles>
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
                                                  :changes-check="checkForUnsavedChanges"
