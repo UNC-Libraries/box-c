@@ -15,18 +15,18 @@ describe('patronRoles.vue', () => {
             propsData: {
                 displayRoles: {
                     inherited: { roles: [
-                            { principal: 'Public', role: 'canViewMetadata' },
-                            { principal: 'Onyen', role: 'canViewOriginals' }
+                            { principal: 'everyone', role: 'canViewMetadata' },
+                            { principal: 'authenticated', role: 'canViewOriginals' }
                         ],
-                        embargoed: false,
+                        embargoed: '',
                         deleted: false
                     },
                     assigned: {
                         roles: [
-                            { principal: 'Public', role: 'canAccess' },
-                            { principal: 'Onyen', role: 'canViewOriginals' }
+                            { principal: 'everyone', role: 'canAccess' },
+                            { principal: 'authenticated', role: 'canViewOriginals' }
                         ],
-                        embargoed: false,
+                        embargoed: '',
                         deleted: false
                     }
                 },
@@ -40,7 +40,7 @@ describe('patronRoles.vue', () => {
                     { text: 'All of this folder', role: 'canAccess' }
                 ],
                 type: 'assigned',
-                user: { principal: 'Public', role: 'canAccess' }
+                user: { principal: 'everyone', role: 'canAccess' }
             }
         });
 
@@ -52,17 +52,17 @@ describe('patronRoles.vue', () => {
 
     it("displays public assigned patron roles", () => {
         expect(permission_type.text()).toBe('From assigned');
-        expect(public_principal.text()).toMatch(/^Public/);
+        expect(public_principal.text()).toMatch(/^Everyone/);
         expect(public_role.text()).toMatch(/^All.of.this.folder/);
     });
 
     it("displays onyen assigned patron roles", () => {
         wrapper.setProps({
-           user:  { principal: 'Onyen', role: 'canViewOriginals' }
+           user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         expect(permission_type.text()).toBe('From assigned');
-        expect(public_principal.text()).toMatch(/^Onyen/);
+        expect(public_principal.text()).toMatch(/^Authenticated/);
         expect(public_role.text()).toMatch(/^Can.View.Originals/);
     });
 
@@ -71,12 +71,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false,
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 }
             },
@@ -91,22 +91,22 @@ describe('patronRoles.vue', () => {
     it("displays public inherited patron roles", () => {
         wrapper.setProps({
             type: 'inherited',
-            user: { principal: 'Public', role: 'canViewMetadata' }
+            user: { principal: 'everyone', role: 'canViewMetadata' }
         });
 
         expect(permission_type.text()).toBe('From inherited');
-        expect(public_principal.text()).toMatch(/^Public/);
+        expect(public_principal.text()).toMatch(/^Everyone/);
         expect(public_role.text()).toMatch(/^Metadata.Only/);
     });
 
     it("displays onyen inherited patron roles", () => {
         wrapper.setProps({
             type: 'inherited',
-            user:  { principal: 'Onyen', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         expect(permission_type.text()).toBe('From inherited');
-        expect(public_principal.text()).toMatch(/^Onyen/);
+        expect(public_principal.text()).toMatch(/^Authenticated/);
         expect(public_role.text()).toMatch(/^Can.View.Originals/);
     });
 
@@ -115,12 +115,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [staff_user],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false,
                 },
                 assigned: {
                     roles: [],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 }
             },
@@ -133,14 +133,14 @@ describe('patronRoles.vue', () => {
         expect(public_role.text()).toMatch(dash_regex);
     });
 
-    it("display a 'more info' icon for 'Public' users", () => {
+    it("display a 'more info' icon for 'Everyone' users", () => {
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(1);
         expect(icons.at(0).classes()).toContain('fa-question-circle');
     });
 
-    it("does not display a 'more info' icon for 'Onyen' users", () => {
-        wrapper.setProps({ user: { principal: 'Onyen', role: 'canAccess' } });
+    it("does not display a 'more info' icon for 'authenticated' users", () => {
+        wrapper.setProps({ user: { principal: 'authenticated', role: 'canAccess' } });
         icons = wrapper.findAll('i.fa-question-circle').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(0);
     });
@@ -149,12 +149,12 @@ describe('patronRoles.vue', () => {
         wrapper.setProps({
             displayRoles: {
                 inherited: { roles: [staff_user],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 }
             },
@@ -169,12 +169,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false,
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 }
             },
@@ -191,23 +191,23 @@ describe('patronRoles.vue', () => {
         wrapper.setProps({
             displayRoles: {
                 inherited: { roles: [
-                        { principal: 'Public', role: 'none' },
-                        { principal: 'Onyen', role: 'none' }
+                        { principal: 'everyone', role: 'none' },
+                        { principal: 'authenticated', role: 'none' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 },
                 assigned: {
                     roles: [
-                        { principal: 'Public', role: 'canAccess' },
-                        { principal: 'Onyen', role: 'canViewOriginals' }
+                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: true
                 }
             },
             type: 'assigned',
-            user:  { principal: 'Public', role: 'canAccess' }
+            user:  { principal: 'everyone', role: 'canAccess' }
         });
 
         // Assigned permissions should not have a check icon
@@ -217,7 +217,7 @@ describe('patronRoles.vue', () => {
         // Inherited permissions should have a check icon
         wrapper.setProps({
             type: 'inherited',
-            user:  { principal: 'Public', role: 'none' }
+            user:  { principal: 'everyone', role: 'none' }
         });
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden') && !i.classes('fa-question-circle'));
         expect(icons.at(0).classes()).toContain('fa-check-circle');
@@ -228,23 +228,23 @@ describe('patronRoles.vue', () => {
         wrapper.setProps({
             displayRoles: {
                 inherited: { roles: [
-                        { principal: 'Public', role: 'none' },
-                        { principal: 'Onyen', role: 'canViewOriginals' }
+                        { principal: 'everyone', role: 'none' },
+                        { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 },
                 assigned: {
                     roles: [
-                        { principal: 'Public', role: 'canAccess' },
-                        { principal: 'Onyen', role: 'none' }
+                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'authenticated', role: 'none' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 }
             },
             type: 'assigned',
-            user:  { principal: 'Onyen', role: 'none' }
+            user:  { principal: 'authenticated', role: 'none' }
         });
 
         // Assigned permissions should have a check icon
@@ -256,7 +256,7 @@ describe('patronRoles.vue', () => {
         // Inherited permissions should not have a check icon
         wrapper.setProps({
             type: 'inherited',
-            user:  { principal: 'Onyen', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         icons = wrapper.findAll('i.fa-check-circle').filter(i => !i.classes('hidden'));
@@ -267,22 +267,22 @@ describe('patronRoles.vue', () => {
        wrapper.setProps({
            displayRoles: {
                inherited: { roles: [
-                       { principal: 'Public', role: 'canViewMetadata' },
-                       { principal: 'Onyen', role: 'canDiscover' }
+                       { principal: 'everyone', role: 'canViewMetadata' },
+                       { principal: 'authenticated', role: 'canDiscover' }
                    ],
-                   embargoed: false,
+                   embargoed: '',
                    deleted: false
                },
                assigned: {
                    roles: [
-                       { principal: 'Public', role: 'canAccess' },
-                       { principal: 'Onyen', role: 'canViewOriginals' }
+                       { principal: 'everyone', role: 'canAccess' },
+                       { principal: 'authenticated', role: 'canViewOriginals' }
                    ],
-                   embargoed: true,
+                   embargoed: '2099-01-01',
                    deleted: false
                }
            },
-           user:  { principal: 'Onyen', role: 'canViewOriginals' }
+           user:  { principal: 'authenticated', role: 'canViewOriginals' }
        });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
@@ -291,7 +291,7 @@ describe('patronRoles.vue', () => {
 
     it("does not display an embargoed icon if an item is not embargoed", () => {
         wrapper.setProps({
-            user:  { principal: 'Onyen', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         icons = wrapper.findAll('i.fa-circle').filter(i => !i.classes('hidden'));
@@ -302,22 +302,22 @@ describe('patronRoles.vue', () => {
         wrapper.setProps({
             displayRoles: {
                 inherited: { roles: [
-                        { principal: 'Public', role: 'canViewMetadata' },
-                        { principal: 'Onyen', role: 'canDiscover' }
+                        { principal: 'everyone', role: 'canViewMetadata' },
+                        { principal: 'authenticated', role: 'canDiscover' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: false
                 },
                 assigned: {
                     roles: [
-                        { principal: 'Public', role: 'canAccess' },
-                        { principal: 'Onyen', role: 'canViewOriginals' }
+                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: false,
+                    embargoed: '',
                     deleted: true
                 }
             },
-            user:  { principal: 'Onyen', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
@@ -326,7 +326,7 @@ describe('patronRoles.vue', () => {
 
     it("does not display a deleted icon if an item is not marked for deletion", () => {
         wrapper.setProps({
-            user:  { principal: 'Onyen', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
         icons = wrapper.findAll('i.fa-times-circle').filter(i => !i.classes('hidden'));

@@ -2,7 +2,7 @@
     <tr>
         <td>From {{ type }}</td>
         <td class="access-display">
-            {{ user.principal }}
+            {{ formattedPrincipal }}
             <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow"></div>
@@ -29,6 +29,8 @@
 </template>
 
 <script>
+    import capitalize from 'lodash.capitalize';
+
     export default {
         name: 'patronDisplayRow',
         
@@ -42,12 +44,16 @@
         computed: {
           hasAction() {
               return this.displayRoles[this.type];
-          }
+          },
+
+            formattedPrincipal() {
+              return capitalize(this.user.principal);
+            }
         },
         
         methods: {
             nonPublicRole(text) {
-                return text !== 'Public';
+                return text !== 'everyone';
             },
 
             currentUserRoles(user = 'Staff') {
