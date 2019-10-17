@@ -63,23 +63,16 @@
                 return { inherited: inherited , assigned: assigned };
             },
 
-            hasStaffOnly() {
-                let current_users = this.currentUserRoles();
-
-                if (current_users.inherited !== undefined) {
-                    return 'inherited';
-                } else if (current_users.assigned !== undefined) {
-                    return 'assigned'
-                } else {
-                    return undefined;
-                }
-            },
-
             displayRole(role) {
                 let selected_role = this.possibleRoles.find((r) => r.role === role);
                 return selected_role.text;
             },
 
+            /**
+             * Compares inherited and current object permissions for a user to determine which is more restrictive
+             * @param current_users
+             * @returns {string}
+             */
             hasMultipleRoles(current_users) {
                 let inherited_role = this.possibleRoles.findIndex((r) => r.role === current_users.inherited.role);
                 let assigned_role = this.possibleRoles.findIndex((r) => r.role === current_users.assigned.role);
@@ -91,6 +84,11 @@
                 }
             },
 
+            /**
+             * Determines which permission for a given user is the 'effective' one
+             * @param user
+             * @returns {string|*|string}
+             */
             hasRolesPriority(user) {
                 let current_users = this.currentUserRoles(user);
 
@@ -105,9 +103,14 @@
                 }
             },
 
+            /**
+             * Determines most restrictive permissions for icon display
+             * @param user
+             * @returns {*|string}
+             */
             mostRestrictive(user) {
                 // Check for staff roles. They supersede all other roles
-                let has_staff_only = this.hasStaffOnly();
+                let has_staff_only = this._hasStaffOnly();
 
                 if (has_staff_only !== undefined) {
                     return has_staff_only;
@@ -115,7 +118,24 @@
 
                 // Check for other users/roles
                 return this.hasRolesPriority(user);
-            }
+            },
+
+            /**
+             * Determines if staff roles are present and if so determines 'effective' permission
+             * @returns {string|undefined}
+             * @private
+             */
+            _hasStaffOnly() {
+                let current_users = this.currentUserRoles();
+
+                if (current_users.inherited !== undefined) {
+                    return 'inherited';
+                } else if (current_users.assigned !== undefined) {
+                    return 'assigned'
+                } else {
+                    return undefined;
+                }
+            },
         }
     }
 </script>
