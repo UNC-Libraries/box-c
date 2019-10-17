@@ -1,5 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import patronDisplayRow from '@/components/patronDisplayRow.vue';
+import {getMilliseconds} from "date-fns";
 
 const localVue = createLocalVue();
 const STAFF_ONLY_ROLE_TEXT = '\u2014';
@@ -18,7 +19,7 @@ describe('patronRoles.vue', () => {
                             { principal: 'everyone', role: 'canViewMetadata' },
                             { principal: 'authenticated', role: 'canViewOriginals' }
                         ],
-                        embargoed: '',
+                        embargo: null,
                         deleted: false
                     },
                     assigned: {
@@ -26,7 +27,7 @@ describe('patronRoles.vue', () => {
                             { principal: 'everyone', role: 'canAccess' },
                             { principal: 'authenticated', role: 'canViewOriginals' }
                         ],
-                        embargoed: '',
+                        embargo: null,
                         deleted: false
                     }
                 },
@@ -71,12 +72,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false,
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 }
             },
@@ -115,12 +116,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [staff_user],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false,
                 },
                 assigned: {
                     roles: [],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 }
             },
@@ -149,12 +150,12 @@ describe('patronRoles.vue', () => {
         wrapper.setProps({
             displayRoles: {
                 inherited: { roles: [staff_user],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 }
             },
@@ -169,12 +170,12 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: {
                     roles: [],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false,
                 },
                 assigned: {
                     roles: [staff_user],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 }
             },
@@ -194,7 +195,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'none' },
                         { principal: 'authenticated', role: 'none' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 },
                 assigned: {
@@ -202,7 +203,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'canAccess' },
                         { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: true
                 }
             },
@@ -231,7 +232,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'none' },
                         { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 },
                 assigned: {
@@ -239,7 +240,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'canAccess' },
                         { principal: 'authenticated', role: 'none' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 }
             },
@@ -270,7 +271,7 @@ describe('patronRoles.vue', () => {
                        { principal: 'everyone', role: 'canViewMetadata' },
                        { principal: 'authenticated', role: 'canDiscover' }
                    ],
-                   embargoed: '',
+                   embargo: null,
                    deleted: false
                },
                assigned: {
@@ -278,7 +279,7 @@ describe('patronRoles.vue', () => {
                        { principal: 'everyone', role: 'canAccess' },
                        { principal: 'authenticated', role: 'canViewOriginals' }
                    ],
-                   embargoed: '2099-01-01',
+                   embargo: getMilliseconds(new Date()),
                    deleted: false
                }
            },
@@ -289,7 +290,7 @@ describe('patronRoles.vue', () => {
         expect(icons.at(0).classes()).toContain('fa-circle');
     });
 
-    it("does not display an embargoed icon if an item is not embargoed", () => {
+    it("does not display an embargo icon if an item is not embargoed", () => {
         wrapper.setProps({
             user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
@@ -305,7 +306,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'canViewMetadata' },
                         { principal: 'authenticated', role: 'canDiscover' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: false
                 },
                 assigned: {
@@ -313,7 +314,7 @@ describe('patronRoles.vue', () => {
                         { principal: 'everyone', role: 'canAccess' },
                         { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
-                    embargoed: '',
+                    embargo: null,
                     deleted: true
                 }
             },
