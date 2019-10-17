@@ -59,8 +59,8 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo :current-embargo="timestampEmbargo" @embargo-info="setEmbargo"></embargo>
-        <p class="message">{{ response_message }}</p>
+        <embargo :current-embargo="timestampEmbargo" @embargo-info="setEmbargo" @error-msg="embargoError"></embargo>
+        <p class="message" :class="{error: !/Saving/.test(response_message)}">{{ response_message }}</p>
         <ul>
             <li>
                 <button id="is-submitting"
@@ -81,6 +81,7 @@
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
+    import isEqual from 'lodash.isequal';
 
     const STAFF_ONLY_ROLE_TEXT = '\u2014';
 
@@ -109,10 +110,12 @@
                     inherited: { roles: [], embargo: null, deleted: false },
                     assigned: { roles: [], embargo: null, deleted: false }
                 },
-                submit_roles: {},
+                submit_roles: { embargo: null, deleted: false },
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
+                response_message: '',
+                unsaved_changes: false,
                 user_type: ''
             }
         },
@@ -171,7 +174,7 @@
                 ];
 
                 options.forEach((option) => {
-                    if (perms[option.field] === undefined) {
+                    if (perms[option.field] === undefined || perms[options.field] === null) {
                         perms[option.field] = option.default;
                     }
                 });
@@ -181,7 +184,7 @@
 
             getRoles() {
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                   if (response.data.inherited.roles.length === 0 && response.data.assigned.roles.length === 0) {
+                   if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) && response.data.assigned.roles.length === 0) {
                        let set_roles = [
                            { principal: 'everyone', role: 'canAccess' },
                            { principal: 'authenticated', role: 'canAccess' }
@@ -236,9 +239,6 @@
                 });
             },
 
-            /**
-             *
-             */
             displayRolesMerge(users) {
                 if (users.length === 2 && users[0].role === users[1].role) {
                     return [{ principal: 'everyone', role: users[0].role }];
@@ -262,22 +262,19 @@
             },
 
             updateRoleList(e) {
-                this.unsaved_changes = true;
                 let type = e.target.id;
 
                 if (type === 'staff') {
-                    this.role_history = Object.assign({}, { patron: this.everyone_role, authenticated: this.authenticated_role });
+                    this.setRoleHistory();
                     this.everyone_role = 'none';
                     this.authenticated_role = 'none';
                 } else if (type === 'patron') {
-                    if (!isEmpty(this.role_history)) {
-                        this.everyone_role = this.role_history.patron;
-                        this.authenticated_role = this.role_history.authenticated;
-                    }
+                    this.loadPreviousRole();
                 }
 
                 this.updateDisplayRoles(type);
                 this.updateSubmitRoles();
+                this.setUnsavedChanges();
             },
 
             updateRole(principal) {
@@ -289,9 +286,9 @@
                     this.display_roles.assigned.roles.push({principal: principal, role: this[`${principal}_role`]})
                 }
 
-                this.unsaved_changes = true;
                 this.dedupeDisplayRoles();
                 this.updateSubmitRoles();
+                this.setUnsavedChanges();
             },
 
             updateDisplayRoles(type) {
@@ -299,6 +296,20 @@
                     this.display_roles.assigned.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
                     this.dedupeDisplayRoles();
+                }
+            },
+
+            setRoleHistory() {
+                this.role_history = Object.assign({}, {
+                    patron: this.everyone_role,
+                    authenticated: this.authenticated_role
+                });
+            },
+
+            loadPreviousRole() {
+                if (!isEmpty(this.role_history)) {
+                    this.everyone_role = this.role_history.patron;
+                    this.authenticated_role = this.role_history.authenticated;
                 }
             },
 
@@ -310,26 +321,35 @@
                 this.submit_roles.roles = this.assignedPatronRoles;
             },
 
+            setUnsavedChanges() {
+                this.unsaved_changes = !isEqual(this.patron_roles.assigned, this.submit_roles);
+            },
+
             userIndex(principal) {
                 return this.display_roles.assigned.roles.findIndex((user) => {
                   return user.principal.toLowerCase() === principal.toLowerCase();
                 });
             },
 
-            setEmbargo(embargo_info) {
+            embargoError(error_msg) {
+                this.response_message = error_msg;
+            },
 
+            setEmbargo(embargo_info) {
                 if (embargo_info !== null) {
+                    this.setRoleHistory();
                     this.everyone_role = 'canViewMetadata';
                     this.authenticated_role = 'canViewMetadata';
-                    this.unsaved_changes = true;
                     this.display_roles.assigned.roles = [{principal: 'everyone', role: 'canViewMetadata'}];
                 } else {
+                    this.loadPreviousRole();
                     this.dedupeDisplayRoles();
                 }
 
                 this.display_roles.assigned.embargo = embargo_info;
                 this.submit_roles.embargo = embargo_info;
                 this.updateSubmitRoles();
+                this.setUnsavedChanges();
             },
 
             /**
@@ -408,6 +428,10 @@
         .is-disabled {
             cursor: not-allowed;
             opacity: .5;
+        }
+
+        p.error {
+            color: red;
         }
     }
 </style>
