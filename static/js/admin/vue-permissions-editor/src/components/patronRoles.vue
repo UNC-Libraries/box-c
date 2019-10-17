@@ -81,9 +81,9 @@
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
-    import isEqual from 'lodash.isequal';
 
     const STAFF_ONLY_ROLE_TEXT = '\u2014';
+    let initial_roles = { roles: [], embargo: null, deleted: false };
 
     export default {
         name: 'patronRoles',
@@ -103,14 +103,14 @@
         data() {
             return {
                 display_roles: {
-                    inherited: { roles: [], embargo: null, deleted: false },
-                    assigned: { roles: [], embargo: null, deleted: false }
+                    inherited: initial_roles,
+                    assigned: initial_roles
                 },
                 patron_roles: {
-                    inherited: { roles: [], embargo: null, deleted: false },
-                    assigned: { roles: [], embargo: null, deleted: false }
+                    inherited: initial_roles,
+                    assigned: initial_roles
                 },
-                submit_roles: { embargo: null, deleted: false },
+                submit_roles: initial_roles,
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
@@ -167,24 +167,17 @@
 
         methods: {
             defaultPermission(perms) {
-                const options = [
-                    { field: 'roles', default: [] },
-                    { field: 'embargo', default: null },
-                    { field: 'deleted', default: false }
-                ];
-
-                options.forEach((option) => {
-                    if (perms[option.field] === undefined || perms[options.field] === null) {
-                        perms[option.field] = option.default;
-                    }
-                });
+                if (perms.roles === null) {
+                    perms.roles = [];
+                }
 
                 return perms;
             },
 
             getRoles() {
                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                   if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) && response.data.assigned.roles.length === 0) {
+                   if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
+                       response.data.assigned.roles.length === 0) {
                        let set_roles = [
                            { principal: 'everyone', role: 'canAccess' },
                            { principal: 'authenticated', role: 'canAccess' }
@@ -193,6 +186,7 @@
                        this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
                        this.display_roles.assigned.roles = set_roles;
                        this.patron_roles.assigned.roles = set_roles;
+                       this.submit_roles.roles = set_roles;
                    } else {
                        let default_perms = {
                            inherited: this.defaultPermission(response.data.inherited),
@@ -200,6 +194,7 @@
                        };
                        this.patron_roles =  default_perms;
                        this.display_roles = cloneDeep(default_perms);
+                       this.submit_roles = cloneDeep(default_perms.assigned);
                    }
 
                    // Set values for forms from retrieved data
@@ -322,7 +317,15 @@
             },
 
             setUnsavedChanges() {
-                this.unsaved_changes = !isEqual(this.patron_roles.assigned, this.submit_roles);
+                let loaded_roles = this.patron_roles.assigned;
+                this.unsaved_changes = this._hasUnsavedChanges('everyone') || this._hasUnsavedChanges('authenticated') ||
+                    loaded_roles.embargo !== this.submit_roles.embargo || loaded_roles.deleted !== this.submit_roles.deleted;
+            },
+
+            _hasUnsavedChanges(type) {
+                let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
+                let current_role = this.submit_roles.roles.find(user => user.principal === type);
+                return initial_role.role !== current_role.role;
             },
 
             userIndex(principal) {
