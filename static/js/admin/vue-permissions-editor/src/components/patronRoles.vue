@@ -5,11 +5,11 @@
 
         <table v-if="hasParentRole || hasObjectRole" class="border inherited-permissions">
             <thead>
-                <tr>
-                    <th></th>
-                    <th class="access-display">Who can access</th>
-                    <th>What can be viewed</th>
-                </tr>
+            <tr>
+                <th></th>
+                <th class="access-display">Who can access</th>
+                <th>What can be viewed</th>
+            </tr>
             </thead>
             <tbody>
             <template v-if="hasParentRole" v-for="user in display_roles.inherited.roles">
@@ -143,6 +143,10 @@
                 return this.display_roles.assigned.roles.length > 0;
             },
 
+            /**
+             * Returns the current state non-staff users
+             * @returns {*[]}
+             */
             assignedPatronRoles() {
                 return [
                     { principal: 'everyone', role: this.everyone_role },
@@ -154,6 +158,10 @@
                 return this.user_type === 'staff' || this.user_type === '' || this.display_roles.assigned.embargo !== null;
             },
 
+            /**
+             * Pass current embargo as a timestamp
+             * @return {null | number}
+             */
             timestampEmbargo() {
                 if (this.display_roles.assigned.embargo === null) {
                     return 0;
@@ -175,36 +183,36 @@
             },
 
             getRoles() {
-               axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                   if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
-                       response.data.assigned.roles.length === 0) {
-                       let set_roles = [
-                           { principal: 'everyone', role: 'canAccess' },
-                           { principal: 'authenticated', role: 'canAccess' }
-                       ];
+                axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
+                    if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
+                        response.data.assigned.roles.length === 0) {
+                        let set_roles = [
+                            { principal: 'everyone', role: 'canAccess' },
+                            { principal: 'authenticated', role: 'canAccess' }
+                        ];
 
-                       this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
-                       this.display_roles.assigned.roles = set_roles;
-                       this.patron_roles.assigned.roles = set_roles;
-                       this.submit_roles.roles = set_roles;
-                   } else {
-                       let default_perms = {
-                           inherited: this.defaultPermission(response.data.inherited),
-                           assigned: this.defaultPermission(response.data.assigned)
-                       };
-                       this.patron_roles =  default_perms;
-                       this.display_roles = cloneDeep(default_perms);
-                       this.submit_roles = cloneDeep(default_perms.assigned);
-                   }
+                        this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
+                        this.display_roles.assigned.roles = set_roles;
+                        this.patron_roles.assigned.roles = set_roles;
+                        this.submit_roles.roles = set_roles;
+                    } else {
+                        let default_perms = {
+                            inherited: this.defaultPermission(response.data.inherited),
+                            assigned: this.defaultPermission(response.data.assigned)
+                        };
+                        this.patron_roles =  default_perms;
+                        this.display_roles = cloneDeep(default_perms);
+                        this.submit_roles = cloneDeep(default_perms.assigned);
+                    }
 
-                   // Set values for forms from retrieved data
-                   this.everyone_role = this.setCurrentObjectRole('everyone');
-                   this.authenticated_role = this.setCurrentObjectRole('authenticated');
+                    // Set values for forms from retrieved data
+                    this.everyone_role = this.setCurrentObjectRole('everyone');
+                    this.authenticated_role = this.setCurrentObjectRole('authenticated');
 
-                   // Merge principals for display if role values are the same
-                   this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
-                   this.display_roles.assigned.roles = this.displayRolesMerge(this.display_roles.assigned.roles);
-               }).catch((error) => {
+                    // Merge principals for display if role values are the same
+                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.display_roles.assigned.roles);
+                }).catch((error) => {
                     let response_msg = `Unable load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
@@ -234,6 +242,11 @@
                 });
             },
 
+            /**
+             * Merge display if everyone and authenticated roles are the same
+             * @param users
+             * @return {{principal: string, role: *}[] | *}
+             */
             displayRolesMerge(users) {
                 if (users.length === 2 && users[0].role === users[1].role) {
                     return [{ principal: 'everyone', role: users[0].role }];
@@ -242,6 +255,11 @@
                 return users;
             },
 
+            /**
+             * Set the form display value for the given user
+             * @param principal
+             * @returns {string}
+             */
             setCurrentObjectRole(principal) {
                 let user_index = this.userIndex(principal);
                 let role_type = 'none';
@@ -256,6 +274,11 @@
                 return role_type;
             },
 
+            /**
+             * Update the role type and current roles
+             * Pull from role history if any, for non-staff roles
+             * @param e
+             */
             updateRoleList(e) {
                 let type = e.target.id;
 
@@ -272,6 +295,10 @@
                 this.setUnsavedChanges();
             },
 
+            /**
+             * Update a users role or add the user and role if they don't exist
+             * @param principal
+             */
             updateRole(principal) {
                 let user_index = this.userIndex(principal);
 
@@ -286,6 +313,10 @@
                 this.setUnsavedChanges();
             },
 
+            /**
+             * Set roles based on user type
+             * @param type
+             */
             updateDisplayRoles(type) {
                 if (type === 'staff') {
                     this.display_roles.assigned.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
@@ -308,6 +339,9 @@
                 }
             },
 
+            /**
+             * Merge assigned roles and set the result to current roles list
+             */
             dedupeDisplayRoles() {
                 this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
             },
@@ -316,13 +350,22 @@
                 this.submit_roles.roles = this.assignedPatronRoles;
             },
 
+            /**
+             * Determine if there are unsaved changes
+             */
             setUnsavedChanges() {
                 let loaded_roles = this.patron_roles.assigned;
-                this.unsaved_changes = this._hasUnsavedChanges('everyone') || this._hasUnsavedChanges('authenticated') ||
+                this.unsaved_changes = this._hasRoleChange('everyone') || this._hasRoleChange('authenticated') ||
                     loaded_roles.embargo !== this.submit_roles.embargo || loaded_roles.deleted !== this.submit_roles.deleted;
             },
 
-            _hasUnsavedChanges(type) {
+            /**
+             * Determine if a user's role has changed
+             * @param type
+             * @returns {boolean}
+             * @private
+             */
+            _hasRoleChange(type) {
                 let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
                 let current_role = this.submit_roles.roles.find(user => user.principal === type);
                 return initial_role.role !== current_role.role;
@@ -330,14 +373,22 @@
 
             userIndex(principal) {
                 return this.display_roles.assigned.roles.findIndex((user) => {
-                  return user.principal.toLowerCase() === principal.toLowerCase();
+                    return user.principal.toLowerCase() === principal.toLowerCase();
                 });
             },
 
+            /**
+             * Updates display message based on emitted event from embargo component
+             * @param error_msg
+             */
             embargoError(error_msg) {
                 this.response_message = error_msg;
             },
 
+            /**
+             * Updates embargo for display and submit roles based on emitted event from embargo component
+             * @param embargo_info
+             */
             setEmbargo(embargo_info) {
                 if (embargo_info !== null) {
                     this.setRoleHistory();

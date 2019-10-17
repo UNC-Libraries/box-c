@@ -63,6 +63,10 @@
         },
 
         methods: {
+            /**
+             * Adds an embargo if none is already present
+             * Removes an embargo if one is present
+             */
             changeEmbargo() {
                 this.has_embargo = !this.has_embargo;
 
@@ -83,18 +87,28 @@
                 }
             },
 
+            /**
+             * Resets embargo form
+             */
             clearEmbargoInfo() {
                 this.custom_embargo_date = '';
                 this.embargo_ends_date = '';
                 this.fixed_embargo_date = '';
             },
 
+            /**
+             * If an embargo is already present and the user changes the embargo length
+             */
             updateCurrentEmbargo() {
                 if (this.has_embargo && this.custom_embargo_date !== '' && this.fixed_embargo_date !== '') {
                     this.$emit('embargo-info', this.embargo_ends_date);
                 }
             },
 
+            /**
+             * Set an embargo for the specified number of years
+             * @param years
+             */
             setFixedEmbargoDate(years) {
                 this.$emit('error-msg', '');
                 this.error_msg = '';
@@ -104,6 +118,9 @@
                 this.updateCurrentEmbargo();
             },
 
+            /**
+             * Set a custom embargo date
+             */
             setCustomEmbargoDate() {
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
 
@@ -117,6 +134,11 @@
                 }
             },
 
+            /**
+             * Turn a date string into a Date object
+             * @param date_value
+             * @returns {null|Date}
+             */
             specifiedDate(date_value) {
                 let parts = date_value.split('-');
 
