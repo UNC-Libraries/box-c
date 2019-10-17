@@ -5,10 +5,10 @@
             <p v-else>No embargo set for this object</p>
 
             <h3>Set Embargo</h3>
-                <form>
+                <form @click="clearEmbargoError">
                     <input @click="setFixedEmbargoDate(1)" v-model="fixed_embargo_date" value="1" type="radio"> 1 year<br/>
                     <input @click="setFixedEmbargoDate(2)" v-model="fixed_embargo_date" value="2" type="radio"> 2 years<br/>
-                    <input @focusin="error_msg=''" :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
+                    <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
                            @change="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
                 </form>
 
@@ -57,6 +57,9 @@
             },
 
             formattedEmbargoDate() {
+                if (this.embargo_ends_date === '') {
+                    return this.embargo_ends_date;
+                }
                 let embargo_date = this.specifiedDate(this.embargo_ends_date);
                 return format(embargo_date, 'MMMM do, yyyy');
             }
@@ -96,6 +99,11 @@
                 this.fixed_embargo_date = '';
             },
 
+            clearEmbargoError() {
+                this.$emit('error-msg', '');
+                this.error_msg = '';
+            },
+
             /**
              * If an embargo is already present and the user changes the embargo length
              */
@@ -110,9 +118,6 @@
              * @param years
              */
             setFixedEmbargoDate(years) {
-                this.$emit('error-msg', '');
-                this.error_msg = '';
-                this.custom_embargo_date = '';
                 let future_date = addYears(new Date(), years);
                 this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
                 this.updateCurrentEmbargo();
