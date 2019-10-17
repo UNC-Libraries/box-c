@@ -11,7 +11,6 @@
                     <input @focusin="error_msg=''" :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
                            @change="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
                 </form>
-                <p class="error">{{ error_msg }}</p>
 
             <button @click="changeEmbargo" id="add-embargo">{{ embargoText }}</button>
         </div>
@@ -33,7 +32,6 @@
                 custom_embargo_date: '',
                 embargo_ends_date: '',
                 fixed_embargo_date: '',
-                error_msg: '',
                 has_embargo: false,
             }
         },
@@ -76,10 +74,10 @@
                         this.has_embargo = true;
                     }
                 } else if (this.custom_embargo_date !== '' && !isFuture(this.specifiedDate(this.custom_embargo_date))) {
-                    this.error_msg = 'Please enter a future date';
+                    this.$emit('error-msg', 'Please enter a future date');
                 } else if (this.fixed_embargo_date === '' && this.custom_embargo_date === '') {
                     this.has_embargo = false;
-                    this.error_msg = 'No embargo is set. Please choose an option from the form above.';
+                    this.$emit('error-msg', 'No embargo is set. Please choose an option from the form above.');
                 } else {
                     this.$emit('embargo-info', this.embargo_ends_date);
                 }
@@ -98,6 +96,7 @@
             },
 
             setFixedEmbargoDate(years) {
+                this.$emit('error-msg', '');
                 this.error_msg = '';
                 this.custom_embargo_date = '';
                 let future_date = addYears(new Date(), years);
@@ -109,9 +108,9 @@
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
 
                 if (date_parts !== null && !isFuture(date_parts)) {
-                    this.error_msg = 'Please enter a future date';
+                    this.$emit('error-msg', 'Please enter a future date');
                 } else {
-                    this.error_msg = '';
+                    this.$emit('error-msg', '');
                     this.fixed_embargo_date = '';
                     this.embargo_ends_date = this.custom_embargo_date;
                     this.updateCurrentEmbargo();
@@ -158,12 +157,6 @@
             border: 1px solid lightgray;
             border-radius: 5px;
             padding: 5px;
-        }
-
-        p.error {
-            color: red;
-            height: 20px;
-            margin-bottom: 0;
         }
     }
 </style>
