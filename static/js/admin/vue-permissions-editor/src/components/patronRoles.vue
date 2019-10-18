@@ -59,7 +59,11 @@
             <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
         </ul>
 
-        <embargo :current-embargo="timestampEmbargo" @embargo-info="setEmbargo" @error-msg="embargoError"></embargo>
+        <embargo ref="embargoInfo"
+                 :current-embargo="timestampEmbargo"
+                 @embargo-info="setEmbargo"
+                 @error-msg="embargoError">
+        </embargo>
         <p class="message" :class="{error: !/Saving/.test(response_message)}">{{ response_message }}</p>
         <ul>
             <li>
@@ -83,7 +87,7 @@
     import isEmpty from 'lodash.isempty';
 
     const STAFF_ONLY_ROLE_TEXT = '\u2014';
-    let initial_roles = { roles: [], embargo: null, deleted: false };
+    let initial_roles = () => cloneDeep({ roles: [], embargo: null, deleted: false });
 
     export default {
         name: 'patronRoles',
@@ -103,14 +107,14 @@
         data() {
             return {
                 display_roles: {
-                    inherited: initial_roles,
-                    assigned: initial_roles
+                    inherited: initial_roles(),
+                    assigned: initial_roles()
                 },
                 patron_roles: {
-                    inherited: initial_roles,
-                    assigned: initial_roles
+                    inherited: initial_roles(),
+                    assigned: initial_roles()
                 },
-                submit_roles: initial_roles,
+                submit_roles: initial_roles(),
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
@@ -174,7 +178,7 @@
         },
 
         methods: {
-            defaultPermission(perms) {
+            defaultRoles(perms) {
                 if (perms.roles === null) {
                     perms.roles = [];
                 }
@@ -197,8 +201,8 @@
                         this.submit_roles.roles = set_roles;
                     } else {
                         let default_perms = {
-                            inherited: this.defaultPermission(response.data.inherited),
-                            assigned: this.defaultPermission(response.data.assigned)
+                            inherited: this.defaultRoles(response.data.inherited),
+                            assigned: this.defaultRoles(response.data.assigned)
                         };
                         this.patron_roles =  default_perms;
                         this.display_roles = cloneDeep(default_perms);
@@ -368,7 +372,12 @@
             _hasRoleChange(type) {
                 let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
                 let current_role = this.submit_roles.roles.find(user => user.principal === type);
-                return initial_role.role !== current_role.role;
+
+                if (initial_role === undefined || current_role === undefined) {
+                    return false;
+                } else {
+                    return initial_role.role !== current_role.role;
+                }
             },
 
             userIndex(principal) {
