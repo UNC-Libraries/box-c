@@ -18,9 +18,9 @@
             {{ displayRole(user.role) }}
             <span class="permission-icons">
                         <i class="far fa-times-circle" :class="{hidden: !hasAction.deleted}"></i>
-                        <i class="far fa-circle" :class="{hidden: !hasAction.embargo > 0}">
-                            <div :class="{'custom-icon-offset': mostRestrictive(user.principal) !== type}">e</div>
-                        </i>
+                        <div class="circle" :class="{hidden: !hasAction.embargo > 0}">
+                            <div>e</div>
+                        </div>
                         <i class="far fa-check-circle"
                            v-if="mostRestrictive(user.principal) === type"></i>
                     </span>
@@ -170,27 +170,26 @@
         margin-left: 8px;
     }
 
-    .fa-circle {
-        margin-left: 4px;
+    .circle {
+        border: 1px solid #0F1C3F;
+        border-radius: 50%;
+        height: .8em;
+        margin-left: 8px;
+        width: .8em;
+        text-align: center;
 
         div {
-            display: inline-block;
-            font-weight: bold;
-            margin-left: -10px;
-            position: relative;
-            top: -2px;
+            font-size: 10px;
+            margin-top: -4px;
         }
     }
 
     .permission-icons {
+        display: inline-flex;
         float: right;
         margin-right: 20px;
         text-align: right;
         width: 55px;
-    }
-
-    .custom-icon-offset {
-        margin-right: 4px;
     }
 
     .browse-tip, .arrow {

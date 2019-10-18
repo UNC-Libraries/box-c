@@ -287,7 +287,7 @@ describe('patronRoles.vue', () => {
        });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
-        expect(icons.at(0).classes()).toContain('fa-circle');
+        expect(icons.at(0).classes()).toContain('circle');
     });
 
     it("does not display an embargo icon if an item is not embargoed", () => {
@@ -295,7 +295,7 @@ describe('patronRoles.vue', () => {
             user:  { principal: 'authenticated', role: 'canViewOriginals' }
         });
 
-        icons = wrapper.findAll('i.fa-circle').filter(i => !i.classes('hidden'));
+        icons = wrapper.findAll('div.circle').filter(i => !i.classes('hidden'));
         expect(icons.length).toBe(0);
     });
 
