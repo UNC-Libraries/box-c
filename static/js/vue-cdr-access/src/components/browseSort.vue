@@ -40,5 +40,9 @@
 <style scoped lang="scss">
     .browse-sort {
         margin-top: 15px;
+
+        select {
+            height: 2.75em;
+        }
     }
 </style>

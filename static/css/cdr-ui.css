@@ -422,17 +422,13 @@ p.no-search-results {
 }
 
 /* Collection Page */
-.browse-header.columns {
-  margin: 0 auto 0 20px;
-  width: calc(100% - 65px);
-}
-
 .browse-header {
   background-color: #EBEBEB;
   color: darkblue;
   display: inline-flex !important;
-  padding-top: 25px;
-  width: calc(100% - 65px);
+  margin: 0;
+  padding-top: .75rem;
+  width: 100%;
 }
 .browse-header h2 {
   font-size: 36px;
@@ -478,9 +474,7 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  justify-content: flex-end;
   margin: 15px 25px 10px 25px;
-  padding-right: 45px;
   width: 100%;
 }
 .display-wrapper p, .display-wrapper a {
@@ -613,13 +607,16 @@ p.no-search-results {
 .full_record .contentarea {
   margin: 0;
 }
+.full_record h2 {
+  color: #3C4C5A;
+}
 
 #full_record_trail {
   border: 1px solid #E0E0E0;
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
-  margin: 0 auto 50px auto;
+  margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
   width: 100%;

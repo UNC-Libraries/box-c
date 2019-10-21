@@ -266,7 +266,6 @@ $light-gray: #E1E1E1;
 $border-style: 1px solid $light-gray;
 $box-shadow-color: rgba(211,211,211,0.5);
 $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box-shadow-color;
-$display-width: calc(100% - 65px);
 
 /**
 *
@@ -446,18 +445,13 @@ p.no-search-results {
 }
 
 /* Collection Page */
-
-.browse-header.columns {
-  margin: 0 auto 0 20px;
-  width: $display-width;
-}
-
 .browse-header {
   background-color: #EBEBEB;
   color: darkblue;
   display: inline-flex !important;
-  padding-top: 25px;
-  width: $display-width;
+  margin: 0;
+  padding-top: .75rem;
+  width: 100%;
 
   h2 {
     font-size: 36px;
@@ -512,9 +506,7 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  justify-content: flex-end;
   margin: 15px 25px 10px 25px;
-  padding-right: 45px;
   width: 100%;
 
   p, a {
@@ -670,6 +662,10 @@ p.no-search-results {
   .contentarea {
     margin: 0;
   }
+
+  h2 {
+    color: #3C4C5A;
+  }
 }
 
 #full_record_trail {
@@ -677,7 +673,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
-  margin: 0 auto 50px auto;
+  margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
   width: 100%;
