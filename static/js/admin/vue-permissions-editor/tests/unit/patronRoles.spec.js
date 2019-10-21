@@ -10,6 +10,17 @@ let response = {
     assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false, embargo: null }
 };
 
+let none_response = {
+    inherited: { roles: null, deleted: false, embargo: null },
+    assigned: { roles: [
+            { principal: 'everyone', role: 'none' },
+            { principal: 'authenticated', role: 'none' }
+        ],
+        deleted: false,
+        embargo: null
+    }
+};
+
 let empty_response = {
     inherited: { roles: [], deleted: false, embargo: null },
     assigned: { roles: [], deleted: false, embargo: null }
@@ -41,7 +52,7 @@ describe('patronRoles.vue', () => {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
                 changesCheck: false,
-                containerType: 'Collection',
+                containerType: 'Folder',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
             },
             methods: {setRoles}
@@ -87,11 +98,55 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canAccess' }]);
-          //  expect(wrapper.vm.patron_roles.inherited.roles).toEqual(empty_defaults);
-          //  expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canAccess' }]);
+            expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
+            expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
+            expect(wrapper.vm.submit_roles.roles).toEqual(empty_defaults);
             done();
         });
+    });
+
+    it("does not set default inherited display roles for collections", (done) => {
+        wrapper.setProps({
+            containerType: 'Collection'
+        });
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(empty_response)
+        });
+
+       moxios.wait(() => {
+           expect(wrapper.vm.display_roles.inherited.roles).toEqual([]);
+           expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canAccess' }]);
+           done();
+       })
+    });
+
+    it("sets display to 'Staff' if public and authenticated principals both have the 'none' role", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(none_response)
+        });
+
+        moxios.wait(() => {
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]);
+            done();
+        })
+    });
+
+    it("set form user type to 'staff' if public and authenticated principals both have the 'none' role", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(none_response)
+        });
+
+        moxios.wait(() => {
+            expect(wrapper.vm.user_type).toEqual('staff');
+            done();
+        })
     });
 
     it("sets form values for assigned roles", (done) => {
@@ -178,7 +233,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
 
             wrapper.findAll('#authenticated option').at(1).setSelected();
 
@@ -205,7 +260,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
             expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(same_roles.assigned.roles);
             done();
         });

@@ -1,7 +1,7 @@
 <template>
     <div id="set-embargo">
         <div class="embargo-details">
-            <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }}</p>
+            <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
             <p v-else>No embargo set for this object</p>
 
             <h3>Set Embargo</h3>
