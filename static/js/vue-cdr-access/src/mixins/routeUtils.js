@@ -19,7 +19,7 @@ export default {
                     rows: this.rows_per_page,
                     start: 0,
                     sort: 'title,normal',
-                    browse_type: localStorage.getItem('dcr-browse-type') || 'gallery-display'
+                    browse_type: 'gallery-display'
                 };
 
             let route_params = Object.assign(defaults, this.$route.query);
