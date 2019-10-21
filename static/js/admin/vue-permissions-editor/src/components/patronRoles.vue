@@ -12,20 +12,20 @@
             </tr>
             </thead>
             <tbody>
-            <template v-if="hasParentRole" v-for="user in display_roles.inherited.roles">
-                <patron-display-row
-                        :display-roles="display_roles"
-                        :possible-roles="possibleRoles"
-                        type="inherited"
-                        :user="user"></patron-display-row>
-            </template>
-            <template v-if="hasObjectRole" v-for="user in display_roles.assigned.roles">
-                <patron-display-row
-                        :display-roles="display_roles"
-                        :possible-roles="possibleRoles"
-                        type="assigned"
-                        :user="user"></patron-display-row>
-            </template>
+                <template v-if="hasParentRole" v-for="user in display_roles.inherited.roles">
+                    <patron-display-row
+                            :display-roles="display_roles"
+                            :possible-roles="possibleRoles"
+                            type="inherited"
+                            :user="user"></patron-display-row>
+                </template>
+                <template v-if="hasObjectRole" v-for="user in display_roles.assigned.roles">
+                    <patron-display-row
+                            :display-roles="display_roles"
+                            :possible-roles="possibleRoles"
+                            type="assigned"
+                            :user="user"></patron-display-row>
+                </template>
             </tbody>
         </table>
         <p v-else>There are no current permissions assigned</p>
@@ -134,7 +134,6 @@
                     { text: 'Can Discover', role: 'canDiscover' },
                     { text: 'Metadata Only', role: 'canViewMetadata' },
                     { text: 'Access Copies', role: 'canViewAccessCopies' },
-                    { text: 'Can View Originals', role: 'canViewOriginals' },
                     { text: `All of this ${container}`, role: 'canAccess' }
                 ]
             },
@@ -159,7 +158,7 @@
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === '' || this.display_roles.assigned.embargo !== null;
+                return this.user_type === 'staff' || this.user_type === '';
             },
 
             /**
@@ -195,7 +194,7 @@
                             { principal: 'authenticated', role: 'canAccess' }
                         ];
 
-                        this.display_roles.inherited.roles = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
+                        this.display_roles.inherited.roles = this._defaultInherited();
                         this.display_roles.assigned.roles = set_roles;
                         this.patron_roles.assigned.roles = set_roles;
                         this.submit_roles.roles = set_roles;
@@ -246,6 +245,22 @@
                 });
             },
 
+
+            /**
+             * Show inherited roles for object other than collections
+             * @returns {Array}
+             * @private
+             */
+            _defaultInherited() {
+                let default_inherited;
+                if (this.containerType.toLowerCase() !== 'collection') {
+                    default_inherited = [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]
+                } else {
+                    default_inherited = [];
+                }
+                return default_inherited;
+            },
+
             /**
              * Merge display if everyone and authenticated roles are the same
              * @param users
@@ -253,7 +268,11 @@
              */
             displayRolesMerge(users) {
                 if (users.length === 2 && users[0].role === users[1].role) {
-                    return [{ principal: 'everyone', role: users[0].role }];
+                    if (users[0].role === 'none') {
+                        return [{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }];
+                    } else {
+                        return [{ principal: 'patron', role: users[0].role }];
+                    }
                 }
 
                 return users;
@@ -268,7 +287,7 @@
                 let user_index = this.userIndex(principal);
                 let role_type = 'none';
 
-                if (this.userIndex('Staff') !== -1) {
+                if (this.userIndex('Staff') !== -1 || this._allRolesNone()) {
                     this.user_type = 'staff';
                 } else if (user_index !== -1) {
                     this.user_type = 'patron';
@@ -276,6 +295,18 @@
                 }
 
                 return role_type;
+            },
+
+            /**
+             * Determines if all assigned roles are set to 'none'
+             * If so staff permissions radio button should be checked
+             * @returns {boolean}
+             */
+            _allRolesNone() {
+                let roles = this.display_roles.assigned.roles.map((r) => r.role);
+                let dedupe = [...new Set(roles)];
+
+                return dedupe.length === 1 && dedupe[0] === 'none';
             },
 
             /**
@@ -401,9 +432,7 @@
             setEmbargo(embargo_info) {
                 if (embargo_info !== null) {
                     this.setRoleHistory();
-                    this.everyone_role = 'canViewMetadata';
-                    this.authenticated_role = 'canViewMetadata';
-                    this.display_roles.assigned.roles = [{principal: 'everyone', role: 'canViewMetadata'}];
+                    this.display_roles.assigned.roles = [{principal: 'patron', role: 'canViewMetadata'}];
                 } else {
                     this.loadPreviousRole();
                     this.dedupeDisplayRoles();
@@ -458,7 +487,7 @@
             li {
                 ul {
                     border-top: none;
-                    margin: 10px 15px;
+                    margin: 10px 27px;
                     text-align: left;
 
                     li {

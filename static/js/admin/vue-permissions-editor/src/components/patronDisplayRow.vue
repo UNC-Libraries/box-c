@@ -1,6 +1,6 @@
 <template>
-    <tr>
-        <td>From {{ type }}</td>
+    <tr :class="{onyen: this.user.principal === 'everyone'}">
+        <td>{{ fromText }}</td>
         <td class="access-display">
             {{ formattedPrincipal }}
             <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
@@ -42,18 +42,32 @@
         },
 
         computed: {
-          hasAction() {
-              return this.displayRoles[this.type];
-          },
+            hasAction() {
+                return this.displayRoles[this.type];
+            },
 
             formattedPrincipal() {
-              return capitalize(this.user.principal);
+                return capitalize(this.user.principal);
+            },
+
+            authenticatedUser() {
+                return this.user.principal === 'authenticated'
+            },
+
+            fromText() {
+                if (this.authenticatedUser) {
+                    return '';
+                } else if (this.type === 'assigned') {
+                    return 'From object';
+                } else {
+                    return 'From Parent';
+                }
             }
         },
         
         methods: {
             nonPublicRole(text) {
-                return text !== 'everyone';
+                return text !== 'everyone' && text !== 'patron';
             },
 
             currentUserRoles(user = 'Staff') {
@@ -141,6 +155,21 @@
 </script>
 
 <style scoped lang="scss">
+    #modal-permissions-editor {
+        .border {
+            tr.onyen {
+                td {
+                    border-bottom: none;
+                }
+            }
+
+            td {
+                height: auto;
+                padding: 7px 0 7px 15px;
+            }
+        }
+    }
+
     td:last-child {
         min-width: 225px;
     }
@@ -188,8 +217,8 @@
         display: inline-flex;
         float: right;
         margin-right: 20px;
+        padding-top: 2px;
         text-align: right;
-        width: 55px;
     }
 
     .browse-tip, .arrow {
@@ -201,7 +230,7 @@
         border-right: 5px solid transparent;
         border-bottom: 10px solid darkslategray;
         height: 0;
-        margin: 2px 2px 0 48px;
+        margin: -20px 2px 0 52px;
         width: 0;
     }
 
@@ -218,7 +247,7 @@
             border-radius: 5px;
             color: black;
             font-weight: normal;
-            margin: 10px 0 0 -65px;
+            margin: -10px 0 0 -65px;
             padding: 10px;
             text-align: left;
             width: 240px;

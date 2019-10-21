@@ -17,7 +17,7 @@ describe('patronRoles.vue', () => {
                 displayRoles: {
                     inherited: { roles: [
                             { principal: 'everyone', role: 'canViewMetadata' },
-                            { principal: 'authenticated', role: 'canViewOriginals' }
+                            { principal: 'authenticated', role: 'canViewAccessCopies' }
                         ],
                         embargo: null,
                         deleted: false
@@ -25,7 +25,7 @@ describe('patronRoles.vue', () => {
                     assigned: {
                         roles: [
                             { principal: 'everyone', role: 'canAccess' },
-                            { principal: 'authenticated', role: 'canViewOriginals' }
+                            { principal: 'authenticated', role: 'canViewAccessCopies' }
                         ],
                         embargo: null,
                         deleted: false
@@ -37,7 +37,6 @@ describe('patronRoles.vue', () => {
                     { text: 'Can Discover', role: 'canDiscover' },
                     { text: 'Metadata Only', role: 'canViewMetadata' },
                     { text: 'Access Copies', role: 'canViewAccessCopies' },
-                    { text: 'Can View Originals', role: 'canViewOriginals' },
                     { text: 'All of this folder', role: 'canAccess' }
                 ],
                 type: 'assigned',
@@ -52,19 +51,19 @@ describe('patronRoles.vue', () => {
     });
 
     it("displays public assigned patron roles", () => {
-        expect(permission_type.text()).toBe('From assigned');
+        expect(permission_type.text()).toBe('From object');
         expect(public_principal.text()).toMatch(/^Everyone/);
         expect(public_role.text()).toMatch(/^All.of.this.folder/);
     });
 
-    it("displays onyen assigned patron roles", () => {
+    it("displays authenticated assigned patron roles", () => {
         wrapper.setProps({
-           user:  { principal: 'authenticated', role: 'canViewOriginals' }
+           user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
-        expect(permission_type.text()).toBe('From assigned');
+        expect(permission_type.text()).toBe('');
         expect(public_principal.text()).toMatch(/^Authenticated/);
-        expect(public_role.text()).toMatch(/^Can.View.Originals/);
+        expect(public_role.text()).toMatch(/^Access.Copies/);
     });
 
     it("displays staff only assigned patron roles", () => {
@@ -84,7 +83,7 @@ describe('patronRoles.vue', () => {
             user: staff_user
         });
 
-        expect(permission_type.text()).toBe('From assigned');
+        expect(permission_type.text()).toBe('From object');
         expect(public_principal.text()).toMatch(/^Staff/);
         expect(public_role.text()).toMatch(dash_regex);
     });
@@ -95,20 +94,20 @@ describe('patronRoles.vue', () => {
             user: { principal: 'everyone', role: 'canViewMetadata' }
         });
 
-        expect(permission_type.text()).toBe('From inherited');
+        expect(permission_type.text()).toBe('From Parent');
         expect(public_principal.text()).toMatch(/^Everyone/);
         expect(public_role.text()).toMatch(/^Metadata.Only/);
     });
 
-    it("displays onyen inherited patron roles", () => {
+    it("displays authenticated inherited patron roles", () => {
         wrapper.setProps({
             type: 'inherited',
-            user:  { principal: 'authenticated', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
-        expect(permission_type.text()).toBe('From inherited');
+        expect(permission_type.text()).toBe('');
         expect(public_principal.text()).toMatch(/^Authenticated/);
-        expect(public_role.text()).toMatch(/^Can.View.Originals/);
+        expect(public_role.text()).toMatch(/^Access.Copies/);
     });
 
     it("displays staff only inherited patron roles", () => {
@@ -129,7 +128,7 @@ describe('patronRoles.vue', () => {
             user: staff_user
         });
 
-        expect(permission_type.text()).toBe('From inherited');
+        expect(permission_type.text()).toBe('From Parent');
         expect(public_principal.text()).toMatch(/^Staff/);
         expect(public_role.text()).toMatch(dash_regex);
     });
@@ -201,7 +200,7 @@ describe('patronRoles.vue', () => {
                 assigned: {
                     roles: [
                         { principal: 'everyone', role: 'canAccess' },
-                        { principal: 'authenticated', role: 'canViewOriginals' }
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
                     ],
                     embargo: null,
                     deleted: true
@@ -230,7 +229,7 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: { roles: [
                         { principal: 'everyone', role: 'none' },
-                        { principal: 'authenticated', role: 'canViewOriginals' }
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
                     ],
                     embargo: null,
                     deleted: false
@@ -257,7 +256,7 @@ describe('patronRoles.vue', () => {
         // Inherited permissions should not have a check icon
         wrapper.setProps({
             type: 'inherited',
-            user:  { principal: 'authenticated', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
         icons = wrapper.findAll('i.fa-check-circle').filter(i => !i.classes('hidden'));
@@ -277,22 +276,22 @@ describe('patronRoles.vue', () => {
                assigned: {
                    roles: [
                        { principal: 'everyone', role: 'canAccess' },
-                       { principal: 'authenticated', role: 'canViewOriginals' }
+                       { principal: 'authenticated', role: 'canViewAccessCopies' }
                    ],
                    embargo: getMilliseconds(new Date()),
                    deleted: false
                }
            },
-           user:  { principal: 'authenticated', role: 'canViewOriginals' }
+           user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
        });
 
-        icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
+        icons = wrapper.findAll('div.circle').filter(i => !i.classes('hidden'));
         expect(icons.at(0).classes()).toContain('circle');
     });
 
     it("does not display an embargo icon if an item is not embargoed", () => {
         wrapper.setProps({
-            user:  { principal: 'authenticated', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
         icons = wrapper.findAll('div.circle').filter(i => !i.classes('hidden'));
@@ -312,13 +311,13 @@ describe('patronRoles.vue', () => {
                 assigned: {
                     roles: [
                         { principal: 'everyone', role: 'canAccess' },
-                        { principal: 'authenticated', role: 'canViewOriginals' }
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
                     ],
                     embargo: null,
                     deleted: true
                 }
             },
-            user:  { principal: 'authenticated', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
@@ -327,7 +326,7 @@ describe('patronRoles.vue', () => {
 
     it("does not display a deleted icon if an item is not marked for deletion", () => {
         wrapper.setProps({
-            user:  { principal: 'authenticated', role: 'canViewOriginals' }
+            user:  { principal: 'authenticated', role: 'canViewAccessCopies' }
         });
 
         icons = wrapper.findAll('i.fa-times-circle').filter(i => !i.classes('hidden'));
