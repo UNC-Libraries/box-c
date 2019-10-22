@@ -134,7 +134,7 @@
                     { text: 'Can Discover', role: 'canDiscover' },
                     { text: 'Metadata Only', role: 'canViewMetadata' },
                     { text: 'Access Copies', role: 'canViewAccessCopies' },
-                    { text: `All of this ${container}`, role: 'canAccess' }
+                    { text: `All of this ${container}`, role: 'canViewOriginals' }
                 ]
             },
 

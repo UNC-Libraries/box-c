@@ -24,7 +24,7 @@ describe('patronRoles.vue', () => {
                     },
                     assigned: {
                         roles: [
-                            { principal: 'everyone', role: 'canAccess' },
+                            { principal: 'everyone', role: 'canViewOriginals' },
                             { principal: 'authenticated', role: 'canViewAccessCopies' }
                         ],
                         embargo: null,
@@ -37,10 +37,10 @@ describe('patronRoles.vue', () => {
                     { text: 'Can Discover', role: 'canDiscover' },
                     { text: 'Metadata Only', role: 'canViewMetadata' },
                     { text: 'Access Copies', role: 'canViewAccessCopies' },
-                    { text: 'All of this folder', role: 'canAccess' }
+                    { text: 'All of this folder', role: 'canViewOriginals' }
                 ],
                 type: 'assigned',
-                user: { principal: 'everyone', role: 'canAccess' }
+                user: { principal: 'everyone', role: 'canViewOriginals' }
             }
         });
 
@@ -140,7 +140,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("does not display a 'more info' icon for 'authenticated' users", () => {
-        wrapper.setProps({ user: { principal: 'authenticated', role: 'canAccess' } });
+        wrapper.setProps({ user: { principal: 'authenticated', role: 'canViewOriginals' } });
         icons = wrapper.findAll('i.fa-question-circle').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(0);
     });
@@ -199,7 +199,7 @@ describe('patronRoles.vue', () => {
                 },
                 assigned: {
                     roles: [
-                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'everyone', role: 'canViewOriginals' },
                         { principal: 'authenticated', role: 'canViewAccessCopies' }
                     ],
                     embargo: null,
@@ -207,7 +207,7 @@ describe('patronRoles.vue', () => {
                 }
             },
             type: 'assigned',
-            user:  { principal: 'everyone', role: 'canAccess' }
+            user:  { principal: 'everyone', role: 'canViewOriginals' }
         });
 
         // Assigned permissions should not have a check icon
@@ -236,7 +236,7 @@ describe('patronRoles.vue', () => {
                 },
                 assigned: {
                     roles: [
-                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'everyone', role: 'canViewOriginals' },
                         { principal: 'authenticated', role: 'none' }
                     ],
                     embargo: null,
@@ -275,7 +275,7 @@ describe('patronRoles.vue', () => {
                },
                assigned: {
                    roles: [
-                       { principal: 'everyone', role: 'canAccess' },
+                       { principal: 'everyone', role: 'canViewOriginals' },
                        { principal: 'authenticated', role: 'canViewAccessCopies' }
                    ],
                    embargo: getMilliseconds(new Date()),
@@ -310,7 +310,7 @@ describe('patronRoles.vue', () => {
                 },
                 assigned: {
                     roles: [
-                        { principal: 'everyone', role: 'canAccess' },
+                        { principal: 'everyone', role: 'canViewOriginals' },
                         { principal: 'authenticated', role: 'canViewAccessCopies' }
                     ],
                     embargo: null,
