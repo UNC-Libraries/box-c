@@ -46,7 +46,7 @@
         margin-top: 15px;
 
         select {
-            height: 2.75em;
+            height: 2.65em;
         }
     }
 </style>

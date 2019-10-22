@@ -47,7 +47,16 @@
 					</div>
 					<div class="column is-8">
 						<h2><c:out value="${briefObject.title}" /></h2>
-						<p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+						<c:if test="${not empty briefObject.dateAdded}">
+							<p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
+						</c:if>
+						<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
+							<p>
+								<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+								<strong>Collection:</strong>
+								<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+							</p>
+						</c:if>
 						<p><strong>Finding Aid: </strong>
 							<c:choose>
 								<c:when test="${empty briefObject.title}">
@@ -66,13 +75,6 @@
 										</c:forEach>
 									</li>
 								</c:if>
-								<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
-									<li>
-										<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
-										<span class="has-text-weight-bold">Collection:</span>
-										<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
-									</li>
-								</c:if>
 							</ul>
 
 							<ul class="pipe_list smaller">
@@ -87,7 +89,6 @@
 										</c:otherwise>
 									</c:choose>
 								</li>
-								<c:if test="${not empty briefObject.dateAdded}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li></c:if>
 								<c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
 								<c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
 							</ul>

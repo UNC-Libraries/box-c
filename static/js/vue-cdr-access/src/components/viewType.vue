@@ -1,11 +1,11 @@
 <template>
     <div id="browse-display-type" class="display-wrapper">
         <p>How would you like to browse?</p>
-        <a href="#" class="display-note-btn">?<div class="arrow"></div>
+        <div class="display-note-btn">?<div class="arrow"></div>
             <span class="browse-tip">
                 <p><strong>Gallery</strong> view shows you all the files only, without the folders that store the files.</p>
                 <p><strong>Structured</strong> view allows you to navigate one level at a time.</p>
-            </span></a>
+            </span></div>
         <div id="browse-btns" @click="setMode">
             <button id="gallery-display" class="button is-light" :class="{'is-selected': isGallery}">Gallery</button>
             <button id="structure-display" class="button is-light" :class="{'is-selected': !isGallery}">Structured</button>

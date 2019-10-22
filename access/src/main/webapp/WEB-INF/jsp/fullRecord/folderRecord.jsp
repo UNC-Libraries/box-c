@@ -45,8 +45,10 @@
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
             <h2><i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
+            <c:if test="${not empty briefObject.dateAdded}">
+                <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
+            </c:if>
             <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollection}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
-            <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
             <p><strong>Finding Aid: </strong>
                 <c:choose>
                     <c:when test="${empty briefObject.title}">
