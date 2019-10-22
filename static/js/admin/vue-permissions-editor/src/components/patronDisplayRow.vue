@@ -5,7 +5,7 @@
             {{ formattedPrincipal }}
             <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
-                <div class="arrow"></div>
+                <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
                 <span class="browse-tip">What this means</span>
             </a>
 
@@ -150,6 +150,10 @@
                     return undefined;
                 }
             },
+
+            alignTooltip(text) {
+                return /patron/.test(text.toLowerCase());
+            }
         }
     }
 </script>
@@ -166,6 +170,7 @@
             td {
                 height: auto;
                 padding: 7px 0 7px 15px;
+                position: relative;
             }
         }
     }
@@ -230,9 +235,13 @@
         border-right: 5px solid transparent;
         border-bottom: 10px solid darkslategray;
         height: 0;
-        margin: -20px 2px 0 52px;
+        left: 88px;
+        margin: inherit;
+        top: 26px;
         width: 0;
     }
+
+
 
     a.display-note-btn:hover {
         .arrow, .browse-tip {
@@ -241,15 +250,20 @@
             z-index: 10009;
         }
 
+        .arrow-offset {
+            left: 68px;
+        }
+
         .browse-tip {
             background-color: white;
             border: 1px solid darkslategray;
             border-radius: 5px;
             color: black;
             font-weight: normal;
-            margin: -10px 0 0 -65px;
+            margin: inherit;
             padding: 10px;
             text-align: left;
+            top: 35px;
             width: 240px;
         }
     }
