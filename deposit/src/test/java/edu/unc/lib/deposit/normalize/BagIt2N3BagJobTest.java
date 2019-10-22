@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,12 +79,11 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
     @Test
     public void testConversion() throws Exception {
-        String sourcePath = "src/test/resources/paths/valid-bag";
-        status.put(DepositField.sourceUri.name(), sourcePath);
+        URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
         status.put(DepositField.fileName.name(), "Test File");
         status.put(DepositField.accessionNumber.name(), "123456");
         status.put(DepositField.mediaId.name(), "789");
-        String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
 
         job.run();
 
@@ -115,17 +115,17 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         // Verify that all manifests were added.
         verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
-        List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
-                absoluteSourcePath + "/manifest-md5.txt");
+        List<String> capturedFilePaths = Arrays.asList(sourceUri.toString() + "bagit.txt",
+                sourceUri.toString() + "manifest-md5.txt");
         assertTrue("Must contain all of the expected manifest files",
                 filePathCaptor.getAllValues().containsAll(capturedFilePaths));
 
         // Verify that files and their properties were added
         assertFileAdded(children.get("lorem.txt"), "fa5c89f3c88b81bfd5e821b0316569af",
-                absoluteSourcePath + "/data/test/lorem.txt");
+                sourceUri.toString() + "data/test/lorem.txt");
 
         assertFileAdded(children.get("ipsum.txt"), "e78f5438b48b39bcbdea61b73679449d",
-                absoluteSourcePath + "/data/test/ipsum.txt");
+                sourceUri.toString() + "data/test/ipsum.txt");
 
         // Verify that the description file for the bag exists
         File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
@@ -139,7 +139,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         }
 
         assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
-        assertTrue("Cleanup of bag not set", cleanupSet.contains(absoluteSourcePath + "/"));
+        assertTrue("Cleanup of bag not set", cleanupSet.contains(sourceUri.toString()));
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
     }
@@ -154,7 +154,8 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
     @Test(expected = JobFailedException.class)
     public void testInvalid() throws Exception {
-        status.put(DepositField.sourceUri.name(), "src/test/resources/paths/invalid-bag");
+        URI sourceUri = Paths.get("src/test/resources/paths/invalid-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
 
         job.run();
     }

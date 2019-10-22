@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,7 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
 
     private Map<PID, List<IngestSource>> pidToSources;
     private Map<String, IngestSource> idToSource;
+    private List<IngestSource> ingestSources;
 
     private String configPath;
     private String mappingPath;
@@ -65,7 +67,7 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
     private void deserializeConfig() throws IOException {
         InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper mapper = new ObjectMapper();
-        List<IngestSource> ingestSources = mapper.readValue(configStream,
+        ingestSources = mapper.readValue(configStream,
                 new TypeReference<List<IngestSource>>() {});
         idToSource = ingestSources.stream()
                 .collect(Collectors.toMap(IngestSource::getId, sl -> sl));
@@ -146,6 +148,16 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
     @Override
     public IngestSource getIngestSourceById(String id) {
         return idToSource.get(id);
+    }
+
+    @Override
+    public IngestSource getIngestSourceForUri(URI uri) {
+        for (IngestSource source: ingestSources) {
+            if (source.isValidUri(uri)) {
+                return source;
+            }
+        }
+        throw new UnknownIngestSourceException("No ingest sources match URI " + uri);
     }
 
     public void setConfigPath(String configPath) {

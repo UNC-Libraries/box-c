@@ -124,14 +124,14 @@ public class FilesystemIngestSource implements IngestSource {
     }
 
     private boolean isValidPath(Path path) {
-     // Check that the incoming path is contained by this base for this source
+        // Check that the incoming path is contained by this base for this source
         if (!path.startsWith(basePath)) {
             return false;
         }
 
         String baseString = basePath.toAbsolutePath().toString();
         for (String pattern : patterns) {
-            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + baseString + "/" + pattern);
+            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + baseString + "/" + pattern + "*");
             if (matcher.matches(path)) {
                 return path.toFile().exists();
             }

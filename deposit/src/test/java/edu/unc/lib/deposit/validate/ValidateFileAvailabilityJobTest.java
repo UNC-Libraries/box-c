@@ -42,11 +42,13 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.ingest.IngestSource;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.services.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
@@ -65,7 +67,9 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     private ValidateFileAvailabilityJob job;
 
     @Mock
-    private StagingPolicyManager policyManager;
+    private IngestSourceManager sourceManager;
+    @Mock
+    private IngestSource ingestSource;
 
     @Before
     public void init() throws Exception {
@@ -77,7 +81,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
-        job.setStagingPolicyManager(policyManager);
+        job.setIngestSourceManager(sourceManager);
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
@@ -86,8 +90,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
         when(depositStatusFactory.getState(anyString()))
                 .thenReturn(DepositState.running);
-        when(policyManager.isValidStagingLocation(any(URI.class)))
-                .thenReturn(true);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         depositPid = job.getDepositPID();
 
@@ -144,8 +147,10 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
+        when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                .thenThrow(new UnknownIngestSourceException("missing"));
+
         addFileObject(depBag, "missing.pdf");
-        addFileObject(depBag, "text.txt");
 
         job.closeModel();
 
@@ -173,8 +178,8 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     public void badStagingLocation() {
         exception.expect(JobFailedException.class);
         exception.expectMessage("Deposit references invalid files");
-        when(policyManager.isValidStagingLocation(any(URI.class)))
-            .thenReturn(false);
+        when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                .thenThrow(new UnknownIngestSourceException("nope"));
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
         addFileObject(depBag, "some/random/location");

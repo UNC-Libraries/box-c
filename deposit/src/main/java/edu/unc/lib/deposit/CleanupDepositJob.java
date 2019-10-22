@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.deposit;
 
-import static edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy.DELETE_INGESTED_FILES;
-import static edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -29,16 +26,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.RDFNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
-import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.persist.services.ingest.IngestSource;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
@@ -54,7 +50,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
     private static final Logger LOG = LoggerFactory
             .getLogger(CleanupDepositJob.class);
 
-    private StagingPolicyManager stagingPolicyManager;
+    private IngestSourceManager sourceManager;
 
     private int statusKeysExpireSeconds;
 
@@ -124,15 +120,9 @@ public class CleanupDepositJob extends AbstractDepositJob {
             while (ni.hasNext()) {
                 RDFNode n = ni.nextNode();
                 URI stagingUri = URI.create(n.asLiteral().getString());
+                IngestSource source = sourceManager.getIngestSourceForUri(stagingUri);
 
-                CleanupPolicy cleanupPolicy = stagingPolicyManager.getCleanupPolicy(stagingUri);
-                switch (cleanupPolicy) {
-                case DO_NOTHING:
-                    break;
-                case DELETE_INGESTED_FILES:
-                    deleteFile(stagingUri);
-                    break;
-                case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
+                if (!source.isReadOnly()) {
                     File parent = deleteFile(stagingUri);
                     try {
                         if (parent != null) {
@@ -143,14 +133,12 @@ public class CleanupDepositJob extends AbstractDepositJob {
                         LOG.debug("Parent directory {} not cleaned up because it is not empty",
                                 parent.getAbsolutePath());
                     } catch (NoSuchFileException e) {
-                        LOG.info("Unable to cleanup parent directory {} because it does not exist",
+                        LOG.debug("Unable to cleanup parent directory {} because it does not exist",
                                 parent.getAbsolutePath());
                     } catch (IOException e) {
                         failJob(e, "Failed to delete staging directory: {0}",
                                 parent.getAbsolutePath());
                     }
-                default:
-                    break;
                 }
             }
         } finally {
@@ -168,10 +156,9 @@ public class CleanupDepositJob extends AbstractDepositJob {
             while (it.hasNext()) {
                 RDFNode n = it.nextNode();
                 URI cleanupUri = URI.create(n.asLiteral().getString());
+                IngestSource source = sourceManager.getIngestSourceForUri(cleanupUri);
 
-                CleanupPolicy cleanupPolicy = stagingPolicyManager.getCleanupPolicy(cleanupUri);
-                if (cleanupPolicy.equals(DELETE_INGESTED_FILES)
-                        || cleanupPolicy.equals(DELETE_INGESTED_FILES_EMPTY_FOLDERS)) {
+                if (!source.isReadOnly()) {
                     cleanupPaths.add(cleanupUri.getPath());
                 }
             }
@@ -204,11 +191,10 @@ public class CleanupDepositJob extends AbstractDepositJob {
         this.statusKeysExpireSeconds = seconds;
     }
 
-    public StagingPolicyManager getStagingPolicyManager() {
-        return stagingPolicyManager;
-    }
-
-    public void setStagingPolicyManager(StagingPolicyManager stagingManager) {
-        this.stagingPolicyManager = stagingManager;
+    /**
+     * @param sourceManager the sourceManager to set
+     */
+    public void setIngestSourceManager(IngestSourceManager sourceManager) {
+        this.sourceManager = sourceManager;
     }
 }

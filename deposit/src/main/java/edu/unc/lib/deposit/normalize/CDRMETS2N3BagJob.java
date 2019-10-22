@@ -16,6 +16,10 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
 import org.jdom2.Document;
@@ -27,6 +31,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -57,12 +62,16 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         // manifest updated to have record of all PIDs
         saveMETS(mets);
 
+        Map<String, String> status = getDepositStatus();
+        URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
+        Path sourceDir = Paths.get(sourceUri).getParent();
+
         Model model = getWritableModel();
         CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
         LOG.info("Extractor initialized");
         extractor.addArrangement(model);
         LOG.info("Extractor arrangement added");
-        extractor.helper.addFileAssociations(model, true);
+        extractor.helper.addFileAssociations(model, sourceDir);
         LOG.info("Extractor file associations added");
         extractor.addAccessControls(model);
         LOG.info("Extractor access controls added");

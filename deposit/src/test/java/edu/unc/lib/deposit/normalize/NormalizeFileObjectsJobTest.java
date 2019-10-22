@@ -29,6 +29,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -248,7 +250,8 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
         childResc.addProperty(CdrDeposit.label, FILENAME);
-        childResc.addProperty(CdrDeposit.stagingLocation, "/path/" + FILENAME);
+        URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "path", FILENAME).toUri();
+        childResc.addProperty(CdrDeposit.stagingLocation, stagingUri.toString());
 
         parent.add(childResc);
 

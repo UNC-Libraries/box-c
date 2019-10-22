@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import java.net.URI;
 import java.util.List;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -52,4 +53,12 @@ public interface IngestSourceManager {
      */
     IngestSource getIngestSourceById(String id);
 
+    /**
+     * Return the ingest source that contains the provided URI
+     *
+     * @param uri
+     * @return Ingest source containing the URI
+     * @throws UnknownIngestSourceException thrown if no ingest source matches the given URI
+     */
+    IngestSource getIngestSourceForUri(URI uri);
 }

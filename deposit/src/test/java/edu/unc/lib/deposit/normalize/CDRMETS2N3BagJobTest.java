@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,12 +79,12 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
     private Map<String, String> status;
 
     private File data;
+    private String stagingBaseUri;
 
 
     @Before
     public void setup() throws Exception {
         status = new HashMap<>();
-        status.put(DepositField.fileName.name(), "src/test/resources/mets.xml");
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
         when(metsSipSchema.newValidator()).thenReturn(metsValidator);
@@ -92,6 +93,10 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 
         data = new File(depositDir, "data");
         data.mkdir();
+
+        Path metsPath = data.toPath().resolve("mets.xml");
+        stagingBaseUri = data.toPath().toUri().toString();
+        status.put(DepositField.sourceUri.name(), metsPath.toUri().toString());
 
         job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
         setField(job, "dataset", dataset);
@@ -167,8 +172,8 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Bag childBag = model.getBag(child);
         NodeIterator workIt = childBag.iterator();
         Resource workChild = (Resource) workIt.next();
-        assertTrue(workChild.hasProperty(CdrDeposit.stagingLocation,
-                "data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+        assertEquals(stagingBaseUri + "_c19064b2-983f-4b55-90f5-8d4b890055e4",
+                workChild.getProperty(CdrDeposit.stagingLocation).getString());
         assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
         assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
         assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
@@ -188,7 +193,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         assertTrue(res.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
         assertTrue(res.hasProperty(CdrDeposit.mimetype, "application/pdf"));
         assertTrue(res.hasProperty(CdrDeposit.stagingLocation,
-                "data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+                stagingBaseUri + "_c19064b2-983f-4b55-90f5-8d4b890055e4"));
         assertTrue(res.hasProperty(CdrDeposit.size, "43129"));
     }
 

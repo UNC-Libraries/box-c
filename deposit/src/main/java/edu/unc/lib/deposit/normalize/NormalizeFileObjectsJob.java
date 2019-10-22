@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,8 +93,8 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
     private void wrapWithWork(Resource parent, Resource fileResc) {
         Model model = parent.getModel();
 
-        String stagingPath = getPropertyValue(fileResc, stagingLocation);
-        String filename = stagingPath.substring(stagingPath.lastIndexOf("/") + 1);
+        URI stagingUri = URI.create(getPropertyValue(fileResc, stagingLocation));
+        String filename = new File(stagingUri).getName();
 
         PID filePid = PIDs.get(fileResc.getURI());
 

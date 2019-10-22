@@ -13,7 +13,7 @@
             init-method="init">
         <property name="contentPathFactory" ref="contentPathFactory" />
         <property name="configPath" value="${ingestSources.path}" />
-        <property name="configPath" value="${ingestSourceMappings.path}" />
+        <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
     
     <!-- Deposit Handlers -->

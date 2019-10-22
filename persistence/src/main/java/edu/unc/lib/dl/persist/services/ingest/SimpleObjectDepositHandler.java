@@ -44,7 +44,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
         PID depositPID = pidMinter.mintDepositRecordPid();
 
         File created = writeStreamToDataDir(depositPID, deposit);
-        deposit.setSourceUri(created.toURI());
+        deposit.setSourceUri(created.toPath().normalize().toUri());
 
         Map<String, String> options = new HashMap<>();
         options.put(DepositField.excludeDepositRecord.name(), "true");

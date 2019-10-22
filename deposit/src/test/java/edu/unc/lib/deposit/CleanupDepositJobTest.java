@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -34,23 +35,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.deposit.staging.StagingException;
-import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
-import edu.unc.lib.deposit.staging.StagingPolicyManager;
+import edu.unc.lib.dl.persist.services.ingest.IngestSource;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.services.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -64,7 +64,9 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
     private Map<String, String> depositStatus;
 
     @Mock
-    private StagingPolicyManager stagingManager;
+    private IngestSourceManager sourceManager;
+    @Mock
+    private IngestSource ingestSource;
 
     private CleanupDepositJob job;
 
@@ -90,7 +92,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
         // Initialize the job
         job = new CleanupDepositJob(jobUUID, depositUUID);
-        job.setStagingPolicyManager(stagingManager);
+        job.setIngestSourceManager(sourceManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "depositStatusFactory", depositStatusFactory);
@@ -131,15 +133,15 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
     /**
      * Verify that no ingest file cleanup takes place, as prescribed by policy
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void doNothingTest() throws Exception {
         addIngestedFilesToModel();
 
-        doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        when(ingestSource.isReadOnly()).thenReturn(true);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         job.run();
 
@@ -158,15 +160,15 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
     /**
      * Verify that deleted files and empty folders were deleted as prescribed by
      * policy
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void deleteIngestedFilesEmptyFoldersTest() throws Exception {
         addIngestedFilesToModel();
 
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        when(ingestSource.isReadOnly()).thenReturn(false);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         job.run();
 
@@ -184,43 +186,15 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
     }
 
     /**
-     * Verify that only ingested files, not folders, were deleted as defined by
-     * policy
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void deleteIngestedFilesTest() throws Exception {
-        addIngestedFilesToModel();
-
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
-
-        job.run();
-
-        assertIngestedFilesDeleted(stagingFolder);
-
-        assertDepositCleanedUp();
-    }
-
-    private void assertIngestedFilesDeleted(File stagingFolder) {
-        assertFalse(new File(stagingFolder, "project/folderA/ingested").exists());
-        assertTrue(new File(stagingFolder, "project/folderA/leftover").exists());
-        assertFalse(new File(stagingFolder, "project/folderB/ingested").exists());
-        assertFalse(new File(stagingFolder, "project/folderB/also_ingested").exists());
-        assertTrue(new File(stagingFolder, "project/folderB").exists());
-    }
-
-    /**
      * Test that the cleanup job does not fail if the staging folder specified
      * is not present at cleanup time
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void cleanupMissingStagingFolderTest() throws Exception {
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        when(ingestSource.isReadOnly()).thenReturn(false);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         job.run();
 
@@ -231,7 +205,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
     /**
      * Test that registering multiple staging locations with different policies
      * works correctly
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -239,14 +213,16 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         addIngestedFilesToModel();
         File stagingFolder2 = new File(stagesDir, "staging_folder2");
         String stagingPath2 = stagingFolder2.getAbsolutePath();
+        IngestSource ingestSource2 = mock(IngestSource.class);
         addIngestedFilesToModel(stagingPath2);
         populateStagingFolder(stagingFolder2);
 
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
-
-        doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder2)));
+        when(ingestSource.isReadOnly()).thenReturn(false);
+        when(ingestSource2.isReadOnly()).thenReturn(true);
+        doReturn(ingestSource).when(sourceManager)
+                .getIngestSourceForUri(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        doReturn(ingestSource2).when(sourceManager)
+                .getIngestSourceForUri(argThat(new FileBeginsWithMatcher(stagingFolder2)));
 
         job.run();
 
@@ -254,10 +230,10 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         assertNothingDeleted(stagingFolder2);
     }
 
-    @Test(expected = StagingException.class)
+    @Test(expected = UnknownIngestSourceException.class)
     public void noCleanupPolicyTest() throws Exception {
-        when(stagingManager.getCleanupPolicy(any(URI.class)))
-                .thenThrow(new StagingException("No staging location"));
+        when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                .thenThrow(new UnknownIngestSourceException("Nope"));
 
         addIngestedFilesToModel();
 
@@ -266,8 +242,8 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
     @Test
     public void cleanupFilesCleanedUpTest() throws Exception {
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        when(ingestSource.isReadOnly()).thenReturn(false);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         File cleanupFile = addCleanupFile();
 
@@ -278,8 +254,8 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
     @Test
     public void doNothingToCleanupFilesTest() throws Exception {
-        doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+        when(ingestSource.isReadOnly()).thenReturn(true);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
 
         File cleanupFile = addCleanupFile();
 
@@ -301,20 +277,6 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         return cleanupFile;
-    }
-
-    @Test
-    public void cleanupFileAndCleanupStagedTest() throws Exception {
-        doReturn(CleanupPolicy.DELETE_INGESTED_FILES).when(stagingManager)
-                .getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
-
-        File cleanupFile = addCleanupFile();
-        addIngestedFilesToModel();
-
-        job.run();
-
-        assertFalse("Cleanup file was not deleted", cleanupFile.exists());
-        assertIngestedFilesDeleted(stagingFolder);
     }
 
     private class FileBeginsWithMatcher extends ArgumentMatcher<URI> {

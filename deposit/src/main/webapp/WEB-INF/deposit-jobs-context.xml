@@ -187,7 +187,7 @@
 
     <bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob"
         scope="prototype">
-        <property name="stagingPolicyManager" ref="stagingPolicyManager" />
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
     </bean>
 
     <bean id="ValidateDescriptionJob" class="edu.unc.lib.deposit.validate.ValidateDescriptionJob"
@@ -260,7 +260,7 @@
 
     <bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
         scope="prototype">
-        <property name="stagingPolicyManager" ref="stagingPolicyManager" />
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
         <property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
     </bean>
 </beans>

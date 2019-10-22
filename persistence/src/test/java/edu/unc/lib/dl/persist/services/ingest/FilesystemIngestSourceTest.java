@@ -139,6 +139,17 @@ public class FilesystemIngestSourceTest {
     }
 
     @Test
+    public void isValidUriMatchesChild() throws Exception {
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+        ingestSource.setPatterns(asList("*"));
+
+        Path path = Paths.get(sourceFolderPath.toString(), "someSubPath", "child");
+        Files.createDirectories(path);
+
+        assertTrue(ingestSource.isValidUri(path.toUri()));
+    }
+
+    @Test
     public void isValidUriMatchesNestedPattern() throws Exception {
         ingestSource.setBase(sourceFolderPath.toUri().toString());
         ingestSource.setPatterns(asList("*/*"));
