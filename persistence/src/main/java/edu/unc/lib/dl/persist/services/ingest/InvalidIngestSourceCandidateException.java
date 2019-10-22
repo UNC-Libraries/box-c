@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.exceptions;
+package edu.unc.lib.dl.persist.services.ingest;
+
+import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
- * General exception related to the state of the box-c repository
- *
  * @author bbpennel
  *
  */
-public class RepositoryException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
+public class InvalidIngestSourceCandidateException extends RepositoryException {
 
-    public RepositoryException(String message) {
+    /**
+     * @param message
+     */
+    public InvalidIngestSourceCandidateException(String message) {
         super(message);
     }
 
-    public RepositoryException(String message, Throwable ex) {
+    public InvalidIngestSourceCandidateException(String message, Throwable ex) {
         super(message, ex);
     }
 }

@@ -20,5 +20,18 @@ package edu.unc.lib.dl.persist.services.storage;
  *
  */
 public enum StorageType {
-    FILESYSTEM
+    FILESYSTEM("filesystem");
+
+    private final String id;
+
+    private StorageType(String id) {
+        this.id = id;
+    }
+
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return id;
+    }
 }
