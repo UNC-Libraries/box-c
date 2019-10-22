@@ -73,7 +73,8 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
             this.base = "file://" + base;
             baseUri = URI.create(this.base);
         } else if (!"file".equals(baseUri.getScheme())) {
-            throw new IllegalArgumentException("Only file URIs are acceptable in locations of type " + getClass().getName());
+            throw new IllegalArgumentException("Only file URIs are acceptable in locations of type "
+                    + getClass().getName());
         }
     }
 

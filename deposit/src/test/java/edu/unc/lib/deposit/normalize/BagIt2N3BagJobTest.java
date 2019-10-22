@@ -79,7 +79,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
     @Test
     public void testConversion() throws Exception {
         String sourcePath = "src/test/resources/paths/valid-bag";
-        status.put(DepositField.sourcePath.name(), sourcePath);
+        status.put(DepositField.sourceUri.name(), sourcePath);
         status.put(DepositField.fileName.name(), "Test File");
         status.put(DepositField.accessionNumber.name(), "123456");
         status.put(DepositField.mediaId.name(), "789");
@@ -154,7 +154,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
     @Test(expected = JobFailedException.class)
     public void testInvalid() throws Exception {
-        status.put(DepositField.sourcePath.name(), "src/test/resources/paths/invalid-bag");
+        status.put(DepositField.sourceUri.name(), "src/test/resources/paths/invalid-bag");
 
         job.run();
     }

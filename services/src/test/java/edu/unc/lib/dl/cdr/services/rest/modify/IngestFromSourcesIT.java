@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.addMapping;
+import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
+import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
+import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.dl.util.PackagingType.BAGIT;
 import static edu.unc.lib.dl.util.PackagingType.DIRECTORY;
 import static java.util.Arrays.asList;
@@ -34,6 +38,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -59,9 +64,10 @@ import edu.unc.lib.dl.cdr.services.rest.modify.IngestSourceController.IngestPack
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.ingest.IngestSource;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceCandidate;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceConfiguration;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.ZipFileUtil;
@@ -85,6 +91,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
     private String sourceFolderPath;
 
+    private List<IngestSourceMapping> mappingList;
+
     private PID destPid;
     private PID rootPid;
     private PID adminUnitPid;
@@ -92,7 +100,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     @Autowired
     private DepositStatusFactory depositStatusFactory;
     @Autowired
-    private IngestSourceManager sourceManager;
+    private IngestSourceManagerImpl sourceManager;
     @Autowired
     private ContentPathFactory contentPathFactory;
 
@@ -104,6 +112,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         tmpFolder.create();
         sourceFolderPath = tmpFolder.newFolder().getAbsolutePath();
+        mappingList = new ArrayList<>();
 
         AccessGroupSet testPrincipals = new AccessGroupSet("admins");
 
@@ -121,8 +130,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void listSourcesInsufficientPermissions() throws Exception {
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -137,8 +146,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void listSourcesOrphanedTarget() throws Exception {
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid);
@@ -150,7 +159,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void listSourcesNoMatchingSources() throws Exception {
-        Path configPath = createConfigFile(asList());
+        Path configPath = createConfigFile();
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -168,12 +177,12 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void listSourcesWithSourcesAndCandidates() throws Exception {
         String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
 
-        Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
-        Path candPath2 = createDirCandidate(sourceFolderPath2, "cand2");
+        createBagCandidate(sourceFolderPath, "cand1");
+        createDirCandidate(sourceFolderPath2, "cand2");
 
-        Path configPath = createConfigFile(asList(
+        Path configPath = createConfigFile(
                 createBasicConfig("testsource1", sourceFolderPath, destPid),
-                createBasicConfig("testsource2", sourceFolderPath2, adminUnitPid)));
+                createBasicConfig("testsource2", sourceFolderPath2, adminUnitPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -186,27 +195,23 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         List<IngestSourceCandidate> candidates = resp.getCandidates();
         assertEquals(2, candidates.size());
 
-        IngestSourceCandidate cand1 = getCandidateByPath(candidates, candPath1);
+        IngestSourceCandidate cand1 = getCandidateByPath(candidates, "cand1");
         assertNotNull(cand1);
         assertEquals(BAGIT, cand1.getPackagingType());
-        assertEquals(sourceFolderPath, cand1.getBase());
         assertEquals(3, cand1.getFileCount().intValue());
 
-        IngestSourceCandidate cand2 = getCandidateByPath(candidates, candPath2);
+        IngestSourceCandidate cand2 = getCandidateByPath(candidates, "cand2");
         assertNotNull(cand2);
         assertEquals(DIRECTORY, cand2.getPackagingType());
-        assertEquals(sourceFolderPath2, cand2.getBase());
 
-        List<IngestSourceConfiguration> sources = resp.getSources();
+        List<IngestSource> sources = resp.getSources();
         assertEquals(2, sources.size());
 
-        IngestSourceConfiguration source1 = getSourceByName(sources, "testsource1");
+        IngestSource source1 = getSourceByName(sources, "testsource1");
         assertNotNull(source1);
-        assertEquals(sourceFolderPath, source1.getBase());
 
-        IngestSourceConfiguration source2 = getSourceByName(sources, "testsource2");
+        IngestSource source2 = getSourceByName(sources, "testsource2");
         assertNotNull(source2);
-        assertEquals(sourceFolderPath2, source2.getBase());
     }
 
     // Ingest tests
@@ -215,8 +220,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void ingestBagInsufficientPermissions() throws Exception {
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -239,8 +244,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void ingestBagWithExtraFields() throws Exception {
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -270,8 +275,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void ingestNoPackagingType() throws Exception {
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -289,8 +294,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void ingestNoPackagePath() throws Exception {
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -311,8 +316,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         // Make a path to a resource that hasn't been created
         Path candPath1 = Paths.get(sourceFolderPath, "noExistCand");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -334,8 +339,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
         Path candPath1 = createBagCandidate(sourceFolderPath2, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -355,8 +360,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void ingestInvalidSourceId() throws Exception {
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -379,9 +384,9 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
         Path candPath2 = createDirCandidate(sourceFolderPath2, "cand2");
 
-        Path configPath = createConfigFile(asList(
+        Path configPath = createConfigFile(
                 createBasicConfig("testsource1", sourceFolderPath, destPid),
-                createBasicConfig("testsource2", sourceFolderPath2, adminUnitPid)));
+                createBasicConfig("testsource2", sourceFolderPath2, adminUnitPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -416,8 +421,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     public void roundTripDirectory() throws Exception {
         Path candPath1 = createDirCandidate(sourceFolderPath, "cand1");
 
-        Path configPath = createConfigFile(asList(
-                createBasicConfig("testsource1", sourceFolderPath, destPid)));
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
         initializeManager(configPath);
 
         mockAncestors(destPid, rootPid, adminUnitPid);
@@ -462,7 +467,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         for (String depositId: depositIds) {
             Map<String, String> status = depositStatusFactory.get(depositId);
 
-            if (status.get(DepositField.sourcePath.name()).equals(candPath.toString())) {
+            if (status.get(DepositField.sourceUri.name()).equals(candPath.toUri().toString())) {
                 return status;
             }
         }
@@ -476,19 +481,12 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         assertTrue("admins principal must be set in deposit", depositPrincipals.contains("admins"));
     }
 
-    private Path createConfigFile(List<IngestSourceConfiguration> configs) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        Path configPath = Files.createTempFile("ingestSources", ".json");
-        mapper.writeValue(configPath.toFile(), configs);
-        return configPath;
-    }
+    private Map<String, Object> createBasicConfig(String id, String path, PID... containers) {
+        for (PID container: containers) {
+            addMapping(id, container, mappingList);
+        }
 
-    private IngestSourceConfiguration createBasicConfig(String id, String path, PID... containers) {
-        return new IngestSourceConfiguration(id,
-                "Source " + id,
-                path,
-                asList("*"),
-                asList(containers));
+        return createFilesystemConfig(id, "Source " + id, Paths.get(path), asList("*"));
     }
 
     private Path createDirCandidate(String sourcePath, String name) throws Exception {
@@ -503,14 +501,14 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         return Files.move(destPath, destPath.resolveSibling(name));
     }
 
-    private IngestSourceCandidate getCandidateByPath(List<IngestSourceCandidate> candidates, Path path) {
+    private IngestSourceCandidate getCandidateByPath(List<IngestSourceCandidate> candidates, String fileName) {
         return candidates.stream()
-                .filter(c -> c.getPatternMatched().equals(path.getFileName().toString()))
+                .filter(c -> c.getPatternMatched().equals(fileName))
                 .findFirst()
                 .orElse(null);
     }
 
-    private IngestSourceConfiguration getSourceByName(List<IngestSourceConfiguration> sources, String name) {
+    private IngestSource getSourceByName(List<IngestSource> sources, String name) {
         return sources.stream()
                 .filter(c -> c.getId().equals(name))
                 .findFirst()
@@ -523,8 +521,10 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     }
 
     private void initializeManager(Path configPath) throws Exception {
+        Path mappingPath = serializeLocationMappings(mappingList);
+
         sourceManager.setConfigPath(configPath.toString());
-        sourceManager.setWatchForChanges(false);
+        sourceManager.setMappingPath(mappingPath.toString());
         sourceManager.init();
     }
 
@@ -534,14 +534,14 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     }
 
     public static class ListSourcesResponse {
-        private List<IngestSourceConfiguration> sources;
+        private List<IngestSource> sources;
         private List<IngestSourceCandidate> candidates;
 
-        public List<IngestSourceConfiguration> getSources() {
+        public List<IngestSource> getSources() {
             return sources;
         }
 
-        public void setSources(List<IngestSourceConfiguration> sources) {
+        public void setSources(List<IngestSource> sources) {
             this.sources = sources;
         }
 

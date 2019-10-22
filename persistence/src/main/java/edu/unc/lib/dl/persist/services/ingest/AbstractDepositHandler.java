@@ -132,8 +132,8 @@ public abstract class AbstractDepositHandler implements DepositHandler {
             String filename = Paths.get(deposit.getFilename()).getFileName().toString();
             status.put(DepositField.fileName.name(), filename);
         }
-        if (deposit.getFilePath() != null) {
-            status.put(DepositField.sourcePath.name(), deposit.getFilePath().toAbsolutePath().toString());
+        if (deposit.getSourceUri() != null) {
+            status.put(DepositField.sourceUri.name(), deposit.getSourceUri().toString());
         }
         status.put(DepositField.depositSlug.name(), deposit.getSlug());
         if (deposit.getPriority() != null) {

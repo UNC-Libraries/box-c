@@ -80,7 +80,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
         Map<String, String> status = getDepositStatus();
-        String sourcePath = status.get(DepositField.sourcePath.name());
+        String sourcePath = status.get(DepositField.sourceUri.name());
         Path sourceFile = Paths.get(sourcePath);
 
         try {

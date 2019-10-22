@@ -53,7 +53,6 @@ public class FileServerDepositHandlerTest {
 
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSIT_METHOD = "unitTest";
-    private static final String SOURCE_NAME = "source";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
 
     @Rule
@@ -97,7 +96,7 @@ public class FileServerDepositHandlerTest {
 
     @Test
     public void testDepositBagPackage() throws Exception {
-        DepositData deposit = new DepositData(sourcePath, null,
+        DepositData deposit = new DepositData(sourcePath.toUri(), null,
                 BAGIT, DEPOSIT_METHOD, depositingAgent);
         deposit.setDepositorEmail(DEPOSITOR_EMAIL);
 
@@ -111,7 +110,7 @@ public class FileServerDepositHandlerTest {
 
     @Test
     public void testDepositDirectory() throws Exception {
-        DepositData deposit = new DepositData(sourcePath, null,
+        DepositData deposit = new DepositData(sourcePath.toUri(), null,
                 DIRECTORY, DEPOSIT_METHOD, depositingAgent);
         deposit.setDepositorEmail(DEPOSITOR_EMAIL);
 
@@ -127,7 +126,6 @@ public class FileServerDepositHandlerTest {
             Map<String, String> status) {
         assertEquals(depositPid.getId(), status.get(DepositField.uuid.name()));
         assertNotNull("Deposit submission time must be set", status.get(DepositField.submitTime.name()));
-        assertEquals(SOURCE_NAME, status.get(DepositField.fileName.name()));
         assertEquals(packageType.getUri(), status.get(DepositField.packagingType.name()));
         assertEquals(DEPOSIT_METHOD, status.get(DepositField.depositMethod.name()));
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));

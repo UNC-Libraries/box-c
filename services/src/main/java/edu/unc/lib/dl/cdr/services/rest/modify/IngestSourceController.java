@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
-import java.nio.file.Path;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,8 +46,9 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceConfiguration;
+import edu.unc.lib.dl.persist.services.ingest.IngestSource;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.services.ingest.InvalidIngestSourceCandidateException;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;
@@ -113,6 +114,7 @@ public class IngestSourceController {
         results.put("destination", pid);
 
         List<String> depositIds = new ArrayList<>();
+        List<URI> candidateUris = new ArrayList<>();
 
         // Validate the packages requested for deposit
         for (IngestPackageDetails packageDetails : packages) {
@@ -122,26 +124,31 @@ public class IngestSourceController {
                 return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
             }
 
-            // Verify that the package path is from within the allowed locations for the specified ingest source
-            if (!sourceManager.isPathValid(packageDetails.getPackagePath(), packageDetails.getSourceId())) {
-                results.put("error", "Invalid source path specified: " + packageDetails.getPackagePath());
+            IngestSource source = sourceManager.getIngestSourceById(packageDetails.getSourceId());
+            if (source == null) {
+                results.put("error", "Invalid source specified: " + packageDetails.getSourceId());
+                return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
+            }
+
+            try {
+                packageDetails.setPackageUri(source.resolveRelativePath(packageDetails.getPackagePath()));
+            } catch (InvalidIngestSourceCandidateException e) {
+                results.put("error", "Invalid ingest Source path: " + packageDetails.getPackagePath());
                 return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
             }
         }
 
         // Build deposit entries and add to queue
         for (IngestPackageDetails packageDetails : packages) {
-            IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
-
-            Path candidatePath = Paths.get(source.getBase(), packageDetails.getPackagePath());
+            IngestSource source = sourceManager.getIngestSourceById(packageDetails.getSourceId());
 
             // Generate a filename if one was not provided
             String filename = packageDetails.getLabel();
             if (isBlank(filename)) {
-                filename = candidatePath.getFileName().toString();
+                filename = Paths.get(packageDetails.getPackagePath()).getFileName().toString();
             }
 
-            DepositData deposit = new DepositData(candidatePath,
+            DepositData deposit = new DepositData(packageDetails.getPackageUri(),
                     null,
                     packageDetails.getPackagingType(),
                     DepositMethod.CDRAPI1.getLabel(),
@@ -170,6 +177,7 @@ public class IngestSourceController {
         private String sourceId;
         // Path is relative to the base for the source
         private String packagePath;
+        private URI packageUri;
         private PackagingType packagingType;
         private String label;
         private String accessionNumber;
@@ -234,6 +242,14 @@ public class IngestSourceController {
 
         public void setMediaId(String mediaId) {
             this.mediaId = mediaId;
+        }
+
+        public URI getPackageUri() {
+            return packageUri;
+        }
+
+        public void setPackageUri(URI packageUri) {
+            this.packageUri = packageUri;
         }
     }
 }

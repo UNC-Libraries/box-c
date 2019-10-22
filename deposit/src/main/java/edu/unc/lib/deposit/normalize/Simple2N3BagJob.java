@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Bag;
@@ -24,7 +25,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriUtils;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -32,7 +32,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -70,14 +69,14 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
         // Identify the important file from the deposit
         Map<String, String> depositStatus = getDepositStatus();
-        String filename = depositStatus.get(DepositField.fileName.name());
+        URI sourceUri = URI.create(depositStatus.get(DepositField.sourceUri.name()));
         String slug = depositStatus.get(DepositField.depositSlug.name());
         String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
         // Create the main resource as a simple resource
         Resource mainResource = model.createResource(mainPID.getURI());
 
-        populateFileObject(mainResource, slug, filename, mimetype);
+        populateFileObject(mainResource, slug, sourceUri, mimetype);
 
         // Store main resource as child of the deposit
         depositBag.add(mainResource);
@@ -96,11 +95,11 @@ public class Simple2N3BagJob extends AbstractDepositJob {
                 .write();
     }
 
-    private void populateFileObject(Resource mainResource, String alabel, String filename,
+    private void populateFileObject(Resource mainResource, String alabel, URI sourceUri,
             String mimetype) {
-        File contentFile = new File(this.getDataDirectory(), filename);
+        File contentFile = new File(sourceUri);
         if (!contentFile.exists()) {
-            failJob("Failed to find upload file for simple deposit: " + filename,
+            failJob("Failed to find upload file for simple deposit: " + sourceUri,
                     contentFile.getAbsolutePath());
         }
 
@@ -114,8 +113,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         }
 
         // Reference the content file as the data file
-        mainResource.addLiteral(CdrDeposit.stagingLocation,
-                DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
+        mainResource.addLiteral(CdrDeposit.stagingLocation, sourceUri.toString());
         mainResource.addProperty(RDF.type, Cdr.FileObject);
     }
 

@@ -85,7 +85,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
     @Test
     public void testConversion() throws Exception {
-        status.put(DepositField.sourcePath.name(), depositDirectory.getAbsolutePath());
+        status.put(DepositField.sourceUri.name(), depositDirectory.getAbsolutePath());
         status.put(DepositField.fileName.name(), "Test File");
         status.put(DepositField.mediaId.name(), "789");
         status.put(DepositField.accessionNumber.name(), "123456");
