@@ -6,7 +6,7 @@ const localVue = createLocalVue();
 const STAFF_ONLY_ROLE_TEXT = '\u2014';
 
 let response = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canAccess' }], deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
     assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false, embargo: null }
 };
 
@@ -27,12 +27,12 @@ let empty_response = {
 };
 
 let empty_defaults = [
-        { principal: 'everyone', role: 'canAccess' },
-        { principal: 'authenticated', role: 'canAccess' }
+        { principal: 'everyone', role: 'canViewOriginals' },
+        { principal: 'authenticated', role: 'canViewOriginals' }
 ];
 
 let same_roles = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, {principal: 'authenticated', role: 'canAccess'}],
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, {principal: 'authenticated', role: 'canViewOriginals'}],
         deleted: false, embargo: null  },
     assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, { principal: 'authenticated', role: 'canViewMetadata'}],
         deleted: false, embargo: null  }
@@ -98,7 +98,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT }]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canAccess' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
             expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
             expect(wrapper.vm.submit_roles.roles).toEqual(empty_defaults);
@@ -118,7 +118,7 @@ describe('patronRoles.vue', () => {
 
        moxios.wait(() => {
            expect(wrapper.vm.display_roles.inherited.roles).toEqual([]);
-           expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canAccess' }]);
+           expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
            done();
        })
     });
