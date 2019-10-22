@@ -47,6 +47,14 @@
             <c:import url="fullRecord/navigationBar.jsp" />
             <h2><i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
             <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+            <p><strong>Finding Aid: </strong>
+                <c:choose>
+                    <c:when test="${empty briefObject.title}">
+                        <a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+                    </c:when>
+                    <c:otherwise>Doesn’t have a finding aid</c:otherwise>
+                </c:choose>
+            </p>
             <c:choose>
                 <c:when test="${not empty briefObject.abstractText}">
                     <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>

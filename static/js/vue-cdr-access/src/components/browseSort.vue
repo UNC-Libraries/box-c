@@ -38,6 +38,10 @@
 </script>
 
 <style scoped lang="scss">
+    .select:not(.is-multiple):not(.is-loading)::after {
+        top: 60% !important;
+    }
+
     .browse-sort {
         margin-top: 15px;
 

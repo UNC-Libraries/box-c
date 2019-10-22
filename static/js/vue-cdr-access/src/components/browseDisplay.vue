@@ -23,7 +23,7 @@
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <a :href="recordUrl(record.id)">
-                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail">
+                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                             <div class="record-title">{{ record.title }}</div>
                         </a>
@@ -211,6 +211,10 @@
             width: 100%;
         }
 
+        li {
+            text-indent: 0;
+        }
+
         div, p {
             font-size: 1.2rem;
         }
@@ -220,7 +224,7 @@
         }
 
         i {
-            font-size: 10rem;
+            font-size: 9rem;
         }
 
         button {
@@ -242,12 +246,11 @@
         }
 
         .record-title {
-            margin-left: -15px;
             margin-top: 25px;
         }
 
         .thumbnail + .record-title {
-            margin-top: 200px;
+            margin-top: 165px;
         }
 
         @media screen and (max-width: 768px) {

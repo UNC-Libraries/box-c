@@ -47,7 +47,15 @@
 					</div>
 					<div class="column is-8">
 						<h2><c:out value="${briefObject.title}" /></h2>
-
+						<p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+						<p><strong>Finding Aid: </strong>
+							<c:choose>
+								<c:when test="${empty briefObject.title}">
+									<a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+								</c:when>
+								<c:otherwise>Doesn’t have a finding aid</c:otherwise>
+							</c:choose>
+						</p>
 						<div class="column is-12">
 							<ul class="pipe_list smaller">
 								<c:if test="${not empty briefObject.creator}">
