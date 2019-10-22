@@ -474,14 +474,13 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  margin: 15px 25px 10px 25px;
+  margin: 5px 25px 10px 0;
   width: 100%;
 }
 .display-wrapper p, .display-wrapper a {
   font-size: 20px;
 }
 .display-wrapper a:hover {
-  opacity: .9;
   text-decoration: none;
   z-index: 100;
 }
@@ -513,14 +512,6 @@ p.no-search-results {
 }
 .display-wrapper a span.browse-tip, .display-wrapper a .arrow {
   display: none;
-}
-.display-wrapper .button.is-light {
-  border: 1px solid darkgray;
-}
-.display-wrapper .button.is-selected {
-  background-color: slategray;
-  border: 1px solid black;
-  color: whitesmoke;
 }
 .display-wrapper button {
   margin-left: 10px;
