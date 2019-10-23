@@ -43,6 +43,7 @@
     }
 
     .browse-sort {
+        float: right;
         margin-top: 15px;
 
         select {

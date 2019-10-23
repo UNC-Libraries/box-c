@@ -9,12 +9,12 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-10 container-note">
+            <div class="column is-11 container-note">
                 <p :class="{ hidden: record_count === 0}">
                     <view-type></view-type>
                 </p>
             </div>
-            <div class="column is-2">
+            <div class="column is-1">
                 <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             </div>
         </div>
