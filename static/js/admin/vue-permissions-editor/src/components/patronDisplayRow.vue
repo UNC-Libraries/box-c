@@ -10,20 +10,18 @@
             </div>
 
             <span class="permission-icons">
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(user.principal) === type"></i>
-                    </span>
+                <i class="far fa-check-circle" v-if="mostRestrictive(user.principal) === type"></i>
+            </span>
         </td>
         <td>
             {{ displayRole(user.role) }}
             <span class="permission-icons">
-                        <i class="far fa-times-circle" :class="{hidden: !hasAction.deleted}"></i>
-                        <div class="circle" :class="{hidden: !hasAction.embargo > 0}">
-                            <div>e</div>
-                        </div>
-                        <i class="far fa-check-circle"
-                           v-if="mostRestrictive(user.principal) === type"></i>
-                    </span>
+                <i class="far fa-times-circle" :class="{hidden: !hasAction.deleted}"></i>
+                <div class="circle" :class="{hidden: !hasAction.embargo > 0}">
+                    <div>e</div>
+                </div>
+                <i class="far fa-check-circle" v-if="mostRestrictive(user.principal) === type"></i>
+            </span>
         </td>
     </tr>
 </template>
