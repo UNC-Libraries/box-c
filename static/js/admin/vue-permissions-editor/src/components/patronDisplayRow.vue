@@ -3,11 +3,11 @@
         <td>{{ fromText }}</td>
         <td class="access-display">
             {{ formattedPrincipal }}
-            <a href="#" class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
+            <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
                 <span class="browse-tip">What this means</span>
-            </a>
+            </div>
 
             <span class="permission-icons">
                         <i class="far fa-check-circle"
@@ -243,7 +243,14 @@
 
 
 
-    a.display-note-btn:hover {
+    div.display-note-btn {
+        display: inline-flex;
+        width: 15px;
+    }
+
+    div.display-note-btn:hover {
+        cursor: grab;
+
         .arrow, .browse-tip {
             display: block;
             position: absolute;
@@ -260,6 +267,7 @@
             border-radius: 5px;
             color: black;
             font-weight: normal;
+            left: 15px;
             margin: inherit;
             padding: 10px;
             text-align: left;
