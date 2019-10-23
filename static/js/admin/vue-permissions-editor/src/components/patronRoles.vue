@@ -166,12 +166,10 @@
              * @return {null | number}
              */
             timestampEmbargo() {
-                if (this.display_roles.assigned.embargo === null) {
+                if (this.patron_roles.assigned.embargo === null) {
                     return 0;
-                } else if( typeof this.display_roles.assigned.embargo === 'string') {
-                    return new Date(this.display_roles.assigned.embargo).getMilliseconds();
                 } else {
-                    return this.display_roles.assigned.embargo;
+                    return this.patron_roles.assigned.embargo;
                 }
             }
         },
