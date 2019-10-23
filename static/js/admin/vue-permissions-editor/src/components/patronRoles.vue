@@ -190,8 +190,8 @@
                     if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
                         response.data.assigned.roles.length === 0) {
                         let set_roles = [
-                            { principal: 'everyone', role: 'canAccess' },
-                            { principal: 'authenticated', role: 'canAccess' }
+                            { principal: 'everyone', role: 'canViewOriginals' },
+                            { principal: 'authenticated', role: 'canViewOriginals' }
                         ];
 
                         this.display_roles.inherited.roles = this._defaultInherited();
