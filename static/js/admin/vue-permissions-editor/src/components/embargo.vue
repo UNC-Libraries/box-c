@@ -39,10 +39,7 @@
         watch: {
             currentEmbargo(embargo) {
                 this.has_embargo = embargo > 0;
-
-                if (this.has_embargo) {
-                    this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
-                }
+                this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
             }
         },
 
@@ -100,15 +97,15 @@
             },
 
             clearEmbargoError() {
-                this.$emit('error-msg', '');
                 this.error_msg = '';
+                this.$emit('error-msg', this.error_msg);
             },
 
             /**
              * If an embargo is already present and the user changes the embargo length
              */
             updateCurrentEmbargo() {
-                if (this.has_embargo && this.custom_embargo_date !== '' && this.fixed_embargo_date !== '') {
+                if (this.has_embargo) {
                     this.$emit('embargo-info', this.embargo_ends_date);
                 }
             },
