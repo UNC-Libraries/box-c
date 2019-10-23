@@ -184,7 +184,7 @@ p.no-search-results {
 /* Collection Page */
 .browse-header {
   background-color: #EBEBEB;
-  box-shadow: inset 0 6px 10px -5px rgba(0,0,0,0.75);
+  box-shadow: inset 0 10px 5px -5px rgba(0, 0, 0, .5);
   color: #3D4D5B;
   display: inline-flex !important;
   margin: 0;
@@ -315,7 +315,6 @@ p.no-search-results {
 
 .collection-info-bottom {
   padding: 5px;
-  box-shadow: inset 0 7px 8px -3px rgba(0, 0, 0, 0.3);
   margin: -12px 0 0 0;
 }
 

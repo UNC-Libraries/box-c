@@ -47,52 +47,47 @@
 					</div>
 					<div class="column is-8">
 						<h2><c:out value="${briefObject.title}" /></h2>
-						<c:if test="${not empty briefObject.dateAdded}">
-							<p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
-						</c:if>
-						<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
-							<p>
-								<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
-								<strong>Collection:</strong>
-								<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
-							</p>
-						</c:if>
-						<p><strong>Finding Aid: </strong>
-							<c:choose>
-								<c:when test="${empty briefObject.title}">
-									<a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
-								</c:when>
-								<c:otherwise>Doesn’t have a finding aid</c:otherwise>
-							</c:choose>
-						</p>
-						<div class="column is-12">
-							<ul class="pipe_list smaller">
-								<c:if test="${not empty briefObject.creator}">
-									<li>
-										<span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
-										<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-											<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
-										</c:forEach>
-									</li>
-								</c:if>
-							</ul>
-
-							<ul class="pipe_list smaller">
+						<ul>
+							<c:if test="${not empty briefObject.dateAdded}">
+								<li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>
+							</c:if>
+							<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
 								<li>
-									<c:choose>
-										<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
-											<span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" />
-											<c:if test="${briefObject.filesizeSort != -1}">  | <span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></c:if>
-										</c:when>
-										<c:otherwise>
-											<span>Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if>
-										</c:otherwise>
-									</c:choose>
+									<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+									<span class="has-text-weight-bold">Collection:</span>
+									<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
 								</li>
-								<c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
-								<c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
-							</ul>
-						</div>
+							</c:if>
+							<li><span class="has-text-weight-bold">Finding Aid: </span>
+								<c:choose>
+									<c:when test="${empty briefObject.title}">
+										<a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+									</c:when>
+									<c:otherwise>Doesn’t have a finding aid</c:otherwise>
+								</c:choose>
+							</li>
+							<c:if test="${not empty briefObject.creator}">
+								<li>
+									<span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
+									<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
+										<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
+									</c:forEach>
+								</li>
+							</c:if>
+
+							<c:choose>
+								<c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
+									<li><span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
+									<c:if test="${briefObject.filesizeSort != -1}"> <li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
+								</c:when>
+								<c:otherwise>
+									<li><span class="has-text-weight-bold">Contains:</span> ${childCount} item<c:if test="${childCount != 1}">s</c:if></li>
+								</c:otherwise>
+							</c:choose>
+
+							<c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
+							<c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
+						</ul>
 					</div>
 
 					<div class="column is-3 action-btn">
