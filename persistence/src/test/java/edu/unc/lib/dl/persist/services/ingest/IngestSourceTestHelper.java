@@ -52,7 +52,8 @@ public class IngestSourceTestHelper {
         FileUtils.copyDirectory(original, ingestSourcePath.resolve(destName).toFile());
     }
 
-    public static IngestSourceCandidate findCandidateByPath(String patternMatched, List<IngestSourceCandidate> candidates) {
+    public static IngestSourceCandidate findCandidateByPath(String patternMatched,
+            List<IngestSourceCandidate> candidates) {
         return candidates.stream().filter(c -> c.getPatternMatched().equals(patternMatched)).findFirst().get();
     }
 
@@ -71,20 +72,25 @@ public class IngestSourceTestHelper {
         assertEquals(patternMatched, candidate.getPatternMatched());
     }
 
-    public static Map<String, Object> createFilesystemConfig(String id, String name, Path basePath, List<String> patterns) {
+    public static Map<String, Object> createFilesystemConfig(String id, String name, Path basePath,
+            List<String> patterns) {
+        return createFilesystemConfig(id, name, basePath, patterns, false);
+    }
+
+    public static Map<String, Object> createFilesystemConfig(String id, String name, Path basePath,
+            List<String> patterns, boolean readOnly) {
         Map<String, Object> config = new HashMap<>();
         config.put("id", id);
         config.put("name", name);
         config.put("patterns", patterns);
         config.put("base", basePath.toUri().toString());
         config.put("type", "filesystem");
+        config.put("readOnly", readOnly);
         return config;
     }
 
     public static void addMapping(String id, PID containerPid, List<IngestSourceMapping> mappings) {
-        IngestSourceMapping mapping = mappings.stream()
-                .filter(m -> m.getId().equals(containerPid.getId()))
-                .findFirst()
+        IngestSourceMapping mapping = mappings.stream().filter(m -> m.getId().equals(containerPid.getId())).findFirst()
                 .orElse(null);
         if (mapping == null) {
             mapping = new IngestSourceMapping();
