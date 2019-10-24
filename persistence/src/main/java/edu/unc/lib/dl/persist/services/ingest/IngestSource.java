@@ -61,6 +61,13 @@ public interface IngestSource {
     boolean isReadOnly();
 
     /**
+     * Returns true if this source is only intended for internal usage
+     *
+     * @return
+     */
+    boolean isInternal();
+
+    /**
      * Get the type of storage represented by this source
      *
      * @return

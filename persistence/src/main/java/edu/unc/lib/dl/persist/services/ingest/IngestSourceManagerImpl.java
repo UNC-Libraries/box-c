@@ -123,6 +123,7 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
         return pathPids.stream()
                 .filter(aPid -> pidToSources.containsKey(aPid))
                 .flatMap(aPid -> pidToSources.get(aPid).stream())
+                .filter(source -> !source.isInternal())
                 .collect(Collectors.toList());
     }
 

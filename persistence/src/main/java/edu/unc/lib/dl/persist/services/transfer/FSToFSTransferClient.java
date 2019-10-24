@@ -74,10 +74,10 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             if (source.isReadOnly()) {
                 Files.copy(Paths.get(sourceFileUri), Paths.get(destUri),
-                        allowOverwrite? COPY_ALLOW_OVERWRITE : COPY_NO_OVERWRITE);
+                        allowOverwrite ? COPY_ALLOW_OVERWRITE : COPY_NO_OVERWRITE);
             } else {
                 Files.move(Paths.get(sourceFileUri), Paths.get(destUri),
-                        allowOverwrite? MOVE_ALLOW_OVERWRITE : MOVE_NO_OVERWRITE);
+                        allowOverwrite ? MOVE_ALLOW_OVERWRITE : MOVE_NO_OVERWRITE);
             }
         } catch (FileAlreadyExistsException e) {
             throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri

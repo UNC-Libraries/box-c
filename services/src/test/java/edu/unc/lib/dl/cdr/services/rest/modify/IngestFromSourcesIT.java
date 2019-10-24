@@ -214,6 +214,41 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         assertNotNull(source2);
     }
 
+    @Test
+    public void listSourcesWithExcludedSource() throws Exception {
+        String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
+
+        createBagCandidate(sourceFolderPath, "cand1");
+        createBagCandidate(sourceFolderPath2, "cand2");
+
+        Map<String, Object> internalSource = createBasicConfig("testsource2", sourceFolderPath2, destPid);
+        internalSource.put("internal", true);
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid),
+                internalSource);
+        initializeManager(configPath);
+
+        mockAncestors(destPid, rootPid, adminUnitPid);
+
+        MvcResult result = mvc.perform(get("/edit/ingestSources/list/" + destPid.getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ListSourcesResponse resp = deserializeListSources(result);
+        List<IngestSourceCandidate> candidates = resp.getCandidates();
+        assertEquals(1, candidates.size());
+
+        IngestSourceCandidate cand1 = getCandidateByPath(candidates, "cand1");
+        assertNotNull(cand1);
+        assertEquals(BAGIT, cand1.getPackagingType());
+
+        List<IngestSource> sources = resp.getSources();
+        assertEquals(1, sources.size());
+
+        IngestSource source1 = getSourceByName(sources, "testsource1");
+        assertNotNull(source1);
+    }
+
     // Ingest tests
 
     @Test

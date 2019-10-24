@@ -56,6 +56,7 @@ public class FilesystemIngestSource implements IngestSource {
     private Path basePath;
     private List<String> patterns;
     private boolean readOnly;
+    private boolean internal;
 
     private BagReader reader = new BagReader();
 
@@ -72,6 +73,11 @@ public class FilesystemIngestSource implements IngestSource {
     @Override
     public boolean isReadOnly() {
         return readOnly;
+    }
+
+    @Override
+    public boolean isInternal() {
+        return internal;
     }
 
     @Override
@@ -106,6 +112,13 @@ public class FilesystemIngestSource implements IngestSource {
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
+    }
+
+    /**
+     * @param internal set whether this source is for internal usage
+     */
+    public void setInternal(boolean internal) {
+        this.internal = internal;
     }
 
     /**

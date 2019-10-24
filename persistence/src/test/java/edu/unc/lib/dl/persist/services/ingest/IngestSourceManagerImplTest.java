@@ -150,6 +150,18 @@ public class IngestSourceManagerImplTest {
     }
 
     @Test
+    public void testListSourcesDirectMatchExcludeInternal() throws Exception {
+        Map<String, Object> sourceConfig = createBasicConfig("testsource", destPid);
+        sourceConfig.put("internal", true);
+        configPath = createConfigFile(sourceConfig);
+        initializeManager();
+
+        List<IngestSource> sources = sourceMan.listSources(destPid);
+
+        assertEquals("Internal source should not be returned", 0, sources.size());
+    }
+
+    @Test
     public void testListSourcesMatchAncestor() throws Exception {
         configPath = createConfigFile(createBasicConfig("testsource", adminUnitPid));
         initializeManager();
