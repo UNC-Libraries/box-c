@@ -39,7 +39,10 @@
         watch: {
             currentEmbargo(embargo) {
                 this.has_embargo = embargo > 0;
-                this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
+
+                if (this.has_embargo) {
+                    this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
+                }
             }
         },
 
