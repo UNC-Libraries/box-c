@@ -164,7 +164,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					if (data.container) {
 						var $publicLink = $("#public_ui_link");
 						var baseHref = $publicLink.data("base-href");
-						$publicLink.attr("href", $publicLink.data("base-href") + "list/" + data.container.id)
+						var show_record_text = data.container.id === "collections" ? "" : "record";
+						$publicLink.attr("href", baseHref + show_record_text + "/" + data.container.id);
 					}
 					
 					$("#result_loading_icon").addClass("hidden");
