@@ -38,7 +38,16 @@
 </script>
 
 <style scoped lang="scss">
+    .select:not(.is-multiple):not(.is-loading)::after {
+        top: 60% !important;
+    }
+
     .browse-sort {
+        float: right;
         margin-top: 15px;
+
+        select {
+            height: 2.65em;
+        }
     }
 </style>

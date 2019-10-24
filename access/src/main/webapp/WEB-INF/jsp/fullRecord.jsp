@@ -29,19 +29,7 @@
 </c:if>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
-	<div id="browse-display-type" class="display-wrapper hidden">
-		<p>How would you like to browse?</p>
-		<a href="#" class="display-note-btn">?<div class="arrow"></div>
-			<span class="browse-tip">
-				<p><strong>Gallery</strong> view shows you all the files only, without the folders that store the files.</p>
-				<p><strong>Structured</strong> view allows you to navigate one level at a time.</p>
-			</span></a>
-		<div id="browse-btns">
-			<button id="gallery-display" class="button is-light">Gallery</button>
-			<button id="structure-display" class="button is-light">Structured</button>
-		</div>
-	</div>
-<c:import url="fullRecord/navigationBar.jsp" />
+
 <c:choose>
 	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
 		<c:import url="fullRecord/adminUnit.jsp" />

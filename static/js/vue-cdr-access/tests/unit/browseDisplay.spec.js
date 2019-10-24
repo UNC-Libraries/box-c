@@ -13,6 +13,7 @@ const router = new VueRouter({
         }
     ]
 });
+
 let wrapper;
 const record_list = [
     {
@@ -52,20 +53,13 @@ const response = {
     resultCount: 8
 };
 
-// Mock setting of methods for browseOptionDisplayUtils.
-// They're looking for elements not controlled by Vue
-const setBrowseEvents = jest.fn();
-const setButtonColor = jest.fn();
-const displayBrowseButtons = jest.fn();
-
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
         moxios.install();
 
         wrapper = shallowMount(browseDisplay, {
             localVue,
-            router,
-            methods: {setBrowseEvents, setButtonColor, displayBrowseButtons}
+            router
         });
 
         wrapper.setData({
@@ -89,7 +83,6 @@ describe('browseDisplay.vue', () => {
         });
 
         moxios.wait(() => {
-            let request = moxios.requests.mostRecent();
             expect(wrapper.vm.record_count).toEqual(response.resultCount);
             expect(wrapper.vm.record_list).toEqual(response.metadata);
             expect(wrapper.vm.container_name).toEqual(response.container.title);
@@ -98,34 +91,51 @@ describe('browseDisplay.vue', () => {
         });
     });
 
-    it("uses the correct search method for gallery browse", () => {
-        wrapper.setData({
-            browse_type: 'gallery-display'
-        });
-        wrapper.vm.retrieveData();
-        expect(wrapper.vm.search_method).toEqual('searchJson');
-    });
-
-    it("uses the correct search method for structure browse", () => {
-        wrapper.setData({
-            browse_type: 'structure-display'
-        });
-        wrapper.vm.retrieveData();
-        expect(wrapper.vm.search_method).toEqual('listJson');
-    });
-
-    it("uses the correct parameters to find admin set children", () => {
-        wrapper.setData({
-            is_admin_unit: true
-        });
-
-        wrapper.vm.updateParams();
-        expect(wrapper.vm.search_method).toEqual('listJson');
+    it("uses the correct search parameter for non admin set gallery browse", () => {
+        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
 
         wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
+    });
+
+    it("uses the correct search parameters for non admin set structure browse", () => {
+        wrapper.vm.$router.currentRoute.query.browse_type = 'structure-display';
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('listJson');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+    });
+
+    it("uses the correct parameters for admin set gallery browse", () => {
+        wrapper.setData({
+            is_admin_unit: true,
+            is_collection: false,
+            is_folder: false
+        });
+        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
     });
 
+    it("uses the correct parameters for admin set structure browse", () => {
+        wrapper.setData({
+            is_admin_unit: true,
+            is_collection: false,
+            is_folder: false
+        });
+        wrapper.vm.$router.currentRoute.query.browse_type = 'structure-display';
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('listJson');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
+    });
 
     it("updates the url when work type changes", () => {
         wrapper.setData({
@@ -133,17 +143,9 @@ describe('browseDisplay.vue', () => {
             is_collection: true
         });
 
-        wrapper.vm.updateParams();
+        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
         wrapper.vm.updateUrl();
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
-    });
-
-    it("prints out text for type of children", () => {
-        wrapper.setData({
-            container_metadata: response.container
-        });
-
-        expect(wrapper.find('.spacing p').text()).toContain('collection');
     });
 
     it("chunks records into groups", () => {

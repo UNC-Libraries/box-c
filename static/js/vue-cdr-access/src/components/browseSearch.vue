@@ -58,9 +58,13 @@
         }
     }
 
+    .button {
+        background-color: #F0F0F0;
+    }
+
     input, button {
         font-size: 1.1rem;
-        height: 44px;
+        height: 50px;
         margin-top: 15px;
     }
 </style>

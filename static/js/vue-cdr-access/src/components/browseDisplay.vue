@@ -9,13 +9,12 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-10 spacing">
-                <p :class="{ no_results: record_count === 0}">
-                    There {{ noteWording('are') }} <strong>{{ record_count }}</strong> {{ noteWording(childTypeText) }} in this level.
-                    <browse-filters v-if="is_collection || is_folder" :browse-type="browse_type" :container-type="container_metadata.type"></browse-filters>
+            <div class="column is-11 container-note">
+                <p :class="{ hidden: record_count === 0}">
+                    <view-type></view-type>
                 </p>
             </div>
-            <div class="column is-2">
+            <div class="column is-1">
                 <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             </div>
         </div>
@@ -24,11 +23,8 @@
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <a :href="recordUrl(record.id)">
-                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url">
+                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
-                            <div class="record-count" :class="{ thumbnail: hasThumbnail(record.thumbnail_url) }">
-                                <div>{{ recordCountFormat(record.counts.child) }}</div>
-                            </div>
                             <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
@@ -43,38 +39,36 @@
 </template>
 
 <script>
-    import browseFilters from "./browseFilters";
     import browseSearch from './browseSearch.vue';
     import browseSort from './browseSort.vue';
     import modalMetadata from './modalMetadata.vue';
     import pagination from './pagination.vue';
+    import viewType from './viewType';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
     import get from 'axios';
     import routeUtils from '../mixins/routeUtils';
-    import browseOptionUtils from "../mixins/browseOptionUtils";
 
     export default {
         name: 'browseDisplay',
 
         components: {
-            browseFilters,
             browseSearch,
             browseSort,
             modalMetadata,
-            pagination
+            pagination,
+            viewType,
         },
 
         watch: {
             '$route.query'(d) {
-                this.browseTypeFromUrl(this.is_admin_unit);
-                if (!this.is_page_loading && (this.applicablePage)) {
+                if (!this.is_page_loading) {
                     this.retrieveData();
                 }
             }
         },
 
-        mixins: [routeUtils, browseOptionUtils],
+        mixins: [routeUtils],
 
         data() {
             return {
@@ -94,18 +88,6 @@
         },
 
         computed: {
-            applicablePage() {
-               return (this.is_admin_unit || this.is_collection || this.is_folder)
-            },
-
-            childTypeText() {
-                if (this.container_metadata.type === 'AdminUnit') {
-                    return 'collection';
-                } else {
-                    return 'item';
-                }
-            },
-
             chunkedRecords() {
                 if (this.column_size === 'is-4') {
                     return chunk(this.record_list, 3);
@@ -120,9 +102,6 @@
         methods: {
             recordUrl(id) {
                 return `/record/${id}`;
-            },
-            recordCountFormat(number) {
-                return new Intl.NumberFormat().format(number);
             },
 
             recordType(type) {
@@ -147,16 +126,6 @@
                 }
             },
 
-            noteWording(word) {
-                if (this.record_count === 1 && word === 'are') {
-                    return 'is';
-                } else if (word === 'are') {
-                    return word;
-                }
-
-                return `${word}s`;
-            },
-
             hasThumbnail(thumb) {
               return thumb !== undefined && thumb !== '';
             },
@@ -166,10 +135,10 @@
 
                 if (this.is_admin_unit) {
                     this.default_work_type = 'Collection';
-                    delete params.format;
-                    delete params.browse_type;
-                } else if (this.containsFolderType(this.$route.query.types)) {
-                    this.default_work_type = 'Work,Folder'
+                } else if (params.browse_type === 'structure-display') {
+                    this.default_work_type = 'Work,Folder';
+                } else {
+                    this.default_work_type = 'Work';
                 }
 
                 params.types = this.default_work_type;
@@ -183,26 +152,11 @@
                     params.types = 'Work';
                 }
 
-                if (this.is_admin_unit) {
-                    params.types = 'Collection';
-
-                    delete params.format;
-                    delete params.browse_type;
-                    localStorage.removeItem('dcr-browse-type');
-
-                    this.browse_type = null;
-                    this.search_method = 'listJson';
-                } else if (this.browse_type === 'structure-display') {
-                    params.types = 'Work,Folder';
-                    delete params.format;
+                if (params.browse_type === 'structure-display') {
+                    params.types = (this.is_admin_unit) ? 'Collection' : 'Work,Folder';
                     this.search_method = 'listJson';
                 } else {
                     this.search_method = 'searchJson';
-                }
-
-                if (this.containsFolderType(this.$route.query.types)) {
-                    params.types = 'Folder';
-                    this.search_method = 'listJson';
                 }
 
                 this.default_work_type = params.types;
@@ -229,39 +183,18 @@
                 this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
                 this.is_collection = document.getElementById('is-collection') !== null;
                 this.is_folder = document.getElementById('is-folder') !== null;
-
-                /*
-                 * Show browse options for non admin unit pages
-                 * The options live outside Vue controlled DOM
-                 * See access/src/main/webapp/WEB-INF/jsp/fullRecord.jsp
-                 */
-                if (this.is_collection || this.is_folder) {
-                    this.displayBrowseButtons();
-                }
-
-                if (this.applicablePage) {
-                    this.updateUrl();
-                }
+                this.updateUrl();
             }
         },
 
         mounted() {
             this.findPageType();
-            this.browseTypeFromUrl(this.is_admin_unit);
-
-            if (this.applicablePage) {
-                this.retrieveData();
-            }
-
+            this.retrieveData();
             window.addEventListener('resize', debounce(this.numberOfColumns, 300));
-            this.setBrowseEvents();
-            window.addEventListener('load', this.setButtonColor);
         },
 
         beforeDestroy() {
             window.removeEventListener('resize', this.numberOfColumns);
-            this.clearBrowseEvents();
-            window.removeEventListener('load', this.setButtonColor);
         }
     };
 </script>
@@ -275,12 +208,15 @@
 
         ul {
             display: inline-flex;
-            text-align: center;
             width: 100%;
         }
 
+        li {
+            text-indent: 0;
+        }
+
         div, p {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
         }
 
         p.spacing {
@@ -288,7 +224,7 @@
         }
 
         i {
-            font-size: 10rem;
+            font-size: 9rem;
         }
 
         button {
@@ -309,44 +245,12 @@
             text-align: center;
         }
 
-        .record-count {
-            color: white;
-            margin-bottom: 35px;
-            margin-left: -15px;
-            margin-top: -65px;
-
-            div {
-                font-size: 40px;
-            }
-        }
-
         .record-title {
-            margin-left: -15px;
-            margin-top: 65px;
-        }
-
-        .thumbnail {
-            background-color: rgba(192, 192, 192, 0.4);
-            height: 100px;
-            float: none;
-            margin: -145px auto 0 auto;
-            width: 200px;
-
-            div {
-                margin-top: 40px;
-                padding-top: 45px;
-            }
+            margin-top: 25px;
         }
 
         .thumbnail + .record-title {
-            margin-left: 10px;
-            margin-top: 75px
-        }
-
-        img {
-            height: 100px;
-            margin-left: 15px;
-            width: 200px;
+            margin-top: 165px;
         }
 
         @media screen and (max-width: 768px) {

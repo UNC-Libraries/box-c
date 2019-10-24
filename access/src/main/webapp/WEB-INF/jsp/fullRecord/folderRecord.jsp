@@ -23,8 +23,8 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
 <c:choose>
-    <c:when test="${not empty parentBriefObject.countMap}">
-        <c:set var="childCount" value="${parentBriefObject.countMap.child}"/>
+    <c:when test="${not empty briefObject.countMap}">
+        <c:set var="childCount" value="${briefObject.countMap.child}"/>
     </c:when>
     <c:otherwise>
         <c:set var="childCount" value="0"/>
@@ -43,19 +43,31 @@
 <div class="contentarea">
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${parentBriefObject.title}"/></h2>
-            <p><strong>Date Deposited:</strong> <c:out value="${parentBriefObject.dateCreated}"/></p>
+            <c:import url="fullRecord/navigationBar.jsp" />
+            <h2><i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
+            <c:if test="${not empty briefObject.dateAdded}">
+                <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
+            </c:if>
+            <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollection}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
+            <p><strong>Finding Aid: </strong>
+                <c:choose>
+                    <c:when test="${empty briefObject.title}">
+                        <a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+                    </c:when>
+                    <c:otherwise>Doesn’t have a finding aid</c:otherwise>
+                </c:choose>
+            </p>
             <c:choose>
-                <c:when test="${not empty parentBriefObject.abstractText}">
-                    <c:set var="truncatedAbstract" value="${cdr:truncateText(parentBriefObject.abstractText, 250)}"/>
+                <c:when test="${not empty briefObject.abstractText}">
+                    <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
                     <c:choose>
-                        <c:when test="${fn:length(parentBriefObject.abstractText) > 250}">
+                        <c:when test="${fn:length(briefObject.abstractText) > 250}">
                             <p id="truncated-abstract"><c:out value="${truncatedAbstract}"/>...</p>
-                            <p id="full-abstract" class="hidden"><c:out value="${parentBriefObject.abstractText}"/></p>
+                            <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}"/></p>
                             <p><a id="show-abstract" href="#">Read more</a></p>
                         </c:when>
                         <c:otherwise>
-                            <p><c:out value="${parentBriefObject.abstractText}"/></p>
+                            <p><c:out value="${briefObject.abstractText}"/></p>
                         </c:otherwise>
                     </c:choose>
                 </c:when>
@@ -63,7 +75,9 @@
                     <p>There is no description available for this record.</p>
                 </c:otherwise>
             </c:choose>
+
         </div>
     </div>
     <c:import url="fullRecord/browseView.jsp"/>
 </div>
+<script type="text/javascript" src="/static/js/public/abstractDisplay"></script>
