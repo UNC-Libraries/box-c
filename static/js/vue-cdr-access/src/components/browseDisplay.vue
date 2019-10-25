@@ -1,18 +1,19 @@
 <template>
     <div class="browse-records-display">
         <div v-if="record_list.length > 0" class="columns">
-            <div class="column is-10">
+            <div class="column is-8">
                 <browse-search></browse-search>
             </div>
             <div class="column is-2">
                 <browse-sort></browse-sort>
             </div>
+            <div class="column is-2">
+                <view-type></view-type>
+            </div>
         </div>
         <div class="columns">
             <div class="column is-11 container-note">
-                <p :class="{ hidden: record_count === 0}">
-                    <view-type></view-type>
-                </p>
+                <works-only :admin-unit="is_admin_unit"></works-only>
             </div>
             <div class="column is-1">
                 <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
@@ -39,11 +40,12 @@
 </template>
 
 <script>
-    import browseSearch from './browseSearch.vue';
-    import browseSort from './browseSort.vue';
-    import modalMetadata from './modalMetadata.vue';
-    import pagination from './pagination.vue';
+    import browseSearch from './browseSearch';
+    import browseSort from './browseSort';
+    import modalMetadata from './modalMetadata';
+    import pagination from './pagination';
     import viewType from './viewType';
+    import worksOnly from './worksOnly';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
     import get from 'axios';
@@ -58,6 +60,7 @@
             modalMetadata,
             pagination,
             viewType,
+            worksOnly
         },
 
         watch: {
@@ -131,34 +134,18 @@
             },
 
             updateUrl() {
-                let params = this.urlParams();
-
-                if (this.is_admin_unit) {
-                    this.default_work_type = 'Collection';
-                } else if (params.browse_type === 'structure-display') {
-                    this.default_work_type = 'Work,Folder';
-                } else {
-                    this.default_work_type = 'Work';
-                }
-
-                params.types = this.default_work_type;
+                let params = this.setTypes();
                 this.$router.push({ name: 'browseDisplay', query: params });
             },
 
             updateParams() {
-                let params = this.urlParams();
+                let params = this.setTypes();
+                this.search_method = (params.browse_type === 'list-display') ? 'listJson' : 'searchJson';
+                return params;
+            },
 
-                if (this.is_collection || this.is_folder) {
-                    params.types = 'Work';
-                }
-
-                if (params.browse_type === 'structure-display') {
-                    params.types = (this.is_admin_unit) ? 'Collection' : 'Work,Folder';
-                    this.search_method = 'listJson';
-                } else {
-                    this.search_method = 'searchJson';
-                }
-
+            setTypes() {
+                let params = this.updateWorkType(this.is_admin_unit, this.urlParams().works_only);
                 this.default_work_type = params.types;
                 return params;
             },

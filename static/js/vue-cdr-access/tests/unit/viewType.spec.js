@@ -27,7 +27,7 @@ describe('viewType.vue', () => {
 
     it("sets a browse type when clicked", () => {
         btns.at(1).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('structure-display'));
+        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('list-display'));
 
         btns.at(0).trigger('click');
         expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
@@ -46,11 +46,11 @@ describe('viewType.vue', () => {
     it("sets browse_type from url, if present", () => {
         expect(wrapper.vm.browse_type).toEqual('gallery-display');
 
-        wrapper.vm.$router.currentRoute.query.browse_type = 'structure-display';
+        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
         wrapper = shallowMount(viewType, {
             localVue,
             router
         });
-        expect(wrapper.vm.browse_type).toEqual('structure-display');
+        expect(wrapper.vm.browse_type).toEqual('list-display');
     });
 });
