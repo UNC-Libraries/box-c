@@ -88,4 +88,11 @@
             width: 250px;
         }
     }
+
+    @media screen and (max-width: 768px) {
+        #browse-display-type {
+            justify-content: flex-start;
+            margin-top: 5px;
+        }
+    }
 </style>

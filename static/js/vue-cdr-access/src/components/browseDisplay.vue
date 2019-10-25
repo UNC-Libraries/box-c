@@ -1,13 +1,13 @@
 <template>
     <div class="browse-records-display">
-        <div v-if="record_list.length > 0" class="columns">
-            <div class="column is-8">
+        <div v-if="record_list.length > 0" class="columns is-tablet">
+            <div class="column is-three-fifths">
                 <browse-search></browse-search>
             </div>
-            <div class="column is-2">
+            <div class="column is-one-fifth">
                 <browse-sort></browse-sort>
             </div>
-            <div class="column is-2">
+            <div class="column is-one-fifth">
                 <view-type></view-type>
             </div>
         </div>
@@ -187,6 +187,9 @@
 </script>
 
 <style scoped lang="scss">
+    .collection-info-bottom, .collinfo_metadata {
+        margin-top: 0;
+    }
     .browse-records-display {
         .columns {
             display: inline-flex;
@@ -214,16 +217,6 @@
             font-size: 9rem;
         }
 
-        button {
-            background-color: #007FAE;
-            color: white;
-
-            &:hover {
-                color: white;
-                opacity: .9;
-            }
-        }
-
         .no_results {
             margin-top: 25px;
         }
@@ -239,8 +232,10 @@
         .thumbnail + .record-title {
             margin-top: 165px;
         }
+    }
 
-        @media screen and (max-width: 768px) {
+    @media screen and (max-width: 768px) {
+        .browse-records-display {
             .spacing {
                 p {
                     line-height: 20px;
@@ -250,6 +245,23 @@
                         text-align: center;
                     }
                 }
+            }
+
+            input {
+                margin-top: 0;
+            }
+
+            .is-2 {
+                margin-top: inherit;
+            }
+
+            .is-tablet {
+                display: inherit;
+                width: inherit;
+            }
+
+            .column.is-three-fifths {
+                padding-bottom: 0;
             }
         }
     }

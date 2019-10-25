@@ -50,4 +50,12 @@
             height: 2.65em;
         }
     }
+
+    @media screen and (max-width: 768px) {
+        .browse-sort {
+            float: left;
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+    }
 </style>
