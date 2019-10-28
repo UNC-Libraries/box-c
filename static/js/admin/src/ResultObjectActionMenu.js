@@ -144,7 +144,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		
 		/* Evaluating if retaining feature
-		if ($.inArray('editAccessControl', metadata.permissions) != -1
+		if ($.inArray('changePatronAccess', metadata.permissions) != -1
 				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
 			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
 		}

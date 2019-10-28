@@ -59,7 +59,7 @@ public class RunEnhancementsController {
         // Check that the user has permission to all requested objects
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         for (String pid : data.getPids()) {
-            if (!aclService.hasAccess(new PID(pid), groups, Permission.editAccessControl)) {
+            if (!aclService.hasAccess(new PID(pid), groups, Permission.changePatronAccess)) {
                 result.put("error", "Insufficient permissions to perform operation");
                 return result;
             }

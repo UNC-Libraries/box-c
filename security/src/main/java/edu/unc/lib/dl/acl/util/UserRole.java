@@ -61,14 +61,6 @@ import edu.unc.lib.dl.rdf.CdrAcl;
  */
 public enum UserRole {
     list("list", new Permission[] {}),
-    metadataPatron("metadata-patron", new Permission[] {
-            Permission.viewMetadata}),
-    accessCopiesPatron("access-copies-patron", new Permission[] {
-            Permission.viewMetadata, Permission.viewAccessCopies}),
-    patron("patron", new Permission[] {
-            Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-    canView("canView", new Permission[] {
-            Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
     // Patron roles
     none("none", false),
     canDiscover("canDiscover", false),
