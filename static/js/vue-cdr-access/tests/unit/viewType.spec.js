@@ -22,7 +22,7 @@ describe('viewType.vue', () => {
             router
         });
 
-        btns = wrapper.findAll('#browse-btns button');
+        btns = wrapper.findAll('#browse-btns i');
     });
 
     it("sets a browse type when clicked", () => {
