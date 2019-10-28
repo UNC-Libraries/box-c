@@ -77,7 +77,7 @@ describe('browseDisplay.vue', () => {
 
     it("retrieves data", (done) => {
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&types=Work`, {
+        moxios.stubRequest(`searchJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&works_only=false&types=Work`, {
             status: 200,
             response: JSON.stringify(response)
         });
@@ -101,7 +101,7 @@ describe('browseDisplay.vue', () => {
     });
 
     it("uses the correct search parameters for non admin set structure browse", () => {
-        wrapper.vm.$router.currentRoute.query.browse_type = 'structure-display';
+        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -129,7 +129,7 @@ describe('browseDisplay.vue', () => {
             is_collection: false,
             is_folder: false
         });
-        wrapper.vm.$router.currentRoute.query.browse_type = 'structure-display';
+        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();

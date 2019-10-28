@@ -1,14 +1,8 @@
 <template>
     <div id="browse-display-type" class="display-wrapper">
-        <p>How would you like to browse?</p>
-        <div class="display-note-btn">?<div class="arrow"></div>
-            <span class="browse-tip">
-                <p><strong>Gallery</strong> view shows you all the files only, without the folders that store the files.</p>
-                <p><strong>Structured</strong> view allows you to navigate one level at a time.</p>
-            </span></div>
         <div id="browse-btns" @click="setMode">
-            <button id="gallery-display" class="button is-light" :class="{'is-selected': isGallery}">Gallery</button>
-            <button id="structure-display" class="button is-light" :class="{'is-selected': !isGallery}">Structured</button>
+            <i id="gallery-display" title="Gallery View" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
+            <i id="list-display" title="List View" class="fas fa-th-list" :class="{'is-selected': !isGallery}"></i>
         </div>
     </div>
 </template>
@@ -23,6 +17,12 @@
         data() {
             return {
                 browse_type: 'gallery-display'
+            }
+        },
+
+        watch: {
+            '$route.query'(params) {
+                this.browse_type = params.browse_type;
             }
         },
 
@@ -52,13 +52,47 @@
 </script>
 
 <style scoped lang="scss">
-    .button.is-light {
-        border: 1px solid darkgray;
+    #browse-display-type {
+        justify-content: flex-end;
+
+        #browse-btns {
+            margin-top: 10px;
+
+            i {
+                border: 1px solid lightgray;
+                border-radius: 5px;
+                color: lightgray;
+                font-size: 2.6rem;
+                padding: 5px;
+            }
+
+            #gallery-display {
+                border-bottom-right-radius: 0;
+                border-top-right-radius: 0;
+            }
+
+            #list-display {
+                border-bottom-left-radius: 0;
+                border-top-left-radius: 0;
+            }
+
+            .is-selected {
+                background-color: slategray;
+                border-color: slategray;
+                color: white;
+            }
+        }
+
+        .browse-tip {
+            line-height: 20px;
+            width: 250px;
+        }
     }
 
-    .button.is-selected {
-        background-color: slategray;
-        border: 1px solid black;
-        color: whitesmoke;
+    @media screen and (max-width: 768px) {
+        #browse-display-type {
+            justify-content: flex-start;
+            margin-top: 5px;
+        }
     }
 </style>
