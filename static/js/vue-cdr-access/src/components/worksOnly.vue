@@ -4,7 +4,7 @@
         <p>Show only works</p>
         <div class="display-note-btn">?
             <div class="arrow"></div>
-            <span class="browse-tip">This feature shows all files without organizational folders.</span>
+            <span class="browse-tip">Show all files without organizational folders.</span>
         </div>
     </div>
 </template>
