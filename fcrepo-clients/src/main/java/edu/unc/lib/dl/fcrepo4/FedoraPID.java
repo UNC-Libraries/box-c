@@ -32,6 +32,7 @@ public class FedoraPID extends PID {
     private String id;
     private String qualifier;
     private String qualifiedId;
+    private String componentId;
     private String componentPath;
     private URI repositoryUri;
     private String repositoryPath;
@@ -45,6 +46,9 @@ public class FedoraPID extends PID {
         this.qualifiedId = qualifier + "/" + id;
         if (componentPath != null) {
             this.qualifiedId += "/" + componentPath;
+            this.componentId = id + "/" + componentPath;
+        } else {
+            this.componentId = id;
         }
     }
 
@@ -88,6 +92,11 @@ public class FedoraPID extends PID {
     @Override
     public String getComponentPath() {
         return componentPath;
+    }
+
+    @Override
+    public String getComponentId() {
+        return componentId;
     }
 
     /**

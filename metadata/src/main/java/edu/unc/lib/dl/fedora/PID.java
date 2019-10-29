@@ -146,6 +146,15 @@ public class PID implements Serializable {
     }
 
     /**
+     * Get the unique identifier for this object, including the component path if present
+     *
+     * @return
+     */
+    public String getComponentId() {
+        return pid;
+    }
+
+    /**
      * Returns true if the provided pid is a component of the this pid
      *
      * @param pid
