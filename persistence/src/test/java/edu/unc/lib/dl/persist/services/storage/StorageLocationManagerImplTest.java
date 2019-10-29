@@ -376,6 +376,93 @@ public class StorageLocationManagerImplTest {
         locManager.getStorageLocationForUri(URI.create("file://random/location"));
     }
 
+    @Test
+    public void listAvailableStorageLocationsFromAncestor() throws Exception {
+        PID unitPid = makePid();
+        mockAncestors(unitPid, getContentRootPid());
+
+        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        addMapping(getContentRootPid().getId(), LOC1_ID);
+
+        initializeManager();
+
+        List<StorageLocation> locs = locManager.listAvailableStorageLocations(unitPid);
+        assertEquals(1, locs.size());
+        assertIsLocation1(locs.get(0));
+    }
+
+    @Test
+    public void listAvailableStorageLocationsNoneAvailable() throws Exception {
+        PID unitPid = makePid();
+        mockAncestors(unitPid, getContentRootPid());
+
+        initializeManager();
+
+        List<StorageLocation> locs = locManager.listAvailableStorageLocations(unitPid);
+        assertEquals(0, locs.size());
+    }
+
+    @Test
+    public void listAvailableStorageLocationsMultiple() throws Exception {
+        PID unitPid = makePid();
+        mockAncestors(unitPid, getContentRootPid());
+
+        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        addMapping(getContentRootPid().getId(), LOC1_ID);
+        addMapping(unitPid.getId(), LOC2_ID);
+
+        initializeManager();
+
+        List<StorageLocation> locs = locManager.listAvailableStorageLocations(unitPid);
+        assertEquals(2, locs.size());
+
+        StorageLocation loc1 = findStorageLocationById(locs, LOC1_ID);
+        assertIsLocation1(loc1);
+
+        StorageLocation loc2 = findStorageLocationById(locs, LOC2_ID);
+        assertIsLocation2(loc2);
+    }
+
+    @Test
+    public void listAvailableStorageLocationsDuplicateLocation() throws Exception {
+        PID unitPid = makePid();
+        mockAncestors(unitPid, getContentRootPid());
+
+        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        addMapping(getContentRootPid().getId(), LOC1_ID);
+        addMapping(unitPid.getId(), LOC1_ID);
+
+        initializeManager();
+
+        List<StorageLocation> locs = locManager.listAvailableStorageLocations(unitPid);
+        assertEquals(1, locs.size());
+        assertIsLocation1(locs.get(0));
+    }
+
+    @Test
+    public void listAvailableStorageLocationsAssignedAfterCollection() throws Exception {
+        PID unitPid = makePid();
+        PID collPid = makePid();
+        PID folderPid = makePid();
+        mockAncestors(folderPid, getContentRootPid(), unitPid, collPid);
+
+        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        addMapping(collPid.getId(), LOC1_ID);
+        addMapping(folderPid.getId(), LOC2_ID);
+
+        initializeManager();
+
+        List<StorageLocation> locs = locManager.listAvailableStorageLocations(folderPid);
+        assertEquals(1, locs.size());
+        assertIsLocation1(locs.get(0));
+    }
+
+    private StorageLocation findStorageLocationById(List<StorageLocation> locs, String id) {
+        return locs.stream().filter(l -> l.getId().equals(id)).findFirst().orElse(null);
+    }
+
     private void addStorageLocation(String id, String name, String base) throws IOException {
         Map<String, String> info = new HashMap<>();
         info.put("id", id);

@@ -20,9 +20,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Resource;
@@ -117,6 +119,18 @@ public class StorageLocationManagerImpl implements StorageLocationManager {
 
         throw new UnknownStorageLocationException(
                 "Unable to determine the default storage location for object " + pid.getId());
+    }
+
+    @Override
+    public List<StorageLocation> listAvailableStorageLocations(PID pid) {
+        List<PID> ancestors = pathFactory.getAncestorPids(pid);
+        ancestors.add(pid);
+
+        return new ArrayList<>(ancestors.stream()
+            .limit(COLLECTION_PATH_DEPTH + 1l)
+            .map(pidToStorageLocation::get)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet()));
     }
 
     @Override
