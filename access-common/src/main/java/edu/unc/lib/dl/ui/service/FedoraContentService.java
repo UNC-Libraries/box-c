@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.ui.service;
 
 import static edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil.getPermissionForDatastream;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
@@ -68,7 +68,7 @@ public class FedoraContentService {
     public void streamData(PID pid, String dsName, AccessGroupSet principals, boolean asAttachment,
             HttpServletResponse response) throws IOException {
         // Default datastream is DATA_FILE
-        String datastream = dsName == null ? ORIGINAL_FILE : dsName;
+        String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
 
         accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                 pid, principals, getPermissionForDatastream(datastream));
@@ -77,7 +77,7 @@ public class FedoraContentService {
 
         FileObject fileObj = repositoryObjectLoader.getFileObject(pid);
         BinaryObject binObj;
-        if (ORIGINAL_FILE.equals(datastream)) {
+        if (ORIGINAL_FILE.getId().equals(datastream)) {
             binObj = fileObj.getOriginalFile();
         } else {
             binObj = fileObj.getBinaryObject(datastream);

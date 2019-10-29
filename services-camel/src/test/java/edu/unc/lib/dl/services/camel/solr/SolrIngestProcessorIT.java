@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -105,7 +105,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(workMd.getContentStatus());
 
         assertEquals(1, workMd.getDatastream().size());
-        assertNotNull(workMd.getDatastreamObject(RepositoryPathConstants.ORIGINAL_FILE));
+        assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
         assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
 
@@ -180,7 +180,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getContentStatus());
 
         assertEquals(1, fileMd.getDatastream().size());
-        assertNotNull(fileMd.getDatastreamObject(RepositoryPathConstants.ORIGINAL_FILE));
+        assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
         assertTrue("Content type was not set to text", fileMd.getContentType().get(0).contains("text"));
 

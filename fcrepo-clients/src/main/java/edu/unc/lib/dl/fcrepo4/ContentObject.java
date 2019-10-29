@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MD_DESCRIPTIVE_FILE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -64,15 +64,15 @@ public abstract class ContentObject extends RepositoryObject {
             Model descModel = ModelFactory.createDefaultModel();
             descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
 
-            descObj = repoObjFactory.createBinary(mdURI, MD_DESCRIPTIVE_FILE, modsStream,
-                    null, "text/xml", null, null, null);
+            descObj = repoObjFactory.createBinary(mdURI, MD_DESCRIPTIVE.getId(), modsStream,
+                    null, MD_DESCRIPTIVE.getMimetype(), null, null, null);
 
             repoObjFactory.createRelationship(this, Cdr.hasMods, descObj.getResource());
 
             return descObj;
         } else {
-            return repoObjFactory.updateBinary(mdURI, MD_DESCRIPTIVE_FILE, modsStream,
-                    null, "text/xml", null, null, null);
+            return repoObjFactory.updateBinary(mdURI, MD_DESCRIPTIVE.getId(), modsStream,
+                    null, MD_DESCRIPTIVE.getMimetype(), null, null, null);
         }
     }
 

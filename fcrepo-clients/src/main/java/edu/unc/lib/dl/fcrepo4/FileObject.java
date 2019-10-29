@@ -16,7 +16,8 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.InputStream;
@@ -85,14 +86,14 @@ public class FileObject extends ContentObject {
             String mimetype, String sha1Checksum, String md5Checksum) {
 
         // Construct the path to where the original file will be created
-        String objectPath = constructOriginalFilePath();
+        String objectPath = getOriginalFilePid(pid).getRepositoryPath();
 
         // Add the OriginalFile use type
         Model fileModel = ModelFactory.createDefaultModel();
         Resource resc = fileModel.createResource(objectPath);
         resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
-        return repoObjFactory.createBinary(fileSetUri, ORIGINAL_FILE, contentStream,
+        return repoObjFactory.createBinary(fileSetUri, ORIGINAL_FILE.getId(), contentStream,
                 filename, mimetype, sha1Checksum, md5Checksum, fileModel);
     }
 
@@ -108,7 +109,7 @@ public class FileObject extends ContentObject {
     public BinaryObject replaceOriginalFile(InputStream contentStream, String filename,
             String mimetype, String sha1Checksum, String md5Checksum) {
 
-        return repoObjFactory.updateBinary(fileSetUri, ORIGINAL_FILE, contentStream,
+        return repoObjFactory.updateBinary(fileSetUri, ORIGINAL_FILE.getId(), contentStream,
                 filename, mimetype, sha1Checksum, md5Checksum, null);
     }
 
@@ -119,12 +120,8 @@ public class FileObject extends ContentObject {
      * @return
      */
     public BinaryObject getOriginalFile() {
-        return driver.getRepositoryObject(PIDs.get(constructOriginalFilePath()),
+        return driver.getRepositoryObject(getOriginalFilePid(pid),
                 BinaryObject.class);
-    }
-
-    private String constructOriginalFilePath() {
-        return URIUtil.join(fileSetPath, ORIGINAL_FILE);
     }
 
     /**
@@ -159,7 +156,7 @@ public class FileObject extends ContentObject {
         if (associationRelation != null) {
             // Establish association with original file relation
             repoObjFactory.createRelationship(derivObj,
-                    associationRelation, createResource(constructOriginalFilePath()));
+                    associationRelation, createResource(getOriginalFilePid(pid).getRepositoryPath()));
         }
 
         return derivObj;

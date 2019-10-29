@@ -80,6 +80,10 @@ public class CdrDeposit {
     public static final Property stagingLocation = createProperty(
             "http://cdr.unc.edu/definitions/deposit#stagingLocation" );
 
+    /** URI of binary content within a storage location. */
+    public static final Property storageUri = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#storageUri" );
+
     /** Link to binary objects contained by this object other than the main payload binary. */
     public static final Property hasDatastream = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastream" );

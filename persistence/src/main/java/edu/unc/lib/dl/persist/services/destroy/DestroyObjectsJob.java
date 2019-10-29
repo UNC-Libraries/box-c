@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.persist.services.destroy;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MD_EVENTS;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 
 import java.io.IOException;
 import java.net.URI;
@@ -181,7 +181,7 @@ public class DestroyObjectsJob implements Runnable {
             RDFNode obj = iter.next();
             String objUri = obj.asResource().getURI();
             // do not delete Premis events and metadata container
-            if (!(objUri.endsWith("/" + MD_EVENTS) || objUri.endsWith("/" + METADATA_CONTAINER))) {
+            if (!(objUri.endsWith("/" + MD_EVENTS.getId()) || objUri.endsWith("/" + METADATA_CONTAINER))) {
                 try (FcrepoResponse resp = fcrepoClient.delete(URI.create(objUri)).perform()) {
                 } catch (FcrepoOperationFailedException | IOException e) {
                     throw new ServiceException("Unable to clean up child object " + objUri, e);

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -72,7 +72,7 @@ public class DatastreamUtil {
         } else {
             url.append(preferredDS.getOwner());
         }
-        if (!ORIGINAL_FILE.equals(preferredDS.getName())) {
+        if (!ORIGINAL_FILE.getId().equals(preferredDS.getName())) {
             url.append("/").append(preferredDS.getName());
         }
         return url.toString();
@@ -86,7 +86,7 @@ public class DatastreamUtil {
      * @return url for accessing the datastream.
      */
     public static String getOriginalFileUrl(BriefObjectMetadata metadata) {
-        return getDatastreamUrl(metadata, ORIGINAL_FILE);
+        return getDatastreamUrl(metadata, ORIGINAL_FILE.getId());
     }
 
     /**
