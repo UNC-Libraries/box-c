@@ -180,14 +180,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         log.debug("Ingesting content for deposit {} containing {} objects", getDepositPID());
 
+        PID destPid = getDestinationPID();
+
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
-        String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destPid = PIDs.get(destinationPath);
-        if (destPid == null) {
-            failJob("Invalid destination URI", "The provide destination uri " + destinationPath
-                    + " was not a valid repository path");
-        }
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {

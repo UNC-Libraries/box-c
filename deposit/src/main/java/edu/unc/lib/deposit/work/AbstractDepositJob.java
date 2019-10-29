@@ -59,6 +59,7 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import io.dropwizard.metrics5.Timer;
 
@@ -89,12 +90,12 @@ public abstract class AbstractDepositJob implements Runnable {
     protected PremisLoggerFactory premisLoggerFactory;
 
     // UUID for this deposit and its deposit record
-    private String depositUUID;
+    protected String depositUUID;
 
-    private PID depositPID;
+    protected PID depositPID;
 
     // UUID for this ingest job
-    private String jobUUID;
+    protected String jobUUID;
 
     // Root directory where all deposits are stored
     @Autowired
@@ -242,6 +243,17 @@ public abstract class AbstractDepositJob implements Runnable {
     public List<String> getManifestFileURIs() {
         List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
         return filePaths;
+    }
+
+    protected PID getDestinationPID() {
+        Map<String, String> depositStatus = getDepositStatus();
+        String destinationPath = depositStatus.get(DepositField.containerId.name());
+        PID destPid = PIDs.get(destinationPath);
+        if (destPid == null) {
+            failJob("Invalid destination URI", "The provide destination uri " + destinationPath
+                    + " was not a valid repository path");
+        }
+        return destPid;
     }
 
     public void failJob(String message, String details) {
