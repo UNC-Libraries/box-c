@@ -62,7 +62,7 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession, MultiDe
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         clientCache.values().forEach(BinaryTransferClient::shutdown);
     }
 

@@ -58,4 +58,10 @@ public interface BinaryTransferSession extends AutoCloseable {
      * @return the URI of the binary in its destination.
      */
     URI transferVersion(PID binPid, URI sourceFileUri);
+
+    /**
+     * Closes the binary session. If there are any failures, they will be RuntimeExceptions.
+     */
+    @Override
+    void close();
 }
