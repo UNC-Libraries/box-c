@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -143,7 +144,7 @@ public abstract class AbstractDepositJob implements Runnable {
             if (dataset.isInTransaction()) {
                 dataset.commit();
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (dataset.isInTransaction()) {
                 dataset.abort();
             }
@@ -241,8 +242,7 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return
      */
     public List<String> getManifestFileURIs() {
-        List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
-        return filePaths;
+        return depositStatusFactory.getManifestURIs(getDepositUUID());
     }
 
     protected PID getDestinationPID() {
@@ -277,7 +277,8 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     protected File getPremisFile(PID pid) {
-        return new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".nt");
+        return Paths.get(depositDirectory.getAbsolutePath(), DepositConstants.EVENTS_DIR,
+                pid.getUUID() + ".nt").toFile();
     }
 
     /**
