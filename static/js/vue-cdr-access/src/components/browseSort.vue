@@ -30,7 +30,7 @@
                     this.sort_order = 'title,normal';
                 }
 
-                this.$router.push({ name: 'browseDisplay', query:  this.urlParams({ sort: this.sort_order }) });
+                this.$router.push({ name: 'displayRecords', query:  this.urlParams({ sort: this.sort_order }) });
                 this.sort_order = '';
             }
         }

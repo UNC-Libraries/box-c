@@ -41,7 +41,7 @@
                 params.types = this.updateWorkType(this.adminUnit, this.works_only).types;
                 params.works_only = this.works_only;
 
-                this.$router.push({ name: 'browseDisplay', query: params });
+                this.$router.push({ name: 'displayRecords', query: params });
             }
         },
 
@@ -53,6 +53,7 @@
 
 <style scoped lang="scss">
     #browse-display-type {
+        font-size: 1.2rem;
         justify-content: center;
 
         .checkbox {

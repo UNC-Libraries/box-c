@@ -98,7 +98,7 @@
                     rows: this.rows_per_page + ''
                 };
 
-                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
+                this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) });
             }
         },
 

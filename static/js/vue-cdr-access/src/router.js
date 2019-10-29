@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import browseDisplay from "./components/browseDisplay";
+import displayWrapper from "./components/displayWrapper";
 
 Vue.use(Router);
 
@@ -10,8 +10,8 @@ export default new Router({
   routes: [
     {
       path: '/record/:uuid/',
-      name: 'browseDisplay',
-      component: browseDisplay
+      name: 'displayRecords',
+      component: displayWrapper
     }
   ]
 });

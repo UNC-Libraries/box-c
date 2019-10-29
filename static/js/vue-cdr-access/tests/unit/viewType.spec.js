@@ -8,7 +8,7 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/uuid1234',
-            name: 'browseDisplay'
+            name: 'displayRecords'
         }
     ]
 });

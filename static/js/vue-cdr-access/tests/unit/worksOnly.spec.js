@@ -10,7 +10,7 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'browseDisplay'
+            name: 'displayRecords'
         }
     ]
 });

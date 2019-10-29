@@ -1,6 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router';
-import browseDisplay from '@/components/browseDisplay.vue';
+import listDisplay from '@/components/listDisplay.vue';
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);
@@ -12,7 +12,6 @@ const router = new VueRouter({
         }
     ]
 });
-
 let wrapper;
 const record_list = [
     {
@@ -39,40 +38,18 @@ const record_list = [
     }
 ];
 
-let records = [...record_list, ...record_list, ...record_list, ...record_list]; // Creates 8 returned records
-
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(browseDisplay, {
+        wrapper = shallowMount(listDisplay, {
             localVue,
             router,
             propsData: {
-                recordList: records
+                recordList: record_list
             }
-        });
-
-        wrapper.setData({
-            column_size: 'is-3',
         });
     });
 
-    it("chunks records into groups", () => {
-        let four_per_row = [...record_list, ...record_list];
-        expect(wrapper.vm.chunkedRecords).toEqual([four_per_row, four_per_row]);
-
-        wrapper.setData({
-            column_size: 'is-4'
-        });
-        let three_per_row = [
-            wrapper.vm.recordList.slice(0, 3),
-            wrapper.vm.recordList.slice(3, 6),
-            wrapper.vm.recordList.slice(6)];
-        expect(wrapper.vm.chunkedRecords).toEqual(three_per_row);
-
-        wrapper.setData({
-            column_size: 'is-6'
-        });
-        let two_per_row = [record_list, record_list, record_list, record_list];
-        expect(wrapper.vm.chunkedRecords).toEqual(two_per_row);
+    it("displays records", () => {
+        expect(wrapper.vm.recordList.length).toEqual(2);
     });
 });

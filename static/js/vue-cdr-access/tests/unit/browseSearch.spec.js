@@ -10,7 +10,7 @@ describe('browseSearch.vue', () => {
         const localVue = createLocalVue();
         const $route = {
             path: '/record/1234',
-            name: 'browseDisplay',
+            name: 'displayRecords',
             query: { anywhere: encodeURIComponent('Test Folder') }
         };
 
@@ -34,7 +34,7 @@ describe('browseSearch.vue', () => {
             routes: [
                 {
                     path: '/record/uuid1234',
-                    name: 'browseDisplay'
+                    name: 'displayRecords'
                 }
             ]
         });
