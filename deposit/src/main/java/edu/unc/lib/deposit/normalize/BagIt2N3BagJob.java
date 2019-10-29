@@ -24,6 +24,7 @@ import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.SHA1;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -80,8 +81,8 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
         Map<String, String> status = getDepositStatus();
-        String sourcePath = status.get(DepositField.sourcePath.name());
-        Path sourceFile = Paths.get(sourcePath);
+        URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
+        Path sourceFile = Paths.get(sourceUri);
 
         try {
             // Verify that the bag has all the required parts
@@ -98,7 +99,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             Set<Manifest> payloadManifests = bagReader.getPayLoadManifests();
 
             // Turn the bag itself into the top level folder for this deposit
-            org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, new File(sourcePath));
+            org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, new File(sourceUri));
 
             int i = 0;
             // Add all of the payload objects into the bag folder
@@ -146,14 +147,14 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             // Register the bag itself for cleanup
             model.add(depositBag, cleanupLocation, sourceFile.toAbsolutePath().toUri().toString());
         } catch (IOException e) {
-            failJob(e, "Unable to read bag file {0}", sourcePath);
+            failJob(e, "Unable to read bag file {0}", sourceUri);
         } catch (InterruptedException e) {
-            failJob(e, "Interrupted while normalizing bag {0}", sourcePath);
+            failJob(e, "Interrupted while normalizing bag {0}", sourceUri);
         } catch (MissingBagitFileException | MissingPayloadDirectoryException | MissingPayloadManifestException
                 | FileNotInPayloadDirectoryException | VerificationException | CorruptChecksumException
                 | UnparsableVersionException | MaliciousPathException | UnsupportedAlgorithmException
                 | InvalidBagitFileFormatException e) {
-            failJob("Unable to normalize bag " + sourcePath + ", it was not complete according to bagit specifications",
+            failJob("Unable to normalize bag " + sourceUri + ", it was not complete according to bagit specifications",
                     e.getMessage());
         }
     }

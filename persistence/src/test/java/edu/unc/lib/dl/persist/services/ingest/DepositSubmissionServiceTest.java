@@ -75,7 +75,7 @@ public class DepositSubmissionServiceTest {
 
     @Test
     public void testSubmitDepositSimplePackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH,
+        DepositData deposit = new DepositData(FILEPATH.toUri(),
                 MIMETYPE,
                 PackagingType.SIMPLE_OBJECT,
                 DEPOSIT_METHOD,
@@ -88,7 +88,7 @@ public class DepositSubmissionServiceTest {
 
     @Test
     public void testSubmitDepositBagitPackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH,
+        DepositData deposit = new DepositData(FILEPATH.toUri(),
                 MIMETYPE,
                 PackagingType.BAGIT,
                 DEPOSIT_METHOD,
@@ -101,7 +101,7 @@ public class DepositSubmissionServiceTest {
 
     @Test(expected = UnsupportedPackagingTypeException.class)
     public void testSubmitDepositUnregisteredPackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH,
+        DepositData deposit = new DepositData(FILEPATH.toUri(),
                 MIMETYPE,
                 PackagingType.ATOM,
                 DEPOSIT_METHOD,
@@ -112,7 +112,7 @@ public class DepositSubmissionServiceTest {
 
     @Test(expected = UnsupportedPackagingTypeException.class)
     public void testSubmitDepositNullPackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH,
+        DepositData deposit = new DepositData(FILEPATH.toUri(),
                 MIMETYPE,
                 null,
                 DEPOSIT_METHOD,

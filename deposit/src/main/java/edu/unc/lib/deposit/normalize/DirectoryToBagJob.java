@@ -57,7 +57,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
         Map<String, String> status = getDepositStatus();
-        String sourcePath = status.get(DepositField.sourcePath.name());
+        String sourcePath = status.get(DepositField.sourceUri.name());
         File sourceFile = new File(sourcePath);
 
         // List all files and directories in the deposit, excluding the base directory

@@ -21,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +77,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         copyTestPackage("src/test/resources/simpleMods.xml", "data_file.xml", job);
 
         status.put(DepositField.depositSlug.name(), name);
-        status.put(DepositField.fileName.name(), "data_file.xml");
+        URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "data", "data_file.xml").toUri();
+        status.put(DepositField.sourceUri.name(), stagingUri.toString());
 
         job.run();
 
@@ -92,7 +95,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
     public void depositSimpleMissingFile() throws Exception {
 
         status.put(DepositField.depositSlug.name(), "name");
-        status.put(DepositField.fileName.name(), "data_file.xml");
+        URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "data_file.xml").toUri();
+        status.put(DepositField.sourceUri.name(), stagingUri.toString());
 
         job.run();
 

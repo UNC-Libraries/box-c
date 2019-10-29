@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.persist.services.ingest;
 
 import java.io.InputStream;
-import java.nio.file.Path;
+import java.net.URI;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.util.PackagingType;
@@ -37,7 +37,7 @@ public class DepositData {
     private String md5;
     private String accessionNumber;
     private String mediaId;
-    private Path filePath;
+    private URI sourceUri;
     private Priority priority;
     private AgentPrincipals depositingAgent;
     private String depositorEmail;
@@ -46,19 +46,19 @@ public class DepositData {
 
     public DepositData(InputStream inputStream, String filename, String mimeType, PackagingType packagingType,
             String depositMethod, AgentPrincipals depositingAgent) {
-        this(filename, mimeType, packagingType, depositMethod, depositingAgent);
+        this(mimeType, packagingType, depositMethod, depositingAgent);
         this.inputStream = inputStream;
-    }
-
-    public DepositData(Path filePath, String mimeType, PackagingType packagingType, String depositMethod,
-            AgentPrincipals depositingAgent) {
-        this(filePath.getFileName().toString(), mimeType, packagingType, depositMethod, depositingAgent);
-        this.filePath = filePath;
-    }
-
-    private DepositData(String filename, String mimeType, PackagingType packagingType, String depositMethod,
-            AgentPrincipals depositingAgent) {
         this.filename = filename;
+    }
+
+    public DepositData(URI sourceUri, String mimeType, PackagingType packagingType, String depositMethod,
+            AgentPrincipals depositingAgent) {
+        this(mimeType, packagingType, depositMethod, depositingAgent);
+        this.sourceUri = sourceUri;
+    }
+
+    private DepositData(String mimeType, PackagingType packagingType, String depositMethod,
+            AgentPrincipals depositingAgent) {
         this.mimeType = mimeType;
         this.depositingAgent = depositingAgent;
         this.packagingType = packagingType;
@@ -137,17 +137,17 @@ public class DepositData {
     }
 
     /**
-     * @return the filePath
+     * @return the sourceUri
      */
-    public Path getFilePath() {
-        return filePath;
+    public URI getSourceUri() {
+        return sourceUri;
     }
 
     /**
-     * @param filePath the filePath to set
+     * @param sourceUri the sourceUri to set
      */
-    public void setFilePath(Path filePath) {
-        this.filePath = filePath;
+    public void setSourceUri(URI sourceUri) {
+        this.sourceUri = sourceUri;
     }
 
     /**

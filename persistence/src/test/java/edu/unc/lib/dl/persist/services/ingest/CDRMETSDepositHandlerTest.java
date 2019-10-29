@@ -26,6 +26,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.activemq.util.ByteArrayInputStream;
@@ -164,6 +166,8 @@ public class CDRMETSDepositHandlerTest {
         assertEquals(depositPid.getId(), status.get(DepositField.uuid.name()));
         assertNotNull("Deposit submission time must be set", status.get(DepositField.submitTime.name()));
         assertEquals(FILENAME, status.get(DepositField.fileName.name()));
+        Path sourcePath = Paths.get(depositsDir.getAbsolutePath(), depositPid.getId(), "data", FILENAME);
+        assertEquals(sourcePath.toUri().toString(), status.get(DepositField.sourceUri.name()));
         assertEquals(MIMETYPE, status.get(DepositField.fileMimetype.name()));
         assertEquals(METS_CDR.getUri(), status.get(DepositField.packagingType.name()));
         assertEquals(DEPOSIT_METHOD, status.get(DepositField.depositMethod.name()));

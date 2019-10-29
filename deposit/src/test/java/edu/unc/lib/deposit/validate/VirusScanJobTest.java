@@ -119,8 +119,10 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        PID file1Pid = addFileObject(depBag, "pdf.pdf");
-        PID file2Pid = addFileObject(depBag, "text.txt");
+        File pdfFile = new File(depositDir, "pdf.pdf");
+        File textFile = new File(depositDir, "text.txt");
+        PID file1Pid = addFileObject(depBag, pdfFile);
+        PID file2Pid = addFileObject(depBag, textFile);
 
         job.closeModel();
 
@@ -149,8 +151,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        PID file1Pid = addFileObject(depBag, pdfFile.getName());
-        addFileObject(depBag, textFile.getName());
+        PID file1Pid = addFileObject(depBag, pdfFile);
+        addFileObject(depBag, textFile);
 
         job.closeModel();
 
@@ -181,7 +183,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         File pdfFile = new File(depositDir, "pdf.pdf");
-        addFileObject(depBag, pdfFile.getName());
+        addFileObject(depBag, pdfFile);
 
         job.closeModel();
 
@@ -198,12 +200,12 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         }
     }
 
-    private PID addFileObject(Bag parent, String stagingLocation) {
+    private PID addFileObject(Bag parent, File stagedFile) {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+        fileResc.addProperty(CdrDeposit.stagingLocation, stagedFile.toPath().toUri().toString());
 
         parent.add(fileResc);
 

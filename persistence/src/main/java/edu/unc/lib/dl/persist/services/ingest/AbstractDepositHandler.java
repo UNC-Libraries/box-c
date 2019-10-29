@@ -90,7 +90,9 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         if (deposit.getInputStream() != null) {
             File dataDir = makeDataDir(depositDir);
             try (InputStream fileStream = deposit.getInputStream()) {
-                File depositFile = new File(dataDir, deposit.getFilename());
+                // ensure that filename is only the filename, without modifiers
+                String filename = new File(deposit.getFilename()).getName();
+                File depositFile = new File(dataDir, filename);
 
                 Files.copy(fileStream,
                         depositFile.toPath(),
@@ -132,8 +134,8 @@ public abstract class AbstractDepositHandler implements DepositHandler {
             String filename = Paths.get(deposit.getFilename()).getFileName().toString();
             status.put(DepositField.fileName.name(), filename);
         }
-        if (deposit.getFilePath() != null) {
-            status.put(DepositField.sourcePath.name(), deposit.getFilePath().toAbsolutePath().toString());
+        if (deposit.getSourceUri() != null) {
+            status.put(DepositField.sourceUri.name(), deposit.getSourceUri().toString());
         }
         status.put(DepositField.depositSlug.name(), deposit.getSlug());
         if (deposit.getPriority() != null) {

@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,14 +23,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.deposit.staging.StagingException;
-import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.services.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
@@ -45,7 +43,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory
             .getLogger(ValidateFileAvailabilityJob.class);
 
-    private StagingPolicyManager policyManager;
+    private IngestSourceManager sourceManager;
 
     public ValidateFileAvailabilityJob() {
     }
@@ -57,7 +55,6 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
     @Override
     public void runJob() {
 
-        Set<String> failures = new HashSet<>();
         Set<String> badlyStagedFiles = new HashSet<>();
 
         Model model = getReadOnlyModel();
@@ -74,18 +71,11 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
         for (Entry<PID, String> entry : hrefs) {
             String href = entry.getValue();
             try {
-                URI manifestURI = getStagedUri(href);
-
-                File file = new File(manifestURI.getPath());
-                if (!file.exists()) {
-                    failures.add(manifestURI.toString());
-                }
-
-                if (!policyManager.isValidStagingLocation(manifestURI)) {
-                    badlyStagedFiles.add(manifestURI.toString());
-                }
-            } catch (StagingException e) {
-                log.debug("Failed to get staged file in deposit {}", getDepositUUID(), e);
+                URI manifestURI = URI.create(entry.getValue());
+                // If no ingest source can be found for the file, then file not available
+                sourceManager.getIngestSourceForUri(manifestURI);
+            } catch (UnknownIngestSourceException e) {
+                log.debug("Failed find staged file {} in deposit {}", href, getDepositUUID(), e);
                 badlyStagedFiles.add(href);
             }
 
@@ -93,42 +83,22 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
         }
 
         // Generate failure message of all files from invalid staging locations
-        StringBuilder sbInvalid = null;
         int invalidCount = badlyStagedFiles.size();
         if (invalidCount > 0) {
-            sbInvalid = new StringBuilder(badlyStagedFiles.size() +
+            StringBuilder sbInvalid = new StringBuilder(badlyStagedFiles.size() +
                     " files referenced by the deposit are located in invalid staging areas:\n");
             for (String file : badlyStagedFiles) {
                 sbInvalid.append(" - ").append(file).append("\n");
             }
-        }
 
-        // Generate failure message of all missing files
-        StringBuilder sbFailure = null;
-        int failureCount = failures.size();
-        if (failureCount > 0) {
-            sbFailure = new StringBuilder(failureCount + "  files referenced by the deposit could not be found:\n");
-            for (String uri : failures) {
-                sbFailure.append(" - ").append(uri).append("\n");
-            }
-        }
-
-        // fails job if any files were from invalid staging areas or could not be found
-        if (invalidCount > 0 && failureCount > 0) {
-            failJob("Deposit references invalid files", (sbInvalid.toString() + sbFailure.toString()));
-        } else if (invalidCount > 0) {
             failJob("Deposit references invalid files", (sbInvalid.toString()));
-        } else if (failureCount > 0) {
-            failJob("Deposit references invalid files", (sbFailure.toString()));
         }
     }
 
-    public void setStagingPolicyManager(StagingPolicyManager policyManager) {
-        this.policyManager = policyManager;
-    }
-
-    private void addLocations(List<Entry<PID, String>> hrefs, Model model, Property property) {
-        List<Entry<PID, String>> additions = getPropertyPairList(model, property);
-        hrefs.addAll(additions);
+    /**
+     * @param sourceManager the sourceManager to set
+     */
+    public void setIngestSourceManager(IngestSourceManager sourceManager) {
+        this.sourceManager = sourceManager;
     }
 }

@@ -154,20 +154,6 @@
     <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
-
-    <bean id="stagesConfigURI" class="java.net.URL">
-        <constructor-arg value="${fedora.stagesConfiguration}" />
-    </bean>
-    
-    <bean id="stagesConfigFile" class="org.apache.commons.io.FileUtils" factory-method="toFile">
-        <constructor-arg ref="stagesConfigURI" />
-    </bean>
-    
-    <bean id="stagingPolicyManager" class="edu.unc.lib.deposit.staging.StagingPolicyManager"
-            init-method="init">
-        <property name="configPath" value="#{stagesConfigFile.getAbsolutePath()}" />
-        <property name="basePath" value="${deposits.dir}" />
-    </bean>
     
     <bean id="multiThreadedHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
@@ -237,5 +223,12 @@
     <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
+    </bean>
+    
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl"
+            init-method="init">
+        <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${ingestSources.path}" />
+        <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
 </beans>

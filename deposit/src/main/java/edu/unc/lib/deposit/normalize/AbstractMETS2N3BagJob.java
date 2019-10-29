@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +88,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             result = new File(dataDir, "METS.XML");
         }
         if (!result.exists()) {
-            result = new File(dataDir, getDepositStatus().get(DepositField.fileName.name()));
+            result = new File(URI.create(getDepositStatus().get(DepositField.sourceUri.name())));
             if (!result.exists()) {
                 failJob("Cannot find a METS file",
                         " A METS was not found in the expected locations: mets.xml, METS.xml, METS.XML.");

@@ -661,6 +661,12 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>persistence</artifactId>
+                <version>${cdr.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>services-worker</artifactId>
                 <version>${cdr.version}</version>
             </dependency>

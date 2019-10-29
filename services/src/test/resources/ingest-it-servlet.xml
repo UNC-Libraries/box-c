@@ -63,9 +63,8 @@
         <entry key="#{T(edu.unc.lib.dl.util.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManager">
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl">
         <property name="contentPathFactory" ref="contentPathFactory" />
-        <property name="configPath" value="${ingestSources.path}" />
     </bean>
     
     <bean id="contentPathFactory" class="org.mockito.Mockito" factory-method="mock">

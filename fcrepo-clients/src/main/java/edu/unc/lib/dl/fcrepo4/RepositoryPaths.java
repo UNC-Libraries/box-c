@@ -150,7 +150,7 @@ public class RepositoryPaths {
      * Returns hashed container path for id.
      *
      * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 with pathDepth = 3 and chunkLength = 2 returns
-     *    9b/d8/b6
+     *    9b/d8/b6/
      *
      * @param id id to generate hashed path for.
      * @param pathDepth number of hashed levels to add to the path

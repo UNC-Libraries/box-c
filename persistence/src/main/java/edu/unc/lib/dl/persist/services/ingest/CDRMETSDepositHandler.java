@@ -44,6 +44,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
         PID depositPID = pidMinter.mintDepositRecordPid();
 
         File metsFile = writeStreamToDataDir(depositPID, deposit);
+        deposit.setSourceUri(metsFile.toPath().normalize().toUri());
 
         // extract info from METS header
         MetsHeaderScanner scanner = new MetsHeaderScanner();

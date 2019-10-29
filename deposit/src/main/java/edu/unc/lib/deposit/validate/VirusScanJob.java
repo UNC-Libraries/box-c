@@ -39,7 +39,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Scans all staged files registered in the deposit for viruses.
- * 
+ *
  * @author count0
  *
  */
@@ -80,9 +80,9 @@ public class VirusScanJob extends AbstractDepositJob {
         for (Entry<PID, String> href : hrefs) {
             verifyRunning();
 
-            URI manifestURI = getStagedUri(href.getValue());
+            URI manifestURI = URI.create(href.getValue());
 
-            File file = new File(manifestURI.getPath());
+            File file = new File(manifestURI);
 
             ScanResult result = clamScan.scan(file);
 

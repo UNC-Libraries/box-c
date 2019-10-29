@@ -33,6 +33,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.event.PremisLoggerFactory;
@@ -51,7 +52,10 @@ import edu.unc.lib.dl.util.JobStatusFactory;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml")
+})
 public class AbstractFedoraDepositJobIT {
 
     @Autowired

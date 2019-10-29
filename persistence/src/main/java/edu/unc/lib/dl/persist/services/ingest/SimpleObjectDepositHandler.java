@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,8 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 
         PID depositPID = pidMinter.mintDepositRecordPid();
 
-        writeStreamToDataDir(depositPID, deposit);
+        File created = writeStreamToDataDir(depositPID, deposit);
+        deposit.setSourceUri(created.toPath().normalize().toUri());
 
         Map<String, String> options = new HashMap<>();
         options.put(DepositField.excludeDepositRecord.name(), "true");

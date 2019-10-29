@@ -107,6 +107,13 @@ public class Cdr {
     public static final Property historicalPath = createProperty(
             "http://cdr.unc.edu/definitions/model#historicalPath" );
 
+    /**
+     * Property containing the identifier of the storage location in which content
+     * for this resource is located.
+     */
+    public static final Property storageLocation = createProperty(
+            "http://cdr.unc.edu/definitions/model#storageLocation" );
+
     /** Reference to a vocabulary object. For objects in this collection, if the given
      *  vocabulary applies to a descriptive field it will only index its value if
      *  it is found within the vocabulary.

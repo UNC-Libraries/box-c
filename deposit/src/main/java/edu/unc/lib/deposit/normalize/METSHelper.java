@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -113,7 +114,7 @@ public class METSHelper {
         return getPIDURI(elementsById.get(id));
     }
 
-    public void addFileAssociations(Model m, boolean prependDataPath) {
+    public void addFileAssociations(Model m, Path sourceDir) {
         // for every fptr
         Iterator<Element> fptrs = getFptrs();
         while (fptrs.hasNext()) {
@@ -126,8 +127,8 @@ public class METSHelper {
             String use = fileEl.getAttributeValue("USE"); // may be null
             Element flocat = fileEl.getChild("FLocat", METS_NS);
             String href = flocat.getAttributeValue("href", XLINK_NS);
-            if (prependDataPath && !href.contains(":")) {
-                href = "data/" + href;
+            if (!href.contains(":")) {
+                href = sourceDir.resolve(href).toUri().toString();
             }
             Resource object = m.createResource(pid);
 

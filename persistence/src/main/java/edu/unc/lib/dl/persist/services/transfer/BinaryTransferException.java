@@ -13,24 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.deposit.staging;
+package edu.unc.lib.dl.persist.services.transfer;
+
+import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
- * Exception thrown when a staging configuration or lookup problem occurs
- * 
  * @author bbpennel
  *
  */
-public class StagingException extends RuntimeException {
+public class BinaryTransferException extends RepositoryException {
 
-    private static final long serialVersionUID = -4749841917768967399L;
+    private static final long serialVersionUID = 1L;
 
-    public StagingException(String message) {
+    /**
+     * @param message
+     */
+    public BinaryTransferException(String message) {
         super(message);
     }
 
-    public StagingException(String message, Exception e) {
-        super(message, e);
+    /**
+     * @param message
+     * @param ex
+     */
+    public BinaryTransferException(String message, Throwable ex) {
+        super(message, ex);
     }
 
 }

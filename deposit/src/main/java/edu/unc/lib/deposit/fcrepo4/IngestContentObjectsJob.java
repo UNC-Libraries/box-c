@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -324,8 +325,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException {
         PID childPid = PIDs.get(childResc.getURI());
 
-        String stagingPath = getPropertyValue(childResc, CdrDeposit.stagingLocation);
-        if (stagingPath == null) {
+        URI stagingUri = URI.create(getPropertyValue(childResc, CdrDeposit.stagingLocation));
+        if (stagingUri == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
@@ -338,7 +339,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         String label = getPropertyValue(childResc, CdrDeposit.label);
 
-        File file = new File(getStagedUri(stagingPath));
+        File file = new File(stagingUri);
 
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
@@ -356,10 +357,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Record the size of the file for throughput stats
             metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
 
-            log.info("Ingested file {} in {} for deposit {}", new Object[] {filename, childPid, getDepositPID()});
+            log.info("Ingested file {} in {} for deposit {}", filename, childPid, getDepositPID());
         } catch (FileNotFoundException e) {
             throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
-                    + ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingPath, e);
+                    + ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingUri, e);
         } catch (IOException e) {
             throw new DepositException("Unable to close inputstream for binary " + childPid.getQualifiedId(), e);
         }
