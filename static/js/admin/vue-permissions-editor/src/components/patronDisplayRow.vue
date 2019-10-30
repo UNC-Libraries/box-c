@@ -27,10 +27,13 @@
 </template>
 
 <script>
+    import patronHelpers from '../mixins/patronHelpers';
     import capitalize from 'lodash.capitalize';
 
     export default {
         name: 'patronDisplayRow',
+
+        mixins: [patronHelpers],
         
         props: {
             displayRoles: Object,
@@ -68,9 +71,9 @@
                 return text !== 'everyone' && text !== 'patron';
             },
 
-            currentUserRoles(user = 'Staff') {
-                let inherited = this.displayRoles.inherited.roles.find((u) => u.principal === user);
-                let assigned = this.displayRoles.assigned.roles.find((u) => u.principal === user);
+            currentUserRoles(user = 'staff') {
+                let inherited = this.displayRoles.inherited.roles.find((u) => this.isPublicEveryone(u.principal, user));
+                let assigned = this.displayRoles.assigned.roles.find((u) => this.isPublicEveryone(u.principal, user));
 
                 return { inherited: inherited , assigned: assigned };
             },
@@ -238,8 +241,6 @@
         top: 26px;
         width: 0;
     }
-
-
 
     div.display-note-btn {
         display: inline-flex;

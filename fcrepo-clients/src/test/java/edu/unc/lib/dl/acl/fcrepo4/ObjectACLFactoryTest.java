@@ -131,7 +131,7 @@ public class ObjectACLFactoryTest {
     @Test
     public void getMultiplePrincipalsTest() throws Exception {
         objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
-        objResc.addLiteral(CdrAcl.canDiscover, PATRON_GRP);
+        objResc.addLiteral(CdrAcl.canViewOriginals, PATRON_GRP);
         objResc.addLiteral(CdrAcl.unitOwner, USER_PRINC);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
@@ -143,7 +143,7 @@ public class ObjectACLFactoryTest {
 
         Set<String> roles2 = results.get(PATRON_GRP);
         assertEquals("Incorrect number of roles for patron grp", 1, roles2.size());
-        assertTrue(roles2.contains(CdrAcl.canDiscover.toString()));
+        assertTrue(roles2.contains(CdrAcl.canViewOriginals.toString()));
 
         Set<String> roles3 = results.get(USER_PRINC);
         assertEquals("Incorrect number of roles for user", 1, roles3.size());

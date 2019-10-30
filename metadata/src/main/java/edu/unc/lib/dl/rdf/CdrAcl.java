@@ -64,12 +64,6 @@ public class CdrAcl {
     /** Grants the specified group or user permission to view metadata records for
      *  this object and all of its children. Applies to cdr:Collection objects. Repeatable.
      */
-    public static final Property canDiscover = createProperty(
-            "http://cdr.unc.edu/definitions/acl#canDiscover" );
-
-    /** Grants the specified group or user permission to view metadata records for
-     *  this object and all of its children. Applies to cdr:Collection objects. Repeatable.
-     */
     public static final Property canViewMetadata = createProperty(
             "http://cdr.unc.edu/definitions/acl#canViewMetadata" );
 

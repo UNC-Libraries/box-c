@@ -38,10 +38,14 @@
 
         watch: {
             currentEmbargo(embargo) {
-                this.has_embargo = embargo > 0;
+                this.has_embargo = embargo !== null;
 
                 if (this.has_embargo) {
-                    this.embargo_ends_date = format(new Date(embargo), 'yyyy-LL-dd');
+                    this.embargo_ends_date = embargo;
+                    this.custom_embargo_date = embargo;
+                } else {
+                    this.embargo_ends_date = '';
+                    this.custom_embargo_date = '';
                 }
             }
         },
@@ -120,6 +124,7 @@
             setFixedEmbargoDate(years) {
                 let future_date = addYears(new Date(), years);
                 this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
+                this.custom_embargo_date = '';
                 this.updateCurrentEmbargo();
             },
 

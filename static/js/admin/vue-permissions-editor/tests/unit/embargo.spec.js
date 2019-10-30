@@ -1,6 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import embargo from '@/components/embargo.vue';
-import { addYears, getMilliseconds, format } from 'date-fns';
+import { addYears, format } from 'date-fns';
 
 const localVue = createLocalVue();
 let embargo_from_server = {
@@ -22,7 +22,7 @@ describe('embargo.vue', () => {
         wrapper = shallowMount(embargo, {
             localVue,
             props: {
-                currentEmbargo: 0
+                currentEmbargo: null
             }
         });
 
@@ -37,16 +37,17 @@ describe('embargo.vue', () => {
     });
 
     it("sets an embargo if one is returned from the server", () => {
-        let test_date = getMilliseconds(new Date());
+        let test_date = '2099-01-01';
         wrapper.setData(embargo_from_server);
         wrapper.setProps({ currentEmbargo: test_date });
 
-        expect(wrapper.vm.embargo_ends_date).toEqual(format(test_date, 'yyyy-LL-dd'));
+        expect(wrapper.vm.embargo_ends_date).toEqual(test_date);
+        expect(wrapper.vm.custom_embargo_date).toEqual(test_date);
     });
 
     it("does not set an embargo if one is not returned from the server", () => {
         wrapper.setData(embargo_from_server);
-        wrapper.setProps({ currentEmbargo: 0 });
+        wrapper.setProps({ currentEmbargo: null });
 
         expect(wrapper.vm.embargo_ends_date).toEqual('');
     });

@@ -4,7 +4,7 @@ import {getMilliseconds} from "date-fns";
 
 const localVue = createLocalVue();
 const STAFF_ONLY_ROLE_TEXT = '\u2014';
-const staff_user = { principal: 'Staff', role: STAFF_ONLY_ROLE_TEXT };
+const staff_user = { principal: 'staff', role: STAFF_ONLY_ROLE_TEXT };
 let dash_regex = new RegExp(STAFF_ONLY_ROLE_TEXT);
 let wrapper, icons;
 let columns, permission_type, public_principal, public_role;
@@ -34,7 +34,7 @@ describe('patronRoles.vue', () => {
                 possibleRoles: [
                     { text: STAFF_ONLY_ROLE_TEXT , role: STAFF_ONLY_ROLE_TEXT },
                     { text: 'No Access', role: 'none' },
-                    { text: 'Can Discover', role: 'canDiscover' },
+                    { text: 'Can Discover', role: 'none' },
                     { text: 'Metadata Only', role: 'canViewMetadata' },
                     { text: 'Access Copies', role: 'canViewAccessCopies' },
                     { text: 'All of this folder', role: 'canViewOriginals' }
@@ -268,7 +268,7 @@ describe('patronRoles.vue', () => {
            displayRoles: {
                inherited: { roles: [
                        { principal: 'everyone', role: 'canViewMetadata' },
-                       { principal: 'authenticated', role: 'canDiscover' }
+                       { principal: 'authenticated', role: 'none' }
                    ],
                    embargo: null,
                    deleted: false
@@ -303,7 +303,7 @@ describe('patronRoles.vue', () => {
             displayRoles: {
                 inherited: { roles: [
                         { principal: 'everyone', role: 'canViewMetadata' },
-                        { principal: 'authenticated', role: 'canDiscover' }
+                        { principal: 'authenticated', role: 'none' }
                     ],
                     embargo: null,
                     deleted: false
