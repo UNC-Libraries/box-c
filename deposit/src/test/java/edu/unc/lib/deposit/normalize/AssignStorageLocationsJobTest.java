@@ -236,16 +236,4 @@ public class AssignStorageLocationsJobTest extends AbstractNormalizationJobTest 
 
         return objResc;
     }
-
-    // single work/file deposit, assigned
-    // admin unit
-    // collection
-    // folder
-    // work
-    // file
-    // a type that doesn't need (content root, no type, tombstone?)
-    // no storage location?
-    // storage location from user...
-    // invalid storage location id on deposit
-    // storage location not permitted for destination
 }
