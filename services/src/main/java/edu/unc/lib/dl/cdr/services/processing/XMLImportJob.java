@@ -217,6 +217,7 @@ public class XMLImportJob implements Runnable {
 
     private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
         XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
+        xmlFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
         xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
 
     }
