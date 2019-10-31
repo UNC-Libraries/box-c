@@ -395,6 +395,7 @@ public class DepositController {
         Element events = new Element("events", JDOMNamespaceUtil.PREMIS_V2_NS);
         Document result = new Document(events);
         XMLInputFactory factory = XMLInputFactory.newInstance();
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
         try (FileInputStream fis = new FileInputStream(eventsFile)) {
             XMLStreamReader reader = factory.createXMLStreamReader(fis);
             StAXStreamBuilder builder = new StAXStreamBuilder();

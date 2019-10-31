@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
@@ -165,10 +166,16 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
     }
 
     protected void validateMETS() {
-        Validator metsValidator = getMetsSipSchema().newValidator();
+
         METSParseException handler = new METSParseException("There was a problem parsing METS XML.");
-        metsValidator.setErrorHandler(handler);
+
         try {
+            Validator metsValidator = getMetsSipSchema().newValidator();
+
+            metsValidator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            metsValidator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            metsValidator.setErrorHandler(handler);
+
             metsValidator.validate(new StreamSource(getMETSFile()));
         } catch (SAXException e) {
             if (log.isDebugEnabled()) {
