@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import java.net.URI;
-import java.nio.file.FileAlreadyExistsException;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.storage.StorageLocation;
@@ -37,9 +36,9 @@ public interface MultiDestinationTransferSession extends AutoCloseable {
      * @param sourceFileUri URI of the binary located in an IngestSource.
      * @param destination storage location to transfer the file to.
      * @return the URI of the binary in its destination.
-     * @throws FileAlreadyExistsException thrown if the binary already exists
+     * @throws BinaryAlreadyExistsException thrown if the binary already exists
      */
-    URI transfer(PID binPid, URI sourceFileUri, StorageLocation destination) throws FileAlreadyExistsException;
+    URI transfer(PID binPid, URI sourceFileUri, StorageLocation destination);
 
     /**
      * Transfer a binary to the provided storage location. If a binary already
