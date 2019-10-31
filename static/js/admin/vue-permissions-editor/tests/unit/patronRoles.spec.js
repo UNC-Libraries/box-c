@@ -325,7 +325,7 @@ describe('patronRoles.vue', () => {
                     { principal: 'everyone', role: 'canViewAccessCopies'},
                     { principal: 'authenticated', role: "canViewOriginals" }
                 ],
-                deleted: false, embargo: 1635552000000 }
+                deleted: false, embargo: embargo_date }
         };
 
         wrapper.vm.getRoles();

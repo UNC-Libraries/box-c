@@ -32,7 +32,7 @@
 
         <ul class="set-patron-roles">
             <li>
-                <input @click="updateRoleList" id="patron" type="radio" v-model="user_type" value="patron"> Allow patron access
+                <input @click="updateRoleList" id="patron" type="radio" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
                 <ul class="patron">
                     <li class="public-role">
                         <p>Public users</p>
@@ -56,11 +56,12 @@
                     </li>
                 </ul>
             </li>
-            <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff"> Staff only access</li>
+            <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access</li>
         </ul>
 
         <embargo ref="embargoInfo"
-                 :current-embargo="timestampEmbargo"
+                 :current-embargo="display_roles.assigned.embargo"
+                 :is-deleted="isDeleted"
                  @embargo-info="setEmbargo"
                  @error-msg="embargoError">
         </embargo>
@@ -155,7 +156,7 @@
             },
 
             /**
-             * Returns the current state non-staff users
+             * Returns the current state of non-staff users
              * @returns {*[]}
              */
             assignedPatronRoles() {
@@ -169,20 +170,12 @@
                 return this.user_type === 'staff' || this.user_type === '';
             },
 
-            /**
-             * Pass current embargo as a timestamp
-             * @return {null | number}
-             */
-            timestampEmbargo() {
-                if (this.patron_roles.assigned.embargo === null) {
-                    return 0;
-                } else {
-                    return this.patron_roles.assigned.embargo;
-                }
-            },
-
             embargoed() {
                 return this.display_roles.inherited.embargo !== null || this.display_roles.assigned.embargo !== null;
+            },
+
+            isDeleted() {
+                return this.display_roles.inherited.deleted || this.display_roles.assigned.deleted;
             }
         },
 
@@ -226,11 +219,16 @@
                         this.submit_roles = cloneDeep(default_perms.assigned);
                     }
 
+                    this.setDeletedRoles();
                     // Set values for forms from retrieved data
                     this.everyone_role = this.setCurrentObjectRole('everyone');
                     this.authenticated_role = this.setCurrentObjectRole('authenticated');
 
-                    // Merge principals for display if role values are the same
+                    /* Format display values
+                    * Set public display of user names
+                    * Merge principals for display if role values are the same and update public user name
+                    * Reset effective display roles if embargoes present
+                    */
                     this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
                     this.display_roles.assigned.roles = this.embargoedRoles('loading');
                 }).catch((error) => {
@@ -262,7 +260,6 @@
                     console.log(error);
                 });
             },
-
 
             /**
              * Show inherited roles for object other than collections
@@ -386,6 +383,11 @@
                 }
             },
 
+            /**
+             * Resets display roles if an embargo is present
+             * @param role_list
+             * @returns {*}
+             */
             embargoedRoles(role_list = 'updated') {
                 let updated_display = (role_list === 'updated') ? this.assignedPatronRoles : this.display_roles.assigned.roles;
                 let updated = updated_display.map((u) => {
@@ -395,12 +397,35 @@
                 return this.displayRolesMerge(updated);
             },
 
+            /**
+             * Reduces effective role if an embargo is present and role is more permissive than canViewMetadata
+             * @param role
+             * @returns {string|*}
+             */
             embargoReduceRole(role) {
                 if (this.embargoed && this.possibleRoles.findIndex((r) => r.role === role) > 2) {
                     return 'canViewMetadata';
                 }
 
                 return role;
+            },
+
+            /**
+             * Resets display to 'none' if an item is marked for deletion
+             */
+            setDeletedRoles() {
+              if (this.isDeleted)  {
+                  let deleted_roles = this.display_roles.assigned.roles.map((u) => {
+                      return { principal: u.principal, role: 'none' }
+                  });
+
+                  this.display_roles.assigned.roles = deleted_roles;
+                  this.submit_roles.roles = deleted_roles;
+                  this.submit_roles.deleted = true;
+                  this.user_type = 'staff';
+                  this.everyone_role = 'none';
+                  this.authenticated_role = 'none';
+              }
             },
 
             setRoleHistory() {
@@ -566,11 +591,6 @@
         .select-wrapper::after {
             right: 5px;
             top: 8px;
-        }
-
-        .is-disabled {
-            cursor: not-allowed;
-            opacity: .5
         }
 
         .btn-disabled {

@@ -22,7 +22,8 @@ describe('embargo.vue', () => {
         wrapper = shallowMount(embargo, {
             localVue,
             props: {
-                currentEmbargo: null
+                currentEmbargo: '',
+                isDeleted: false
             }
         });
 
@@ -130,5 +131,14 @@ describe('embargo.vue', () => {
 
         wrapper.find('form').trigger('click');
         expect(wrapper.emitted()['error-msg'][1]).toEqual(['']);
+    });
+
+    it("disables the form if the object or its parent is marked for deletion", () => {
+        wrapper.setProps({
+            isDeleted: true
+        });
+
+        expect(wrapper.find('fieldset').html()).toEqual(expect.stringContaining('disabled="disabled"'));
+        expect(wrapper.find('#add-embargo').html()).toEqual(expect.stringContaining('disabled="disabled"'));
     });
 });

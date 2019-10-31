@@ -6,13 +6,15 @@
 
             <h3>Set Embargo</h3>
                 <form @click="clearEmbargoError">
-                    <input @click="setFixedEmbargoDate(1)" v-model="fixed_embargo_date" value="1" type="radio"> 1 year<br/>
-                    <input @click="setFixedEmbargoDate(2)" v-model="fixed_embargo_date" value="2" type="radio"> 2 years<br/>
-                    <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
-                           @change="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
+                    <fieldset :disabled="isDeleted">
+                        <input @click="setFixedEmbargoDate(1)" v-model="fixed_embargo_date" value="1" type="radio"> 1 year<br/>
+                        <input @click="setFixedEmbargoDate(2)" v-model="fixed_embargo_date" value="2" type="radio"> 2 years<br/>
+                        <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
+                               @change="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
+                    </fieldset>
                 </form>
 
-            <button @click="changeEmbargo" id="add-embargo">{{ embargoText }}</button>
+            <button @click="changeEmbargo" :disabled="isDeleted" :class="{'is-disabled': isDeleted}" id="add-embargo">{{ embargoText }}</button>
         </div>
     </div>
 </template>
@@ -24,7 +26,8 @@
         name: 'embargo',
 
         props: {
-            currentEmbargo: Number
+            currentEmbargo: String,
+            isDeleted: Boolean
         },
 
         data() {
@@ -32,7 +35,7 @@
                 custom_embargo_date: '',
                 embargo_ends_date: '',
                 fixed_embargo_date: '',
-                has_embargo: false,
+                has_embargo: false
             }
         },
 

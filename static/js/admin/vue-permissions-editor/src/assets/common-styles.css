@@ -188,7 +188,13 @@
     margin-top: 15px;
 }
 
+#modal-permissions-editor .is-disabled {
+    opacity: .5
+}
 
+#modal-permissions-editor .is-disabled:hover {
+    cursor: not-allowed;
+}
 
 .slide-enter-active, .slide-leave-active {
     max-height: 200px;
