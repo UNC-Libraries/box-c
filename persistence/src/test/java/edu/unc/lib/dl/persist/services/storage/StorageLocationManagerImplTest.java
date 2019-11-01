@@ -24,13 +24,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
@@ -42,15 +38,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl.StorageLocationMapping;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**
@@ -72,8 +65,7 @@ public class StorageLocationManagerImplTest {
 
     private StorageLocationManagerImpl locManager;
 
-    private List<StorageLocationMapping> mappingList;
-    private List<Map<String, String>> locationList;
+    private StorageLocationTestHelper helper;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -87,41 +79,40 @@ public class StorageLocationManagerImplTest {
         locManager.setPathFactory(pathFactory);
         locManager.setRepositoryObjectLoader(repositoryObjectLoader);
 
-        mappingList = new ArrayList<>();
-        locationList = new ArrayList<>();
+        helper = new StorageLocationTestHelper();
     }
 
     private void initializeManager() throws Exception {
-        locManager.setConfigPath(serializeLocationConfig());
-        locManager.setMappingPath(serializeLocationMappings());
+        locManager.setConfigPath(helper.serializeLocationConfig());
+        locManager.setMappingPath(helper.serializeLocationMappings());
 
         locManager.init();
     }
 
     @Test(expected = IllegalStateException.class)
     public void duplicateLocationId() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC1_ID, LOC2_NAME, LOC2_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC2_NAME, LOC2_BASE);
 
         initializeManager();
     }
 
     @Test(expected = IllegalStateException.class)
     public void duplicateMappingContainerId() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
         PID unitPid = makePid();
-        addMapping(unitPid.getId(), LOC1_ID);
-        addMapping(unitPid.getRepositoryPath(), LOC2_ID);
+        helper.addMapping(unitPid.getId(), LOC1_ID);
+        helper.addMapping(unitPid.getRepositoryPath(), LOC2_ID);
 
         initializeManager();
     }
 
     @Test(expected = UnknownStorageLocationException.class)
     public void mappingToNonexistentLocation() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
         PID unitPid = makePid();
-        addMapping(unitPid.getId(), LOC2_ID);
+        helper.addMapping(unitPid.getId(), LOC2_ID);
 
         initializeManager();
     }
@@ -131,7 +122,7 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
         initializeManager();
 
@@ -143,8 +134,8 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -157,8 +148,8 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(unitPid.getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(unitPid.getId(), LOC1_ID);
 
         initializeManager();
 
@@ -171,10 +162,10 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(unitPid.getId(), LOC1_ID);
-        addMapping(getContentRootPid().getId(), LOC2_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(unitPid.getId(), LOC1_ID);
+        helper.addMapping(getContentRootPid().getId(), LOC2_ID);
 
         initializeManager();
 
@@ -191,10 +182,10 @@ public class StorageLocationManagerImplTest {
         mockAncestors(collPid, getContentRootPid(), unitPid);
         mockAncestors(workPid, getContentRootPid(), unitPid, collPid, folderPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(unitPid.getId(), LOC1_ID);
-        addMapping(folderPid.getId(), LOC2_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(unitPid.getId(), LOC1_ID);
+        helper.addMapping(folderPid.getId(), LOC2_ID);
 
         initializeManager();
 
@@ -212,10 +203,10 @@ public class StorageLocationManagerImplTest {
         mockAncestors(unitPid, getContentRootPid());
         mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
-        addMapping(collPid.getId(), LOC2_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addMapping(collPid.getId(), LOC2_ID);
 
         initializeManager();
 
@@ -231,8 +222,8 @@ public class StorageLocationManagerImplTest {
         PID collPid = makePid();
         mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -253,9 +244,9 @@ public class StorageLocationManagerImplTest {
         PID collPid = makePid();
         mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -276,8 +267,8 @@ public class StorageLocationManagerImplTest {
         PID collPid = makePid();
         mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -297,8 +288,8 @@ public class StorageLocationManagerImplTest {
         PID collPid = makePid();
         mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -318,7 +309,7 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
         initializeManager();
 
@@ -337,8 +328,8 @@ public class StorageLocationManagerImplTest {
 
     @Test
     public void getStorageLocationById() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
 
         initializeManager();
 
@@ -349,8 +340,8 @@ public class StorageLocationManagerImplTest {
 
     @Test
     public void getStorageLocationForUriMatchingUris() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
 
         initializeManager();
 
@@ -360,7 +351,7 @@ public class StorageLocationManagerImplTest {
 
     @Test(expected = UnknownStorageLocationException.class)
     public void getStorageLocationForUriParentUri() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
         initializeManager();
 
@@ -369,7 +360,7 @@ public class StorageLocationManagerImplTest {
 
     @Test(expected = UnknownStorageLocationException.class)
     public void getStorageLocationForUriNoMatching() throws Exception {
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
         initializeManager();
 
@@ -381,8 +372,8 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
         initializeManager();
 
@@ -407,10 +398,10 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
-        addMapping(unitPid.getId(), LOC2_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addMapping(unitPid.getId(), LOC2_ID);
 
         initializeManager();
 
@@ -429,9 +420,9 @@ public class StorageLocationManagerImplTest {
         PID unitPid = makePid();
         mockAncestors(unitPid, getContentRootPid());
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addMapping(getContentRootPid().getId(), LOC1_ID);
-        addMapping(unitPid.getId(), LOC1_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
+        helper.addMapping(unitPid.getId(), LOC1_ID);
 
         initializeManager();
 
@@ -447,10 +438,10 @@ public class StorageLocationManagerImplTest {
         PID folderPid = makePid();
         mockAncestors(folderPid, getContentRootPid(), unitPid, collPid);
 
-        addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        addMapping(collPid.getId(), LOC1_ID);
-        addMapping(folderPid.getId(), LOC2_ID);
+        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+        helper.addMapping(collPid.getId(), LOC1_ID);
+        helper.addMapping(folderPid.getId(), LOC2_ID);
 
         initializeManager();
 
@@ -461,37 +452,6 @@ public class StorageLocationManagerImplTest {
 
     private StorageLocation findStorageLocationById(List<StorageLocation> locs, String id) {
         return locs.stream().filter(l -> l.getId().equals(id)).findFirst().orElse(null);
-    }
-
-    private void addStorageLocation(String id, String name, String base) throws IOException {
-        Map<String, String> info = new HashMap<>();
-        info.put("id", id);
-        info.put("name", name);
-        info.put("type", HashedFilesystemStorageLocation.TYPE_NAME);
-        info.put("base", base);
-
-        locationList.add(info);
-    }
-
-    private void addMapping(String id, String defaultLoc) {
-        StorageLocationMapping mapping = new StorageLocationMapping();
-        mapping.setId(id);
-        mapping.setDefaultLocation(defaultLoc);
-        mappingList.add(mapping);
-    }
-
-    private String serializeLocationConfig() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        File jsonFile = tmpFolder.newFile("locConfig.json");
-        objectMapper.writeValue(jsonFile, locationList);
-        return jsonFile.getAbsolutePath();
-    }
-
-    private String serializeLocationMappings() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        File jsonFile = tmpFolder.newFile("locMapping.json");
-        objectMapper.writeValue(jsonFile, mappingList);
-        return jsonFile.getAbsolutePath();
     }
 
     private void assertIsLocation1(StorageLocation loc) {
