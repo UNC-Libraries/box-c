@@ -84,6 +84,10 @@ public class CdrDeposit {
     public static final Property storageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#storageUri" );
 
+    /** URI of FITS metadata extract file within a storage location. */
+    public static final Property fitsStorageUri = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#fitsStorageUri" );
+
     /** Link to binary objects contained by this object other than the main payload binary. */
     public static final Property hasDatastream = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastream" );

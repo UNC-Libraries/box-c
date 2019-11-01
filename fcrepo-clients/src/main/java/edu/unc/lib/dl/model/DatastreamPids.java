@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.model;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
@@ -54,6 +55,11 @@ public class DatastreamPids {
 
     public static PID getTechnicalMetadataPid(PID pid) {
         String path = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET, TECHNICAL_METADATA.getId());
+        return PIDs.get(path);
+    }
+
+    public static PID getDepositManifestPid(PID pid, String name) {
+        String path = URIUtil.join(pid.getRepositoryPath(), DEPOSIT_MANIFEST_CONTAINER, name);
         return PIDs.get(path);
     }
 }
