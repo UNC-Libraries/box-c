@@ -12,6 +12,11 @@ let response = {
     assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false, embargo: null }
 };
 
+let response_display = {
+    inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    assigned: { roles: [{ principal: 'Public User', role: 'canViewMetadata' }], deleted: false, embargo: null }
+}
+
 let none_response = {
     inherited: { roles: null, deleted: false, embargo: null },
     assigned: { roles: [
@@ -33,6 +38,11 @@ let empty_defaults = [
         { principal: 'authenticated', role: 'canViewOriginals' }
 ];
 
+let empty_response_no_inherited = {
+    inherited: { roles: [], deleted: false, embargo: null },
+    assigned: { roles: empty_defaults, deleted: false, embargo: null }
+};
+
 let same_roles = {
     inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, {principal: 'authenticated', role: 'canViewOriginals'}],
         deleted: false, embargo: null  },
@@ -44,6 +54,15 @@ let full_roles = {
     inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
     assigned: { roles: [
             { principal: 'everyone', role: 'none'},
+            { principal: 'authenticated', role: "canViewOriginals" }
+        ],
+        deleted: false, embargo: null }
+};
+
+let full_roles_display = {
+    inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    assigned: { roles: [
+            { principal: 'Public User', role: 'none'},
             { principal: 'authenticated', role: "canViewOriginals" }
         ],
         deleted: false, embargo: null }
@@ -93,14 +112,31 @@ describe('patronRoles.vue', () => {
         stubDataLoad();
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles).toEqual(response);
+            expect(wrapper.vm.display_roles).toEqual(response_display);
             expect(wrapper.vm.patron_roles).toEqual(response);
             expect(wrapper.vm.submit_roles).toEqual(response.assigned);
             done();
         });
     });
 
-    it("sets default roles if no roles are returned", (done) => {
+    it("sets default roles if no inherited roles are returned", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(empty_response_no_inherited)
+        });
+
+        moxios.wait(() => {
+            expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
+            expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
+            expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
+            expect(wrapper.vm.submit_roles.roles).toEqual(empty_defaults);
+            done();
+        });
+    });
+
+    it("sets default roles if neither inherited or assigned roles are returned", (done) => {
         wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
             status: 200,
@@ -134,7 +170,7 @@ describe('patronRoles.vue', () => {
        })
     });
 
-    it("sets display to 'staff' if public and authenticated principals both have the 'none' role", (done) => {
+    it("sets display 'staff' if public and authenticated principals both have the 'none' role", (done) => {
         wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
             status: 200,
@@ -147,7 +183,7 @@ describe('patronRoles.vue', () => {
         })
     });
 
-    it("set form user type to 'staff' if public and authenticated principals both have the 'none' role", (done) => {
+    it("sets form user type to 'staff' if public and authenticated principals both have the 'none' role", (done) => {
         wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
             status: 200,
@@ -156,6 +192,48 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.user_type).toEqual('staff');
+            done();
+        })
+    });
+
+    it("sets form user type to 'staff' and form roles to 'canViewOriginals' if item is marked for deletion and no roles returned from the server", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify({
+                inherited: { roles: null, deleted: false, embargo: null },
+                assigned: { roles: [],
+                    deleted: true,
+                    embargo: null
+                }
+            })
+        });
+
+        moxios.wait(() => {
+            expect(wrapper.vm.user_type).toEqual('staff');
+            expect(wrapper.vm.everyone_role).toEqual('canViewOriginals');
+            expect(wrapper.vm.authenticated_role).toEqual('canViewOriginals');
+            done();
+        })
+    });
+
+    it("sets form user type to 'staff' and form roles to returned values if item is marked for deletion and roles are returned from the server", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify({
+                inherited: { roles: null, deleted: false, embargo: null },
+                assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata'}, { principal: 'authenticated', role: 'canViewAccessCopies'}],
+                    deleted: true,
+                    embargo: null
+                }
+            })
+        });
+
+        moxios.wait(() => {
+            expect(wrapper.vm.user_type).toEqual('staff');
+            expect(wrapper.vm.everyone_role).toEqual('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toEqual('canViewAccessCopies');
             done();
         })
     });
@@ -195,7 +273,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
             expect(wrapper.vm.authenticated_role).toBe('none');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(response.assigned.roles);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(response_display.assigned.roles);
 
             wrapper.find('#staff').trigger('click');
 
@@ -218,7 +296,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(response.assigned.roles);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'canViewMetadata' }]);
 
             wrapper.findAll('#public option').at(2).setSelected();
 
@@ -228,7 +306,10 @@ describe('patronRoles.vue', () => {
             ];
 
             expect(wrapper.vm.everyone_role).toBe('canViewAccessCopies');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(updated_public_roles);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'Public User', role: 'canViewAccessCopies' },
+                { principal: 'authenticated', role: 'none' }
+            ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_public_roles);
 
             done();
@@ -254,7 +335,10 @@ describe('patronRoles.vue', () => {
             ];
 
             expect(wrapper.vm.authenticated_role).toBe('canViewOriginals');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(updated_authenticated_roles);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'Public User', role: 'canViewMetadata' },
+                { principal: 'authenticated', role: 'canViewOriginals' }
+            ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_authenticated_roles);
 
             done();
@@ -281,28 +365,6 @@ describe('patronRoles.vue', () => {
         expect(wrapper.vm.submit_roles.embargo).toEqual(null);
         wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
         expect(wrapper.vm.submit_roles.embargo).toEqual(embargo_date);
-    });
-
-    it("updates display roles if an embargo is set from server response on an object's parent", (done) => {
-        let values = {
-            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: embargo_date },
-            assigned: { roles: [
-                    { principal: 'everyone', role: 'canViewAccessCopies'},
-                    { principal: 'authenticated', role: "canViewOriginals" }
-                ],
-                deleted: false, embargo: null }
-        };
-
-        wrapper.vm.getRoles();
-        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
-            status: 200,
-            response: JSON.stringify(values)
-        });
-
-        moxios.wait(() => {
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
-            done();
-        })
     });
 
     it("does not update display roles if an embargo is not set from server response", (done) => {
@@ -349,6 +411,16 @@ describe('patronRoles.vue', () => {
                 ],
                 deleted: false, embargo: null }
         };
+
+        let values_display = {
+            inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
+            assigned: { roles: [
+                    { principal: 'Public User', role: 'canViewAccessCopies'},
+                    { principal: 'authenticated', role: "canViewOriginals" }
+                ],
+                deleted: false, embargo: null }
+        };
+
         wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
             status: 200,
@@ -356,7 +428,7 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles).toEqual(values);
+            expect(wrapper.vm.display_roles).toEqual(values_display);
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
             done();
@@ -371,9 +443,10 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles).toEqual(full_roles);
+            expect(wrapper.vm.display_roles).toEqual(full_roles_display);
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'none' },
+                { principal: 'authenticated', role: 'canViewMetadata'}]);
             done();
         })
     });
@@ -418,10 +491,10 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'everyone', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
 
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
-            expect(wrapper.vm.display_roles).toEqual(full_roles);
+            expect(wrapper.vm.display_roles).toEqual(full_roles_display);
             done();
         })
     });

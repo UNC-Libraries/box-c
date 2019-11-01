@@ -9,8 +9,8 @@ export default {
         isPublicEveryone(selected_principal, user) {
             let user_value = user.toLowerCase();
 
-            if (user_value === 'everyone' || user_value === 'patron') {
-                return selected_principal === 'everyone' || selected_principal === 'patron';
+            if (user_value === 'everyone' || user_value === 'patron' || user_value === 'public user') {
+                return selected_principal === 'everyone' || selected_principal === 'patron' || selected_principal === 'public user';
             }
 
             return selected_principal === user_value;

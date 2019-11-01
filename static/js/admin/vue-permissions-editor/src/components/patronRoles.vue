@@ -171,11 +171,11 @@
             },
 
             embargoed() {
-                return this.display_roles.inherited.embargo !== null || this.display_roles.assigned.embargo !== null;
+                return this.display_roles.assigned.embargo !== null;
             },
 
             isDeleted() {
-                return this.display_roles.inherited.deleted || this.display_roles.assigned.deleted;
+                return this.display_roles.assigned.deleted;
             }
         },
 
@@ -188,7 +188,7 @@
                 return perms;
             },
 
-            defaultPublicDisplayRole(perms) {
+            defaultPublicDisplayRoles(perms) {
                 if (perms.inherited.roles.length === 1 && perms.inherited.roles[0].principal === 'authenticated') {
                     perms.inherited.roles.push({ principal: 'everyone', role: 'none'});
                 }
@@ -200,26 +200,33 @@
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
                         response.data.assigned.roles.length === 0) {
-                        let set_roles = [
+                        response.data.inherited.roles = this._defaultInherited();
+                        response.data.assigned.roles = [
                             { principal: 'everyone', role: 'canViewOriginals' },
                             { principal: 'authenticated', role: 'canViewOriginals' }
                         ];
 
-                        this.display_roles.inherited.roles = this._defaultInherited();
-                        this.display_roles.assigned.roles = set_roles;
-                        this.patron_roles.assigned.roles = set_roles;
-                        this.submit_roles.roles = set_roles;
+                        this.display_roles.inherited = response.data.inherited;
+                        this.display_roles.assigned = response.data.assigned;
+                        this.patron_roles.assigned = cloneDeep(response.data.assigned);
+                        this.submit_roles = cloneDeep(response.data.assigned);
                     } else {
                         let default_perms = {
                             inherited: this.defaultRoles(response.data.inherited),
                             assigned: this.defaultRoles(response.data.assigned)
                         };
-                        this.patron_roles =  default_perms;
-                        this.display_roles = cloneDeep(this.defaultPublicDisplayRole(default_perms));
+
+                        this.patron_roles =  cloneDeep(default_perms);
                         this.submit_roles = cloneDeep(default_perms.assigned);
+
+                        // Add in staff user for display if no users returned
+                        if(default_perms.inherited.roles.length === 0) {
+                            default_perms.inherited.roles = this._defaultInherited();
+                        }
+
+                        this.display_roles = cloneDeep(this.defaultPublicDisplayRoles(default_perms));
                     }
 
-                    this.setDeletedRoles();
                     // Set values for forms from retrieved data
                     this.everyone_role = this.setCurrentObjectRole('everyone');
                     this.authenticated_role = this.setCurrentObjectRole('authenticated');
@@ -229,8 +236,13 @@
                     * Merge principals for display if role values are the same and update public user name
                     * Reset effective display roles if embargoes present
                     */
-                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
-                    this.display_roles.assigned.roles = this.embargoedRoles('loading');
+                    this.display_roles.inherited.roles = this.publicUserText(this.displayRolesMerge(this.display_roles.inherited.roles));
+
+                    if (!this.isDeleted) {
+                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles('loading'));
+                    } else {
+                        this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    }
                 }).catch((error) => {
                     let response_msg = `Unable load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
@@ -294,19 +306,36 @@
             },
 
             /**
+             * Updates display text of everyone user to 'Public User'
+             * @param level
+             * @returns {*}
+             */
+            publicUserText(level) {
+                return level.map((u) => {
+                    return u.principal === 'everyone' ? { principal: 'Public User', role: u.role } : u;
+                });
+            },
+
+            /**
              * Set the form display value for the given user
              * @param principal
              * @returns {string}
              */
             setCurrentObjectRole(principal) {
                 let user_index = this.userIndex(principal);
+                let is_staff = this.userIndex('staff') !== -1;
                 let role_type = 'none';
 
-                if (this.userIndex('staff') !== -1 || this._allRolesNone()) {
+                if (this.isDeleted || is_staff || this._allRolesNone()) {
                     this.user_type = 'staff';
                 } else if (user_index !== -1) {
                     this.user_type = 'patron';
+                }
+
+                if (user_index !== -1) {
                     role_type = this.display_roles.assigned.roles[user_index].role;
+                } else if (this.isDeleted) {
+                    role_type = 'canViewOriginals';
                 }
 
                 return role_type;
@@ -373,7 +402,7 @@
              */
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }];
                 } else {
                     if (this.display_roles.assigned.embargo !== null) {
                         this.display_roles.assigned.roles = [{ principal: 'patron', role: 'canViewMetadata' }];
@@ -410,24 +439,6 @@
                 return role;
             },
 
-            /**
-             * Resets display to 'none' if an item is marked for deletion
-             */
-            setDeletedRoles() {
-              if (this.isDeleted)  {
-                  let deleted_roles = this.display_roles.assigned.roles.map((u) => {
-                      return { principal: u.principal, role: 'none' }
-                  });
-
-                  this.display_roles.assigned.roles = deleted_roles;
-                  this.submit_roles.roles = deleted_roles;
-                  this.submit_roles.deleted = true;
-                  this.user_type = 'staff';
-                  this.everyone_role = 'none';
-                  this.authenticated_role = 'none';
-              }
-            },
-
             setRoleHistory() {
                 this.role_history = Object.assign({}, {
                     patron: this.everyone_role,
@@ -447,9 +458,9 @@
              */
             dedupeDisplayRoles() {
                 if (this.embargoed) {
-                    this.display_roles.assigned.roles = this.displayRolesMerge(this.embargoedRoles());
+                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.embargoedRoles()));
                 } else {
-                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
+                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.assignedPatronRoles));
                 }
             },
 
@@ -483,8 +494,9 @@
                 }
             },
 
-            userIndex(principal) {
-                return this.display_roles.assigned.roles.findIndex((user) => {
+            userIndex(principal, is_display = true) {
+                let roles = is_display ? this.display_roles.assigned.roles : this.patron_roles.assigned.roles;
+                return roles.findIndex((user) => {
                     return this.isPublicEveryone(principal, user.principal);
                 });
             },
@@ -509,7 +521,7 @@
                     this.setRoleHistory();
                     let roles = this.display_roles.assigned.roles;
                     if (roles.length > 0 && roles[0].principal !== 'staff') {
-                        this.display_roles.assigned.roles = this.embargoedRoles();
+                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles());
                     }
                 } else {
                     this.loadPreviousRole();
