@@ -14,6 +14,10 @@ describe('patronRoles.vue', () => {
         wrapper = shallowMount(patronDisplayRow, {
             localVue,
             propsData: {
+                compareRoles: {
+                    inherited: { roles: [], embargo: null, deleted: false },
+                    assigned: { roles: [], embargo: null, deleted: false }
+                },
                 displayRoles: {
                     inherited: { roles: [
                             { principal: 'everyone', role: 'canViewMetadata' },
@@ -51,7 +55,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("displays public assigned patron roles", () => {
-        expect(permission_type.text()).toBe('From object');
+        expect(permission_type.text()).toBe('From Object');
         expect(public_principal.text()).toMatch(/^Everyone/);
         expect(public_role.text()).toMatch(/^All.of.this.folder/);
     });
@@ -83,7 +87,7 @@ describe('patronRoles.vue', () => {
             user: staff_user
         });
 
-        expect(permission_type.text()).toBe('From object');
+        expect(permission_type.text()).toBe('From Object');
         expect(public_principal.text()).toMatch(/^Staff/);
         expect(public_role.text()).toMatch(dash_regex);
     });
@@ -133,7 +137,7 @@ describe('patronRoles.vue', () => {
         expect(public_role.text()).toMatch(dash_regex);
     });
 
-    it("display a 'more info' icon for 'Everyone' users", () => {
+    it("display a 'more info' icon for 'Public User' users", () => {
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(1);
         expect(icons.at(0).classes()).toContain('fa-question-circle');
@@ -166,14 +170,22 @@ describe('patronRoles.vue', () => {
 
     it("displays 'effective permissions' icons for most restrictive permission", () => {
         wrapper.setProps({
+            compareRoles: {
+                inherited: { roles: [
+                        { principal: 'everyone', role: 'none' },
+                        { principal: 'authenticated', role: 'none' }
+                    ], embargo: null, deleted: false },
+                assigned: { roles: [staff_user], embargo: null, deleted: false }
+            },
             displayRoles: {
                 inherited: {
-                    roles: [],
+                    roles: [staff_user],
                     embargo: null,
                     deleted: false,
                 },
                 assigned: {
-                    roles: [staff_user],
+                    roles: [{ principal: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }],
                     embargo: null,
                     deleted: false
                 }
@@ -189,6 +201,23 @@ describe('patronRoles.vue', () => {
 
     it("displays 'effective permissions' icons for most restrictive public permission", () => {
         wrapper.setProps({
+            compareRoles: {
+                inherited: { roles: [
+                        { principal: 'everyone', role: 'none' },
+                        { principal: 'authenticated', role: 'none' }
+                    ],
+                    embargo: null,
+                    deleted: false
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
+                    ],
+                    embargo: null,
+                    deleted: true
+                }
+            },
             displayRoles: {
                 inherited: { roles: [
                         { principal: 'everyone', role: 'none' },
@@ -224,19 +253,34 @@ describe('patronRoles.vue', () => {
         expect(icons.at(1).classes()).toContain('fa-check-circle');
     });
 
-    it("displays 'effective permissions' icons for most restrictive onyen permission", () => {
+    it("displays 'effective permissions' icons for most restrictive authenticated permission", () => {
         wrapper.setProps({
-            displayRoles: {
+            compareRoles: {
                 inherited: { roles: [
                         { principal: 'everyone', role: 'none' },
-                        { principal: 'authenticated', role: 'canViewAccessCopies' }
+                        { principal: 'authenticated', role: 'canViewOriginals' }
                     ],
                     embargo: null,
                     deleted: false
                 },
                 assigned: {
                     roles: [
-                        { principal: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'everyone', role: 'canViewAccessCopies'},
+                        { principal: 'authenticated', role: 'none'}
+                    ]
+                }
+            },
+            displayRoles: {
+                inherited: { roles: [
+                        { principal: 'everyone', role: 'none' },
+                        { principal: 'authenticated', role: 'canViewOriginals' }
+                    ],
+                    embargo: null,
+                    deleted: false
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'canViewAccessCopies' },
                         { principal: 'authenticated', role: 'none' }
                     ],
                     embargo: null,

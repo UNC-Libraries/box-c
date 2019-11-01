@@ -14,6 +14,7 @@
             <tbody>
             <template v-if="hasParentRole" v-for="user in sortedInheritedRoles">
                 <patron-display-row
+                        :compare-roles="compareRoles"
                         :display-roles="display_roles"
                         :possible-roles="possibleRoles"
                         type="inherited"
@@ -21,6 +22,7 @@
             </template>
             <template v-if="hasObjectRole" v-for="user in sortedAssignedRoles">
                 <patron-display-row
+                        :compare-roles="compareRoles"
                         :display-roles="display_roles"
                         :possible-roles="possibleRoles"
                         type="assigned"
@@ -155,6 +157,13 @@
                 return this.display_roles.assigned.roles.sort((a, b) => b.principal.localeCompare(a.principal));
             },
 
+            compareRoles() {
+                return {
+                    inherited: this.patron_roles.inherited,
+                    assigned: this.submit_roles
+                };
+            },
+
             /**
              * Returns the current state of non-staff users
              * @returns {*[]}
@@ -180,9 +189,13 @@
         },
 
         methods: {
-            defaultRoles(perms) {
+            defaultRoles(perms, type) {
                 if (perms.roles === null) {
                     perms.roles = [];
+                } else if (perms.roles.length === 0 && type === 'assigned') {
+                    this.authenticated_role = 'canViewOriginals';
+                    this.everyone_role = 'canViewOriginals';
+                    perms.roles = this.assignedPatronRoles;
                 }
 
                 return perms;
@@ -212,8 +225,8 @@
                         this.submit_roles = cloneDeep(response.data.assigned);
                     } else {
                         let default_perms = {
-                            inherited: this.defaultRoles(response.data.inherited),
-                            assigned: this.defaultRoles(response.data.assigned)
+                            inherited: this.defaultRoles(response.data.inherited, 'inherited'),
+                            assigned: this.defaultRoles(response.data.assigned, 'assigned')
                         };
 
                         this.patron_roles =  cloneDeep(default_perms);
@@ -375,7 +388,6 @@
             },
 
             /**
-             * TODO May need principal check
              * Update a users role or add the user and role if they don't exist
              * @param principal
              */
@@ -487,11 +499,11 @@
                 let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
                 let current_role = this.submit_roles.roles.find(user => user.principal === type);
 
-                if (initial_role === undefined || current_role === undefined) {
-                    return false;
-                } else {
-                    return initial_role.role !== current_role.role;
+
+                if (initial_role === undefined) {
+                    return true;
                 }
+                return initial_role.role !== current_role.role;
             },
 
             userIndex(principal, is_display = true) {

@@ -36,6 +36,7 @@
         mixins: [patronHelpers],
 
         props: {
+            compareRoles: Object,
             displayRoles: Object,
             possibleRoles: Array,
             type: String,
@@ -59,7 +60,7 @@
                 if (this.authenticatedUser) {
                     return '';
                 } else if (this.type === 'assigned') {
-                    return 'From object';
+                    return 'From Object';
                 } else {
                     return 'From Parent';
                 }
@@ -72,8 +73,14 @@
             },
 
             currentUserRoles(user = 'staff') {
-                let inherited = this.displayRoles.inherited.roles.find((u) => this.isPublicEveryone(u.principal, user));
-                let assigned = this.displayRoles.assigned.roles.find((u) => this.isPublicEveryone(u.principal, user));
+                // Since we only care about the returned role checking for 'everyone' if user is 'patron'
+                // is fine since 'everyone' and 'authenticated' will have the same role
+                if (user === 'Public User' || user === 'patron') {
+                    user = 'everyone';
+                }
+
+                let inherited = this.compareRoles.inherited.roles.find((u) => u.principal === user);
+                let assigned = this.compareRoles.assigned.roles.find((u) => u.principal === user);
 
                 return { inherited: inherited , assigned: assigned };
             },
@@ -108,7 +115,7 @@
                 let current_users = this.currentUserRoles(user);
 
                 if (current_users.inherited === undefined && current_users.assigned === undefined) {
-                    return 'none';
+                    return undefined;
                 } else if (current_users.inherited !== undefined && current_users.assigned === undefined) {
                     return 'inherited';
                 } else if (current_users.inherited === undefined && current_users.assigned !== undefined) {
