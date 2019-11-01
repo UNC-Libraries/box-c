@@ -18,6 +18,8 @@ package edu.unc.lib.dl.persist.services.acl;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 
 /**
@@ -29,6 +31,7 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 public class PatronAccessDetails {
 
     private List<RoleAssignment> roles;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "UTC", pattern = "yyyy-MM-dd")
     private Date embargo;
     private boolean deleted;
 
