@@ -22,7 +22,15 @@
                                     </slot>
                                 </div>
                                 <div class="modal-body">
-                                    <patron-roles v-if="permissionType === 'Patron'"></patron-roles>
+                                    <patron-roles v-if="permissionType === 'Patron'"
+                                                  :alert-handler="alertHandler"
+                                                  :changes-check="checkForUnsavedChanges"
+                                                  :container-type="metadata.type"
+                                                  :title="metadata.title"
+                                                  :uuid="metadata.id"
+                                                  @reset-changes-check="resetChangesCheck"
+                                                  @show-modal="closeModal">
+                                    </patron-roles>
                                     <staff-roles v-else
                                                  :alert-handler="alertHandler"
                                                  :changes-check="checkForUnsavedChanges"
@@ -133,7 +141,6 @@
 
     .modal-container {
         background-color: white;
-
         max-width: 620px;
 
         h3 {
@@ -144,7 +151,7 @@
             background-color: white;
             border-radius: 0 0 5px 5px;
             margin: 10px -30px -20px -30px;
-            max-height: 650px;
+            max-height: 550px;
             overflow: auto;
             padding: 20px 0;
         }
