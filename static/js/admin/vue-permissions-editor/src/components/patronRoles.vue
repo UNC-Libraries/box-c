@@ -185,6 +185,10 @@
 
             isDeleted() {
                 return this.display_roles.assigned.deleted;
+            },
+
+            isCollection() {
+                return this.containerType.toLowerCase() === 'collection';
             }
         },
 
@@ -192,6 +196,10 @@
             defaultRoles(perms, type) {
                 if (perms.roles === null) {
                     perms.roles = [];
+                } else if (perms.roles.length === 0 && type === 'assigned' && this.isCollection) {
+                    this.authenticated_role = 'none';
+                    this.everyone_role = 'none';
+                    perms.roles = this.assignedPatronRoles;
                 } else if (perms.roles.length === 0 && type === 'assigned') {
                     this.authenticated_role = 'canViewOriginals';
                     this.everyone_role = 'canViewOriginals';
@@ -213,11 +221,22 @@
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
                             response.data.assigned.roles.length === 0) {
+                        let assigned_defaults;
                         response.data.inherited.roles = this._defaultInherited();
-                        response.data.assigned.roles = [
-                            { principal: 'everyone', role: 'canViewOriginals' },
-                            { principal: 'authenticated', role: 'canViewOriginals' }
-                        ];
+
+                        if (this.isCollection) {
+                            assigned_defaults = [
+                                { principal: 'everyone', role: 'none' },
+                                { principal: 'authenticated', role: 'none' }
+                            ]
+                        } else {
+                            assigned_defaults = [
+                                { principal: 'everyone', role: 'canViewOriginals' },
+                                { principal: 'authenticated', role: 'canViewOriginals' }
+                            ]
+                        }
+
+                        response.data.assigned.roles = assigned_defaults;
 
                         this.display_roles.inherited = response.data.inherited;
                         this.display_roles.assigned = response.data.assigned;
@@ -293,7 +312,7 @@
              */
             _defaultInherited() {
                 let default_inherited;
-                if (this.containerType.toLowerCase() !== 'collection') {
+                if (!this.isCollection) {
                     default_inherited = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
                 } else {
                     default_inherited = [];

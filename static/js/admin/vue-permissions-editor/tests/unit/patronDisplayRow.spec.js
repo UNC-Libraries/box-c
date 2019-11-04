@@ -138,7 +138,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("display a 'more info' icon for 'Public Users' users", () => {
-        icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
+        icons = wrapper.findAll('i.fa-question-circle').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(1);
         expect(icons.at(0).classes()).toContain('fa-question-circle');
     });
@@ -197,6 +197,44 @@ describe('patronRoles.vue', () => {
         expect(icons.length).toEqual(2);
         expect(icons.at(0).classes()).toContain('fa-check-circle');
         expect(icons.at(1).classes()).toContain('fa-check-circle');
+    });
+
+    it("displays 'effective permissions' icons for most restrictive public permission if there are no inherited roles", () => {
+        wrapper.setProps({
+            compareRoles: {
+                inherited: { roles: [],
+                    embargo: null,
+                    deleted: false
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
+                    ],
+                    embargo: null,
+                    deleted: true
+                }
+            },
+            displayRoles: {
+                inherited: { roles: [],
+                    embargo: null,
+                    deleted: false
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'authenticated', role: 'canViewAccessCopies' }
+                    ],
+                    embargo: null,
+                    deleted: true
+                }
+            },
+            type: 'assigned',
+            user:  { principal: 'everyone', role: 'canViewOriginals' }
+        });
+
+        icons = wrapper.findAll('i.fa-check-circle').filter(i => !i.classes('hidden'));
+        expect(icons.length).toEqual(2);
     });
 
     it("displays 'effective permissions' icons for most restrictive public permission", () => {
@@ -365,7 +403,7 @@ describe('patronRoles.vue', () => {
         });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
-        expect(icons.at(0).classes()).toContain('fa-times-circle');
+        expect(icons.at(1).classes()).toContain('fa-times-circle');
     });
 
     it("does not display a deleted icon if an item is not marked for deletion", () => {

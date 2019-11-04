@@ -153,7 +153,8 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("does not set default inherited display roles for collections", (done) => {
+    it("does not set default inherited display roles for collections and sets assigned permissions to 'none'" +
+        "if no assigned permissions are returned", (done) => {
         wrapper.setProps({
             containerType: 'Collection'
         });
@@ -165,7 +166,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
             done();
         })
     });

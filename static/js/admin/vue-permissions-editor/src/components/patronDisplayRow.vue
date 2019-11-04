@@ -69,7 +69,7 @@
 
         methods: {
             nonPublicRole(text) {
-                return text !== 'everyone' && text !== 'patron';
+                return text !== 'everyone' && text !== 'patron' && text !== 'Public Users';
             },
 
             currentUserRoles(user = 'staff') {
@@ -114,12 +114,11 @@
             hasRolesPriority(user) {
                 let current_users = this.currentUserRoles(user);
 
-                if (current_users.inherited === undefined && current_users.assigned === undefined) {
-                    return undefined;
-                } else if (current_users.inherited !== undefined && current_users.assigned === undefined) {
+                // There will always be a default assigned permission if none is returned from the server
+                if (current_users.inherited === undefined) {
+                    return 'assigned'
+                } else if (current_users.assigned === undefined) {
                     return 'inherited';
-                } else if (current_users.inherited === undefined && current_users.assigned !== undefined) {
-                    return 'assigned';
                 } else {
                     return this.hasMultipleRoles(current_users);
                 }
