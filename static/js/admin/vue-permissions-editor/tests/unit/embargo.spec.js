@@ -55,12 +55,14 @@ describe('embargo.vue', () => {
 
     it("emits an event when a new embargo is added", () => {
         wrapper.setData({
-            embargo_ends_date: '2099-01-01',
-            custom_embargo_date: '2099-01-01',
             has_embargo: false
         });
 
         btn.trigger('click');
+        wrapper.setProps({
+            currentEmbargo: '2099-01-01'
+        });
+
         expect(wrapper.emitted()['embargo-info'][0]).toEqual(['2099-01-01']);
         expect(wrapper.vm.has_embargo).toBe(true);
     });
@@ -82,25 +84,38 @@ describe('embargo.vue', () => {
 
     it("emits an event when an embargo is removed", () => {
         btn.trigger('click');
+        wrapper.setProps({
+            currentEmbargo: null
+        });
         expect(wrapper.emitted()['embargo-info'][0]).toEqual([null]);
         expect(wrapper.vm.has_embargo).toBe(false);
     });
 
     it("updates button text when an embargo is added", () => {
         wrapper.setData({
-            embargo_ends_date: '2099-01-01',
-            custom_embargo_date: '2099-01-01',
+            custom_embargo_date: '',
+            embargo_ends_date: '',
             has_embargo: false
         });
 
         expect(btn.text()).toBe('Add Embargo');
-        btn.trigger('click');
+
+        // triggers watcher
+        wrapper.setProps({
+            currentEmbargo: '2099-01-01'
+        });
+
         expect(btn.text()).toBe('Remove Embargo');
     });
 
     it("updates button text when an embargo is removed", () => {
         expect(btn.text()).toBe('Remove Embargo');
-        btn.trigger('click');
+
+        // triggers watcher
+        wrapper.setProps({
+            currentEmbargo: null
+        });
+
         expect(btn.text()).toBe('Add Embargo');
     });
 

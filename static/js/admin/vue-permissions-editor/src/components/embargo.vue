@@ -78,23 +78,20 @@
              * Removes an embargo if one is present
              */
             changeEmbargo() {
-                this.has_embargo = !this.has_embargo;
-
-                if (!this.has_embargo) {
+                if (this.custom_embargo_date !== '' && !isFuture(this.specifiedDate(this.custom_embargo_date))) {
+                    this.$emit('error-msg', 'Please enter a future date');
+                } else if (this.fixed_embargo_date === '' && this.custom_embargo_date === '') {
+                    this.$emit('error-msg', 'No embargo is set. Please choose an option from the form above.');
+                } else if (!this.has_embargo) {
+                    this.$emit('embargo-info', this.embargo_ends_date);
+                } else {
                     if (window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
                         this.clearEmbargoInfo();
                         this.$emit('embargo-info', null);
-                    } else {
-                        this.has_embargo = true;
                     }
-                } else if (this.custom_embargo_date !== '' && !isFuture(this.specifiedDate(this.custom_embargo_date))) {
-                    this.$emit('error-msg', 'Please enter a future date');
-                } else if (this.fixed_embargo_date === '' && this.custom_embargo_date === '') {
-                    this.has_embargo = false;
-                    this.$emit('error-msg', 'No embargo is set. Please choose an option from the form above.');
-                } else {
-                    this.$emit('embargo-info', this.embargo_ends_date);
                 }
+
+                this.embargo = !this.embargo;
             },
 
             /**
