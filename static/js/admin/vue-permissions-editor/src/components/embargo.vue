@@ -60,7 +60,7 @@
 
             minDate() {
                 let tomorrow = new Date(startOfTomorrow());
-                return  format(tomorrow, 'yyyy-LL-dd');
+                return format(tomorrow, 'yyyy-LL-dd');
             },
 
             formattedEmbargoDate() {
@@ -81,7 +81,7 @@
                 this.has_embargo = !this.has_embargo;
 
                 if (!this.has_embargo) {
-                    if(window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
+                    if (window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
                         this.clearEmbargoInfo();
                         this.$emit('embargo-info', null);
                     } else {

@@ -137,7 +137,7 @@ describe('patronRoles.vue', () => {
         expect(public_role.text()).toMatch(dash_regex);
     });
 
-    it("display a 'more info' icon for 'Public User' users", () => {
+    it("display a 'more info' icon for 'Public Users' users", () => {
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
         expect(icons.length).toEqual(1);
         expect(icons.at(0).classes()).toContain('fa-question-circle');

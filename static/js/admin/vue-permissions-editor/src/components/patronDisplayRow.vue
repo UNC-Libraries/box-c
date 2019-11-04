@@ -73,9 +73,9 @@
             },
 
             currentUserRoles(user = 'staff') {
-                // Since we only care about the returned role checking for 'everyone' if user is 'patron'
+                // Since we only care about the returned role, checking for 'everyone' if user is 'patron'
                 // is fine since 'everyone' and 'authenticated' will have the same role
-                if (user === 'Public User' || user === 'patron') {
+                if (user === 'Public Users' || user === 'patron') {
                     user = 'everyone';
                 }
 

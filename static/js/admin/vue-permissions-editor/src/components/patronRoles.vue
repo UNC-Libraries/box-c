@@ -212,7 +212,7 @@
             getRoles() {
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
-                        response.data.assigned.roles.length === 0) {
+                            response.data.assigned.roles.length === 0) {
                         response.data.inherited.roles = this._defaultInherited();
                         response.data.assigned.roles = [
                             { principal: 'everyone', role: 'canViewOriginals' },
@@ -233,7 +233,7 @@
                         this.submit_roles = cloneDeep(default_perms.assigned);
 
                         // Add in staff user for display if no users returned
-                        if(default_perms.inherited.roles.length === 0) {
+                        if (default_perms.inherited.roles.length === 0) {
                             default_perms.inherited.roles = this._defaultInherited();
                         }
 
@@ -257,7 +257,7 @@
                         this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
                     }
                 }).catch((error) => {
-                    let response_msg = `Unable load current patron roles for: ${this.title}`;
+                    let response_msg = `Unable to load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
                 });
@@ -319,13 +319,13 @@
             },
 
             /**
-             * Updates display text of everyone user to 'Public User'
+             * Updates display text of everyone user to 'Public Users'
              * @param level
              * @returns {*}
              */
             publicUserText(level) {
                 return level.map((u) => {
-                    return u.principal === 'everyone' ? { principal: 'Public User', role: u.role } : u;
+                    return u.principal === 'everyone' ? { principal: 'Public Users', role: u.role } : u;
                 });
             },
 
@@ -498,7 +498,6 @@
             _hasRoleChange(type) {
                 let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
                 let current_role = this.submit_roles.roles.find(user => user.principal === type);
-
 
                 if (initial_role === undefined) {
                     return true;

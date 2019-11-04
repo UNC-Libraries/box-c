@@ -13,8 +13,8 @@ let response = {
 };
 
 let response_display = {
-    inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
-    assigned: { roles: [{ principal: 'Public User', role: 'canViewMetadata' }], deleted: false, embargo: null }
+    inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    assigned: { roles: [{ principal: 'Public Users', role: 'canViewMetadata' }], deleted: false, embargo: null }
 }
 
 let none_response = {
@@ -60,9 +60,9 @@ let full_roles = {
 };
 
 let full_roles_display = {
-    inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
     assigned: { roles: [
-            { principal: 'Public User', role: 'none'},
+            { principal: 'Public Users', role: 'none'},
             { principal: 'authenticated', role: "canViewOriginals" }
         ],
         deleted: false, embargo: null }
@@ -296,7 +296,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'canViewMetadata' }]);
 
             wrapper.findAll('#public option').at(2).setSelected();
 
@@ -307,7 +307,7 @@ describe('patronRoles.vue', () => {
 
             expect(wrapper.vm.everyone_role).toBe('canViewAccessCopies');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                { principal: 'Public User', role: 'canViewAccessCopies' },
+                { principal: 'Public Users', role: 'canViewAccessCopies' },
                 { principal: 'authenticated', role: 'none' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_public_roles);
@@ -336,7 +336,7 @@ describe('patronRoles.vue', () => {
 
             expect(wrapper.vm.authenticated_role).toBe('canViewOriginals');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                { principal: 'Public User', role: 'canViewMetadata' },
+                { principal: 'Public Users', role: 'canViewMetadata' },
                 { principal: 'authenticated', role: 'canViewOriginals' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_authenticated_roles);
@@ -413,9 +413,9 @@ describe('patronRoles.vue', () => {
         };
 
         let values_display = {
-            inherited: { roles: [{ principal: 'Public User', role: 'canViewOriginals' }], deleted: false, embargo: null },
+            inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
             assigned: { roles: [
-                    { principal: 'Public User', role: 'canViewAccessCopies'},
+                    { principal: 'Public Users', role: 'canViewAccessCopies'},
                     { principal: 'authenticated', role: "canViewOriginals" }
                 ],
                 deleted: false, embargo: null }
@@ -445,7 +445,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.display_roles).toEqual(full_roles_display);
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'none' },
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'none' },
                 { principal: 'authenticated', role: 'canViewMetadata'}]);
             done();
         })
@@ -491,7 +491,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public User', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
 
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
             expect(wrapper.vm.display_roles).toEqual(full_roles_display);
