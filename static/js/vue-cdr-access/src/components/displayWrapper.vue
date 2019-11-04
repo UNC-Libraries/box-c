@@ -20,7 +20,7 @@
                     <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
                 </div>
             </div>
-            <browse-display v-if="display_type === 'browse-display'" :record-list="record_list"></browse-display>
+            <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
             <list-display v-else :record-list="record_list"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
@@ -71,7 +71,6 @@
                 container_name: '',
                 container_metadata: {},
                 default_work_type: 'Work',
-                display_type: 'browse-display',
                 is_admin_unit: false,
                 is_collection: false,
                 is_folder: false,
@@ -80,6 +79,12 @@
                 record_list: [],
                 search_method: 'searchJson',
                 uuid: ''
+            }
+        },
+
+        computed: {
+            isBrowseDisplay() {
+                return this.urlParams().browse_type === 'gallery-display';
             }
         },
 
