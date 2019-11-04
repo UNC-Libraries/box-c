@@ -34,7 +34,9 @@
 
         <ul class="set-patron-roles">
             <li>
-                <input @click="updateRoleList" id="patron" type="radio" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
+                <span @click="updateRoleList" id="patron">
+                    <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
+                </span>
                 <ul class="patron">
                     <li class="public-role">
                         <p>Public users</p>
@@ -58,7 +60,11 @@
                     </li>
                 </ul>
             </li>
-            <li><input @click="updateRoleList" id="staff" type="radio" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access</li>
+            <li>
+                <span @click="updateRoleList" id="staff">
+                    <input type="radio" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access
+                </span>
+            </li>
         </ul>
 
         <embargo ref="embargoInfo"
@@ -392,6 +398,7 @@
              */
             updateRoleList(e) {
                 let type = e.target.id;
+                this.user_type = type;
 
                 if (type === 'staff') {
                     this.setRoleHistory();
@@ -581,6 +588,10 @@
     #patron-roles {
         text-align: left;
         margin: 5px 25px;
+
+        span:hover {
+            cursor: default;
+        }
 
         select {
             margin-left: 5px;

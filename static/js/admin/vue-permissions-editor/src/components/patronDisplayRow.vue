@@ -242,7 +242,7 @@
         border-right: 5px solid transparent;
         border-bottom: 10px solid darkslategray;
         height: 0;
-        left: 88px;
+        left: 105px;
         margin: inherit;
         top: 26px;
         width: 0;
