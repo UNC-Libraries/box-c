@@ -9,8 +9,8 @@
                 <fieldset :disabled="isDeleted">
                     <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
                     <div @click="setFixedEmbargoDate(2)"><input v-model="fixed_embargo_date" value="2" type="radio"> 2 years</div>
-                    <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
-                           @focusout="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
+                    <input id="custom-embargo" placeholder="YYYY-MM-DD"
+                           @click="clearEmbargoError" @focusout="setCustomEmbargoDate" type="text" v-model="custom_embargo_date"> Custom Date
                 </fieldset>
             </form>
             <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo">Remove Embargo</button>
@@ -44,10 +44,8 @@
 
                 if (this.has_embargo) {
                     this.embargo_ends_date = embargo;
-                    this.custom_embargo_date = embargo;
                 } else {
                     this.embargo_ends_date = '';
-                    this.custom_embargo_date = '';
                 }
             }
         },
@@ -114,35 +112,29 @@
              */
             setCustomEmbargoDate() {
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
+                let date_filled = this.custom_embargo_date !== '';
+                let regex_match = /\d{4}-\d{2}-\d{2}/.test(this.custom_embargo_date);
 
-                if (this.has_embargo && date_parts === null) {
-                    this.$emit('error-msg', 'Embargo won\'t be removed until "Remove Embargo" is clicked');
-                } else if (this.has_embargo && !isFuture(date_parts)) {
-                    this.custom_embargo_date = this.embargo_ends_date;
-                    this.$emit('error-msg', 'Please enter a future date. Date reset to current embargo');
-                } else if (date_parts !== null && !isFuture(date_parts)) {
-                    this.$emit('error-msg', 'Please enter a future date');
-                } else {
+                if (date_filled && regex_match && isFuture(date_parts)) {
                     this.$emit('error-msg', '');
                     this.fixed_embargo_date = '';
                     this.embargo_ends_date = this.custom_embargo_date;
                     this.$emit('embargo-info', this.embargo_ends_date);
+                } else if (date_filled && !regex_match) {
+                    this.$emit('error-msg', 'Please enter enter a date in the following format YYYY-MM-DD');
+                } else if (date_filled && !isFuture(date_parts)) {
+                    this.$emit('error-msg', 'Please enter a future date');
                 }
             },
 
             /**
              * Turn a date string into a Date object
              * @param date_value
-             * @returns {null|Date}
+             * @returns {Date}
              */
             specifiedDate(date_value) {
                 let parts = date_value.split('-');
-
-                if (parts.length > 1) {
-                    return new Date(parts[0], parts[1] - 1, parts[2]);
-                }
-
-                return null;
+                return new Date(parts[0], parts[1] - 1, parts[2]);
             }
         }
     }
@@ -166,6 +158,7 @@
         fieldset {
             div {
                 cursor: default;
+                width: 80px;
             }
         }
 
@@ -177,7 +170,7 @@
             margin-bottom: 10px;
         }
 
-        input[type=date] {
+        input[type=text] {
             border: 1px solid lightgray;
             border-radius: 5px;
             padding: 5px;

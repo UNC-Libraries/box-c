@@ -45,7 +45,6 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: test_date });
 
         expect(wrapper.vm.embargo_ends_date).toEqual(test_date);
-        expect(wrapper.vm.custom_embargo_date).toEqual(test_date);
     });
 
     it("does not set an embargo if one is not returned from the server", () => {
@@ -108,37 +107,20 @@ describe('embargo.vue', () => {
         expect(wrapper.vm.has_embargo).toBe(false);
     });
 
+    it("emits an error message if user tries to add embargo with the wrong date format", () => {
+        wrapper.setData({
+            custom_embargo_date: '2099-01'
+        });
+
+        inputs.at(2).trigger('focusout');
+        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter enter a date in the following format YYYY-MM-DD']);
+    });
+
     it("emits an error message if user tries to add embargo in the past", () => {
         wrapper.setData(past_embargo);
 
         inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
-    });
-
-    it("if there is a current embargo it emits an error message and resets the form to the current embargo" +
-        "if the user tries to set an embargo in the past", () => {
-        wrapper.setData({
-            embargo_ends_date: '2099-01-01',
-            custom_embargo_date: '2011-01-01',
-            fixed_embargo_date: '',
-            has_embargo: true
-        });
-
-        inputs.at(2).trigger('focusout');
-        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date. Date reset to current embargo']);
-        expect(wrapper.vm.custom_embargo_date).toEqual('2099-01-01');
-    });
-
-    it("it emits a message if there is a current embargo and the user clears the custom embargo field", () => {
-        wrapper.setData({
-            embargo_ends_date: '2099-01-01',
-            custom_embargo_date: '',
-            fixed_embargo_date: '',
-            has_embargo: true
-        });
-
-        inputs.at(2).trigger('focusout');
-        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Embargo won\'t be removed until "Remove Embargo" is clicked']);
     });
 
     it("emits a message to clear error message if a form input is clicked", () => {
@@ -147,7 +129,7 @@ describe('embargo.vue', () => {
         inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
 
-        inputs.at(0).trigger('click');
+        inputs.at(2).trigger('click');
         expect(wrapper.emitted()['error-msg'][1]).toEqual(['']);
     });
 
