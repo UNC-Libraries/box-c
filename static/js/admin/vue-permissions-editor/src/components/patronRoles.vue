@@ -14,7 +14,7 @@
             <tbody>
             <template v-if="hasParentRole" v-for="user in sortedInheritedRoles">
                 <patron-display-row
-                        :compare-roles="compareRoles"
+                        :container-type="containerType"
                         :display-roles="display_roles"
                         :possible-roles="possibleRoles"
                         type="inherited"
@@ -22,7 +22,7 @@
             </template>
             <template v-if="hasObjectRole" v-for="user in sortedAssignedRoles">
                 <patron-display-row
-                        :compare-roles="compareRoles"
+                        :container-type="containerType"
                         :display-roles="display_roles"
                         :possible-roles="possibleRoles"
                         type="assigned"

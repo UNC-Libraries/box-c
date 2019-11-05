@@ -190,6 +190,7 @@ describe('patronRoles.vue', () => {
                     deleted: false
                 }
             },
+            type: 'inherited',
             user: staff_user
         });
 
@@ -403,7 +404,7 @@ describe('patronRoles.vue', () => {
         });
 
         icons = wrapper.findAll('i').filter(i => !i.classes('hidden'));
-        expect(icons.at(1).classes()).toContain('fa-times-circle');
+        expect(icons.at(0).classes()).toContain('fa-times-circle');
     });
 
     it("does not display a deleted icon if an item is not marked for deletion", () => {

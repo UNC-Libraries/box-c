@@ -36,7 +36,7 @@
         mixins: [patronHelpers],
 
         props: {
-            compareRoles: Object,
+            containerType: String,
             displayRoles: Object,
             possibleRoles: Array,
             type: String,
@@ -79,10 +79,17 @@
                     user = 'everyone';
                 }
 
-                let inherited = this.compareRoles.inherited.roles.find((u) => u.principal === user);
-                let assigned = this.compareRoles.assigned.roles.find((u) => u.principal === user);
+                let inherited = this.displayRoles.inherited.roles.find((u) => u.principal === user);
+                let assigned = this.displayRoles.assigned.roles.find((u) => u.principal === user);
+                let inherited_staff = this.displayRoles.inherited.roles.find((u) => u.principal === 'staff');
+                let assigned_staff = this.displayRoles.assigned.roles.find((u) => u.principal === 'staff');
 
-                return { inherited: inherited , assigned: assigned };
+                return {
+                    inherited: inherited,
+                    assigned: assigned,
+                    inherited_staff: inherited_staff,
+                    assigned_staff: assigned_staff
+                };
             },
 
             displayRole(role) {
@@ -114,11 +121,16 @@
             hasRolesPriority(user) {
                 let current_users = this.currentUserRoles(user);
 
-                // There will always be a default assigned permission if none is returned from the server
-                if (current_users.inherited === undefined) {
-                    return 'assigned'
+                if (this.containerType === 'Collection') {
+                    return 'assigned';
+                } else if (current_users.inherited_staff !== undefined) {
+                    return 'inherited';
+                } else if (current_users.assigned_staff !== undefined) {
+                    return 'assigned';
                 } else if (current_users.assigned === undefined) {
                     return 'inherited';
+                } else if (current_users.inherited === undefined) {
+                    return 'assigned';
                 } else {
                     return this.hasMultipleRoles(current_users);
                 }
@@ -130,32 +142,7 @@
              * @returns {*|string}
              */
             mostRestrictive(user) {
-                // Check for staff roles. They supersede all other roles
-                let has_staff_only = this._hasStaffOnly();
-
-                if (has_staff_only !== undefined) {
-                    return has_staff_only;
-                }
-
-                // Check for other users/roles
                 return this.hasRolesPriority(user);
-            },
-
-            /**
-             * Determines if staff roles are present and if so determines 'effective' permission
-             * @returns {string|undefined}
-             * @private
-             */
-            _hasStaffOnly() {
-                let current_users = this.currentUserRoles();
-
-                if (current_users.inherited !== undefined) {
-                    return 'inherited';
-                } else if (current_users.assigned !== undefined) {
-                    return 'assigned'
-                } else {
-                    return undefined;
-                }
             },
 
             alignTooltip(text) {
