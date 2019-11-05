@@ -5,16 +5,15 @@
             <p v-else>No embargo set for this object</p>
 
             <h3>Set Embargo</h3>
-            <form @click="clearEmbargoError">
+            <form>
                 <fieldset :disabled="isDeleted">
                     <input @click="setFixedEmbargoDate(1)" v-model="fixed_embargo_date" value="1" type="radio"> 1 year<br/>
                     <input @click="setFixedEmbargoDate(2)" v-model="fixed_embargo_date" value="2" type="radio"> 2 years<br/>
                     <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
-                           @change="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
+                           @focusout="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
                 </fieldset>
             </form>
-
-            <button @click="changeEmbargo" :disabled="isDeleted" :class="{'is-disabled': isDeleted}" id="add-embargo">{{ embargoText }}</button>
+            <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo">Remove Embargo</button>
         </div>
     </div>
 </template>
@@ -54,10 +53,6 @@
         },
 
         computed: {
-            embargoText() {
-                return this.has_embargo ? 'Remove Embargo' : 'Add Embargo';
-            },
-
             minDate() {
                 let tomorrow = new Date(startOfTomorrow());
                 return format(tomorrow, 'yyyy-LL-dd');
@@ -77,44 +72,28 @@
              * Adds an embargo if none is already present
              * Removes an embargo if one is present
              */
-            changeEmbargo() {
-                if (this.custom_embargo_date !== '' && !isFuture(this.specifiedDate(this.custom_embargo_date))) {
-                    this.$emit('error-msg', 'Please enter a future date');
-                } else if (this.fixed_embargo_date === '' && this.custom_embargo_date === '') {
-                    this.$emit('error-msg', 'No embargo is set. Please choose an option from the form above.');
-                } else if (!this.has_embargo) {
-                    this.$emit('embargo-info', this.embargo_ends_date);
-                } else {
-                    if (window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
-                        this.clearEmbargoInfo();
-                        this.$emit('embargo-info', null);
-                    }
+            removeEmbargo() {
+                if (window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
+                    this.clearEmbargoInfo();
+                    this.$emit('embargo-info', null);
                 }
-
-                this.embargo = !this.embargo;
             },
 
             /**
              * Resets embargo form
              */
             clearEmbargoInfo() {
+                this.has_embargo = false;
                 this.custom_embargo_date = '';
                 this.embargo_ends_date = '';
                 this.fixed_embargo_date = '';
+
+                this.clearEmbargoError();
             },
 
             clearEmbargoError() {
                 this.error_msg = '';
                 this.$emit('error-msg', this.error_msg);
-            },
-
-            /**
-             * If an embargo is already present and the user changes the embargo length
-             */
-            updateCurrentEmbargo() {
-                if (this.has_embargo) {
-                    this.$emit('embargo-info', this.embargo_ends_date);
-                }
             },
 
             /**
@@ -125,7 +104,8 @@
                 let future_date = addYears(new Date(), years);
                 this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
                 this.custom_embargo_date = '';
-                this.updateCurrentEmbargo();
+                this.clearEmbargoError();
+                this.$emit('embargo-info', this.embargo_ends_date);
             },
 
             /**
@@ -134,13 +114,18 @@
             setCustomEmbargoDate() {
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
 
-                if (date_parts !== null && !isFuture(date_parts)) {
+                if (this.has_embargo && date_parts === null) {
+                    this.$emit('error-msg', 'Embargo won\'t be removed until "Remove Embargo" is clicked');
+                } else if (this.has_embargo && !isFuture(date_parts)) {
+                    this.custom_embargo_date = this.embargo_ends_date;
+                    this.$emit('error-msg', 'Please enter a future date. Date reset to current embargo');
+                } else if (date_parts !== null && !isFuture(date_parts)) {
                     this.$emit('error-msg', 'Please enter a future date');
                 } else {
                     this.$emit('error-msg', '');
                     this.fixed_embargo_date = '';
                     this.embargo_ends_date = this.custom_embargo_date;
-                    this.updateCurrentEmbargo();
+                    this.$emit('embargo-info', this.embargo_ends_date);
                 }
             },
 
@@ -152,7 +137,7 @@
             specifiedDate(date_value) {
                 let parts = date_value.split('-');
 
-                if (parts.length > 0) {
+                if (parts.length > 1) {
                     return new Date(parts[0], parts[1] - 1, parts[2]);
                 }
 
@@ -171,7 +156,7 @@
             margin: 15px 25px;
         }
 
-        #add-embargo {
+        #remove-embargo {
             margin-left: 0;
             margin-top: 20px;
             width: 115px;

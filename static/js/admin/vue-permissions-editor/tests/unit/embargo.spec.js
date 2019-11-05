@@ -16,6 +16,7 @@ let past_embargo = {
 };
 let wrapper;
 let btn;
+let inputs;
 
 describe('embargo.vue', () => {
     beforeEach(() => {
@@ -33,7 +34,8 @@ describe('embargo.vue', () => {
             has_embargo: true
         });
 
-        btn = wrapper.find('#add-embargo');
+        btn = wrapper.find('#remove-embargo');
+        inputs = wrapper.findAll('input');
         global.confirm = jest.fn().mockReturnValue(true);
     });
 
@@ -53,12 +55,27 @@ describe('embargo.vue', () => {
         expect(wrapper.vm.embargo_ends_date).toEqual('');
     });
 
+    it("shows a 'Remove Embargo' button if an embargo is set", () => {
+        let test_date = '2099-01-01';
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: test_date });
+
+        expect(btn.classes('hidden')).toBe(false);
+    });
+
+    it("hides the 'Remove Embargo' button if no embargo is set", () => {
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: null });
+
+        expect(btn.classes('hidden')).toBe(true);
+    });
+
     it("emits an event when a new embargo is added", () => {
         wrapper.setData({
             has_embargo: false
         });
 
-        btn.trigger('click');
+        inputs.at(2).trigger('focusout');
         wrapper.setProps({
             currentEmbargo: '2099-01-01'
         });
@@ -70,7 +87,7 @@ describe('embargo.vue', () => {
     it("updates current embargo if one is already present", () => {
         expect(wrapper.vm.embargo_ends_date).toBe('2099-01-01');
 
-        wrapper.find('input').trigger('click');
+        inputs.at(0).trigger('click');
 
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
         expect(wrapper.vm.fixed_embargo_date).toEqual('1');
@@ -91,60 +108,46 @@ describe('embargo.vue', () => {
         expect(wrapper.vm.has_embargo).toBe(false);
     });
 
-    it("updates button text when an embargo is added", () => {
-        wrapper.setData({
-            custom_embargo_date: '',
-            embargo_ends_date: '',
-            has_embargo: false
-        });
-
-        expect(btn.text()).toBe('Add Embargo');
-
-        // triggers watcher
-        wrapper.setProps({
-            currentEmbargo: '2099-01-01'
-        });
-
-        expect(btn.text()).toBe('Remove Embargo');
-    });
-
-    it("updates button text when an embargo is removed", () => {
-        expect(btn.text()).toBe('Remove Embargo');
-
-        // triggers watcher
-        wrapper.setProps({
-            currentEmbargo: null
-        });
-
-        expect(btn.text()).toBe('Add Embargo');
-    });
-
-    it("emits an error message if user clicks 'Add embargo' and form is empty", () => {
-        wrapper.setData({
-            embargo_ends_date: '',
-            custom_embargo_date: '',
-            fixed_embargo_date: '',
-            has_embargo: false
-        });
-
-        btn.trigger('click');
-        expect(wrapper.emitted()['error-msg'][0]).toEqual(['No embargo is set. Please choose an option from the form above.']);
-    });
-
     it("emits an error message if user tries to add embargo in the past", () => {
         wrapper.setData(past_embargo);
 
-        btn.trigger('click');
+        inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
     });
 
-    it("emits  a message to clear error message if form is clicked", () => {
+    it("if there is a current embargo it emits an error message and resets the form to the current embargo" +
+        "if the user tries to set an embargo in the past", () => {
+        wrapper.setData({
+            embargo_ends_date: '2099-01-01',
+            custom_embargo_date: '2011-01-01',
+            fixed_embargo_date: '',
+            has_embargo: true
+        });
+
+        inputs.at(2).trigger('focusout');
+        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date. Date reset to current embargo']);
+        expect(wrapper.vm.custom_embargo_date).toEqual('2099-01-01');
+    });
+
+    it("it emits a message if there is a current embargo and the user clears the custom embargo field", () => {
+        wrapper.setData({
+            embargo_ends_date: '2099-01-01',
+            custom_embargo_date: '',
+            fixed_embargo_date: '',
+            has_embargo: true
+        });
+
+        inputs.at(2).trigger('focusout');
+        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Embargo won\'t be removed until "Remove Embargo" is clicked']);
+    });
+
+    it("emits a message to clear error message if a form input is clicked", () => {
         wrapper.setData(past_embargo);
 
-        btn.trigger('click');
+        inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
 
-        wrapper.find('form').trigger('click');
+        inputs.at(0).trigger('click');
         expect(wrapper.emitted()['error-msg'][1]).toEqual(['']);
     });
 
@@ -154,6 +157,5 @@ describe('embargo.vue', () => {
         });
 
         expect(wrapper.find('fieldset').html()).toEqual(expect.stringContaining('disabled="disabled"'));
-        expect(wrapper.find('#add-embargo').html()).toEqual(expect.stringContaining('disabled="disabled"'));
     });
 });
