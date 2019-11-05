@@ -7,8 +7,8 @@
             <h3>Set Embargo</h3>
             <form>
                 <fieldset :disabled="isDeleted">
-                    <input @click="setFixedEmbargoDate(1)" v-model="fixed_embargo_date" value="1" type="radio"> 1 year<br/>
-                    <input @click="setFixedEmbargoDate(2)" v-model="fixed_embargo_date" value="2" type="radio"> 2 years<br/>
+                    <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
+                    <div @click="setFixedEmbargoDate(2)"><input v-model="fixed_embargo_date" value="2" type="radio"> 2 years</div>
                     <input :min="minDate" id="custom-embargo" placeholder="YYYY-MM-DD"
                            @focusout="setCustomEmbargoDate" type="date" v-model="custom_embargo_date"> Custom Date
                 </fieldset>
@@ -103,6 +103,7 @@
             setFixedEmbargoDate(years) {
                 let future_date = addYears(new Date(), years);
                 this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
+                this.fixed_embargo_date = years;
                 this.custom_embargo_date = '';
                 this.clearEmbargoError();
                 this.$emit('embargo-info', this.embargo_ends_date);
@@ -160,6 +161,12 @@
             margin-left: 0;
             margin-top: 20px;
             width: 115px;
+        }
+
+        fieldset {
+            div {
+                cursor: default;
+            }
         }
 
         p {
