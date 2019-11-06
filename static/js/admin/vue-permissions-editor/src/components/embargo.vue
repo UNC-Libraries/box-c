@@ -4,16 +4,20 @@
             <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
             <p v-else>No embargo set for this object</p>
 
-            <h3>Set Embargo</h3>
-            <form>
-                <fieldset :disabled="isDeleted">
-                    <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
-                    <div @click="setFixedEmbargoDate(2)"><input v-model="fixed_embargo_date" value="2" type="radio"> 2 years</div>
-                    <input id="custom-embargo" placeholder="YYYY-MM-DD"
-                           @click="clearEmbargoError" @focusout="setCustomEmbargoDate" type="text" v-model="custom_embargo_date"> Custom Date
-                </fieldset>
-            </form>
-            <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo">Remove Embargo</button>
+
+            <button id="show-form" v-if="!has_embargo && !show_form" @click="showForm">Add embargo</button>
+            <div class="form" v-if="has_embargo || show_form">
+                <h3>Set Embargo</h3>
+                <form>
+                    <fieldset :disabled="isDeleted">
+                        <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
+                        <div @click="setFixedEmbargoDate(2)"><input v-model="fixed_embargo_date" value="2" type="radio"> 2 years</div>
+                        <input id="custom-embargo" placeholder="YYYY-MM-DD"
+                               @click="clearEmbargoError" @focusout="setCustomEmbargoDate" type="text" v-model="custom_embargo_date"> Custom Date
+                    </fieldset>
+                </form>
+                <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo">Remove Embargo</button>
+            </div>
         </div>
     </div>
 </template>
@@ -34,7 +38,8 @@
                 custom_embargo_date: '',
                 embargo_ends_date: '',
                 fixed_embargo_date: '',
-                has_embargo: false
+                has_embargo: false,
+                show_form: false
             }
         },
 
@@ -66,6 +71,10 @@
         },
 
         methods: {
+            showForm() {
+                this.show_form = !this.show_form;
+            },
+
             /**
              * Adds an embargo if none is already present
              * Removes an embargo if one is present
@@ -113,7 +122,7 @@
             setCustomEmbargoDate() {
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
                 let date_filled = this.custom_embargo_date !== '';
-                let regex_match = /\d{4}-\d{2}-\d{2}/.test(this.custom_embargo_date);
+                let regex_match = /^\d{4}-\d{2}-\d{2}$/.test(this.custom_embargo_date);
 
                 if (date_filled && regex_match && isFuture(date_parts)) {
                     this.$emit('error-msg', '');

@@ -54,19 +54,42 @@ describe('embargo.vue', () => {
         expect(wrapper.vm.embargo_ends_date).toEqual('');
     });
 
+    it("shows the embargo form if an embargo is set", () => {
+        let test_date = '2099-01-01';
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: test_date });
+
+        expect(wrapper.contains('.form')).toBe(true);
+    });
+
+    it("hides the embargo form if no embargo is set", () => {
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: null });
+
+        expect(wrapper.contains('.form')).toBe(false);
+    });
+
+    it("shows the embargo form if the 'set embargo' button is clicked", () => {
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: null });
+        wrapper.find('#show-form').trigger('click');
+
+        expect(wrapper.contains('.form')).toBe(true);
+    });
+
     it("shows a 'Remove Embargo' button if an embargo is set", () => {
         let test_date = '2099-01-01';
         wrapper.setData(embargo_from_server);
         wrapper.setProps({ currentEmbargo: test_date });
 
-        expect(btn.classes('hidden')).toBe(false);
+        expect(wrapper.find('#remove-embargo').classes('hidden')).toBe(false);
     });
 
-    it("hides the 'Remove Embargo' button if no embargo is set", () => {
+    it("hides the 'Remove Embargo' button if no embargo is set and the form is visible", () => {
         wrapper.setData(embargo_from_server);
         wrapper.setProps({ currentEmbargo: null });
-
-        expect(btn.classes('hidden')).toBe(true);
+        wrapper.find('#show-form').trigger('click');
+        expect(wrapper.find('#remove-embargo').classes('hidden')).toBe(true);
     });
 
     it("emits an event when a new embargo is added", () => {
