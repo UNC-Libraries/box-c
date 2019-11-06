@@ -91,6 +91,7 @@
              */
             clearEmbargoInfo() {
                 this.has_embargo = false;
+                this.show_form = false;
                 this.custom_embargo_date = '';
                 this.embargo_ends_date = '';
                 this.fixed_embargo_date = '';
@@ -122,7 +123,7 @@
             setCustomEmbargoDate() {
                 let date_parts = this.specifiedDate(this.custom_embargo_date);
                 let date_filled = this.custom_embargo_date !== '';
-                let regex_match = /^\d{4}-\d{2}-\d{2}$/.test(this.custom_embargo_date);
+                let regex_match = /^[1-2]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/.test(this.custom_embargo_date);
 
                 if (date_filled && regex_match && isFuture(date_parts)) {
                     this.$emit('error-msg', '');
@@ -130,7 +131,7 @@
                     this.embargo_ends_date = this.custom_embargo_date;
                     this.$emit('embargo-info', this.embargo_ends_date);
                 } else if (date_filled && !regex_match) {
-                    this.$emit('error-msg', 'Please enter enter a date in the following format YYYY-MM-DD');
+                    this.$emit('error-msg', 'Please enter a valid date in the following format YYYY-MM-DD');
                 } else if (date_filled && !isFuture(date_parts)) {
                     this.$emit('error-msg', 'Please enter a future date');
                 }
@@ -158,8 +159,11 @@
             margin: 15px 25px;
         }
 
-        #remove-embargo {
+        button {
             margin-left: 0;
+        }
+
+        #remove-embargo {
             margin-top: 20px;
             width: 115px;
         }

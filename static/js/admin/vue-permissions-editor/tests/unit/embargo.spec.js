@@ -62,11 +62,12 @@ describe('embargo.vue', () => {
         expect(wrapper.contains('.form')).toBe(true);
     });
 
-    it("hides the embargo form if no embargo is set", () => {
+    it("hides the embargo form if no embargo is set and displays an 'Add Embargo' button", () => {
         wrapper.setData(embargo_from_server);
         wrapper.setProps({ currentEmbargo: null });
 
         expect(wrapper.contains('.form')).toBe(false);
+        expect(wrapper.contains('#show-form')).toBe(true);
     });
 
     it("shows the embargo form if the 'set embargo' button is clicked", () => {
@@ -90,6 +91,16 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: null });
         wrapper.find('#show-form').trigger('click');
         expect(wrapper.find('#remove-embargo').classes('hidden')).toBe(true);
+    });
+
+    it("hides the form and displays an 'Add Embargo' button if an embargo is removed", () => {
+        let test_date = '2099-01-01';
+        wrapper.setData(embargo_from_server);
+        wrapper.setProps({ currentEmbargo: test_date });
+        wrapper.find('#remove-embargo').trigger('click');
+
+        expect(wrapper.contains('.form')).toBe(false);
+        expect(wrapper.contains('#show-form')).toBe(true);
     });
 
     it("emits an event when a new embargo is added", () => {
@@ -136,7 +147,14 @@ describe('embargo.vue', () => {
         });
 
         inputs.at(2).trigger('focusout');
-        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter enter a date in the following format YYYY-MM-DD']);
+        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a valid date in the following format YYYY-MM-DD']);
+
+        wrapper.setData({
+            custom_embargo_date: '2099-60-34'
+        });
+
+        inputs.at(2).trigger('focusout');
+        expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a valid date in the following format YYYY-MM-DD']);
     });
 
     it("emits an error message if user tries to add embargo in the past", () => {
