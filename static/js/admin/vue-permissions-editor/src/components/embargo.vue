@@ -23,7 +23,7 @@
 </template>
 
 <script>
-    import { addYears, format, isFuture, startOfTomorrow } from 'date-fns'
+    import { addYears, format, isFuture } from 'date-fns'
 
     export default {
         name: 'embargo',
@@ -56,11 +56,6 @@
         },
 
         computed: {
-            minDate() {
-                let tomorrow = new Date(startOfTomorrow());
-                return format(tomorrow, 'yyyy-LL-dd');
-            },
-
             formattedEmbargoDate() {
                 if (this.embargo_ends_date === '') {
                     return this.embargo_ends_date;
