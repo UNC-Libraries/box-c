@@ -1,5 +1,8 @@
 <template>
-    <list-display :record-list="records"></list-display>
+    <div class="contentarea">
+        <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
+        <list-display :record-list="records"></list-display>
+    </div>
 </template>
 
 <script>
@@ -17,6 +20,7 @@
         data() {
             return {
                 anywhere: '',
+                is_loading: true,
                 records: [],
             }
         },
@@ -27,6 +31,7 @@
 
                 get(`searchJson/${param_string}`).then((response) => {
                     this.records = response.data.metadata;
+                    this.is_loading = false;
                 }).catch(function (error) {
                     console.log(error);
                 });
@@ -40,5 +45,8 @@
 </script>
 
 <style scoped lang="scss">
-
+    img {
+        display: block;
+        margin: 25px auto;
+    }
 </style>

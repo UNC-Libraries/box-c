@@ -9,8 +9,8 @@
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                         </div>
                         <div class="column is-10">
-                            <div>
-                                <a :href="recordUrl(record.id)">{{ record.title }}</a> <span>({{ countDisplay(record.counts.child) }})</span>
+                            <div class="result-title">
+                                <a :href="recordUrl(record.id)">{{ record.title }}</a> <span class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div v-if="record.updated !==''">Date Deposited: {{ formatDate(record.updated) }}</div>
                             <div>Collection: </div>
@@ -78,6 +78,10 @@
         margin-bottom: 5px;
     }
 
+    .result-title {
+        margin-bottom: 15px;
+    }
+
     i {
         color: #007FAE;
         font-size: 5rem;
@@ -89,7 +93,6 @@
     }
 
     span {
-        color: #676777;
         margin-left: 10px;
     }
 
