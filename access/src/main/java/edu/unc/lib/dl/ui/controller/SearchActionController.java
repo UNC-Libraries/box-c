@@ -58,15 +58,20 @@ public class SearchActionController extends AbstractSolrSearchController {
     }
 
     @RequestMapping("/search")
-    public String search(Model model, HttpServletRequest request) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        // Backwards compability with the previous search url
-        if (!extractOldPathSyntax(request, searchRequest)) {
-            searchRequest.setApplyCutoffs(false);
-        }
-        model.addAttribute("queryMethod", "search");
-        return search(searchRequest, model, request);
+    public String search() {
+        return "searchResults";
     }
+
+//    @RequestMapping("/search")
+//    public String search(Model model, HttpServletRequest request) {
+//        SearchRequest searchRequest = generateSearchRequest(request);
+//        // Backwards compability with the previous search url
+//        if (!extractOldPathSyntax(request, searchRequest)) {
+//            searchRequest.setApplyCutoffs(false);
+//        }
+//        model.addAttribute("queryMethod", "search");
+//        return search(searchRequest, model, request);
+//    }
 
     private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
         doSearch(searchRequest, model, request);
@@ -102,6 +107,17 @@ public class SearchActionController extends AbstractSolrSearchController {
         }
 
         return formattedQuery.trim();
+    }
+
+    @RequestMapping(value = "/searchJson", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody
+    Map<String, Object> searchJson(HttpServletRequest request,
+                                   HttpServletResponse response) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
+        searchRequest.setApplyCutoffs(false);
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        return getResults(resultResponse, "search", request);
     }
 
     @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")

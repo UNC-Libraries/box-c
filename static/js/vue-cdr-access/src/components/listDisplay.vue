@@ -33,7 +33,7 @@
 
         props: {
             recordList: {
-                default: [],
+                default: () => [],
                 type: Array
             }
         },
