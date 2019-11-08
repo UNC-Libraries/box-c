@@ -257,9 +257,7 @@ describe('patronRoles.vue', () => {
             expect(selects.at(0).attributes('disabled')).not.toBe('disabled');
             expect(selects.at(1).attributes('disabled')).not.toBe('disabled');
 
-            let radio = wrapper.find('#staff');
-            radio.element.selected = true;
-            radio.trigger('change');
+            wrapper.find('#staff').trigger('click');
 
             expect(wrapper.vm.user_type).toEqual('staff');
             expect(selects.at(0).attributes('disabled')).toBe('disabled');
