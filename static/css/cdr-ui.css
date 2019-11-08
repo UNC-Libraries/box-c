@@ -593,9 +593,6 @@ p.no-search-results {
   padding-top: 25px;
   width: 85%;
 }
-.full_record_top .thumbnail .thumbnail-placeholder {
-  position: relative;
-}
 
 .full_record .contentarea {
   margin: 0;
