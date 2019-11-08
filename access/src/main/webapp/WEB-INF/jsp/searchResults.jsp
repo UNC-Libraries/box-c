@@ -23,7 +23,7 @@
 
 <div>
 <div class="search-query-text contentarea">
-	<h2>${pageSubtitle}</h2>
+	<h2 class="has-text-centered">Your search for: "${pageSubtitle}"</h2>
 	<div class="results_header_hierarchy_path">
 		<c:if test="${not empty resultResponse.selectedContainer}">
 			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
