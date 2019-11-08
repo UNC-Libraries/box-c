@@ -250,7 +250,21 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("disables select boxes if 'Staff only access' is checked", (done) => {
+    it("sets a radio button if button or it's text is clicked", () => {
+        wrapper.find('#patron').trigger('click');
+        expect(wrapper.vm.user_type).toBe('patron');
+
+        wrapper.find('#staff').trigger('click');
+        expect(wrapper.vm.user_type).toBe('staff');
+
+        wrapper.find('#patron input').trigger('click');
+        expect(wrapper.vm.user_type).toBe('patron');
+
+        wrapper.find('#staff input').trigger('click');
+        expect(wrapper.vm.user_type).toBe('staff');
+    });
+
+    it("disables select boxes if 'Staff only access' wrapper text is clicked", (done) => {
         stubDataLoad();
 
         moxios.wait(() => {
@@ -266,7 +280,23 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("sets patron permissions to 'No Access' if 'Staff only access' is checked", (done) => {
+    it("disables select boxes if 'Staff only access' radio button is checked", (done) => {
+        stubDataLoad();
+
+        moxios.wait(() => {
+            expect(selects.at(0).attributes('disabled')).not.toBe('disabled');
+            expect(selects.at(1).attributes('disabled')).not.toBe('disabled');
+
+            wrapper.find('#staff input').trigger('click');
+
+            expect(wrapper.vm.user_type).toEqual('staff');
+            expect(selects.at(0).attributes('disabled')).toBe('disabled');
+            expect(selects.at(1).attributes('disabled')).toBe('disabled');
+            done();
+        });
+    });
+
+    it("sets patron permissions to 'No Access' if 'Staff only access' wrapper text is clicked", (done) => {
         stubDataLoad();
 
         moxios.wait(() => {
@@ -286,6 +316,71 @@ describe('patronRoles.vue', () => {
                 {principal: 'everyone', role: 'none'},
                 {principal: 'authenticated', role: 'none'}
             ]);
+            done();
+        });
+    });
+
+    it("sets patron permissions to 'No Access' if 'Staff only access' radio button is checked", (done) => {
+        stubDataLoad();
+
+        moxios.wait(() => {
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(response_display.assigned.roles);
+
+            wrapper.find('#staff input').trigger('click');
+
+            expect(wrapper.vm.everyone_role).toBe('none');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                {principal: 'staff', role: STAFF_ONLY_ROLE_TEXT}
+            ]);
+            expect(wrapper.vm.submit_roles.roles).toEqual([
+                {principal: 'everyone', role: 'none'},
+                {principal: 'authenticated', role: 'none'}
+            ]);
+            done();
+        });
+    });
+
+    it("sets role history", (done) => {
+        stubDataLoad();
+
+        moxios.wait(() => {
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+            expect(wrapper.vm.role_history).toEqual({});
+            expect(wrapper.vm.history_set).toBe(false);
+
+            wrapper.find('#staff input').trigger('click');
+
+            expect(wrapper.vm.everyone_role).toBe('none');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+            expect(wrapper.vm.role_history).toEqual({ patron: 'canViewMetadata', authenticated: 'none' });
+            expect(wrapper.vm.history_set).toBe(true);
+            done();
+        });
+    });
+
+    it("loads role history", (done) => {
+        stubDataLoad();
+
+        moxios.wait(() => {
+            expect(wrapper.vm.role_history).toEqual({});
+            expect(wrapper.vm.history_set).toBe(false);
+
+            wrapper.find('#staff input').trigger('click');
+            expect(wrapper.vm.everyone_role).toBe('none');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+            expect(wrapper.vm.role_history).toEqual({ patron: 'canViewMetadata', authenticated: 'none' });
+            expect(wrapper.vm.history_set).toBe(true);
+
+            wrapper.find('#patron input').trigger('click');
+            expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
+            expect(wrapper.vm.authenticated_role).toBe('none');
+            expect(wrapper.vm.role_history).toEqual({ patron: 'canViewMetadata', authenticated: 'none' });
+            expect(wrapper.vm.history_set).toBe(false);
             done();
         });
     });

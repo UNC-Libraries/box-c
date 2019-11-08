@@ -35,7 +35,7 @@
         <ul class="set-patron-roles">
             <li>
                 <span @click="updateRoleList" id="patron">
-                    <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
+                    <input type="radio" @click="updateRoleList" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
                 </span>
                 <ul class="patron">
                     <li class="public-role">
@@ -62,7 +62,7 @@
             </li>
             <li>
                 <span @click="updateRoleList" id="staff">
-                    <input type="radio" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access
+                    <input type="radio" @click="updateRoleList" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access
                 </span>
             </li>
         </ul>
@@ -128,6 +128,7 @@
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
+                history_set: false,
                 response_message: '',
                 unsaved_changes: false,
                 user_type: ''
@@ -398,14 +399,22 @@
              */
             updateRoleList(e) {
                 let type = e.target.id;
+
+                // Use wrapper id if radio button clicked
+                if (type === '') {
+                    type = e.target.parentElement.id;
+                }
+
                 this.user_type = type;
 
                 if (type === 'staff') {
                     this.setRoleHistory();
+                    this.history_set = true;
                     this.everyone_role = 'none';
                     this.authenticated_role = 'none';
                 } else if (type === 'patron') {
                     this.loadPreviousRole();
+                    this.history_set = false;
                 }
 
                 this.updateDisplayRoles(type);
@@ -478,10 +487,12 @@
             },
 
             setRoleHistory() {
-                this.role_history = Object.assign({}, {
-                    patron: this.everyone_role,
-                    authenticated: this.authenticated_role
-                });
+                if (!this.history_set) {
+                    this.role_history = {
+                        patron: this.everyone_role,
+                        authenticated: this.authenticated_role
+                    };
+                }
             },
 
             loadPreviousRole() {
@@ -555,7 +566,6 @@
                 this.submit_roles.embargo = embargo_info;
 
                 if (embargo_info !== null) {
-                    this.setRoleHistory();
                     let roles = this.display_roles.assigned.roles;
                     if (roles.length > 0 && roles[0].principal !== 'staff') {
                         this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles());
