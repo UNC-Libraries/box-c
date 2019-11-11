@@ -13,7 +13,7 @@
                                 <a :href="recordUrl(record.id)">{{ record.title }}</a> <span class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
-                            <div><span class="has-text-weight-bold">Collection:</span> {{ getCollection(record.objectPath) }}</div>
+                            <div v-if="record.objectPath.length >= 3"><span class="has-text-weight-bold">Collection:</span> {{ getCollection(record.objectPath) }}</div>
                             <div v-if="record.type === 'Work'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
                     </li>

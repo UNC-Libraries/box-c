@@ -9,6 +9,10 @@ const router = new VueRouter({
         {
             path: '/record/uuid1234',
             name: 'displayRecords'
+        },
+        {
+            path: '/search/?anywhere=',
+            name: 'searchRecords'
         }
     ]
 });
@@ -21,8 +25,8 @@ describe('pagination.vue', () => {
             localVue,
             router,
             propsData: {
-                numberOfRecords: 199,
-                pageBaseUrl: 'https://dcr.lib.unc.edu'
+                browseType: 'display',
+                numberOfRecords: 199
             }
         });
 
@@ -57,8 +61,16 @@ describe('pagination.vue', () => {
         expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);
     });
 
-    it("updates the start record when a page is selected", () => {
+    it("updates the start record when a 'display' page is selected", () => {
         wrapper.findAll('.page-number').at(1).trigger('click');
         expect(wrapper.vm.$router.currentRoute.query.start).toEqual(20);
+    });
+
+    it("updates the start record when a 'search' page is selected", () => {
+        wrapper.setProps({
+            browseType: 'search'
+        });
+        wrapper.findAll('.page-number').at(1).trigger('click');
+        expect(wrapper.vm.$router.currentRoute.query['a.setStartRow']).toEqual(20);
     });
 });

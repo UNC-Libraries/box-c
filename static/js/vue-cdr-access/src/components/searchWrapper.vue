@@ -1,19 +1,33 @@
 <template>
-    <div class="contentarea">
-        <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
-        <list-display :record-list="records"></list-display>
+    <div>
+        <div class="contentarea search-query-text"></div>
+        <div class="columns">
+            <div class="column is-one-quarter facets-border border-box-left-top">
+
+            </div>
+            <div class="column is-three-quarters search-results-border border-box-left-top">
+                <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
+                <list-display :record-list="records"></list-display>
+            </div>
+        </div>
+        <div class="columns is-mobile">
+            <div class="column is-12 search-pagination-bottom">
+                <pagination browse-type="search" :number-of-records="records.length"></pagination>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
     import ListDisplay from "./listDisplay";
+    import Pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 
     export default {
         name: 'searchWrapper',
 
-        components: {ListDisplay},
+        components: {ListDisplay, Pagination},
 
         mixins: [routeUtils],
 

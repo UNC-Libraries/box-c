@@ -24,8 +24,7 @@
             <list-display v-else :record-list="record_list"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
-        <pagination :number-of-records="record_count"
-                    :page-base-url="container_metadata.uri">
+        <pagination browse-type="display" :number-of-records="record_count">
         </pagination>
     </div>
 </template>

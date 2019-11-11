@@ -29,8 +29,8 @@
         name: 'pagination',
 
         props: {
-            numberOfRecords: Number,
-            pageBaseUrl: String
+            browseType: String,
+            numberOfRecords: Number
         },
 
         mixins: [routeUtils],
@@ -46,7 +46,9 @@
 
         computed: {
             currentPage() {
-               if (isEmpty(this.$route.query) || parseInt(this.$route.query.start) === 0) {
+                let query = this.$route.query;
+               if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
+                   (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
                    return 1;
                }
 
@@ -98,7 +100,20 @@
                     rows: this.rows_per_page + ''
                 };
 
-                this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) });
+                if (this.browseType === 'display') {
+                    this.$router.push({ name: 'displayRecords', query: this.urlParams({
+                            start: start_record,
+                            rows: this.rows_per_page + ''
+                        })
+                    });
+                } else {
+                    this.$router.push({ name: 'searchRecords', query: this.urlParams(update_params = {
+                            'a.setStartRow': start_record,
+                            rows: this.rows_per_page + ''
+                        }, true)
+                    });
+                }
+
             }
         },
 
