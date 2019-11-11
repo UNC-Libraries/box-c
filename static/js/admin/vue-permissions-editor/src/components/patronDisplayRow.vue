@@ -6,7 +6,10 @@
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
-                <span class="browse-tip">What this means</span>
+                <div class="browse-tip">
+                    <p><strong>Everyone:</strong> Applies to unauthenticated users.</p>
+                    <p><strong>Patrons:</strong> Applies to all patron users, whether authenticated or unauthenticated.</p>
+                </div>
             </div>
 
             <span class="permission-icons">
@@ -265,6 +268,10 @@
             text-align: left;
             top: 35px;
             width: 240px;
+
+            p {
+                font-size: 14px;
+            }
         }
     }
 </style>
