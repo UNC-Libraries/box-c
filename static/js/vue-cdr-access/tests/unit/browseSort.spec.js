@@ -9,15 +9,34 @@ const router = new VueRouter({
         {
             path: '/record/uuid1234',
             name: 'displayRecords'
+        },
+        {
+            path: '/search/?anywhere=',
+            name: 'searchRecords'
         }
     ]
 });
 
 describe('browseSort.vue', () => {
-    it("updates the url when the dropdown changes", () => {
+    it("updates the url when the dropdown changes for browsing", () => {
         let wrapper = shallowMount(browseSort, {
             localVue,
-            router
+            router,
+            propsData: {
+                browseType: 'display'
+            }
+        });
+        wrapper.findAll('option').at(2).setSelected();
+        expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
+    });
+
+    it("updates the url when the dropdown changes for a search", () => {
+        let wrapper = shallowMount(browseSort, {
+            localVue,
+            router,
+            propsData: {
+                browseType: 'search'
+            }
         });
         wrapper.findAll('option').at(2).setSelected();
         expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');

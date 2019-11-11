@@ -6,7 +6,7 @@
                     <browse-search></browse-search>
                 </div>
                 <div class="column is-one-fifth">
-                    <browse-sort></browse-sort>
+                    <browse-sort browse-type="display"></browse-sort>
                 </div>
                 <div class="column is-one-fifth">
                     <view-type></view-type>
@@ -139,10 +139,6 @@
 <style scoped lang="scss">
     .collection-info-bottom, .collinfo_metadata {
         margin-top: 0;
-    }
-
-    p {
-        font-size: 1.2rem;
     }
 
     i {

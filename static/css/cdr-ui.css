@@ -340,9 +340,14 @@ label.checkbox {
 .search-results-border {
   border-bottom: 1px solid #E1E1E1;
   border-left: 1px solid #E1E1E1;
-  padding-bottom: 0;
   padding-left: 15px;
   padding-right: 0;
+}
+
+p.spacing {
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+  text-align: center;
 }
 
 .bottomline {
