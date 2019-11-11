@@ -12,8 +12,9 @@
                             <div class="result-title">
                                 <a :href="recordUrl(record.id)">{{ record.title }}</a> <span class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
-                            <div v-if="record.updated !==''">Date Deposited: {{ formatDate(record.updated) }}</div>
-                            <div>Collection: </div>
+                            <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
+                            <div><span class="has-text-weight-bold">Collection:</span> {{ getCollection(record.objectPath) }}</div>
+                            <div v-if="record.type === 'Work'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
                     </li>
                 </ul>
@@ -51,6 +52,28 @@
 
             formatDate(date_string) {
                 return format(new Date(date_string), 'MMMM do, yyyy');
+            },
+
+            getCollection(object_path) {
+                if (object_path.length >= 3) {
+                    return object_path[2].name;
+                }
+
+                return '';
+            },
+
+            getFileType(datastream_info) {
+                for (let i in datastream_info) {
+                    let ds_parts = datastream_info[i].split('\|');
+
+                    if (ds_parts.length < 5 || ds_parts[0] !== 'original_file') {
+                        continue;
+                    }
+
+                    return ds_parts[3];
+                }
+
+                return '';
             }
         }
 
@@ -94,6 +117,10 @@
 
     span {
         margin-left: 10px;
+    }
+
+    .has-text-weight-bold {
+        margin-left: 0;
     }
 
     .stripe {
