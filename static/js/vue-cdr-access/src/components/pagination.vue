@@ -47,12 +47,13 @@
         computed: {
             currentPage() {
                 let query = this.$route.query;
-               if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
-                   (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
-                   return 1;
-               }
 
-               return Math.ceil(parseInt(this.$route.query.start) / this.rows_per_page) + 1;
+                if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
+                    (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
+                    return 1;
+                }
+
+                return Math.ceil(parseInt(this.$route.query.start) / this.rows_per_page) + 1;
             },
 
             currentPageList() {

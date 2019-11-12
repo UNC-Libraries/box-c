@@ -29,11 +29,11 @@
 </template>
 
 <script>
+    import BrowseSort from "./browseSort";
     import ListDisplay from "./listDisplay";
     import Pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
-    import BrowseSort from "./browseSort";
 
     export default {
         name: 'searchWrapper',
@@ -58,9 +58,10 @@
             recordDisplayCounts() {
                 let search_start = parseInt(this.$route.query['a.setStartRow']);
                 let start = (search_start > 0) ? search_start : 1;
-                let finish = (search_start > 0) ? search_start : 0;
+                let records = (this.records.length < this.rows_per_page) ? this.records.length : this.rows_per_page;
+                let offset = (search_start > 0) ? search_start : 0;
 
-                return `${start}-${parseInt(this.rows_per_page) + finish}`;
+                return `${start}-${records + offset}`;
             }
         },
 
