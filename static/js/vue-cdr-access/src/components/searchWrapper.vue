@@ -29,16 +29,16 @@
 </template>
 
 <script>
-    import BrowseSort from "./browseSort";
-    import ListDisplay from "./listDisplay";
-    import Pagination from "./pagination";
+    import browseSort from "./browseSort";
+    import listDisplay from "./listDisplay";
+    import pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 
     export default {
         name: 'searchWrapper',
 
-        components: {BrowseSort, ListDisplay, Pagination},
+        components: {browseSort, listDisplay, pagination},
 
         mixins: [routeUtils],
 
