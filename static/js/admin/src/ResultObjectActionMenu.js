@@ -190,13 +190,18 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Set/Update permission actions
-		items["seppermission"] = "";
+		if ($.inArray('assignStaffRoles', metadata.permissions) !== -1 || (metadata.type !== 'AdminUnit' && $.inArray('changePatronAccess', metadata.permissions) !== -1)) {
+			items["seppermission"] = "";
+		}
 
-		if (metadata.type !== 'AdminUnit') {
+		if (metadata.type !== 'AdminUnit' && $.inArray('changePatronAccess', metadata.permissions) !== -1) {
 			items["patronPermissions"] = {name : 'Patron permissions'};
 		}
-		
-		items["staffPermissions"] = {name : 'Staff permissions'};
+
+		if ($.inArray('assignStaffRoles', metadata.permissions) !== -1) {
+			items["staffPermissions"] = {name : 'Staff permissions'};
+		}
+
 
 		// Get data object for vue permissions editor
 		var perms_editor_data = perms_editor.$children[0].$children[0].$data;
