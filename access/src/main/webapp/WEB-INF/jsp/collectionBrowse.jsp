@@ -23,7 +23,7 @@
 
 <div>
 	<div class="search-query-text collection-list has-text-centered">
-		<h2>${pageSubtitle}</h2>
+		<h2>Your search for: "${pageSubtitle}"</h2>
 	</div>
 	<c:set var="searchState" value="${resultResponse.searchState}"/>
 	<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
