@@ -8,14 +8,10 @@ build-admin:
 	npm --prefix static/js/admin/vue-permissions-editor run build
 
 	cat /dev/null > static/js/vue-permissions.js
-	# Uncomment line in production mode
-	# cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*.js > static/js/vue-permissions.js
+	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*.js > static/js/vue-permissions.js
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-permissions.js
-	# Comment out line in production mode
-	cat static/js/admin/vue-permissions-editor/dist/app.js > static/js/vue-permissions.js
-	# Uncomment line in production mode
-	# cat static/js/admin/vue-permissions-editor/dist/js/app*.js >> static/js/vue-permissions.js
+	cat static/js/admin/vue-permissions-editor/dist/js/app*.js >> static/js/vue-permissions.js
 
 	cat static/js/lib/jquery.min.js > static/js/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-admin.js
@@ -43,9 +39,8 @@ build-admin:
 		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr_vue_modal_styles.css \
+		static/js/admin/vue-permissions-editor/dist/css/app*.css \
 		> static/css/cdr_admin.css
-		# Reinsert and uncomment line in production mode
- 		# static/js/admin/vue-permissions-editor/dist/css/app*.css
 	
 ifneq ($(VERSION), "")
 	for i in static/js/admin/*.js; do \
@@ -72,14 +67,10 @@ build-access:
 	echo "});" >> static/js/cdr-access.js
 
 	cat /dev/null > static/js/vue-access.js
-	# Uncomment line in production mode
-	# cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js > static/js/vue-access.js
+	cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js > static/js/vue-access.js
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-access.js
-	# Comment out line in production mode
-	cat static/js/vue-cdr-access/dist/app.js > static/js/vue-access.js
-	# Uncomment line in production mode
-	# cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
+	cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
 
 	cat \
 		static/js/public/src/*.js \
@@ -93,9 +84,8 @@ build-access:
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
 		static/css/cdr_vue_modal_styles.css \
+		static/js/vue-cdr-access/dist/css/app*.css \
 		> static/css/cdr_access.css
-		# Reinsert and uncomment line in production mode
-		# static/js/vue-cdr-access/dist/css/app*.css
 
 SUSPEND = "n"
 
