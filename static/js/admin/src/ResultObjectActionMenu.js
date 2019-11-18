@@ -190,15 +190,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Set/Update permission actions
-		if ($.inArray('assignStaffRoles', metadata.permissions) !== -1 || (metadata.type !== 'AdminUnit' && $.inArray('changePatronAccess', metadata.permissions) !== -1)) {
+		var canChangePatronAccess = $.inArray('changePatronAccess', metadata.permissions) !== -1;
+		var canAssignStaffRoles = $.inArray('assignStaffRoles', metadata.permissions) !== -1;
+		var isAdminUnit = metadata.type === 'AdminUnit';
+
+		if (canAssignStaffRoles || (!isAdminUnit && canChangePatronAccess)) {
 			items["seppermission"] = "";
 		}
 
-		if (metadata.type !== 'AdminUnit' && $.inArray('changePatronAccess', metadata.permissions) !== -1) {
+		if (!isAdminUnit && canChangePatronAccess) {
 			items["patronPermissions"] = {name : 'Patron permissions'};
 		}
 
-		if ($.inArray('assignStaffRoles', metadata.permissions) !== -1) {
+		if (canAssignStaffRoles) {
 			items["staffPermissions"] = {name : 'Staff permissions'};
 		}
 
