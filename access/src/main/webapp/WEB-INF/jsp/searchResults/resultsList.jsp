@@ -18,8 +18,4 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 
 <div id="app"></div>
-<%--
-app js is loaded here fullRecord/browseView.jsp
-Loading it again here will result in a component reload
-if loading is removed from the page above uncomment the line below
-<script src="static/js/vue-access.js"></script> --%>
+<script src="static/js/vue-access.js"></script>
