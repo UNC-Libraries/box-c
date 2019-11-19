@@ -12,7 +12,7 @@
                 <div class="bottomline paddedline">
                     <p>
                         Showing <span class="has-text-weight-bold">{{ recordDisplayCounts }}</span> of
-                        <span class="has-text-weight-bold">{{ records.length }}</span> results found
+                        <span class="has-text-weight-bold">{{ total_records }}</span> results found
                     </p>
                     <browse-sort browse-type="search"></browse-sort>
                 </div>
@@ -22,7 +22,7 @@
         <p v-else class="spacing">No records were found.</p>
         <div class="columns is-mobile">
             <div class="column is-12 search-pagination-bottom">
-                <pagination browse-type="search" :number-of-records="records.length"></pagination>
+                <pagination browse-type="search" :number-of-records="total_records"></pagination>
             </div>
         </div>
     </div>
@@ -47,6 +47,7 @@
                 anywhere: '',
                 is_loading: true,
                 records: [],
+                total_records: 0
             }
         },
 
@@ -57,8 +58,8 @@
         computed: {
             recordDisplayCounts() {
                 let search_start = parseInt(this.$route.query['a.setStartRow']);
-                let start = (search_start > 0) ? search_start : 1;
-                let records = (this.records.length < this.rows_per_page) ? this.records.length : this.rows_per_page;
+                let start = (search_start > 0) ? search_start + 1 : 1;
+                let records = (this.records.length < this.rows_per_page) ? this.records.length : parseInt(this.rows_per_page);
                 let offset = (search_start > 0) ? search_start : 0;
 
                 return `${start}-${records + offset}`;
@@ -71,6 +72,7 @@
 
                 get(`searchJson/${param_string}`).then((response) => {
                     this.records = response.data.metadata;
+                    this.total_records = response.data.resultCount;
                     this.is_loading = false;
                 }).catch(function (error) {
                     console.log(error);

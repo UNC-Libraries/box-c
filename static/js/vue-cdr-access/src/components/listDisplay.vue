@@ -5,15 +5,20 @@
                 <ul>
                     <li v-for="(record, index) in recordList" class="columns" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
-                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail thumbnail-size-small">
-                            <i v-else class="fa" :class="recordType(record.type)"></i>
+                            <a :href="recordUrl(record.id)">
+                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-small">
+                                <i v-else class="fa" :class="recordType(record.type)"></i>
+                            </a>
                         </div>
                         <div class="column is-10">
                             <div class="result-title">
-                                <a :href="recordUrl(record.id)">{{ record.title }}</a> <span class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
+                                <a :href="recordUrl(record.id, 'list-display')">{{ record.title }}</a>
+                                <span v-if="record.type !== 'Work'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
-                            <div v-if="record.objectPath.length >= 3"><span class="has-text-weight-bold">Collection:</span> {{ getCollection(record.objectPath) }}</div>
+                            <div v-if="record.objectPath.length >= 3">
+                                <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, 'list-display')">{{ collectionInfo(record.objectPath) }}</a>
+                            </div>
                             <div v-if="record.type === 'Work'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
                     </li>
@@ -54,7 +59,7 @@
                 return format(new Date(date_string), 'MMMM do, yyyy');
             },
 
-            getCollection(object_path) {
+            collectionInfo(object_path) {
                 if (object_path.length >= 3) {
                     return object_path[2].name;
                 }
@@ -95,6 +100,11 @@
 
     a {
         font-size: 1.5rem;
+    }
+
+    a.metadata-link {
+        font-size: 1rem;
+        margin-left: 5px;
     }
 
     div {

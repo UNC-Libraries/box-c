@@ -4,8 +4,8 @@
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <a :href="recordUrl(record.id)">
-                            <img v-if="hasThumbnail(record.thumbnail_url)" :src="record.thumbnail_url" class="thumbnail thumbnail-size-large">
+                        <a :href="recordUrl(record.id, 'gallery-display')">
+                            <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                             <div class="record-title">{{ record.title }}</div>
                         </a>

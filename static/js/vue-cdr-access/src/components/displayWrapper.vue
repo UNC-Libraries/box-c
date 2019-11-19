@@ -14,7 +14,7 @@
             </div>
             <div class="columns">
                 <div class="column is-11 container-note">
-                    <works-only :admin-unit="is_admin_unit"></works-only>
+                    <works-only v-if="!isBrowseDisplay" :admin-unit="is_admin_unit"></works-only>
                 </div>
                 <div class="column is-1">
                     <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
@@ -24,8 +24,7 @@
             <list-display v-else :record-list="record_list"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
-        <pagination browse-type="display" :number-of-records="record_count">
-        </pagination>
+        <pagination browse-type="display" :number-of-records="record_count"></pagination>
     </div>
 </template>
 

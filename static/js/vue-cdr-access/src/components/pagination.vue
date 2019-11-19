@@ -4,7 +4,7 @@
             <ul v-if="numberOfRecords > 0">
                 <li v-if="currentPage !== 1"><a class="back-next" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
                 <li v-else class="no-link">&lt;&lt;</li>
-                <li v-if="currentPage >= pageLimit - 1"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
+                <li v-if="currentPage >= pageLimit - 1" ><a @click.prevent="pageUrl(1)" href="#" class="page-number"
                                                            :class="{ current: currentPage === 1 }">1</a> ...</li>
                 <li v-for="(page, index) in currentPageList">
                     <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
@@ -47,13 +47,14 @@
         computed: {
             currentPage() {
                 let query = this.$route.query;
+                let display_type = (this.$route.name === 'searchRecords') ? query['a.setStartRow'] : query.start;
 
                 if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
                     (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
                     return 1;
                 }
 
-                return Math.ceil(parseInt(this.$route.query.start) / this.rows_per_page) + 1;
+                return Math.ceil(parseInt(display_type) / parseInt(this.rows_per_page)) + 1;
             },
 
             currentPageList() {
@@ -114,7 +115,6 @@
                         }, true)
                     });
                 }
-
             }
         },
 
@@ -131,6 +131,7 @@
 <style scoped lang="scss">
     .pagination {
         margin-bottom: 1px;
+        margin-top: 20px;
 
         ul {
             display: inline;

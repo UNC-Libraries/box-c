@@ -1,11 +1,13 @@
 export default {
     methods: {
-        recordUrl(id) {
-            return `/record/${id}`;
+        recordUrl(id, browse_type) {
+            return `/record/${id}/?browse_type=${browse_type}`;
         },
 
         recordType(type) {
-            if (type === 'Collection') {
+            if (type === 'AdminUnit') {
+                return 'fa-university';
+            } else if (type === 'Collection') {
                 return 'fa-archive';
             } else if (type === 'Folder') {
                 return 'fa-folder';
@@ -14,8 +16,12 @@ export default {
             }
         },
 
-        hasThumbnail(thumb) {
+        thumbnailPresent(thumb) {
             return thumb !== undefined && thumb !== '';
+        },
+
+        altText(title) {
+            return `Thumbnail for ${title}`;
         }
     }
 }
