@@ -62,17 +62,6 @@ public class SearchActionController extends AbstractSolrSearchController {
         return "searchResults";
     }
 
-//    @RequestMapping("/search")
-//    public String search(Model model, HttpServletRequest request) {
-//        SearchRequest searchRequest = generateSearchRequest(request);
-//        // Backwards compability with the previous search url
-//        if (!extractOldPathSyntax(request, searchRequest)) {
-//            searchRequest.setApplyCutoffs(false);
-//        }
-//        model.addAttribute("queryMethod", "search");
-//        return search(searchRequest, model, request);
-//    }
-
     private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
         doSearch(searchRequest, model, request);
         String queryText = formatQueryText(request);
@@ -178,25 +167,25 @@ public class SearchActionController extends AbstractSolrSearchController {
     }
 
     @RequestMapping("/collections")
-    public String browseCollections(Model model, HttpServletRequest request) {
+    public String browseCollections() {
+        return "collectionBrowse";
+    }
+
+    @RequestMapping(value = "/collectionsJson", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody Map<String, Object> browseCollectionsJson(HttpServletRequest request,
+                                                               HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
         CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
         searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
         searchRequest.setApplyCutoffs(true);
+
         SearchState searchState = searchRequest.getSearchState();
-        // searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeUnit));
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
         searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
-        SearchResultResponse result = doSearch(searchRequest, model, request);
-        result.setSelectedContainer(null);
-
-        model.addAttribute("queryMethod", "collections");
-        model.addAttribute("facetQueryMethod", "search");
-        model.addAttribute("menuId", "browse");
-        model.addAttribute("resultType", "collectionBrowse");
-        model.addAttribute("pageSubtitle", "Collections");
-        return "collectionBrowse";
+        return getResults(resultResponse, "search", request);
     }
 
     protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {

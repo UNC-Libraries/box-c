@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import displayWrapper from "./components/displayWrapper";
 import searchWrapper from "./components/searchWrapper";
+import collectionBrowse from "./components/collectionBrowse";
 
 Vue.use(Router);
 
@@ -18,6 +19,11 @@ export default new Router({
       path: '/search/',
       name: 'searchRecords',
       component: searchWrapper
+    },
+    {
+      path: '/collections/',
+      name: 'collectionBrowse',
+      component: collectionBrowse
     }
   ]
 });

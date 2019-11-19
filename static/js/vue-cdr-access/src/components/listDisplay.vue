@@ -1,5 +1,5 @@
 <template>
-    <div class="list-records-display">
+    <div id="list-records-display">
         <div class="columns">
             <div class="column is-12" >
                 <ul>
@@ -86,54 +86,56 @@
 </script>
 
 <style scoped lang="scss">
-    li {
-        align-items: center;
-        display: inline-flex;
-        padding-bottom: 20px;
-        padding-top: 20px;
-        width: 100%;
-    }
+    #list-records-display {
+        li {
+            align-items: center;
+            display: inline-flex;
+            padding-bottom: 20px;
+            padding-top: 20px;
+            width: 100%;
+        }
 
-    .is-2 {
-        text-align: center;
-    }
+        .is-2 {
+            text-align: center;
+        }
 
-    a {
-        font-size: 1.5rem;
-    }
+        a {
+            font-size: 1.5rem;
+        }
 
-    a.metadata-link {
-        font-size: 1rem;
-        margin-left: 5px;
-    }
+        a.metadata-link {
+            font-size: 1rem;
+            margin-left: 5px;
+        }
 
-    div {
-        margin-bottom: 5px;
-    }
+        div {
+            margin-bottom: 5px;
+        }
 
-    .result-title {
-        margin-bottom: 15px;
-    }
+        .result-title {
+            margin-bottom: 15px;
+        }
 
-    i {
-        color: #007FAE;
-        font-size: 5rem;
-    }
+        i {
+            color: #007FAE;
+            font-size: 5rem;
+        }
 
-    img.thumbnail {
-        float: none;
-        margin: auto;
-    }
+        img.thumbnail {
+            float: none;
+            margin: auto;
+        }
 
-    span {
-        margin-left: 10px;
-    }
+        span {
+            margin-left: 10px;
+        }
 
-    .has-text-weight-bold {
-        margin-left: 0;
-    }
+        .has-text-weight-bold {
+            margin-left: 0;
+        }
 
-    .stripe {
-        background-color: #f7f7f7;
+        .stripe {
+            background-color: #f7f7f7;
+        }
     }
 </style>

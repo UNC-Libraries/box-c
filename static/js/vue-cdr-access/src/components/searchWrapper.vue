@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class="contentarea search-query-text">
-
+        <div class="search-query-text">
+            <strong>Search results for</strong> "{{ $route.query.anywhere }}"
         </div>
         <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
         <div v-if="records.length > 0" class="columns">

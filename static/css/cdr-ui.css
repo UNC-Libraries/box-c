@@ -263,7 +263,7 @@ footer a:hover, footer a:active {
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
-  font-size: 16px;
+  font-size: 24px;
 }
 .search-query-text h2 {
   color: black;
@@ -376,7 +376,7 @@ p.spacing {
   padding: 25px;
 }
 
-.searchitem_container_count {
+#list-records-display .searchitem_container_count {
   background-color: #4B9CD3;
   border: 1px solid #4B9CD3;
   border-radius: 5px;

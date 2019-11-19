@@ -11,7 +11,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
-  font-size: 16px;
+  font-size: 24px;
 
   h2 {
     color: black;
@@ -133,18 +133,19 @@ p.spacing {
   padding: 25px;
 }
 
-.searchitem_container_count {
-  background-color: $unc-blue;
-  border: 1px solid $unc-blue;
-  border-radius: 5px;
-  color: white;
-  line-height: 18px;
-  margin-bottom: 4px;
-  padding: 3px 8px;
-  white-space: nowrap;
-  width: 100%;
+#list-records-display {
+  .searchitem_container_count {
+    background-color: $unc-blue;
+    border: 1px solid $unc-blue;
+    border-radius: 5px;
+    color: white;
+    line-height: 18px;
+    margin-bottom: 4px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    width: 100%;
+  }
 }
-
 
 .iteminfo {
   float: none;

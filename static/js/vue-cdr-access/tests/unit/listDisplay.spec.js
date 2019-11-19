@@ -132,7 +132,7 @@ describe('listDisplay.vue', () => {
     });
 
     it("finds a record's collection", () => {
-        expect(wrapper.vm. getCollection(wrapper.vm.recordList[1].objectPath)).toEqual('testCollection');
+        expect(wrapper.vm.collectionInfo(wrapper.vm.recordList[1].objectPath)).toEqual('testCollection');
     });
 
     it("finds a record's file type", () => {
