@@ -4,25 +4,27 @@
             <strong>Search results for</strong> "{{ $route.query.anywhere }}"
         </div>
         <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
-        <div v-if="records.length > 0" class="columns">
-            <div class="column is-one-quarter facets-border border-box-left-top">
+        <div v-if="!is_loading">
+            <div v-if="records.length > 0" class="columns">
+                <div class="column is-one-quarter facets-border border-box-left-top">
 
-            </div>
-            <div class="column is-three-quarters search-results-border border-box-left-top">
-                <div class="bottomline paddedline">
-                    <p>
-                        Showing <span class="has-text-weight-bold">{{ recordDisplayCounts }}</span> of
-                        <span class="has-text-weight-bold">{{ total_records }}</span> results found
-                    </p>
-                    <browse-sort browse-type="search"></browse-sort>
                 </div>
-                <list-display v-if="records.length > 0" :record-list="records"></list-display>
+                <div class="column is-three-quarters search-results-border border-box-left-top">
+                    <div class="bottomline paddedline">
+                        <p>
+                            Showing <span class="has-text-weight-bold">{{ recordDisplayCounts }}</span> of
+                            <span class="has-text-weight-bold">{{ total_records }}</span> results found
+                        </p>
+                        <browse-sort browse-type="search"></browse-sort>
+                    </div>
+                    <list-display v-if="records.length > 0" :record-list="records"></list-display>
+                </div>
             </div>
-        </div>
-        <p v-else class="spacing">No records were found.</p>
-        <div class="columns is-mobile">
-            <div class="column is-12 search-pagination-bottom">
-                <pagination browse-type="search" :number-of-records="total_records"></pagination>
+            <p v-else class="spacing">No records were found.</p>
+            <div class="columns is-mobile">
+                <div class="column is-12 search-pagination-bottom">
+                    <pagination browse-type="search" :number-of-records="total_records"></pagination>
+                </div>
             </div>
         </div>
     </div>
