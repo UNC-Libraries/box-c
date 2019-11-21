@@ -21,7 +21,7 @@
                 </div>
             </div>
             <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
-            <list-display v-else :record-list="record_list"></list-display>
+            <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
         <pagination browse-type="display" :number-of-records="record_count"></pagination>

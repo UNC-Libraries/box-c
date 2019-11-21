@@ -38,6 +38,7 @@
                 this.browse_type = e.target.id;
                 let update_params = { browse_type: encodeURIComponent(this.browse_type) };
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) });
+                sessionStorage.setItem('browse-type', this.browse_type);
             }
         },
 
@@ -46,6 +47,7 @@
 
             if (this.paramExists('browse_type', current_url_params)) {
                 this.browse_type = current_url_params.browse_type;
+                sessionStorage.setItem('browse-type', this.browse_type);
             }
         }
     }

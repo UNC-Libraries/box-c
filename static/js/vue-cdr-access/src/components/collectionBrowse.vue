@@ -1,6 +1,6 @@
 <template>
     <div>
-        <list-display :record-list="records"></list-display>
+        <list-display :record-list="records" :use-saved-browse-type="true"></list-display>
     </div>
 </template>
 
@@ -29,10 +29,14 @@
             }
         },
 
-        mounted() {
+        created() {
             this.retrieveData();
         }
     }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+    ul {
+        margin: inherit;
+    }
+</style>

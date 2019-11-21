@@ -73,4 +73,54 @@ describe('pagination.vue', () => {
         wrapper.findAll('.page-number').at(1).trigger('click');
         expect(wrapper.vm.$router.currentRoute.query['a.setStartRow']).toEqual(20);
     });
+
+    it("displays a link to jump to the first page if the user in on a page beyond the pageLimit", () => {
+        wrapper.findAll('.page-number').at(5).trigger('click');
+        wrapper.findAll('.page-number').at(1).trigger('click');
+
+        expect(wrapper.find('#first-page-link').isVisible()).toBe(true);
+    });
+
+    it("displays a link to jump to the last page if the user in on a page that is before the pageLimit and" +
+        "there are more pages than the pageLimit", () => {
+        expect(wrapper.find('#last-page-link').isVisible()).toBe(true);
+    });
+
+    it("does not display a link to jump to the first page if the user in on a page before the pageLimit and" +
+        "there are less than or eqaul number of pages than the pageLimit", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+        wrapper.findAll('.page-number').at(4).trigger('click');
+        expect(wrapper.find('#first-page-link').exists()).toBe(false);
+    });
+
+    it("does not display a link to jump to the last page if the user in on a page before the pageLimit and" +
+        "there are less than or eqaul number of pages than the pageLimit", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+        wrapper.findAll('.page-number').at(1).trigger('click');
+        expect(wrapper.find('#last-page-link').exists()).toBe(false);
+    });
+
+    it("displays a back link", () => {
+        expect(wrapper.find('.start').classes('back-next')).toBe(true);
+
+        wrapper.findAll('.page-number').at(0).trigger('click');
+        expect(wrapper.find('.start').classes('back-next')).toBe(false);
+        expect(wrapper.find('.start').classes('no-link')).toBe(true);
+    });
+
+    it("displays a next link", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+
+        expect(wrapper.find('.end').classes('back-next')).toBe(true);
+
+        wrapper.findAll('.page-number').at(4).trigger('click');
+        expect(wrapper.find('.end').classes('back-next')).toBe(false);
+        expect(wrapper.find('.end').classes('no-link')).toBe(true);
+    });
 });

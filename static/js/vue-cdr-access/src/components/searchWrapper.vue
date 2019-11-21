@@ -17,7 +17,7 @@
                         </p>
                         <browse-sort browse-type="search"></browse-sort>
                     </div>
-                    <list-display v-if="records.length > 0" :record-list="records"></list-display>
+                    <list-display v-if="records.length > 0" :record-list="records" :use-saved-browse-type="true"></list-display>
                 </div>
             </div>
             <p v-else class="spacing">No records were found.</p>

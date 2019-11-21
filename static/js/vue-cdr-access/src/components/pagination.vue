@@ -2,19 +2,19 @@
     <div class="columns pagination">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
-                <li v-else class="no-link">&lt;&lt;</li>
-                <li v-if="currentPage >= pageLimit - 1" ><a @click.prevent="pageUrl(1)" href="#" class="page-number"
+                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
+                <li v-else class="no-link start">&lt;&lt;</li>
+                <li id="first-page-link" v-if="currentPage >= pageLimit - 1 && totalPageCount > pageLimit"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
                                                            :class="{ current: currentPage === 1 }">1</a> ...</li>
                 <li v-for="(page, index) in currentPageList">
                     <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
-                <li v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
+                <li id="last-page-link" v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
                     ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
                            :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
                 </li>
-                <li v-if="currentPage < totalPageCount"><a class="back-next" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
-                <li v-else class="no-link">&gt;&gt;</li>
+                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
+                <li v-else class="no-link end">&gt;&gt;</li>
             </ul>
         </div>
     </div>

@@ -20,6 +20,7 @@ let wrapper;
 
 describe('listDisplay.vue', () => {
     beforeEach(() => {
+        sessionStorage.clear();
         wrapper = shallowMount(listDisplay, {
             localVue,
             router,
@@ -138,5 +139,31 @@ describe('listDisplay.vue', () => {
     it("finds a record's file type", () => {
         expect(wrapper.vm.getFileType(wrapper.vm.recordList[0].datastream)).toEqual('');
         expect(wrapper.vm.getFileType(wrapper.vm.recordList[1].datastream)).toEqual('png');
+    });
+
+    it("set a default browse type for record links when saved browse type shouldn't be used", () => {
+        wrapper.setProps({
+            useSavedBrowseType: false
+        });
+        expect(wrapper.vm.linkBrowseType).toBe('list-display');
+    });
+
+    it("sets a default browse type for record links when saved browse type should be used and no value is set", () => {
+        wrapper.setProps({
+            useSavedBrowseType: true
+        });
+        expect(wrapper.vm.linkBrowseType).toBe('gallery-display');
+    });
+
+    it("sets browse type form sessionStorage for record links when saved browse type should be used", () => {
+        sessionStorage.setItem('browse-type', 'list-display');
+        wrapper = shallowMount(listDisplay, {
+            localVue,
+            router,
+            propsData: {
+                useSavedBrowseType: true
+            }
+        });
+        expect(wrapper.vm.linkBrowseType).toBe('list-display');
     });
 });

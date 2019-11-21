@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import VueRouter from 'vue-router';
 import worksOnly from '@/components/worksOnly.vue';
-import moxios from "moxios";
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);

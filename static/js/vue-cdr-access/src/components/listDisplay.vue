@@ -1,9 +1,9 @@
 <template>
     <div id="list-records-display">
         <div class="columns">
-            <div class="column is-12" >
-                <ul>
-                    <li v-for="(record, index) in recordList" class="columns" :class="{stripe: index % 2 === 0}">
+            <div class="column is-12">
+                <ul :class="{'margin-offset': isRecordBrowse}">
+                    <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
                             <a :href="recordUrl(record.id)">
                                 <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-small">
@@ -12,14 +12,14 @@
                         </div>
                         <div class="column is-10">
                             <div class="result-title">
-                                <a :href="recordUrl(record.id, 'list-display')">{{ record.title }}</a>
-                                <span v-if="record.type !== 'Work'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
+                                <a :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
+                                <span v-if="record.type !== 'File'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
                             <div v-if="record.objectPath.length >= 3">
-                                <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, 'list-display')">{{ collectionInfo(record.objectPath) }}</a>
+                                <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
                             </div>
-                            <div v-if="record.type === 'Work'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
+                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
                     </li>
                 </ul>
@@ -41,6 +41,25 @@
             recordList: {
                 default: () => [],
                 type: Array
+            },
+            isRecordBrowse: {
+                default: false,
+                type: Boolean
+            },
+            useSavedBrowseType: {
+                default: false,
+                type: Boolean
+            }
+        },
+
+        computed: {
+            linkBrowseType() {
+                if (this.useSavedBrowseType) {
+                    let saved_browse_type = sessionStorage.getItem('browse-type');
+                    return saved_browse_type !== null ? saved_browse_type : 'gallery-display';
+                }
+
+                return 'list-display';
             }
         },
 
@@ -81,18 +100,22 @@
                 return '';
             }
         }
-
     }
 </script>
 
 <style scoped lang="scss">
     #list-records-display {
+        ul.margin-offset {
+            width: inherit;
+            margin-left: 15px;
+            margin-right: -15px;
+        }
+
         li {
             align-items: center;
             display: inline-flex;
             padding-bottom: 20px;
             padding-top: 20px;
-            width: 100%;
         }
 
         .is-2 {
