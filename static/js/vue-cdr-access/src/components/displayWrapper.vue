@@ -12,7 +12,7 @@
                     <view-type></view-type>
                 </div>
             </div>
-            <div class="columns">
+            <div class="columns is-tablet">
                 <div class="column is-11 container-note">
                     <works-only v-if="!isBrowseDisplay" :admin-unit="is_admin_unit"></works-only>
                 </div>

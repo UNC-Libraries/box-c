@@ -814,6 +814,10 @@ table.dataTable {
     margin-top: 25px;
   }
 
+  .collinfo_metadata {
+    margin: auto 0;
+  }
+
   .dataTables_wrapper {
     .dataTables_filter {
       float: left !important;
@@ -835,6 +839,12 @@ table.dataTable {
     a {
       float: none;
       width: 100%;
+    }
+
+    h2 {
+      .fa {
+        display: none;
+      }
     }
   }
 

@@ -1,5 +1,5 @@
 <template>
-    <div class="columns pagination">
+    <div class="columns pagination is-mobile">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
                 <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
@@ -130,8 +130,10 @@
 
 <style scoped lang="scss">
     .pagination {
+        display: inline-block;
         margin-bottom: 1px;
         margin-top: 20px;
+        width: 100%;
 
         ul {
             display: inline;

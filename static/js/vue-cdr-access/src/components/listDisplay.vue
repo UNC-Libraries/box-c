@@ -160,5 +160,19 @@
         .stripe {
             background-color: #f7f7f7;
         }
+
+        @media screen and (max-width: 768px) {
+            margin-top: 25px;
+
+            li {
+                display: inherit;
+            }
+
+            .browseitem {
+                float: none;
+                padding-left: 15px;
+                text-align: center;
+            }
+        }
     }
 </style>

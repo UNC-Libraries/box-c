@@ -739,6 +739,10 @@ table.dataTable tbody tr.odd {
     margin-top: 25px;
   }
 
+  .collinfo_metadata {
+    margin: auto 0;
+  }
+
   .dataTables_wrapper .dataTables_filter {
     float: left !important;
   }
@@ -756,6 +760,9 @@ table.dataTable tbody tr.odd {
   .contentarea a {
     float: none;
     width: 100%;
+  }
+  .contentarea h2 .fa {
+    display: none;
   }
 
   .iteminfo {

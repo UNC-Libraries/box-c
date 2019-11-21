@@ -64,4 +64,11 @@
             zoom: .6; /* Needed for webkit browsers */
         }
     }
+
+    @media screen and (max-width: 768px) {
+        #browse-display-type {
+            justify-content: flex-start;
+            margin: auto;
+        }
+    }
 </style>
