@@ -106,6 +106,22 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
         searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+
+        SearchState searchState = searchRequest.getSearchState();
+        AccessGroupSet principals = searchRequest.getAccessGroups();
+        SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
+        facetRequest.setApplyCutoffs(false);
+        if (resultResponse.getSelectedContainer() != null) {
+            SearchState facetState = (SearchState) searchState.clone();
+            facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+                    resultResponse.getSelectedContainer().getPath());
+            facetRequest.setSearchState(facetState);
+        }
+
+        // Retrieve the facet result set
+        SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+        resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+
         return getResults(resultResponse, "search", request);
     }
 
@@ -117,6 +133,22 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+
+        SearchState searchState = searchRequest.getSearchState();
+        AccessGroupSet principals = searchRequest.getAccessGroups();
+        SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
+        facetRequest.setApplyCutoffs(false);
+        if (resultResponse.getSelectedContainer() != null) {
+            SearchState facetState = (SearchState) searchState.clone();
+            facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+                    resultResponse.getSelectedContainer().getPath());
+            facetRequest.setSearchState(facetState);
+        }
+
+        // Retrieve the facet result set
+        SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+        resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+
         return getResults(resultResponse, "search", request);
     }
 

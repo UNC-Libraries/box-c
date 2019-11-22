@@ -53,6 +53,7 @@
     .browse-sort {
         float: right;
         margin-top: 15px;
+        margin-right: 25px;
 
         select {
             height: 2.65em;
@@ -64,6 +65,10 @@
             float: left;
             margin-bottom: 0;
             margin-top: 0;
+
+            select {
+                height: inherit;
+            }
         }
     }
 </style>
