@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import VueRouter from 'vue-router';
 import worksOnly from '@/components/worksOnly.vue';
-import moxios from "moxios";
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);
@@ -10,7 +9,7 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'browseDisplay'
+            name: 'displayRecords'
         }
     ]
 });

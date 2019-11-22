@@ -18,7 +18,7 @@ describe('routeUtils', () => {
         });
     });
 
-    it("sets default url parameters if none are given", () => {
+    it("sets default url parameters for browse view if none are given", () => {
         const defaults = {
             rows: 20,
             start: 0,
@@ -36,7 +36,23 @@ describe('routeUtils', () => {
         expect(results.works_only).toEqual(defaults.works_only);
     });
 
-    it("updates url parameters", () => {
+    it("sets default url parameters for search view if none are given", () => {
+        const defaults = {
+            'a.setStartRow': 0,
+            rows: 20,
+            sort: 'title,normal',
+            facetSelect: 'collection,format'
+        };
+
+        let results = wrapper.vm.urlParams({}, true);
+
+        expect(results.rows).toEqual(defaults.rows);
+        expect(results['a.setStartRow']).toEqual(defaults['a.setStartRow']);
+        expect(results.sort).toEqual(defaults.sort);
+        expect(results.facetSelect).toEqual(defaults.facetSelect);
+    });
+
+    it("updates url parameters for a browse view", () => {
         let defaults = {
             rows: 20,
             start: 0,
@@ -54,6 +70,22 @@ describe('routeUtils', () => {
         expect(results.browse_type).toEqual(defaults.browse_type);
         expect(results.works_only).toEqual(defaults.works_only);
         expect(results.types).toEqual(defaults.types);
+    });
+
+    it("updates url parameters for a search view", () => {
+        const defaults = {
+            'a.setStartRow': 0,
+            rows: 20,
+            sort: 'title,normal',
+            facetSelect: 'collection,format'
+        };
+
+        let results = wrapper.vm.urlParams({'a.setStartRow': 20}, true);
+
+        expect(results.rows).toEqual(defaults.rows);
+        expect(results['a.setStartRow']).toEqual(20);
+        expect(results.sort).toEqual(defaults.sort);
+        expect(results.facetSelect).toEqual(defaults.facetSelect);
     });
 
     it("formats a url string from an object", () => {

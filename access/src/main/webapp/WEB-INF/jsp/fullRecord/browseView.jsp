@@ -18,4 +18,5 @@
 <div class="collinfo_metadata">
     <div id="app"></div>
 </div>
+<%-- Code loaded in vue-access.js is also used by fullRecord/resultsList.jsp --%>
 <script src="static/js/vue-access.js"></script>

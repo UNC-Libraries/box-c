@@ -8,7 +8,7 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/uuid1234',
-            name: 'browseDisplay'
+            name: 'displayRecords'
         }
     ]
 });
@@ -17,6 +17,7 @@ let wrapper, btns;
 
 describe('viewType.vue', () => {
     beforeEach(() => {
+        sessionStorage.clear();
         wrapper = shallowMount(viewType, {
             localVue,
             router
@@ -31,6 +32,15 @@ describe('viewType.vue', () => {
 
         btns.at(0).trigger('click');
         expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
+    });
+
+    it("sets the browse type in sessionStorage when clicked", () => {
+        const KEY = 'browse-type';
+        btns.at(1).trigger('click');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
+
+        btns.at(0).trigger('click');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'gallery-display');
     });
 
     it("highlights the correct selected browse type", () => {

@@ -31,20 +31,15 @@
   width: 100%;
   text-align: center;
 
-  button {
-    float: right;
-    margin: auto 0 auto auto;
-  }
-
   div {
     display: inline-flex;
+    width: 100%;
   }
 
   h3 {
     font-size: 2rem;
     line-height: 2rem;
     margin-top: 0;
-    text-align: center;
     text-transform: capitalize;
     width: 100%;
   }
@@ -53,6 +48,7 @@
 .modal-body {
   margin: 20px 0;
   text-align: center;
+  font-size: 16px;
 
   table {
     td {
@@ -108,5 +104,9 @@
   .modal-header h3 {
     font-size: 1.3rem;
     width: 85%;
+  }
+
+  .meta-modal {
+    float: none;
   }
 }

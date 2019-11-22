@@ -263,7 +263,7 @@ footer a:hover, footer a:active {
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
-  font-size: 16px;
+  font-size: 24px;
 }
 .search-query-text h2 {
   color: black;
@@ -340,9 +340,14 @@ label.checkbox {
 .search-results-border {
   border-bottom: 1px solid #E1E1E1;
   border-left: 1px solid #E1E1E1;
-  padding-bottom: 0;
   padding-left: 15px;
-  padding-right: 25px;
+  padding-right: 0;
+}
+
+p.spacing {
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+  text-align: center;
 }
 
 .bottomline {
@@ -371,7 +376,7 @@ label.checkbox {
   padding: 25px;
 }
 
-.searchitem_container_count {
+#list-records-display .searchitem_container_count {
   background-color: #4B9CD3;
   border: 1px solid #4B9CD3;
   border-radius: 5px;
@@ -734,6 +739,10 @@ table.dataTable tbody tr.odd {
     margin-top: 25px;
   }
 
+  .collinfo_metadata {
+    margin: auto 0;
+  }
+
   .dataTables_wrapper .dataTables_filter {
     float: left !important;
   }
@@ -751,6 +760,9 @@ table.dataTable tbody tr.odd {
   .contentarea a {
     float: none;
     width: 100%;
+  }
+  .contentarea h2 .fa {
+    display: none;
   }
 
   .iteminfo {

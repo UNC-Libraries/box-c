@@ -8,7 +8,11 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/uuid1234',
-            name: 'browseDisplay'
+            name: 'displayRecords'
+        },
+        {
+            path: '/search/?anywhere=',
+            name: 'searchRecords'
         }
     ]
 });
@@ -21,8 +25,8 @@ describe('pagination.vue', () => {
             localVue,
             router,
             propsData: {
-                numberOfRecords: 199,
-                pageBaseUrl: 'https://dcr.lib.unc.edu'
+                browseType: 'display',
+                numberOfRecords: 199
             }
         });
 
@@ -57,8 +61,66 @@ describe('pagination.vue', () => {
         expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);
     });
 
-    it("updates the start record when a page is selected", () => {
+    it("updates the start record when a 'display' page is selected", () => {
         wrapper.findAll('.page-number').at(1).trigger('click');
         expect(wrapper.vm.$router.currentRoute.query.start).toEqual(20);
+    });
+
+    it("updates the start record when a 'search' page is selected", () => {
+        wrapper.setProps({
+            browseType: 'search'
+        });
+        wrapper.findAll('.page-number').at(1).trigger('click');
+        expect(wrapper.vm.$router.currentRoute.query['a.setStartRow']).toEqual(20);
+    });
+
+    it("displays a link to jump to the first page if the user in on a page beyond the pageLimit", () => {
+        wrapper.findAll('.page-number').at(5).trigger('click');
+        wrapper.findAll('.page-number').at(1).trigger('click');
+
+        expect(wrapper.find('#first-page-link').isVisible()).toBe(true);
+    });
+
+    it("displays a link to jump to the last page if the user in on a page that is before the pageLimit and" +
+        "there are more pages than the pageLimit", () => {
+        expect(wrapper.find('#last-page-link').isVisible()).toBe(true);
+    });
+
+    it("does not display a link to jump to the first page if the user in on a page before the pageLimit and" +
+        "there are less than or eqaul number of pages than the pageLimit", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+        wrapper.findAll('.page-number').at(4).trigger('click');
+        expect(wrapper.find('#first-page-link').exists()).toBe(false);
+    });
+
+    it("does not display a link to jump to the last page if the user in on a page before the pageLimit and" +
+        "there are less than or eqaul number of pages than the pageLimit", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+        wrapper.findAll('.page-number').at(1).trigger('click');
+        expect(wrapper.find('#last-page-link').exists()).toBe(false);
+    });
+
+    it("displays a back link", () => {
+        expect(wrapper.find('.start').classes('back-next')).toBe(true);
+
+        wrapper.findAll('.page-number').at(0).trigger('click');
+        expect(wrapper.find('.start').classes('back-next')).toBe(false);
+        expect(wrapper.find('.start').classes('no-link')).toBe(true);
+    });
+
+    it("displays a next link", () => {
+        wrapper.setProps({
+            numberOfRecords: 100
+        });
+
+        expect(wrapper.find('.end').classes('back-next')).toBe(true);
+
+        wrapper.findAll('.page-number').at(4).trigger('click');
+        expect(wrapper.find('.end').classes('back-next')).toBe(false);
+        expect(wrapper.find('.end').classes('no-link')).toBe(true);
     });
 });

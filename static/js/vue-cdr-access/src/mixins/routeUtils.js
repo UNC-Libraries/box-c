@@ -9,19 +9,31 @@ export default {
 
     methods: {
         /**
-         * Put URL parameters into an object
+         *  Put URL parameters into an object
          * Set default params, if none are present, that can be updated
          * @param params_to_update
-         * @returns {{start: number, sort: string, rows: (*|number), browse_type: string | string} & Dictionary<string | (string | null)[]>}
+         * @param is_search
+         * @returns {any}
          */
-        urlParams(params_to_update = {}) {
-            let defaults = {
+        urlParams(params_to_update = {}, is_search = false) {
+            let defaults;
+
+            if (is_search) {
+                defaults = {
+                    'a.setStartRow': 0,
+                    rows: this.rows_per_page,
+                    sort: 'title,normal',
+                    facetSelect: 'collection,format'
+                };
+            } else {
+                defaults = {
                     rows: this.rows_per_page,
                     start: 0,
                     sort: 'title,normal',
                     browse_type: 'gallery-display',
                     works_only: false
                 };
+            }
 
             let route_params = Object.assign(defaults, this.$route.query);
 
