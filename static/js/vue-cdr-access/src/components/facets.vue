@@ -1,11 +1,21 @@
 <template>
     <div id="facetList" class="contentarea">
         <h2 class="facet-header">Filter results by...</h2>
+        <div class="selected_facets" v-if="facet_info.length > 0">
+            <ul>
+                <li v-for="value in facet_info">
+                    <label :aria-label="value.displayValue" @click="facetInfo(value)">
+                        <input type="checkbox" v-model="selected_facets" :value="facetValue(value)">
+                        {{ value.displayValue }}
+                    </label>
+                </li>
+            </ul>
+        </div>
         <div class="facet-display" v-if="facet.values.length > 0" v-for="facet in this.facetList">
             <h3>{{ facetName(facet.name) }}</h3>
             <ul>
                 <li v-for="value in facet.values">
-                    <label :aria-label="value.displayValue" @click="facetInfo(facet)">
+                    <label :aria-label="value.displayValue" @click="facetInfo(value)">
                         <input type="checkbox" v-model="selected_facets" :value="facetValue(value)">
                         {{ value.displayValue }} ({{ value.count }})
                     </label>
@@ -42,31 +52,38 @@
 
         methods: {
             selectedFacets() {
-                let search_params = this.updateUrl();
-                let base_search = {
-                    query: this.urlParams(search_params.queryFacets, true)
-                };
+                const POSSIBLE_FACETS = ['format', 'language', 'subject'];
+                let updated_facet_params = this.updateUrl();
 
-                if (search_params.collection !== '') {
-                    base_search.path = search_params.path
+                let base_search = {
+                    query: this.urlParams({}, true)
+                };
+                // Unset current facets
+                POSSIBLE_FACETS.forEach((facet) => delete base_search.query[facet]);
+                // Add/Update with new facets
+                base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
+
+                if (updated_facet_params.collection !== '') {
+                    base_search.path = updated_facet_params.path
                 } else {
                     base_search.name = 'searchRecords';
                 }
 
                 this.$router.push(base_search);
-                this.$emit('search-collection', search_params.collection);
+                this.$emit('search-collection', updated_facet_params.collection);
             },
 
             updateUrl() {
                 let collection = this.selected_facets.findIndex((facet) => {
                     return /^uuid/.test(facet);
                 });
+
                 let updated_facets = this.selected_facets;
                 let path;
                 let collection_name;
 
                 if (collection !== -1) {
-                    path = this._updateCollection(this.selected_facets[collection]);
+                    path = `${this.$route.path}/${this.selected_facets[collection]}`;
                     collection_name = this.selected_facets[collection];
 
                     // Remove collection from facets array without removing it from this.selected_facets
@@ -79,12 +96,16 @@
                     path = '/search/';
                 }
 
-                return { collection: collection_name, path: path, queryFacets: this._formatFacets(updated_facets) };
+                return {
+                    collection: collection_name,
+                    path: path,
+                    queryFacets: this._formatFacets(updated_facets)
+                };
             },
 
             facetInfo(facet) {
                 let facet_index = this.facet_info.findIndex((f) => {
-                   return f.name === facet.name;
+                   return f.displayValue === facet.displayValue;
                 });
 
                 if (facet_index === -1) {
@@ -95,17 +116,6 @@
                         ...this.facet_info.slice(facet_index + 1)
                     ];
                 }
-            },
-
-            _updateCollection(collection) {
-                let path = this.$route.path;
-
-                if (/uuid:/.test(path)) {
-                    let path_parts = path.split('/').slice(0, 2);
-                    path = path_parts.join('/');
-                }
-
-                return `${path}/${collection}/`;
             },
 
             _formatFacets(updated_facets) {
@@ -180,6 +190,11 @@
         label {
             float: none;
             width: 100%;
+        }
+
+        .selected_facets {
+            margin-bottom: 50px;
+            margin-top: -20px;
         }
     }
 
