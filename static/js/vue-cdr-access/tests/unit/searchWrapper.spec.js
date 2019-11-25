@@ -8,7 +8,7 @@ localVue.use(VueRouter);
 const router = new VueRouter({
     routes: [
         {
-            path: '/search/',
+            path: '/search/:uuid?',
             name: 'searchRecords'
         }
     ]

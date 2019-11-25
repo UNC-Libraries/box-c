@@ -11,7 +11,7 @@ const router = new VueRouter({
             name: 'displayRecords'
         },
         {
-            path: '/search/?anywhere=',
+            path: '/search/:uuid?',
             name: 'searchRecords'
         }
     ]
