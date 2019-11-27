@@ -23,12 +23,21 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.validation.MODSValidator;
 import io.dropwizard.metrics5.Timer;
 import org.apache.commons.io.IOUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderSAX2Factory;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
+import java.util.Arrays;
+
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 /**
  * Service that manages editing of the mods:title property on an object
@@ -39,9 +48,11 @@ import java.util.logging.Logger;
 public class EditTitleService {
 
     private AccessControlService aclService;
+    private MODSValidator modsValidator;
+    private OperationsMessageSender operationsMessageSender;
     private RepositoryObjectLoader repoObjLoader;
 
-    private static Logger log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private static final Timer timer = TimerFactory.createTimerForClass(EditTitleService.class);
 
     public EditTitleService() {
     }
@@ -54,42 +65,50 @@ public class EditTitleService {
      * @param title the new label (dc:title) of the given object
      */
     public void editTitle(AgentPrincipals agent, PID pid, String title) throws Exception {
-        log.info(pid.toString());
-        log.info(agent.getUsername());
-        log.info(agent.getPrincipals().toString());
+        try (Timer.Context context = timer.time()) {
 
-        aclService.assertHasAccess(
-                "User does not have permissions to edit titles",
-                pid, agent.getPrincipals(), Permission.editDescription);
+            aclService.assertHasAccess(
+                    "User does not have permissions to edit titles",
+                    pid, agent.getPrincipals(), Permission.editDescription);
 
-        log.info("access checked");
+            ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+            BinaryObject mods = obj.getDescription();
 
-        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        log.info("object loaded");
-        BinaryObject mods = obj.getDescription();
-        log.info("mods fetched");
+            String username = agent.getUsername();
 
-        String username = agent.getUsername();
-
-        if (mods != null) {
-            log.info(mods.toString());
-            String oldTitle = getOldTitle(mods);
-            // if old title is null, add titleInfo/title to mods
-            if (oldTitle != null) {
-                log.info("mods has title element: "+oldTitle);
-                // update title
-            } else {
-                log.info("mods needs title element");
-                // add titleInfo/title to mods
+            String newMods;
+            InputStream modsStream;
+            try {
+                modsStream = mods.getBinaryStream();
+            } catch (NullPointerException e) {
+                modsStream = null;
             }
-        } else {
-            log.info("null mods");
-            // else create new mods stream
-            createMODS(title);
+
+            if (modsStream != null) {
+                String modsString = IOUtils.toString(modsStream, StandardCharsets.UTF_8);
+                ByteArrayInputStream modsByteArray = new ByteArrayInputStream(modsString.getBytes());
+                SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+                Document document = sb.build(modsByteArray);
+                Element rootEl = document.getRootElement();
+
+                String oldTitle = getOldTitle(rootEl);
+                if (oldTitle != "no mods:title") {
+                    newMods = updateTitle(document, title);
+                } else {
+                    newMods = addTitleToMODS(document, title);
+                }
+            } else {
+                Document document = new Document();
+                document.addContent(new Element("mods", MODS_V3_NS));
+                newMods = addTitleToMODS(document, title);
+            }
+
+            InputStream newModsStream = new ByteArrayInputStream(newMods.getBytes());
+            modsValidator.validate(newModsStream);
+            obj.setDescription(newModsStream);
         }
 
-        // Send message that the action completed
-//        operationsMessageSender.sendUpdateDescriptionOperation(agent.getUsername(), Arrays.asList(pid));
+        operationsMessageSender.sendUpdateDescriptionOperation(agent.getUsername(), Arrays.asList(pid));
     }
 
     /**
@@ -99,6 +118,10 @@ public class EditTitleService {
         this.aclService = aclService;
     }
 
+    /**
+     *
+     * @return
+     */
     public RepositoryObjectLoader getRepoObjLoader() {
         return repoObjLoader;
     }
@@ -113,23 +136,64 @@ public class EditTitleService {
 
     /**
      *
-     * @param mods the mods record to be edited
-     * @return current title property
+     * @param modsValidator
      */
-    private String getOldTitle(BinaryObject mods) throws Exception {
-        String oldTitle = null;
-        InputStream modsStream = mods.getBinaryStream();
-        String modsString = IOUtils.toString(modsStream, StandardCharsets.UTF_8);
-        log.info(modsString);
-        // find title
+    public void setModsValidator(MODSValidator modsValidator) {
+        this.modsValidator = modsValidator;
+    }
+
+    /**
+     *
+     * @param operationsMessageSender
+     */
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
+    }
+
+    /**
+     *
+     * @param mods the mods record to be edited
+     * @return current title value as a string
+     */
+    private String getOldTitle(Element mods) {
+        String oldTitle;
+        try {
+            Element title = mods.getChild("titleInfo", MODS_V3_NS).getChild("title",
+                 MODS_V3_NS);
+            oldTitle = title.getValue();
+        } catch (NullPointerException e) {
+            oldTitle = "no mods:title";
+        }
 
         return oldTitle;
     }
 
-    private String createMODS(String title) {
+    /**
+     *
+     * @param doc the mods document to be edited
+     * @param title the new title to be added to the mods document
+     * @return updated mods document as a string
+     */
+    private String addTitleToMODS(Document doc, String title) {
+        doc.getRootElement()
+                .addContent(new Element("titleInfo", MODS_V3_NS)
+                        .addContent(new Element("title", MODS_V3_NS)
+                                .setText(title)));
 
-        // create mods
+        return doc.toString();
+    }
 
-        return "mods with new title";
+    /**
+     *
+     * @param doc
+     * @param title
+     * @return updated mods document as a string
+     */
+    private String updateTitle(Document doc, String title) {
+        Element oldTitle = doc.getRootElement().getChild("titleInfo", MODS_V3_NS).getChild("title",
+                MODS_V3_NS);
+        oldTitle.setText(title);
+
+        return doc.toString();
     }
 }
