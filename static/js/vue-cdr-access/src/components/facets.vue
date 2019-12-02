@@ -133,6 +133,10 @@
                     return 'Collection'
                 } else if (value === 'CONTENT_TYPE') {
                     return 'Format';
+                } else if (value === 'LANGUAGE') {
+                    return 'Language';
+                } else if (value === 'SUBJECT') {
+                    return 'Subject';
                 } else {
                     return value;
                 }
