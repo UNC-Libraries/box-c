@@ -28,6 +28,8 @@
 <script>
     import routeUtils from '../mixins/routeUtils';
 
+    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
     export default {
         name: 'facets',
 
@@ -70,30 +72,25 @@
                 }
 
                 this.$router.push(base_search);
-                this.$emit('search-collection', updated_facet_params.collection);
             },
 
             updateUrl() {
+                let updated_facets = this.selected_facets;
+                let path = '/search/';
+                let collection_name = '';
                 let collection = this.selected_facets.findIndex((facet) => {
-                    return /^uuid/.test(facet);
+                    return UUID_REGEX.test(facet);
                 });
 
-                let updated_facets = this.selected_facets;
-                let path;
-                let collection_name;
-
                 if (collection !== -1) {
-                    path = `${this.$route.path}/${this.selected_facets[collection]}`;
                     collection_name = this.selected_facets[collection];
+                    path += `${this.selected_facets[collection]}`;
 
                     // Remove collection from facets array without removing it from this.selected_facets
                     updated_facets = [
                         ...this.selected_facets.slice(0, collection),
                         ...this.selected_facets.slice(collection + 1)
                     ];
-                } else {
-                    collection_name = '';
-                    path = '/search/';
                 }
 
                 return {
@@ -105,7 +102,7 @@
 
             facetInfo(facet) {
                 let facet_index = this.facet_info.findIndex((f) => {
-                   return f.displayValue === facet.displayValue;
+                   return f.value === facet.value;
                 });
 
                 if (facet_index === -1) {
@@ -145,9 +142,7 @@
             facetValue(value) {
                 let facet_type;
 
-                if (value.fieldName === 'ANCESTOR_PATH') {
-                    facet_type = 'uuid:';
-                } else if (value.fieldName  === 'CONTENT_TYPE') {
+                if (value.fieldName  === 'CONTENT_TYPE') {
                     facet_type = 'format=';
                 } else if (value.fieldName  === 'LANGUAGE') {
                     facet_type = 'language=';
@@ -161,9 +156,14 @@
             },
 
             addCollection() {
-                let collection = this.$route.path.match(/uuid:.*?\//);
+                let collection = this.$route.path.match(UUID_REGEX);
                 if (collection !== null) {
-                    this.selected_facets.push(collection[0].substr(0, collection[0].length - 1));
+                    this.selected_facets.push(collection[0]);
+
+                    let collections = this.facetList.find((f) => f.name === 'PARENT_COLLECTION');
+                    if (collections !== undefined) {
+                        this.facetInfo(collections.values.find((f) => f.value === collection[0]));
+                    }
                 }
             }
         },

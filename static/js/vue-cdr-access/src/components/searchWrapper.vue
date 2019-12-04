@@ -7,7 +7,7 @@
         <div v-if="!is_loading">
             <div v-if="records.length > 0" class="columns">
                 <div class="column is-one-quarter facets-border border-box-left-top">
-                    <facets :facet-list="facet_list" @search-collection="searchCollection"></facets>
+                    <facets :facet-list="facet_list"></facets>
                 </div>
                 <div class="column is-three-quarters search-results-border border-box-left-top">
                     <div class="bottomline paddedline">
@@ -37,6 +37,8 @@
     import pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
+
+    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
     export default {
         name: 'searchWrapper',
@@ -72,16 +74,13 @@
         },
 
         methods: {
-            searchCollection(collection) {
-                this.collection = collection;
-                this.retrieveData();
-            },
+
 
             retrieveData() {
-                let param_string = this.formatParamsString(this.$route.query);
+                let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
                 let search_path = 'searchJson';
 
-                if (/uuid:/.test(this.$route.path)) {
+                if (UUID_REGEX.test(this.$route.path)) {
                     this.collection = this.$route.path.split('/')[2];
                 }
 

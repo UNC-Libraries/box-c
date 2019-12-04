@@ -25,36 +25,40 @@ describe('facets.vue', () => {
             propsData: {
                 facetList: [
                     {
-                        name: 'PARENT_COLLECTION',
+                        name: "PARENT_COLLECTION",
                         values: [
                             {
                                 count:19,
-                                displayValue:"testCollection",
-                                fieldName:"ANCESTOR_PATH",
-                                limitToValue:"d77fd8c9-744b-42ab-8e20-5ad9bdf8194e"
+                                displayValue: "testCollection",
+                                fieldName: "ANCESTOR_PATH",
+                                limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+                                value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e"
                             },
                             {
                                 count:1,
-                                displayValue:"test2Collection",
-                                fieldName:"ANCESTOR_PATH",
-                                limitToValue:"88386d31-6931-467d-add5-1d109f335302"
+                                displayValue: "test2Collection",
+                                fieldName: "ANCESTOR_PATH",
+                                limitToValue: "88386d31-6931-467d-add5-1d109f335302",
+                                value: "88386d31-6931-467d-add5-1d109f335302"
                             }
                         ]
                     },
                     {
-                        name:"CONTENT_TYPE",
+                        name: "CONTENT_TYPE",
                         values: [
                             {
                                 count:8,
-                                displayValue:"Image",
-                                fieldName:"CONTENT_TYPE",
-                                limitToValue:"image"
+                                displayValue: "Image",
+                                fieldName: "CONTENT_TYPE",
+                                limitToValue: "image",
+                                value: "image"
                             },
                             {
                                 count:2,
-                                displayValue:"Text",
-                                fieldName:"CONTENT_TYPE",
-                                limitToValue:"text"
+                                displayValue: "Text",
+                                fieldName: "CONTENT_TYPE",
+                                limitToValue: "text",
+                                image: "text"
                             }
                         ]
                     }
@@ -90,9 +94,10 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
         expect(wrapper.vm.facet_info).toEqual([{
             count:8,
-            displayValue:"Image",
-            fieldName:"CONTENT_TYPE",
-            limitToValue:"image"
+            displayValue: "Image",
+            fieldName: "CONTENT_TYPE",
+            limitToValue: "image",
+            value: "image"
         }]);
     });
 
@@ -105,9 +110,10 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
         expect(wrapper.vm.facet_info).toEqual([{
             count:8,
-            displayValue:"Image",
-            fieldName:"CONTENT_TYPE",
-            limitToValue:"image"
+            displayValue: "Image",
+            fieldName: "CONTENT_TYPE",
+            limitToValue: "image",
+            value: "image"
         }]);
 
         // Remove facet
@@ -141,28 +147,34 @@ describe('facets.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
     });
 
-    it("emits an event with the current collection when facets change", () => {
-        collection.setChecked();
-        expect(wrapper.emitted()['search-collection'][0]).toEqual(['uuid:d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
-
-        collection.setChecked(false);
-        expect(wrapper.emitted()['search-collection'][1]).toEqual(['']);
-    });
-
     it("updates the url if a 'collection' is selected", () => {
         collection.trigger('click');
         collection.setChecked();
-        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/uuid:d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
     });
 
     it("updates the url if a 'collection' is removed", () => {
         collection.trigger('click');
         collection.setChecked();
-        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/uuid:d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
 
         collection.trigger('click');
         collection.trigger('change');
         expect(wrapper.vm.$router.currentRoute.path).toBe('/search');
+    });
+
+    it("updates facet display if a collection uuid is in the url when page is loaded", () => {
+        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        wrapper.vm.addCollection(); // Called in mounted hook
+
+        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
+        expect(wrapper.vm.facet_info).toEqual([ {
+            count:19,
+            displayValue: "testCollection",
+            fieldName: "ANCESTOR_PATH",
+            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e"
+        }]);
     });
 
     afterEach(() => {

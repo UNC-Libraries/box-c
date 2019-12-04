@@ -53,6 +53,7 @@
 
 <style scoped lang="scss">
     .browse-search {
+        margin-right: 15px;
         input, div:first-child  {
             width: 100%;
         }
