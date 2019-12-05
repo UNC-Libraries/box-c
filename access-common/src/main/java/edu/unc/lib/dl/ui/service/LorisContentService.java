@@ -50,8 +50,9 @@ public class LorisContentService {
             HttpServletResponse response, int retryServerError) {
         CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
-        path.append(simplepid);
+        StringBuilder path = new StringBuilder("http://localhost:4080/loris/");
+        path.append(setImageViewerURL(simplepid));
+        path.append("/info.json");
 
         HttpGet method = new HttpGet(path.toString());
         try (CloseableHttpResponse httpResp = client.execute(method)) {
@@ -64,7 +65,7 @@ public class LorisContentService {
                     FileIOUtil.stream(outStream, httpResp);
                 }
             } else {
-                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0 ) {
+                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
                     this.getMetadata(simplepid, datastream, outStream, response, retryServerError - 1);
                 } else {
                     LOG.error("Unexpected failure: " + httpResp.getStatusLine().toString());
@@ -90,9 +91,9 @@ public class LorisContentService {
             int retryServerError) {
         CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
+        StringBuilder path = new StringBuilder("http://localhost:4080/loris/");
 
-        path.append(simplepid).append("/" + region).append("/" + size)
+        path.append(setImageViewerURL(simplepid)).append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
         HttpGet method = new HttpGet(path.toString());
@@ -124,6 +125,20 @@ public class LorisContentService {
         } finally {
             method.releaseConnection();
         }
+    }
+
+    private String setImageViewerURL(String uuid) {
+        String image_path = "";
+
+        if (uuid != null) {
+            image_path += uuid.substring(0, 2) + "/";
+            image_path += uuid.substring(2, 4) + "/";
+            image_path += uuid.substring(4, 6) + "/";
+            image_path += uuid.substring(6, 8) + "/";
+            image_path += uuid + ".jp2";
+        }
+
+        return image_path;
     }
 
     public ApplicationPathSettings getApplicationPathSettings() {
