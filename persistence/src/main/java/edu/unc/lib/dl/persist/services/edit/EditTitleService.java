@@ -100,7 +100,7 @@ public class EditTitleService {
                 Document document;
                 try {
                     document = sb.build(modsByteArray);
-                } catch (IOException|JDOMException e) {
+                } catch (IOException | JDOMException e) {
                     throw new ServiceException("Unable to build mods document for " + pid, e);
                 }
                 Element rootEl = document.getRootElement();
