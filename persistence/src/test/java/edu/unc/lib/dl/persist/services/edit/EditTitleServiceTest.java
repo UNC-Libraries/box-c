@@ -22,10 +22,15 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.*;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
+import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,12 +39,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.UUID;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -65,6 +72,8 @@ public class EditTitleServiceTest {
 
     @Captor
     private ArgumentCaptor<Collection<PID>> pidsCaptor;
+    @Captor
+    private ArgumentCaptor<InputStream> inputStreamCaptor;
 
     private EditTitleService service;
     private PID pid;
@@ -106,8 +115,12 @@ public class EditTitleServiceTest {
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
         Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(pids.size(), 1);
+        assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
+
+        verify(contentObj).setDescription(inputStreamCaptor.capture());
+        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
+        assertTrue(assertTitleValue(updatedDoc, title));
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -133,8 +146,12 @@ public class EditTitleServiceTest {
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
         Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(pids.size(), 1);
+        assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
+
+        verify(contentObj).setDescription(inputStreamCaptor.capture());
+        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
+        assertTrue(assertTitleValue(updatedDoc, title));
     }
 
     @Test
@@ -152,8 +169,12 @@ public class EditTitleServiceTest {
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
         Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(pids.size(), 1);
+        assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
+
+        verify(contentObj).setDescription(inputStreamCaptor.capture());
+        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
+        assertTrue(assertTitleValue(updatedDoc, title));
     }
 
     @Test
@@ -162,21 +183,57 @@ public class EditTitleServiceTest {
         document.addContent(new Element("mods", MODS_V3_NS)
                 .addContent(new Element("titleInfo", MODS_V3_NS)
                         .addContent(new Element("title", MODS_V3_NS).setText("original title")))
-                .addContent(new Element("titleInfo", MODS_V3_NS))
-                        .addContent(new Element("title", MODS_V3_NS).setText("a second title")));
+                .addContent(new Element("titleInfo", MODS_V3_NS)
+                        .addContent(new Element("title", MODS_V3_NS).setText("a second title"))));
         when(binaryObj.getBinaryStream()).thenReturn(convertDocumentToStream(document));
 
         service.editTitle(agent, pid, title);
 
         verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
         Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(pids.size(), 1);
+        assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
+
+        verify(contentObj).setDescription(inputStreamCaptor.capture());
+        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
+        assertTrue(assertTitleValue(updatedDoc, title));
+        // check that first title is no longer in mods
+        assertFalse(assertTitleValue(updatedDoc, "original title"));
+        // check that second title is unchanged
+        assertTrue(assertTitleValue(updatedDoc, "a second title"));
     }
 
     private InputStream convertDocumentToStream(Document doc) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         new XMLOutputter().output(doc, outStream);
         return new ByteArrayInputStream(outStream.toByteArray());
+    }
+
+    private Document getUpdatedDescriptionDocument(InputStream inputStream) {
+        Document document;
+        String modsString;
+
+        try {
+            modsString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new ServiceException("Unable to covert mods stream to string for " + pid, e);
+        }
+
+        ByteArrayInputStream modsByteArray = new ByteArrayInputStream(modsString.getBytes());
+        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+        try {
+            document = sb.build(modsByteArray);
+        } catch (IOException| JDOMException e) {
+            throw new ServiceException("Unable to build mods document for " + pid, e);
+        }
+
+        return document;
+    }
+
+    private boolean assertTitleValue(Document document, String expectedTitle) {
+        return document.getRootElement()
+                .getChildren("titleInfo", MODS_V3_NS)
+                .stream()
+                .anyMatch(e -> (e.getChild("title", MODS_V3_NS).getValue().contentEquals(expectedTitle)));
     }
 }
