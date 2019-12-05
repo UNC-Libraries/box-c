@@ -23,70 +23,85 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="onecol full_record_top">
 	<div class="contentarea">
-		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
-		<c:import url="common/thumbnail.jsp">
-			<c:param name="target" value="file" />
-			<c:param name="size" value="large" />
-		</c:import>
-		<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-			<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
-		</c:if>
-		
-		<div class="collinfo">
-			<div class="collinfo_metadata">
-				<h2><c:out value="${briefObject.title}" /></h2>
-				<ul>
-					<c:if test="${not empty briefObject.dateAdded}">
-						<li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>
-					</c:if>
-					<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
-						<li>
-							<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
-							<span class="has-text-weight-bold">Collection:</span>
-							<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
-						</li>
-					</c:if>
-					<li><span class="has-text-weight-bold">Finding Aid: </span>
-						<c:choose>
-							<c:when test="${empty briefObject.title}">
-								<a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
-							</c:when>
-							<c:otherwise>Doesn’t have a finding aid</c:otherwise>
-						</c:choose>
-					</li>
-					<c:if test="${not empty briefObject.creator}">
-						<li>
-							<span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
-							<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-								<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
-							</c:forEach>
-						</li>
-					</c:if>
-					<li><span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
-					<c:if test="${briefObject.filesizeSort != -1}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
-					<c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
-					<c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
-				</ul>
-			</div>
+        <div class="columns">
+            <div class="column is-10">
+                <h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
+            </div>
+            <div class="column is-2 item-actions">
+                <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
+                    <div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">
+                        <i class="fa fa-file" aria-hidden="true"></i> Edit</a>
+                    </div>
+                </c:if>
+                <c:choose>
+                    <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
+                        <div class="actionlink right download">
+                            <a href="${cdr:getOriginalFileUrl(briefObject)}?dl=true">
+                                <i class="fa fa-download" aria-hidden="true"></i> Download</a>
+                        </div>
+                        <c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
+                            <div class="actionlink right">
+                                <a href="${cdr:getOriginalFileUrl(briefObject)}">
+                                    <i class="fa fa-search" aria-hidden="true"></i> View</a>
+                            </div>
+                        </c:if>
+                    </c:when>
+                    <c:when test="${not empty embargoDate}">
+                        <div class="noaction right">
+                            Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
+                        </div>
+                    </c:when>
+                </c:choose>
+            </div>
+        </div>
+		<div class="item-info columns">
+            <div class="column is-2">
+                <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+                <c:import url="common/thumbnail.jsp">
+                    <c:param name="target" value="file" />
+                    <c:param name="size" value="large" />
+                </c:import>
+            </div>
+            <div class="column is-10">
+                <div class="collinfo">
+                    <div class="collinfo_metadata">
+                        <ul>
+                            <c:if test="${not empty briefObject.dateAdded}">
+                                <li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>
+                            </c:if>
+                            <c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
+                                <li>
+                                    <c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+                                    <span class="has-text-weight-bold">Collection:</span>
+                                    <a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+                                </li>
+                            </c:if>
+                            <li><span class="has-text-weight-bold">Finding Aid: </span>
+                                <c:choose>
+                                    <c:when test="${empty briefObject.title}">
+                                        <a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+                                    </c:when>
+                                    <c:otherwise>Doesn’t have a finding aid</c:otherwise>
+                                </c:choose>
+                            </li>
+                            <c:if test="${not empty briefObject.creator}">
+                                <li>
+                                    <span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
+                                    <c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
+                                        <c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
+                                    </c:forEach>
+                                </li>
+                            </c:if>
+                            <li><span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
+                            <c:if test="${briefObject.filesizeSort != -1}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
+                            <c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
+                            <c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 		</div>
 		<div class="clear">
-			<c:choose>
-				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-					<div class="actionlink left download">
-						<a href="${cdr:getOriginalFileUrl(briefObject)}?dl=true">Download</a>
-					</div>
-					<c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-						<div class="actionlink left">
-							<a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
-						</div>
-					</c:if>
-				</c:when>
-				<c:when test="${not empty embargoDate}">
-					<div class="noaction left">
-						Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
-					</div>
-				</c:when>
-			</c:choose>
 			<c:choose>
 				<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
 					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">

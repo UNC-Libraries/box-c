@@ -589,6 +589,11 @@ p.no-search-results {
 
 /* Work page */
 
+.jp2_imageviewer_window {
+  margin: 15px;
+  width: auto;
+}
+
 
 /* DataTables  */
 #child-files_wrapper div {
@@ -639,23 +644,39 @@ p.no-search-results {
   margin: 20px;
 }
 
+.item-title {
+  font-size: 36px;
+  padding-left: 25px;
+}
+
+.item-actions {
+  padding-right: 25px;
+}
+
 .full_record_top {
   border-bottom: 1px solid $light-gray;
+
+  margin-left: 15px;
+  margin-top: 25px;
   padding-bottom: 25px;
+  width: 97%;
 
   .collinfo {
-    padding-top: 25px;
     width: 85%;
+  }
+
+  .item-info {
+    margin-left: 15px;
+  }
+
+  .columns {
+    margin-bottom: 0;
   }
 }
 
 .full_record {
   .contentarea {
     margin: 0;
-  }
-
-  h2 {
-    color: #3C4C5A;
   }
 }
 
@@ -674,6 +695,12 @@ p.no-search-results {
   font-size: 24px;
 }
 
+.actionlink {
+  a {
+    color: white;
+  }
+}
+
 .actionlink.view {
   max-width: 60px;
 
@@ -690,8 +717,19 @@ table.dataTable {
   }
 }
 
+.item-actions {
+  .actionlink {
+    a {
+      display: inline;
+      font-size: 16px;
+      padding: 10px;
+      vertical-align: middle;
+    }
+  }
+}
+
 .collinfo_metadata {
-  margin: 20px;
+  margin: 0 20px 20px 0;
 
   h2 {
     font-size: 24px;
@@ -699,7 +737,6 @@ table.dataTable {
 
   .actionlink {
     a {
-      color: white;
       padding: 15px;
       display: inline-block;
     }
