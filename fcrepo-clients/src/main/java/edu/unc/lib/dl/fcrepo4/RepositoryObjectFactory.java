@@ -17,7 +17,9 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static org.fcrepo.client.ExternalContentHandling.PROXY;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
+import static org.fcrepo.client.LinkHeaderConstants.DESCRIBEDBY_REL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -299,6 +301,71 @@ public class RepositoryObjectFactory {
         }
 
         return new FileObject(pid, repoObjDriver, this);
+    }
+
+    /**
+     * Creates a BinaryObject with the given PID, using the provided storage URI as the proxied external binary
+     * location.
+     *
+     * @param pid pid of the binary
+     * @param storageUri location where the binary is stored
+     * @param filename filename for the binary
+     * @param mimetype mimetype of the binary
+     * @param sha1Checksum sha1 digest of the content.
+     * @param md5Checksum md5 digest of the content.
+     * @param model Model containing any properties to include in the description of this binary
+     * @return the newly created BinaryObject
+     * @throws FedoraException
+     */
+    public BinaryObject createOrUpdateBinary(PID pid, URI storageUri, String filename, String mimetype,
+            String sha1Checksum, String md5Checksum, Model model) {
+        // Upload the binary and provided metadata
+        URI resultUri;
+        // Track the URI where metadata updates would be made to for this binary
+        URI describedBy;
+        try (FcrepoResponse response = getClient().put(pid.getRepositoryUri())
+                .externalContent(storageUri, mimetype, PROXY)
+                .addInteractionModel(LDP_NON_RDF_SOURCE)
+                .filename(filename)
+                .digestSha1(sha1Checksum)
+                .digestMd5(md5Checksum)
+                .perform()) {
+            resultUri = response.getLocation();
+            describedBy = response.getLinkHeaders(DESCRIBEDBY_REL).get(0);
+        } catch (IOException e) {
+            throw new FedoraException("Unable to create binary at " + pid.getRepositoryPath(), e);
+        } catch (FcrepoOperationFailedException e) {
+            // if one or more checksums don't match
+            if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
+                throw new ChecksumMismatchException("Failed to create binary for " + pid.getRepositoryPath()
+                    + ", since checksum(s) did not match the submitted content according to the repository.", e);
+            }
+            throw ClientFaultResolver.resolve(e);
+        }
+
+        if (model != null) {
+            updateBinaryDescription(pid, describedBy, model);
+        }
+
+        return new BinaryObject(PIDs.get(resultUri), storageUri, repoObjDriver, this);
+    }
+
+    private void updateBinaryDescription(PID binPid, URI describedBy, Model model) {
+        // Add in pcdm:File type to model
+        populateModelTypes(binPid.getRepositoryUri(), model, Arrays.asList(PcdmModels.File));
+
+        // If a model was provided, then add the triples to the new binary's
+        // metadata
+        // Turn model into sparql update query
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(model);
+        InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+        try (FcrepoResponse response = getClient().patch(describedBy).body(sparqlStream).perform()) {
+        } catch (IOException e) {
+            throw new FedoraException("Unable to add triples to binary at " + describedBy, e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
     }
 
     /**

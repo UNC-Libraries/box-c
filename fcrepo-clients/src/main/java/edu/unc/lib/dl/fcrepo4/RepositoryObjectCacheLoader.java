@@ -62,12 +62,22 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         try (FcrepoResponse response = client.head(pid.getRepositoryUri())
                 .perform()) {
 
-            URI metadataUri;
-            if (response.hasType(BINARY_TYPE_URI)) {
-                metadataUri = RepositoryPaths.getMetadataUri(pid);
-            } else {
-                metadataUri = pid.getRepositoryUri();
+            boolean isBinary = response.hasType(BINARY_TYPE_URI);
+            String etag = response.getHeaderValue("ETag");
+            if (etag != null) {
+                etag = new EntityTag(etag).getValue();
             }
+
+            if (isBinary) {
+                String contentLoc = response.getHeaderValue("Content-Location");
+                URI contentUri = null;
+                if (contentLoc != null) {
+                    contentUri = URI.create(contentLoc);
+                }
+                return instantiateBinaryObject(pid, contentUri, etag);
+            }
+
+            URI metadataUri = pid.getRepositoryUri();
 
             Model model;
             try (FcrepoResponse modelResp = client.get(metadataUri)
@@ -76,11 +86,6 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
                 model = ModelFactory.createDefaultModel();
                 model.read(modelResp.getBody(), null, Lang.TURTLE.getName());
-            }
-
-            String etag = response.getHeaderValue("ETag");
-            if (etag != null) {
-                etag = new EntityTag(etag).getValue();
             }
 
             return instantiateRepositoryObject(pid, model, etag);
@@ -110,6 +115,12 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
      */
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
+    }
+
+    private BinaryObject instantiateBinaryObject(PID pid, URI contentUri, String etag) {
+        BinaryObject obj = new BinaryObject(pid, contentUri, repositoryObjectDriver, repoObjFactory);
+        obj.setEtag(etag);
+        return obj;
     }
 
     private RepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {

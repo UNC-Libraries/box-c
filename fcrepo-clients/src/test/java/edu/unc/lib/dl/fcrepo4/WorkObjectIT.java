@@ -22,10 +22,13 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -72,9 +75,10 @@ public class WorkObjectIT extends AbstractFedoraIT {
         String bodyString = "Content";
         String filename = "file.txt";
         String mimetype = "text/plain";
-        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        Path contentPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
 
-        obj.addDataFile(contentStream, filename, mimetype, null, null);
+        obj.addDataFile(contentPath.toUri(), filename, mimetype, null, null);
 
         treeIndexer.indexAll(baseAddress);
 
@@ -101,18 +105,20 @@ public class WorkObjectIT extends AbstractFedoraIT {
         // Create the primary object
         String bodyString = "Primary object";
         String filename = "primary.txt";
-        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        Path contentPath = Files.createTempFile("primary", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
 
-        FileObject primaryObj = obj.addDataFile(contentStream, filename, null, null, null);
+        FileObject primaryObj = obj.addDataFile(contentPath.toUri(), filename, null, null, null);
         // Set it as the primary object for our work
         obj.setPrimaryObject(primaryObj.getPid());
 
         // Create the supplemental object
         String bodyStringS = "Supplement1";
         String filenameS = "s1.txt";
-        InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
+        Path contentPath2 = Files.createTempFile("s1", ".txt");
+        FileUtils.writeStringToFile(contentPath2.toFile(), bodyStringS, "UTF-8");
 
-        FileObject supp = obj.addDataFile(contentStreamS, filenameS, null, null, null);
+        FileObject supp = obj.addDataFile(contentPath2.toUri(), filenameS, null, null, null);
 
         treeIndexer.indexAll(baseAddress);
 

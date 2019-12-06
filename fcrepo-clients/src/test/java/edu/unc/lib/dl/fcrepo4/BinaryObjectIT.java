@@ -22,9 +22,12 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
@@ -78,9 +81,10 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         String bodyString = "Test text";
         String filename = "test.txt";
         String mimetype = "text/plain";
-        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
 
-        BinaryObject binObj = fileObj.addOriginalFile(contentStream, filename, mimetype, null, null);
+        BinaryObject binObj = fileObj.addOriginalFile(contentPath.toUri(), filename, mimetype, null, null);
 
         treeIndexer.indexAll(baseAddress);
 

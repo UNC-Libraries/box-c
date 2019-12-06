@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
@@ -33,8 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -146,6 +145,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private ArgumentCaptor<Model> modelCaptor;
 
     private File techmdDir;
+    private Path storageLocPath;
 
     @Mock
     private VerifyObjectsAreInFedoraService verificationService;
@@ -182,6 +182,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         techmdDir = new File(depositDir, TECHMD_DIR);
         techmdDir.mkdir();
+
+        storageLocPath = tmpFolder.newFolder("storageLoc").toPath();
 
         // Setup logging dependencies
         mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
@@ -273,7 +275,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class),
+        when(work.addDataFile(any(PID.class), any(URI.class),
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
@@ -283,15 +285,15 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
         verify(destinationObj).addMember(eq(work));
 
-        verify(work).addDataFile(eq(mainPid), any(InputStream.class), eq(mainLoc),
+        verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
                 eq(mainMime), anyString(), anyString(), any(Model.class));
-        verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
+        verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
                 eq(supMime), anyString(), anyString(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
-        verify(mockFileObj, times(2)).addBinary(eq(TECHNICAL_METADATA.getId()), any(InputStream.class),
+        verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
                 anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
                 any(Resource.class));
     }
@@ -385,7 +387,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class),
+        when(work.addDataFile(any(PID.class), any(URI.class),
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
@@ -403,13 +405,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjLoader).getWorkObject(any(PID.class));
 
         // Main file object should not be touched
-        verify(work, never()).addDataFile(eq(mainPid), any(InputStream.class),
+        verify(work, never()).addDataFile(eq(mainPid), any(URI.class),
                 anyString(), anyString(), anyString(), anyString(), any(Model.class));
         verify(repoObjLoader, never()).getFileObject(eq(mainPid));
 
         // Supplemental file should be created
         verify(repoObjLoader, never()).getFileObject(eq(supPid));
-        verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
+        verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
                 eq(supMime), anyString(), anyString(), any(Model.class));
 
         // Ensure that the primary object still got set
@@ -575,7 +577,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class),
+        when(work.addDataFile(any(PID.class), any(URI.class),
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid);
@@ -588,7 +590,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         assertTrue("Work object did not contain assigned restriction",
                 workAipResc.hasProperty(CdrAcl.embargoUntil));
 
-        verify(work).addDataFile(eq(mainPid), any(InputStream.class), eq(mainLoc),
+        verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
                 eq(mainMime), anyString(), anyString(), modelCaptor.capture());
 
         Resource fileAipResc = modelCaptor.getValue().getResource(mainPid.getRepositoryPath());
@@ -620,16 +622,21 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
-        String absolutePath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
+        String stagingPath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
+        String storagePath = storageLocPath.resolve(filePid.getId() + ".txt").toUri().toString();
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, absolutePath);
+        fileResc.addProperty(CdrDeposit.stagingLocation, stagingPath);
+        fileResc.addProperty(CdrDeposit.storageUri, storagePath);
+        fileResc.addProperty(CdrDeposit.label, stagingLocation);
         fileResc.addProperty(CdrDeposit.mimetype, mimetype);
 
         parent.add(fileResc);
 
         // Create the accompanying fake FITS report file
-        new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
+        File fitsFile = new File(techmdDir, filePid.getUUID() + ".xml");
+        fitsFile.createNewFile();
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsFile.toPath().toUri().toString());
 
         return filePid;
     }

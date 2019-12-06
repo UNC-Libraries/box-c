@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
@@ -26,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -321,8 +323,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException {
         PID childPid = PIDs.get(childResc.getURI());
 
-        URI stagingUri = URI.create(getPropertyValue(childResc, CdrDeposit.stagingLocation));
-        if (stagingUri == null) {
+        URI storageUri = URI.create(getPropertyValue(childResc, CdrDeposit.storageUri));
+        if (storageUri == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
@@ -335,8 +337,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         String label = getPropertyValue(childResc, CdrDeposit.label);
 
-        File file = new File(stagingUri);
-
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
         Resource aResc = aipModel.getResource(childResc.getURI());
@@ -344,38 +344,29 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addAclProperties(childResc, aResc);
         populateAIPProperties(childResc, aResc);
 
-        String filename = label != null ? label : file.getName();
-
-        FileObject fileObj;
-        try (InputStream fileStream = new FileInputStream(file)) {
-            // Add the file to the work as the datafile of its own FileObject
-            fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1, md5, aipModel);
-            // Record the size of the file for throughput stats
-            metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
-
-            log.info("Ingested file {} in {} for deposit {}", filename, childPid, getDepositPID());
-        } catch (FileNotFoundException e) {
-            throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
-                    + ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingUri, e);
-        } catch (IOException e) {
-            throw new DepositException("Unable to close inputstream for binary " + childPid.getQualifiedId(), e);
+        // Add the file to the work as the datafile of its own FileObject
+        FileObject fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
+        // Record the size of the file for throughput stats
+        if (storageUri.getScheme().equals("file")) {
+            metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
         }
 
         // Add the FITS report for this file
-        addFitsReport(fileObj);
+        addFitsReport(fileObj, childResc);
 
         return fileObj;
     }
 
-    private void addFitsReport(FileObject fileObj) throws DepositException {
-        File fitsFile = new File(getTechMdDirectory(), fileObj.getPid().getUUID() + ".xml");
-        try (InputStream fitsStream = new FileInputStream(fitsFile)) {
-            fileObj.addBinary(TECHNICAL_METADATA.getId(), fitsStream, fitsFile.getName(), "text/xml",
-                    IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
-        } catch (IOException e) {
-            throw new DepositException("Unable to ingest technical metadata for "
-                    + fileObj.getPid().getQualifiedId(), e);
+    private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
+        if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
+            failJob("Missing FITs extract", "No storage URI for FITS extract for " + fileObj.getPid().getId());
         }
+
+        URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+
+        fileObj.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     /**

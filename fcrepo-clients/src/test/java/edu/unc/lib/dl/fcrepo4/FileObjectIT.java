@@ -15,23 +15,28 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
@@ -66,8 +71,9 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Prep file and add
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        BinaryObject origObj = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        BinaryObject origObj = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                 origMd5Checksum);
 
         verifyOriginalFile(origObj);
@@ -81,55 +87,49 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Add the original
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        BinaryObject bObj3 = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        BinaryObject bObj2 = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                 origMd5Checksum);
 
         // Construct the derivative objects
         String textBodyString = "Extracted text";
         String textFilename = "extracted.txt";
         String textMimetype = "text/plain";
-        InputStream textContentStream = new ByteArrayInputStream(textBodyString.getBytes());
-        BinaryObject bObj1 = fileObj.addDerivative("text", textContentStream, textFilename, textMimetype,
-                PcdmUse.ExtractedText);
-        assertNotNull(bObj1);
-
-        String thumbBodyString = "";
-        String thumbFilename = "thumb.png";
-        String thumbMimetype = "image/png";
-        InputStream thumbContentStream = new ByteArrayInputStream(thumbBodyString.getBytes());
-        BinaryObject bObj2 = fileObj.addDerivative("thumb", thumbContentStream, thumbFilename, thumbMimetype,
-                PcdmUse.ThumbnailImage);
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        Path fitsPath = Files.createTempFile("extracted", ".txt");
+        FileUtils.writeStringToFile(fitsPath.toFile(), textBodyString, "UTF-8");
+        BinaryObject bObj1 = fileObj.addBinary(fitsPid, fitsPath.toUri(), textFilename, textMimetype,
+                null, RDF.type, PcdmUse.ExtractedText);
         assertNotNull(bObj1);
 
         // Retrieve the binary objects directly
         List<BinaryObject> binaries = fileObj.getBinaryObjects();
 
-        assertEquals("Incorrect number of binaries added", 3, binaries.size());
+        assertEquals("Incorrect number of binaries added", 2, binaries.size());
 
         // Find each of the created binaries by pid
         BinaryObject rObj1 = findBinaryByPid(binaries, bObj1.getPid());
         BinaryObject rObj2 = findBinaryByPid(binaries, bObj2.getPid());
-        BinaryObject rObj3 = findBinaryByPid(binaries, bObj3.getPid());
 
         assertNotNull(rObj1);
         assertNotNull(rObj2);
-        assertNotNull(rObj3);
 
         // Verify that binaries had correct data added
         verifyFile(rObj1, textFilename, textMimetype, textBodyString);
-        verifyFile(rObj2, thumbFilename, thumbMimetype, thumbBodyString);
-        verifyOriginalFile(rObj3);
+        verifyOriginalFile(rObj2);
     }
 
     @Test
     public void testGetBinaryByName() throws Exception {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        fileObj.addBinary("some_binary", contentStream, origFilename, origMimetype, null, null, null);
+        PID binPid = getOriginalFilePid(fileObj.getPid());
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), origBodyString, "UTF-8");
+        fileObj.addBinary(binPid, contentPath.toUri(), origFilename, origMimetype, null, null, null);
 
-        BinaryObject binObj = fileObj.getBinaryObject("some_binary");
+        BinaryObject binObj = fileObj.getBinaryObject(DatastreamType.ORIGINAL_FILE.getId());
         verifyFile(binObj, origFilename, origMimetype, origBodyString);
     }
 
@@ -146,8 +146,9 @@ public class FileObjectIT extends AbstractFedoraIT {
     public void testGetParent() throws Exception {
         WorkObject work = repoObjFactory.createWorkObject(null);
 
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        FileObject fileObj = work.addDataFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                     origMd5Checksum);
 
         treeIndexer.indexAll(baseAddress);

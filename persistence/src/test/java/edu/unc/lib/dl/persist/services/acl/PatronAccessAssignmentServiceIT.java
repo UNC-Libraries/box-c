@@ -38,13 +38,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -101,7 +101,6 @@ public class PatronAccessAssignmentServiceIT {
     private static final String USER_PRINC = "user";
     private static final String GRP_PRINC = "adminGroup";
 
-    private static final String origBodyString = "Original data";
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
 
@@ -189,8 +188,8 @@ public class PatronAccessAssignmentServiceIT {
         createCollectionInUnit(null);
         WorkObject work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, null, null);
+        URI contentUri = Files.createTempFile("test", ".txt").toUri();
+        FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
         BinaryObject binObj = fileObj.getOriginalFile();
 
         PID pid = binObj.getPid();

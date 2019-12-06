@@ -49,12 +49,34 @@ public class BinaryObject extends RepositoryObject {
     private Long filesize;
 
     private URI metadataUri;
+    private URI contentUri;
 
+    /**
+     * Constructor for internal binary
+     *
+     * @param pid
+     * @param driver
+     * @param repoObjFactory
+     */
     protected BinaryObject(PID pid, RepositoryObjectDriver driver,
+            RepositoryObjectFactory repoObjFactory) {
+        this(pid, null, driver, repoObjFactory);
+    }
+
+    /**
+     * Constructor for external binary
+     *
+     * @param pid
+     * @param contentUri
+     * @param driver
+     * @param repoObjFactory
+     */
+    protected BinaryObject(PID pid, URI contentUri, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);
 
         metadataUri = RepositoryPaths.getMetadataUri(pid);
+        this.contentUri = contentUri;
     }
 
     @Override
@@ -78,6 +100,13 @@ public class BinaryObject extends RepositoryObject {
      */
     public InputStream getBinaryStream() throws FedoraException {
         return driver.getBinaryStream(this);
+    }
+
+    /**
+     * @return the URI where the content for this binary is located
+     */
+    public URI getContentUri() {
+        return contentUri;
     }
 
     /**

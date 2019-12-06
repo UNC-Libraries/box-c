@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
@@ -31,11 +32,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -100,7 +101,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), "file.txt", "text/plain", null, null);
+        Path contentPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), BINARY_CONTENT, "UTF-8");
+        fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/file/" + filePid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -122,8 +125,14 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), null, "text/plain", null, null);
-        fileObj.addBinary(TECHNICAL_METADATA.getId(), new ByteArrayInputStream(content.getBytes()),
+        Path originalPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(originalPath.toFile(), BINARY_CONTENT, "UTF-8");
+        fileObj.addOriginalFile(originalPath.toUri(), null, "text/plain", null, null);
+
+        PID fitsPid = getTechnicalMetadataPid(filePid);
+        Path techmdPath = Files.createTempFile("fits", ".xml");
+        FileUtils.writeStringToFile(techmdPath.toFile(), content, "UTF-8");
+        fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "application/xml", null, null, null);
 
         // Verify original file content retrievable

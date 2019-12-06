@@ -29,12 +29,13 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.junit.After;
 import org.junit.Before;
@@ -555,8 +556,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .model);
         WorkObject work = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(work);
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, null, null,
+
+        Path originalPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(originalPath.toFile(), origBodyString, "UTF-8");
+        FileObject fileObj = work.addDataFile(originalPath.toUri(), origFilename, origMimetype, null, null,
                 new AclModelBuilder("Work")
                     .addNoneRole(PUBLIC_PRINC)
                     .model);
