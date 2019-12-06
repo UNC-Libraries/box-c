@@ -17,9 +17,10 @@ package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletResponse;
 
-import edu.unc.lib.dl.ui.service.LorisContentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-
-import java.io.IOException;
+import edu.unc.lib.dl.ui.service.LorisContentService;
 
 /**
  * Controller for requests related to accessing jp2's through loris. Applies cdr access control as a prerequisite to

@@ -56,7 +56,7 @@
     </bean>
 
     <!-- Beans -->
-    
+
     <bean id="gaTrackingID" class="java.lang.String">
         <constructor-arg value="${google.trackingId}" />
     </bean>
@@ -71,6 +71,10 @@
     
     <bean id="formsBaseUrl" class="java.lang.String">
         <constructor-arg value="${forms.base.url}" />
+    </bean>
+
+    <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
+        <property name="lorisPath" value="${loris.base.url}"/>
     </bean>
 
     <!-- Import controllers -->
