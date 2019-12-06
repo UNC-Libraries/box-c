@@ -19,6 +19,7 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -26,10 +27,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
-import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 
 /**
@@ -39,8 +38,7 @@ import edu.unc.lib.dl.ui.util.FileIOUtil;
 public class LorisContentService {
     private static final Logger LOG = LoggerFactory.getLogger(LorisContentService.class);
 
-    @Autowired
-    private ApplicationPathSettings applicationPathSettings;
+    private String lorisPath;
 
     public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response) {
         this.getMetadata(simplepid, datastream, outStream, response, 1);
@@ -50,9 +48,9 @@ public class LorisContentService {
             HttpServletResponse response, int retryServerError) {
         CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder("http://localhost:4080/loris/");
-        path.append(setImageViewerURL(simplepid));
-        path.append("/info.json");
+        StringBuilder path = new StringBuilder(getLorisPath());
+        path.append(RepositoryPaths.idToPath(simplepid, 4, 2))
+                .append("/" + simplepid).append(".jp2").append("/info.json");
 
         HttpGet method = new HttpGet(path.toString());
         try (CloseableHttpResponse httpResp = client.execute(method)) {
@@ -91,9 +89,11 @@ public class LorisContentService {
             int retryServerError) {
         CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder("http://localhost:4080/loris/");
+        StringBuilder path = new StringBuilder(getLorisPath());
 
-        path.append(setImageViewerURL(simplepid)).append("/" + region).append("/" + size)
+        path.append(RepositoryPaths.idToPath(simplepid, 4, 2)).append("/" + simplepid)
+                .append(".jp2")
+                .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
         HttpGet method = new HttpGet(path.toString());
@@ -127,25 +127,11 @@ public class LorisContentService {
         }
     }
 
-    private String setImageViewerURL(String uuid) {
-        String image_path = "";
-
-        if (uuid != null) {
-            image_path += uuid.substring(0, 2) + "/";
-            image_path += uuid.substring(2, 4) + "/";
-            image_path += uuid.substring(4, 6) + "/";
-            image_path += uuid.substring(6, 8) + "/";
-            image_path += uuid + ".jp2";
-        }
-
-        return image_path;
+    public void setLorisPath(String fullPath) {
+        this.lorisPath = fullPath;
     }
 
-    public ApplicationPathSettings getApplicationPathSettings() {
-        return applicationPathSettings;
-    }
-
-    public void setApplicationPathSettings(ApplicationPathSettings applicationPathSettings) {
-        this.applicationPathSettings = applicationPathSettings;
+    public String getLorisPath() {
+        return lorisPath;
     }
 }

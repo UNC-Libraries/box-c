@@ -63,8 +63,6 @@ public class SerializationUtilTest extends Assert {
     private ObjectMapper mapper;
 
     @Mock
-    private ApplicationPathSettings applicationPathSettings;
-    @Mock
     private SearchSettings searchSettings;
     @Mock
     private SolrSettings solrSettings;
@@ -76,8 +74,7 @@ public class SerializationUtilTest extends Assert {
     @Before
     public void init() {
         mapper = new ObjectMapper();
-        when(applicationPathSettings.getApiRecordPath()).thenReturn(API_PATH);
-        SerializationUtil.injectSettings(applicationPathSettings, searchSettings, solrSettings,
+        SerializationUtil.injectSettings(searchSettings, solrSettings,
                 globalPermissionEvaluator);
         when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
                 .thenReturn(Collections.emptySet());

@@ -28,19 +28,10 @@
         </property>
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
-    
+
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
-    </bean>
-
-    <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
-        <property name="fedoraPath"
-            value="${fcrepo.baseUrl}" />
-        <property name="solrPath"
-            value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
-        <property name="lorisPath" value="${loris.base.url}" />
-        <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -48,7 +39,6 @@
             value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings" />
         <property name="arguments">
             <list>
-                <ref bean="applicationPathSettings" />
                 <ref bean="searchSettings" />
                 <ref bean="solrSettings" />
                 <ref bean="globalPermissionEvaluator" />
@@ -64,10 +54,6 @@
                 <value>${services.api.url}</value>
             </list>
         </property>
-    </bean>
-    
-    <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
-        <property name="applicationPathSettings" ref="applicationPathSettings" />
     </bean>
     
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">

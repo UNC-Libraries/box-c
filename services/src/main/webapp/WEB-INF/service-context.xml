@@ -191,10 +191,6 @@
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
     </bean>
     
-    <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
-        <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
-    </bean>
-    
     <bean id="gaTrackingID" class="java.lang.String">
         <constructor-arg
             value="${google.trackingId}" />
@@ -371,7 +367,6 @@
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
         <property name="arguments">
             <list>
-                <ref bean="applicationPathSettings"/>
                 <ref bean="searchSettings"/>
                 <ref bean="solrSettings"/>
                 <ref bean="globalPermissionEvaluator" />
