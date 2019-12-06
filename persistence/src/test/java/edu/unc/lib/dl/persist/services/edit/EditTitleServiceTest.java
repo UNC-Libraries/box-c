@@ -22,10 +22,8 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.*;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
-import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -39,7 +37,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.UUID;
 

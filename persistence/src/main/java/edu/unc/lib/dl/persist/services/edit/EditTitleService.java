@@ -27,7 +27,6 @@ import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import io.dropwizard.metrics5.Timer;
-import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -39,7 +38,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
