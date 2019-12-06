@@ -118,9 +118,8 @@ public class EditTitleServiceTest {
         assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
 
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
-        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
-        assertTrue(assertTitleValue(updatedDoc, title));
+        Document updatedDoc = getUpdatedDescriptionDocument();
+        assertTrue(hasTitleValue(updatedDoc, title));
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -140,7 +139,7 @@ public class EditTitleServiceTest {
     @Test
     public void noModsTest() throws Exception {
         String title = "new title";
-        when(binaryObj.getBinaryStream()).thenReturn(null);
+        when(contentObj.getDescription()).thenReturn(null);
 
         service.editTitle(agent, pid, title);
 
@@ -149,9 +148,8 @@ public class EditTitleServiceTest {
         assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
 
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
-        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
-        assertTrue(assertTitleValue(updatedDoc, title));
+        Document updatedDoc = getUpdatedDescriptionDocument();
+        assertTrue(hasTitleValue(updatedDoc, title));
     }
 
     @Test
@@ -172,9 +170,8 @@ public class EditTitleServiceTest {
         assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
 
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
-        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
-        assertTrue(assertTitleValue(updatedDoc, title));
+        Document updatedDoc = getUpdatedDescriptionDocument();
+        assertTrue(hasTitleValue(updatedDoc, title));
     }
 
     @Test
@@ -194,13 +191,13 @@ public class EditTitleServiceTest {
         assertEquals(1, pids.size());
         assertTrue(pids.contains(pid));
 
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
-        Document updatedDoc = getUpdatedDescriptionDocument(inputStreamCaptor.getValue());
-        assertTrue(assertTitleValue(updatedDoc, title));
+
+        Document updatedDoc = getUpdatedDescriptionDocument();
+        assertTrue(hasTitleValue(updatedDoc, title));
         // check that first title is no longer in mods
-        assertFalse(assertTitleValue(updatedDoc, "original title"));
+        assertFalse(hasTitleValue(updatedDoc, "original title"));
         // check that second title is unchanged
-        assertTrue(assertTitleValue(updatedDoc, "a second title"));
+        assertTrue(hasTitleValue(updatedDoc, "a second title"));
     }
 
     private InputStream convertDocumentToStream(Document doc) throws IOException {
@@ -209,28 +206,13 @@ public class EditTitleServiceTest {
         return new ByteArrayInputStream(outStream.toByteArray());
     }
 
-    private Document getUpdatedDescriptionDocument(InputStream inputStream) {
-        Document document;
-        String modsString;
-
-        try {
-            modsString = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new ServiceException("Unable to covert mods stream to string for " + pid, e);
-        }
-
-        ByteArrayInputStream modsByteArray = new ByteArrayInputStream(modsString.getBytes());
+    private Document getUpdatedDescriptionDocument() throws IOException, JDOMException {
+        verify(contentObj).setDescription(inputStreamCaptor.capture());
         SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
-        try {
-            document = sb.build(modsByteArray);
-        } catch (IOException| JDOMException e) {
-            throw new ServiceException("Unable to build mods document for " + pid, e);
-        }
-
-        return document;
+        return sb.build(inputStreamCaptor.getValue());
     }
 
-    private boolean assertTitleValue(Document document, String expectedTitle) {
+    private boolean hasTitleValue(Document document, String expectedTitle) {
         return document.getRootElement()
                 .getChildren("titleInfo", MODS_V3_NS)
                 .stream()

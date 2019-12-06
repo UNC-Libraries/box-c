@@ -172,8 +172,8 @@ public class EditTitleService {
      * @param mods the mods record to be edited
      * @return true if mods has title
      */
-    private Boolean hasExistingTitle(Element mods) {
-        Boolean hasOldTitle;
+    private boolean hasExistingTitle(Element mods) {
+        boolean hasOldTitle;
         try {
             Element title = mods.getChild("titleInfo", MODS_V3_NS).getChild("title", MODS_V3_NS);
             hasOldTitle = true;
