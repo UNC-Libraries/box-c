@@ -88,18 +88,10 @@ public class EditTitleService {
             }
 
             if (modsStream != null) {
-                String modsString;
-                try {
-                    modsString = IOUtils.toString(modsStream, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new ServiceException("Unable to covert mods stream to string for " + pid, e);
-                }
-
-                ByteArrayInputStream modsByteArray = new ByteArrayInputStream(modsString.getBytes());
                 SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
                 Document document;
                 try {
-                    document = sb.build(modsByteArray);
+                    document = sb.build(modsStream);
                 } catch (IOException | JDOMException e) {
                     throw new ServiceException("Unable to build mods document for " + pid, e);
                 }
