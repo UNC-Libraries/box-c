@@ -34,7 +34,8 @@
 <c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
 
 <div class="full_record_top border-box-left-top">
-	<div class="contentarea">
+	<c:import url="fullRecord/navigationBar.jsp" />
+	<div class="contentarea-aggregate">
 		<div class="collinfo">
 			<div class="collinfo_metadata">
 				<div class="columns">

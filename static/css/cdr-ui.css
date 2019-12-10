@@ -590,6 +590,16 @@ p.no-search-results {
 .onecol, .content-wrap.full_record {
   width: 100%;
 }
+.onecol h2, .content-wrap.full_record h2 {
+  font-size: 20px;
+  margin: 20px;
+}
+.onecol .current_item, .content-wrap.full_record .current_item {
+  margin-left: 35px;
+}
+.onecol .relateditem p, .content-wrap.full_record .relateditem p {
+  font-size: 16px;
+}
 
 .contentarea {
   margin: 20px;
@@ -623,6 +633,10 @@ p.no-search-results {
 
 .full_record .contentarea {
   margin: 0;
+}
+.full_record .contentarea-aggregate .collinfo_metadata {
+  margin: 25px;
+  width: 100%;
 }
 
 #full_record_trail {

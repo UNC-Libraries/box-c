@@ -638,6 +638,22 @@ p.no-search-results {
 
 .onecol, .content-wrap.full_record {
   width: 100%;
+
+  h2 {
+    font-size: 20px;
+    margin: 20px;
+  }
+
+  .current_item {
+    margin-left: 35px;
+  }
+
+  .relateditem {
+    p {
+      font-size: 16px;
+    }
+
+  }
 }
 
 .contentarea {
@@ -677,6 +693,14 @@ p.no-search-results {
 .full_record {
   .contentarea {
     margin: 0;
+  }
+
+  .contentarea-aggregate {
+    .collinfo_metadata {
+      margin: 25px;
+      width: 100%;
+    }
+
   }
 }
 
