@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.net.URI;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -157,6 +158,9 @@ public class WorkObject extends ContentContainerObject {
 
         if (model == null) {
             model = ModelFactory.createDefaultModel();
+        }
+        if (filename == null) {
+            filename = StringUtils.substringAfterLast(storageUri.toString(), "/");
         }
         model.getResource("").addProperty(DC.title, filename);
 
