@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel.images;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.SimpleUuidGenerator;
 
 /**
  * Router which triggers the creation of thumbnails when applicable binaries
@@ -55,6 +56,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
+                .bean(SimpleUuidGenerator.class)
                 .multicast()
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
 
@@ -63,7 +65,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrBinaryPath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
                     + "${headers[CdrBinaryPath]} png 64 64 "
-                    + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-small"))
+                    + "${properties:services.tempDirectory}/${body}-small"))
             .bean(addSmallThumbnailProcessor);
 
         from("direct:large.thumbnail")
@@ -71,7 +73,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrBinaryPath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
                     + "${headers[CdrBinaryPath]} png 128 128 "
-                    + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-large"))
+                    + "${properties:services.tempDirectory}/${body}-large"))
             .bean(addLargeThumbProcessor);
 
         from("direct-vm:process.enhancement.imageAccessCopy")
@@ -81,7 +83,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
                         + "${headers[CdrBinaryPath]} jp2 "
-                        + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-access"))
+                        + "${properties:services.tempDirectory}/${body}-access"))
                 .bean(addAccessCopyProcessor);
     }
 }
