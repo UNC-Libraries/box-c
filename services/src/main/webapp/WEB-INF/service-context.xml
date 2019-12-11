@@ -123,9 +123,8 @@
         </property>
     </bean>
     
-    <bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
-        factory-method="newInstance" scope="prototype">
-        <constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
+    <bean id="schemaFactory" class="edu.unc.lib.dl.xml.SecureXMLFactory"
+        factory-method="createSchemaFactory" scope="prototype">
     </bean>
     
     <bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">

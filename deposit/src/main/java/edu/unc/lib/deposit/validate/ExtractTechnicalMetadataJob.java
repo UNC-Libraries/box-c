@@ -21,6 +21,8 @@ import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -54,7 +56,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -197,10 +198,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
             if (resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 failJob(null, "Failed to retrieve report for {0}, status {1} response {2}",
-                        objPid, resp.getStatusLine().getStatusCode(), IOUtils.toString(respBodyStream));
+                        objPid, resp.getStatusLine().getStatusCode(), IOUtils.toString(respBodyStream, UTF_8));
             }
 
-            return new SAXBuilder().build(respBodyStream);
+            return createSAXBuilder().build(respBodyStream);
         } catch (IOException | JDOMException e) {
             failJob(e, "Failed to stream report for {0} from server to report document",
                     objPid);

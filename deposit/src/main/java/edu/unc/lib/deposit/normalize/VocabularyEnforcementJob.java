@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.walkChildrenDepthFirst;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,20 +27,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -78,7 +77,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
         Bag deposit = model.getBag(getDepositPID().getURI());
         walkChildrenDepthFirst(deposit, resourcePIDs, true);
 
-        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+        SAXBuilder sb = createSAXBuilder();
 
         // Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
         PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));

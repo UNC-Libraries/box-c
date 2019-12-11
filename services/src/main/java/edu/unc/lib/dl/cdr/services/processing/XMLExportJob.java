@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
@@ -30,7 +31,6 @@ import java.util.zip.ZipOutputStream;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -129,7 +129,7 @@ public class XMLExportJob implements Runnable {
             if (mods != null) {
                 Document dsDoc;
                 try (InputStream modsStream = mods.getBinaryStream()) {
-                    dsDoc = new SAXBuilder().build(modsStream);
+                    dsDoc = createSAXBuilder().build(modsStream);
                 }
 
                 objectEl.addContent(SEPERATOR);
