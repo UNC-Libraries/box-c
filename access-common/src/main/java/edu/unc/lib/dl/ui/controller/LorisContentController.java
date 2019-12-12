@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -82,7 +82,7 @@ public class LorisContentController extends AbstractSolrSearchController {
      * @param request
      * @param response
      */
-    @RequestMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
+    @GetMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
     public void getRegion(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, @PathVariable("region") String region,
             @PathVariable("size") String size, @PathVariable("rotation") String rotation,
@@ -100,10 +100,10 @@ public class LorisContentController extends AbstractSolrSearchController {
                         id, region, size, rotation, quality, format, datastream,
                         response.getOutputStream(), response);
             } catch (IOException e) {
-                LOG.error("Error retrieving streaming JP2 content for " + id, e);
+                LOG.error("Error retrieving streaming JP2 content for {}", id, e);
             }
         } else {
-            LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+            LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             response.setStatus(HttpStatus.FORBIDDEN.value());
         }
     }
@@ -115,7 +115,7 @@ public class LorisContentController extends AbstractSolrSearchController {
      * @param request
      * @param response
      */
-    @RequestMapping("/jp2Proxy/{id}/{datastream}")
+    @GetMapping("/jp2Proxy/{id}/{datastream}")
     public void getMetadata(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, HttpServletResponse response) {
 
@@ -125,10 +125,10 @@ public class LorisContentController extends AbstractSolrSearchController {
             try {
                 lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
             } catch (IOException e) {
-                LOG.error("Error retrieving JP2 metadata content for " + id, e);
+                LOG.error("Error retrieving JP2 metadata content for {}", id, e);
             }
         } else {
-            LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+            LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             response.setStatus(HttpStatus.FORBIDDEN.value());
         }
     }
