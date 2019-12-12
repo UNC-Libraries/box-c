@@ -23,6 +23,7 @@ import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -49,8 +50,14 @@ public class LorisContentService {
 
     public LorisContentService() {
         multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(2000)
+                .build();
+
         httpClient = HttpClients.custom()
                 .setConnectionManager(multiThreadedHttpConnectionManager)
+                .setDefaultRequestConfig(requestConfig)
                 .build();
     }
 
@@ -92,6 +99,8 @@ public class LorisContentService {
             LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
         } catch (Exception e ) {
             LOG.error("Problem retrieving metadata for {}", path, e);
+        } finally {
+            method.releaseConnection();
         }
     }
 
@@ -134,6 +143,8 @@ public class LorisContentService {
             LOG.debug("User client aborted request to stream jp2 for {}", simplepid, e);
         } catch (Exception e) {
             LOG.error("Problem retrieving metadata for {}", path, e);
+        } finally {
+            method.releaseConnection();
         }
     }
 
