@@ -6,6 +6,7 @@ export default {
                 { text: 'can Access', value: 'canAccess' },
                 { text: 'can Ingest', value: 'canIngest' },
                 { text: 'can Describe', value: 'canDescribe' },
+                { text: 'can Process', value: 'canProcess' },
                 { text: 'can Manage', value: 'canManage' },
                 { text: 'Unit Owner', value: 'unitOwner' },
             ]
