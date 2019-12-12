@@ -344,7 +344,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         assertTrue("Manager should be able to modify unit",
                 aclService.hasAccess(adminUnit1.getPid(), principals, Permission.editDescription));
         assertFalse("Manager should not be able to create collections in unit",
-                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection));
+                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.destroy));
         assertTrue("Manager should be able to modify contained collection",
                 aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest));
         assertTrue("Manager should be able to modify all contained collections",
