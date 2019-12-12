@@ -124,7 +124,7 @@ public class LorisContentService {
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
                     streamJP2(simplepid, region, size, rotation, quality,
-                            format, datastream, outStream, response, retryServerError);
+                            format, datastream, outStream, response, retryServerError - 1);
                 } else {
                     LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
                     LOG.error("Path was: {}", method.getURI());
