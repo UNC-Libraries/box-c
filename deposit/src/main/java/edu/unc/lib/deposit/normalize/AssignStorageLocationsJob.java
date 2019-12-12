@@ -117,6 +117,7 @@ public class AssignStorageLocationsJob extends AbstractDepositJob {
         String providedStorageId = depositStatus.get(DepositField.storageLocation.name());
 
         if (providedStorageId == null) {
+            // Handle default storage location case
             StorageLocation loc = locationManager.getStorageLocation(destPid);
             if (loc == null) {
                 throw new UnknownStorageLocationException("Unable to determine storage location for destination "
@@ -125,12 +126,14 @@ public class AssignStorageLocationsJob extends AbstractDepositJob {
 
             return loc.getId();
         } else {
+            // Handle client provided storage location
             StorageLocation loc = locationManager.getStorageLocationById(providedStorageId);
             if (loc == null) {
                 throw new UnknownStorageLocationException("Unknown location " + providedStorageId
                         + " specified for deposit " + depositUUID);
             }
 
+            // Verify that the select storage location is allowed for the destination container
             List<StorageLocation> available = locationManager.listAvailableStorageLocations(destPid);
             if (!available.contains(loc)) {
                 failJob("Illegal storage location for destination",

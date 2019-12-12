@@ -56,6 +56,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
+                // Generate an random identifier to avoid derivative collisions
                 .bean(SimpleUuidGenerator.class)
                 .multicast()
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
@@ -81,6 +82,8 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .log(LoggingLevel.DEBUG, "Access copy triggered")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
+                // Generate an random identifier to avoid derivative collisions
+                .bean(SimpleUuidGenerator.class)
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
                         + "${headers[CdrBinaryPath]} jp2 "
                         + "${properties:services.tempDirectory}/${body}-access"))

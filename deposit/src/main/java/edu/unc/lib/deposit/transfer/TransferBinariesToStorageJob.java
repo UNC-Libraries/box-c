@@ -115,6 +115,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferOriginalFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        // add storageUri if doesn't already exist. It will exist in a resume scenario.
         if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri)) {
             PID originalPid = getOriginalFilePid(objPid);
             URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());

@@ -44,9 +44,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,7 +56,6 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
@@ -83,10 +80,6 @@ public class EnhancementRouterIT {
 
     private final static String FILE_CONTENT = "content";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private String baseBinaryPath;
-
     @Autowired
     private String baseAddress;
 
@@ -94,13 +87,7 @@ public class EnhancementRouterIT {
     private RepositoryObjectFactory repoObjectFactory;
 
     @Autowired
-    private RepositoryObjectLoader repoObjectLoader;
-
-    @Autowired
     private CamelContext cdrEnhancements;
-
-    @Autowired
-    private CamelContext cdrServiceImageEnhancements;
 
     @Produce(uri = "direct-vm:enhancements.fedora")
     private ProducerTemplate template;
@@ -130,8 +117,6 @@ public class EnhancementRouterIT {
         reset(solrIngestProcessor);
 
         TestHelper.setContentBase(baseAddress);
-
-        baseBinaryPath = tmpFolder.getRoot().getAbsolutePath();
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
         FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
@@ -177,7 +162,7 @@ public class EnhancementRouterIT {
                 .create();
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
-//        assertTrue("Processing message did not match expectations", result);
+        assertTrue("Processing message did not match expectations", result);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));

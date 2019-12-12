@@ -68,6 +68,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 etag = new EntityTag(etag).getValue();
             }
 
+            // For binaries, pull out location of content and immediately instantiate binary obj
             if (isBinary) {
                 String contentLoc = response.getHeaderValue("Content-Location");
                 URI contentUri = null;
@@ -77,6 +78,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 return instantiateBinaryObject(pid, contentUri, etag);
             }
 
+            // For non-binaries, retrieve the metadata body before instantiation
             URI metadataUri = pid.getRepositoryUri();
 
             Model model;
