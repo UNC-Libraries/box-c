@@ -26,7 +26,7 @@
     <base href="${url}" />
 	<c:import url="common/headElements.jsp" />
 	<title>
-		CDR Administration <c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
+		DCR Administration <c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
 	</title>
 </head>
 <body>
