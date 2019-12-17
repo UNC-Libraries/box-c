@@ -128,12 +128,12 @@ public class BinaryTransferServiceImplIT {
 
         try (MultiDestinationTransferSession session = transferService.getSession()) {
             StorageLocation dest1 = storageManager.getStorageLocationById("loc1");
-            URI destUri1 = session.transfer(binPid1, sourceFile1.toUri(), dest1);
+            URI destUri1 = session.forDestination(dest1).transfer(binPid1, sourceFile1.toUri());
             assertTrue(new File(destUri1).exists());
             assertFalse(sourceFile1.toFile().exists());
 
             StorageLocation dest2 = storageManager.getStorageLocationById("loc2");
-            URI destUri2 = session.transfer(binPid2, sourceFile2.toUri(), dest2);
+            URI destUri2 = session.forDestination(dest2).transfer(binPid2, sourceFile2.toUri());
             assertTrue(new File(destUri2).exists());
             assertTrue("Transfer from read only source should not delete source file",
                     sourceFile2.toFile().exists());

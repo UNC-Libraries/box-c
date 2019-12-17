@@ -30,33 +30,26 @@ import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 
 /**
- * Implementation of a session that can be used for single or multi destination binary transfers
+ * Implementation of a session that can be used for single destination binary transfers
  *
  * @author bbpennel
  *
  */
-public class BinaryTransferSessionImpl implements BinaryTransferSession, MultiDestinationTransferSession {
+public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
     private IngestSourceManager sourceManager;
     private StorageLocation storageLocation;
     private Map<String, BinaryTransferClient> clientCache;
 
     /**
-     * Constructor for session operating in multi destination mode
-     */
-    public BinaryTransferSessionImpl(IngestSourceManager sourceManager) {
-        clientCache = new HashMap<>();
-        this.sourceManager = sourceManager;
-    }
-
-    /**
-     * Constructor for session operating in single destination mode
+     * Constructor for session for a single destination
      *
      * @param storageLocation
      */
     public BinaryTransferSessionImpl(IngestSourceManager sourceManager, StorageLocation storageLocation) {
-        this(sourceManager);
         notNull(storageLocation, "Must provide a storage location");
+        clientCache = new HashMap<>();
+        this.sourceManager = sourceManager;
         this.storageLocation = storageLocation;
     }
 
@@ -67,45 +60,27 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession, MultiDe
 
     @Override
     public URI transfer(PID binPid, URI sourceFileUri) {
-        return transfer(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
-        return transferReplaceExisting(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri) {
-        return transferVersion(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transfer(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source, storageLocation);
         return client.transfer(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
+    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source, storageLocation);
         return client.transferReplaceExisting(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
+    public URI transferVersion(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source, storageLocation);
         return client.transferVersion(binPid, sourceFileUri);
     }
 
     private BinaryTransferClient getTransferClient(IngestSource source, StorageLocation dest) {
-        String key = source.getId() + "|" + dest.getId();
+        String key = source.getId();
         if (clientCache.containsKey(key)) {
             return clientCache.get(key);
         }
