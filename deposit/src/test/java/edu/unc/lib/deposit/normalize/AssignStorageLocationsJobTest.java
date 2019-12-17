@@ -131,6 +131,10 @@ public class AssignStorageLocationsJobTest extends AbstractNormalizationJobTest 
         assertTrue(postFileResc.hasProperty(Cdr.storageLocation, LOC_ID));
     }
 
+    /*
+     * Test that a object in a deposit without a resource type does not get the
+     * storage location added, since this has historically meant it was a binary
+     */
     @Test
     public void resourceWithNoTypeDeposit() throws Exception {
         Bag folderBag = addContainerObject(depBag, Cdr.Folder);
