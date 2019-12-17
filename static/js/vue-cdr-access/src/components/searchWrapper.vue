@@ -74,16 +74,11 @@
         },
 
         methods: {
-
-
             retrieveData() {
                 let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
                 let search_path = 'searchJson';
 
-                if (UUID_REGEX.test(this.$route.path)) {
-                    this.collection = this.$route.path.split('/')[2];
-                }
-
+                this.collection = UUID_REGEX.test(this.$route.path) ? this.$route.path.split('/')[2] : '';
                 if (this.collection !== '') {
                     search_path += `/${this.collection}`
                 }
