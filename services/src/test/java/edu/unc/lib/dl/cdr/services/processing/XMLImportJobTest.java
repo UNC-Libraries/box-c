@@ -52,6 +52,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 
 /**
  *

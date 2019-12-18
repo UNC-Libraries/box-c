@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.edit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,12 +26,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.tika.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -59,6 +59,8 @@ import edu.unc.lib.dl.validation.MetadataValidationException;
  */
 public class UpdateDescriptionServiceTest {
 
+    private static final String FILE_CONTENT = "Some content";
+
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -75,6 +77,8 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private ContentObject obj;
 
+    @Captor
+    private ArgumentCaptor<InputStream> inputStreamCaptor;
     @Captor
     private ArgumentCaptor<Collection<PID>> pidsCaptor;
 
@@ -95,7 +99,7 @@ public class UpdateDescriptionServiceTest {
                 .thenReturn("message_id");
 
         objPid = PIDs.get(UUID.randomUUID().toString());
-        modsStream = new FileInputStream(new File("src/test/resources/txt.txt"));
+        modsStream = new ByteArrayInputStream(FILE_CONTENT.getBytes());
 
         service = new UpdateDescriptionService();
         service.setAclService(aclService);
@@ -110,8 +114,10 @@ public class UpdateDescriptionServiceTest {
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
         Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(pids.size(), 1);
+        assertEquals(1, pids.size());
         assertTrue(pids.contains(objPid));
+
+        assertEquals(FILE_CONTENT, IOUtils.toString(inputStreamCaptor.getValue()));
     }
 
     @Test(expected = AccessRestrictionException.class)

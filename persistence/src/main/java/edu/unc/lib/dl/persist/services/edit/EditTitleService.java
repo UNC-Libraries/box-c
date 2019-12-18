@@ -15,6 +15,20 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaderSAX2Factory;
+import org.jdom2.output.XMLOutputter;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -24,23 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.validation.MODSValidator;
 import io.dropwizard.metrics5.Timer;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
-import org.jdom2.output.XMLOutputter;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 /**
  * Service that manages editing of the mods:title property on an object
@@ -51,9 +49,8 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 public class EditTitleService {
 
     private AccessControlService aclService;
-    private MODSValidator modsValidator;
-    private OperationsMessageSender operationsMessageSender;
     private RepositoryObjectLoader repoObjLoader;
+    private UpdateDescriptionService updateDescriptionService;
 
     private static final Timer timer = TimerFactory.createTimerForClass(EditTitleService.class);
 
@@ -87,12 +84,7 @@ public class EditTitleService {
 
             if (modsStream != null) {
                 SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
-                Document document;
-                try {
-                    document = sb.build(modsStream);
-                } catch (IOException | JDOMException e) {
-                    throw new ServiceException("Unable to build mods document for " + pid, e);
-                }
+                Document document = sb.build(modsStream);
                 Element rootEl = document.getRootElement();
 
                 if (hasExistingTitle(rootEl)) {
@@ -106,20 +98,16 @@ public class EditTitleService {
                 newMods = addTitleToMODS(document, title);
             }
 
-            InputStream newModsStream;
-            try {
-                ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-                new XMLOutputter().output(newMods, outStream);
-                newModsStream = new ByteArrayInputStream(outStream.toByteArray());
-            } catch (IOException e) {
-                throw new ServiceException("Unable to build new mods stream for " + pid, e);
-            }
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            new XMLOutputter().output(newMods, outStream);
+            InputStream newModsStream = new ByteArrayInputStream(outStream.toByteArray());
 
-            modsValidator.validate(newModsStream);
-            obj.setDescription(newModsStream);
+            updateDescriptionService.updateDescription(agent, pid, newModsStream);
+        } catch (JDOMException e) {
+            throw new ServiceException("Unable to build mods document for " + pid, e);
+        } catch (IOException e) {
+            throw new ServiceException("Unable to build new mods stream for " + pid, e);
         }
-
-        operationsMessageSender.sendUpdateDescriptionOperation(agent.getUsername(), Arrays.asList(pid));
     }
 
     /**
@@ -143,35 +131,16 @@ public class EditTitleService {
 
     /**
      *
-     * @param modsValidator
-     */
-    public void setModsValidator(MODSValidator modsValidator) {
-        this.modsValidator = modsValidator;
-    }
-
-    /**
-     *
-     * @param operationsMessageSender
-     */
-    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
-        this.operationsMessageSender = operationsMessageSender;
-    }
-
-    /**
-     *
      * @param mods the mods record to be edited
      * @return true if mods has title
      */
     private boolean hasExistingTitle(Element mods) {
-        boolean hasOldTitle;
         try {
-            Element title = mods.getChild("titleInfo", MODS_V3_NS).getChild("title", MODS_V3_NS);
-            hasOldTitle = true;
+            mods.getChild("titleInfo", MODS_V3_NS).getChild("title", MODS_V3_NS);
+            return true;
         } catch (NullPointerException e) {
-            hasOldTitle = false;
+            return false;
         }
-
-        return hasOldTitle;
     }
 
     /**
@@ -201,5 +170,12 @@ public class EditTitleService {
         oldTitle.setText(title);
 
         return doc;
+    }
+
+    /**
+     * @param updateDescriptionService the updateDescriptionService to set
+     */
+    public void setUpdateDescriptionService(UpdateDescriptionService updateDescriptionService) {
+        this.updateDescriptionService = updateDescriptionService;
     }
 }

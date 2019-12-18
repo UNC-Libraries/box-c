@@ -269,7 +269,7 @@
       <property name="operationsMessageSender" ref="operationsMessageSender" />
   </bean>
   
-  <bean id="updateDescriptionService" class="edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService" >
+  <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
       <property name="aclService" ref="aclService" />
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="operationsMessageSender" ref="operationsMessageSender" />

@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.edit;
+
+import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
+import static java.util.Arrays.asList;
+import static org.apache.commons.io.IOUtils.toByteArray;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-
-import org.apache.commons.io.IOUtils;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -29,6 +30,10 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
@@ -46,10 +51,15 @@ public class UpdateDescriptionService {
     private RepositoryObjectLoader repoObjLoader;
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
+    private BinaryTransferService transferService;
+    private StorageLocationManager locationManager;
+
+    private boolean validate;
 
     private static final Timer timer = TimerFactory.createTimerForClass(UpdateDescriptionService.class);
 
     public UpdateDescriptionService() {
+        validate = true;
     }
 
     /**
@@ -64,20 +74,54 @@ public class UpdateDescriptionService {
     public void updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
             throws MetadataValidationException, IOException {
 
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+        StorageLocation destLocation = locationManager.getStorageLocation(obj);
+
+        try (BinaryTransferSession transferSession = transferService.getSession(destLocation)) {
+            updateDescription(transferSession, agent, obj, modsStream);
+        }
+    }
+
+    /**
+     * Updates the MODS description of an object as part of the provided ongoing session.
+     *
+     * @param transferSession ongoing transfer session
+     * @param agent
+     * @param pid
+     * @param modsStream
+     * @throws MetadataValidationException
+     * @throws IOException
+     */
+    public void updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
+            PID pid, InputStream modsStream) throws MetadataValidationException, IOException {
+
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+
+        updateDescription(transferSession, agent, obj, modsStream);
+    }
+
+    private void updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
+            ContentObject obj, InputStream modsStream) throws IOException {
+
         try (Timer.Context context = timer.time()) {
             aclService.assertHasAccess("User does not have permissions to update description",
-                    pid, agent.getPrincipals(), Permission.editDescription);
+                    obj.getPid(), agent.getPrincipals(), Permission.editDescription);
 
             String username = agent.getUsername();
-            if (!modsStream.markSupported()) {
-                modsStream = new ByteArrayInputStream(IOUtils.toByteArray(modsStream));
+            if (validate) {
+                if (!modsStream.markSupported()) {
+                    modsStream = new ByteArrayInputStream(toByteArray(modsStream));
+                }
+                modsValidator.validate(modsStream);
             }
-            modsValidator.validate(modsStream);
 
-            ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+            // Transfer the description to its storage location
+            PID modsDsPid = getMdDescriptivePid(obj.getPid());
+            transferSession.transferReplaceExisting(modsDsPid, modsStream);
+
             obj.setDescription(modsStream);
 
-            operationsMessageSender.sendUpdateDescriptionOperation(username, Arrays.asList(pid));
+            operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
         }
     }
 
@@ -111,4 +155,24 @@ public class UpdateDescriptionService {
         this.modsValidator = modsValidator;
     }
 
+    /**
+     * @param transferService the transferService to set
+     */
+    public void setTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
+    }
+
+    /**
+     * @param locationManager the locationManager to set
+     */
+    public void setLocationManager(StorageLocationManager locationManager) {
+        this.locationManager = locationManager;
+    }
+
+    /**
+     * @param validate if set to true, then will perform validation of the description.
+     */
+    public void setValidate(boolean validate) {
+        this.validate = validate;
+    }
 }

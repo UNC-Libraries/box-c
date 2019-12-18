@@ -15,15 +15,24 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.*;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.validation.MODSValidator;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -36,17 +45,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import java.io.*;
-import java.util.Collection;
-import java.util.UUID;
-
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 
 public class EditTitleServiceTest {
 
@@ -63,12 +71,10 @@ public class EditTitleServiceTest {
     @Mock
     private BinaryObject binaryObj;
     @Mock
-    private OperationsMessageSender operationsMessageSender;
-    @Mock
-    private MODSValidator modsValidator;
+    private UpdateDescriptionService updateDescriptionService;
 
     @Captor
-    private ArgumentCaptor<Collection<PID>> pidsCaptor;
+    private ArgumentCaptor<PID> pidCaptor;
     @Captor
     private ArgumentCaptor<InputStream> inputStreamCaptor;
 
@@ -84,9 +90,8 @@ public class EditTitleServiceTest {
         service = new EditTitleService();
 
         service.setAclService(aclService);
-        service.setModsValidator(modsValidator);
+        service.setUpdateDescriptionService(updateDescriptionService);
         service.setRepoObjLoader(repoObjLoader);
-        service.setOperationsMessageSender(operationsMessageSender);
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getDescription()).thenReturn(binaryObj);
@@ -95,7 +100,6 @@ public class EditTitleServiceTest {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(contentObj);
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("agentname");
-        when(operationsMessageSender.sendUpdateDescriptionOperation(anyString(), any(Collection.class))).thenReturn("message_id");
 
         document = new Document();
     }
@@ -110,10 +114,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -140,10 +144,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -162,10 +166,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -183,10 +187,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
 
         Document updatedDoc = getUpdatedDescriptionDocument();
@@ -204,7 +208,6 @@ public class EditTitleServiceTest {
     }
 
     private Document getUpdatedDescriptionDocument() throws IOException, JDOMException {
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
         SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
         return sb.build(inputStreamCaptor.getValue());
     }
