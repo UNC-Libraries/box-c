@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router';
-import browseDisplay from '@/components/browseDisplay.vue'
-import moxios from "moxios";
+import browseDisplay from '@/components/browseDisplay.vue';
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);
@@ -9,10 +8,11 @@ const router = new VueRouter({
     routes: [
         {
             path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'browseDisplay'
+            name: 'displayRecords'
         }
     ]
 });
+
 let wrapper;
 const record_list = [
     {
@@ -39,119 +39,24 @@ const record_list = [
     }
 ];
 
-const response = {
-    container: {
-        added: "2017-12-20T13:44:46.119Z",
-        title: "Test Admin Unit",
-        type: "AdminUnit",
-        uri: "https://dcr.lib.unc.edu/record/73bc003c-9603-4cd9-8a65-93a22520ef6a",
-        id: "73bc003c-9603-4cd9-8a65-93a22520ef6a",
-        updated: "2017-12-20T13:44:46.264Z",
-    },
-    metadata: [...record_list, ...record_list, ...record_list, ...record_list], // Creates 8 returned records
-    resultCount: 8
-};
-
-// Mock setting of methods for browseOptionDisplayUtils.
-// They're looking for elements not controlled by Vue
-const setBrowseEvents = jest.fn();
-const setButtonColor = jest.fn();
-const displayBrowseButtons = jest.fn();
+let records = [...record_list, ...record_list, ...record_list, ...record_list]; // Creates 8 returned records
 
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
-        moxios.install();
-
         wrapper = shallowMount(browseDisplay, {
             localVue,
             router,
-            methods: {setBrowseEvents, setButtonColor, displayBrowseButtons}
+            propsData: {
+                recordList: records
+            }
         });
 
         wrapper.setData({
             column_size: 'is-3',
-            container_name: '',
-            container_metadata: {},
-            is_admin_unit: false,
-            is_collection: true,
-            is_folder: false,
-            record_count: 0,
-            record_list: [],
-            uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
         });
-    });
-
-    it("retrieves data", (done) => {
-        wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&types=Work`, {
-            status: 200,
-            response: JSON.stringify(response)
-        });
-
-        moxios.wait(() => {
-            let request = moxios.requests.mostRecent();
-            expect(wrapper.vm.record_count).toEqual(response.resultCount);
-            expect(wrapper.vm.record_list).toEqual(response.metadata);
-            expect(wrapper.vm.container_name).toEqual(response.container.title);
-            expect(wrapper.vm.container_metadata).toEqual(response.container);
-            done();
-        });
-    });
-
-    it("uses the correct search method for gallery browse", () => {
-        wrapper.setData({
-            browse_type: 'gallery-display'
-        });
-        wrapper.vm.retrieveData();
-        expect(wrapper.vm.search_method).toEqual('searchJson');
-    });
-
-    it("uses the correct search method for structure browse", () => {
-        wrapper.setData({
-            browse_type: 'structure-display'
-        });
-        wrapper.vm.retrieveData();
-        expect(wrapper.vm.search_method).toEqual('listJson');
-    });
-
-    it("uses the correct parameters to find admin set children", () => {
-        wrapper.setData({
-            is_admin_unit: true
-        });
-
-        wrapper.vm.updateParams();
-        expect(wrapper.vm.search_method).toEqual('listJson');
-
-        wrapper.vm.updateUrl();
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
-    });
-
-
-    it("updates the url when work type changes", () => {
-        wrapper.setData({
-            is_admin_unit: false,
-            is_collection: true
-        });
-
-        wrapper.vm.updateParams();
-        wrapper.vm.updateUrl();
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
-    });
-
-    it("prints out text for type of children", () => {
-        wrapper.setData({
-            container_metadata: response.container
-        });
-
-        expect(wrapper.find('.spacing p').text()).toContain('collection');
     });
 
     it("chunks records into groups", () => {
-        wrapper.setData({
-            container_metadata: response.container,
-            record_list: response.metadata
-        });
-
         let four_per_row = [...record_list, ...record_list];
         expect(wrapper.vm.chunkedRecords).toEqual([four_per_row, four_per_row]);
 
@@ -159,9 +64,9 @@ describe('browseDisplay.vue', () => {
             column_size: 'is-4'
         });
         let three_per_row = [
-            wrapper.vm.record_list.slice(0, 3),
-            wrapper.vm.record_list.slice(3, 6),
-            wrapper.vm.record_list.slice(6)];
+            wrapper.vm.recordList.slice(0, 3),
+            wrapper.vm.recordList.slice(3, 6),
+            wrapper.vm.recordList.slice(6)];
         expect(wrapper.vm.chunkedRecords).toEqual(three_per_row);
 
         wrapper.setData({
@@ -169,9 +74,5 @@ describe('browseDisplay.vue', () => {
         });
         let two_per_row = [record_list, record_list, record_list, record_list];
         expect(wrapper.vm.chunkedRecords).toEqual(two_per_row);
-    });
-
-    afterEach(() => {
-        moxios.uninstall();
     });
 });

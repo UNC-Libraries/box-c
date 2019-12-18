@@ -274,7 +274,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
-  font-size: 16px;
+  font-size: 24px;
 
   h2 {
     color: black;
@@ -357,9 +357,14 @@ label.checkbox {
 .search-results-border {
   border-bottom: $border-style;
   border-left: $border-style;
-  padding-bottom: 0;
   padding-left: 15px;
-  padding-right: 25px
+  padding-right: 0;
+}
+
+p.spacing {
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+  text-align: center;
 }
 
 .bottomline {
@@ -391,18 +396,19 @@ label.checkbox {
   padding: 25px;
 }
 
-.searchitem_container_count {
-  background-color: $unc-blue;
-  border: 1px solid $unc-blue;
-  border-radius: 5px;
-  color: white;
-  line-height: 18px;
-  margin-bottom: 4px;
-  padding: 3px 8px;
-  white-space: nowrap;
-  width: 100%;
+#list-records-display {
+  .searchitem_container_count {
+    background-color: $unc-blue;
+    border: 1px solid $unc-blue;
+    border-radius: 5px;
+    color: white;
+    line-height: 18px;
+    margin-bottom: 4px;
+    padding: 3px 8px;
+    white-space: nowrap;
+    width: 100%;
+  }
 }
-
 
 .iteminfo {
   float: none;
@@ -445,22 +451,24 @@ p.no-search-results {
 }
 
 /* Collection Page */
-
 .browse-header {
-  background-color: $light-gray;
-  color: darkblue;
+  background-color: #EBEBEB;
+  box-shadow: inset 0 10px 5px -5px rgba(0, 0, 0, .5);
+  color: #3D4D5B;
   display: inline-flex !important;
   margin: 0;
+  padding-top: .75rem;
   width: 100%;
 
   h2 {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: bold;
     margin: 15px;
 
     span {
       color: gray;
       font-size: 20px;
+      font-weight: normal;
       margin-left: 10px;
     }
   }
@@ -468,8 +476,15 @@ p.no-search-results {
   p {
     color: black;
     font-size: 18px;
+    line-height: 22px;
     margin-left: 15px;
   }
+}
+
+
+
+.browse-header.browse-header-bottom {
+  padding-bottom: 25px;
 }
 
 .search-query-text.collection-list {
@@ -498,18 +513,16 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  justify-content: flex-end;
-  margin: 15px 25px 0 25px;
-  padding-right: 45px;
+  margin: 5px 25px 10px 0;
   width: 100%;
 
   p, a {
     font-size: 20px;
   }
 
-  a {
+  div {
     &:hover {
-      opacity: .9;
+      cursor: grab;
       text-decoration: none;
       z-index: 100;
 
@@ -549,16 +562,6 @@ p.no-search-results {
     }
   }
 
-  .button.is-light {
-    border: 1px solid darkgray;
-  }
-
-  .button.is-selected {
-    background-color: slategray;
-    border: 1px solid black;
-    color: whitesmoke;
-  }
-
   button {
     margin-left: 10px;
     margin-top: -10px;
@@ -577,6 +580,11 @@ p.no-search-results {
     text-align: center;
     width: 25px;
   }
+}
+
+.collection-info-bottom {
+  padding: 5px;
+  margin: -12px 0 0 0;
 }
 
 /* Work page */
@@ -639,21 +647,25 @@ p.no-search-results {
     padding-top: 25px;
     width: 85%;
   }
+}
 
-  .thumbnail {
-    .thumbnail-placeholder {
-      position: relative;
-    }
+.full_record {
+  .contentarea {
+    margin: 0;
+  }
+
+  h2 {
+    color: #3C4C5A;
   }
 }
 
 #full_record_trail {
-  border: 1px solid $light-gray;
-  background-color: $light-gray;
+  border: 1px solid #E0E0E0;
+  background-color: #E0E0E0;
   border-radius: 5px;
-  font-size: 16px;
-  margin-left: 0;
-  padding: 12px;
+  font-size: 18px;
+  margin: 0 auto 25px auto;
+  padding: 20px;
   text-indent: 0;
   width: 100%;
 }
@@ -679,6 +691,8 @@ table.dataTable {
 }
 
 .collinfo_metadata {
+  margin: 20px;
+
   h2 {
     font-size: 24px;
   }
@@ -764,6 +778,10 @@ table.dataTable {
   #child-files_wrapper {
     overflow-x: scroll;
   }
+
+  .collection-info-bottom {
+    margin: 0 25px 25px 25px;
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -796,6 +814,10 @@ table.dataTable {
     margin-top: 25px;
   }
 
+  .collinfo_metadata {
+    margin: auto 0;
+  }
+
   .dataTables_wrapper {
     .dataTables_filter {
       float: left !important;
@@ -817,6 +839,12 @@ table.dataTable {
     a {
       float: none;
       width: 100%;
+    }
+
+    h2 {
+      .fa {
+        display: none;
+      }
     }
   }
 
@@ -845,5 +873,10 @@ table.dataTable {
 
   .facets {
     word-wrap: break-word;
+  }
+
+  .collection-info-bottom {
+    margin: 0;
+    word-break: break-all;
   }
 }

@@ -130,7 +130,7 @@ public class DatastreamUtil {
      *         is not available.
      */
     public static String getThumbnailUrl(BriefObjectMetadata metadata, String size) {
-        String selectedSize = size == null ? "small" : size;
+        String selectedSize = size == null ? "large" : size;
         selectedSize = selectedSize.toLowerCase().trim();
         String derivativeName = "thumbnail_" + selectedSize;
 

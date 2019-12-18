@@ -1,20 +1,20 @@
 <template>
-    <div class="columns pagination">
+    <div class="columns pagination is-mobile">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
-                <li v-else class="no-link">&lt;&lt;</li>
-                <li v-if="currentPage >= pageLimit - 1"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
+                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
+                <li v-else class="no-link start">&lt;&lt;</li>
+                <li id="first-page-link" v-if="currentPage >= pageLimit - 1 && totalPageCount > pageLimit"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
                                                            :class="{ current: currentPage === 1 }">1</a> ...</li>
                 <li v-for="(page, index) in currentPageList">
                     <a v-if="index < pageLimit" @click.prevent="pageUrl(page)" href="#" class="page-number" :class="{ current: currentPage === page }">{{ page }}</a>
                 </li>
-                <li v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
+                <li id="last-page-link" v-if="totalPageCount > pageLimit && (currentPage < totalPageCount - pageOffset)">
                     ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
                            :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
                 </li>
-                <li v-if="currentPage < totalPageCount"><a class="back-next" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
-                <li v-else class="no-link">&gt;&gt;</li>
+                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
+                <li v-else class="no-link end">&gt;&gt;</li>
             </ul>
         </div>
     </div>
@@ -29,8 +29,8 @@
         name: 'pagination',
 
         props: {
-            numberOfRecords: Number,
-            pageBaseUrl: String
+            browseType: String,
+            numberOfRecords: Number
         },
 
         mixins: [routeUtils],
@@ -46,11 +46,15 @@
 
         computed: {
             currentPage() {
-               if (isEmpty(this.$route.query) || parseInt(this.$route.query.start) === 0) {
-                   return 1;
-               }
+                let query = this.$route.query;
+                let display_type = (this.$route.name === 'searchRecords') ? query['a.setStartRow'] : query.start;
 
-               return Math.ceil(parseInt(this.$route.query.start) / this.rows_per_page) + 1;
+                if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
+                    (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
+                    return 1;
+                }
+
+                return Math.ceil(parseInt(display_type) / parseInt(this.rows_per_page)) + 1;
             },
 
             currentPageList() {
@@ -98,7 +102,19 @@
                     rows: this.rows_per_page + ''
                 };
 
-                this.$router.push({ name: 'browseDisplay', query: this.urlParams(update_params) });
+                if (this.browseType === 'display') {
+                    this.$router.push({ name: 'displayRecords', query: this.urlParams({
+                            start: start_record,
+                            rows: this.rows_per_page + ''
+                        })
+                    });
+                } else {
+                    this.$router.push({ name: 'searchRecords', query: this.urlParams(update_params = {
+                            'a.setStartRow': start_record,
+                            rows: this.rows_per_page + ''
+                        }, true)
+                    });
+                }
             }
         },
 
@@ -114,7 +130,10 @@
 
 <style scoped lang="scss">
     .pagination {
+        display: inline-block;
         margin-bottom: 1px;
+        margin-top: 20px;
+        width: 100%;
 
         ul {
             display: inline;

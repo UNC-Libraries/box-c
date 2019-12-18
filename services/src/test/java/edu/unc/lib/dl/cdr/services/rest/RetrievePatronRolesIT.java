@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
@@ -618,9 +619,14 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
 
     private Calendar getNextYear() {
         Date dt = new Date();
-        Calendar c = Calendar.getInstance();
+
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         c.setTime(dt);
         c.add(Calendar.DATE, 365);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
         return c;
     }
 }

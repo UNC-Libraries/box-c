@@ -61,14 +61,6 @@ import edu.unc.lib.dl.rdf.CdrAcl;
  */
 public enum UserRole {
     list("list", new Permission[] {}),
-    metadataPatron("metadata-patron", new Permission[] {
-            Permission.viewMetadata}),
-    accessCopiesPatron("access-copies-patron", new Permission[] {
-            Permission.viewMetadata, Permission.viewAccessCopies}),
-    patron("patron", new Permission[] {
-            Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-    canView("canView", new Permission[] {
-            Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
     // Patron roles
     none("none", false),
     canDiscover("canDiscover", false),
@@ -81,9 +73,11 @@ public enum UserRole {
             ingest),
     canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             editDescription, bulkUpdateDescription),
+    canProcess("canProcess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            editDescription, bulkUpdateDescription, move, markForDeletion, changePatronAccess),
     canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-            changePatronAccess, editResourceType),
+            changePatronAccess, editResourceType, createCollection),
     unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),

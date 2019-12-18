@@ -144,7 +144,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		
 		/* Evaluating if retaining feature
-		if ($.inArray('editAccessControl', metadata.permissions) != -1
+		if ($.inArray('changePatronAccess', metadata.permissions) != -1
 				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
 			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
 		}
@@ -190,9 +190,22 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Set/Update permission actions
-		items["seppermission"] = "";
-		items["patronPermissions"] = {name : 'Patron permissions'};
-		items["staffPermissions"] = {name : 'Staff permissions'};
+		var canChangePatronAccess = $.inArray('changePatronAccess', metadata.permissions) !== -1;
+		var canAssignStaffRoles = $.inArray('assignStaffRoles', metadata.permissions) !== -1;
+		var isAdminUnit = metadata.type === 'AdminUnit';
+
+		if (canAssignStaffRoles || (!isAdminUnit && canChangePatronAccess)) {
+			items["seppermission"] = "";
+		}
+
+		if (!isAdminUnit && canChangePatronAccess) {
+			items["patronPermissions"] = {name : 'Patron permissions'};
+		}
+
+		if (canAssignStaffRoles) {
+			items["staffPermissions"] = {name : 'Staff permissions'};
+		}
+
 
 		// Get data object for vue permissions editor
 		var perms_editor_data = perms_editor.$children[0].$children[0].$data;

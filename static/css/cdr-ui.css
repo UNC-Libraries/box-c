@@ -263,7 +263,7 @@ footer a:hover, footer a:active {
 **/
 .search-query-text {
   margin: 40px 20px 40px 25px;
-  font-size: 16px;
+  font-size: 24px;
 }
 .search-query-text h2 {
   color: black;
@@ -340,9 +340,14 @@ label.checkbox {
 .search-results-border {
   border-bottom: 1px solid #E1E1E1;
   border-left: 1px solid #E1E1E1;
-  padding-bottom: 0;
   padding-left: 15px;
-  padding-right: 25px;
+  padding-right: 0;
+}
+
+p.spacing {
+  font-size: 1.2rem;
+  margin-bottom: 50px;
+  text-align: center;
 }
 
 .bottomline {
@@ -371,7 +376,7 @@ label.checkbox {
   padding: 25px;
 }
 
-.searchitem_container_count {
+#list-records-display .searchitem_container_count {
   background-color: #4B9CD3;
   border: 1px solid #4B9CD3;
   border-radius: 5px;
@@ -423,26 +428,34 @@ p.no-search-results {
 
 /* Collection Page */
 .browse-header {
-  background-color: #E1E1E1;
-  color: darkblue;
+  background-color: #EBEBEB;
+  box-shadow: inset 0 10px 5px -5px rgba(0, 0, 0, 0.5);
+  color: #3D4D5B;
   display: inline-flex !important;
   margin: 0;
+  padding-top: .75rem;
   width: 100%;
 }
 .browse-header h2 {
-  font-size: 24px;
+  font-size: 36px;
   font-weight: bold;
   margin: 15px;
 }
 .browse-header h2 span {
   color: gray;
   font-size: 20px;
+  font-weight: normal;
   margin-left: 10px;
 }
 .browse-header p {
   color: black;
   font-size: 18px;
+  line-height: 22px;
   margin-left: 15px;
+}
+
+.browse-header.browse-header-bottom {
+  padding-bottom: 25px;
 }
 
 .search-query-text.collection-list {
@@ -467,24 +480,22 @@ p.no-search-results {
 /* Full record page */
 .display-wrapper {
   display: inline-flex;
-  justify-content: flex-end;
-  margin: 15px 25px 0 25px;
-  padding-right: 45px;
+  margin: 5px 25px 10px 0;
   width: 100%;
 }
 .display-wrapper p, .display-wrapper a {
   font-size: 20px;
 }
-.display-wrapper a:hover {
-  opacity: .9;
+.display-wrapper div:hover {
+  cursor: grab;
   text-decoration: none;
   z-index: 100;
 }
-.display-wrapper a:hover span.browse-tip, .display-wrapper a:hover .arrow {
+.display-wrapper div:hover span.browse-tip, .display-wrapper div:hover .arrow {
   display: block;
   opacity: 1;
 }
-.display-wrapper a:hover span.browse-tip {
+.display-wrapper div:hover span.browse-tip {
   background-color: white;
   border: 1px solid darkslategray;
   border-radius: 5px;
@@ -495,10 +506,10 @@ p.no-search-results {
   text-align: left;
   width: 240px;
 }
-.display-wrapper a:hover span.browse-tip p {
+.display-wrapper div:hover span.browse-tip p {
   font-size: 14px;
 }
-.display-wrapper a .arrow {
+.display-wrapper div .arrow {
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-bottom: 10px solid darkslategray;
@@ -506,16 +517,8 @@ p.no-search-results {
   margin: 7px 2px 0 2px;
   width: 0;
 }
-.display-wrapper a span.browse-tip, .display-wrapper a .arrow {
+.display-wrapper div span.browse-tip, .display-wrapper div .arrow {
   display: none;
-}
-.display-wrapper .button.is-light {
-  border: 1px solid darkgray;
-}
-.display-wrapper .button.is-selected {
-  background-color: slategray;
-  border: 1px solid black;
-  color: whitesmoke;
 }
 .display-wrapper button {
   margin-left: 10px;
@@ -533,6 +536,11 @@ p.no-search-results {
   padding: 4px 5px;
   text-align: center;
   width: 25px;
+}
+
+.collection-info-bottom {
+  padding: 5px;
+  margin: -12px 0 0 0;
 }
 
 /* Work page */
@@ -590,17 +598,21 @@ p.no-search-results {
   padding-top: 25px;
   width: 85%;
 }
-.full_record_top .thumbnail .thumbnail-placeholder {
-  position: relative;
+
+.full_record .contentarea {
+  margin: 0;
+}
+.full_record h2 {
+  color: #3C4C5A;
 }
 
 #full_record_trail {
-  border: 1px solid #E1E1E1;
-  background-color: #E1E1E1;
+  border: 1px solid #E0E0E0;
+  background-color: #E0E0E0;
   border-radius: 5px;
-  font-size: 16px;
-  margin-left: 0;
-  padding: 12px;
+  font-size: 18px;
+  margin: 0 auto 25px auto;
+  padding: 20px;
   text-indent: 0;
   width: 100%;
 }
@@ -620,6 +632,9 @@ table.dataTable tbody tr.odd {
   background-color: #E1E8FF;
 }
 
+.collinfo_metadata {
+  margin: 20px;
+}
 .collinfo_metadata h2 {
   font-size: 24px;
 }
@@ -691,6 +706,10 @@ table.dataTable tbody tr.odd {
   #child-files_wrapper {
     overflow-x: scroll;
   }
+
+  .collection-info-bottom {
+    margin: 0 25px 25px 25px;
+  }
 }
 @media screen and (max-width: 768px) {
   .facet-padding {
@@ -720,6 +739,10 @@ table.dataTable tbody tr.odd {
     margin-top: 25px;
   }
 
+  .collinfo_metadata {
+    margin: auto 0;
+  }
+
   .dataTables_wrapper .dataTables_filter {
     float: left !important;
   }
@@ -737,6 +760,9 @@ table.dataTable tbody tr.odd {
   .contentarea a {
     float: none;
     width: 100%;
+  }
+  .contentarea h2 .fa {
+    display: none;
   }
 
   .iteminfo {
@@ -761,6 +787,11 @@ table.dataTable tbody tr.odd {
 
   .facets {
     word-wrap: break-word;
+  }
+
+  .collection-info-bottom {
+    margin: 0;
+    word-break: break-all;
   }
 }
 

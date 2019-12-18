@@ -22,18 +22,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
 <div>
-<div class="search-query-text contentarea">
-	<h2>${pageSubtitle}</h2>
-	<div class="results_header_hierarchy_path">
-		<c:if test="${not empty resultResponse.selectedContainer}">
-			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
-			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="linkLast">true</c:param>
-				<c:param name="ignoreSearchState">true</c:param>
-			</c:import>
-		</c:if>
-	</div>
-</div>
 <c:set var="searchState" scope="request" value="${resultResponse.searchState}"/>
 <c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 <c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>

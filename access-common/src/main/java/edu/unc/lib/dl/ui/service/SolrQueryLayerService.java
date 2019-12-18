@@ -268,12 +268,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         // Retrieve search results
         SearchResultResponse resultResponse = getSearchResults(searchRequest);
 
-        if (resultResponse.getResultCount() == 0 && searchRequest.isApplyCutoffs()
-                && searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-            ((CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name())).setCutoff(null);
-            resultResponse = getSearchResults(searchRequest);
-        }
-
         resultResponse.setSelectedContainer(selectedContainer);
 
         searchRequest.setSearchState(originalState);

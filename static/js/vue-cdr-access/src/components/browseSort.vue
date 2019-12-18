@@ -18,6 +18,10 @@
 
         mixins: [routeUtils],
 
+        props: {
+            browseType: String
+        },
+
         data() {
             return {
                 sort_order: ''
@@ -30,7 +34,11 @@
                     this.sort_order = 'title,normal';
                 }
 
-                this.$router.push({ name: 'browseDisplay', query:  this.urlParams({ sort: this.sort_order }) });
+                let is_search_sort = this.browseType === 'search';
+                this.$router.push({
+                    name: this.$route.name,
+                    query: this.urlParams({ sort: this.sort_order }, is_search_sort)
+                });
                 this.sort_order = '';
             }
         }
@@ -38,7 +46,24 @@
 </script>
 
 <style scoped lang="scss">
+    .select:not(.is-multiple):not(.is-loading)::after {
+        top: 60% !important;
+    }
+
     .browse-sort {
+        float: right;
         margin-top: 15px;
+
+        select {
+            height: 2.65em;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .browse-sort {
+            float: left;
+            margin-bottom: 0;
+            margin-top: 0;
+        }
     }
 </style>

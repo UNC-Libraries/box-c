@@ -44,8 +44,19 @@
 <div class="contentarea">
     <div id="is-collection" class="columns browse-header">
         <div class="column is-12">
-            <h2><c:out value="${briefObject.title}"/></h2>
-            <p><strong>Date Deposited:</strong> <c:out value="${briefObject.dateCreated}"/></p>
+            <c:import url="fullRecord/navigationBar.jsp" />
+            <h2><i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
+            <c:if test="${not empty briefObject.dateAdded}">
+                <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
+            </c:if>
+            <p><strong>Finding Aid: </strong>
+                <c:choose>
+                    <c:when test="${empty briefObject.title}">
+                        <a href="<c:out value="${briefObject.title}"/>"><c:out value="${briefObject.title}"/></a>
+                    </c:when>
+                    <c:otherwise>Doesn’t have a finding aid</c:otherwise>
+                </c:choose>
+            </p>
             <c:choose>
                 <c:when test="${not empty briefObject.abstractText}">
                     <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
@@ -66,5 +77,8 @@
             </c:choose>
         </div>
     </div>
-    <c:import url="fullRecord/browseView.jsp"/>
+    <script type="text/javascript" src="/static/js/public/abstractDisplay"></script>
+    <div class="collection-info-bottom">
+        <c:import url="fullRecord/browseView.jsp"/>
+    </div>
 </div>

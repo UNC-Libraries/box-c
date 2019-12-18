@@ -101,6 +101,12 @@ public class CdrAcl {
     public static final Property canManage = createProperty(
             "http://cdr.unc.edu/definitions/acl#canManage" );
 
+    /** Grants the specified group or user processor permissions. Applies to cdr:Collection
+     * and cdr:AdminUnit objects. Repeatable.
+     */
+    public static final Property canProcess = createProperty(
+            "http://cdr.unc.edu/definitions/acl#canProcess" );
+
     /** A restriction on patron access which expires after date given. When in effect,
      *  the embargo reduces patron access to only being able to view metadata for
      *  the object and all objects contained within it. Applies to cdr:FileObject,

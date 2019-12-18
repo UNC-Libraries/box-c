@@ -69,6 +69,15 @@
     }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+    .meta-modal {
+        float: right;
+    }
+
+    @media screen and (max-width: 768px) {
+        .meta-modal {
+            float: none;
+        }
+    }
 /* See cdr_vue_modal_styles.scss. Modal styles moved there so they can be used across Vue applications */
 </style>

@@ -22,10 +22,6 @@ package edu.unc.lib.dl.acl.util;
  *
  */
 public enum Permission {
-    // TODO Remove old
-    addRemoveContents, editAccessControl, moveToTrash, publish,
-    purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
-    // current acl permissions
     viewMetadata,
     viewAccessCopies,
     viewOriginal,

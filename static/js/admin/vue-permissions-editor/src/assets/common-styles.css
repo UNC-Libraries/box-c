@@ -46,7 +46,8 @@
 }
 
 #modal-permissions-editor button {
-    margin-left: 15px;
+    border: none;
+    padding: 5px 10px;
 }
 
 #modal-permissions-editor button:hover {
@@ -150,6 +151,49 @@
 #modal-permissions-editor .role-description {
     display: block;
     margin: 10px auto;
+}
+
+#modal-permissions-editor ul {
+    border-top: 1px solid lightgray;
+    list-style-type: none;
+    margin-top: 25px;
+    padding-top: 20px;
+    text-align: center;
+}
+
+#modal-permissions-editor ul li {
+    display: inline;
+    margin-left: 0;
+}
+
+#modal-permissions-editor ul li button {
+    font-size: 14px;
+}
+
+#modal-permissions-editor button {
+    margin-left: 15px;
+}
+
+#modal-permissions-editor .btn-disabled {
+    opacity: .3;
+    cursor: not-allowed;
+}
+
+#modal-permissions-editor .cancel {
+    background-color: gray;
+}
+
+#modal-permissions-editor .message {
+    height: 17px;
+    margin-top: 15px;
+}
+
+#modal-permissions-editor .is-disabled {
+    opacity: .5
+}
+
+#modal-permissions-editor .is-disabled:hover {
+    cursor: not-allowed;
 }
 
 .slide-enter-active, .slide-leave-active {

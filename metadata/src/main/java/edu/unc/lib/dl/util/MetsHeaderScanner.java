@@ -38,9 +38,9 @@ import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  * An quick SAX extractor of METS header information.
- * 
+ *
  * @author count0
- * 
+ *
  */
 public class MetsHeaderScanner extends DefaultHandler {
     Logger log = LoggerFactory.getLogger(MetsHeaderScanner.class);
@@ -52,7 +52,7 @@ public class MetsHeaderScanner extends DefaultHandler {
     String profile = null;
     String type = null;
     String id = null;
-    List<String> names = new ArrayList<String>();
+    List<String> names = new ArrayList<>();
     StringBuilder nameBuffer = null;
 
     public List<String> getNames() {
@@ -178,6 +178,7 @@ public class MetsHeaderScanner extends DefaultHandler {
             }
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             SAXParser saxParser = null;
             saxParser = factory.newSAXParser();
             saxParser.parse(toParse, this);
