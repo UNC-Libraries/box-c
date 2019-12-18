@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.util.DerivativeService.isDerivative;
 
 import java.io.FileNotFoundException;
@@ -98,7 +98,7 @@ public class DatastreamController {
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
             HttpServletRequest request) {
-        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.equals(datastream))) {
+        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.getId().equals(datastream))) {
             return;
         }
         analyticsTracker.trackEvent(request, "download", pid, principals);

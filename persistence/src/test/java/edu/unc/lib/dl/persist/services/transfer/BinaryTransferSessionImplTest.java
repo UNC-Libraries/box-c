@@ -15,8 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -78,9 +77,8 @@ public class BinaryTransferSessionImplTest {
         sourcePath = tmpFolder.newFolder("source").toPath();
         storagePath = tmpFolder.newFolder("storage").toPath();
 
-        String binId = makeBinId();
-        binPid = PIDs.get(binId);
-        binDestPath = storagePath.resolve(binId);
+        binPid = makeBinPid();
+        binDestPath = storagePath.resolve(binPid.getComponentId());
 
         when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
         when(ingestSource.getId()).thenReturn("source1");
@@ -129,9 +127,8 @@ public class BinaryTransferSessionImplTest {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
-        String binId2 = makeBinId();
-        PID binPid2 = PIDs.get(binId2);
-        Path binDestPath2 = storagePath.resolve(binId2);
+        PID binPid2 = makeBinPid();
+        Path binDestPath2 = storagePath.resolve(binPid2.getComponentId());
         when(storageLoc.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
 
         Path sourceFile = createSourceFile();
@@ -160,9 +157,8 @@ public class BinaryTransferSessionImplTest {
         when(storageLoc2.getStorageType()).thenReturn(FILESYSTEM);
         Path storagePath2 = tmpFolder.newFolder("storage2").toPath();
 
-        String binId2 = makeBinId();
-        PID binPid2 = PIDs.get(binId2);
-        Path binDestPath2 = storagePath2.resolve(binId2);
+        PID binPid2 = makeBinPid();
+        Path binDestPath2 = storagePath2.resolve(binPid2.getComponentId());
         // Establish destination path for second binary in second location
         when(storageLoc2.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
 
@@ -190,9 +186,8 @@ public class BinaryTransferSessionImplTest {
         Path sourcePath2 = tmpFolder.newFolder("source2").toPath();
         Path sourceFile2 = createFile(sourcePath2.resolve("another.txt"), "stuff");
 
-        String binId2 = makeBinId();
-        PID binPid2 = PIDs.get(binId2);
-        Path binDestPath2 = storagePath.resolve(binId2);
+        PID binPid2 = makeBinPid();
+        Path binDestPath2 = storagePath.resolve(binPid2.getComponentId());
         when(storageLoc.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
 
         // Create second ingest source, which is not read only
@@ -273,7 +268,7 @@ public class BinaryTransferSessionImplTest {
         assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
 
-    private String makeBinId() {
-        return UUID.randomUUID().toString() + "/" + DATA_FILE_FILESET + "/" + ORIGINAL_FILE;
+    private PID makeBinPid() {
+        return getOriginalFilePid(PIDs.get(UUID.randomUUID().toString()));
     }
 }

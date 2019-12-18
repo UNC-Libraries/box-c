@@ -22,13 +22,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.InputStream;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -250,10 +251,12 @@ public class DestroyObjectsJobIT {
         WorkObject work = repoObjFactory.createWorkObject(null);
         folder.addMember(work);
         String bodyString = "Content";
-        String filename = "file.txt";
         String mimetype = "text/plain";
-        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
-        FileObject file = work.addDataFile(contentStream, filename, mimetype, null, null);
+        File contentFile = Files.createTempFile("file", ".txt").toFile();
+        String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
+        String filename = contentFile.getName();
+        FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
+        FileObject file = work.addDataFile(contentFile.toPath().toUri(), filename, mimetype, sha1, null);
 
         treeIndexer.indexAll(baseAddress);
 

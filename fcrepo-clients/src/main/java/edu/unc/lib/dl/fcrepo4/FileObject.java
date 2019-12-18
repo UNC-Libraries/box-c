@@ -15,11 +15,9 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +34,8 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.PcdmUse;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Repository object which contains a single original file and any number of
@@ -53,15 +49,9 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class FileObject extends ContentObject {
 
-    private final String fileSetPath;
-    private final URI fileSetUri;
-
     protected FileObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);
-
-        fileSetPath = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET);
-        fileSetUri = URI.create(fileSetPath);
     }
 
     @Override
@@ -81,19 +71,14 @@ public class FileObject extends ContentObject {
      * @param sha1Checksum
      * @return
      */
-    public BinaryObject addOriginalFile(InputStream contentStream, String filename,
+    public BinaryObject addOriginalFile(URI storageUri, String filename,
             String mimetype, String sha1Checksum, String md5Checksum) {
 
         // Construct the path to where the original file will be created
-        String objectPath = constructOriginalFilePath();
+        PID originalPid = getOriginalFilePid(pid);
 
-        // Add the OriginalFile use type
-        Model fileModel = ModelFactory.createDefaultModel();
-        Resource resc = fileModel.createResource(objectPath);
-        resc.addProperty(RDF.type, PcdmUse.OriginalFile);
-
-        return repoObjFactory.createBinary(fileSetUri, ORIGINAL_FILE, contentStream,
-                filename, mimetype, sha1Checksum, md5Checksum, fileModel);
+        return addBinary(originalPid, storageUri, filename, mimetype, sha1Checksum, md5Checksum,
+                null, RDF.type, PcdmUse.OriginalFile);
     }
 
     /**
@@ -105,10 +90,12 @@ public class FileObject extends ContentObject {
      * @param sha1Checksum
      * @return
      */
-    public BinaryObject replaceOriginalFile(InputStream contentStream, String filename,
+    public BinaryObject replaceOriginalFile(URI storageUri, String filename,
             String mimetype, String sha1Checksum, String md5Checksum) {
 
-        return repoObjFactory.updateBinary(fileSetUri, ORIGINAL_FILE, contentStream,
+        PID originalPid = getOriginalFilePid(pid);
+
+        return repoObjFactory.createOrUpdateBinary(originalPid, storageUri,
                 filename, mimetype, sha1Checksum, md5Checksum, null);
     }
 
@@ -119,50 +106,51 @@ public class FileObject extends ContentObject {
      * @return
      */
     public BinaryObject getOriginalFile() {
-        return driver.getRepositoryObject(PIDs.get(constructOriginalFilePath()),
+        return driver.getRepositoryObject(getOriginalFilePid(pid),
                 BinaryObject.class);
     }
 
-    private String constructOriginalFilePath() {
-        return URIUtil.join(fileSetPath, ORIGINAL_FILE);
-    }
-
     /**
-     * Create and add a derivative of the original file to this file object.
+     * Create and add a binary to this file object.
      *
-     * @param contentStream
-     * @param mimetype
-     * @param type
-     * @return the created derivative as a binary object
+     * @param binPid the PID of the binary to add
+     * @param storageUri uri of the content for this binary
+     * @param filename name of the binary
+     * @param mimetype mimetype
+     * @param associationRelation if provided, the binary will relate to the original binary with this property.
+     * @param typeRelation relation for defining the type for this binary
+     * @param type the type for this binary
+     * @return the new binary
      */
-    public BinaryObject addDerivative(String slug, InputStream contentStream, String filename,
-            String mimetype, Resource type) {
-        return addBinary(slug, contentStream, filename, mimetype, IanaRelation.derivedfrom, RDF.type, type);
-    }
-
-    public BinaryObject addBinary(String slug, InputStream contentStream, String filename,
+    public BinaryObject addBinary(PID binPid, URI storageUri, String filename,
             String mimetype, Property associationRelation, Property typeRelation, Resource type) {
 
-        String derivPath = URIUtil.join(fileSetPath, slug);
+        return addBinary(binPid, storageUri, filename, mimetype, null, null,
+                associationRelation, typeRelation, type);
+    }
+
+    private BinaryObject addBinary(PID binPid, URI storageUri, String filename,
+            String mimetype, String sha1Checksum, String md5Checksum,
+            Property associationRelation, Property typeRelation, Resource type) {
 
         Model fileModel = null;
         if (type != null && typeRelation != null) {
             fileModel = ModelFactory.createDefaultModel();
-            Resource resc = fileModel.createResource(derivPath);
+            Resource resc = fileModel.createResource(binPid.getRepositoryPath());
             resc.addProperty(typeRelation, type);
         }
 
-        // Create the derivative binary object
-        BinaryObject derivObj = repoObjFactory.createBinary(fileSetUri, slug, contentStream, filename,
-                mimetype, null, null, fileModel);
+        // Create the binary object
+        BinaryObject binObj = repoObjFactory.createOrUpdateBinary(binPid, storageUri, filename,
+                mimetype, sha1Checksum, md5Checksum, fileModel);
 
         if (associationRelation != null) {
             // Establish association with original file relation
-            repoObjFactory.createRelationship(derivObj,
-                    associationRelation, createResource(constructOriginalFilePath()));
+            repoObjFactory.createRelationship(binObj,
+                    associationRelation, createResource(getOriginalFilePid(pid).getRepositoryPath()));
         }
 
-        return derivObj;
+        return binObj;
     }
 
     /**

@@ -40,14 +40,8 @@
         <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
     </bean>
     
-    <bean id="getBinaryProcessor" class="edu.unc.lib.dl.services.camel.GetBinaryProcessor">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
-    </bean>
-
-    <bean id="cleanupBinaryProcessor" class="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor">
-    </bean>
-    
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">

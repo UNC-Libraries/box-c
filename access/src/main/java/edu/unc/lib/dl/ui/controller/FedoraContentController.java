@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ public class FedoraContentController {
     public void getDefaultDatastream(@PathVariable("pid") String pid,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request, HttpServletResponse response) {
-        streamData(pid, ORIGINAL_FILE, download, request, response);
+        streamData(pid, ORIGINAL_FILE.getId(), download, request, response);
     }
 
     @RequestMapping(value = {"/content/{pid}/{datastream}", "/indexablecontent/{pid}/{datastream}"})
@@ -78,7 +78,7 @@ public class FedoraContentController {
     public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request, HttpServletResponse response) {
-        streamData(id, ORIGINAL_FILE, download, request, response);
+        streamData(id, ORIGINAL_FILE.getId(), download, request, response);
     }
 
     private void streamData(String pidString, String datastream, boolean asAttachment, HttpServletRequest request,
@@ -96,7 +96,7 @@ public class FedoraContentController {
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
             HttpServletRequest request) {
-        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.equals(datastream))) {
+        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.getId().equals(datastream))) {
             return;
         }
         analyticsTracker.trackEvent(request, "download", pid, principals);

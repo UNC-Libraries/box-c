@@ -27,11 +27,12 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -309,8 +310,10 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     public void testFileObject() throws Exception {
         AdminUnit unit = setupAdminUnitWithGroup();
         WorkObject work = setupWorkStructure(unit);
-        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        FileObject fileObj = work.addDataFile(contentStream, origFilename, origMimetype, null, null);
+
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), origBodyString, "UTF-8");
+        FileObject fileObj = work.addDataFile(contentPath.toUri(), origFilename, origMimetype, null, null);
         PID pid = fileObj.getPid();
         treeIndexer.indexAll(baseAddress);
 

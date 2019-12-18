@@ -33,6 +33,8 @@ import edu.unc.lib.dl.acl.util.Permission;
 public enum DatastreamType {
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", EXTERNAL, viewHidden),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", EXTERNAL, viewAccessCopies),
+    MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", INTERNAL, viewMetadata),
+    MD_EVENTS("event_log", "application/n-triples", "nt", INTERNAL, viewMetadata),
     ORIGINAL_FILE("original_file", null, null, INTERNAL, viewOriginal),
     TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", INTERNAL, viewHidden),
     THUMBNAIL_SMALL("thumbnail_small", "image/png", "png", EXTERNAL, viewMetadata),
@@ -72,6 +74,13 @@ public enum DatastreamType {
      */
     public String getExtension() {
         return extension;
+    }
+
+    /**
+     * @return the default filename for datastreams of this type
+     */
+    public String getDefaultFilename() {
+        return id + "." + extension;
     }
 
     /**

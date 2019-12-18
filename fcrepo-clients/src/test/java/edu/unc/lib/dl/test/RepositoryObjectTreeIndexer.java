@@ -89,7 +89,7 @@ public class RepositoryObjectTreeIndexer {
         while (containedIt.hasNext()) {
             RDFNode contained = containedIt.next();
             URI rescUri = URI.create(contained.asResource().getURI());
-            try (FcrepoResponse resp = fcrepoClient.get(rescUri).perform()) {
+            try (FcrepoResponse resp = fcrepoClient.head(rescUri).perform()) {
                 Model containedModel;
                 // If the object retrieved is a binary, request its fcr:metadata instead
                 if (resp.getLinkHeaders("describedby").size() > 0) {
@@ -98,7 +98,9 @@ public class RepositoryObjectTreeIndexer {
                         containedModel = createModel(binResp.getBody());
                     }
                 } else {
-                    containedModel = createModel(resp.getBody());
+                    try (FcrepoResponse rdfResp = fcrepoClient.get(rescUri).perform()) {
+                        containedModel = createModel(rdfResp.getBody());
+                    }
                 }
 
                 indexTree(containedModel);

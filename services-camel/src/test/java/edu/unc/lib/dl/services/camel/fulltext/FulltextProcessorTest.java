@@ -87,7 +87,7 @@ public class FulltextProcessorTest {
         FileUtils.write(originalFile, testText, "UTF-8");
 
         when(message.getHeader(eq(CdrBinaryPath)))
-                .thenReturn(originalFile.getAbsolutePath());
+                .thenReturn(originalFile.toPath().toString());
 
         processor.process(exchange);
         assertTrue(finalDerivativeFile.exists());
@@ -100,7 +100,7 @@ public class FulltextProcessorTest {
         Files.copy(new File("src/test/resources/datastreams/invalid.pdf"), originalFile);
 
         when(message.getHeader(eq(CdrBinaryPath)))
-                .thenReturn(originalFile.getAbsolutePath());
+                .thenReturn(originalFile.toPath().toString());
 
         processor.process(exchange);
         assertFalse(finalDerivativeFile.exists());

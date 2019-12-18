@@ -15,8 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -71,9 +70,8 @@ public class FSToFSTransferClientTest {
 
         client = new FSToFSTransferClient(ingestSource, storageLoc);
 
-        String binId = TEST_UUID + "/" + DATA_FILE_FILESET + "/" + ORIGINAL_FILE;
-        binPid = PIDs.get(binId);
-        binDestPath = storagePath.resolve(binId);
+        binPid = getOriginalFilePid(PIDs.get(TEST_UUID));
+        binDestPath = storagePath.resolve(binPid.getComponentId());
 
         when(storageLoc.getStorageUri(binPid)).thenReturn(binDestPath.toUri());
     }

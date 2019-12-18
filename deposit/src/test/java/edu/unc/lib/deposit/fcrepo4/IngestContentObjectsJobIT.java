@@ -409,7 +409,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Fix the staging location of the second file
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
-        file2Resc.addProperty(CdrDeposit.stagingLocation, Paths.get(depositDir.getAbsolutePath(),
+        file2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                 FILE2_LOC).toUri().toString());
         job.closeModel();
 
@@ -661,8 +661,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals(loc, binary.getFilename());
         if (sha1 != null) {
             assertEquals("urn:sha1:" + sha1, binary.getSha1Checksum());
-        } else {
-            assertNotNull(binary.getSha1Checksum());
         }
         // md5 isn't required, so not all tests will need to ensure it isn't null
         if (md5 != null) {
@@ -684,7 +682,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         if (stagingLocation != null) {
-            fileResc.addProperty(CdrDeposit.stagingLocation, Paths.get(depositDir.getAbsolutePath(),
+            fileResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                     stagingLocation).toUri().toString());
         }
         fileResc.addProperty(CdrDeposit.mimetype, mimetype);
@@ -698,7 +696,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         parent.add(fileResc);
 
         // Create the accompanying fake premis report file
-        new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
+        File fitsFile = new File(techmdDir, filePid.getUUID() + ".xml");
+        fitsFile.createNewFile();
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsFile.toPath().toUri().toString());
 
         return filePid;
     }

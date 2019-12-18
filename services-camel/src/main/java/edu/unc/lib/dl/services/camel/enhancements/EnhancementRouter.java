@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.rdf.Cdr.FileObject;
 import static edu.unc.lib.dl.rdf.Cdr.Folder;
 import static edu.unc.lib.dl.rdf.Cdr.Work;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.INFO;
 
@@ -32,8 +33,6 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.dl.services.camel.CleanupBinaryProcessor;
-import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
 
 /**
  * Router which queues and triggers enhancement services.
@@ -50,12 +49,6 @@ public class EnhancementRouter extends RouteBuilder {
 
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
-
-    @BeanInject(value = "getBinaryProcessor")
-    private GetBinaryProcessor getBinaryProcessor;
-
-    @BeanInject(value = "cleanupBinaryProcessor")
-    private CleanupBinaryProcessor cleanupBinaryProcessor;
 
     @Override
     public void configure() throws Exception {
@@ -78,9 +71,8 @@ public class EnhancementRouter extends RouteBuilder {
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
-            .process(getBinaryProcessor)
-            .to("direct:process.enhancements")
-            .process(cleanupBinaryProcessor);
+            .filter(header(CdrBinaryPath).isNotNull())
+            .to("direct:process.enhancements");
 
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")

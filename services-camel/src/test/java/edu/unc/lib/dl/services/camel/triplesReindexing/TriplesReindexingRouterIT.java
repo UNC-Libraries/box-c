@@ -16,26 +16,27 @@
 package edu.unc.lib.dl.services.camel.triplesReindexing;
 
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.DatasetImpl;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,8 +168,9 @@ public class TriplesReindexingRouterIT {
         workObj = repositoryObjectFactory.createWorkObject(null);
         folderObj1.addMember(workObj);
 
-        InputStream content = new ByteArrayInputStream("content".getBytes());
-        fileObj = workObj.addDataFile(content, "file.txt", null, null, null);
+        File contentFile = File.createTempFile("test", ".txt");
+        FileUtils.write(contentFile, "content", UTF_8);
+        fileObj = workObj.addDataFile(contentFile.toPath().toUri(), "file.txt", null, null, null);
     }
 
     @Test

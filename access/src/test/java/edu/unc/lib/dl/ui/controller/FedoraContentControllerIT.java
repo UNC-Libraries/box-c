@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
@@ -26,9 +27,14 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.fusesource.hawtbuf.ByteArrayInputStream;
+import java.io.File;
+import java.net.URI;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -76,6 +82,9 @@ public class FedoraContentControllerIT {
     @Autowired
     protected WebApplicationContext context;
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     @Before
     public void init() {
 
@@ -95,7 +104,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), "file.txt", "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -115,7 +124,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), "file.txt", "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
                 .param("dl", "true"))
@@ -136,7 +145,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), null, "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
                 .param("dl", "true"))
@@ -157,7 +166,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), null, "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSet.class), eq(Permission.viewOriginal));
@@ -186,9 +195,9 @@ public class FedoraContentControllerIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), null, "text/plain", null, null);
-        fileObj.addBinary(TECHNICAL_METADATA.getId(), new ByteArrayInputStream(content.getBytes()),
-                "fits.xml", "application/xml", null, null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 
         // Verify original file content retrievable
         MvcResult result1 = mvc.perform(get(requestPath + filePid.getId()))
@@ -217,8 +226,8 @@ public class FedoraContentControllerIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addBinary(TECHNICAL_METADATA.getId(), new ByteArrayInputStream(content.getBytes()),
-                "fits.xml", "application/xml", null, null, null);
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 
         // Requires viewHidden permission
         doThrow(new AccessRestrictionException()).when(accessControlService)
@@ -257,5 +266,11 @@ public class FedoraContentControllerIT {
         mvc.perform(get("/content/" + objPid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
+    }
+
+    private URI makeContentUri(String content) throws Exception {
+        File dataFile = tmpFolder.newFile();
+        FileUtils.write(dataFile, content, "UTF-8");
+        return dataFile.toPath().toUri();
     }
 }

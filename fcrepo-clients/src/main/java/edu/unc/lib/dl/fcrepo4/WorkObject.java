@@ -15,8 +15,9 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.io.InputStream;
+import java.net.URI;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -122,15 +123,15 @@ public class WorkObject extends ContentContainerObject {
      * @param md5Checksum
      * @return
      */
-    public FileObject addDataFile(InputStream contentStream, String filename, String mimetype,
+    public FileObject addDataFile(URI storageUri, String filename, String mimetype,
             String sha1Checksum, String md5Checksum) {
 
-        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, md5Checksum, null);
+        return addDataFile(null, storageUri, filename, mimetype, sha1Checksum, md5Checksum, null);
     }
 
-    public FileObject addDataFile(InputStream contentStream, String filename,
+    public FileObject addDataFile(URI storageUri, String filename,
             String mimetype, String sha1Checksum, String md5Checksum, Model model) {
-        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, md5Checksum, model);
+        return addDataFile(null, storageUri, filename, mimetype, sha1Checksum, md5Checksum, model);
     }
 
     /**
@@ -148,15 +149,18 @@ public class WorkObject extends ContentContainerObject {
      *            model containing properties for the new fileObject
      * @return
      */
-    public FileObject addDataFile(PID filePid, InputStream contentStream, String filename,
+    public FileObject addDataFile(PID filePid, URI storageUri, String filename,
             String mimetype, String sha1Checksum, String md5Checksum, Model model) {
 
-        if (contentStream == null) {
-            throw new IllegalArgumentException("A non-null contentstream is required");
+        if (storageUri == null) {
+            throw new IllegalArgumentException("A non-null storage uri is required");
         }
 
         if (model == null) {
             model = ModelFactory.createDefaultModel();
+        }
+        if (filename == null) {
+            filename = StringUtils.substringAfterLast(storageUri.toString(), "/");
         }
         model.getResource("").addProperty(DC.title, filename);
 
@@ -168,7 +172,7 @@ public class WorkObject extends ContentContainerObject {
             fileObj = repoObjFactory.createFileObject(filePid, model);
         }
         // Add the binary content to it as its original file
-        fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum, md5Checksum);
+        fileObj.addOriginalFile(storageUri, filename, mimetype, sha1Checksum, md5Checksum);
 
         // Add the new file object as a member of this Work
         repoObjFactory.addMember(this, fileObj);

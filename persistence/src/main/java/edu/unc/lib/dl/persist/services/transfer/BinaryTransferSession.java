@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import java.net.URI;
-import java.nio.file.FileAlreadyExistsException;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -35,9 +34,9 @@ public interface BinaryTransferSession extends AutoCloseable {
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceFileUri URI of the binary located in an IngestSource.
      * @return the URI of the binary in its destination.
-     * @throws FileAlreadyExistsException thrown if the binary already exists
+     * @throws BinaryAlreadyExistsException thrown if the binary already exists
      */
-    URI transfer(PID binPid, URI sourceFileUri) throws FileAlreadyExistsException;
+    URI transfer(PID binPid, URI sourceFileUri);
 
     /**
      * Transfer a binary to the preservation storage location. If a binary already
@@ -58,4 +57,10 @@ public interface BinaryTransferSession extends AutoCloseable {
      * @return the URI of the binary in its destination.
      */
     URI transferVersion(PID binPid, URI sourceFileUri);
+
+    /**
+     * Closes the binary session. If there are any failures, they will be RuntimeExceptions.
+     */
+    @Override
+    void close();
 }

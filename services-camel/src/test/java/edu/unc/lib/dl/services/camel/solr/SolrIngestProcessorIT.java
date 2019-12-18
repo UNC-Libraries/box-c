@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -24,13 +26,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -56,6 +59,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     private SolrIngestProcessor processor;
 
+    private static final String CONTENT_TEXT = "Content";
+
     @Autowired
     private DocumentIndexingPipeline solrFullUpdatePipeline;
 
@@ -72,13 +77,18 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         generateBaseStructure();
     }
 
+    private URI makeContentUri(String content) throws Exception {
+        File contentFile = File.createTempFile("test", ".txt");
+        FileUtils.write(contentFile, content, UTF_8);
+        return contentFile.toPath().toUri();
+    }
+
     @Test
     public void testIndexDescribedWork() throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
-        String contentText = "Content";
-        FileObject fileObj = workObj.addDataFile(new ByteArrayInputStream(contentText.getBytes()),
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
         workObj.setDescription(getClass().getResourceAsStream("/datastreams/simpleMods.xml"));
@@ -105,7 +115,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(workMd.getContentStatus());
 
         assertEquals(1, workMd.getDatastream().size());
-        assertNotNull(workMd.getDatastreamObject(RepositoryPathConstants.ORIGINAL_FILE));
+        assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
         assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
 
@@ -155,8 +165,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         Model fileModel = ModelFactory.createDefaultModel();
         Resource fileResc = fileModel.getResource("");
         fileResc.addProperty(CdrAcl.none, AUTHENTICATED_PRINC);
-        String contentText = "Content";
-        FileObject fileObj = workObj.addDataFile(new ByteArrayInputStream(contentText.getBytes()),
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null, fileModel);
 
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
@@ -180,7 +189,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getContentStatus());
 
         assertEquals(1, fileMd.getDatastream().size());
-        assertNotNull(fileMd.getDatastreamObject(RepositoryPathConstants.ORIGINAL_FILE));
+        assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
         assertTrue("Content type was not set to text", fileMd.getContentType().get(0).contains("text"));
 

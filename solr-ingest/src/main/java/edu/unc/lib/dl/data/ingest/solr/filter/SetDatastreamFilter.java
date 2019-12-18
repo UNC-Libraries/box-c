@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        log.debug("Performing Datastream filter for object", dip.getPid());
+        log.debug("Performing Datastream filter for object {}", dip.getPid());
 
         ContentObject contentObj = dip.getContentObject();
 
@@ -110,7 +111,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 String mimetype = binaryResc.getProperty(Ebucore.hasMimeType).getString();
                 long filesize = binaryResc.getProperty(Premis.hasSize).getLong();
                 // Making assumption that there is only one checksum
-                String checksum = binaryResc.getProperty(Premis.hasMessageDigest).getResource().getURI();
+                String checksum = getFirstChecksum(binaryResc);
 
                 String filename = binaryResc.getProperty(Ebucore.filename).getString();
                 int extensionIndex = filename.lastIndexOf('.');
@@ -120,6 +121,14 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 return new Datastream(owner, name, filesize, mimetype, filename, extension, checksum);
             }).collect(Collectors.toList());
+    }
+
+    private String getFirstChecksum(Resource resc) {
+        Statement prop = resc.getProperty(Premis.hasMessageDigest);
+        if (prop == null) {
+            return null;
+        }
+        return prop.getResource().getURI();
     }
 
     private List<String> getDatastreamStrings(List<Datastream> datastreams) {
@@ -138,7 +147,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private long getFilesizeTotal(List<Datastream> datastreams) {
         return datastreams.stream()
             .filter(ds -> ds.getFilesize() != null && ds.getOwner() == null)
-            .mapToLong(ds -> ds.getFilesize())
+            .mapToLong(Datastream::getFilesize)
             .sum();
     }
 

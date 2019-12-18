@@ -17,27 +17,26 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.exec.ExecResult;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  * Adds a derivative file to an existing file object
@@ -63,20 +62,17 @@ public class AddDerivativeProcessor implements Processor {
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryId = PIDs.get(binaryUri).getId();
-        String derivativePath = RepositoryPaths
-                .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
         final ExecResult result = (ExecResult) in.getBody();
 
-        String derivativeTmpPath = new BufferedReader(new InputStreamReader(result.getStdout()))
-                .lines().collect(Collectors.joining("\n"));
+        String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8);
         derivativeTmpPath += "." + fileExtension;
 
-        String derivativeFinalRelative = derivativePath + binaryId + "." + fileExtension;
-        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativeFinalRelative);
+        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
 
         moveFile(derivativeTmpPath, derivativeFinalPath);
-        log.info("Adding derivative for {} from {}", binaryUri, derivativeFinalPath);
+        log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
     }
 
     private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)

@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import io.dropwizard.metrics5.Timer;
 
@@ -89,12 +91,12 @@ public abstract class AbstractDepositJob implements Runnable {
     protected PremisLoggerFactory premisLoggerFactory;
 
     // UUID for this deposit and its deposit record
-    private String depositUUID;
+    protected String depositUUID;
 
-    private PID depositPID;
+    protected PID depositPID;
 
     // UUID for this ingest job
-    private String jobUUID;
+    protected String jobUUID;
 
     // Root directory where all deposits are stored
     @Autowired
@@ -142,7 +144,7 @@ public abstract class AbstractDepositJob implements Runnable {
             if (dataset.isInTransaction()) {
                 dataset.commit();
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (dataset.isInTransaction()) {
                 dataset.abort();
             }
@@ -240,8 +242,18 @@ public abstract class AbstractDepositJob implements Runnable {
      * @return
      */
     public List<String> getManifestFileURIs() {
-        List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
-        return filePaths;
+        return depositStatusFactory.getManifestURIs(getDepositUUID());
+    }
+
+    protected PID getDestinationPID() {
+        Map<String, String> depositStatus = getDepositStatus();
+        String destinationPath = depositStatus.get(DepositField.containerId.name());
+        PID destPid = PIDs.get(destinationPath);
+        if (destPid == null) {
+            failJob("Invalid destination URI", "The provide destination uri " + destinationPath
+                    + " was not a valid repository path");
+        }
+        return destPid;
     }
 
     public void failJob(String message, String details) {
@@ -265,7 +277,8 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     protected File getPremisFile(PID pid) {
-        return new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".nt");
+        return Paths.get(depositDirectory.getAbsolutePath(), DepositConstants.EVENTS_DIR,
+                pid.getUUID() + ".nt").toFile();
     }
 
     /**

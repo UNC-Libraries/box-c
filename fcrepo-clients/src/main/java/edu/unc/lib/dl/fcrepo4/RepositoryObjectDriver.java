@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.OrphanedObjectException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,6 +64,7 @@ public class RepositoryObjectDriver {
 
     private RepositoryObjectLoader repositoryObjectLoader;
 
+    @Deprecated
     private RepositoryObjectFactory repositoryObjectFactory;
 
     private FcrepoClient client;
@@ -170,13 +172,24 @@ public class RepositoryObjectDriver {
      * @throws FedoraException
      */
     public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
-        PID pid = obj.getPid();
+        if (obj.getContentUri() == null) {
+            // Retrieve local content
+            PID pid = obj.getPid();
 
-        try {
-            FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
-            return response.getBody();
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
+            try {
+                FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
+                return response.getBody();
+            } catch (FcrepoOperationFailedException e) {
+                throw ClientFaultResolver.resolve(e);
+            }
+        } else {
+            // Retrieve external content
+            try {
+                return obj.getContentUri().toURL().openStream();
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to read content from " + obj.getContentUri()
+                        + " for object " + obj.getPid(), e);
+            }
         }
     }
 

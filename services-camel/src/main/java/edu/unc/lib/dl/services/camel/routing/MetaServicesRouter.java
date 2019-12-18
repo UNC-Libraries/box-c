@@ -22,8 +22,6 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.dl.services.camel.CleanupBinaryProcessor;
-import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
 
 /**
  * Meta router which sequences all service routes to run on events.
@@ -37,12 +35,6 @@ public class MetaServicesRouter extends RouteBuilder {
 
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
-
-    @BeanInject(value = "getBinaryProcessor")
-    private GetBinaryProcessor getBinaryProcessor;
-
-    @BeanInject(value = "cleanupBinaryProcessor")
-    private CleanupBinaryProcessor cleanupBinaryProcessor;
 
     @Override
     public void configure() throws Exception {

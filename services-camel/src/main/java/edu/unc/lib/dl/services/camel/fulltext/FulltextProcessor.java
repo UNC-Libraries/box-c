@@ -17,20 +17,22 @@ package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -41,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
@@ -62,22 +63,21 @@ public class FulltextProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 
-        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String fedoraUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        String binaryId = PIDs.get(binaryUri).getId();
-        String binarySubPath = RepositoryPaths
-                .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        String binaryId = PIDs.get(fedoraUri).getId();
+        String binarySubPath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         String text;
 
         try {
             text = extractText(binaryPath);
         } catch (TikaException e) {
             // Parsing issues aren't going to succeed on retry, so fail gently
-            log.error("Failed to extract text for {} due to parsing error", binaryUri, e);
+            log.error("Failed to extract text for {} due to parsing error", fedoraUri, e);
             return;
         }
 
-        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath + "/" + binaryId + ".txt");
+        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
         File derivative = derivativePath.toFile();
         File parentDir = derivative.getParentFile();
 
@@ -86,18 +86,16 @@ public class FulltextProcessor implements Processor {
             throw new IOException("Failed to create parent directories for " + derivativePath);
         }
 
-        try (PrintWriter fulltext = new PrintWriter(derivativePath.toString())) {
-            fulltext.println(text);
-        }
+        FileUtils.write(derivative, text, UTF_8);
     }
 
-    private String extractText(String filepath) throws IOException, SAXException, TikaException {
+    private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
         BodyContentHandler handler = new BodyContentHandler();
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
 
-        try (InputStream stream = new FileInputStream(new File(filepath))) {
+        try (InputStream stream = new FileInputStream(new File(binaryPath))) {
             parser.parse(stream, handler, metadata, new ParseContext());
             return handler.toString();
         }

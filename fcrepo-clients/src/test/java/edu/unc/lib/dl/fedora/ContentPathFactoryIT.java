@@ -17,11 +17,11 @@ package edu.unc.lib.dl.fedora;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,8 +93,8 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         WorkObject work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
 
-        InputStream contentStream = new ByteArrayInputStream("content".getBytes());
-        FileObject fileObj = work.addDataFile(contentStream, "file", "text/plain", null, null);
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileObject fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
         BinaryObject binObj = fileObj.getOriginalFile();
 
         treeIndexer.indexAll(baseAddress);

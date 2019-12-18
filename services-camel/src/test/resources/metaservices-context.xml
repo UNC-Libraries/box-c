@@ -16,14 +16,6 @@
     <bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor" />
     </bean>
-    
-    <bean id="getBinaryProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.GetBinaryProcessor" />
-    </bean>
-    
-    <bean id="cleanupBinaryProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor" />
-    </bean>
 
     <camel:camelContext id="CdrMetaServicesRouter">
         <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>

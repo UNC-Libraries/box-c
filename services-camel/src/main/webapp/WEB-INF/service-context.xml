@@ -148,7 +148,7 @@
     </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
-        <property name="baseBinaryPath" value="${fcrepo.binaryBase}" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
@@ -168,20 +168,6 @@
     
     <bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
-    </bean>
-    
-    <bean id="replicationProcessor" class="edu.unc.lib.dl.services.camel.replication.ReplicationProcessor">
-        <constructor-arg value="${cdr.replication.locations}" />
-        <constructor-arg value="${error.maxRedeliveries}" />
-        <constructor-arg value="${error.retryDelay}" />
-    </bean>
-    
-    <bean id="getBinaryProcessor" class="edu.unc.lib.dl.services.camel.GetBinaryProcessor">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
-        <property name="tempDirectory" value="${services.tempDirectory}" />
-    </bean>
-    
-    <bean id="cleanupBinaryProcessor" class="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor">
     </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
@@ -208,10 +194,6 @@
     
     <camel:camelContext id="CdrServiceFulltextExtraction">
         <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrServiceReplication">
-        <camel:package>edu.unc.lib.dl.services.camel.replication</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrServiceCdrEvents">

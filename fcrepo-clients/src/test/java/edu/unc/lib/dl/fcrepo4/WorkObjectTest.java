@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.InputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -71,8 +71,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
     @Mock
     private FileObject fileObj;
-    @Mock
-    private InputStream contentStream;
+    private URI contentUri;
 
     private List<String> types;
     private Model model;
@@ -92,6 +91,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         work = new WorkObject(pid, driver, repoObjFactory);
 
         when(fileObj.getParent()).thenReturn(work);
+        contentUri = URI.create("file:///path/to/file");
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
         when(driver.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
@@ -223,7 +223,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file
-        work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
+        work.addDataFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5);
 
         ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -233,7 +233,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
 
-        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
+        verify(fileObj).addOriginalFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5);
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
@@ -247,7 +247,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file with properties
-        FileObject fileObj = work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5, extraProperties);
+        FileObject fileObj = work.addDataFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5, extraProperties);
 
         ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -259,7 +259,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
         assertTrue(fileObjModel.contains(null, CdrAcl.none, PUBLIC_PRINC));
 
-        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
+        verify(fileObj).addOriginalFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5);
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 

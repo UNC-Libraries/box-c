@@ -15,30 +15,29 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
-import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.net.URI;
 import java.nio.file.Paths;
-import java.util.StringJoiner;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Stores information related to identifying binary objects from the repository
@@ -47,56 +46,48 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  *
  */
 public class BinaryMetadataProcessor implements Processor {
-    private final int BINARY_PATH_DEPTH = 3;
-    private String baseBinaryPath;
+    private static final Logger log = LoggerFactory.getLogger(BinaryMetadataProcessor.class);
+
+    private RepositoryObjectLoader repoObjLoader;
 
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-        final Model model = createDefaultModel();
 
-        String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
+        String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
+        PID binPid = PIDs.get(fcrepoBinaryUri);
 
-        Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
-        ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
-
+        BinaryObject binObj;
         try {
-            if (resources.hasNext()) {
-                Resource resource = resources.next();
-                String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
-                String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+            binObj = repoObjLoader.getBinaryObject(binPid);
+        } catch (ObjectTypeMismatchException e) {
+            log.warn("Cannot extract binary metadata from {}, it is not a binary", binPid.getId());
+            return;
+        }
 
-                String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
+        if (binObj.getContentUri() != null) {
+            Model model = ModelFactory.createDefaultModel();
+            model.read(in.getBody(InputStream.class), null, "Turtle");
+            Resource resc = model.getResource(binPid.getRepositoryPath());
+            String binaryMimeType = resc.getProperty(hasMimeType).getObject().toString();
 
-                String binaryPath = RepositoryPaths
-                        .idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
-
-                String binaryFullPath = new StringJoiner("")
-                    .add(baseBinaryPath)
-                    .add(binaryPath)
-                    .add(binaryFcrepoChecksumSplit[2])
-                    .toString();
-                // Only set the binary path if the computed path exists
-                if (Files.exists(Paths.get(binaryFullPath))) {
-                    in.setHeader(CdrBinaryPath, binaryFullPath);
-                }
-
-                in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
-                in.setHeader(CdrBinaryMimeType, binaryMimeType);
-                in.setHeader(CdrBinaryUri, fcrepoBinaryUri);
+            URI contentUri = binObj.getContentUri();
+            if (!contentUri.getScheme().equals("file")) {
+                log.warn("Only file content URIs are supported at this time");
+                return;
             }
-        } finally {
-            resources.close();
+
+            in.setHeader(CdrBinaryPath, Paths.get(binObj.getContentUri()).toString());
+            in.setHeader(CdrBinaryMimeType, binaryMimeType);
+        } else {
+            log.warn("Cannot process {}, internal binaries are not currently supported", binPid.getId());
         }
     }
 
     /**
-     * @param baseBinaryPath the baseBinaryPath to set
+     * @param repoObjLoader the repoObjLoader to set
      */
-    public void setBaseBinaryPath(String baseBinaryPath) {
-        this.baseBinaryPath = baseBinaryPath;
-        if (!baseBinaryPath.endsWith("/")) {
-            this.baseBinaryPath += "/";
-        }
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }

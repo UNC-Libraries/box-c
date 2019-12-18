@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
 import static org.springframework.util.Assert.notNull;
 
 import java.net.URI;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,12 +61,12 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession, MultiDe
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         clientCache.values().forEach(BinaryTransferClient::shutdown);
     }
 
     @Override
-    public URI transfer(PID binPid, URI sourceFileUri) throws FileAlreadyExistsException {
+    public URI transfer(PID binPid, URI sourceFileUri) {
         return transfer(binPid, sourceFileUri, storageLocation);
     }
 

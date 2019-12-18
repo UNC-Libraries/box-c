@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.enhancements;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
@@ -29,6 +30,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -41,9 +44,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,7 +59,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
 import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor;
@@ -80,10 +80,6 @@ public class EnhancementRouterIT {
 
     private final static String FILE_CONTENT = "content";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private String baseBinaryPath;
-
     @Autowired
     private String baseAddress;
 
@@ -92,9 +88,6 @@ public class EnhancementRouterIT {
 
     @Autowired
     private CamelContext cdrEnhancements;
-
-    @Autowired
-    private CamelContext cdrServiceImageEnhancements;
 
     @Produce(uri = "direct-vm:enhancements.fedora")
     private ProducerTemplate template;
@@ -117,9 +110,6 @@ public class EnhancementRouterIT {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
-    @BeanInject(value = "getBinaryProcessor")
-    private GetBinaryProcessor getBinaryProcessor;
-
     @Before
     public void init() throws Exception {
         initMocks(this);
@@ -127,9 +117,6 @@ public class EnhancementRouterIT {
         reset(solrIngestProcessor);
 
         TestHelper.setContentBase(baseAddress);
-
-        baseBinaryPath = tmpFolder.getRoot().getAbsolutePath();
-        getBinaryProcessor.setTempDirectory(baseBinaryPath);
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
         FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
@@ -161,7 +148,9 @@ public class EnhancementRouterIT {
     @Test
     public void testImageFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject binObj = fileObj.addOriginalFile(new ByteArrayInputStream(FILE_CONTENT.getBytes()),
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
@@ -185,7 +174,9 @@ public class EnhancementRouterIT {
     @Test
     public void testBinaryMetadataFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject binObj = fileObj.addOriginalFile(new ByteArrayInputStream(FILE_CONTENT.getBytes()),
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
@@ -212,7 +203,10 @@ public class EnhancementRouterIT {
     @Test
     public void testInvalidFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject binObj = fileObj.addBinary("techmd_fits", new ByteArrayInputStream(FILE_CONTENT.getBytes()),
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        Path techmdPath = Files.createTempFile("fits", ".xml");
+        FileUtils.writeStringToFile(techmdPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
