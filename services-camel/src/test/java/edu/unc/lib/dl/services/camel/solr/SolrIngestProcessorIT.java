@@ -91,7 +91,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
-        workObj.setDescription(getClass().getResourceAsStream("/datastreams/simpleMods.xml"));
+        workObj.setDescription(getClass().getResource("/datastreams/simpleMods.xml").toURI());
 
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
 

@@ -22,6 +22,7 @@ import static org.apache.commons.io.IOUtils.toByteArray;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -117,9 +118,9 @@ public class UpdateDescriptionService {
 
             // Transfer the description to its storage location
             PID modsDsPid = getMdDescriptivePid(obj.getPid());
-            transferSession.transferReplaceExisting(modsDsPid, modsStream);
+            URI modsUri = transferSession.transferReplaceExisting(modsDsPid, modsStream);
 
-            obj.setDescription(modsStream);
+            obj.setDescription(modsUri);
 
             operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
         }

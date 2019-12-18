@@ -135,7 +135,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testUpdateDescription() throws Exception {
-        collObj.setDescription(getClass().getResourceAsStream("/datastreams/simpleMods.xml"));
+        collObj.setDescription(getClass().getResource("/datastreams/simpleMods.xml").toURI());
 
         indexObjectsInTripleStore(rootObj, unitObj, collObj);
 

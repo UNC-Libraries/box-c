@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -133,8 +133,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     private String createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
-        folder.setDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods.xml")));
-        work.setDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods2.xml")));
+        folder.setDescription(Paths.get("src/test/resources/mods/valid-mods.xml").toUri());
+        work.setDescription(Paths.get("src/test/resources/mods/valid-mods2.xml").toUri());
 
         String pid1 = folder.getPid().getRepositoryPath();
         String pid2 = work.getPid().getRepositoryPath();

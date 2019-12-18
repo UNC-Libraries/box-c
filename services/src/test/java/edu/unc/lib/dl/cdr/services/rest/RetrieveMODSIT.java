@@ -26,9 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
@@ -109,8 +107,7 @@ public class RetrieveMODSIT extends AbstractAPIIT {
     private File setupWorkWithMODS(PID pid) throws FileNotFoundException {
         WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
         File modsFile = new File("src/test/resources/mods/work-mods.xml");
-        InputStream modsStream = new FileInputStream(modsFile);
-        work.setDescription(modsStream);
+        work.setDescription(modsFile.toPath().toUri());
 
         return modsFile;
     }
