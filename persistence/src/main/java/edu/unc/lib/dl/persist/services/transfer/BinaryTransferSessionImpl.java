@@ -56,7 +56,12 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
     @Override
     public void close() {
-        clientCache.values().forEach(BinaryTransferClient::shutdown);
+        if (clientCache != null) {
+            clientCache.values().forEach(BinaryTransferClient::shutdown);
+        }
+        if (streamClient != null) {
+            streamClient.shutdown();
+        }
     }
 
     @Override

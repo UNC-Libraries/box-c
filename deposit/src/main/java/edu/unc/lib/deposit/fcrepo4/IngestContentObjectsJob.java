@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -125,6 +123,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
 
+    private AccessGroupSet groupSet;
+
     private boolean skipDepositLink;
     private Resource depositResc;
 
@@ -180,8 +180,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         Model model = getReadOnlyModel();
 
-        log.debug("Ingesting content for deposit {} containing {} objects", getDepositPID());
-
         PID destPid = getDestinationPID();
 
         // Retrieve the object where this deposit will be ingested to.
@@ -193,7 +191,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     + ", types does not support children");
         }
         String groups = depositStatus.get(DepositField.permissionGroups.name());
-        AccessGroupSet groupSet = new AccessGroupSet(groups);
+        groupSet = new AccessGroupSet(groups);
 
         // Verify that the depositor is allowed to ingest to the given destination
         aclService.assertHasAccess(
@@ -211,9 +209,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         skipDepositLink = Boolean.parseBoolean(depositStatus.get(excludeDepositRecord.name()));
         depositResc = createResource(getDepositPID().getRepositoryPath());
+
         // Ingest objects included in this deposit into the destination object
         try {
-            ingestChildren((ContentContainerObject) destObj, depositBag, groupSet);
+            ingestChildren((ContentContainerObject) destObj, depositBag);
             // Add ingestion event for the parent container
             addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
         } catch (DepositException | FedoraException | IOException e) {
@@ -238,7 +237,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestChildren(ContentContainerObject destObj, Resource parentResc, AccessGroupSet groupSet)
+    private void ingestChildren(ContentContainerObject destObj, Resource parentResc)
             throws DepositException, IOException {
         NodeIterator iterator = getChildIterator(parentResc);
         // No more children, nothing further to do in this tree
@@ -259,13 +258,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                         ingestFileObject(destObj, parentResc, childResc);
                     }
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
-                    ingestFolder(destObj, parentResc, childResc, groupSet);
+                    ingestFolder(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc, groupSet);
+                    ingestWork(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
-                    ingestCollection(destObj, parentResc, childResc, groupSet);
+                    ingestCollection(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
-                    ingestAdminUnit(destObj, parentResc, childResc, groupSet);
+                    ingestAdminUnit(destObj, parentResc, childResc);
                 }
             }
         } finally {
@@ -298,7 +297,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForChild(obj);
         addPremisEvents(obj);
         // add MODS
-        addDescription(obj);
+        addDescription(obj, childResc);
 
         // Increment the count of objects deposited
         addClicks(1);
@@ -375,13 +374,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @param parent
      * @param parentResc
      * @param childResc
-     * @param groupSet
      * @return
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc,
-            AccessGroupSet groupSet) throws DepositException, IOException {
+    private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
+            throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
         FolderObject obj = null;
@@ -403,7 +401,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
-                addDescription(obj);
+                addDescription(obj, childResc);
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
@@ -417,15 +415,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // ingest children of the folder
-        ingestChildren(obj, childResc, groupSet);
+        ingestChildren(obj, childResc);
         // add ingestion event for the new folder
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
     }
 
-    private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc,
-            AccessGroupSet groupSet) throws DepositException, IOException {
+    private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc)
+            throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
         AdminUnit obj = null;
@@ -451,7 +449,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
-                addDescription(obj);
+                addDescription(obj, childResc);
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
@@ -465,15 +463,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // ingest children of the admin unit
-        ingestChildren(obj, childResc, groupSet);
+        ingestChildren(obj, childResc);
         // add ingestion event for the new folder
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
     }
 
-    private void ingestCollection(ContentContainerObject parent, Resource parentResc, Resource childResc,
-            AccessGroupSet groupSet) throws DepositException, IOException {
+    private void ingestCollection(ContentContainerObject parent, Resource parentResc, Resource childResc)
+            throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
         CollectionObject obj = null;
@@ -499,7 +497,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
-                addDescription(obj);
+                addDescription(obj, childResc);
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
@@ -513,7 +511,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // ingest children of the admin unit
-        ingestChildren(obj, childResc, groupSet);
+        ingestChildren(obj, childResc);
         // add ingestion event for the new folder
         addIngestionEventForContainer(obj, childResc);
 
@@ -528,20 +526,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @param parent
      * @param parentResc
      * @param childResc
-     * @param groupSet
      * @return
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc,
-            AccessGroupSet groupSet) throws DepositException, IOException {
+    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
+            throws DepositException, IOException {
         PID childPid = PIDs.get(childResc.getURI());
 
         WorkObject obj = null;
         boolean skip = skipResumed(childResc);
         if (skip) {
             obj = repoObjLoader.getWorkObject(childPid);
-            ingestChildren(obj, childResc, groupSet);
+            ingestChildren(obj, childResc);
 
             // Avoid adding primaryObject relation for a resuming deposit if already present
             if (!obj.getResource().hasProperty(Cdr.primaryObject)) {
@@ -564,14 +561,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
-                addDescription(obj);
+                addDescription(obj, childResc);
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
 
                 log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 
-                ingestChildren(obj, childResc, groupSet);
+                ingestChildren(obj, childResc);
                 // Set the primary object for this work if one was specified
                 addPrimaryObject(obj, childResc);
                 // Add ingestion event for the work as container
@@ -648,14 +645,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void addDescription(ContentObject obj) throws IOException {
-        File modsFile = new File(getDescriptionDir(), obj.getPid().getUUID() + ".xml");
-        if (!modsFile.exists()) {
+    private void addDescription(ContentObject obj, Resource dResc) throws IOException {
+        if (!dResc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
             return;
         }
-        try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
-            obj.setDescription(modsStream);
-        }
+        URI descUri = URI.create(dResc.getProperty(CdrDeposit.descriptiveStorageUri).getString());
+        obj.setDescription(descUri);
     }
 
     private void addPremisEvents(ContentObject obj) {
