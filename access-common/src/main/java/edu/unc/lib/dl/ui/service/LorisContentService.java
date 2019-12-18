@@ -15,21 +15,25 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+
 import java.io.OutputStream;
 
+import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
-import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 
 /**
@@ -39,44 +43,64 @@ import edu.unc.lib.dl.ui.util.FileIOUtil;
 public class LorisContentService {
     private static final Logger LOG = LoggerFactory.getLogger(LorisContentService.class);
 
-    @Autowired
-    private ApplicationPathSettings applicationPathSettings;
+    private CloseableHttpClient httpClient;
+    private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
+
+    private String lorisPath;
+
+    public LorisContentService() {
+        multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(2000)
+                .build();
+
+        httpClient = HttpClients.custom()
+                .setConnectionManager(multiThreadedHttpConnectionManager)
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+    }
+
+    @PreDestroy
+    public void destroy() {
+        multiThreadedHttpConnectionManager.shutdown();
+    }
 
     public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response) {
-        this.getMetadata(simplepid, datastream, outStream, response, 1);
+        getMetadata(simplepid, datastream, outStream, response, 1);
     }
 
     public void getMetadata(String simplepid, String datastream, OutputStream outStream,
             HttpServletResponse response, int retryServerError) {
-        CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
-        path.append(simplepid);
+        StringBuilder path = new StringBuilder(getLorisPath());
+        path.append(idToPath(simplepid, 4, 2))
+                .append(simplepid).append(".jp2").append("/info.json");
 
         HttpGet method = new HttpGet(path.toString());
-        try (CloseableHttpResponse httpResp = client.execute(method)) {
+        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
             int statusCode = httpResp.getStatusLine().getStatusCode();
             if (statusCode == HttpStatus.SC_OK) {
-                if (response != null ) {
+                if (response != null) {
                     response.setHeader("Content-Type", "application/json");
                     response.setHeader("content-disposition", "inline");
 
                     FileIOUtil.stream(outStream, httpResp);
                 }
             } else {
-                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0 ) {
-                    this.getMetadata(simplepid, datastream, outStream, response, retryServerError - 1);
+                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
+                    getMetadata(simplepid, datastream, outStream, response, retryServerError - 1);
                 } else {
-                    LOG.error("Unexpected failure: " + httpResp.getStatusLine().toString());
-                    LOG.error("Path was: " + method.getURI());
+                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
+                    LOG.error("Path was: {}", method.getURI());
                 }
             }
         } catch (ClientAbortException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("User client aborted request to stream jp2 metadata for " + simplepid, e);
-            }
+            LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
         } catch (Exception e ) {
-            LOG.error("Problem retrieving metadata for " + path, e);
+            LOG.error("Problem retrieving metadata for {}", path, e);
+        } finally {
+            method.releaseConnection();
         }
     }
 
@@ -88,20 +112,19 @@ public class LorisContentService {
     public void streamJP2(String simplepid, String region, String size, String rotation, String quality,
             String format, String datastream, OutputStream outStream, HttpServletResponse response,
             int retryServerError) {
-        CloseableHttpClient client = HttpClients.createDefault();
 
-        StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
-
-        path.append(simplepid).append("/" + region).append("/" + size)
+        StringBuilder path = new StringBuilder(getLorisPath());
+        path.append(idToPath(simplepid, 4, 2)).append(simplepid).append(".jp2")
+                .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
         HttpGet method = new HttpGet(path.toString());
 
-        try (CloseableHttpResponse httpResp = client.execute(method)) {
+        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
             int statusCode = httpResp.getStatusLine().getStatusCode();
 
             if (statusCode == HttpStatus.SC_OK) {
-                if (response != null ) {
+                if (response != null) {
                     response.setHeader("Content-Type", "image/jpeg");
                     response.setHeader("content-disposition", "inline");
 
@@ -109,28 +132,27 @@ public class LorisContentService {
                 }
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
-                    this.getMetadata(simplepid, datastream, outStream, response, retryServerError - 1);
+                    streamJP2(simplepid, region, size, rotation, quality,
+                            format, datastream, outStream, response, retryServerError - 1);
                 } else {
-                    LOG.error("Unexpected failure: " + httpResp.getStatusLine().toString());
-                    LOG.error("Path was: " + method.getURI());
+                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
+                    LOG.error("Path was: {}", method.getURI());
                 }
             }
         } catch (ClientAbortException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("User client aborted request to stream jp2 for " + simplepid, e);
-            }
+            LOG.debug("User client aborted request to stream jp2 for {}", simplepid, e);
         } catch (Exception e) {
-            LOG.error("Problem retrieving metadata for " + path, e);
+            LOG.error("Problem retrieving metadata for {}", path, e);
         } finally {
             method.releaseConnection();
         }
     }
 
-    public ApplicationPathSettings getApplicationPathSettings() {
-        return applicationPathSettings;
+    public void setLorisPath(String fullPath) {
+        this.lorisPath = fullPath;
     }
 
-    public void setApplicationPathSettings(ApplicationPathSettings applicationPathSettings) {
-        this.applicationPathSettings = applicationPathSettings;
+    public String getLorisPath() {
+        return lorisPath;
     }
 }

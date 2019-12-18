@@ -18,6 +18,7 @@ package edu.unc.lib.dl.xml;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayDeque;
@@ -38,7 +39,6 @@ import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
@@ -166,7 +166,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
     public List<List<String>> getAuthoritativeForms(final Element docElement)
             throws JDOMException {
 
-        Set<String> terms = new HashSet<String>();
+        Set<String> terms = new HashSet<>();
 
         List<?> names = docElement.getChildren("name",
                 JDOMNamespaceUtil.MODS_V3_NS);
@@ -185,7 +185,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
             }
         }
 
-        List<List<String>> expandedDepts = new ArrayList<List<String>>(
+        List<List<String>> expandedDepts = new ArrayList<>(
                 terms.size());
         for (String affiliation : terms) {
             List<List<String>> results = getAuthoritativeForm(affiliation);
@@ -305,7 +305,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
     }
 
     private List<List<String>> getAddressDepartment(final String[] addressParts) {
-        List<List<String>> allResults = new ArrayList<List<String>>();
+        List<List<String>> allResults = new ArrayList<>();
 
         for (int i = 0; i < addressParts.length; i++) {
             String addressPart = addressParts[i];
@@ -392,7 +392,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
         // Check if there are multiple departments in this affiliation
         String[] multipleDepts = deptSplitPlural.split(affiliation);
         if (multipleDepts.length > 1) {
-            List<List<String>> allPaths = new ArrayList<List<String>>();
+            List<List<String>> allPaths = new ArrayList<>();
             // Split the departments up, to lookup and add separately
             for (String part : multipleDepts) {
                 part = part.trim().replace("departments", "department");
@@ -418,7 +418,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
      * @return
      */
     private List<List<String>> buildHierarchy(final DepartmentConcept dept) {
-        List<List<String>> hierarchy = new ArrayList<List<String>>();
+        List<List<String>> hierarchy = new ArrayList<>();
 
         walkHierarchy(dept, new ArrayDeque<String>(), hierarchy);
 
@@ -442,14 +442,14 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
             for (String broader : dept.broader) {
                 parentDept = departments.get(broader);
                 if (parentDept == null) {
-                    deptPaths.add(new ArrayList<String>(deptStack));
+                    deptPaths.add(new ArrayList<>(deptStack));
                 } else {
                     walkHierarchy(parentDept, deptStack, deptPaths);
                 }
             }
 
         } else {
-            deptPaths.add(new ArrayList<String>(deptStack));
+            deptPaths.add(new ArrayList<>(deptStack));
         }
 
         deptStack.removeFirst();
@@ -505,18 +505,18 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
      * @throws Exception
      */
     private void parseVocabulary(final byte[] content) throws Exception {
-        departments = new HashMap<String, DepartmentConcept>();
+        departments = new HashMap<>();
 
         log.debug("Parsing and building Department vocabulary from {}",
                 getVocabularyURI());
 
-        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+        SAXBuilder sb = createSAXBuilder();
         Document skosDoc = sb.build(new ByteArrayInputStream(content));
 
         // Extract all of the concepts and store them to an index
         List<?> concepts = skosDoc.getRootElement().getChildren("Concept",
                 SKOS_NS);
-        Map<String, DepartmentConcept> tempDepts = new HashMap<String, DepartmentConcept>(
+        Map<String, DepartmentConcept> tempDepts = new HashMap<>(
                 concepts.size());
         for (Object conceptObj : concepts) {
             DepartmentConcept dept = new DepartmentConcept((Element) conceptObj);
@@ -652,7 +652,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
             throws JDOMException {
         List<?> nameObjs = namePath.evaluate(modsRoot);
 
-        Set<String> invalidTerms = new HashSet<String>();
+        Set<String> invalidTerms = new HashSet<>();
 
         for (Object nameObj : nameObjs) {
             Element nameEl = (Element) nameObj;
@@ -705,7 +705,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see edu.unc.lib.dl.xml.VocabularyHelper#getVocabularyTerms()
      */
     @Override
@@ -724,7 +724,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see edu.unc.lib.dl.xml.VocabularyHelper#setContent(byte[])
      */
     @Override
@@ -765,7 +765,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
                 this.prefLabel = cleanLabel(this.prefLabel);
             }
 
-            this.otherLabels = new ArrayList<String>();
+            this.otherLabels = new ArrayList<>();
             addLabelsFromElements(conceptEl.getChildren("altLabel", SKOS_NS));
             addLabelsFromElements(conceptEl.getChildren("hiddenLabel", SKOS_NS));
         }
@@ -802,7 +802,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
         }
 
         public void setBroader(final List<?> broaderEls) {
-            broader = new ArrayList<String>(broaderEls.size());
+            broader = new ArrayList<>(broaderEls.size());
             for (Object broaderEl : broaderEls) {
                 broader.add(((Element) broaderEl).getAttributeValue("resource",
                         RDF_NS).toLowerCase());
@@ -825,7 +825,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see edu.unc.lib.dl.xml.VocabularyHelper#getVocabularyURI()
      */
     @Override

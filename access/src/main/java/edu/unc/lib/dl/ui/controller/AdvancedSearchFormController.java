@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
@@ -47,11 +49,11 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 @Controller
 @RequestMapping("/advancedSearch")
 public class AdvancedSearchFormController extends AbstractSolrSearchController {
-    LinkedHashMap<String, String> dropdownVals = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> dropdownVals = new LinkedHashMap<>();
 
     @PostConstruct
     public void init() throws IOException, JDOMException {
-        SAXBuilder builder = new SAXBuilder();
+        SAXBuilder builder = createSAXBuilder();
         Document document = null;
 
         try (InputStream responseStream = this.getClass().getResourceAsStream("/mappings/dropdownMappings.xml")) {

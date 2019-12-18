@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.util;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -22,7 +24,6 @@ import org.apache.camel.Message;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 /**
  * Utilities for working with event messages
@@ -50,11 +51,9 @@ public class MessageUtil {
             if (body instanceof Document) {
                 return (Document) body;
             } else if (body instanceof InputStream) {
-                SAXBuilder bodyBuilder = new SAXBuilder();
-                return bodyBuilder.build((InputStream) body);
+                return createSAXBuilder().build((InputStream) body);
             } else if (body instanceof String) {
-                SAXBuilder bodyBuilder = new SAXBuilder();
-                return bodyBuilder.build(
+                return createSAXBuilder().build(
                         new ByteArrayInputStream(((String) body).getBytes()));
             }
         }

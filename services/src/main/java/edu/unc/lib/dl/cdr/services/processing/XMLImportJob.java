@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +34,6 @@ import javax.mail.internet.MimeMessage;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
@@ -216,10 +217,7 @@ public class XMLImportJob implements Runnable {
     }
 
     private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
-        XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
-        xmlFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-        xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
-
+        xmlReader = createXMLInputFactory().createXMLEventReader(new FileInputStream(importFile));
     }
 
     private void processUpdates() throws XMLStreamException, ServiceException {

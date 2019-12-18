@@ -58,7 +58,7 @@ public class SerializationUtil {
     static {
         jsonMapper.setSerializationInclusion(Include.NON_NULL);
     }
-    private static ApplicationPathSettings applicationPathSettings;
+
     private static SearchSettings searchSettings;
     private static SolrSettings solrSettings;
     private static GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -272,9 +272,8 @@ public class SerializationUtil {
         return "";
     }
 
-    public static void injectSettings(ApplicationPathSettings applicationPathSettings, SearchSettings searchSettings,
+    public static void injectSettings(SearchSettings searchSettings,
             SolrSettings solrSettings, GlobalPermissionEvaluator globalPermissionEvaluator) {
-        SerializationUtil.applicationPathSettings = applicationPathSettings;
         SerializationUtil.searchSettings = searchSettings;
         SerializationUtil.solrSettings = solrSettings;
         SerializationUtil.globalPermissionEvaluator = globalPermissionEvaluator;

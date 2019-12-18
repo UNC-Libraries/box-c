@@ -15,6 +15,20 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.output.XMLOutputter;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -27,20 +41,6 @@ import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import io.dropwizard.metrics5.Timer;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
-import org.jdom2.output.XMLOutputter;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 /**
  * Service that manages editing of the mods:title property on an object
@@ -86,10 +86,9 @@ public class EditTitleService {
             }
 
             if (modsStream != null) {
-                SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
                 Document document;
                 try {
-                    document = sb.build(modsStream);
+                    document = createSAXBuilder().build(modsStream);
                 } catch (IOException | JDOMException e) {
                     throw new ServiceException("Unable to build mods document for " + pid, e);
                 }

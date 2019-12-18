@@ -67,11 +67,10 @@
         </property>
     </bean>
 
-    <bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
-        factory-method="newInstance" scope="prototype">
-        <constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
+    <bean id="schemaFactory" class="edu.unc.lib.dl.xml.SecureXMLFactory"
+        factory-method="createSchemaFactory" scope="prototype">
     </bean>
-    
+
     <bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="modsSchema">
@@ -121,14 +120,6 @@
                 </bean>
             </list>
         </constructor-arg>
-    </bean>
-
-    <bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
-        factory-method="newInstance" scope="prototype">
-        <property name="uRIResolver">
-            <bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
-            </bean>
-        </property>
     </bean>
 
     <bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
