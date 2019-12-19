@@ -32,4 +32,10 @@ public interface MultiDestinationTransferSession extends AutoCloseable {
      * @return Transfer session to the provided destination
      */
     BinaryTransferSession forDestination(StorageLocation dest);
+
+    /**
+     * Closes the transfer session. If there are any failures, they will be RuntimeExceptions.
+     */
+    @Override
+    void close();
 }

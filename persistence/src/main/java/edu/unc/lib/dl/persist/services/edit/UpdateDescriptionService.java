@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -47,6 +50,7 @@ import io.dropwizard.metrics5.Timer;
  *
  */
 public class UpdateDescriptionService {
+    private static final Logger log = LoggerFactory.getLogger(UpdateDescriptionService.class);
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -104,6 +108,7 @@ public class UpdateDescriptionService {
     private void updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
             ContentObject obj, InputStream modsStream) throws IOException {
 
+        log.debug("Updating description for {}", obj.getPid().getId());
         try (Timer.Context context = timer.time()) {
             aclService.assertHasAccess("User does not have permissions to update description",
                     obj.getPid(), agent.getPrincipals(), Permission.editDescription);
@@ -121,6 +126,7 @@ public class UpdateDescriptionService {
             URI modsUri = transferSession.transferReplaceExisting(modsDsPid, modsStream);
 
             obj.setDescription(modsUri);
+            log.debug("Successfully set desc to {}", modsUri);
 
             operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
         }

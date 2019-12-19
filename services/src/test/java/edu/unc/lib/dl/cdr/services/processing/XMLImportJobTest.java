@@ -15,20 +15,22 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObject;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.makeUpdateDocument;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.writeToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -39,6 +41,8 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +56,14 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 
 /**
  *
@@ -60,6 +71,14 @@ import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
  *
  */
 public class XMLImportJobTest {
+
+    private final static String ORIGINAL_TITLE = "Work Test";
+    private final static String UPDATED_TITLE = "Updated Work Title";
+    private final static String ORIGINAL_DATE = "2017-10-09";
+
+    private static final String OBJ1_ID = "ae0091e0-192d-46f9-a8ad-8b0dc82f33ad";
+    private static final String OBJ2_ID = "b75e416f-0ca8-4138-94ca-0a99bbd8e710";
+    private static final String OBJ3_ID = "43dcb37a-27fc-425b-9c00-76cee952507c";
 
     private XMLImportJob job;
 
@@ -73,8 +92,16 @@ public class XMLImportJobTest {
     private JavaMailSender mailSender;
     @Mock
     private UpdateDescriptionService updateService;
-
-    private String fromAddress = "admin@example.com";
+    @Mock
+    private BinaryTransferService transferService;
+    @Mock
+    private MultiDestinationTransferSession multiDestSession;
+    @Mock
+    private BinaryTransferSession singleDestSession;
+    @Mock
+    private StorageLocationManager locationManager;
+    @Mock
+    private StorageLocation storageLocation;
 
     @Mock
     private MimeMessage msg;
@@ -104,6 +131,10 @@ public class XMLImportJobTest {
         initMocks(this);
 
         when(mailSender.createMimeMessage()).thenReturn(msg);
+
+        when(transferService.getSession()).thenReturn(multiDestSession);
+        when(multiDestSession.forDestination(storageLocation)).thenReturn(singleDestSession);
+        when(locationManager.getStorageLocation(any(PID.class))).thenReturn(storageLocation);
     }
 
     @SuppressWarnings("unchecked")
@@ -150,7 +181,11 @@ public class XMLImportJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void incorrectOpeningTagTest() throws Exception {
-        File importFile = createTempImportFile("src/test/resources/mods/bad-update-work-mods.xml");
+        Document updateDoc = new Document();
+        updateDoc.addContent(new Element("wrongRoot"));
+        addObjectUpdate(updateDoc, PIDs.get("ae0091e0-192d-46f9-a8ad-8b0dc82f33ad"), null)
+            .addContent(modsWithTitleAndDate("Updated Work Test", null));
+        File importFile = writeToFile(updateDoc);
 
         setupJob(importFile);
 
@@ -192,21 +227,18 @@ public class XMLImportJobTest {
         assertNotNull(dataMap.get("updated"));
         assertNotNull(dataMap.get("updatedCount"));
         verify(msg).setSubject(subjectCaptor.capture());
-        System.out.println("WHAT " + subjectCaptor.getValue());
         assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
     }
 
-    private File createTempImportFile() throws IOException {
-        return createTempImportFile("src/test/resources/mods/bulk-md.xml");
-    }
+    private File createTempImportFile() throws Exception {
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, PIDs.get(OBJ1_ID), null)
+            .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
+        addObjectUpdate(updateDoc, PIDs.get(OBJ2_ID), "2017-10-18T12:29:53.396Z")
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, null));
+        addObject(updateDoc, PIDs.get(OBJ3_ID));
 
-    // creates copy of import file to avoid test file being deleted from project
-    private File createTempImportFile(String path) throws IOException {
-        File tempDir = tmpFolder.newFolder();
-        File tempImportFile = new File(tempDir, "temp-mods-import");
-        Files.copy(Paths.get(path), tempImportFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        return tempImportFile;
+        return writeToFile(updateDoc);
     }
 
     private void setupJob(File importFile) {
@@ -214,12 +246,13 @@ public class XMLImportJobTest {
         job = new XMLImportJob(userEmail, agent, importFile);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
-        job.setFromAddress(fromAddress);
+        job.setFromAddress("admin@example.com");
         job.setMailSender(mailSender);
         job.setUpdateService(updateService);
         job.setMimeMessage(msg);
         job.setMessageHelper(msgHelper);
-        job.setFromAddress("cdrAdmin@example.org");
+        job.setLocationManager(locationManager);
+        job.setTransferService(transferService);
     }
 
 }

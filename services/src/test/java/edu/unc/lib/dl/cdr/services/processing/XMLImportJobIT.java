@@ -15,6 +15,14 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.makeUpdateDocument;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.writeToFile;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -22,13 +30,11 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Path;
+import java.util.ArrayList;
 
 import javax.mail.internet.MimeMessage;
 
@@ -36,6 +42,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,11 +60,15 @@ import com.samskivert.mustache.Template;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.test.TestHelper;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  *
@@ -74,7 +85,16 @@ public class XMLImportJobIT {
 
     private XMLImportJob job;
 
-    private String userEmail = "user@example.com";
+    private final static String USER_EMAIL = "user@example.com";
+
+    private final static String LOC1_ID = "loc1";
+    private final static String LOC2_ID = "loc2";
+
+    private final static String ORIGINAL_TITLE = "Work Test";
+    private final static String UPDATED_TITLE = "Updated Work Title";
+    private final static String ORIGINAL_DATE = "2017-10-09";
+    private final static String UPDATED_DATE = "2018-04-06";
+
     @Mock
     private AgentPrincipals agent;
     private File importFile;
@@ -99,10 +119,24 @@ public class XMLImportJobIT {
 
     @Autowired
     private RepositoryObjectFactory factory;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
+    private ContentPathFactory pathFactory;
     private WorkObject workObj;
 
+    private PID parentPid;
+
+    private StorageLocationManagerImpl locationManager;
+    private BinaryTransferServiceImpl transferService;
+
+    private StorageLocationTestHelper locTestHelper;
+
+    private Path loc1Path;
+    private Path loc2Path;
+
     @Before
-    public void init_() throws IOException {
+    public void init_() throws Exception {
         initMocks(this);
 
         tempDir = tmpFolder.newFolder();
@@ -111,112 +145,142 @@ public class XMLImportJobIT {
         when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
 
         TestHelper.setContentBase("http://localhost:48085/rest/");
+
+        loc1Path = tmpFolder.newFolder("loc1").toPath();
+        loc2Path = tmpFolder.newFolder("loc2").toPath();
+
+        parentPid = makePid();
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>(asList(parentPid)));
+
+        locTestHelper = new StorageLocationTestHelper();
+        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
+        locTestHelper.addMapping(parentPid.getId(), LOC1_ID);
+        locTestHelper.addStorageLocation(LOC2_ID, "Location 2", loc2Path.toString());
+
+        locationManager = new StorageLocationManagerImpl();
+        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
+        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
+        locationManager.setRepositoryObjectLoader(repoObjLoader);
+        locationManager.setPathFactory(pathFactory);
+        locationManager.init();
+
+        transferService = new BinaryTransferServiceImpl();
     }
 
     @Test
     public void testMODSGetsUpdated() throws Exception {
-        populateFedora("uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad");
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
+        PID workPid = populateFedora();
+        InputStream originalMods = descriptionStream(workPid);
         assertModsNotUpdated(originalMods);
-        importFile = createTempImportFile("src/test/resources/mods/update-work-mods.xml");
+
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, workPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
         createJob();
 
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
 
-        InputStream updatedMods = workObj.getDescription().getBinaryStream();
-
+        InputStream updatedMods = descriptionStream(workPid);
         assertModsUpdated(updatedMods);
     }
 
     @Test
     public void testTwoWorksOneGetsUpdated() throws Exception {
-        populateFedora("uuid:ae0091e0-192d-57a0-a8ad-8b0dc82f33ad");
+        PID workPid = populateFedora();
         // create a second work obj in Fedora and add mods to it
-        PID anotherWorkPid = PIDs.get("uuid:bf0091e0-192d-57a0-a8ad-8b0dc82f33be");
-        WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
-        anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
+        PID anotherWorkPid =  populateFedora();
 
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
-        InputStream anotherOriginalMods = anotherWorkObj.getDescription().getBinaryStream();
+        InputStream originalMods = descriptionStream(workPid);
+        InputStream anotherOriginalMods = descriptionStream(anotherWorkPid);
         assertModsNotUpdated(originalMods);
         assertModsNotUpdated(anotherOriginalMods);
 
-        importFile = createTempImportFile("src/test/resources/mods/two-works-missing-pid-mods.xml");
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, null, null)
+            .addContent(modsWithTitleAndDate("Missing pid!", null));
+        addObjectUpdate(updateDoc, workPid, "2017-10-18T12:29:53.396Z")
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
         createJob();
 
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        InputStream updatedMods = workObj.getDescription().getBinaryStream();
-        InputStream anotherUpdatedMods = anotherWorkObj.getDescription().getBinaryStream();
-        assertModsUpdated(updatedMods);
-        assertModsNotUpdated(anotherUpdatedMods);
+        assertModsUpdated(descriptionStream(workPid));
+        assertModsNotUpdated(descriptionStream(anotherWorkPid));
     }
 
     @Test
     public void testTwoObjectsUpdatedSingleRequest() throws Exception {
-        populateFedora("uuid:ae0091e0-192d-57a0-a8ad-9c1dc82f33ad");
+        PID workPid = populateFedora();
         // create a second work obj in Fedora and add mods to it
-        PID anotherWorkPid = PIDs.get("uuid:bf0091e0-192d-57a0-b9be-8b0dc82f33be");
-        WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
-        anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
+        PID anotherWorkPid = populateFedora();
 
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
-        InputStream anotherOriginalMods = anotherWorkObj.getDescription().getBinaryStream();
-        assertModsNotUpdated(originalMods);
-        assertModsNotUpdated(anotherOriginalMods);
+        assertModsNotUpdated(descriptionStream(workPid));
+        assertModsNotUpdated(descriptionStream(anotherWorkPid));
 
-        importFile = createTempImportFile("src/test/resources/mods/two-works-mods.xml");
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, anotherWorkPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        addObjectUpdate(updateDoc, workPid, "2017-10-18T12:29:53.396Z")
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
         createJob();
 
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        InputStream updatedMods = workObj.getDescription().getBinaryStream();
-        InputStream anotherUpdatedMods = anotherWorkObj.getDescription().getBinaryStream();
-        assertModsUpdated(updatedMods);
-        assertModsUpdated(anotherUpdatedMods);
+        assertModsUpdated(descriptionStream(workPid));
+        assertModsUpdated(descriptionStream(anotherWorkPid));
     }
 
     @Test
     public void testUpdateFileMissingBulkMetadataTag() throws Exception {
-        populateFedora("uuid:bf0091e0-192d-46f9-a8ad-8b0dc82f33be");
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
-        importFile = createTempImportFile("src/test/resources/mods/bad-update-work-mods.xml");
+        PID workPid = populateFedora();
+
+        Document updateDoc = new Document();
+        updateDoc.addContent(new Element("wrongRoot"));
+        addObjectUpdate(updateDoc, workPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
         createJob();
 
         job.run();
 
-        assertModsNotUpdated(originalMods);
+        assertModsNotUpdated(descriptionStream(workPid));
         verify(mailSender).send(any(MimeMessage.class));
         assertEquals("File is not a bulk-metadata-update doc", job.getFailed().get(importFile.getAbsolutePath()));
     }
 
     @Test
     public void testUpdateFileMissingUpdateTag() throws Exception {
-        populateFedora("uuid:bf0091e0-203e-46f9-a8ad-8b0dc82f33be");
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
-        importFile = createTempImportFile("src/test/resources/mods/no-update-mods.xml");
+        PID workPid = populateFedora();
+
+        Document updateDoc = makeUpdateDocument();
+        updateDoc.getRootElement().addContent(new Element("object").setAttribute("pid", workPid.getId()));
+        importFile = writeToFile(updateDoc);
         createJob();
 
         job.run();
 
-        assertModsNotUpdated(originalMods);
+        assertModsNotUpdated(descriptionStream(workPid));
         verify(mailSender).send(any(MimeMessage.class));
     }
 
     @Test
     public void testUpdateFileHasXMLErrors() throws Exception {
-        populateFedora("uuid:ca0091e0-192d-46f9-a8ad-8b0dc82f33cf");
-        InputStream originalMods = workObj.getDescription().getBinaryStream();
-        importFile = createTempImportFile("src/test/resources/mods/bad-xml.xml");
+        PID workPid = populateFedora();
+
+        importFile = Files.createTempFile(tempDir.toPath(), "import", ".xml").toFile();
+        writeStringToFile(importFile, "<bulkMetadata><mods>busted</mods>", UTF_8);
         createJob();
 
         job.run();
 
-        assertModsNotUpdated(originalMods);
+        assertModsNotUpdated(descriptionStream(workPid));
         verify(mailSender).send(any(MimeMessage.class));
         assertEquals("The import file contains XML errors", job.getFailed().get(importFile.getAbsolutePath()));
     }
@@ -225,48 +289,51 @@ public class XMLImportJobIT {
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build(updatedMods);
         Element rootEl = doc.getRootElement();
-        Element title = rootEl.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("title",
-                JDOMNamespaceUtil.MODS_V3_NS);
-        Element dateCreated = rootEl.getChild("originInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("dateCreated",
-                JDOMNamespaceUtil.MODS_V3_NS);
-        assertEquals("Updated Work Test", title.getValue());
-        assertEquals("2018-04-06", dateCreated.getValue());
+        String title = rootEl.getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
+        String dateCreated = rootEl.getChild("originInfo", MODS_V3_NS).getChildText("dateCreated", MODS_V3_NS);
+        assertEquals(UPDATED_TITLE, title);
+        assertEquals(UPDATED_DATE, dateCreated);
     }
 
     private void assertModsNotUpdated(InputStream originalMods) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build(originalMods);
         Element rootEl = doc.getRootElement();
-        Element title = rootEl.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("title",
-                JDOMNamespaceUtil.MODS_V3_NS);
-        Element dateCreated = rootEl.getChild("originInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("dateCreated",
-                JDOMNamespaceUtil.MODS_V3_NS);
-        assertEquals("Work Test", title.getValue());
-        assertEquals("2017-10-09", dateCreated.getValue());
+        String title = rootEl.getChild("titleInfo", MODS_V3_NS).getChild("title",
+                MODS_V3_NS).getValue();
+        String dateCreated = rootEl.getChild("originInfo", MODS_V3_NS).getChild("dateCreated",
+                MODS_V3_NS).getValue();
+        assertEquals(ORIGINAL_TITLE, title);
+        assertEquals(ORIGINAL_DATE, dateCreated);
     }
 
     private void createJob() {
-        job = new XMLImportJob(userEmail, agent, importFile);
+        job = new XMLImportJob(USER_EMAIL, agent, importFile);
         job.setUpdateService(updateService);
         job.setMailSender(mailSender);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress(fromAddress);
         job.setMimeMessage(mimeMsg);
+        job.setLocationManager(locationManager);
+        job.setTransferService(transferService);
     }
 
-    private File createTempImportFile(String filename) throws IOException {
-        File tempImportFile = new File(tempDir, "temp-import");
-        Files.copy(Paths.get(filename), tempImportFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        File importFile = new File(tempImportFile.getPath());
-        return importFile;
-    }
-
-    private void populateFedora(String pid) throws FileNotFoundException {
-        PID workPid = PIDs.get(pid);
+    private PID populateFedora() throws Exception {
+        PID workPid = makePid();
         workObj = factory.createWorkObject(workPid, null);
-        workObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
+        Document doc = new Document()
+                .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
+        File workModsFile = writeToFile(doc);
+        workObj.setDescription(workModsFile.toPath().toUri());
+        return workPid;
     }
 
+    private PID makePid() {
+        return PIDs.get(UUID.randomUUID().toString());
+    }
+
+    private InputStream descriptionStream(PID pid) {
+        return repoObjLoader.getWorkObject(pid).getDescription().getBinaryStream();
+    }
 }

@@ -44,7 +44,7 @@ public class MultiDestinationTransferSessionImpl implements MultiDestinationTran
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         sessionMap.entrySet().forEach(e -> e.getValue().close());
     }
 

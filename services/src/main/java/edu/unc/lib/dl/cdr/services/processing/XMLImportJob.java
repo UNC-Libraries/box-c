@@ -54,6 +54,10 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 import io.dropwizard.metrics5.Timer;
 
@@ -102,6 +106,9 @@ public class XMLImportJob implements Runnable {
     private List<String> updated;
     private Map<String, String> failed;
 
+    private BinaryTransferService transferService;
+    private StorageLocationManager locationManager;
+
     private static final Timer timer = TimerFactory.createTimerForClass(XMLImportJob.class);
 
     public XMLImportJob(String userEmail, AgentPrincipals agent, File importFile) {
@@ -123,15 +130,18 @@ public class XMLImportJob implements Runnable {
             mimeMsg = mailSender.createMimeMessage();
             msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
         } catch (MessagingException e) {
-            log.error("Failed to send email to " + userEmail
-                    + " for update " + importFile.getAbsolutePath(), e);
+            log.error("Failed to send email to {} for update {}",
+                    userEmail, importFile.getAbsolutePath(), e);
         }
 
-        try (Timer.Context context = timer.time()) {
+        try (
+                Timer.Context context = timer.time();
+                MultiDestinationTransferSession session = transferService.getSession();
+        ) {
             initializeXMLReader();
-            processUpdates();
+            processUpdates(session, null, null);
             log.info("Finished metadata import for {} objects in {}ms for user {}",
-                    new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
+                    objectCount, System.currentTimeMillis() - startTime, username);
             sendCompletedEmail(updated, failed);
         } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
@@ -216,6 +226,20 @@ public class XMLImportJob implements Runnable {
         return failed;
     }
 
+    /**
+     * @param transferService the transferService to set
+     */
+    public void setTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
+    }
+
+    /**
+     * @param locationManager the locationManager to set
+     */
+    public void setLocationManager(StorageLocationManager locationManager) {
+        this.locationManager = locationManager;
+    }
+
     private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
         XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
         xmlFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
@@ -223,11 +247,8 @@ public class XMLImportJob implements Runnable {
 
     }
 
-    private void processUpdates() throws XMLStreamException, ServiceException {
-        processUpdates(null, null);
-    }
-
-    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, ServiceException {
+    private void processUpdates(MultiDestinationTransferSession session, PID resumePid, String resumeDs)
+            throws XMLStreamException, ServiceException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
@@ -329,7 +350,9 @@ public class XMLImportJob implements Runnable {
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
                                 try {
-                                    updateService.updateDescription(agent, currentPid, modsStream);
+                                    BinaryTransferSession transferSession =
+                                            session.forDestination(locationManager.getStorageLocation(currentPid));
+                                    updateService.updateDescription(transferSession, agent, currentPid, modsStream);
                                 } catch (AccessRestrictionException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
