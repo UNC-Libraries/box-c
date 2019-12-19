@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.edit;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,13 +32,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.UUID;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +78,8 @@ public class EditTitleServiceTest {
     private ArgumentCaptor<PID> pidCaptor;
     @Captor
     private ArgumentCaptor<InputStream> inputStreamCaptor;
+    @Captor
+    private ArgumentCaptor<URI> uriCaptor;
 
     private EditTitleService service;
     private PID pid;
@@ -208,7 +211,7 @@ public class EditTitleServiceTest {
     }
 
     private Document getUpdatedDescriptionDocument() throws IOException, JDOMException {
-        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+        SAXBuilder sb = createSAXBuilder();
         return sb.build(inputStreamCaptor.getValue());
     }
 

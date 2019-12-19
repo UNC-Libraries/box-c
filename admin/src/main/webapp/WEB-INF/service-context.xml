@@ -75,6 +75,10 @@
         <constructor-arg
             value="${sword.password}" />
     </bean>
+    
+    <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
+        <property name="lorisPath" value="${loris.base.url}"/>
+    </bean>
 
     <bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
         <property name="exposedContextBeanNames">

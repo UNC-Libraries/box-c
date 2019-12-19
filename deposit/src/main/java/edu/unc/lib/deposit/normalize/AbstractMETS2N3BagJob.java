@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
@@ -31,7 +32,6 @@ import javax.xml.validation.Validator;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
-import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +47,7 @@ import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.NoResolutionResourceResolver;
 import edu.unc.lib.dl.xml.METSProfile;
 
 /**
@@ -134,7 +135,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
             count++;
         }
-        log.info(count + " PIDs assigned");
+        log.info("{} PIDs assigned", count);
 
         PID depositPID = getDepositPID();
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
@@ -146,9 +147,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
     protected Document loadMETS() {
         Document mets = null;
-        SAXBuilder builder = new SAXBuilder();
         try {
-            mets = builder.build(getMETSFile());
+            mets = createSAXBuilder().build(getMETSFile());
         } catch (Exception e) {
             failJob(e, "Unexpected error parsing METS file.");
         }
@@ -170,10 +170,9 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
         METSParseException handler = new METSParseException("There was a problem parsing METS XML.");
 
         try {
+            // XXE addressed via resource resolver since xerces validator doesn't support the usual jaxp parameters
             Validator metsValidator = getMetsSipSchema().newValidator();
-
-            metsValidator.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            metsValidator.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            metsValidator.setResourceResolver(new NoResolutionResourceResolver());
             metsValidator.setErrorHandler(handler);
 
             metsValidator.validate(new StreamSource(getMETSFile()));

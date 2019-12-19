@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -305,7 +306,7 @@ public class DepositController {
         Map<String, String> status = depositStatusFactory.get(uuid);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
-            if (username == null ||  !username.equals(status.get(DepositField.depositorName))) {
+            if (username == null ||  !username.equals(status.get(DepositField.depositorName.name()))) {
                 response.setStatus(403);
                 return;
             }
@@ -394,8 +395,7 @@ public class DepositController {
         }
         Element events = new Element("events", JDOMNamespaceUtil.PREMIS_V2_NS);
         Document result = new Document(events);
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        XMLInputFactory factory = createXMLInputFactory();
         try (FileInputStream fis = new FileInputStream(eventsFile)) {
             XMLStreamReader reader = factory.createXMLStreamReader(fis);
             StAXStreamBuilder builder = new StAXStreamBuilder();

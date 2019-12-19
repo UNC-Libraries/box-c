@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.edit;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,8 +26,6 @@ import java.io.InputStream;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaderSAX2Factory;
 import org.jdom2.output.XMLOutputter;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -83,8 +82,7 @@ public class EditTitleService {
             }
 
             if (modsStream != null) {
-                SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
-                Document document = sb.build(modsStream);
+                Document document = createSAXBuilder().build(modsStream);
                 Element rootEl = document.getRootElement();
 
                 if (hasExistingTitle(rootEl)) {

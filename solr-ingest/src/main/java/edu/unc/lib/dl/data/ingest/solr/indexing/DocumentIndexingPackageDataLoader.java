@@ -15,13 +15,14 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -50,7 +51,7 @@ public class DocumentIndexingPackageDataLoader {
         }
 
         try (InputStream modsStream = modsBinary.getBinaryStream()) {
-            Document dsDoc = new SAXBuilder().build(modsStream);
+            Document dsDoc = createSAXBuilder().build(modsStream);
             return dsDoc.detachRootElement();
         } catch (JDOMException | IOException e) {
             throw new IndexingException("Failed to parse MODS stream for object " + dip.getPid(), e);

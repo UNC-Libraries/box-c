@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
             BinaryObject modsObj = contentObj.getDescription();
             if (modsObj != null) {
-                SAXBuilder builder = new SAXBuilder();
+                SAXBuilder builder = createSAXBuilder();
                 Document modsDoc = builder.build(modsObj.getBinaryStream());
 
                 fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);

@@ -544,6 +544,11 @@ p.no-search-results {
 }
 
 /* Work page */
+.jp2_imageviewer_window {
+  margin: 15px;
+  width: auto;
+}
+
 /* DataTables  */
 #child-files_wrapper div {
   margin: 15px 0 !important;
@@ -585,25 +590,53 @@ p.no-search-results {
 .onecol, .content-wrap.full_record {
   width: 100%;
 }
+.onecol h2, .content-wrap.full_record h2 {
+  font-size: 20px;
+  margin: 20px;
+}
+.onecol .current_item, .content-wrap.full_record .current_item {
+  margin-left: 35px;
+}
+.onecol .relateditem p, .content-wrap.full_record .relateditem p {
+  font-size: 16px;
+}
 
 .contentarea {
   margin: 20px;
 }
 
+.item-title {
+  font-size: 36px;
+  padding-left: 25px;
+}
+
+.item-actions {
+  padding-right: 25px;
+}
+
 .full_record_top {
   border-bottom: 1px solid #E1E1E1;
+  margin-left: 15px;
+  margin-top: 25px;
   padding-bottom: 25px;
+  width: 97%;
 }
 .full_record_top .collinfo {
-  padding-top: 25px;
   width: 85%;
+}
+.full_record_top .item-info {
+  margin-left: 15px;
+}
+.full_record_top .columns {
+  margin-bottom: 0;
 }
 
 .full_record .contentarea {
   margin: 0;
 }
-.full_record h2 {
-  color: #3C4C5A;
+.full_record .contentarea-aggregate .collinfo_metadata {
+  margin: 25px;
+  width: 100%;
 }
 
 #full_record_trail {
@@ -621,6 +654,10 @@ p.no-search-results {
   font-size: 24px;
 }
 
+.actionlink a {
+  color: white;
+}
+
 .actionlink.view {
   max-width: 60px;
 }
@@ -632,14 +669,20 @@ table.dataTable tbody tr.odd {
   background-color: #E1E8FF;
 }
 
+.item-actions .actionlink a {
+  display: inline;
+  font-size: 16px;
+  padding: 10px;
+  vertical-align: middle;
+}
+
 .collinfo_metadata {
-  margin: 20px;
+  margin: 0 20px 20px 0;
 }
 .collinfo_metadata h2 {
   font-size: 24px;
 }
 .collinfo_metadata .actionlink a {
-  color: white;
   padding: 15px;
   display: inline-block;
 }

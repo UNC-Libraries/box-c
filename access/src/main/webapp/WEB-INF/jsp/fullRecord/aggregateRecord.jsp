@@ -34,7 +34,8 @@
 <c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
 
 <div class="full_record_top border-box-left-top">
-	<div class="contentarea">
+	<c:import url="fullRecord/navigationBar.jsp" />
+	<div class="contentarea-aggregate">
 		<div class="collinfo">
 			<div class="collinfo_metadata">
 				<div class="columns">
@@ -119,7 +120,7 @@
 					<div class="clear_space"></div>
 					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
 					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
-					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${cdr:getPreferredDatastream(briefObject, 'IMAGE_JP2000').owner}"></div>
+					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
 				</c:when>
 				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 					<c:choose>

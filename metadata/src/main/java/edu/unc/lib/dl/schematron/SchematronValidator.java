@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.schematron;
 
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createTransformerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,10 +31,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
-
-import net.sf.saxon.TransformerFactoryImpl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +56,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class SchematronValidator {
     private static final Log log = LogFactory.getLog(SchematronValidator.class);
-    private Map<String, Resource> schemas = new HashMap<String, Resource>();
+    private Map<String, Resource> schemas = new HashMap<>();
     private Map<String, Templates> templates = null;
 
     private static Filter<Element> failedAsserts = new ElementFilter(
@@ -127,7 +126,7 @@ public class SchematronValidator {
      * Templates for quick use.
      */
     public void loadSchemas() {
-        templates = new HashMap<String, Templates>();
+        templates = new HashMap<>();
         // Load up a transformer and the ISO Schematron to XSL templates.
         Templates isoSVRLTemplates = null;
         ClassPathResource svrlRes = new ClassPathResource(
@@ -141,23 +140,7 @@ public class SchematronValidator {
         }
         TransformerFactory factory = null;
         try {
-            factory = new TransformerFactoryImpl();
-            // enable relative classpath-based URIs
-            factory.setURIResolver(new URIResolver() {
-                public Source resolve(String href, String base)
-                        throws TransformerException {
-                    ClassPathResource svrlRes = new ClassPathResource(href,
-                            SchematronValidator.class);
-                    Source result;
-                    try {
-                        result = new StreamSource(svrlRes.getInputStream());
-                    } catch (IOException e1) {
-                        throw new TransformerException(
-                                "Cannot resolve " + href, e1);
-                    }
-                    return result;
-                }
-            });
+            factory = createTransformerFactory(getClass());
             isoSVRLTemplates = factory.newTemplates(svrlrc);
         } catch (TransformerFactoryConfigurationError e) {
             log.error("Error setting up transformer factory.", e);
@@ -181,6 +164,7 @@ public class SchematronValidator {
             Resource resource = schemas.get(schema);
             Source schematron = null;
             try {
+
                 schematron = new StreamSource(resource.getInputStream());
             } catch (IOException e) {
                 throw new Error("Cannot load resource for schema \"" + schema
@@ -280,7 +264,7 @@ public class SchematronValidator {
     }
 
     public static List<String> parseSVRLErrors(Document svrl) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         @SuppressWarnings("rawtypes")
         Iterator desc = svrl.getDescendants(failedAsserts);
         if (desc.hasNext()) {
