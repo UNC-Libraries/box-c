@@ -153,29 +153,19 @@
                 this._updateSelectedFacets(facet);
 
                 if (!UUID_REGEX.test(facet.value)) {
-                    this._removeSubFacets(facet);
+                    this._removeSubFacetInfo(facet);
                 }
             },
 
             /**
-             * Create regular expression to find facet value
-             * @param facet
-             * @returns {RegExp}
-             * @private
-             */
-            _buildRegex(facet) {
-                let search_value = facet.limitToValue;
-                return new RegExp(search_value);
-            },
-
-            /**
-             * Add/remove item from facet info list
+             * Remove children of base facets
              * @param facet
              * @private
              */
-            _updateFacetInfo(facet) {
+            _removeSubFacetInfo(facet) {
+                let regex = new RegExp(facet.limitToValue);
                 this.facet_info = this.facet_info.filter((f) => {
-                    return f.fieldName !== facet.fieldName;
+                    return !regex.test(JSON.parse(f).limitToValue)
                 });
             },
 
@@ -185,20 +175,10 @@
              * @private
              */
             _updateSelectedFacets(facet) {
-                let regex = this._buildRegex(facet);
+                let regex = new RegExp(this.facetValue(facet));
                 this.selected_facets = this.selected_facets.filter((sf) => {
                     return !regex.test(sf);
                 });
-            },
-
-            /**
-             * Remove children of base facets
-             * @param facet
-             * @private
-             */
-            _removeSubFacets(facet) {
-                this._updateSelectedFacets(facet);
-                this._updateFacetInfo(facet);
             },
 
             /**
@@ -274,7 +254,7 @@
                         value: collection[0]
                     };
 
-                    this.facet_info.push(facet);
+                    this.facet_info.push(JSON.stringify(facet));
                 }
             },
 
@@ -304,7 +284,7 @@
                         facet.fieldName = (/format/.test(type)) ? 'CONTENT_TYPE' : type.toUpperCase();
 
                         this.selected_facets.push(`${type}=${limit_value}`);
-                        this.facet_info.push(facet);
+                        this.facet_info.push(JSON.stringify(facet));
                     });
                 }
             },
