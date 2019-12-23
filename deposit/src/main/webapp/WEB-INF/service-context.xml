@@ -231,4 +231,16 @@
         <property name="configPath" value="${ingestSources.path}" />
         <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferService">
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
+    </bean>
+    
+    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+            init-method="init">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${storageLocations.path}" />
+        <property name="mappingPath" value="${storageLocationMappings.path}" />
+    </bean>
 </beans>

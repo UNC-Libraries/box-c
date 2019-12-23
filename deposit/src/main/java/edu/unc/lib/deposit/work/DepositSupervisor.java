@@ -44,12 +44,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
+import edu.unc.lib.deposit.normalize.AssignStorageLocationsJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
+import edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob;
 import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateContentModelJob;
@@ -635,6 +637,16 @@ public class DepositSupervisor implements WorkerListener {
         // Extract technical metadata
         if (!successfulJobs.contains(ExtractTechnicalMetadataJob.class.getName())) {
             return makeJob(ExtractTechnicalMetadataJob.class, depositUUID);
+        }
+
+        // Assign storage locations
+        if (!successfulJobs.contains(AssignStorageLocationsJob.class.getName())) {
+            return makeJob(AssignStorageLocationsJob.class, depositUUID);
+        }
+
+        // Transfer binaries to storage locations
+        if (!successfulJobs.contains(TransferBinariesToStorageJob.class.getName())) {
+            return makeJob(TransferBinariesToStorageJob.class, depositUUID);
         }
 
         boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
