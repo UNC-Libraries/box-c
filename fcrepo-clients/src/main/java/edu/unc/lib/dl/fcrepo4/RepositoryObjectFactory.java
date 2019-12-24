@@ -618,6 +618,19 @@ public class RepositoryObjectFactory {
         }
     }
 
+    public boolean objectExists(URI uri) {
+        try (FcrepoResponse response = getClient().head(uri).perform()) {
+            return true;
+        } catch (IOException e) {
+            throw new FedoraException("Failed to close HEAD response for " + uri, e);
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                return false;
+            }
+            throw new FedoraException("Failed to check on object " + uri, e);
+        }
+    }
+
     public void setClient(FcrepoClient client) {
         this.client = client;
     }

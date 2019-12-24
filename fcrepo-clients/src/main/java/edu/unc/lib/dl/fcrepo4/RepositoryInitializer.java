@@ -15,19 +15,13 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.io.IOException;
 import java.net.URI;
 
-import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
-import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
 
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -39,11 +33,6 @@ import edu.unc.lib.dl.util.URIUtil;
 public class RepositoryInitializer {
 
     private RepositoryObjectFactory objFactory;
-
-    private FcrepoClient fcrepoClient;
-
-    public RepositoryInitializer() {
-    }
 
     /**
      * Initializes objects required for the base functionality of the repository
@@ -66,7 +55,7 @@ public class RepositoryInitializer {
         URI containerUri = URI.create(containerString);
 
         // Abort initialization of already present container
-        if (objectExists(containerUri)) {
+        if (objFactory.objectExists(containerUri)) {
             return containerUri;
         }
 
@@ -85,7 +74,7 @@ public class RepositoryInitializer {
         URI contentRootUri = URI.create(contentRootString);
 
         // Don't initialize the object if it is already present.
-        if (objectExists(contentRootUri)) {
+        if (objFactory.objectExists(contentRootUri)) {
             return contentRootUri;
         }
 
@@ -99,26 +88,7 @@ public class RepositoryInitializer {
         return contentRootUri;
     }
 
-    private boolean objectExists(URI uri) {
-        try (FcrepoResponse response = fcrepoClient.head(uri)
-                .perform()) {
-            return true;
-        } catch (IOException e) {
-            throw new FedoraException("Failed to close HEAD response for " + uri, e);
-        } catch (FcrepoOperationFailedException e) {
-            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-                return false;
-            }
-            throw new FedoraException("Failed to check on object " + uri
-                    + " during initialization", e);
-        }
-    }
-
     public void setObjFactory(RepositoryObjectFactory objFactory) {
         this.objFactory = objFactory;
-    }
-
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
     }
 }
