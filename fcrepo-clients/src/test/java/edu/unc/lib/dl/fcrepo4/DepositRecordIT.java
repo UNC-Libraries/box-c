@@ -16,19 +16,21 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.createTempFile;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -89,8 +91,9 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String bodyString1 = "Manifest info";
         String filename1 = "manifest1.txt";
         String mimetype1 = "text/plain";
-        InputStream contentStream1 = new ByteArrayInputStream(bodyString1.getBytes());
-        BinaryObject manifest1 = record.addManifest(contentStream1, filename1, mimetype1);
+        Path manifestPath = createTempFile("manifest", ".txt");
+        writeStringToFile(manifestPath.toFile(), bodyString1, UTF_8);
+        BinaryObject manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1);
 
         assertNotNull(manifest1);
         assertEquals(filename1, manifest1.getFilename());
@@ -99,8 +102,9 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String bodyString2 = "Second manifest";
         String filename2 = "manifest2.txt";
         String mimetype2 = "text/plain";
-        InputStream contentStream2 = new ByteArrayInputStream(bodyString2.getBytes());
-        BinaryObject manifest2 = record.addManifest(contentStream2, filename2, mimetype2);
+        Path manifestPath2 = createTempFile("manifest", ".txt");
+        writeStringToFile(manifestPath2.toFile(), bodyString2, UTF_8);
+        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2);
 
         assertNotNull(manifest2);
 

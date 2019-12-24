@@ -71,7 +71,6 @@
     
     <bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
             init-method="initializeRepository">
-        <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>
 </beans>

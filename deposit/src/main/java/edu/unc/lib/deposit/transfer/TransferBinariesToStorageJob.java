@@ -167,15 +167,15 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferDepositManifests(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
         for (String manifestPath : manifestURIs) {
-            File manifestFile = new File(URI.create(manifestPath));
+            URI manifestUri = URI.create(manifestPath);
+            File manifestFile = new File(manifestUri);
             if (!manifestFile.exists()) {
                 log.warn("Manifest {} does not exist, it may have already been transferred in deposit {}",
                         manifestPath, getDepositUUID());
                 continue;
             }
             PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
-            URI stagingUri = URI.create(manifestPath);
-            URI storageUri = transferSession.transfer(manifestPid, stagingUri);
+            URI storageUri = transferSession.transfer(manifestPid, manifestUri);
             resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
         }
     }

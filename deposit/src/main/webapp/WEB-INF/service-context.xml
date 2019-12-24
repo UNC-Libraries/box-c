@@ -232,7 +232,7 @@
         <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
     
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferService">
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
         <property name="ingestSourceManager" ref="ingestSourceManager" />
     </bean>
     
