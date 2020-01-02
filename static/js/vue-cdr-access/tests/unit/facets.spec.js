@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
 import VueRouter from 'vue-router';
 import facets from '@/components/facets.vue';
-import moxios from "moxios";
 
 const localVue = createLocalVue();
 localVue.use(VueRouter);
@@ -28,18 +27,18 @@ describe('facets.vue', () => {
                         name: "PARENT_COLLECTION",
                         values: [
                             {
-                                count:19,
+                                count: 19,
                                 displayValue: "testCollection",
-                                fieldName: "ANCESTOR_PATH",
                                 limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-                                value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e"
+                                value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+                                fieldName: "ANCESTOR_PATH"
                             },
                             {
-                                count:1,
+                                count: 1,
                                 displayValue: "test2Collection",
-                                fieldName: "ANCESTOR_PATH",
                                 limitToValue: "88386d31-6931-467d-add5-1d109f335302",
-                                value: "88386d31-6931-467d-add5-1d109f335302"
+                                value: "88386d31-6931-467d-add5-1d109f335302",
+                                fieldName: "ANCESTOR_PATH"
                             }
                         ]
                     },
@@ -47,18 +46,18 @@ describe('facets.vue', () => {
                         name: "CONTENT_TYPE",
                         values: [
                             {
-                                count:8,
+                                count: 8,
                                 displayValue: "Image",
-                                fieldName: "CONTENT_TYPE",
                                 limitToValue: "image",
-                                value: "image"
+                                value: "^image,Image",
+                                fieldName: "CONTENT_TYPE"
                             },
                             {
-                                count:2,
+                                count: 2,
                                 displayValue: "Text",
-                                fieldName: "CONTENT_TYPE",
                                 limitToValue: "text",
-                                image: "text"
+                                image: "^text,Text",
+                                fieldName: "CONTENT_TYPE"
                             }
                         ]
                     }
@@ -90,15 +89,14 @@ describe('facets.vue', () => {
         selected_facet.setChecked();
 
         expect(wrapper.find('.selected_facets').exists()).toBe(true);
-        expect(wrapper.find('.selected_facets label').text()).toBe('Image');
+        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_info).toEqual([{
-            count:8,
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
             displayValue: "Image",
-            fieldName: "CONTENT_TYPE",
             limitToValue: "image",
-            value: "image"
-        }]);
+            value: "^image,Image",
+            fieldName: "CONTENT_TYPE"
+        })]);
     });
 
     it("clears a selected facet if it is unchecked", () => {
@@ -106,19 +104,18 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
         selected_facet.setChecked();
 
-        expect(wrapper.find('.selected_facets label').text()).toBe('Image');
+        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_info).toEqual([{
-            count:8,
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
             displayValue: "Image",
-            fieldName: "CONTENT_TYPE",
             limitToValue: "image",
-            value: "image"
-        }]);
+            value: "^image,Image",
+            fieldName: "CONTENT_TYPE"
+        })]);
 
         // Remove facet
-        selected_facet.trigger('click');
-        selected_facet.trigger('change');
+        let selected = wrapper.find('.selected_facets div');
+        selected.trigger('click');
 
         expect(wrapper.find('.selected_facets').exists()).toBe(false);
         expect(wrapper.vm.selected_facets).toEqual([]);
@@ -142,8 +139,8 @@ describe('facets.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
 
         // Remove facet
-        selected_facet.trigger('click');
-        selected_facet.trigger('change');
+        let selected = wrapper.find('.selected_facets div');
+        selected.trigger('click');
         expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
     });
 
@@ -158,27 +155,99 @@ describe('facets.vue', () => {
         collection.setChecked();
         expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
 
-        collection.trigger('click');
-        collection.trigger('change');
+        let selected = wrapper.find('.selected_facets div');
+        selected.trigger('click');
         expect(wrapper.vm.$router.currentRoute.path).toBe('/search');
     });
 
     it("updates facet display if a collection uuid is in the url when page is loaded", () => {
-        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-        wrapper.vm.addCollection(); // Called in mounted hook
+        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection');
 
         expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
-        expect(wrapper.vm.facet_info).toEqual([ {
-            count:19,
+
+        // Returns a sub-set of facet info when building values from the page url
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
             displayValue: "testCollection",
-            fieldName: "ANCESTOR_PATH",
             limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e"
-        }]);
+            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            fieldName: "ANCESTOR_PATH",
+        })]);
+    });
+
+    it("accepts multiple facets", () => {
+        collection.trigger('click');
+        collection.setChecked();
+        selected_facet.trigger('click');
+        selected_facet.setChecked();
+        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
+            displayValue: "testCollection",
+            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            fieldName: "ANCESTOR_PATH"
+        }), JSON.stringify( {
+            displayValue: "Image",
+
+            limitToValue: "image",
+            value: "^image,Image",
+            fieldName: "CONTENT_TYPE"
+        })]);
+    });
+
+    it("removes the child facet facet if a parent facet is removed", () => {
+        wrapper.vm.$router.push('/search?format=image%252Fpng');
+        expect(wrapper.vm.selected_facets).toEqual(['format=image', 'format=image/png']);
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
+            displayValue: "Image",
+            limitToValue: "image",
+            value: "^image,Image",
+            fieldName: "CONTENT_TYPE",
+        }), JSON.stringify({
+            displayValue: "png",
+            limitToValue: "image/png",
+            value: "/image^png,png",
+            fieldName: "CONTENT_TYPE",
+        })]);
+
+        // Should always be above child facet
+        let parent_facet = wrapper.find('.selected_facets div');
+        parent_facet.trigger('click');
+
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.vm.facet_info).toEqual([]);
+    });
+
+    it("sets selected facets if the page is reloaded", () => {
+        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&format=image%252Fpng');
+        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image', 'format=image/png']);
+
+        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
+            displayValue: "testCollection",
+            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+            fieldName: "ANCESTOR_PATH"
+        }), JSON.stringify({
+            displayValue: "Image",
+            limitToValue: "image",
+            value: "^image,Image",
+            fieldName: "CONTENT_TYPE",
+        }), JSON.stringify({
+            displayValue: "png",
+            limitToValue: "image/png",
+            value: "/image^png,png",
+            fieldName: "CONTENT_TYPE",
+        })]);
+
+        let display = wrapper.findAll('.selected_facets div');
+        expect(display.at(0).text()).toBe('testCollection');
+        expect(display.at(1).text()).toBe('Image');
+        expect(display.at(2).text()).toBe('png');
     });
 
     afterEach(() => {
         selected_facet.setChecked(false);
         collection.setChecked(false);
+        wrapper.vm.facet_info = [];
+        wrapper.vm.selected_facets = [];
     });
 });

@@ -52,23 +52,9 @@
             },
 
            '$route.query'(route) {
-                if (route.format === undefined && route.language === undefined &&
-                    route.subject === undefined && route.collection_name === undefined) {
-                    this.facet_info = [];
-                    this.selected_facets = [];
-                } else {
-                    POSSIBLE_FACET_PARAMS.forEach((facet) => {
-                        let route_facet = decodeURIComponent(route[facet]);
-                        let facet_record = this.selected_facets.findIndex((f) => {
-                           return `${facet}=${route_facet}` === f;
-                        });
-
-                         if (route[facet] === undefined && facet_record !== -1) {
-                            this.removeFacetInfo(facet_record);
-                            this.removeSelectedFacets(facet_record);
-                        }
-                    });
-                }
+               this.facet_info = [];
+               this.selected_facets = [];
+               this.setFacetsFromParams();
             }
         },
 
@@ -84,10 +70,12 @@
 
         methods: {
             updateAll(facet, remove = false) {
+                let facet_string = JSON.stringify(facet);
+
                 if (remove) {
                     this.facetInfoRemove(facet);
-                } else {
-                    this.facet_info.push(JSON.stringify(facet));
+                } else if (UUID_REGEX.test(facet_string)) {
+                    this.facet_info.push(facet_string);
                 }
             },
 
@@ -282,9 +270,9 @@
 
                     let facet = {
                         displayValue: this.$route.query.collection_name,
-                        fieldName: 'PARENT_COLLECTION',
                         limitToValue: collection[0],
-                        value: collection[0]
+                        value: collection[0],
+                        fieldName: 'ANCESTOR_PATH'
                     };
 
                     this.facet_info.push(JSON.stringify(facet));
