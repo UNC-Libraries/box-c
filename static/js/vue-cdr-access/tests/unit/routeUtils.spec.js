@@ -40,7 +40,7 @@ describe('routeUtils', () => {
         const defaults = {
             'a.setStartRow': 0,
             rows: 20,
-            sort: 'title,normal',
+            sort: 'default,normal',
             facetSelect: 'collection,format'
         };
 
@@ -76,7 +76,7 @@ describe('routeUtils', () => {
         const defaults = {
             'a.setStartRow': 0,
             rows: 20,
-            sort: 'title,normal',
+            sort: 'default,normal',
             facetSelect: 'collection,format'
         };
 
