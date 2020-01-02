@@ -15,27 +15,30 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
+import org.jdom2.Document;
+import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -44,7 +47,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
-import net.greghaines.jesque.Job;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 
 /**
  *
@@ -63,13 +66,18 @@ public class ImportXMLIT extends AbstractAPIIT {
 
     @Autowired
     private XMLImportService service;
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
     private File tempDir;
 
     @Before
     public void init_() throws Exception {
+        reset(jmsTemplate);
+
         tempDir = tmpFolder.newFolder();
         service.setDataDir(tempDir.getAbsolutePath());
+        service.setJmsTemplate(jmsTemplate);
         service.init();
     }
 
@@ -86,22 +94,19 @@ public class ImportXMLIT extends AbstractAPIIT {
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("import xml", respMap.get("action"));
-        assertEquals(GroupsThreadStore.getUsername(), respMap.get("username"));
         assertEquals("Import of metadata has begun. " + GroupsThreadStore.getEmail()
                 + " will be emailed when the update completes", respMap.get("message"));
         assertTrue(respMap.containsKey("timestamp"));
 
-        verify(service.getClient()).enqueue(anyString(), any(Job.class));
+        verify(jmsTemplate).send(any(MessageCreator.class));
     }
 
     @Test
     public void testNullQueue() throws Exception {
+        doThrow(new IllegalArgumentException()).when(jmsTemplate).send(any(MessageCreator.class));
 
         MockMultipartFile importFile = createTempImportFile();
-
-        doThrow( new IllegalArgumentException()).when(service.getClient()).enqueue(anyString(), any(Job.class));
-
-        MvcResult result = mvc.perform(MockMvcRequestBuilders.fileUpload(URI.create("/edit/importXML"))
+        MvcResult result = mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/importXML"))
                 .file(importFile))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
@@ -112,12 +117,11 @@ public class ImportXMLIT extends AbstractAPIIT {
         assertEquals(GroupsThreadStore.getUsername(), respMap.get("username"));
     }
 
-    private MockMultipartFile createTempImportFile() throws IOException {
-        File tempImportFile = new File(tempDir, "temp-import");
-        Files.copy(Paths.get("src/test/resources/mods/bulk-md.xml"), tempImportFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        MockMultipartFile importFile = new MockMultipartFile("file",
-                Files.newInputStream(Paths.get(tempImportFile.getPath())));
+    private MockMultipartFile createTempImportFile() throws Exception {
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, PIDs.get(UUID.randomUUID().toString()), null);
+
+        MockMultipartFile importFile = new MockMultipartFile("file", documentToInputStream(updateDoc));
         return importFile;
     }
 

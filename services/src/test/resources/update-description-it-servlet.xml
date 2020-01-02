@@ -37,6 +37,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="modsValidator" ref="modsValidator" />
+        <property name="transferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

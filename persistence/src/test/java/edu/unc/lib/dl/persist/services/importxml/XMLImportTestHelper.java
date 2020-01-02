@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 
-import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
@@ -39,10 +40,14 @@ public class XMLImportTestHelper {
 
     public static File writeToFile(Document doc) throws Exception {
         File xmlFile = File.createTempFile("doc", ".xml");
+        copyInputStreamToFile(documentToInputStream(doc), xmlFile);
+        return xmlFile;
+    }
+
+    public static InputStream documentToInputStream(Document doc) throws Exception {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         new XMLOutputter().output(doc, outStream);
-        FileUtils.copyInputStreamToFile(new ByteArrayInputStream(outStream.toByteArray()), xmlFile);
-        return xmlFile;
+        return new ByteArrayInputStream(outStream.toByteArray());
     }
 
     public static Document makeUpdateDocument() {

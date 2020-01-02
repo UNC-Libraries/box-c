@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
 
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObjectUpdate;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.makeUpdateDocument;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.modsWithTitleAndDate;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.writeToFile;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -79,11 +79,11 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/import-job-it.xml")
+    @ContextConfiguration("/spring-test/import-job-it.xml")
 })
-public class XMLImportJobIT {
+public class ImportXMLJobIT {
 
-    private XMLImportJob job;
+    private ImportXMLJob job;
 
     private final static String USER_EMAIL = "user@example.com";
 
@@ -128,6 +128,7 @@ public class XMLImportJobIT {
     private PID parentPid;
 
     private StorageLocationManagerImpl locationManager;
+    @Autowired
     private BinaryTransferServiceImpl transferService;
 
     private StorageLocationTestHelper locTestHelper;
@@ -163,8 +164,6 @@ public class XMLImportJobIT {
         locationManager.setRepositoryObjectLoader(repoObjLoader);
         locationManager.setPathFactory(pathFactory);
         locationManager.init();
-
-        transferService = new BinaryTransferServiceImpl();
     }
 
     @Test
@@ -308,7 +307,8 @@ public class XMLImportJobIT {
     }
 
     private void createJob() {
-        job = new XMLImportJob(USER_EMAIL, agent, importFile);
+        ImportXMLRequest request = new ImportXMLRequest(USER_EMAIL, agent, importFile);
+        job = new ImportXMLJob(request);
         job.setUpdateService(updateService);
         job.setMailSender(mailSender);
         job.setCompleteTemplate(completeTemplate);

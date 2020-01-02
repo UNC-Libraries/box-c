@@ -38,9 +38,11 @@ public abstract class AbstractMessageSender {
     protected void sendMessage(Document msg) {
         XMLOutputter out = new XMLOutputter();
         final String msgStr = out.outputString(msg);
+        sendMessage(msgStr);
+    }
 
+    protected void sendMessage(String msgStr) {
         jmsTemplate.send(new MessageCreator() {
-
             @Override
             public Message createMessage(Session session) throws JMSException {
                 return session.createTextMessage(msgStr);

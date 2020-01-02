@@ -112,6 +112,42 @@
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
     
+    <bean name="aclPropertiesURI" class="java.lang.System"
+            factory-method="getProperty">
+        <constructor-arg index="0" value="acl.properties.uri" />
+    </bean>
+
+    <bean id="aclProperties"
+        class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <ref bean="aclPropertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+    
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+        <constructor-arg ref="aclProperties" />
+    </bean>
+    
+    <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
+    </bean>
+    
+    <!-- External storage manager -->
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    </bean>
+    
+    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+            init-method="init">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${storageLocations.path}" />
+        <property name="mappingPath" value="${storageLocationMappings.path}" />
+    </bean>
+    
     <!-- JMS messaging -->
     <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
         <property name="connectionFactory">
@@ -126,7 +162,7 @@
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.stream}" />
-        <property name="pubSubDomain" value="true" />
+        <property name="pubSubDomain" value="false" />
     </bean>
 
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -179,6 +215,101 @@
         <property name="authHost" value="${fcrepo.auth.host}"/>
         <property name="baseUrl" value="${fcrepo.baseUrl}"/>
     </bean>
+    
+    <!-- XML Import dependencies -->
+    
+    <bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
+
+    <bean id="updateCompleteTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream"
+                    value="classpath:update-complete-html.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="updateFailedTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream"
+                    value="classpath:update-failed-html.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+  
+    <bean id="fromAddress" class="java.lang.String">
+        <constructor-arg value="${repository.from.email}" />
+    </bean>
+
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${smtp.host:localhost}" />
+        <property name="port" value="${smtp.port:25}" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+    </bean>
+    
+    <bean id="schematronValidator" class="edu.unc.lib.dl.schematron.SchematronValidator"
+       init-method="loadSchemas">
+        <property name="schemas">
+            <map>
+                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}"
+                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
+                <entry key="object-mods"
+                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+                <entry key="vocabularies-mods"
+                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="schemaFactory" class="edu.unc.lib.dl.xml.SecureXMLFactory"
+        factory-method="createSchemaFactory" scope="prototype">
+    </bean>
+    
+    <bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
+        <property name="schematronValidator" ref="schematronValidator" />
+        <property name="modsSchema">
+            <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
+                factory-method="newSchema">
+                <constructor-arg>
+                    <list value-type="javax.xml.transform.Source">
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xml.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xlink.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/mods-3-7.xsd" />
+                        </bean>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="modsValidator" ref="modsValidator" />
+        <property name="locationManager" ref="storageLocationManager" />
+        <property name="transferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="importXMLProcessor" class="edu.unc.lib.dl.services.camel.importxml.ImportXMLProcessor">
+    </bean>
+
+    <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
         <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
@@ -207,5 +338,9 @@
     <!-- Initialize metaServicesRouter after the routes it depends on -->
     <camel:camelContext id="MetaServicesRouter">
         <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrImportXML">
+        <camel:package>edu.unc.lib.dl.services.camel.importxml</camel:package>
     </camel:camelContext>
 </beans>

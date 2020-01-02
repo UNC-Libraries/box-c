@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
 
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObject;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.addObjectUpdate;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.makeUpdateDocument;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.modsWithTitleAndDate;
-import static edu.unc.lib.dl.cdr.services.processing.XMLImportTestHelper.writeToFile;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObject;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -31,6 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -70,7 +70,7 @@ import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
  * @author harring
  *
  */
-public class XMLImportJobTest {
+public class ImportXMLJobTest {
 
     private final static String ORIGINAL_TITLE = "Work Test";
     private final static String UPDATED_TITLE = "Updated Work Title";
@@ -80,7 +80,7 @@ public class XMLImportJobTest {
     private static final String OBJ2_ID = "b75e416f-0ca8-4138-94ca-0a99bbd8e710";
     private static final String OBJ3_ID = "43dcb37a-27fc-425b-9c00-76cee952507c";
 
-    private XMLImportJob job;
+    private ImportXMLJob job;
 
     @Mock
     private AgentPrincipals agent;
@@ -210,6 +210,7 @@ public class XMLImportJobTest {
         assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void successfulJobTest() throws Exception {
         File tempImportFile = createTempImportFile();
@@ -224,8 +225,13 @@ public class XMLImportJobTest {
         assertNull(dataMap.get("failed"));
         assertNull(dataMap.get("failedCount"));
         assertNull(dataMap.get("issues"));
-        assertNotNull(dataMap.get("updated"));
-        assertNotNull(dataMap.get("updatedCount"));
+
+        List<String> updated = (List<String>) dataMap.get("updated");
+        assertEquals(2, updated.size());
+        assertTrue(updated.contains(OBJ1_ID));
+        assertTrue(updated.contains(OBJ2_ID));
+        assertEquals(2, dataMap.get("updatedCount"));
+
         verify(msg).setSubject(subjectCaptor.capture());
         assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
     }
@@ -243,7 +249,8 @@ public class XMLImportJobTest {
 
     private void setupJob(File importFile) {
         String userEmail = "user@email.com";
-        job = new XMLImportJob(userEmail, agent, importFile);
+        ImportXMLRequest request = new ImportXMLRequest(userEmail, agent, importFile);
+        job = new ImportXMLJob(request);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress("admin@example.com");

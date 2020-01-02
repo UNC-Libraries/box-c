@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,14 +29,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.validation.MetadataValidationException;
@@ -53,7 +51,7 @@ public class UpdateDescriptionController {
     @Autowired
     private UpdateDescriptionService updateService;
 
-    @RequestMapping(value = "edit/description/{id}", method = RequestMethod.POST)
+    @PostMapping(value = "edit/description/{id}")
     @ResponseBody
     public ResponseEntity<Object> updateDescription(@PathVariable("id") String id, HttpServletRequest request) {
         return update(id, request);
@@ -66,24 +64,17 @@ public class UpdateDescriptionController {
 
         PID pid = PIDs.get(id);
 
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
         try (InputStream modsStream = request.getInputStream()) {
-            updateService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
-        } catch (Exception e) {
-            log.error("Failed to update MODS: {}",  e);
-            result.put("error", e.getMessage());
-            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
-                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-            } else if (e instanceof MetadataValidationException) {
-                Throwable cause = e.getCause();
-                if (cause != null) {
-                    result.put("error", e.getMessage() + "\n" + cause.getMessage());
-                }
-                return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
-            } else if (e instanceof IllegalArgumentException) {
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            updateService.updateDescription(agent, pid, modsStream);
+        } catch (MetadataValidationException e) {
+            if (e.getCause() != null) {
+                result.put("error", e.getMessage() + "\n" + e.getCause().getMessage());
             }
+            return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (IOException e) {
+            log.error("Failed to parse input", e);
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
         result.put("timestamp", System.currentTimeMillis());
