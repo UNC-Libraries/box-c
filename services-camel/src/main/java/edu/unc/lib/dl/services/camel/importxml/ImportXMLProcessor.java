@@ -20,7 +20,6 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,19 +41,12 @@ import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
 public class ImportXMLProcessor implements Processor {
     final Logger log = LoggerFactory.getLogger(ImportXMLProcessor.class);
 
-    @Autowired
     private UpdateDescriptionService updateService;
-    @Autowired
     private JavaMailSender mailSender;
-    @Autowired
     private Template updateCompleteTemplate;
-    @Autowired
     private Template updateFailedTemplate;
-    @Autowired
     private String fromAddress;
-    @Autowired
     private BinaryTransferService transferService;
-    @Autowired
     private StorageLocationManager locationManager;
 
     private static final ObjectReader MAPPER = new ObjectMapper().readerFor(ImportXMLRequest.class);
@@ -79,5 +71,33 @@ public class ImportXMLProcessor implements Processor {
         job.setTransferService(transferService);
         job.setUpdateService(updateService);
         return job;
+    }
+
+    public void setUpdateService(UpdateDescriptionService updateService) {
+        this.updateService = updateService;
+    }
+
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public void setUpdateCompleteTemplate(Template updateCompleteTemplate) {
+        this.updateCompleteTemplate = updateCompleteTemplate;
+    }
+
+    public void setUpdateFailedTemplate(Template updateFailedTemplate) {
+        this.updateFailedTemplate = updateFailedTemplate;
+    }
+
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
+    }
+
+    public void setTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
+    }
+
+    public void setLocationManager(StorageLocationManager locationManager) {
+        this.locationManager = locationManager;
     }
 }

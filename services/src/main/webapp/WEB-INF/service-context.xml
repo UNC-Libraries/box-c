@@ -288,12 +288,12 @@
   </bean>
   
   <bean id="importXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.importxml.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
+      <property name="connectionFactory" ref="jmsFactory" />
+      <property name="defaultDestinationName" value="${cdr.importxml.stream}" />
+      <property name="pubSubDomain" value="false" />
+  </bean>
   
-  <bean id="xmlImportService" class="edu.unc.lib.dl.cdr.services.processing.XMLImportService"
+  <bean id="xmlImportService" class="edu.unc.lib.dl.persist.services.importxml.ImportXMLService"
         init-method="init">
       <property name="dataDir" ref="dataDir" />
       <property name="jmsTemplate" ref="importXmlJmsTemplate"/>

@@ -46,8 +46,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 
 /**
  *
@@ -65,7 +65,7 @@ public class ImportXMLIT extends AbstractAPIIT {
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Autowired
-    private XMLImportService service;
+    private ImportXMLService service;
     @Autowired
     private JmsTemplate jmsTemplate;
 

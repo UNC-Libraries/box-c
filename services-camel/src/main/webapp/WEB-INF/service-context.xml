@@ -307,6 +307,13 @@
     </bean>
     
     <bean id="importXMLProcessor" class="edu.unc.lib.dl.services.camel.importxml.ImportXMLProcessor">
+        <property name="updateService" ref="updateDescriptionService" />
+        <property name="mailSender" ref="mailSender" />
+        <property name="updateCompleteTemplate" ref="updateCompleteTemplate" />
+        <property name="updateFailedTemplate" ref="updateFailedTemplate" />
+        <property name="fromAddress" ref="fromAddress" />
+        <property name="transferService" ref="binaryTransferService" />
+        <property name="locationManager" ref="storageLocationManager" />
     </bean>
 
     <!-- Camel contexts -->

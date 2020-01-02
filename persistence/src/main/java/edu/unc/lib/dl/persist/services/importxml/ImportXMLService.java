@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
 
 import static java.io.File.createTempFile;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.persist.services.importxml.ImportXMLRequest;
 import edu.unc.lib.dl.services.AbstractMessageSender;
 
 /**
@@ -41,8 +40,8 @@ import edu.unc.lib.dl.services.AbstractMessageSender;
  * @author harring
  *
  */
-public class XMLImportService extends AbstractMessageSender {
-    private static final Logger log = LoggerFactory.getLogger(XMLImportService.class);
+public class ImportXMLService extends AbstractMessageSender {
+    private static final Logger log = LoggerFactory.getLogger(ImportXMLService.class);
 
     private String dataDir;
     private Path storagePath;
