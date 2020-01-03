@@ -110,7 +110,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         if (rescTypes.contains(Cdr.FileObject)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
-
         } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
             transferDepositManifests(objPid, resc, transferSession);
         }
