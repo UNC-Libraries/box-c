@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,12 +25,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -77,12 +73,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         generateBaseStructure();
     }
 
-    private URI makeContentUri(String content) throws Exception {
-        File contentFile = File.createTempFile("test", ".txt");
-        FileUtils.write(contentFile, content, UTF_8);
-        return contentFile.toPath().toUri();
-    }
-
     @Test
     public void testIndexDescribedWork() throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
@@ -91,7 +81,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
-        workObj.setDescription(getClass().getResource("/datastreams/simpleMods.xml").toURI());
+        workObj.setDescription(makeContentUriFromResource("/datastreams/simpleMods.xml"));
 
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
 

@@ -16,18 +16,22 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.net.URI;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.apache.tika.io.IOUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,5 +129,17 @@ public abstract class AbstractSolrProcessorIT {
         for (RepositoryObject obj : objs) {
             queryModel.add(obj.getModel());
         }
+    }
+
+    protected URI makeContentUri(String content) throws Exception {
+        File contentFile = File.createTempFile("test", ".txt");
+        contentFile.deleteOnExit();
+        FileUtils.write(contentFile, content, UTF_8);
+        return contentFile.toPath().toUri();
+    }
+
+    protected URI makeContentUriFromResource(String resourcePath) throws Exception {
+        return makeContentUri(IOUtils.toString(
+                getClass().getResourceAsStream(resourcePath)));
     }
 }
