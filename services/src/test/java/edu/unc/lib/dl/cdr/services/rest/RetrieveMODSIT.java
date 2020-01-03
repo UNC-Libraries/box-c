@@ -16,6 +16,9 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -26,10 +29,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -52,20 +56,30 @@ import edu.unc.lib.dl.fedora.PID;
     @ContextConfiguration("/retrieve-mods-it-servlet.xml")
 })
 public class RetrieveMODSIT extends AbstractAPIIT {
+    private static URI modsUri;
+    private static File modsFile;
+
+    @BeforeClass
+    public static void classSetup() throws Exception {
+        modsFile = File.createTempFile("mods", ".xml");
+        modsFile.deleteOnExit();
+        Files.copy(Paths.get("src/test/resources/mods/work-mods.xml"), modsFile.toPath(), REPLACE_EXISTING);
+        modsUri = modsFile.toPath().toUri();
+    }
 
     @Test
     public void testRetrieveMODSFromWork() throws Exception {
         doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
                 eq(viewMetadata));
         PID workPid = makePid();
-        File modsFile = setupWorkWithMODS(workPid);
+        setupWorkWithMODS(workPid);
 
         MvcResult result = mvc.perform(get("/description/" + workPid.getUUID()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        String expectedResponseBody = FileUtils.readFileToString(modsFile, StandardCharsets.UTF_8);
+        String expectedResponseBody = readFileToString(modsFile, UTF_8);
         assertEquals(expectedResponseBody, responseBody);
     }
 
@@ -104,11 +118,8 @@ public class RetrieveMODSIT extends AbstractAPIIT {
                 .andReturn();
     }
 
-    private File setupWorkWithMODS(PID pid) throws FileNotFoundException {
+    private void setupWorkWithMODS(PID pid) {
         WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
-        File modsFile = new File("src/test/resources/mods/work-mods.xml");
-        work.setDescription(modsFile.toPath().toUri());
-
-        return modsFile;
+        work.setDescription(modsUri);
     }
 }
