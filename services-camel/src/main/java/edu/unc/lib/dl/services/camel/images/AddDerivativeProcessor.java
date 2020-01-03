@@ -66,7 +66,8 @@ public class AddDerivativeProcessor implements Processor {
 
         final ExecResult result = (ExecResult) in.getBody();
 
-        String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8);
+        // Read command result as path to derived file, and trim off trailing whitespace
+        String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
         derivativeTmpPath += "." + fileExtension;
 
         Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);

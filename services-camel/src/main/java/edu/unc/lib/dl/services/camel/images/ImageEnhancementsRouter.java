@@ -39,11 +39,15 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
+    private SimpleUuidGenerator uuidGenerator;
+
     /**
      * Configure the thumbnail route workflow.
      */
     @Override
     public void configure() throws Exception {
+        uuidGenerator = new SimpleUuidGenerator();
+
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
@@ -57,7 +61,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
                 // Generate an random identifier to avoid derivative collisions
-                .bean(SimpleUuidGenerator.class)
+                .bean(uuidGenerator)
                 .multicast()
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
 
@@ -83,7 +87,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
                 // Generate an random identifier to avoid derivative collisions
-                .bean(SimpleUuidGenerator.class)
+                .bean(uuidGenerator)
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
                         + "${headers[CdrBinaryPath]} jp2 "
                         + "${properties:services.tempDirectory}/${body}-access"))
