@@ -8,7 +8,7 @@ localVue.use(VueRouter);
 const router = new VueRouter({
     routes: [
         {
-            path: '/search/',
+            path: '/search/:uuid?',
             name: 'searchRecords'
         }
     ]
@@ -72,7 +72,7 @@ describe('searchWrapper.vue', () => {
 
         wrapper.vm.$router.currentRoute.query.anywhere = '';
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/?anywhere=`, {
+        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
             status: 200,
             response: JSON.stringify(response)
         });

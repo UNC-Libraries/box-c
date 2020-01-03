@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,10 +24,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -36,7 +37,6 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -48,76 +48,31 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 public class SearchActionController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
-    @RequestMapping("/search/{pid}")
-    public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
-        searchRequest.setApplyCutoffs(false);
-        model.addAttribute("queryMethod", "search");
-        return search(searchRequest, model, request);
-    }
-
     @RequestMapping("/search")
     public String search() {
         return "searchResults";
     }
 
-    private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-        doSearch(searchRequest, model, request);
-        String queryText = formatQueryText(request);
-
-        model.addAttribute("resultType", "searchResults");
-        model.addAttribute("pageSubtitle", queryText);
-
+    @RequestMapping("/search/{pid}")
+    public String search(@PathVariable("pid") String pid) {
         return "searchResults";
-    }
-
-    private String formatQueryText(HttpServletRequest request) {
-        String query = request.getParameter("anywhere");
-        String queryTitle = request.getParameter("titleIndex");
-        String queryContributor = request.getParameter("contributorIndex");
-        String querySubject = request.getParameter("subjectIndex");
-        String formattedQuery = "";
-
-        if (query != null) {
-            formattedQuery += query;
-        }
-
-        if (queryTitle != null) {
-            formattedQuery += " Title: " + queryTitle;
-        }
-
-        if (queryContributor != null) {
-            formattedQuery += " Contributor: " + queryContributor;
-        }
-
-        if (querySubject != null) {
-            formattedQuery += " Subject: " + querySubject;
-        }
-
-        return formattedQuery.trim();
     }
 
     @RequestMapping(value = "/searchJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Map<String, Object> searchJson(HttpServletRequest request,
+    Map<String, Object> searchJson(@RequestParam("getFacets") Optional<String> getFacets, HttpServletRequest request,
                                    HttpServletResponse response) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
-        searchRequest.setApplyCutoffs(false);
-        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        return getResults(resultResponse, "search", request);
+        String facets = getFacets.orElse(null);
+        return searchJsonRequest(request, facets, null);
     }
 
     @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Map<String, Object> searchJson(@PathVariable("pid") String pid, HttpServletRequest request,
-                                   HttpServletResponse response) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
-        searchRequest.setApplyCutoffs(false);
-        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        return getResults(resultResponse, "search", request);
+    Map<String, Object> searchJson(@PathVariable("pid") String pid,
+                                   @RequestParam("getFacets") Optional<String> getFacets,
+                                   HttpServletRequest request, HttpServletResponse response) {
+        String facets = getFacets.orElse(null);
+        return searchJsonRequest(request, facets, pid);
     }
 
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
@@ -129,41 +84,6 @@ public class SearchActionController extends AbstractSolrSearchController {
         searchRequest.setApplyCutoffs(true);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         return getResults(resultResponse, "list", request);
-    }
-
-    @RequestMapping("/list/{pid}")
-    public String list(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
-        searchRequest.setApplyCutoffs(true);
-        model.addAttribute("queryMethod", "list");
-        model.addAttribute("facetQueryMethod", "search");
-        return search(searchRequest, model, request);
-    }
-
-    @RequestMapping("/list")
-    public String list(Model model, HttpServletRequest request) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
-        searchRequest.setApplyCutoffs(true);
-        model.addAttribute("queryMethod", "list");
-        model.addAttribute("facetQueryMethod", "search");
-        return search(searchRequest, model, request);
-    }
-
-    @RequestMapping("/listContents/{pid}")
-    public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
-        searchRequest.setApplyCutoffs(false);
-        searchRequest.getSearchState().setRollup(true);
-        model.addAttribute("queryMethod", "listContents");
-        return search(searchRequest, model, request);
-    }
-
-    @RequestMapping("/listContents")
-    public String listContents(Model model, HttpServletRequest request) {
-        return listContents(RepositoryPaths.getContentRootPid().getURI(), model, request);
     }
 
     @RequestMapping("/collections")
@@ -188,43 +108,31 @@ public class SearchActionController extends AbstractSolrSearchController {
         return getResults(resultResponse, "search", request);
     }
 
-    protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-        LOG.debug("In handle search actions");
-        searchRequest.setRetrieveFacets(true);
+    private Map<String, Object> searchJsonRequest(HttpServletRequest request, String getFacets, String pid) {
+        String rootPid = (pid != null) ? pid : RepositoryPaths.getContentRootPid().getURI();
 
-        // Request object for the search
-        SearchState searchState = searchRequest.getSearchState();
-        AccessGroupSet principals = searchRequest.getAccessGroups();
-
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(rootPid);
+        searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
-        if (resultResponse != null) {
-            childrenCountService.addChildrenCounts(resultResponse.getResultList(),
-                    principals);
-
-            if (searchRequest.isRetrieveFacets()) {
-                SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
-                facetRequest.setApplyCutoffs(false);
-                if (resultResponse.getSelectedContainer() != null) {
-                    SearchState facetState = (SearchState) searchState.clone();
-                    facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
-                            resultResponse.getSelectedContainer().getPath());
-                    facetRequest.setSearchState(facetState);
-                }
-
-                // Retrieve the facet result set
-                SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
-                resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-            }
-
-            queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
+        SearchState searchState = searchRequest.getSearchState();
+        AccessGroupSet principals = searchRequest.getAccessGroups();
+        SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
+        facetRequest.setApplyCutoffs(false);
+        if (resultResponse.getSelectedContainer() != null) {
+            SearchState facetState = (SearchState) searchState.clone();
+            facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+                    resultResponse.getSelectedContainer().getPath());
+            facetRequest.setSearchState(facetState);
         }
 
-        model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
-        model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
-        model.addAttribute("userAccessGroups", principals);
-        model.addAttribute("resultResponse", resultResponse);
+        // Retrieve the facet result set
+        if (Boolean.valueOf(getFacets)) {
+            SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+            resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+        }
 
-        return resultResponse;
+        return getResults(resultResponse, "search", request);
     }
 }

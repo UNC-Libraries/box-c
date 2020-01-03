@@ -22,7 +22,7 @@ export default {
                 defaults = {
                     'a.setStartRow': 0,
                     rows: this.rows_per_page,
-                    sort: 'title,normal',
+                    sort: 'default,normal',
                     facetSelect: 'collection,format'
                 };
             } else {

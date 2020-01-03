@@ -11,7 +11,7 @@ const router = new VueRouter({
             name: 'displayRecords'
         },
         {
-            path: '/search/?anywhere=',
+            path: '/search/:uuid?',
             name: 'searchRecords'
         }
     ]
@@ -122,5 +122,16 @@ describe('pagination.vue', () => {
         wrapper.findAll('.page-number').at(4).trigger('click');
         expect(wrapper.find('.end').classes('back-next')).toBe(false);
         expect(wrapper.find('.end').classes('no-link')).toBe(true);
+    });
+
+    it("maintains the base path when changing search pages", () => {
+        wrapper.setProps({
+            browseType: 'search'
+        });
+        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&page=1');
+
+        // Change pages
+        wrapper.vm.pageUrl(2);
+        expect(wrapper.vm.$route.path).toEqual('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
     });
 });

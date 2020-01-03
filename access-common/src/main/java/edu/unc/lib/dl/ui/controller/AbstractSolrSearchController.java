@@ -189,6 +189,7 @@ public abstract class AbstractSolrSearchController {
         results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
         results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
         results.put("queryMethod", queryMethod);
+        results.put("facetFields", resp.getFacetFields());
         results.put("onyen", GroupsThreadStore.getUsername());
         results.put("email", GroupsThreadStore.getEmail());
 

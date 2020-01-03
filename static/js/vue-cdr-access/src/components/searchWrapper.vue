@@ -7,7 +7,7 @@
         <div v-if="!is_loading">
             <div v-if="records.length > 0" class="columns">
                 <div class="column is-one-quarter facets-border border-box-left-top">
-
+                    <facets :facet-list="facet_list"></facets>
                 </div>
                 <div class="column is-three-quarters search-results-border border-box-left-top">
                     <div class="bottomline paddedline">
@@ -32,21 +32,26 @@
 
 <script>
     import browseSort from "./browseSort";
+    import facets from "./facets";
     import listDisplay from "./listDisplay";
     import pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 
+    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, listDisplay, pagination},
+        components: {browseSort, facets, listDisplay, pagination},
 
         mixins: [routeUtils],
 
         data() {
             return {
                 anywhere: '',
+                collection: '',
+                facet_list: [],
                 is_loading: true,
                 records: [],
                 total_records: 0
@@ -64,17 +69,24 @@
                 let records = (this.records.length < this.rows_per_page) ? this.records.length : parseInt(this.rows_per_page);
                 let offset = (search_start > 0) ? search_start : 0;
 
-                return `${start}-${records + offset}`;
+                return `${start}-${parseInt(records) + offset}`;
             }
         },
 
         methods: {
             retrieveData() {
-                let param_string = this.formatParamsString(this.$route.query);
+                let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
+                let search_path = 'searchJson';
 
-                get(`searchJson/${param_string}`).then((response) => {
+                this.collection = UUID_REGEX.test(this.$route.path) ? this.$route.path.split('/')[2] : '';
+                if (this.collection !== '') {
+                    search_path += `/${this.collection}`
+                }
+
+                get(`${search_path}/${param_string}`).then((response) => {
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;
+                    this.facet_list = response.data.facetFields;
                     this.is_loading = false;
                 }).catch(function (error) {
                     console.log(error);
@@ -89,9 +101,21 @@
 </script>
 
 <style scoped lang="scss">
+    $light-gray: #E1E1E1;
+    $border-style: 1px solid $light-gray;
+
     img {
         display: block;
         margin: 25px auto;
+    }
+
+    .facets-border {
+        border-bottom: $border-style;
+        border-top: $border-style;
+        font-size: 16px;
+        padding-bottom: 0;
+        padding-right: 0;
+        padding-top: 0;
     }
 
     .bottomline {
@@ -105,5 +129,11 @@
 
     p {
         margin: auto 0;
+    }
+
+    @media screen and (max-width: 1024px) {
+        .bottomline {
+            display: inline-flex;
+        }
     }
 </style>

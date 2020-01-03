@@ -16,7 +16,7 @@ export default new Router({
       component: displayWrapper
     },
     {
-      path: '/search/',
+      path: '/search/:uuid?/',
       name: 'searchRecords',
       component: searchWrapper
     },

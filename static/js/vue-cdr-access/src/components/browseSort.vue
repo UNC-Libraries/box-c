@@ -35,8 +35,9 @@
                 }
 
                 let is_search_sort = this.browseType === 'search';
+
                 this.$router.push({
-                    name: this.$route.name,
+                    path: this.$route.path,
                     query: this.urlParams({ sort: this.sort_order }, is_search_sort)
                 });
                 this.sort_order = '';
@@ -53,6 +54,7 @@
     .browse-sort {
         float: right;
         margin-top: 15px;
+        margin-right: 25px;
 
         select {
             height: 2.65em;
@@ -64,6 +66,10 @@
             float: left;
             margin-bottom: 0;
             margin-top: 0;
+
+            select {
+                height: inherit;
+            }
         }
     }
 </style>
