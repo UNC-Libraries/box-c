@@ -109,7 +109,7 @@
                         })
                     });
                 } else {
-                    this.$router.push({ name: 'searchRecords', query: this.urlParams(update_params = {
+                    this.$router.push({ path: this.$route.path, query: this.urlParams(update_params = {
                             'a.setStartRow': start_record,
                             rows: this.rows_per_page + ''
                         }, true)

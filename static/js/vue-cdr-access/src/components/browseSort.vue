@@ -35,8 +35,9 @@
                 }
 
                 let is_search_sort = this.browseType === 'search';
+
                 this.$router.push({
-                    name: this.$route.name,
+                    path: this.$route.path,
                     query: this.urlParams({ sort: this.sort_order }, is_search_sort)
                 });
                 this.sort_order = '';

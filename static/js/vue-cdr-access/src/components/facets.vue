@@ -364,6 +364,10 @@
         label {
             float: none;
             width: 100%;
+
+            &:hover {
+                cursor: pointer;
+            }
         }
 
         .selected_facets {

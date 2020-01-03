@@ -41,4 +41,20 @@ describe('browseSort.vue', () => {
         wrapper.findAll('option').at(2).setSelected();
         expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
     });
+
+    it("maintains the base path when changing search pages", () => {
+        let wrapper = shallowMount(browseSort, {
+            localVue,
+            router,
+            propsData: {
+                browseType: 'search'
+            }
+        });
+
+        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
+
+        // Change sort types
+        wrapper.findAll('option').at(2).setSelected();
+        expect(wrapper.vm.$route.path).toEqual('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+    });
 });

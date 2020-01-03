@@ -217,7 +217,7 @@ describe('facets.vue', () => {
         expect(wrapper.vm.facet_info).toEqual([]);
     });
 
-    it("sets selected facets if the page is reloaded", () => {
+    it("sets selected facets, including parent facets, if the page is reloaded", () => {
         wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&format=image%252Fpng');
         expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image', 'format=image/png']);
 
