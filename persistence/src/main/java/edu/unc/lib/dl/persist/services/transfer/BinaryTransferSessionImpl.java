@@ -18,6 +18,7 @@ package edu.unc.lib.dl.persist.services.transfer;
 import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
 import static org.springframework.util.Assert.notNull;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,95 +31,109 @@ import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 
 /**
- * Implementation of a session that can be used for single or multi destination binary transfers
+ * Implementation of a session that can be used for single destination binary transfers
  *
  * @author bbpennel
  *
  */
-public class BinaryTransferSessionImpl implements BinaryTransferSession, MultiDestinationTransferSession {
+public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
     private IngestSourceManager sourceManager;
     private StorageLocation storageLocation;
     private Map<String, BinaryTransferClient> clientCache;
+    private StreamTransferClient streamClient;
 
     /**
-     * Constructor for session operating in multi destination mode
-     */
-    public BinaryTransferSessionImpl(IngestSourceManager sourceManager) {
-        clientCache = new HashMap<>();
-        this.sourceManager = sourceManager;
-    }
-
-    /**
-     * Constructor for session operating in single destination mode
+     * Constructor for session for a single destination
      *
      * @param storageLocation
      */
     public BinaryTransferSessionImpl(IngestSourceManager sourceManager, StorageLocation storageLocation) {
-        this(sourceManager);
         notNull(storageLocation, "Must provide a storage location");
+        this.sourceManager = sourceManager;
         this.storageLocation = storageLocation;
     }
 
     @Override
     public void close() {
-        clientCache.values().forEach(BinaryTransferClient::shutdown);
+        if (clientCache != null) {
+            clientCache.values().forEach(BinaryTransferClient::shutdown);
+        }
+        if (streamClient != null) {
+            streamClient.shutdown();
+        }
     }
 
     @Override
     public URI transfer(PID binPid, URI sourceFileUri) {
-        return transfer(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
-        return transferReplaceExisting(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri) {
-        return transferVersion(binPid, sourceFileUri, storageLocation);
-    }
-
-    @Override
-    public URI transfer(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source);
         return client.transfer(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
+    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source);
         return client.transferReplaceExisting(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri, StorageLocation destination) {
-        notNull(destination, "Must provide a storage location");
+    public URI transferVersion(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
-        BinaryTransferClient client = getTransferClient(source, destination);
+        BinaryTransferClient client = getTransferClient(source);
         return client.transferVersion(binPid, sourceFileUri);
     }
 
-    private BinaryTransferClient getTransferClient(IngestSource source, StorageLocation dest) {
-        String key = source.getId() + "|" + dest.getId();
+    private BinaryTransferClient getTransferClient(IngestSource source) {
+        if (clientCache == null) {
+            clientCache = new HashMap<>();
+        }
+
+        String key = source.getId();
         if (clientCache.containsKey(key)) {
             return clientCache.get(key);
         }
 
         BinaryTransferClient client = null;
-        if (FILESYSTEM.equals(source.getStorageType()) && FILESYSTEM.equals(dest.getStorageType())) {
-            client = new FSToFSTransferClient(source, dest);
+        if (FILESYSTEM.equals(source.getStorageType()) && FILESYSTEM.equals(storageLocation.getStorageType())) {
+            client = new FSToFSTransferClient(source, storageLocation);
         } else {
-            throw new NotImplementedException("Transfer from " + source.getId() + " to " + dest.getId()
+            throw new NotImplementedException("Transfer from " + source.getId() + " to " + storageLocation.getId()
                 + " is not currently supported.");
         }
         clientCache.put(key, client);
 
         return client;
+    }
+
+    @Override
+    public URI transfer(PID binPid, InputStream sourceStream) {
+        return getStreamClient().transfer(binPid, sourceStream);
+    }
+
+    @Override
+    public URI transferReplaceExisting(PID binPid, InputStream sourceStream) {
+        return getStreamClient().transferReplaceExisting(binPid, sourceStream);
+    }
+
+    @Override
+    public URI transferVersion(PID binPid, InputStream sourceStream) {
+        return getStreamClient().transferVersion(binPid, sourceStream);
+    }
+
+    private StreamTransferClient getStreamClient() {
+        if (streamClient != null) {
+            return streamClient;
+        }
+
+        if (FILESYSTEM.equals(storageLocation.getStorageType())) {
+            streamClient = new StreamToFSTransferClient(storageLocation);
+        } else {
+            throw new NotImplementedException("Write stream to " + storageLocation.getId()
+                + " is not currently supported.");
+        }
+
+        return streamClient;
     }
 }

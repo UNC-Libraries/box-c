@@ -30,7 +30,7 @@ public class BinaryTransferServiceImpl implements BinaryTransferService {
 
     @Override
     public MultiDestinationTransferSession getSession() {
-        return new BinaryTransferSessionImpl(sourceManager);
+        return new MultiDestinationTransferSessionImpl(sourceManager);
     }
 
     @Override

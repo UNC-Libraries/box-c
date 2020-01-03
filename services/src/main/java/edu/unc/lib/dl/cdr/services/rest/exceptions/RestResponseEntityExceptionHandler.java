@@ -22,10 +22,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 
 /**
@@ -39,7 +42,17 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler(value = { AccessRestrictionException.class })
     protected ResponseEntity<Object> handleAccessRestriction(RuntimeException ex, WebRequest request) {
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        log.warn("User {} has insufficient permissions to perform requested action {}",
+                agent.getUsername(), getRequestUri(request));
         String bodyOfResponse = "Insufficient permissions";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = { AuthorizationException.class })
+    protected ResponseEntity<Object> handleAuthorizationException(RuntimeException ex, WebRequest request) {
+        log.error("Failed to authenticate with fedora", ex);
+        String bodyOfResponse = "Authentication failure";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
@@ -51,6 +64,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler(value = { IllegalArgumentException.class })
     protected ResponseEntity<Object> handleIllegalArgumentException(RuntimeException ex, WebRequest request) {
+        log.warn("Illegal argument in request to {}: {}", getRequestUri(request), ex.getMessage());
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
@@ -60,5 +74,10 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         log.error("Uncaught exception", ex);
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
                 HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    // Extract the query path of the current request
+    private String getRequestUri(WebRequest request) {
+        return ((ServletWebRequest) request).getRequest().getRequestURI();
     }
 }

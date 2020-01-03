@@ -16,7 +16,9 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
+import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -25,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -56,23 +57,23 @@ public abstract class ContentObject extends RepositoryObject {
      * @param modsStream
      * @return the BinaryObject for the descriptive record
      */
-    public BinaryObject setDescription(InputStream modsStream) {
-        URI mdURI = getMetadataContainerUri(pid);
+    public BinaryObject setDescription(URI modsUri) {
+        PID modsPid = getMdDescriptivePid(pid);
 
         BinaryObject descObj = this.getDescription();
         if (descObj == null) {
-            Model descModel = ModelFactory.createDefaultModel();
+            Model descModel = createDefaultModel();
             descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
 
-            descObj = repoObjFactory.createBinary(mdURI, MD_DESCRIPTIVE.getId(), modsStream,
-                    null, MD_DESCRIPTIVE.getMimetype(), null, null, null);
+            descObj = repoObjFactory.createOrUpdateBinary(modsPid, modsUri, MD_DESCRIPTIVE.getDefaultFilename(),
+                    MD_DESCRIPTIVE.getMimetype(), null, null, descModel);
 
             repoObjFactory.createRelationship(this, Cdr.hasMods, descObj.getResource());
 
             return descObj;
         } else {
-            return repoObjFactory.updateBinary(mdURI, MD_DESCRIPTIVE.getId(), modsStream,
-                    null, MD_DESCRIPTIVE.getMimetype(), null, null, null);
+            return repoObjFactory.createOrUpdateBinary(modsPid, modsUri, MD_DESCRIPTIVE.getDefaultFilename(),
+                    MD_DESCRIPTIVE.getMimetype(), null, null, null);
         }
     }
 
@@ -95,7 +96,7 @@ public abstract class ContentObject extends RepositoryObject {
         }
 
         // Populate a source metadata binary, using a random uuid for the identifier
-        Model sourceModel = ModelFactory.createDefaultModel();
+        Model sourceModel = createDefaultModel();
         Resource sourceResc = sourceModel.getResource("");
         sourceResc.addProperty(RDF.type, Cdr.SourceMetadata);
         sourceResc.addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);

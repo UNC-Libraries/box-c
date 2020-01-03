@@ -21,6 +21,8 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -28,7 +30,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -228,7 +229,9 @@ public class EnhancementRouterIT {
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject descObj = fileObj.setDescription(new ByteArrayInputStream(FILE_CONTENT.getBytes()));
+        Path modsPath = Files.createTempFile(null, null);
+        writeStringToFile(modsPath.toFile(), FILE_CONTENT, UTF_8);
+        BinaryObject descObj = fileObj.setDescription(modsPath.toUri());
 
         Map<String, Object> headers = createEvent(descObj.getPid(),
                 Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());

@@ -47,7 +47,6 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     public void init() {
         repoInitializer = new RepositoryInitializer();
         repoInitializer.setObjFactory(repoObjFactory);
-        repoInitializer.setFcrepoClient(client);
     }
 
     /**

@@ -15,14 +15,13 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -49,32 +48,31 @@ public class DepositRecord extends RepositoryObject {
     /**
      *  Adds the given file as a manifest for this deposit.
      *
-     * @param manifest File containing the manifest content
+     * @param manifestUri URI of the binary content for this manifest
      * @param mimetype mimetype string of the manifest file
      * @return BinaryObject representing the newly created manifest object
      * @throws FedoraException
      */
-    public BinaryObject addManifest(File manifest, String mimetype)
-            throws FedoraException, IOException {
+    public BinaryObject addManifest(URI manifestUri, String mimetype)
+            throws FedoraException {
 
-        InputStream contentStream = new FileInputStream(manifest);
-        return addManifest(contentStream, manifest.getName(), mimetype);
+        String filename = StringUtils.substringAfterLast(manifestUri.toString(), "/");
+        return addManifest(manifestUri, filename, mimetype);
     }
 
     /**
      * Adds the given inputstream as the content of a manifest for this deposit.
      *
-     * @param manifestStream inputstream containing the binary content for this manifest
+     * @param manifestUri URI of the binary content for this manifest
      * @param filename filename for the manifest
      * @param mimetype mimetype for the content of the manifest
      * @return representing the newly created manifest object
      * @throws FedoraException
      */
-    public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype)
+    public BinaryObject addManifest(URI manifestUri, String filename, String mimetype)
             throws FedoraException {
-        URI manifestsUri = getManifestsUri();
-        return repoObjFactory.createBinary(manifestsUri, null, manifestStream, filename,
-                mimetype, null, null, model);
+        PID manifestPid = getDepositManifestPid(getPid(), filename);
+        return repoObjFactory.createOrUpdateBinary(manifestPid, manifestUri, filename, mimetype, null, null, null);
     }
 
     /**
@@ -125,16 +123,6 @@ public class DepositRecord extends RepositoryObject {
     @Override
     public RepositoryObject getParent() {
         return driver.getParentObject(this);
-    }
-
-    /**
-     * Returns the URI for the container which holds manifests for this record
-     *
-     * @return
-     */
-    public URI getManifestsUri() {
-        return URI.create(pid.getRepositoryUri()
-                + "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
     }
 
     private List<PID> addPidsToList(Property p) {

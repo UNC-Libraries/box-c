@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import java.io.InputStream;
 import java.net.URI;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -39,6 +40,16 @@ public interface BinaryTransferSession extends AutoCloseable {
     URI transfer(PID binPid, URI sourceFileUri);
 
     /**
+     * Write the provided stream to the preservation storage location.
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @param sourceStream InputStream of the content to transfer.
+     * @return URI of the file in its destination
+     * @throws BinaryAlreadyExistsException thrown if the binary already exists
+     */
+    URI transfer(PID binPid, InputStream sourceStream);
+
+    /**
      * Transfer a binary to the preservation storage location. If a binary already
      * exists at the expected destination, it will be overwritten.
      *
@@ -49,6 +60,16 @@ public interface BinaryTransferSession extends AutoCloseable {
     URI transferReplaceExisting(PID binPid, URI sourceFileUri);
 
     /**
+     * Write the provided stream to the preservation storage location. If a binary already
+     * exists at the expected destination, it will be overwritten.
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @param sourceStream InputStream of the content to transfer.
+     * @return the URI of the binary in its destination.
+     */
+    URI transferReplaceExisting(PID binPid, InputStream sourceStream);
+
+    /**
      * Transfer a new version of binary to the preservation storage location. Previous
      * versions will not be overwritten.
      *
@@ -57,6 +78,16 @@ public interface BinaryTransferSession extends AutoCloseable {
      * @return the URI of the binary in its destination.
      */
     URI transferVersion(PID binPid, URI sourceFileUri);
+
+    /**
+     * Write the provided stream as a new version of binary in the preservation storage location. Previous
+     * versions will not be overwritten.
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @param sourceStream InputStream of the content to transfer
+     * @return the URI of the binary in its destination.
+     */
+    URI transferVersion(PID binPid, InputStream sourceStream);
 
     /**
      * Closes the binary session. If there are any failures, they will be RuntimeExceptions.

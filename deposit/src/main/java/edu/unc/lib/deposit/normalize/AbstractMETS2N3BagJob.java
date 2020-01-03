@@ -47,8 +47,8 @@ import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.NoResolutionResourceResolver;
 import edu.unc.lib.dl.xml.METSProfile;
+import edu.unc.lib.dl.xml.NoResolutionResourceResolver;
 
 /**
  *
@@ -199,7 +199,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
     protected void addManifestURI() {
         File metsFile = getMETSFile();
         log.debug("Adding manifest URI referencing {}", metsFile);
-        getDepositStatusFactory().addManifest(getDepositUUID(), metsFile.getAbsolutePath());
+        getDepositStatusFactory().addManifest(getDepositUUID(), metsFile.toPath().toUri().toString());
     }
 
     protected void validateProfile(METSProfile profile) {

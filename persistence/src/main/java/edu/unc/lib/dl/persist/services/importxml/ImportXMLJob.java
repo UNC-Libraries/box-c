@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
 
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
 
@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +55,11 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 import io.dropwizard.metrics5.Timer;
 
@@ -63,9 +69,9 @@ import io.dropwizard.metrics5.Timer;
  * @author harring
  *
  */
-public class XMLImportJob implements Runnable {
+public class ImportXMLJob implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(XMLImportJob.class);
+    private static final Logger log = LoggerFactory.getLogger(ImportXMLJob.class);
 
     private UpdateDescriptionService updateService;
     private JavaMailSender mailSender;
@@ -102,12 +108,15 @@ public class XMLImportJob implements Runnable {
     private List<String> updated;
     private Map<String, String> failed;
 
-    private static final Timer timer = TimerFactory.createTimerForClass(XMLImportJob.class);
+    private BinaryTransferService transferService;
+    private StorageLocationManager locationManager;
 
-    public XMLImportJob(String userEmail, AgentPrincipals agent, File importFile) {
-        this.userEmail = userEmail;
-        this.agent = agent;
-        this.importFile = importFile;
+    private static final Timer timer = TimerFactory.createTimerForClass(ImportXMLJob.class);
+
+    public ImportXMLJob(ImportXMLRequest request) {
+        this.userEmail = request.getUserEmail();
+        this.agent = request.getAgent();
+        this.importFile = request.getImportFile();
 
         this.username = agent.getUsername();
 
@@ -123,15 +132,18 @@ public class XMLImportJob implements Runnable {
             mimeMsg = mailSender.createMimeMessage();
             msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
         } catch (MessagingException e) {
-            log.error("Failed to send email to " + userEmail
-                    + " for update " + importFile.getAbsolutePath(), e);
+            log.error("Failed to send email to {} for update {}",
+                    userEmail, importFile.getAbsolutePath(), e);
         }
 
-        try (Timer.Context context = timer.time()) {
+        try (
+                Timer.Context context = timer.time();
+                MultiDestinationTransferSession session = transferService.getSession();
+        ) {
             initializeXMLReader();
-            processUpdates();
+            processUpdates(session, null, null);
             log.info("Finished metadata import for {} objects in {}ms for user {}",
-                    new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
+                    objectCount, System.currentTimeMillis() - startTime, username);
             sendCompletedEmail(updated, failed);
         } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
@@ -216,15 +228,26 @@ public class XMLImportJob implements Runnable {
         return failed;
     }
 
+    /**
+     * @param transferService the transferService to set
+     */
+    public void setTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
+    }
+
+    /**
+     * @param locationManager the locationManager to set
+     */
+    public void setLocationManager(StorageLocationManager locationManager) {
+        this.locationManager = locationManager;
+    }
+
     private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
         xmlReader = createXMLInputFactory().createXMLEventReader(new FileInputStream(importFile));
     }
 
-    private void processUpdates() throws XMLStreamException, ServiceException {
-        processUpdates(null, null);
-    }
-
-    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, ServiceException {
+    private void processUpdates(MultiDestinationTransferSession session, PID resumePid, String resumeDs)
+            throws XMLStreamException, ServiceException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
@@ -326,7 +349,10 @@ public class XMLImportJob implements Runnable {
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
                                 try {
-                                    updateService.updateDescription(agent, currentPid, modsStream);
+                                    BinaryTransferSession transferSession =
+                                            session.forDestination(locationManager.getStorageLocation(currentPid));
+                                    updateService.updateDescription(transferSession, agent, currentPid, modsStream);
+                                    updated.add(currentPid.getId());
                                 } catch (AccessRestrictionException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
@@ -372,14 +398,18 @@ public class XMLImportJob implements Runnable {
 
     private void cleanup() {
         if (importFile != null) {
-            importFile.delete();
+            try {
+                Files.delete(importFile.toPath());
+            } catch (IOException e) {
+                log.error("Failed to cleanup import file {}", importFile.getAbsolutePath(), e);
+            }
         }
     }
 
     private void sendCompletedEmail(List<String> updated, Map<String, String> failed) {
         try {
             msg.setFrom(fromAddress);
-            log.error("Sending email to '{}'", userEmail);
+            log.info("Sending email to '{}'", userEmail);
             if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
                 msg.addTo(fromAddress);

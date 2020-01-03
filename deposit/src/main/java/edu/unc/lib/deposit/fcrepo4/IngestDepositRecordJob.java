@@ -18,14 +18,14 @@ package edu.unc.lib.deposit.fcrepo4;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +35,11 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
@@ -54,6 +56,8 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class IngestDepositRecordJob extends AbstractDepositJob {
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
@@ -93,16 +97,23 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         // Create the deposit record object in Fedora
         DepositRecord depositRecord;
         try {
-            depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel);
+            // In case of a resume, check if object already exists
+            if (!repoObjFactory.objectExists(depositPID.getRepositoryUri())) {
+                depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel);
+            } else {
+                depositRecord = repoObjLoader.getDepositRecord(depositPID);
+            }
+
             addPremisEvents(depositRecord);
 
             // Add manifest files
-            List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
-            for (String manifestPath : manifestURIs) {
-                String path = URI.create(manifestPath).getPath();
-                depositRecord.addManifest(new File(path), "text/plain");
+            StmtIterator it = deposit.listProperties(CdrDeposit.storageUri);
+            while (it.hasNext()) {
+                Statement stmt = it.nextStatement();
+                URI manifestUri = URI.create(stmt.getString());
+                depositRecord.addManifest(manifestUri, "text/plain");
             }
-        } catch (IOException | FedoraException e) {
+        } catch (FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);
         }
     }

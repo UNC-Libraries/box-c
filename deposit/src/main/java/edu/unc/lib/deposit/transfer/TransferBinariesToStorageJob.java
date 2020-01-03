@@ -17,18 +17,24 @@ package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
+import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +60,9 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(TransferBinariesToStorageJob.class);
+
+    private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
+            Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
 
     @Autowired
     private BinaryTransferService transferService;
@@ -91,7 +100,14 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferBinaries(Resource resc, BinaryTransferSession transferSession) {
         PID objPid = PIDs.get(resc.toString());
 
-        if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
+        Set<Resource> rescTypes = resc.listProperties(RDF.type).toList().stream()
+                .map(Statement::getResource).collect(toSet());
+
+        if (TYPES_ALLOWING_DESC.stream().anyMatch(rescTypes::contains)) {
+            transferModsFile(objPid, resc, transferSession);
+        }
+
+        if (rescTypes.contains(Cdr.FileObject)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
         } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
@@ -124,6 +140,20 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
     }
 
+    private void transferModsFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        // add descStorageUri if doesn't already exist. It will exist in a resume scenario.
+        if (!resc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
+            File modsFile = new File(getDescriptionDir(), objPid.getUUID() + ".xml");
+            if (!modsFile.exists()) {
+                return;
+            }
+
+            PID originalPid = getMdDescriptivePid(objPid);
+            URI storageUri = transferSession.transferReplaceExisting(originalPid, modsFile.toURI());
+            resc.addLiteral(CdrDeposit.descriptiveStorageUri, storageUri.toString());
+        }
+    }
+
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
@@ -136,15 +166,15 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferDepositManifests(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
         for (String manifestPath : manifestURIs) {
-            File manifestFile = new File(URI.create(manifestPath));
+            URI manifestUri = URI.create(manifestPath);
+            File manifestFile = new File(manifestUri);
             if (!manifestFile.exists()) {
                 log.warn("Manifest {} does not exist, it may have already been transferred in deposit {}",
                         manifestPath, getDepositUUID());
                 continue;
             }
             PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
-            URI stagingUri = URI.create(manifestPath);
-            URI storageUri = transferSession.transfer(manifestPid, stagingUri);
+            URI storageUri = transferSession.transfer(manifestPid, manifestUri);
             resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
         }
     }

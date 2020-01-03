@@ -33,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
+import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 
 /**
  * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for
@@ -47,7 +47,7 @@ public class ImportXMLController {
     private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
 
     @Autowired
-    private XMLImportService service;
+    private ImportXMLService service;
 
     /**
      * Imports an XML document containing metadata for all objects specified by the request

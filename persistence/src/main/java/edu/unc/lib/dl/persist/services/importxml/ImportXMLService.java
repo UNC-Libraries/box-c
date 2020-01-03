@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.importxml;
+
+import static java.io.File.createTempFile;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,13 +25,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
+import edu.unc.lib.dl.services.AbstractMessageSender;
 
 /**
  * A service for performing import of bulk metadata updates
@@ -36,14 +40,13 @@ import net.greghaines.jesque.client.Client;
  * @author harring
  *
  */
-public class XMLImportService {
-    private static final Logger log = LoggerFactory.getLogger(XMLImportService.class);
+public class ImportXMLService extends AbstractMessageSender {
+    private static final Logger log = LoggerFactory.getLogger(ImportXMLService.class);
 
-    private Client jesqueClient;
-    private String bulkMetadataQueueName;
     private String dataDir;
-
     private Path storagePath;
+
+    private static final ObjectWriter MAPPER = new ObjectMapper().writerFor(ImportXMLRequest.class);
 
     public void init() throws IOException {
         storagePath = Paths.get(dataDir, "metadataImport");
@@ -54,29 +57,13 @@ public class XMLImportService {
     public void pushJobToQueue(InputStream importStream, AgentPrincipals agent,
             String userEmail) throws IOException {
 
-        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-        FileUtils.copyInputStreamToFile(importStream, importFile);
+        File importFile = createTempFile("import", ".xml", storagePath.toFile());
+        copyInputStreamToFile(importStream, importFile);
 
-        Job job = new Job(XMLImportJob.class.getName(), agent, userEmail, importFile.getAbsolutePath());
-
-        jesqueClient.enqueue(bulkMetadataQueueName, job);
+        ImportXMLRequest request = new ImportXMLRequest(userEmail, agent, importFile);
+        String messageBody = MAPPER.writeValueAsString(request);
+        sendMessage(messageBody);
         log.info("Job to import {} has been queued for {}", importFile.getName(), agent.getUsername());
-    }
-
-    public void setClient(Client jesqueClient) {
-        this.jesqueClient = jesqueClient;
-    }
-
-    public Client getClient() {
-        return jesqueClient;
-    }
-
-    public void setQueueName(String queueName) {
-        this.bulkMetadataQueueName = queueName;
-    }
-
-    public String getQueueName() {
-        return bulkMetadataQueueName;
     }
 
     public void setDataDir(String dataDir) {

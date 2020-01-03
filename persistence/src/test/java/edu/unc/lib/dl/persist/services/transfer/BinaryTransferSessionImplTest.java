@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,17 +28,12 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.ingest.IngestSource;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
@@ -49,16 +43,10 @@ import edu.unc.lib.dl.persist.services.storage.StorageLocation;
  * @author bbpennel
  *
  */
-public class BinaryTransferSessionImplTest {
-
-    private static final String FILE_CONTENT = "File content";
+public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     private BinaryTransferSessionImpl session;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private Path sourcePath;
-    private Path storagePath;
     @Mock
     private IngestSourceManager sourceManager;
     @Mock
@@ -69,13 +57,10 @@ public class BinaryTransferSessionImplTest {
     private PID binPid;
     private Path binDestPath;
 
-
     @Before
     public void setup() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        createPaths();
 
         binPid = makeBinPid();
         binDestPath = storagePath.resolve(binPid.getComponentId());
@@ -92,10 +77,10 @@ public class BinaryTransferSessionImplTest {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
             Path sourceFile = createSourceFile();
 
-            session.transfer(binPid, sourceFile.toUri(), storageLoc);
+            session.transfer(binPid, sourceFile.toUri());
 
             assertIsSourceFile(binDestPath);
         }
@@ -103,11 +88,7 @@ public class BinaryTransferSessionImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void transferNoDestination() throws Exception {
-        initSession();
-
-        Path sourceFile = createSourceFile();
-
-        session.transfer(binPid, sourceFile.toUri(), null);
+        session = new BinaryTransferSessionImpl(sourceManager, null);
     }
 
     @Test(expected = NotImplementedException.class)
@@ -115,11 +96,11 @@ public class BinaryTransferSessionImplTest {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(null);
 
-        initSession();
+        session = new BinaryTransferSessionImpl(sourceManager, storageLoc);
 
         Path sourceFile = createSourceFile();
 
-        session.transfer(binPid, sourceFile.toUri(), storageLoc);
+        session.transfer(binPid, sourceFile.toUri());
     }
 
     @Test
@@ -147,37 +128,6 @@ public class BinaryTransferSessionImplTest {
     }
 
     @Test
-    public void transferFSToFSMultipleFilesDifferentDestination() throws Exception {
-        when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
-        when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
-
-        // Setup a second storage location
-        StorageLocation storageLoc2 = mock(StorageLocation.class);
-        when(storageLoc2.getId()).thenReturn("loc2");
-        when(storageLoc2.getStorageType()).thenReturn(FILESYSTEM);
-        Path storagePath2 = tmpFolder.newFolder("storage2").toPath();
-
-        PID binPid2 = makeBinPid();
-        Path binDestPath2 = storagePath2.resolve(binPid2.getComponentId());
-        // Establish destination path for second binary in second location
-        when(storageLoc2.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
-
-        Path sourceFile = createSourceFile();
-        Path sourceFile2 = createSourceFile("another.txt", "stuff");
-
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager)) {
-            URI result1 = session.transfer(binPid, sourceFile.toUri(), storageLoc);
-            URI result2 = session.transfer(binPid2, sourceFile2.toUri(), storageLoc2);
-
-            // Verify that results ended up in the right storage locations
-            assertTrue(result1.toString().contains("storage/"));
-            assertTrue(result2.toString().contains("storage2/"));
-            assertFileContent(Paths.get(result1), FILE_CONTENT);
-            assertFileContent(Paths.get(result2), "stuff");
-        }
-    }
-
-    @Test
     public void transferFSToFSMultipleFilesTwoSourcesOneDest() throws Exception {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
@@ -199,9 +149,9 @@ public class BinaryTransferSessionImplTest {
         // Make first ingest source read only, so it will be different from the second
         when(ingestSource.isReadOnly()).thenReturn(true);
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager)) {
-            URI result1 = session.transfer(binPid, sourceFile.toUri(), storageLoc);
-            URI result2 = session.transfer(binPid2, sourceFile2.toUri(), storageLoc);
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+            URI result1 = session.transfer(binPid, sourceFile.toUri());
+            URI result2 = session.transfer(binPid2, sourceFile2.toUri());
 
             // Verify that results ended up in the right storage locations
             assertTrue(result1.toString().contains("storage/"));
@@ -240,35 +190,5 @@ public class BinaryTransferSessionImplTest {
         try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
             session.transferVersion(binPid, sourceFile.toUri());
         }
-    }
-
-    private void initSession() {
-        session = new BinaryTransferSessionImpl(sourceManager);
-    }
-
-    private Path createSourceFile() throws Exception {
-        return createFile(sourcePath.resolve("file.txt"), FILE_CONTENT);
-    }
-
-    private Path createSourceFile(String filename, String content) throws Exception {
-        return createFile(sourcePath.resolve(filename), content);
-    }
-
-    private Path createFile(Path path, String content) throws Exception {
-        FileUtils.writeStringToFile(path.toFile(), content, "UTF-8");
-        return path;
-    }
-
-    private void assertIsSourceFile(Path path) throws Exception {
-        assertFileContent(path, FILE_CONTENT);
-    }
-
-    private void assertFileContent(Path path, String content) throws Exception {
-        assertTrue("File was not present at " + path, path.toFile().exists());
-        assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
-    }
-
-    private PID makeBinPid() {
-        return getOriginalFilePid(PIDs.get(UUID.randomUUID().toString()));
     }
 }

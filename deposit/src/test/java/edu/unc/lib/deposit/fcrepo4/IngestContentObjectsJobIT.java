@@ -504,6 +504,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         modsFolder.mkdir();
 
         PID folderPid = pidMinter.mintContentPid();
+
         File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
         modsFile.createNewFile();
 
@@ -517,6 +518,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
         folderBag.addProperty(CdrDeposit.label, label);
+        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsFile.toPath().toUri().toString());
 
         depBag.add(folderBag);
 

@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import java.net.URI;
-
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 
 /**
@@ -29,36 +26,16 @@ import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 public interface MultiDestinationTransferSession extends AutoCloseable {
 
     /**
-     * Transfer a binary to the provided storage location. If the
-     * binary already exists in the destination, an exception will be thrown.
+     * Get a transfer session to a single destination within this multi-destination session.
      *
-     * @param binPid PID of the binary object the binary is associated with
-     * @param sourceFileUri URI of the binary located in an IngestSource.
-     * @param destination storage location to transfer the file to.
-     * @return the URI of the binary in its destination.
-     * @throws BinaryAlreadyExistsException thrown if the binary already exists
+     * @param dest storage location to transfer to.
+     * @return Transfer session to the provided destination
      */
-    URI transfer(PID binPid, URI sourceFileUri, StorageLocation destination);
+    BinaryTransferSession forDestination(StorageLocation dest);
 
     /**
-     * Transfer a binary to the provided storage location. If a binary already
-     * exists at the expected destination, it will be overwritten.
-     *
-     * @param binPid PID of the binary object the binary is associated with
-     * @param sourceFileUri URI of the binary located in an IngestSource.
-     * @param destination storage location to transfer the file to.
-     * @return the URI of the binary in its destination.
+     * Closes the transfer session. If there are any failures, they will be RuntimeExceptions.
      */
-    URI transferReplaceExisting(PID binPid, URI sourceFileUri, StorageLocation destination);
-
-    /**
-     * Transfer a new version of binary to the provided storage location. Previous
-     * versions will not be overwritten.
-     *
-     * @param binPid PID of the binary object the binary is associated with
-     * @param sourceFileUri URI of the binary located in an IngestSource.
-     * @param destination storage location to transfer the file to.
-     * @return the URI of the binary in its destination.
-     */
-    URI transferVersion(PID binPid, URI sourceFileUri, StorageLocation destination);
+    @Override
+    void close();
 }

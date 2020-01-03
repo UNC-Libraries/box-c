@@ -126,6 +126,12 @@
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>persistence</artifactId>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>persistence</artifactId>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
     
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
@@ -142,6 +148,12 @@
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>solr-ingest</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId><!-- 4.1 conflicts with 3.1.4 from apache cxf-spring-boot-starter-jaxws-->
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <!-- Testing -->
@@ -221,6 +233,12 @@
     <dependency>
         <groupId>org.apache.solr</groupId>
         <artifactId>solr-core</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>stax2-api</artifactId><!-- 4.1 conflicts with 3.1.4 from apache cxf-spring-boot-starter-jaxws-->
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
         <groupId>org.apache.activemq</groupId>

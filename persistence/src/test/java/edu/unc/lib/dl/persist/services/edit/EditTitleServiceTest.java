@@ -32,7 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.net.URI;
 import java.util.UUID;
 
 import org.jdom2.Document;
@@ -56,8 +56,6 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.validation.MODSValidator;
 
 public class EditTitleServiceTest {
 
@@ -74,14 +72,14 @@ public class EditTitleServiceTest {
     @Mock
     private BinaryObject binaryObj;
     @Mock
-    private OperationsMessageSender operationsMessageSender;
-    @Mock
-    private MODSValidator modsValidator;
+    private UpdateDescriptionService updateDescriptionService;
 
     @Captor
-    private ArgumentCaptor<Collection<PID>> pidsCaptor;
+    private ArgumentCaptor<PID> pidCaptor;
     @Captor
     private ArgumentCaptor<InputStream> inputStreamCaptor;
+    @Captor
+    private ArgumentCaptor<URI> uriCaptor;
 
     private EditTitleService service;
     private PID pid;
@@ -95,9 +93,8 @@ public class EditTitleServiceTest {
         service = new EditTitleService();
 
         service.setAclService(aclService);
-        service.setModsValidator(modsValidator);
+        service.setUpdateDescriptionService(updateDescriptionService);
         service.setRepoObjLoader(repoObjLoader);
-        service.setOperationsMessageSender(operationsMessageSender);
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getDescription()).thenReturn(binaryObj);
@@ -106,7 +103,6 @@ public class EditTitleServiceTest {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(contentObj);
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("agentname");
-        when(operationsMessageSender.sendUpdateDescriptionOperation(anyString(), any(Collection.class))).thenReturn("message_id");
 
         document = new Document();
     }
@@ -121,10 +117,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -151,10 +147,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -173,10 +169,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
@@ -194,10 +190,10 @@ public class EditTitleServiceTest {
 
         service.editTitle(agent, pid, title);
 
-        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertTrue(pids.contains(pid));
+        verify(updateDescriptionService).updateDescription(
+                eq(agent), pidCaptor.capture(), inputStreamCaptor.capture());
+
+        assertEquals(pid, pidCaptor.getValue());
 
 
         Document updatedDoc = getUpdatedDescriptionDocument();
@@ -215,7 +211,6 @@ public class EditTitleServiceTest {
     }
 
     private Document getUpdatedDescriptionDocument() throws IOException, JDOMException {
-        verify(contentObj).setDescription(inputStreamCaptor.capture());
         SAXBuilder sb = createSAXBuilder();
         return sb.build(inputStreamCaptor.getValue());
     }

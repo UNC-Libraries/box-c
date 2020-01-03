@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -150,8 +152,9 @@ public class WorkObjectIT extends AbstractFedoraIT {
     public void addModsTest() throws Exception {
         WorkObject obj = repoObjFactory.createWorkObject(null);
         String bodyString = "some MODS content";
-        InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
-        BinaryObject modsObj = obj.setDescription(modsStream);
+        Path modsPath = Files.createTempFile(null, null);
+        writeStringToFile(modsPath.toFile(), bodyString, UTF_8);
+        BinaryObject modsObj = obj.setDescription(modsPath.toUri());
 
         assertObjectExists(obj.getDescription().getPid());
         assertObjectExists(modsObj.getPid());
@@ -169,8 +172,9 @@ public class WorkObjectIT extends AbstractFedoraIT {
         String sourceMdBodyString = "source md content";
         String modsBodyString = "MODS content";
         InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
-        InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
-        BinaryObject modsObj = anotherObj.setDescription(modsStream);
+        Path modsPath = Files.createTempFile(null, null);
+        writeStringToFile(modsPath.toFile(), modsBodyString, UTF_8);
+        BinaryObject modsObj = anotherObj.setDescription(modsPath.toUri());
         BinaryObject sourceObj = anotherObj.addSourceMetadata(sourceMdStream, sourceProfile);
 
         // tests that listDescriptions returns binary objects for source md and mods

@@ -13,10 +13,14 @@
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
     
-    <bean id="updateService" class="edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService" >
+    <bean id="updateService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="modsValidator" ref="modsValidator" />
+        <property name="transferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
     </bean>
 </beans>

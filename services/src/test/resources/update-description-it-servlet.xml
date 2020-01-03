@@ -32,11 +32,15 @@
 
     <context:component-scan resource-pattern="**/UpdateDescriptionController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="updateDescriptionService" class="edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService">
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="modsValidator" ref="modsValidator" />
+        <property name="transferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
