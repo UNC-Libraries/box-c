@@ -46,8 +46,8 @@
 							<c:param name="size" value="large" />
 						</c:import>
 					</div>
-					<div class="column is-8">
-						<h2><c:out value="${briefObject.title}" /></h2>
+					<div class="column is-8 file-record">
+						<h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
 						<ul>
 							<c:if test="${not empty briefObject.dateAdded}">
 								<li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>

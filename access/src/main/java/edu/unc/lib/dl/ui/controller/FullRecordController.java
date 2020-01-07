@@ -21,9 +21,7 @@ import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -228,29 +226,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             List<BriefObjectMetadataBean> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             model.addAttribute("neighborList", neighbors);
-
-            // Get previous and next record in the same folder if there are any
-            Map<String, BriefObjectMetadataBean> previousNext = new HashMap<>();
-
-            int selectedRecord = -1;
-            for (BriefObjectMetadataBean neighbor : neighbors) {
-                if (neighbor.getId().equals(briefObject.getId())) {
-                    selectedRecord = neighbors.indexOf(neighbor);
-                    break;
-                }
-            }
-
-            if (selectedRecord != -1) {
-                if (selectedRecord > 0) {
-                    previousNext.put("previous", neighbors.get(selectedRecord - 1));
-                }
-
-                if (selectedRecord + 1 < neighbors.size()) {
-                    previousNext.put("next", neighbors.get(selectedRecord + 1));
-                }
-            }
-
-            model.addAttribute("previousNext", previousNext);
         }
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());

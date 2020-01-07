@@ -441,6 +441,10 @@ p.no-search-results {
   margin-left: 15px;
 }
 
+.hierarchicalTrail {
+  line-height: 25px;
+}
+
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
 }
@@ -532,7 +536,7 @@ p.no-search-results {
 
 /* Work page */
 .jp2_imageviewer_window {
-  margin: 15px;
+  margin: 15px 15px 15px 30px;
   width: auto;
 }
 
@@ -579,7 +583,6 @@ p.no-search-results {
 }
 .onecol h2, .content-wrap.full_record h2 {
   font-size: 20px;
-  margin: 20px;
 }
 .onecol .current_item, .content-wrap.full_record .current_item {
   margin-left: 35px;
@@ -635,6 +638,10 @@ p.no-search-results {
   padding: 20px;
   text-indent: 0;
   width: 100%;
+}
+
+.file-record {
+  margin-top: 95px;
 }
 
 #expand-breadcrumb {
@@ -704,6 +711,10 @@ table.dataTable tbody tr.odd {
   margin-bottom: 10px;
 }
 
+.contentarea-aggregate .item-title {
+  padding-left: 0;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
@@ -718,6 +729,10 @@ table.dataTable tbody tr.odd {
   }
 }
 @media screen and (max-width: 1024px) {
+  .contentarea-aggregate .item-title {
+    margin-top: 50px;
+  }
+
   .bottomline {
     display: block;
   }
@@ -740,6 +755,10 @@ table.dataTable tbody tr.odd {
   .collection-info-bottom {
     margin: 0 25px 25px 25px;
   }
+
+  .item-info .is-2 {
+    margin-right: 25px;
+  }
 }
 @media screen and (max-width: 768px) {
   .facet-padding {
@@ -753,25 +772,49 @@ table.dataTable tbody tr.odd {
 
   .bottomline p {
     font-size: 16px;
-    margin-lef: 10px;
+    margin-left: 10px;
     width: 100%;
+  }
+
+  .full_record_top .item-info {
+    margin-left: 5px;
   }
 
   .light {
     float: none;
   }
 
+  .item-info .is-2 {
+    margin-top: 50px;
+  }
+
+  .item-actions {
+    margin-left: 5px;
+  }
+
   .actionlink.right {
     float: left;
-    margin-left: 10px;
   }
 
   .action-btn {
     margin-top: 25px;
   }
 
+  .item-title {
+    padding-left: 5px;
+    padding-top: 40px;
+  }
+
   .collinfo_metadata {
     margin: auto 0;
+  }
+
+  .full_record .contentarea-aggregate .collinfo_metadata {
+    margin: 15px;
+  }
+
+  .jp2_imageviewer_window {
+    margin: auto 15px;
   }
 
   .dataTables_wrapper .dataTables_filter {

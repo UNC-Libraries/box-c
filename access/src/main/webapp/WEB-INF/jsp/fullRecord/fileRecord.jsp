@@ -21,13 +21,15 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
+
 <div class="onecol full_record_top">
+    <c:import url="fullRecord/navigationBar.jsp" />
 	<div class="contentarea">
-        <div class="columns">
-            <div class="column is-10">
+        <div class="columns file-record">
+            <div class="column is-9">
                 <h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
             </div>
-            <div class="column is-2 item-actions">
+            <div class="column is-3 item-actions">
                 <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
                     <div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">
                         <i class="fa fa-file" aria-hidden="true"></i> Edit</a>

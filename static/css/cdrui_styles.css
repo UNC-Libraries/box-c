@@ -957,7 +957,7 @@ label {
 }
 
 .ol_fullscreenItemActive {
-	width: 20x;
+	width: 20px;
 	height: 19px;
 	background-image: url('/static/images/full_screen.png');
 	background-repeat: no-repeat;
@@ -988,16 +988,4 @@ label {
 
 .deleted .collinfo {
 	color: #888;
-}
-
-#prevNext {
-	float: right;
-}
-
-#prevNext li {
-	padding-left: 5px;
-	display: inline;
-	margin-left: 0;
-	text-indent: 0;
-	color: #999;
 }
