@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,8 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -46,13 +47,17 @@ public class DestroyObjectsController {
     @Autowired
     private DestroyObjectsService service;
 
-    @RequestMapping(value = "edit/destroy", method = RequestMethod.POST)
+    @PostMapping(value = "/edit/destroy")
     @ResponseBody
     public ResponseEntity<Object> destroyBatch(@RequestParam("ids") String ids) {
+        if (isEmpty(ids)) {
+            throw new IllegalArgumentException("Must provide one or more ids");
+        }
+
         return destroy(ids.split("\n"));
     }
 
-    @RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
+    @PostMapping(value = "/edit/destroy/{id}")
     @ResponseBody
     public ResponseEntity<Object> destroyObject(@PathVariable("id") String id) {
         return destroy(id);
@@ -68,7 +73,8 @@ public class DestroyObjectsController {
         }
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
-        service.destroyObjects(agent, ids);
+        String jobId = service.destroyObjects(agent, ids);
+        result.put("job", jobId);
         log.info("{} initiated destruction of {} objects from the repository", agent.getUsername(), ids.length);
 
         result.put("timestamp", System.currentTimeMillis());

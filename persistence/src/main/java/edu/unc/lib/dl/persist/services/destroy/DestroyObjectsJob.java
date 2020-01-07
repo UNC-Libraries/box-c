@@ -18,6 +18,10 @@ package edu.unc.lib.dl.persist.services.destroy;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
+import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,12 +39,18 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -64,17 +74,24 @@ import io.dropwizard.metrics5.Timer;
  *
  */
 public class DestroyObjectsJob implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(DestroyObjectsJob.class);
+
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    private AgentPrincipals agent;
+
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
     private ObjectPathFactory pathFactory;
     private FcrepoClient fcrepoClient;
+    private InheritedAclFactory inheritedAclFactory;
+    private AccessControlService aclService;
 
-    public DestroyObjectsJob(List<PID> objsToDestroy) {
-        this.objsToDestroy = objsToDestroy;
+    public DestroyObjectsJob(DestroyObjectsRequest request) {
+        this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
+        this.agent = request.getAgent();
     }
 
     @Override
@@ -84,6 +101,13 @@ public class DestroyObjectsJob implements Runnable {
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+
+                assertCanDestroy(agent, repoObj, aclService);
+                if (!inheritedAclFactory.isMarkedForDeletion(pid)) {
+                    log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
+                    continue;
+                }
+
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
                     // purge tree with repoObj as root from repository
                     destroyTree(repoObj);
@@ -124,6 +148,7 @@ public class DestroyObjectsJob implements Runnable {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
+            .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .write();
     }
@@ -158,7 +183,7 @@ public class DestroyObjectsJob implements Runnable {
                 continue;
             }
             Property replacement = null;
-            if (ServerManagedProperties.isServerManagedProperty(p)) {
+            if (isServerManagedProperty(p)) {
                 replacement = replaceServerManagedProperty(p);
             }
             if (replacement != null) {
@@ -170,8 +195,7 @@ public class DestroyObjectsJob implements Runnable {
     }
 
     private Property replaceServerManagedProperty(Property p) {
-        Property localProperty = ServerManagedProperties.mapToLocalNamespace(p);
-        return localProperty;
+        return ServerManagedProperties.mapToLocalNamespace(p);
 
     }
 
@@ -187,7 +211,7 @@ public class DestroyObjectsJob implements Runnable {
                     throw new ServiceException("Unable to clean up child object " + objUri, e);
                 }
 
-                URI tombstoneUri = URI.create(objUri.toString() + "/" + FCR_TOMBSTONE);
+                URI tombstoneUri = URI.create(objUri + "/" + FCR_TOMBSTONE);
                 try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
                 } catch (FcrepoOperationFailedException | IOException e) {
                     throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
@@ -214,5 +238,13 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {
         this.fcrepoClient = fcrepoClient;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
+        this.inheritedAclFactory = inheritedAclFactory;
     }
 }

@@ -43,8 +43,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
@@ -64,6 +66,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
+import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 /**
@@ -75,8 +78,12 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/acl-service-context.xml")
 })
 public class DestroyObjectsJobIT {
+    private static final String USER_NAME = "user";
+    private static final String USER_GROUPS = "edu:lib:staff_grp";
+    private static final String ADMIN_GROUP = "adminGroup";
 
     @Autowired
     private String baseAddress;
@@ -96,6 +103,12 @@ public class DestroyObjectsJobIT {
     private Model queryModel;
     @Autowired
     private FcrepoClient fcrepoClient;
+    @Autowired
+    private AccessControlService aclService;
+    @Autowired
+    private InheritedAclFactory inheritedAclFactory;
+
+    private AgentPrincipals agent;
 
     private RepositoryObjectTreeIndexer treeIndexer;
 
@@ -107,8 +120,9 @@ public class DestroyObjectsJobIT {
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
-        GroupsThreadStore.storeUsername("test_user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+
+        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
+        agent = new AgentPrincipals(USER_NAME, testPrincipals);
 
         treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
 
@@ -239,7 +253,9 @@ public class DestroyObjectsJobIT {
         }
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
 
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(new AclModelBuilder("Unit")
+                .addUnitOwner(agent.getUsernameUri())
+                .model);
         contentRoot.addMember(adminUnit);
 
         CollectionObject collection = repoObjFactory.createCollectionObject(null);
@@ -270,12 +286,16 @@ public class DestroyObjectsJobIT {
     }
 
     private void initializeJob(List<PID> objsToDestroy) {
-        job = new DestroyObjectsJob(objsToDestroy);
+        DestroyObjectsRequest request = new DestroyObjectsRequest("jobid", agent,
+                objsToDestroy.stream().map(PID::getId).toArray(String[]::new));
+        job = new DestroyObjectsJob(request);
         job.setPathFactory(pathFactory);
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
         job.setTransactionManager(txManager);
         job.setFcrepoClient(fcrepoClient);
+        job.setAclService(aclService);
+        job.setInheritedAclFactory(inheritedAclFactory);
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {

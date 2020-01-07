@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    
+    <bean id="destroyObjectsProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyObjectsProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+    </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
+    </bean>
+    
+    <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory" />
+    </bean>
+    
+    <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory" />
+    </bean>
+    
+    <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" />
+    </bean>
+    
+    <bean id="transactionManager" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.fcrepo4.TransactionManager" />
+    </bean>
+    
+    <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
+    </bean>
+    
+    <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.fcrepo.client.FcrepoClient" />
+    </bean>
+
+    <camel:camelContext id="cdrDestroyObjects">
+        <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
+    </camel:camelContext>
+    
+</beans>
