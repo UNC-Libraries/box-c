@@ -174,6 +174,10 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("embargoDate", embargoUntil);
         }
 
+        // Get pid of JP2 if there is one
+        String jp2Id = Jp2Pid(briefObject.getDatastream());
+        model.addAttribute("jp2Id", jp2Id);
+
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
         boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
@@ -255,6 +259,21 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
+    }
+
+    private String Jp2Pid(List<String> datastream) {
+        if (datastream != null) {
+            for (String stream : datastream) {
+                if (stream.trim().startsWith("jp2")) {
+                    String[] uuid_parts = stream.split("\\|");
+                    if (uuid_parts.length == 7) {
+                        return uuid_parts[6];
+                    }
+                }
+            }
+        }
+
+        return "";
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
