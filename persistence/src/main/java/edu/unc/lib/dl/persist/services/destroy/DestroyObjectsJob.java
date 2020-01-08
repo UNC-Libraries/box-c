@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
+import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
@@ -68,6 +69,7 @@ import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -96,6 +98,7 @@ public class DestroyObjectsJob implements Runnable {
     private AccessControlService aclService;
     private StorageLocationManager locManager;
     private BinaryTransferService transferService;
+    private IndexingMessageSender indexingMessageSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
@@ -120,6 +123,7 @@ public class DestroyObjectsJob implements Runnable {
                     // purge tree with repoObj as root from repository
                     destroyTree(repoObj);
                 }
+                indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
            }
         } catch (Exception e) {
              tx.cancel(e);
@@ -275,5 +279,9 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setBinaryTransferService(BinaryTransferService transferService) {
         this.transferService = transferService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

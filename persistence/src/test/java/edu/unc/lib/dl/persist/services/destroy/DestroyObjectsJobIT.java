@@ -18,10 +18,14 @@ package edu.unc.lib.dl.persist.services.destroy;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
+import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -76,6 +80,7 @@ import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -121,6 +126,8 @@ public class DestroyObjectsJobIT {
     private AccessControlService aclService;
     @Autowired
     private InheritedAclFactory inheritedAclFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
 
     private StorageLocationManagerImpl locationManager;
     private BinaryTransferService transferService;
@@ -186,6 +193,8 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneResc.hasProperty(Cdr.hasSize));
 
         assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -214,6 +223,8 @@ public class DestroyObjectsJobIT {
         assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
         assertTrue(logModel.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -245,6 +256,9 @@ public class DestroyObjectsJobIT {
         assertTrue(logModel2.contains(null, Premis.hasEventType, Premis.Deletion));
         assertTrue(logModel2.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObj1Pid), eq(DELETE_SOLR_TREE));
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObj2Pid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -260,6 +274,8 @@ public class DestroyObjectsJobIT {
         assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -335,6 +351,7 @@ public class DestroyObjectsJobIT {
         job.setInheritedAclFactory(inheritedAclFactory);
         job.setBinaryTransferService(transferService);
         job.setStorageLocationManager(locationManager);
+        job.setIndexingMessageSender(indexingMessageSender);
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {

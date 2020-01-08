@@ -47,7 +47,8 @@ public class DestroyObjectsHelper {
      * @param repoObj object to destroy
      * @param aclService acl service
      */
-    public static void assertCanDestroy(AgentPrincipals agent, RepositoryObject repoObj, AccessControlService aclService) {
+    public static void assertCanDestroy(AgentPrincipals agent, RepositoryObject repoObj,
+            AccessControlService aclService) {
         if (repoObj instanceof AdminUnit) {
             aclService.assertHasAccess("User does not have permission to destroy admin unit", repoObj.getPid(),
                     agent.getPrincipals(), Permission.destroyUnit);

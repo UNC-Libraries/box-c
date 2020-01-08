@@ -219,6 +219,7 @@
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">

@@ -21,6 +21,7 @@
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -45,6 +46,10 @@
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
+    </bean>
+    
+    <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.IndexingMessageSender" />
     </bean>
     
     <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">

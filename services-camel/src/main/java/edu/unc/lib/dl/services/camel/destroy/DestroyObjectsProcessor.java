@@ -35,6 +35,7 @@ import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 
 /**
  * Processor which handles messages requesting the destruction of objects.
@@ -57,6 +58,7 @@ public class DestroyObjectsProcessor implements Processor {
     private InheritedAclFactory inheritedAclFactory;
     private StorageLocationManager locManager;
     private BinaryTransferService transferService;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -79,6 +81,7 @@ public class DestroyObjectsProcessor implements Processor {
         job.setInheritedAclFactory(inheritedAclFactory);
         job.setBinaryTransferService(transferService);
         job.setStorageLocationManager(locManager);
+        job.setIndexingMessageSender(indexingMessageSender);
         return job;
     }
 
@@ -116,5 +119,9 @@ public class DestroyObjectsProcessor implements Processor {
 
     public void setBinaryTransferService(BinaryTransferService transferService) {
         this.transferService = transferService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }
