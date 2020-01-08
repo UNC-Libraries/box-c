@@ -214,9 +214,11 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
-        <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="objectPathFactory" ref="pathFactory" />
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+        <property name="storageLocationManager" ref="storageLocationManager" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">

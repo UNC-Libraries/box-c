@@ -32,6 +32,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 
 /**
@@ -53,6 +55,8 @@ public class DestroyObjectsProcessor implements Processor {
     private ObjectPathFactory pathFactory;
     private FcrepoClient fcrepoClient;
     private InheritedAclFactory inheritedAclFactory;
+    private StorageLocationManager locManager;
+    private BinaryTransferService transferService;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -73,6 +77,8 @@ public class DestroyObjectsProcessor implements Processor {
         job.setTransactionManager(txManager);
         job.setAclService(aclService);
         job.setInheritedAclFactory(inheritedAclFactory);
+        job.setBinaryTransferService(transferService);
+        job.setStorageLocationManager(locManager);
         return job;
     }
 
@@ -102,5 +108,13 @@ public class DestroyObjectsProcessor implements Processor {
 
     public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
         this.inheritedAclFactory = inheritedAclFactory;
+    }
+
+    public void setStorageLocationManager(StorageLocationManager locManager) {
+        this.locManager = locManager;
+    }
+
+    public void setBinaryTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
     }
 }

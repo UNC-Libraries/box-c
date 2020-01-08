@@ -64,17 +64,20 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
     }
 
     public void setBase(String base) {
-        this.base = base;
+        this.base = base.replaceFirst(":///", ":/");
         if (!this.base.endsWith("/")) {
             this.base += "/";
         }
-        baseUri = URI.create(this.base);
+        baseUri = URI.create(this.base).normalize();
         if (baseUri.getScheme() == null) {
-            this.base = "file://" + base;
-            baseUri = URI.create(this.base);
+            this.base = "file:" + base;
+            baseUri = URI.create(this.base).normalize();
         } else if (!"file".equals(baseUri.getScheme())) {
             throw new IllegalArgumentException("Only file URIs are acceptable in locations of type "
                     + getClass().getName());
+        } else {
+            // Ensure base string representation is normalized to match the uri representation
+            this.base = baseUri.toString();
         }
     }
 
@@ -92,11 +95,13 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
         String derivativePath = RepositoryPaths
                 .idToPath(objId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
+        URI storageUri;
         if (pid.getComponentPath() != null) {
-            return URI.create(URIUtil.join(baseUri, derivativePath, objId, pid.getComponentPath()));
+            storageUri = URI.create(URIUtil.join(baseUri, derivativePath, objId, pid.getComponentPath()));
         } else {
-            return URI.create(URIUtil.join(baseUri, derivativePath, objId));
+            storageUri = URI.create(URIUtil.join(baseUri, derivativePath, objId));
         }
+        return storageUri.normalize();
     }
 
     @Override

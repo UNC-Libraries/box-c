@@ -67,7 +67,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void baseFieldWithNoScheme() {
-        String expectedBase = "file:///path/to/my/stuff/";
+        String expectedBase = "file:/path/to/my/stuff/";
         String assignedBase = "/path/to/my/stuff/";
         loc.setBase(assignedBase);
 

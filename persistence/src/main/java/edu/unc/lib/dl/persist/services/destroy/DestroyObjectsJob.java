@@ -59,6 +59,10 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
@@ -81,6 +85,8 @@ public class DestroyObjectsJob implements Runnable {
     private List<PID> objsToDestroy;
     private AgentPrincipals agent;
 
+    private MultiDestinationTransferSession transferSession;
+
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
@@ -88,6 +94,8 @@ public class DestroyObjectsJob implements Runnable {
     private FcrepoClient fcrepoClient;
     private InheritedAclFactory inheritedAclFactory;
     private AccessControlService aclService;
+    private StorageLocationManager locManager;
+    private BinaryTransferService transferService;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
@@ -132,11 +140,7 @@ public class DestroyObjectsJob implements Runnable {
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
-            FileObject file = (FileObject) rootOfTree;
-            BinaryObject origFile = file.getOriginalFile();
-            if (origFile != null) {
-                addBinaryMetadataToParent(rootResc, origFile);
-            }
+            destroyFile((FileObject) rootOfTree, rootResc);
         }
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
@@ -167,6 +171,23 @@ public class DestroyObjectsJob implements Runnable {
         stoneModel.add(destroyedResc, Cdr.historicalIdPath, pidPath);
         stoneModel.add(destroyedResc, RDF.type, Cdr.Tombstone);
         return stoneModel;
+    }
+
+    private void destroyFile(FileObject fileObj, Resource resc) {
+        BinaryObject origFile = fileObj.getOriginalFile();
+        if (origFile != null) {
+            addBinaryMetadataToParent(resc, origFile);
+            destroyBinary(origFile.getContentUri());
+        }
+    }
+
+    private void destroyBinary(URI contentUri) {
+        if (transferSession == null) {
+            transferSession = transferService.getSession();
+        }
+        StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
+        transferSession.forDestination(storageLoc)
+                .delete(contentUri);
     }
 
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
@@ -246,5 +267,13 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
         this.inheritedAclFactory = inheritedAclFactory;
+    }
+
+    public void setStorageLocationManager(StorageLocationManager locManager) {
+        this.locManager = locManager;
+    }
+
+    public void setBinaryTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
     }
 }
