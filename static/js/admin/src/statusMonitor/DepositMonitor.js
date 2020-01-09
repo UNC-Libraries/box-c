@@ -71,7 +71,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 				var jobName = currentJob.name.substring(currentJob.name.lastIndexOf(".") + 1);
 				result["shortName"] = jobName;
 				
-				if (jobName == "IngestDeposit" && "total" in currentJob) {
+				if (jobName == "IngestContentObjectsJob" && "total" in currentJob) {
 					var completion = result.ingestedObjects? result.ingestedObjects : 0;
 					completion += " / " + currentJob.total;
 					result["completion"] = completion;
@@ -99,7 +99,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 				
 				job["shortName"] = jobName;
 				
-				if (jobName == "IngestDeposit" && "total" in job) {
+				if (jobName == "IngestContentObjectsJob" && "total" in job) {
 					var completion = results.ingestedObjects? results.ingestedObjects : 0;
 					completion += " / " + job.total;
 					job["completion"] = completion;
