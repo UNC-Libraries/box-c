@@ -12,14 +12,12 @@
                     <view-type></view-type>
                 </div>
             </div>
-            <div class="columns is-tablet">
-                <div class="column is-11 container-note">
-                    <works-only v-if="!isBrowseDisplay" :admin-unit="is_admin_unit"></works-only>
-                </div>
-                <div class="column is-1">
-                    <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
+            <div class="columns is-tablet" v-if="!isBrowseDisplay" :admin-unit="is_admin_unit">
+                <div class="column is-12 container-note">
+                    <works-only></works-only>
                 </div>
             </div>
+            <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
             <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
         </div>
