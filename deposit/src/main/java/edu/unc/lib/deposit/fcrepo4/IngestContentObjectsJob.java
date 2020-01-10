@@ -301,6 +301,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         // Increment the count of objects deposited
         addClicks(1);
+        getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
 
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
     }
@@ -412,6 +413,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
+
+            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the folder
@@ -460,6 +463,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
+
+            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the admin unit
@@ -508,6 +513,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
+
+            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the admin unit
@@ -580,6 +587,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
+
+            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
     }
 

@@ -169,6 +169,12 @@ public class DepositStatusFactory {
         }
     }
 
+    public void incrIngestedObjects(String depositUUID, int amount) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            jedis.hincrBy(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.ingestedObjects.name(), amount);
+        }
+    }
+
     public void fail(String depositUUID, String message) {
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(), DepositState.failed.name());

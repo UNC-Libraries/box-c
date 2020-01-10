@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -100,6 +101,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private DepositStatusFactory depositStatusFactory;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
@@ -221,6 +224,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 "ingested as PID: " + folder.getPid().getQualifiedId()));
 
         assertClickCount(1);
+        ingestedObjectsCount(1);
 
         assertLinksToDepositRecord(folder);
     }
@@ -298,6 +302,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 + "\n ingested as filename: " + FILE2_LOC));
 
         assertClickCount(3);
+        ingestedObjectsCount(3);
 
         assertLinksToDepositRecord(mWork, primaryObj);
     }
@@ -359,6 +364,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals("Incorrect number of members in work", 2, workMembers.size());
 
         assertClickCount(3);
+        ingestedObjectsCount(3);
     }
 
     /**
@@ -444,6 +450,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Count includes folder, two works each with a file
         assertClickCount(5);
+        ingestedObjectsCount(5);
     }
 
     /**
@@ -494,6 +501,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Nesting depth plus 2 for the final work and its file
         assertClickCount(nestingDepth + 2);
+        ingestedObjectsCount(nestingDepth + 2);
 
         assertLinksToDepositRecord(deposited.toArray(new RepositoryObject[deposited.size()]));
     }
@@ -675,6 +683,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private void assertClickCount(int count) {
         Map<String, String> jobStatus = jobStatusFactory.get(jobUUID);
         assertEquals(count, Integer.parseInt(jobStatus.get(JobField.num.name())));
+    }
+
+    private void ingestedObjectsCount(int count) {
+        Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
+        assertEquals(count, Integer.parseInt(depositStatus.get(DepositField.ingestedObjects.name())));
     }
 
     private PID addFileObject(Bag parent, String stagingLocation,
