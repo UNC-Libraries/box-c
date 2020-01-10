@@ -466,8 +466,6 @@ p.no-search-results {
   }
 }
 
-
-
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
 }
@@ -567,6 +565,12 @@ p.no-search-results {
   }
 }
 
+.file_record {
+  .columns {
+    width: 100%;
+  }
+}
+
 .collection-info-bottom {
   padding: 5px;
   margin: -12px 0 0 0;
@@ -625,8 +629,22 @@ p.no-search-results {
   width: 100%;
 
   h2 {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin: 0 20px 20px 0;
+    padding-left: 0;
+  }
+
+  h2.link-list {
     font-size: 20px;
-    margin: 20px;
+    padding-left: 15px;
+    padding-top: 10px;
+  }
+
+  .file_record {
+    h2.item-title {
+      padding-left: 25px;
+    }
   }
 
   .current_item {
@@ -637,7 +655,6 @@ p.no-search-results {
     p {
       font-size: 16px;
     }
-
   }
 }
 
@@ -663,7 +680,7 @@ p.no-search-results {
   width: 97%;
 
   .collinfo {
-    width: 85%;
+    width: 100%;
   }
 
   .item-info {
@@ -672,6 +689,10 @@ p.no-search-results {
 
   .columns {
     margin-bottom: 0;
+  }
+
+  .action-btn {
+    padding-right: 50px;
   }
 }
 
@@ -694,6 +715,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
+  line-height: 1.2;
   margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
@@ -729,9 +751,8 @@ table.dataTable {
 .item-actions {
   .actionlink {
     a {
-      display: inline;
       font-size: 16px;
-      padding: 10px;
+      padding: 15px 15px 30px 15px;
       vertical-align: middle;
     }
   }
@@ -744,14 +765,7 @@ table.dataTable {
     font-size: 24px;
   }
 
-  .actionlink {
-    a {
-      padding: 15px;
-      display: inline-block;
-    }
-  }
-
-  .actionlink a, ul {
+  ul {
     font-size: 16px;
   }
 }
@@ -828,6 +842,12 @@ table.dataTable {
   .collection-info-bottom {
     margin: 0 25px 25px 25px;
   }
+
+  .columns-resize {
+    .is-10 {
+      padding-left: 50px;
+    }
+  }
 }
 
 @media screen and (max-width: 768px) {
@@ -843,7 +863,7 @@ table.dataTable {
   .bottomline {
     p {
       font-size: 16px;
-      margin-lef: 10px;
+      margin-left: 10px;
       width: 100%;
     }
   }
@@ -852,17 +872,37 @@ table.dataTable {
     float: none;
   }
 
-  .actionlink.right {
-    float: left;
-    margin-left: 10px;
+  .file_record {
+    .item-actions {
+      padding-left: 40px;
+    }
   }
 
-  .action-btn {
-    margin-top: 25px;
+  .actionlink.right {
+    float: left;
   }
 
   .collinfo_metadata {
     margin: auto 0;
+  }
+  .item-title {
+    margin-bottom: 0;
+  }
+
+  .columns-resize {
+    margin-top: 50px;
+
+    .thumbnail {
+      margin-right: 35px;
+    }
+
+    .is-10 {
+      padding-left: 0;
+
+      ul {
+        margin-top: -25px;
+      }
+    }
   }
 
   .dataTables_wrapper {
@@ -891,6 +931,16 @@ table.dataTable {
     h2 {
       .fa {
         display: none;
+      }
+    }
+  }
+
+  .file_record {
+    .columns-resize {
+      .is-10 {
+        ul {
+          margin-top: 0;
+        }
       }
     }
   }

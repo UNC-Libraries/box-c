@@ -94,6 +94,7 @@
     @media screen and (max-width: 768px) {
         #browse-display-type {
             justify-content: flex-start;
+            margin-left: 15px;
             margin-top: 5px;
         }
     }

@@ -57,19 +57,17 @@
         margin-right: 25px;
 
         select {
-            height: 2.65em;
+            height: 50px;
         }
     }
 
     @media screen and (max-width: 768px) {
         .browse-sort {
             float: left;
-            margin-bottom: 0;
+            padding-left: 15px;
+            margin-bottom: 10px;
             margin-top: 0;
-
-            select {
-                height: inherit;
-            }
         }
+
     }
 </style>

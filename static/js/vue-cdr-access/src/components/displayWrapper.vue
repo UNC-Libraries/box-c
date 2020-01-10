@@ -153,6 +153,10 @@
         text-align: center;
     }
 
+    .is-three-fifths {
+        padding-left: 25px;
+    }
+
     @media screen and (max-width: 768px) {
         .browse-records-display {
             .spacing {

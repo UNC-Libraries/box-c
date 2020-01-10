@@ -525,6 +525,10 @@ p.no-search-results {
   width: 25px;
 }
 
+.file_record .columns {
+  width: 100%;
+}
+
 .collection-info-bottom {
   padding: 5px;
   margin: -12px 0 0 0;
@@ -578,8 +582,18 @@ p.no-search-results {
   width: 100%;
 }
 .onecol h2, .content-wrap.full_record h2 {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0 20px 20px 0;
+  padding-left: 0;
+}
+.onecol h2.link-list, .content-wrap.full_record h2.link-list {
   font-size: 20px;
-  margin: 20px;
+  padding-left: 15px;
+  padding-top: 10px;
+}
+.onecol .file_record h2.item-title, .content-wrap.full_record .file_record h2.item-title {
+  padding-left: 25px;
 }
 .onecol .current_item, .content-wrap.full_record .current_item {
   margin-left: 35px;
@@ -609,13 +623,16 @@ p.no-search-results {
   width: 97%;
 }
 .full_record_top .collinfo {
-  width: 85%;
+  width: 100%;
 }
 .full_record_top .item-info {
   margin-left: 15px;
 }
 .full_record_top .columns {
   margin-bottom: 0;
+}
+.full_record_top .action-btn {
+  padding-right: 50px;
 }
 
 .full_record .contentarea {
@@ -631,6 +648,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
+  line-height: 1.2;
   margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
@@ -657,9 +675,8 @@ table.dataTable tbody tr.odd {
 }
 
 .item-actions .actionlink a {
-  display: inline;
   font-size: 16px;
-  padding: 10px;
+  padding: 15px 15px 30px 15px;
   vertical-align: middle;
 }
 
@@ -669,11 +686,7 @@ table.dataTable tbody tr.odd {
 .collinfo_metadata h2 {
   font-size: 24px;
 }
-.collinfo_metadata .actionlink a {
-  padding: 15px;
-  display: inline-block;
-}
-.collinfo_metadata .actionlink a, .collinfo_metadata ul {
+.collinfo_metadata ul {
   font-size: 16px;
 }
 
@@ -740,6 +753,10 @@ table.dataTable tbody tr.odd {
   .collection-info-bottom {
     margin: 0 25px 25px 25px;
   }
+
+  .columns-resize .is-10 {
+    padding-left: 50px;
+  }
 }
 @media screen and (max-width: 768px) {
   .facet-padding {
@@ -753,7 +770,7 @@ table.dataTable tbody tr.odd {
 
   .bottomline p {
     font-size: 16px;
-    margin-lef: 10px;
+    margin-left: 10px;
     width: 100%;
   }
 
@@ -761,17 +778,33 @@ table.dataTable tbody tr.odd {
     float: none;
   }
 
-  .actionlink.right {
-    float: left;
-    margin-left: 10px;
+  .file_record .item-actions {
+    padding-left: 40px;
   }
 
-  .action-btn {
-    margin-top: 25px;
+  .actionlink.right {
+    float: left;
   }
 
   .collinfo_metadata {
     margin: auto 0;
+  }
+
+  .item-title {
+    margin-bottom: 0;
+  }
+
+  .columns-resize {
+    margin-top: 50px;
+  }
+  .columns-resize .thumbnail {
+    margin-right: 35px;
+  }
+  .columns-resize .is-10 {
+    padding-left: 0;
+  }
+  .columns-resize .is-10 ul {
+    margin-top: -25px;
   }
 
   .dataTables_wrapper .dataTables_filter {
@@ -794,6 +827,10 @@ table.dataTable tbody tr.odd {
   }
   .contentarea h2 .fa {
     display: none;
+  }
+
+  .file_record .columns-resize .is-10 ul {
+    margin-top: 0;
   }
 
   .iteminfo {
