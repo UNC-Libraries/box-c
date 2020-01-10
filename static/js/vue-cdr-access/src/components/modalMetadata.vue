@@ -1,9 +1,5 @@
 <template>
     <div class="meta-modal">
-        <button id="show-modal" class="button is-medium" @click="showMetadata">
-            <i class="fa fa-file-text-o" aria-hidden="true" title="Metadata"></i> Metadata
-        </button>
-
         <div v-if="showModal" @close="showModal = false">
             <transition name="modal">
                 <div class="modal-mask">
@@ -51,7 +47,8 @@
         },
 
         methods: {
-            showMetadata() {
+            showMetadata(e) {
+                e.preventDefault();
                 this.retrieveContainerMetadata();
             },
 
@@ -64,6 +61,14 @@
                     this.metadata = '<p>Unable to retrieve metadata for this item</p>';
                     this.showModal = true;
                 });
+            }
+        },
+
+        mounted() {
+            const metadata_link = document.getElementById('metadata-modal-link');
+
+            if (metadata_link !== null) {
+                metadata_link.addEventListener('click', this.showMetadata);
             }
         }
     }
