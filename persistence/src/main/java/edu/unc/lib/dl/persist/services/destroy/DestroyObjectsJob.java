@@ -26,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -62,6 +63,7 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -89,6 +91,8 @@ public class DestroyObjectsJob implements Runnable {
 
     private MultiDestinationTransferSession transferSession;
 
+    private List<URI> cleanupBinaryUris;
+
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
@@ -103,6 +107,7 @@ public class DestroyObjectsJob implements Runnable {
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
         this.agent = request.getAgent();
+        this.cleanupBinaryUris = new ArrayList<>();
     }
 
     @Override
@@ -130,6 +135,9 @@ public class DestroyObjectsJob implements Runnable {
         } finally {
              tx.close();
         }
+
+        // Defer binary cleanup until after fedora destroy transaction completes
+        destroyBinaries();
     }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
@@ -181,17 +189,24 @@ public class DestroyObjectsJob implements Runnable {
         BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
-            destroyBinary(origFile.getContentUri());
+            cleanupBinaryUris.add(origFile.getContentUri());
         }
     }
 
-    private void destroyBinary(URI contentUri) {
+    private void destroyBinaries() {
         if (transferSession == null) {
             transferSession = transferService.getSession();
         }
-        StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
-        transferSession.forDestination(storageLoc)
-                .delete(contentUri);
+        cleanupBinaryUris.forEach(contentUri -> {
+            try {
+                StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
+                transferSession.forDestination(storageLoc)
+                        .delete(contentUri);
+            } catch (BinaryTransferException e) {
+                String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
+                log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
+            }
+        });
     }
 
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
