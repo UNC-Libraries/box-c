@@ -194,6 +194,10 @@ public class DestroyObjectsJob implements Runnable {
     }
 
     private void destroyBinaries() {
+        if (cleanupBinaryUris.isEmpty()) {
+            return;
+        }
+
         if (transferSession == null) {
             transferSession = transferService.getSession();
         }
