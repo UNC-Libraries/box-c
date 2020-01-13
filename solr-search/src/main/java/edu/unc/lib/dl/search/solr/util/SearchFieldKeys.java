@@ -44,6 +44,7 @@ public enum SearchFieldKeys {
     DISPLAY_ORDER("displayOrder"),
     FILESIZE("filesizeSort"),
     FILESIZE_TOTAL("filesizeTotal"),
+    FINDING_AID_LINK("findingAidLink"),
     FULL_TEXT("fullText"),
     ID("id"),
     IDENTIFIER("identifier"),
