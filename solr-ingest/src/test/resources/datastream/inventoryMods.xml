@@ -17,9 +17,11 @@
   <mods:physicalDescription>
     <mods:note>phys note</mods:note>
   </mods:physicalDescription>
-  <mods:location>
-    <mods:url displayLabel="Link to finding aid">https://finding-aids.lib.unc.edu/1234</mods:url>
-  </mods:location>
+  <mods:relatedItem type="isReferencedBy">
+    <mods:location>
+      <mods:url displayLabel="Link to finding aid">https://finding-aids.lib.unc.edu/1234</mods:url>
+    </mods:location>
+  </mods:relatedItem>
   <mods:note type="citation/reference">citation text</mods:note>
   <mods:name type="personal">
     <mods:affiliation>Music</mods:affiliation>
