@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageType;
 
 /**
  * @author bbpennel

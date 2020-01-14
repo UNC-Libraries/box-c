@@ -29,8 +29,11 @@ import java.nio.file.Paths;
 import org.apache.commons.lang3.NotImplementedException;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 
 /**
  * Client for transferring files from a filesystem ingest source to a filesystem

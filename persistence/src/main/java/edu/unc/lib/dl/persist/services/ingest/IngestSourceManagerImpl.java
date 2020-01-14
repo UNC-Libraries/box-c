@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
-import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +39,10 @@ import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 
 /**
  * Loads and manages ingest sources, which are preconfigured locations to find packages for deposit.
@@ -71,7 +75,7 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
         InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerSubtypes(
-                new NamedType(FilesystemIngestSource.class, FILESYSTEM.name()));
+                new NamedType(FilesystemIngestSource.class, FILESYSTEM.getId()));
         ingestSources = mapper.readValue(configStream,
                 new TypeReference<List<IngestSource>>() {});
         idToSource = ingestSources.stream()

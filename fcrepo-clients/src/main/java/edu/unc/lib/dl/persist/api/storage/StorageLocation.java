@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.storage;
+package edu.unc.lib.dl.persist.api.storage;
 
 import java.net.URI;
 

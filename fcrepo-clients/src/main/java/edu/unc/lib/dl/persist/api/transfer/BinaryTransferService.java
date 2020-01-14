@@ -13,21 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
+package edu.unc.lib.dl.persist.api.transfer;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**
+ * A service for transferring binaries to preservation storage locations.
+ *
  * @author bbpennel
  *
  */
-public class UnknownIngestSourceException extends RepositoryException {
-    private static final long serialVersionUID = 1L;
+public interface BinaryTransferService {
 
     /**
-     * @param message
+     * Get a new binary transfer session.
+     *
+     * @return new binary transfer session
      */
-    public UnknownIngestSourceException(String message) {
-        super(message);
-    }
+    MultiDestinationTransferSession getSession();
+
+    /**
+     * Get a new session for transferring binaries to the specified storage location
+     *
+     * @param destination the storage location to transfer to
+     * @return new binary transfer session
+     */
+    BinaryTransferSession getSession(StorageLocation destination);
 }

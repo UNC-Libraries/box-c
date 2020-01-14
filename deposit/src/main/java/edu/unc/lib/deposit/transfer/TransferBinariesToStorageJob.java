@@ -43,10 +43,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 

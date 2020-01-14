@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.transfer;
+package edu.unc.lib.dl.persist.api.transfer;
 
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**
  * A session for transferring one or more binaries to preservation storage locations

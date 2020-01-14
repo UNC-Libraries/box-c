@@ -43,9 +43,9 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.ingest.UnknownIngestSourceException;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.URIUtil;
 

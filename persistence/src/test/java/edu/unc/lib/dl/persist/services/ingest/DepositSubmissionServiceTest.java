@@ -30,6 +30,8 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.ingest.DepositData;
+import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.UnsupportedPackagingTypeException;
 

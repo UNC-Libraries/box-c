@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.transfer;
-
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+package edu.unc.lib.dl.persist.api.transfer;
 
 /**
- * A service for transferring binaries to preservation storage locations.
- *
  * @author bbpennel
  *
  */
-public interface BinaryTransferService {
+public class BinaryAlreadyExistsException extends BinaryTransferException {
+    private static final long serialVersionUID = 1L;
 
     /**
-     * Get a new binary transfer session.
-     *
-     * @return new binary transfer session
+     * @param message
      */
-    MultiDestinationTransferSession getSession();
+    public BinaryAlreadyExistsException(String message) {
+        super(message);
+    }
 
     /**
-     * Get a new session for transferring binaries to the specified storage location
-     *
-     * @param destination the storage location to transfer to
-     * @return new binary transfer session
+     * @param message
+     * @param ex
      */
-    BinaryTransferSession getSession(StorageLocation destination);
+    public BinaryAlreadyExistsException(String message, Throwable ex) {
+        super(message, ex);
+    }
 }

@@ -37,7 +37,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import edu.unc.lib.dl.persist.services.storage.StorageType;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.InvalidIngestSourceCandidateException;
+import edu.unc.lib.dl.persist.api.storage.StorageType;
 
 /**
  * @author bbpennel

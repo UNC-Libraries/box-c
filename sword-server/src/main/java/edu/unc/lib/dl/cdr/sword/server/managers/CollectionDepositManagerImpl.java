@@ -35,7 +35,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.DepositData;
+import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.ErrorURIRegistry;

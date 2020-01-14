@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 
 /**
  * Default implementation of a binary transfer service
