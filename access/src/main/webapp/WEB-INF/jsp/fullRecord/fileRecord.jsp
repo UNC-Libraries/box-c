@@ -21,16 +21,16 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<div class="onecol full_record_top file_record">
-	<div class="contentarea">
+<div class="full_record_top">
+    <div class="collinfo_metadata browse-header">
         <c:import url="fullRecord/navigationBar.jsp" />
         <div class="columns">
             <div class="column is-8">
                 <h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
             </div>
-            <div class="column is-4 item-actions">
+            <div class="column is-narrow-tablet action-btn item-actions">
                 <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-                    <div class="actionlink right"><a class="button" ${adminBaseUrl}/describe/${briefObject.id}">
+                    <div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}">
                         <i class="fa fa-file" aria-hidden="true"></i> Edit</a>
                     </div>
                 </c:if>
@@ -55,8 +55,8 @@
                 </c:choose>
             </div>
         </div>
-		<div class="item-info columns columns-resize">
-            <div class="column is-2">
+        <div class="columns columns-resize">
+            <div class="column is-narrow-tablet">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="target" value="file" />
@@ -97,32 +97,32 @@
                     <c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
                 </ul>
             </div>
-		</div>
-		<div class="clear">
-			<c:choose>
-				<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
-					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
-					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
-					<div class="clear_space"></div>
-					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
-				</c:when>
-				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-					<c:choose>
-						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
-							<div class="actionlink left">
-								<a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
-							</div>
-						</c:when>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-							<div class="clear_space"></div>
-							<audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
-							</audio>
-						</c:when>
-					</c:choose>
-				</c:when>
-			</c:choose>
-		</div>
-	</div>
+        </div>
+    </div>
+    <div class="clear">
+        <c:choose>
+            <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
+                <link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
+                <link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
+                <div class="clear_space"></div>
+                <div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
+            </c:when>
+            <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
+                <c:choose>
+                    <c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
+                        <div class="actionlink left">
+                            <a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
+                        </div>
+                    </c:when>
+                    <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
+                        <div class="clear_space"></div>
+                        <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
+                        </audio>
+                    </c:when>
+                </c:choose>
+            </c:when>
+        </c:choose>
+    </div>
 </div>
 <div class="onecol shadowtop">
 	<div class="contentarea">
