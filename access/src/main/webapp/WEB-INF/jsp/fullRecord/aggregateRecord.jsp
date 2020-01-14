@@ -62,11 +62,10 @@
 							<li><span class="has-text-weight-bold">Finding Aid: </span>
 								<c:choose>
 									<c:when test="${not empty briefObject.findingAidLink}">
-										<ul>
-										<c:forEach var="findingAid" items="${briefObject.findingAidLink}">
-											<li><a href="<c:out value="${findingAid}"/>"><c:out value="${findingAid}"/></a></li>
+										<c:forEach var="findingAid" items="${briefObject.findingAidLink}" varStatus="findingAidStatus">
+											<a href="<c:out value="${findingAid}"/>"><c:out value="${findingAid}"/></a>
+											<c:if test="${!findingAidStatus.last }">, </c:if>
 										</c:forEach>
-										</ul>
 									</c:when>
 									<c:otherwise>Doesn’t have a finding aid</c:otherwise>
 								</c:choose>
