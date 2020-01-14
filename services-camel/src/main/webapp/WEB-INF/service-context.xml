@@ -209,11 +209,28 @@
     <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
     
+    <bean id="destroyObjectsProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyObjectsProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="objectPathFactory" ref="pathFactory" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+        <property name="storageLocationManager" ref="storageLocationManager" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+    </bean>
+    
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
         <property name="authUsername" value="${fcrepo.auth.user}"/>
         <property name="authPassword" value="${fcrepo.auth.password}"/>
         <property name="authHost" value="${fcrepo.auth.host}"/>
         <property name="baseUrl" value="${fcrepo.baseUrl}"/>
+    </bean>
+    
+    <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+        <property name="client" ref="fcrepoClient" />
     </bean>
     
     <!-- XML Import dependencies -->
@@ -349,5 +366,9 @@
     
     <camel:camelContext id="CdrImportXML">
         <camel:package>edu.unc.lib.dl.services.camel.importxml</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrDestroyObjects">
+        <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
     </camel:camelContext>
 </beans>

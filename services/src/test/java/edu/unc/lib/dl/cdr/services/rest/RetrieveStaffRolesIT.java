@@ -64,6 +64,7 @@ import edu.unc.lib.dl.test.AclModelBuilder;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
 })
 public class RetrieveStaffRolesIT extends AbstractAPIIT {

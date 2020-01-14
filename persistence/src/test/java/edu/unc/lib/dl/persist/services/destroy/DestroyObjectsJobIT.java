@@ -15,15 +15,25 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
+import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,7 +45,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +55,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
@@ -52,18 +66,23 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
+import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 /**
@@ -75,8 +94,15 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/acl-service-context.xml")
 })
 public class DestroyObjectsJobIT {
+    private final static String LOC1_ID = "loc1";
+    private static final String USER_NAME = "user";
+    private static final String USER_GROUPS = "edu:lib:staff_grp";
+
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Autowired
     private String baseAddress;
@@ -96,6 +122,19 @@ public class DestroyObjectsJobIT {
     private Model queryModel;
     @Autowired
     private FcrepoClient fcrepoClient;
+    @Autowired
+    private AccessControlService aclService;
+    @Autowired
+    private InheritedAclFactory inheritedAclFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
+
+    private StorageLocationManagerImpl locationManager;
+    private BinaryTransferService transferService;
+    private StorageLocationTestHelper locTestHelper;
+    private Path loc1Path;
+
+    private AgentPrincipals agent;
 
     private RepositoryObjectTreeIndexer treeIndexer;
 
@@ -107,22 +146,39 @@ public class DestroyObjectsJobIT {
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
-        GroupsThreadStore.storeUsername("test_user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+
+        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
+        agent = new AgentPrincipals(USER_NAME, testPrincipals);
 
         treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
 
+        loc1Path = tmpFolder.newFolder("loc1").toPath();
         objsToDestroy = createContentTree();
 
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
         when(path.toNamePath()).thenReturn("path/to/object");
         when(path.toIdPath()).thenReturn("pid0/pid1/pid2/pid3");
+
+        transferService = new BinaryTransferServiceImpl();
+
+        locTestHelper = new StorageLocationTestHelper();
+        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
+        locTestHelper.addMapping(getContentRootPid().getId(), LOC1_ID);
+
+        locationManager = new StorageLocationManagerImpl();
+        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
+        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
+        locationManager.setRepositoryObjectLoader(repoObjLoader);
+        locationManager.init();
     }
 
     @Test
     public void destroySingleFileObjectTest() {
         PID fileObjPid = objsToDestroy.get(2);
-        initializeJob(Arrays.asList(fileObjPid));
+        initializeJob(asList(fileObjPid));
+
+        URI contentUri = repoObjLoader.getFileObject(fileObjPid).getOriginalFile().getContentUri();
+        assertTrue(Files.exists(Paths.get(contentUri)));
 
         job.run();
 
@@ -135,6 +191,10 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneResc.hasProperty(Cdr.hasMessageDigest));
         assertTrue(stoneResc.hasProperty(Ebucore.hasMimeType));
         assertTrue(stoneResc.hasProperty(Cdr.hasSize));
+
+        assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -163,6 +223,8 @@ public class DestroyObjectsJobIT {
         assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
         assertTrue(logModel.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -194,6 +256,9 @@ public class DestroyObjectsJobIT {
         assertTrue(logModel2.contains(null, Premis.hasEventType, Premis.Deletion));
         assertTrue(logModel2.contains(null, Premis.hasEventDetail,
                 "Item deleted from repository and replaced by tombstone"));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObj1Pid), eq(DELETE_SOLR_TREE));
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObj2Pid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -209,6 +274,8 @@ public class DestroyObjectsJobIT {
         assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
     }
 
     @Test
@@ -230,7 +297,7 @@ public class DestroyObjectsJobIT {
     }
 
     private List<PID> createContentTree() throws Exception {
-        PID contentRootPid = RepositoryPaths.getContentRootPid();
+        PID contentRootPid = getContentRootPid();
         try {
             repoObjFactory.createContentRootObject(
                     contentRootPid.getRepositoryUri(), null);
@@ -239,7 +306,9 @@ public class DestroyObjectsJobIT {
         }
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
 
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(new AclModelBuilder("Unit")
+                .addUnitOwner(agent.getUsernameUri())
+                .model);
         contentRoot.addMember(adminUnit);
 
         CollectionObject collection = repoObjFactory.createCollectionObject(null);
@@ -252,7 +321,7 @@ public class DestroyObjectsJobIT {
         folder.addMember(work);
         String bodyString = "Content";
         String mimetype = "text/plain";
-        File contentFile = Files.createTempFile("file", ".txt").toFile();
+        File contentFile = Files.createTempFile(loc1Path, "file", ".txt").toFile();
         String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
         String filename = contentFile.getName();
         FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
@@ -270,12 +339,19 @@ public class DestroyObjectsJobIT {
     }
 
     private void initializeJob(List<PID> objsToDestroy) {
-        job = new DestroyObjectsJob(objsToDestroy);
+        DestroyObjectsRequest request = new DestroyObjectsRequest("jobid", agent,
+                objsToDestroy.stream().map(PID::getId).toArray(String[]::new));
+        job = new DestroyObjectsJob(request);
         job.setPathFactory(pathFactory);
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
         job.setTransactionManager(txManager);
         job.setFcrepoClient(fcrepoClient);
+        job.setAclService(aclService);
+        job.setInheritedAclFactory(inheritedAclFactory);
+        job.setBinaryTransferService(transferService);
+        job.setStorageLocationManager(locationManager);
+        job.setIndexingMessageSender(indexingMessageSender);
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {

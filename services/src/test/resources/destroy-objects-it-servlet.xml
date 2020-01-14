@@ -30,17 +30,11 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/ImportXMLController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    <context:component-scan resource-pattern="**/DestroyObjectsController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="xmlImportService" class="edu.unc.lib.dl.persist.services.importxml.ImportXMLService">
+    <bean id="destroyObjectsService" class="edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="jmsTemplate" ref="jmsTemplate"/>
-    </bean>
-    
-    <bean id="dataDir" class="java.lang.String">
-        <constructor-arg value="src/test/resources/temp"/>
-    </bean>
-    
-    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
 </beans>

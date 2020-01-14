@@ -164,8 +164,9 @@ public class StorageLocationManagerImpl implements StorageLocationManager {
 
     @Override
     public StorageLocation getStorageLocationForUri(URI uri) {
+        URI normalizedUri = uri.normalize();
         return storageLocations.stream()
-                .filter(sl -> sl.isValidUri(uri))
+                .filter(sl -> sl.isValidUri(normalizedUri))
                 .findFirst()
                 .orElseThrow(() -> new UnknownStorageLocationException(
                         "No configured storage locations matched " + uri));

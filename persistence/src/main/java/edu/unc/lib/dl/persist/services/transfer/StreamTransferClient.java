@@ -59,6 +59,13 @@ public interface StreamTransferClient {
     URI transferVersion(PID binPid, InputStream sourceStream);
 
     /**
+     * Delete a binary in a preservation location.
+     *
+     * @param fileUri uri of the file to delete
+     */
+    void delete(URI fileUri);
+
+    /**
      * Shut down this transfer client.
      */
     void shutdown();

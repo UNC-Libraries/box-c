@@ -90,6 +90,14 @@ public interface BinaryTransferSession extends AutoCloseable {
     URI transferVersion(PID binPid, InputStream sourceStream);
 
     /**
+     * Delete a binary from a preservation storage location. If the binary cannot
+     * be deleted, then a BinaryTransferException will be thrown.
+     *
+     * @param fileUri uri of the binary to delete.
+     */
+    void delete(URI fileUri);
+
+    /**
      * Closes the binary session. If there are any failures, they will be RuntimeExceptions.
      */
     @Override
