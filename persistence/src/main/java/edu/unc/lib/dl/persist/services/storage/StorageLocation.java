@@ -17,8 +17,6 @@ package edu.unc.lib.dl.persist.services.storage;
 
 import java.net.URI;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -33,8 +31,6 @@ import edu.unc.lib.dl.fedora.PID;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
-@JsonSubTypes({
-        @Type(value = HashedFilesystemStorageLocation.class, name = HashedFilesystemStorageLocation.TYPE_NAME) })
 public interface StorageLocation {
 
     /**

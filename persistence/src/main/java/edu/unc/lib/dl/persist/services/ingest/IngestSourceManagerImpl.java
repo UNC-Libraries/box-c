@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -67,6 +70,8 @@ public class IngestSourceManagerImpl implements IngestSourceManager {
     private void deserializeConfig() throws IOException {
         InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerSubtypes(
+                new NamedType(FilesystemIngestSource.class, FILESYSTEM.name()));
         ingestSources = mapper.readValue(configStream,
                 new TypeReference<List<IngestSource>>() {});
         idToSource = ingestSources.stream()
