@@ -198,7 +198,7 @@ p.no-search-results {
     color: black;
     font-size: 18px;
     line-height: 22px;
-    margin-left: 20px;
+    margin-left: 25px;
   }
 }
 
@@ -312,7 +312,7 @@ p.no-search-results {
 }
 
 .collection-info-bottom {
-  padding: 5px;
+  padding: 0 5px 5px 5px;
   margin: -12px 0 0 0;
 }
 
@@ -371,7 +371,7 @@ p.no-search-results {
   h2 {
     font-size: 2.5rem;
     line-height: 1;
-    margin: 0 20px 20px 20px;
+    margin: 0 20px 20px 25px;
     padding-left: 0;
   }
 
@@ -575,6 +575,10 @@ table.dataTable {
     p {
       width: 100%;
     }
+  }
+
+  .actionlink {
+    margin-bottom: 1px;
   }
 
   .pipe_list {

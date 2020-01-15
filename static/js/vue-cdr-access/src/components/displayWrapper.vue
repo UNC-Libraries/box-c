@@ -15,11 +15,11 @@
                     <view-type></view-type>
                 </div>
             </div>
-            <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
             <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
+        <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
         <pagination browse-type="display" :number-of-records="record_count"></pagination>
     </div>
 </template>
@@ -145,7 +145,9 @@
     }
 
     p.spacing {
-        margin-bottom: 50px;
+        font-size: 20px;
+        margin-top: 50px;
+        margin-bottom: 20px;
         text-align: center;
     }
 
