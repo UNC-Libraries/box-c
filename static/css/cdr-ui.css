@@ -713,6 +713,10 @@ table.dataTable tbody tr.odd {
   vertical-align: middle;
 }
 
+#is-folder .is-12 {
+  padding-top: 0;
+}
+
 .columns-resize {
   padding-left: 50px;
 }

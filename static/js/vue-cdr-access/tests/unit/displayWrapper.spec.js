@@ -76,7 +76,7 @@ describe('displayWrapper.vue', () => {
 
     it("retrieves data", (done) => {
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&works_only=false&types=Work`, {
+        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=gallery-display&works_only=false&types=Work%2CFolder`, {
             status: 200,
             response: JSON.stringify(response)
         });
@@ -90,8 +90,8 @@ describe('displayWrapper.vue', () => {
         });
     });
 
-    it("uses the correct search parameter for non admin set gallery browse", () => {
-        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
+    it("uses the correct search parameter for non admin set browse works only browse", () => {
+        wrapper.vm.$router.currentRoute.query.works_only = 'true';
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -99,8 +99,8 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
     });
 
-    it("uses the correct search parameters for non admin set structure browse", () => {
-        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
+    it("uses the correct search parameters for non admin works only browse", () => {
+        wrapper.vm.$router.currentRoute.query.works_only = 'false';
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -108,27 +108,13 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
-    it("uses the correct parameters for admin set gallery browse", () => {
+    it("uses the correct parameters for admin set browse", () => {
         wrapper.setData({
             is_admin_unit: true,
             is_collection: false,
             is_folder: false
         });
-        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
-
-        wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
-        expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
-    });
-
-    it("uses the correct parameters for admin set structure browse", () => {
-        wrapper.setData({
-            is_admin_unit: true,
-            is_collection: false,
-            is_folder: false
-        });
-        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
+        wrapper.vm.$router.currentRoute.query.works_only = 'false';
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -144,7 +130,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
         wrapper.vm.updateUrl();
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
     afterEach(() => {

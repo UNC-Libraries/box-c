@@ -1,11 +1,11 @@
 <template>
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
-        <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only">
-        <p>Show only works</p>
         <div class="display-note-btn">?
             <div class="arrow"></div>
             <span class="browse-tip">Show all files without organizational folders.</span>
         </div>
+        <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only">
+        <p>Show only works</p>
     </div>
 </template>
 
@@ -54,14 +54,21 @@
 <style scoped lang="scss">
     #browse-display-type {
         font-size: 1.2rem;
-        justify-content: center;
+        padding-top: 20px;
+        margin: inherit;
 
         .checkbox {
             height: 40px;
+            margin-right: 8px;
             margin-top: -10px;
             width: 50px;
             vertical-align: middle;
             zoom: .6; /* Needed for webkit browsers */
+        }
+
+        .display-note-btn {
+            margin-left: 0;
+            margin-right: 8px;
         }
     }
 

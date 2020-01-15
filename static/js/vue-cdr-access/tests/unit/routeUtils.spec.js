@@ -105,15 +105,13 @@ describe('routeUtils', () => {
         expect(wrapper.vm.updateWorkType(true, false).types).toEqual('Collection');
         expect(wrapper.vm.updateWorkType(true, true).types).toEqual('Collection');
 
-        // Other work types gallery view
-        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
-        expect(wrapper.vm.updateWorkType(false, false).types).toEqual('Work');
+        // Works only
+        wrapper.vm.$router.currentRoute.query.works_only = 'true';
         expect(wrapper.vm.updateWorkType(false, true).types).toEqual('Work');
 
-        // Other work types list view
-        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
+        // All work types
+        wrapper.vm.$router.currentRoute.query.works_only = 'false';
         expect(wrapper.vm.updateWorkType(false, false).types).toEqual('Work,Folder');
-        expect(wrapper.vm.updateWorkType(false, true).types).toEqual('Work');
     });
 
     it("coerces works only value to a boolean from a string", () => {
