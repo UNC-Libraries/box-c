@@ -34,13 +34,17 @@
 <c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
 
 <div class="full_record_top">
-			<div class="collinfo_metadata browse-header">
+			<div class="collinfo_metadata browse-header aggregate-record">
 				<c:import url="fullRecord/navigationBar.jsp" />
 				<div class="columns">
 					<div class="column is-8">
 						<h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
 					</div>
-					<div class="column is-narrow-tablet action-btn item-actions">
+					<div class="column is-narrow-desktop action-btn item-actions">
+						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
+							<div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
+						</c:if>
+
 						<c:choose>
 							<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 								<div class="actionlink right download">
@@ -53,13 +57,9 @@
 								</div>
 							</c:when>
 						</c:choose>
-
-						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-							<div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
-						</c:if>
 					</div>
 				</div>
-				<div class="columns columns-resize">
+				<div class="columns columns-resize aggregate-info">
 					<div class="column is-narrow-tablet">
 						<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
 						<c:import url="common/thumbnail.jsp">

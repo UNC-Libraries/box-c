@@ -105,6 +105,7 @@
 	height: 64px;
 	opacity: 0;
 	transition: opacity 0.3s;
+	margin-top: -5px;
 }
 
 .thumbnail.thumbnail-size-large .thumbnail-placeholder {

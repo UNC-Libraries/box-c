@@ -91,7 +91,6 @@ p.spacing {
 
 .bottomline {
   display: inline-flex;
-  padding-top: 20px;
 
   p {
     font-size: 20px;
@@ -179,7 +178,7 @@ p.no-search-results {
   box-shadow: inset 0 10px 5px -5px rgba(0, 0, 0, .5);
   color: #3D4D5B;
   margin: 0;
-  padding-top: .75rem;
+  padding: .75rem;
 
   h2 {
     font-size: 36px;
@@ -371,8 +370,14 @@ p.no-search-results {
   h2 {
     font-size: 2.5rem;
     line-height: 1;
-    margin: 0 20px 20px 25px;
+    margin: 0 20px 20px 0;
     padding-left: 0;
+  }
+
+  #is-admin-unit, #is-collection {
+    h2 {
+      margin-left: 25px;
+    }
   }
 
   h2.link-list {
@@ -383,12 +388,8 @@ p.no-search-results {
 
   .browse-header {
     h2.item-title {
-      padding-left: 25px;
+      padding-left: 15px;
     }
-  }
-
-  .current_item {
-    margin-left: 35px;
   }
 
   .relateditem {
@@ -404,7 +405,6 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
-  padding-left: 25px;
 }
 
 .item-actions {
@@ -430,6 +430,10 @@ p.no-search-results {
   .action-btn {
     padding-right: 50px;
   }
+
+  .bottomline {
+    padding: .75rem;
+  }
 }
 
 .full_record {
@@ -452,7 +456,7 @@ p.no-search-results {
   border-radius: 5px;
   font-size: 18px;
   line-height: 1.2;
-  margin: 0 20px 25px 20px;
+  margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
   width: 100%;
@@ -540,10 +544,18 @@ table.dataTable {
 }
 
 .columns-resize {
-  padding-left: 50px;
+  padding-left: 25px;
 
   .is-10 {
     padding-left: 25px;
+  }
+}
+
+.aggregate-info {
+  padding-left: 0;
+
+  .thumbnail-preview {
+    padding-left: 15px;
   }
 }
 
@@ -626,6 +638,10 @@ table.dataTable {
     }
   }
 
+  #is-admin-unit.browse-header, #is-collection.browse-header {
+    display: flex;
+  }
+
   .actionlink.right {
     float: left;
   }
@@ -655,8 +671,14 @@ table.dataTable {
   }
 
   .action-btn {
-    padding-left: 55px;
+    padding-left: 40px;
     padding-top: 0;
+  }
+
+  .aggregate-record.browse-header {
+    .action-btn {
+      padding-left: 30px;
+    }
   }
 
   .dataTables_wrapper {
@@ -664,6 +686,7 @@ table.dataTable {
       float: left !important;
 
       input {
+        margin-left: 0 !important;
         margin-top: 25px;
         float: left;
       }
@@ -691,12 +714,18 @@ table.dataTable {
 
   .file_record {
     .columns-resize {
+
       .is-10 {
         ul {
           margin-top: 0;
         }
       }
     }
+  }
+
+  .relateditem {
+    margin-left: 5px;
+    margin-right: 5px;
   }
 
   .iteminfo {
@@ -707,10 +736,6 @@ table.dataTable {
   .file-info {
     float: none;
     width: 100%;
-
-    div {
-      width: 80px;
-    }
 
     p, .actionlink, .right {
       float: none;

@@ -58,14 +58,14 @@
                     </c:otherwise>
                 </c:choose>
             </p>
-            <div class="column is-3">
+            <div class="column is-narrow-tablet">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="target" value="file" />
                     <c:param name="size" value="large" />
                 </c:import>
             </div>
-            <div class="column is-9">
+            <div class="column">
                 <c:choose>
                     <c:when test="${not empty briefObject.abstractText}">
                         <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>

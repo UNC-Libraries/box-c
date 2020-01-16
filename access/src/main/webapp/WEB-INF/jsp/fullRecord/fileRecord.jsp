@@ -22,13 +22,13 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="full_record_top">
-    <div class="collinfo_metadata browse-header">
+    <div class="collinfo_metadata browse-header column">
         <c:import url="fullRecord/navigationBar.jsp" />
         <div class="columns">
             <div class="column is-8">
                 <h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
             </div>
-            <div class="column is-narrow-tablet action-btn item-actions">
+            <div class="column is-narrow-desktop action-btn item-actions">
                 <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
                     <div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}">
                         <i class="fa fa-file" aria-hidden="true"></i> Edit</a>
@@ -46,6 +46,12 @@
                                     <i class="fa fa-search" aria-hidden="true"></i> View</a>
                             </div>
                         </c:if>
+                        <c:if test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
+                            <div class="actionlink right">
+                                <a class="button" href="${cdr:getOriginalFileUrl(briefObject)}">
+                                    <i class="fa fa-search" aria-hidden="true"></i> View</a>
+                            </div>
+                        </c:if>
                     </c:when>
                     <c:when test="${not empty embargoDate}">
                         <div class="noaction right">
@@ -55,7 +61,7 @@
                 </c:choose>
             </div>
         </div>
-        <div class="columns columns-resize">
+        <div class="columns columns-resize file-info">
             <div class="column is-narrow-tablet">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
@@ -108,18 +114,11 @@
                 <div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
             </c:when>
             <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-                <c:choose>
-                    <c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
-                        <div class="actionlink left">
-                            <a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
-                        </div>
-                    </c:when>
-                    <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-                        <div class="clear_space"></div>
-                        <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
-                        </audio>
-                    </c:when>
-                </c:choose>
+                <c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
+                    <div class="clear_space"></div>
+                    <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
+                    </audio>
+                </c:if>
             </c:when>
         </c:choose>
     </div>
