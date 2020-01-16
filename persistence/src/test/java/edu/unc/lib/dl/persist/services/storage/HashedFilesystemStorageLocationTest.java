@@ -49,7 +49,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void baseFieldWithFileScheme() {
-        String assignedBase = "file:///path/to/my/stuff/";
+        String assignedBase = "file:/path/to/my/stuff/";
         loc.setBase(assignedBase);
 
         assertEquals(assignedBase, loc.getBase());
@@ -57,8 +57,18 @@ public class HashedFilesystemStorageLocationTest {
     }
 
     @Test
+    public void baseFieldWithTripleSlashes() {
+        String assignedBase = "file:///path/to/my/stuff/";
+        String expectedBase = "file:/path/to/my/stuff/";
+        loc.setBase(assignedBase);
+
+        assertEquals(expectedBase, loc.getBase());
+        assertEquals(URI.create(expectedBase), loc.getBaseUri());
+    }
+
+    @Test
     public void baseFieldWithFileSchemeWithoutTrailingSlash() {
-        String assignedBase = "file:///path/to/my/stuff";
+        String assignedBase = "file:/path/to/my/stuff";
         loc.setBase(assignedBase);
 
         assertEquals(assignedBase + "/", loc.getBase());
@@ -67,7 +77,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void baseFieldWithNoScheme() {
-        String expectedBase = "file:///path/to/my/stuff/";
+        String expectedBase = "file:/path/to/my/stuff/";
         String assignedBase = "/path/to/my/stuff/";
         loc.setBase(assignedBase);
 
@@ -83,7 +93,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void getStorageUriForPidWithoutComponent() {
-        String assignedBase = "file:///location/path/";
+        String assignedBase = "file:/location/path/";
 
         loc.setId("loc1");
         loc.setBase(assignedBase);
@@ -96,7 +106,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void getStorageUriForPidWithComponent() {
-        String assignedBase = "file:///location/path/";
+        String assignedBase = "file:/location/path/";
         String component = "/datafs/original_data";
 
         loc.setId("loc1");
@@ -110,7 +120,7 @@ public class HashedFilesystemStorageLocationTest {
 
     @Test
     public void isValidUriInLocation() {
-        String assignedBase = "file:///location/path/";
+        String assignedBase = "file:/location/path/";
         String subpath = "ab/cd/ef/gh/abcdefgh";
         URI targetUri = URI.create(assignedBase + subpath);
 

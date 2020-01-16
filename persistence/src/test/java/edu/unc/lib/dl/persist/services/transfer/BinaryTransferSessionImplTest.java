@@ -191,4 +191,19 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
             session.transferVersion(binPid, sourceFile.toUri());
         }
     }
+
+    @Test
+    public void deleteBinaryFSToFS() throws Exception {
+        when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
+        when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
+
+        Files.createDirectories(binDestPath.getParent());
+        createFile(binDestPath, "some stuff");
+        Path sourceFile = createSourceFile();
+
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+            session.delete(sourceFile.toUri());
+        }
+        assertFalse("File must be deleted", Files.exists(sourceFile));
+    }
 }

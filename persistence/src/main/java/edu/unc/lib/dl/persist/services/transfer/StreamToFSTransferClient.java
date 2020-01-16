@@ -94,4 +94,14 @@ public class StreamToFSTransferClient implements StreamTransferClient {
     public void shutdown() {
         // No finalization needed at this time
     }
+
+    @Override
+    public void delete(URI fileUri) {
+        try {
+            Files.delete(Paths.get(fileUri));
+        } catch (IOException e) {
+            throw new BinaryTransferException("Failed to delete file from destination "
+                    + destination.getId(), e);
+        }
+    }
 }

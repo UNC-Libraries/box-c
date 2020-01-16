@@ -133,6 +133,8 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertEquals("Abstract text", idb.getAbstractText());
 
+        assertTrue(idb.getFindingAidLink().contains("https://finding-aids.lib.unc.edu/1234"));
+
         assertTrue(idb.getSubject().contains("Test resource"));
 
         assertTrue(idb.getLanguage().contains("English"));

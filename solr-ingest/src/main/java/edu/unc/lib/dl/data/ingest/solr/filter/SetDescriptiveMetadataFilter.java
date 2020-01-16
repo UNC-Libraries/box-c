@@ -73,6 +73,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractTitles(mods, idb);
             this.extractNamesAndAffiliations(mods, idb, true);
             this.extractAbstract(mods, idb);
+            this.extractFindingAidLink(mods, idb);
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
             this.extractDateCreated(mods, idb);
@@ -249,6 +250,38 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setAbstractText(abstractText.trim());
         } else {
             idb.setAbstractText(null);
+        }
+    }
+
+    private void extractFindingAidLink(Element mods, IndexDocumentBean idb) {
+        List<?> findingAidLinkEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> findingAids = new ArrayList<>();
+
+        if (findingAidLinkEls != null && findingAidLinkEls.size() > 0) {
+            for (Object findingAidObj: findingAidLinkEls) {
+                List<?> findingAidParts = ((Element)findingAidObj).getChildren();
+                for (Object findingAid: findingAidParts) {
+                    Element aid = (Element) findingAid;
+
+                    if (aid.getName().equals("location")) {
+                        List<?> urls = aid.getChildren();
+                        for (Object url : urls) {
+                            Element urlType = (Element) url;
+                            String displayLabel = urlType.getAttributeValue("displayLabel");
+
+                            if (displayLabel.toLowerCase().equals("link to finding aid")) {
+                                findingAids.add(urlType.getValue());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (findingAids.size() > 0) {
+            idb.setFindingAidLink(findingAids);
+        } else {
+            idb.setFindingAidLink(null);
         }
     }
 

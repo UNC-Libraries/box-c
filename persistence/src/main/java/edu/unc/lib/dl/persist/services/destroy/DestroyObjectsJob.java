@@ -18,9 +18,15 @@ package edu.unc.lib.dl.persist.services.destroy;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
+import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
+import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -35,12 +41,18 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -49,11 +61,17 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -64,17 +82,32 @@ import io.dropwizard.metrics5.Timer;
  *
  */
 public class DestroyObjectsJob implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(DestroyObjectsJob.class);
+
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    private AgentPrincipals agent;
+
+    private MultiDestinationTransferSession transferSession;
+
+    private List<URI> cleanupBinaryUris;
+
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
     private ObjectPathFactory pathFactory;
     private FcrepoClient fcrepoClient;
+    private InheritedAclFactory inheritedAclFactory;
+    private AccessControlService aclService;
+    private StorageLocationManager locManager;
+    private BinaryTransferService transferService;
+    private IndexingMessageSender indexingMessageSender;
 
-    public DestroyObjectsJob(List<PID> objsToDestroy) {
-        this.objsToDestroy = objsToDestroy;
+    public DestroyObjectsJob(DestroyObjectsRequest request) {
+        this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
+        this.agent = request.getAgent();
+        this.cleanupBinaryUris = new ArrayList<>();
     }
 
     @Override
@@ -84,16 +117,27 @@ public class DestroyObjectsJob implements Runnable {
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+
+                assertCanDestroy(agent, repoObj, aclService);
+                if (!inheritedAclFactory.isMarkedForDeletion(pid)) {
+                    log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
+                    continue;
+                }
+
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
                     // purge tree with repoObj as root from repository
                     destroyTree(repoObj);
                 }
+                indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
            }
         } catch (Exception e) {
              tx.cancel(e);
         } finally {
              tx.close();
         }
+
+        // Defer binary cleanup until after fedora destroy transaction completes
+        destroyBinaries();
     }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
@@ -108,11 +152,7 @@ public class DestroyObjectsJob implements Runnable {
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
-            FileObject file = (FileObject) rootOfTree;
-            BinaryObject origFile = file.getOriginalFile();
-            if (origFile != null) {
-                addBinaryMetadataToParent(rootResc, origFile);
-            }
+            destroyFile((FileObject) rootOfTree, rootResc);
         }
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
@@ -124,6 +164,7 @@ public class DestroyObjectsJob implements Runnable {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
+            .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .write();
     }
@@ -144,6 +185,34 @@ public class DestroyObjectsJob implements Runnable {
         return stoneModel;
     }
 
+    private void destroyFile(FileObject fileObj, Resource resc) {
+        BinaryObject origFile = fileObj.getOriginalFile();
+        if (origFile != null) {
+            addBinaryMetadataToParent(resc, origFile);
+            cleanupBinaryUris.add(origFile.getContentUri());
+        }
+    }
+
+    private void destroyBinaries() {
+        if (cleanupBinaryUris.isEmpty()) {
+            return;
+        }
+
+        if (transferSession == null) {
+            transferSession = transferService.getSession();
+        }
+        cleanupBinaryUris.forEach(contentUri -> {
+            try {
+                StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
+                transferSession.forDestination(storageLoc)
+                        .delete(contentUri);
+            } catch (BinaryTransferException e) {
+                String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
+                log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
+            }
+        });
+    }
+
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         Resource childResc = child.getResource();
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
@@ -158,7 +227,7 @@ public class DestroyObjectsJob implements Runnable {
                 continue;
             }
             Property replacement = null;
-            if (ServerManagedProperties.isServerManagedProperty(p)) {
+            if (isServerManagedProperty(p)) {
                 replacement = replaceServerManagedProperty(p);
             }
             if (replacement != null) {
@@ -170,8 +239,7 @@ public class DestroyObjectsJob implements Runnable {
     }
 
     private Property replaceServerManagedProperty(Property p) {
-        Property localProperty = ServerManagedProperties.mapToLocalNamespace(p);
-        return localProperty;
+        return ServerManagedProperties.mapToLocalNamespace(p);
 
     }
 
@@ -187,7 +255,7 @@ public class DestroyObjectsJob implements Runnable {
                     throw new ServiceException("Unable to clean up child object " + objUri, e);
                 }
 
-                URI tombstoneUri = URI.create(objUri.toString() + "/" + FCR_TOMBSTONE);
+                URI tombstoneUri = URI.create(objUri + "/" + FCR_TOMBSTONE);
                 try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
                 } catch (FcrepoOperationFailedException | IOException e) {
                     throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
@@ -214,5 +282,25 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {
         this.fcrepoClient = fcrepoClient;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
+        this.inheritedAclFactory = inheritedAclFactory;
+    }
+
+    public void setStorageLocationManager(StorageLocationManager locManager) {
+        this.locManager = locManager;
+    }
+
+    public void setBinaryTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

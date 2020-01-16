@@ -136,4 +136,9 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
         return streamClient;
     }
+
+    @Override
+    public void delete(URI fileUri) {
+        getStreamClient().delete(fileUri);
+    }
 }
