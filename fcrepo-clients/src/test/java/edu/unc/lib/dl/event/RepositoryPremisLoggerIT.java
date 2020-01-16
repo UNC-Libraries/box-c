@@ -15,18 +15,34 @@
  */
 package edu.unc.lib.dl.event;
 
+import static java.nio.file.Files.createTempFile;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -41,8 +57,35 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     private RepositoryObject parentObject;
 
+    @Mock
+    private BinaryTransferService transferService;
+    @Mock
+    private BinaryTransferSession mockSession;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
+
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
+
+        when(transferService.getSession(any(RepositoryObject.class))).thenReturn(mockSession);
+        premisLoggerFactory.setBinaryTransferService(transferService);
+
+        // No implementations of session available here, so mock from interface
+        final Path path = createTempFile("content", null);
+        when(mockSession.transferReplaceExisting(any(PID.class), any(InputStream.class)))
+                .thenAnswer(new Answer<URI>()  {
+                    @Override
+                    public URI answer(InvocationOnMock invocation) throws Throwable {
+                        InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
+                        copyInputStreamToFile(contentStream, path.toFile());
+                        return path.toUri();
+                    }
+                });
+    }
+
     private void initPremisLogger(RepositoryObject repoObj) {
-        logger = new RepositoryPremisLogger(parentObject, pidMinter,
+        logger = new RepositoryPremisLogger(parentObject, mockSession, pidMinter,
                 repoObjLoader, repoObjFactory);
     }
 
@@ -85,8 +128,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         logger.writeEvents(event2Resc, event3Resc);
 
         // Make a new logger to make sure everything is clean
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, pidMinter,
-                repoObjLoader, repoObjFactory);
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
+                pidMinter, repoObjLoader, repoObjFactory);
 
         Model logModel = retrieveLogger.getEventsModel();
         Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());

@@ -139,4 +139,14 @@ public class FilePremisLogger implements PremisLogger {
     public Model getEventsModel() {
         return getModel();
     }
+
+    @Override
+    public void close() {
+        // Nothing to release currently
+    }
+
+    @Override
+    public boolean isClosed() {
+        return false;
+    }
 }

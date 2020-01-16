@@ -51,8 +51,8 @@ import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -76,7 +76,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private IngestSourceManagerImpl sourceManager;
 
-    private StorageLocationManagerImpl locationManager;
+    private StorageLocationManager locationManager;
     private StorageLocation storageLoc;
     private BinaryTransferServiceImpl transferService;
 
@@ -101,10 +101,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
         locTestHelper.addStorageLocation(LOC2_ID, "Location 2", loc2Path.toString());
 
-        locationManager = new StorageLocationManagerImpl();
-        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
-        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
-        locationManager.init();
+        locationManager = locTestHelper.createLocationManager(null);
         storageLoc = locationManager.getStorageLocationById(LOC1_ID);
 
         sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();

@@ -113,7 +113,7 @@ public class AddContainerService {
                 .buildEvent(Premis.Creation)
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Container added at destination " + parentPid)
-                .write();
+                .writeAndClose();
         } catch (Exception e) {
             tx.cancel(e);
         } finally {

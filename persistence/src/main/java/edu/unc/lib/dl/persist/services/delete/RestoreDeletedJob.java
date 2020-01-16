@@ -80,7 +80,7 @@ public class RestoreDeletedJob implements Runnable {
         repoObj.getPremisLog().buildEvent(Premis.Deletion)
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Item restored from deletion")
-                .write();
+                .writeAndClose();
     }
 
 }

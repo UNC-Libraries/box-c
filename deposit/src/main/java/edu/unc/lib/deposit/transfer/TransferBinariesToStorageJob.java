@@ -38,14 +38,10 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -63,11 +59,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
-
-    @Autowired
-    private BinaryTransferService transferService;
-    @Autowired
-    private StorageLocationManager locationManager;
 
     /**
      *
@@ -89,10 +80,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
         // All objects in deposit should have the same destination, so pull storage loc from deposit record
-        String destLocationId = depositBag.getProperty(Cdr.storageLocation).getString();
-        StorageLocation destLocation = locationManager.getStorageLocationById(destLocationId);
-
-        try (BinaryTransferSession transferSession = transferService.getSession(destLocation)) {
+        try (BinaryTransferSession transferSession = getTransferSession(model)) {
             transferBinaries(depositBag, transferSession);
         }
     }

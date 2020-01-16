@@ -76,6 +76,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -119,6 +120,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private TransactionManager txManager;
+
+    private BinaryTransferSession logTransferSession;
 
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
@@ -212,11 +215,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         // Ingest objects included in this deposit into the destination object
         try {
+            logTransferSession = getTransferSession(model);
+
             ingestChildren((ContentContainerObject) destObj, depositBag);
             // Add ingestion event for the parent container
             addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
         } catch (DepositException | FedoraException | IOException e) {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
+        } finally {
+            logTransferSession.close();
         }
 
         // Verify objects from deposit are present in fcrepo
@@ -668,7 +675,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             return;
         }
 
-        PremisLogger repoPremisLogger = obj.getPremisLog();
+        PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(obj, logTransferSession);
         try {
             repoPremisLogger.createLog(new FileInputStream(premisFile));
         } catch (FileNotFoundException e) {

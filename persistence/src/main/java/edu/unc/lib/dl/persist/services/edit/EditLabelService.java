@@ -80,7 +80,7 @@ public class EditLabelService {
                 .buildEvent(Premis.Migration)
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
-                .write();
+                .writeAndClose();
         } catch (Exception e) {
             tx.cancel(e);
         } finally {

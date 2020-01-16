@@ -166,7 +166,7 @@ public class DestroyObjectsJob implements Runnable {
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
             .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
-            .write();
+            .writeAndClose();
     }
 
     private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)

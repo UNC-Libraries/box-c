@@ -22,6 +22,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
 /**
  * A factory class for creating PremisLogger instances
@@ -34,13 +36,39 @@ public class PremisLoggerFactory {
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
+    private BinaryTransferService transferService;
 
+    /**
+     * Create a PREMIS logger for events related to the object identified by pid. Events
+     * will be stored to/retrieved from the provided local file.
+     *
+     * @param pid pid of the subject of the logger
+     * @param file file where the event data is stored
+     * @return new PremisLogger instance
+     */
     public PremisLogger createPremisLogger(PID pid, File file) {
         return new FilePremisLogger(pid, file, pidMinter);
     }
 
+    /**
+     * Create a premis logger for events related to the provided repository object.
+     *
+     * @param repoObject subject of the logger
+     * @return new PremisLogger instance
+     */
     public PremisLogger createPremisLogger(RepositoryObject repoObject) {
-        return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory);
+        return createPremisLogger(repoObject, transferService.getSession(repoObject));
+    }
+
+    /**
+     * Create a PREMIS logger for events related to the provided repository object.
+     *
+     * @param repoObject subject of the logger
+     * @param session session the logger will use for transferring log data to storage
+     * @return new PremisLogger instance
+     */
+    public PremisLogger createPremisLogger(RepositoryObject repoObject, BinaryTransferSession session) {
+        return new RepositoryPremisLogger(repoObject, session, pidMinter, repoObjLoader, repoObjFactory);
     }
 
     /**
@@ -62,5 +90,9 @@ public class PremisLoggerFactory {
      */
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
+    }
+
+    public void setBinaryTransferService(BinaryTransferService transferService) {
+        this.transferService = transferService;
     }
 }

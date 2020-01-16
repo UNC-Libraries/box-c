@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.DcElements;
@@ -58,6 +59,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
     private RepositoryObjectFactory repoObjFactory;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
+
+    private BinaryTransferSession logTransferSession;
 
     private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
@@ -94,6 +97,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
                 .addAuthorizingAgent(DepositField.depositorName.name())
                 .write();
 
+        logTransferSession = getTransferSession(dModel);
+
         // Create the deposit record object in Fedora
         DepositRecord depositRecord;
         try {
@@ -115,6 +120,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             }
         } catch (FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);
+        } finally {
+            logTransferSession.close();
         }
     }
 
@@ -162,7 +169,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             return;
         }
 
-        PremisLogger repoPremisLogger = obj.getPremisLog();
+        PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(obj, logTransferSession);
         try {
             repoPremisLogger.createLog(new FileInputStream(premisFile));
         } catch (FileNotFoundException e) {

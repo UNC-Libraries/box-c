@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
@@ -84,6 +85,10 @@ import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -141,6 +146,15 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Mock
     private BinaryObject mockBinaryObj;
 
+    @Mock
+    private BinaryTransferService binaryTransferService;
+    @Mock
+    private StorageLocationManager storageLocationManager;
+    @Mock
+    private StorageLocation storageLocation;
+    @Mock
+    private BinaryTransferSession mockTransferSession;
+
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
 
@@ -171,6 +185,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "fcrepoClient", fcrepoClient);
         setField(job, "txManager", txManager);
         setField(job, "verificationService", verificationService);
+        setField(job, "transferService", binaryTransferService);
+        setField(job, "locationManager", storageLocationManager);
 
         job.init();
 
@@ -201,6 +217,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         when(txManager.startTransaction()).thenReturn(mockTx);
         doThrow(new TransactionCancelledException()).when(mockTx).cancel(any(Exception.class));
+
+        depBag.addProperty(Cdr.storageLocation, LOC1_ID);
+        when(storageLocationManager.getStorageLocationById(anyString())).thenReturn(storageLocation);
+        when(binaryTransferService.getSession(any(StorageLocation.class))).thenReturn(mockTransferSession);
     }
 
     private void setupDestination() {

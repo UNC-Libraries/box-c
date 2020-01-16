@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -32,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.dl.util.DepositStatusFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -71,6 +71,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -138,6 +139,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "fcrepoClient", fcrepoClient);
         setField(job, "verificationService", verificationService);
+        setField(job, "transferService", binaryTransferService);
+        setField(job, "locationManager", storageLocationManager);
         job.init();
 
         // Create a destination folder where deposits will be ingested to
@@ -150,6 +153,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Create deposit record for this deposit to reference
         depositRecord = repoObjFactory.createDepositRecord(depositPid, null);
+        Model model = job.getWritableModel();
+        Resource depositResc = model.getResource(depositPid.getRepositoryPath());
+        depositResc.addProperty(Cdr.storageLocation, LOC1_ID);
+        job.closeModel();
     }
 
     private void setupDestination() throws Exception {

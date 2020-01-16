@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.event;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
+import static edu.unc.lib.dl.model.DatastreamPids.getMdEventsPid;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 
 import java.io.ByteArrayInputStream;
@@ -39,6 +39,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
@@ -56,15 +57,19 @@ public class RepositoryPremisLogger implements PremisLogger {
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
+    private BinaryTransferSession transferSession;
 
     private RepositoryObject repoObject;
+    private boolean closed = false;
 
-    public RepositoryPremisLogger(RepositoryObject repoObject, RepositoryPIDMinter pidMinter,
-            RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory) {
+    public RepositoryPremisLogger(RepositoryObject repoObject, BinaryTransferSession transferSession,
+            RepositoryPIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
+            RepositoryObjectFactory repoObjFactory) {
         this.repoObject = repoObject;
         this.pidMinter = pidMinter;
         this.repoObjLoader = repoObjLoader;
         this.repoObjFactory = repoObjFactory;
+        this.transferSession = transferSession;
     }
 
     @Override
@@ -104,8 +109,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         if (s == null) {
             createLog(modelStream);
         } else {
-            URI mdURI = getMetadataContainerUri(repoObject.getPid());
-            PID logPid = DatastreamPids.getMdEventsPid(repoObject.getPid());
+            PID logPid = getMdEventsPid(repoObject.getPid());
             // Event log exists, append new events to it
             BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
 
@@ -117,8 +121,7 @@ public class RepositoryPremisLogger implements PremisLogger {
                     logObj.getBinaryStream(),
                     newContentStream);
 
-            repoObjFactory.updateBinary(mdURI, MD_EVENTS.getId(), mergedStream, MD_EVENTS.getDefaultFilename(),
-                    MD_EVENTS.getMimetype(), null, null, null);
+            updateOrCreateLog(mergedStream);
         }
 
         return this;
@@ -126,15 +129,20 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisLogger createLog(InputStream contentStream) {
-        URI mdURI = getMetadataContainerUri(repoObject.getPid());
-
-        BinaryObject eventsObj = repoObjFactory.createBinary(mdURI, MD_EVENTS.getId(), contentStream,
-                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), null, null, null);
+        BinaryObject eventsObj = updateOrCreateLog(contentStream);
 
         // Link from the repository object to its event log
         repoObjFactory.createRelationship(repoObject, Cdr.hasEvents, eventsObj.getResource());
 
         return this;
+    }
+
+    private BinaryObject updateOrCreateLog(InputStream contentStream) {
+        PID logPid = getMdEventsPid(repoObject.getPid());
+        URI logUri = transferSession.transferReplaceExisting(logPid, contentStream);
+
+        return repoObjFactory.createOrUpdateBinary(logPid, logUri,
+                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), null, null, null);
     }
 
     @Override
@@ -146,5 +154,16 @@ public class RepositoryPremisLogger implements PremisLogger {
         } catch (NotFoundException e) {
             return ModelFactory.createDefaultModel();
         }
+    }
+
+    @Override
+    public void close() {
+        transferSession.close();
+        closed = true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return closed;
     }
 }

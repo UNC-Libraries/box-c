@@ -170,7 +170,7 @@ public class AddContainerServiceTest {
         service.addContainer(agent, parentPid, "folder", Cdr.Folder);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
-        verify(eventBuilder).write();
+        verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
                 addedContainersCaptor.capture(), any(Collection.class), anyString());
 
@@ -196,7 +196,7 @@ public class AddContainerServiceTest {
         service.addContainer(agent, parentPid, "work", Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
-        verify(eventBuilder).write();
+        verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
                 addedContainersCaptor.capture(), any(Collection.class), anyString());
 

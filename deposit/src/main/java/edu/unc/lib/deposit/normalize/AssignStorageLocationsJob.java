@@ -29,12 +29,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -46,9 +44,6 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  *
  */
 public class AssignStorageLocationsJob extends AbstractDepositJob {
-
-    @Autowired
-    private StorageLocationManager locationManager;
 
     private static final Set<Resource> TYPES_NEEDING_LOCATION = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject, Cdr.DepositRecord));

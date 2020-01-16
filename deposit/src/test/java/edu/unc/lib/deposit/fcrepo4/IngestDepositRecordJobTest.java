@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,6 +51,10 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -75,6 +80,15 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
     @Captor
     private ArgumentCaptor<URI> uriCaptor;
 
+    @Mock
+    private BinaryTransferService binaryTransferService;
+    @Mock
+    private StorageLocationManager storageLocationManager;
+    @Mock
+    private StorageLocation storageLocation;
+    @Mock
+    private BinaryTransferSession mockTransferSession;
+
     @Before
     public void setup() throws Exception {
         when(repoObjFactory.createDepositRecord(any(PID.class), any(Model.class)))
@@ -83,6 +97,9 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
 
         when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
+
+        when(storageLocationManager.getStorageLocationById(anyString())).thenReturn(storageLocation);
+        when(binaryTransferService.getSession(any(StorageLocation.class))).thenReturn(mockTransferSession);
     }
 
     private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
@@ -108,6 +125,8 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "pidMinter", pidMinter);
         setField(job, "repoObjFactory", repoObjFactory);
+        setField(job, "transferService", binaryTransferService);
+        setField(job, "locationManager", storageLocationManager);
 
         job.init();
 
@@ -133,6 +152,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         URI manifestUri2 = Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toUri();
         resc.addProperty(CdrDeposit.storageUri, manifestUri1.toString());
         resc.addProperty(CdrDeposit.storageUri, manifestUri2.toString());
+        resc.addProperty(Cdr.storageLocation, LOC1_ID);
 
         job.closeModel();
 

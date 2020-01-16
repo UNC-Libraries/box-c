@@ -303,17 +303,17 @@ public class PatronAccessAssignmentService {
     }
 
     private void writePremisEvents(RepositoryObject repoObj, Resource rolesEvent, Resource embargoEvent) {
-        PremisLogger logger = repoObj.getPremisLog();
-
-        if (rolesEvent != null) {
-            if (embargoEvent != null) {
-                logger.writeEvents(rolesEvent, embargoEvent);
+        try (PremisLogger logger = repoObj.getPremisLog()) {
+            if (rolesEvent != null) {
+                if (embargoEvent != null) {
+                    logger.writeEvents(rolesEvent, embargoEvent);
+                } else {
+                    logger.writeEvents(rolesEvent);
+                }
             } else {
-                logger.writeEvents(rolesEvent);
+                // This method is only called if either roles or embargo event is non-null
+                logger.writeEvents(embargoEvent);
             }
-        } else {
-            // This method is only called if either roles or embargo event is non-null
-            logger.writeEvents(embargoEvent);
         }
     }
 
