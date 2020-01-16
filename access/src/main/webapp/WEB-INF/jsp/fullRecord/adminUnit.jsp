@@ -58,14 +58,14 @@
                     </c:otherwise>
                 </c:choose>
             </p>
-            <div class="column is-3">
+            <div class="column is-narrow-tablet">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="target" value="file" />
                     <c:param name="size" value="large" />
                 </c:import>
             </div>
-            <div class="column is-9">
+            <div class="column">
                 <c:choose>
                     <c:when test="${not empty briefObject.abstractText}">
                         <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
@@ -87,6 +87,7 @@
                         <p>There is no description available for this record.</p>
                     </c:otherwise>
                 </c:choose>
+                <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>
             </div>
         </div>
     </div>

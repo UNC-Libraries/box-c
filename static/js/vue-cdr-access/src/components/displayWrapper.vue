@@ -2,28 +2,24 @@
     <div>
         <div v-if="record_list.length > 0">
             <div class="columns is-tablet">
-                <div class="column is-three-fifths">
+                <div class="column is-6">
                     <browse-search></browse-search>
                 </div>
-                <div class="column is-one-fifth">
+                <div class="column is-2">
                     <browse-sort browse-type="display"></browse-sort>
                 </div>
-                <div class="column is-one-fifth">
+                <div class="column is-2 container-note">
+                    <works-only :admin-unit="is_admin_unit"></works-only>
+                </div>
+                <div class="column is-narrow-tablet">
                     <view-type></view-type>
-                </div>
-            </div>
-            <div class="columns is-tablet">
-                <div class="column is-11 container-note">
-                    <works-only v-if="!isBrowseDisplay" :admin-unit="is_admin_unit"></works-only>
-                </div>
-                <div class="column is-1">
-                    <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
                 </div>
             </div>
             <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
             <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
         </div>
         <p v-else class="spacing">No records were found.</p>
+        <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
         <pagination browse-type="display" :number-of-records="record_count"></pagination>
     </div>
 </template>
@@ -75,7 +71,7 @@
                 is_page_loading: true,
                 record_count: 0,
                 record_list: [],
-                search_method: 'searchJson',
+                search_method: 'listJson',
                 uuid: ''
             }
         },
@@ -109,7 +105,7 @@
 
             updateParams() {
                 let params = this.setTypes();
-                this.search_method = (params.browse_type === 'list-display') ? 'listJson' : 'searchJson';
+                this.search_method = (params.works_only === 'true') ? 'searchJson' : 'listJson';
                 return params;
             },
 
@@ -149,8 +145,18 @@
     }
 
     p.spacing {
-        margin-bottom: 50px;
+        font-size: 20px;
+        margin-top: 50px;
+        margin-bottom: 20px;
         text-align: center;
+    }
+
+    .container-note {
+        padding: 20px 0;
+    }
+
+    .is-6 {
+        padding-left: 50px;
     }
 
     @media screen and (max-width: 768px) {
@@ -178,10 +184,18 @@
                 display: inherit;
                 width: inherit;
             }
+        }
 
-            .column.is-three-fifths {
-                padding-bottom: 0;
-            }
+        .is-6 {
+            padding-left: 25px;
+        }
+
+        .container-note {
+            padding: 25px 0 0 25px;
+        }
+
+        .is-narrow-tablet {
+            padding-top: 0;
         }
     }
 </style>

@@ -33,21 +33,41 @@
 
 <c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
 
-<div class="full_record_top border-box-left-top">
-	<c:import url="fullRecord/navigationBar.jsp" />
-	<div class="contentarea-aggregate">
-		<div class="collinfo">
-			<div class="collinfo_metadata">
+<div class="full_record_top">
+			<div class="collinfo_metadata browse-header aggregate-record">
+				<c:import url="fullRecord/navigationBar.jsp" />
 				<div class="columns">
-					<div class="column is-2">
+					<div class="column is-8">
+						<h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
+					</div>
+					<div class="column is-narrow-desktop action-btn item-actions">
+						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
+							<div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
+						</c:if>
+
+						<c:choose>
+							<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
+								<div class="actionlink right download">
+									<a class="button" href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
+								</div>
+							</c:when>
+							<c:when test="${not empty embargoDate && not empty dataFileUrl}">
+								<div class="noaction right">
+									Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
+								</div>
+							</c:when>
+						</c:choose>
+					</div>
+				</div>
+				<div class="columns columns-resize aggregate-info">
+					<div class="column is-narrow-tablet">
 						<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
 						<c:import url="common/thumbnail.jsp">
 							<c:param name="target" value="file" />
 							<c:param name="size" value="large" />
 						</c:import>
 					</div>
-					<div class="column is-8">
-						<h2><c:out value="${briefObject.title}" /></h2>
+					<div class="column is-10">
 						<ul>
 							<c:if test="${not empty briefObject.dateAdded}">
 								<li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>
@@ -92,53 +112,31 @@
 							<c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
 						</ul>
 					</div>
-
-					<div class="column is-3 action-btn">
-						<c:choose>
-							<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-								<div class="actionlink right download">
-									<a href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
-								</div>
-							</c:when>
-							<c:when test="${not empty embargoDate && not empty dataFileUrl}">
-								<div class="noaction right">
-									Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
-								</div>
-							</c:when>
-						</c:choose>
-
-						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-							<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
-						</c:if>
-					</div>
-
 				</div>
 			</div>
-		</div>
 
-		<div class="clear">
-			<c:choose>
-				<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
-					<div class="clear_space"></div>
-					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
-					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
-					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${jp2Id}"></div>
-				</c:when>
-				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-					<c:choose>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-							<div class="actionlink left">
-								<a href="" class="inline_viewer_link audio_player_link">Listen</a>
-							</div>
-							<div class="clear_space"></div>
-							<audio class="audio_player inline_viewer" src="${dataFileUrl}">
-							</audio>
-						</c:when>
-					</c:choose>
-				</c:when>
-			</c:choose>
-		</div>
-	</div>
+			<div class="clear">
+				<c:choose>
+					<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
+						<div class="clear_space"></div>
+						<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
+						<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
+						<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${jp2Id}"></div>
+					</c:when>
+					<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
+						<c:choose>
+							<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
+								<div class="actionlink left">
+									<a href="" class="inline_viewer_link audio_player_link">Listen</a>
+								</div>
+								<div class="clear_space"></div>
+								<audio class="audio_player inline_viewer" src="${dataFileUrl}">
+								</audio>
+							</c:when>
+						</c:choose>
+					</c:when>
+				</c:choose>
+			</div>
 </div>
 
 <%-- Reenable once child counts are working --%>

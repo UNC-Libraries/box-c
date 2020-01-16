@@ -418,10 +418,8 @@ p.no-search-results {
   background-color: #EBEBEB;
   box-shadow: inset 0 10px 5px -5px rgba(0, 0, 0, 0.5);
   color: #3D4D5B;
-  display: inline-flex !important;
   margin: 0;
-  padding-top: .75rem;
-  width: 100%;
+  padding: .75rem;
 }
 .browse-header h2 {
   font-size: 36px;
@@ -438,7 +436,7 @@ p.no-search-results {
   color: black;
   font-size: 18px;
   line-height: 22px;
-  margin-left: 15px;
+  margin-left: 25px;
 }
 
 .browse-header.browse-header-bottom {
@@ -465,6 +463,10 @@ p.no-search-results {
 }
 
 /* Full record page */
+.columns {
+  width: 100%;
+}
+
 .display-wrapper {
   display: inline-flex;
   margin: 5px 25px 10px 0;
@@ -525,8 +527,12 @@ p.no-search-results {
   width: 25px;
 }
 
+.file_record .columns {
+  width: 100%;
+}
+
 .collection-info-bottom {
-  padding: 5px;
+  padding: 0 5px 5px 5px;
   margin: -12px 0 0 0;
 }
 
@@ -578,11 +584,21 @@ p.no-search-results {
   width: 100%;
 }
 .onecol h2, .content-wrap.full_record h2 {
-  font-size: 20px;
-  margin: 20px;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0 20px 20px 0;
+  padding-left: 0;
 }
-.onecol .current_item, .content-wrap.full_record .current_item {
-  margin-left: 35px;
+.onecol #is-admin-unit h2, .onecol #is-collection h2, .content-wrap.full_record #is-admin-unit h2, .content-wrap.full_record #is-collection h2 {
+  margin-left: 25px;
+}
+.onecol h2.link-list, .content-wrap.full_record h2.link-list {
+  font-size: 20px;
+  padding-left: 15px;
+  padding-top: 10px;
+}
+.onecol .browse-header h2.item-title, .content-wrap.full_record .browse-header h2.item-title {
+  padding-left: 15px;
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
@@ -594,7 +610,6 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
-  padding-left: 25px;
 }
 
 .item-actions {
@@ -603,19 +618,22 @@ p.no-search-results {
 
 .full_record_top {
   border-bottom: 1px solid #E1E1E1;
-  margin-left: 15px;
-  margin-top: 25px;
   padding-bottom: 25px;
-  width: 97%;
 }
 .full_record_top .collinfo {
-  width: 85%;
+  width: 100%;
 }
 .full_record_top .item-info {
   margin-left: 15px;
 }
 .full_record_top .columns {
   margin-bottom: 0;
+}
+.full_record_top .action-btn {
+  padding-right: 50px;
+}
+.full_record_top .bottomline {
+  padding: .75rem;
 }
 
 .full_record .contentarea {
@@ -631,6 +649,7 @@ p.no-search-results {
   background-color: #E0E0E0;
   border-radius: 5px;
   font-size: 18px;
+  line-height: 1.2;
   margin: 0 auto 25px auto;
   padding: 20px;
   text-indent: 0;
@@ -657,23 +676,18 @@ table.dataTable tbody tr.odd {
 }
 
 .item-actions .actionlink a {
-  display: inline;
   font-size: 16px;
-  padding: 10px;
+  padding: 15px 15px 30px 15px;
   vertical-align: middle;
 }
 
 .collinfo_metadata {
-  margin: 0 20px 20px 0;
+  margin: 0 0 20px 0;
 }
 .collinfo_metadata h2 {
   font-size: 24px;
 }
-.collinfo_metadata .actionlink a {
-  padding: 15px;
-  display: inline-block;
-}
-.collinfo_metadata .actionlink a, .collinfo_metadata ul {
+.collinfo_metadata ul {
   font-size: 16px;
 }
 
@@ -700,6 +714,24 @@ table.dataTable tbody tr.odd {
   vertical-align: middle;
 }
 
+#is-folder .is-12 {
+  padding-top: 0;
+}
+
+.columns-resize {
+  padding-left: 25px;
+}
+.columns-resize .is-10 {
+  padding-left: 25px;
+}
+
+.aggregate-info {
+  padding-left: 0;
+}
+.aggregate-info .thumbnail-preview {
+  padding-left: 15px;
+}
+
 .pipe_list {
   margin-bottom: 10px;
 }
@@ -723,6 +755,10 @@ table.dataTable tbody tr.odd {
   }
   .bottomline p {
     width: 100%;
+  }
+
+  .actionlink {
+    margin-bottom: 1px;
   }
 
   .pipe_list {
@@ -753,7 +789,7 @@ table.dataTable tbody tr.odd {
 
   .bottomline p {
     font-size: 16px;
-    margin-lef: 10px;
+    margin-left: 10px;
     width: 100%;
   }
 
@@ -761,23 +797,54 @@ table.dataTable tbody tr.odd {
     float: none;
   }
 
-  .actionlink.right {
-    float: left;
-    margin-left: 10px;
+  .file_record .item-actions {
+    padding-left: 40px;
   }
 
-  .action-btn {
-    margin-top: 25px;
+  #is-admin-unit.browse-header, #is-collection.browse-header {
+    display: flex;
+  }
+
+  .actionlink.right {
+    float: left;
   }
 
   .collinfo_metadata {
     margin: auto 0;
   }
 
+  .item-title {
+    margin-bottom: 0;
+  }
+
+  .columns-resize {
+    margin-top: 50px;
+    padding-bottom: 50px;
+  }
+  .columns-resize .thumbnail {
+    margin-right: 35px;
+  }
+  .columns-resize .is-10 {
+    padding-left: 0;
+  }
+  .columns-resize .is-10 ul {
+    margin-top: -25px;
+  }
+
+  .action-btn {
+    padding-left: 40px;
+    padding-top: 0;
+  }
+
+  .aggregate-record.browse-header .action-btn {
+    padding-left: 30px;
+  }
+
   .dataTables_wrapper .dataTables_filter {
     float: left !important;
   }
   .dataTables_wrapper .dataTables_filter input {
+    margin-left: 0 !important;
     margin-top: 25px;
     float: left;
   }
@@ -796,6 +863,15 @@ table.dataTable tbody tr.odd {
     display: none;
   }
 
+  .file_record .columns-resize .is-10 ul {
+    margin-top: 0;
+  }
+
+  .relateditem {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
   .iteminfo {
     float: none;
     width: 100%;
@@ -804,9 +880,6 @@ table.dataTable tbody tr.odd {
   .file-info {
     float: none;
     width: 100%;
-  }
-  .file-info div {
-    width: 80px;
   }
   .file-info p, .file-info .actionlink, .file-info .right {
     float: none;

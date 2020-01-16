@@ -20,7 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="contentarea">
-	<h2>Export Metadata</h2>
+	<h2 class="link-list">Export Metadata</h2>
 	<ul>
 	</ul>
 </div>

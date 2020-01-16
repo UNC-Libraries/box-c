@@ -3,10 +3,8 @@
 	float: left;
 	margin: 0px 0 10px 0;
 	padding: 10px 0px;
-	max-height: 150px;
 	text-align: center;
 	overflow: hidden;
-	word-wrap: break-word;
 	border: 1px solid transparent;
 }
 
@@ -105,6 +103,7 @@
 	height: 64px;
 	opacity: 0;
 	transition: opacity 0.3s;
+	margin-top: -5px;
 }
 
 .thumbnail.thumbnail-size-large .thumbnail-placeholder {
@@ -611,10 +610,6 @@ label {
 .actionlink a:hover {
 	color: #fff;
 	background-color: #084b6b;
-}
-
-.container_browse {
-
 }
 
 .container_browse a {

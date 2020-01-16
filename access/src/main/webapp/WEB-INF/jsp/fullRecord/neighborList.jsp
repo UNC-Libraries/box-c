@@ -22,7 +22,7 @@
 
 <div class="onecol gray shadowtop">
 	<div class="contentarea">
-		<h2>Related Items (neighbors in this collection/folder)</h2>
+		<h2 class="link-list">Related Items (neighbors in this collection/folder)</h2>
 		<c:forEach items="${neighborList}" var="neighbor" varStatus="status">
 			<c:url var="fullRecordUrl" scope="page" value="record/${neighbor.id}">
 			</c:url>

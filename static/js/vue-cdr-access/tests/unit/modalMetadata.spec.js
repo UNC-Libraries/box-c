@@ -11,7 +11,6 @@ const updated_uuid = 'c03a4bd7-25f4-4a6c-a68d-fedc4251b680';
 const title = 'Test Collection';
 const response = `<table><tbody><tr><th>Creator</th> <td><p>Real Dean</p></td></tr></tbody></table>`;
 let wrapper;
-let btn;
 
 describe('modalMetadata.vue', () => {
     beforeEach(() => {
@@ -23,11 +22,11 @@ describe('modalMetadata.vue', () => {
                 title: title
             }
         });
-
-        btn = wrapper.find('#show-modal');
     });
 
     it("fetches the record metadata when the metadata button is clicked", () => {
+        // Mock event
+        const event = { preventDefault: jest.fn() };
         moxios.install();
         moxios.stubRequest(`record/${updated_uuid}/metadataView`, {
             status: 200,
@@ -36,7 +35,8 @@ describe('modalMetadata.vue', () => {
             }
         });
 
-        btn.trigger('click');
+        // link is outside of Vue, so just trigger it
+        wrapper.vm.showMetadata(event);
 
         moxios.wait(() => {
             expect(wrapper.vm.metadata).toEqual(response);

@@ -77,6 +77,7 @@
                     <p>There is no description available for this record.</p>
                 </c:otherwise>
             </c:choose>
+            <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>
         </div>
     </div>
     <script type="text/javascript" src="/static/js/public/abstractDisplay"></script>

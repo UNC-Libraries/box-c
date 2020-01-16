@@ -72,7 +72,7 @@ export default {
 
             if (is_admin_unit) {
                 params.types = 'Collection'
-            } else if (params.browse_type === 'list-display' && !this.coerceWorksOnly(works_only)) {
+            } else if (!this.coerceWorksOnly(works_only)) {
                 params.types = 'Work,Folder';
             } else {
                 params.types = 'Work';
