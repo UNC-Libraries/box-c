@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.api.transfer;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**
@@ -39,4 +40,12 @@ public interface BinaryTransferService {
      * @return new binary transfer session
      */
     BinaryTransferSession getSession(StorageLocation destination);
+
+    /**
+     * Get a new session for transferring binaries to the specified repository object
+     *
+     * @param repoObj object to open the session for
+     * @return new binary transfer session
+     */
+    BinaryTransferSession getSession(RepositoryObject repoObj);
 }

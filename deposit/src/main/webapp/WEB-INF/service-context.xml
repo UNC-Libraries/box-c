@@ -234,6 +234,7 @@
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
         <property name="ingestSourceManager" ref="ingestSourceManager" />
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
     <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"

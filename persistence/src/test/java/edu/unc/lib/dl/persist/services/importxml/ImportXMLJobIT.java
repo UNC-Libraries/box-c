@@ -21,7 +21,6 @@ import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.mods
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -33,8 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 
 import javax.mail.internet.MimeMessage;
 
@@ -64,9 +61,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -86,9 +82,6 @@ public class ImportXMLJobIT {
     private ImportXMLJob job;
 
     private final static String USER_EMAIL = "user@example.com";
-
-    private final static String LOC1_ID = "loc1";
-    private final static String LOC2_ID = "loc2";
 
     private final static String ORIGINAL_TITLE = "Work Test";
     private final static String UPDATED_TITLE = "Updated Work Title";
@@ -125,16 +118,10 @@ public class ImportXMLJobIT {
     private ContentPathFactory pathFactory;
     private WorkObject workObj;
 
-    private PID parentPid;
-
-    private StorageLocationManagerImpl locationManager;
+    @Autowired
+    private StorageLocationManager locationManager;
     @Autowired
     private BinaryTransferServiceImpl transferService;
-
-    private StorageLocationTestHelper locTestHelper;
-
-    private Path loc1Path;
-    private Path loc2Path;
 
     @Before
     public void init_() throws Exception {
@@ -146,24 +133,6 @@ public class ImportXMLJobIT {
         when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
 
         TestHelper.setContentBase("http://localhost:48085/rest/");
-
-        loc1Path = tmpFolder.newFolder("loc1").toPath();
-        loc2Path = tmpFolder.newFolder("loc2").toPath();
-
-        parentPid = makePid();
-        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>(asList(parentPid)));
-
-        locTestHelper = new StorageLocationTestHelper();
-        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
-        locTestHelper.addMapping(parentPid.getId(), LOC1_ID);
-        locTestHelper.addStorageLocation(LOC2_ID, "Location 2", loc2Path.toString());
-
-        locationManager = new StorageLocationManagerImpl();
-        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
-        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
-        locationManager.setRepositoryObjectLoader(repoObjLoader);
-        locationManager.setPathFactory(pathFactory);
-        locationManager.init();
     }
 
     @Test

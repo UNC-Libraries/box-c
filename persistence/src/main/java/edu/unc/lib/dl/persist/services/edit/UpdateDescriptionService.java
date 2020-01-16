@@ -34,8 +34,6 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -57,7 +55,6 @@ public class UpdateDescriptionService {
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
     private BinaryTransferService transferService;
-    private StorageLocationManager locationManager;
 
     private boolean validate;
 
@@ -80,9 +77,8 @@ public class UpdateDescriptionService {
             throws MetadataValidationException, IOException {
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        StorageLocation destLocation = locationManager.getStorageLocation(obj);
 
-        try (BinaryTransferSession transferSession = transferService.getSession(destLocation)) {
+        try (BinaryTransferSession transferSession = transferService.getSession(obj)) {
             updateDescription(transferSession, agent, obj, modsStream);
         }
     }
@@ -167,13 +163,6 @@ public class UpdateDescriptionService {
      */
     public void setTransferService(BinaryTransferService transferService) {
         this.transferService = transferService;
-    }
-
-    /**
-     * @param locationManager the locationManager to set
-     */
-    public void setLocationManager(StorageLocationManager locationManager) {
-        this.locationManager = locationManager;
     }
 
     /**

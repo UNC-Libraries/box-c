@@ -19,8 +19,8 @@ import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addO
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.newStorageLocationTestHelper;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -28,8 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javax.mail.internet.MimeMessage;
@@ -39,7 +37,6 @@ import org.apache.camel.builder.NotifyBuilder;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,15 +55,11 @@ import com.samskivert.mustache.Template;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
+import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -84,7 +77,6 @@ public class ImportXMLIT {
 
     private final static String USER_EMAIL = "user@example.com";
 
-    private final static String LOC1_ID = "loc1";
     private final static String UPDATED_TITLE = "Updated Work Title";
     private final static String UPDATED_DATE = "2018-04-06";
 
@@ -107,12 +99,9 @@ public class ImportXMLIT {
 
     private ImportXMLService importXmlService;
 
-    @Mock
-    private ContentPathFactory pathFactory;
-    private StorageLocationManagerImpl locationManager;
-    private StorageLocationTestHelper locTestHelper;
+    private StorageLocationManager locationManager;
     @Autowired
-    private UpdateDescriptionService updateDescriptionService;
+    private BinaryTransferServiceImpl binaryTransferService;
     @Autowired
     private ImportXMLProcessor importXMLProcessor;
     @Autowired
@@ -122,8 +111,6 @@ public class ImportXMLIT {
     @Autowired
     private Template updateCompleteTemplate;
 
-    private PID parentPid;
-    private Path loc1Path;
     @Mock
     private AgentPrincipals agent;
 
@@ -133,27 +120,16 @@ public class ImportXMLIT {
 
         TestHelper.setContentBase(baseAddress);
 
-        loc1Path = tmpFolder.newFolder("loc1").toPath();
-        parentPid = makePid();
-        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>(asList(parentPid)));
-
         importXmlService = new ImportXMLService();
         importXmlService.setJmsTemplate(importXmlJmsTemplate);
         importXmlService.setDataDir(tmpFolder.getRoot().getAbsolutePath());
         importXmlService.init();
 
-        locTestHelper = new StorageLocationTestHelper();
-        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
-        locTestHelper.addMapping(parentPid.getId(), LOC1_ID);
+        locationManager = newStorageLocationTestHelper()
+                .addTestLocation()
+                .createLocationManager(repoObjectLoader);
 
-        locationManager = new StorageLocationManagerImpl();
-        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
-        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
-        locationManager.setRepositoryObjectLoader(repoObjectLoader);
-        locationManager.setPathFactory(pathFactory);
-        locationManager.init();
-
-        updateDescriptionService.setLocationManager(locationManager);
+        binaryTransferService.setStorageLocationManager(locationManager);
         importXMLProcessor.setLocationManager(locationManager);
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
         when(updateCompleteTemplate.execute(any())).thenReturn("");
@@ -193,9 +169,5 @@ public class ImportXMLIT {
         String dateCreated = rootEl.getChild("originInfo", MODS_V3_NS).getChildText("dateCreated", MODS_V3_NS);
         assertEquals(expectedTitle, title);
         assertEquals(expectedDate, dateCreated);
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
     }
 }

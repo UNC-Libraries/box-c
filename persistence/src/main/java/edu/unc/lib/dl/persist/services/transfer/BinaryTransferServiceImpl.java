@@ -15,8 +15,10 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
@@ -31,9 +33,11 @@ public class BinaryTransferServiceImpl implements BinaryTransferService {
 
     private IngestSourceManager sourceManager;
 
+    private StorageLocationManager storageLocationManager;
+
     @Override
     public MultiDestinationTransferSession getSession() {
-        return new MultiDestinationTransferSessionImpl(sourceManager);
+        return new MultiDestinationTransferSessionImpl(sourceManager, storageLocationManager);
     }
 
     @Override
@@ -41,11 +45,21 @@ public class BinaryTransferServiceImpl implements BinaryTransferService {
         return new BinaryTransferSessionImpl(sourceManager, destination);
     }
 
+    @Override
+    public BinaryTransferSession getSession(RepositoryObject repoObj) {
+        StorageLocation loc = storageLocationManager.getStorageLocation(repoObj);
+        return getSession(loc);
+    }
+
     /**
      * @param sourceManager the sourceManager to set
      */
     public void setIngestSourceManager(IngestSourceManager sourceManager) {
         this.sourceManager = sourceManager;
+    }
+
+    public void setStorageLocationManager(StorageLocationManager storageLocationManager) {
+        this.storageLocationManager = storageLocationManager;
     }
 
 }

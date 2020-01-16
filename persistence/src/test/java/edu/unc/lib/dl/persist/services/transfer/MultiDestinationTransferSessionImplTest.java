@@ -33,6 +33,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 
 /**
  * @author bbpennel
@@ -51,6 +52,8 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
     private StorageLocation storageLoc;
     @Mock
     private StorageLocation storageLoc2;
+    @Mock
+    private StorageLocationManager storageLocationManager;
 
     private PID binPid;
     private Path binDestPath;
@@ -74,7 +77,8 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
 
     @Test(expected = IllegalArgumentException.class)
     public void noDestination() throws Exception {
-        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(sourceManager)) {
+        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
+                sourceManager, storageLocationManager)) {
             session.forDestination(null);
         }
     }
@@ -89,7 +93,8 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         Path sourceFile = createSourceFile();
         Path sourceFile2 = createSourceFile("another.txt", "stuff");
 
-        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(sourceManager)) {
+        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
+                sourceManager, storageLocationManager)) {
             URI result1 = session.forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
             URI result2 = session.forDestination(storageLoc).transfer(binPid2, sourceFile2.toUri());
 
@@ -115,7 +120,8 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         Path sourceFile = createSourceFile();
         Path sourceFile2 = createSourceFile("another.txt", "stuff");
 
-        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(sourceManager)) {
+        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
+                sourceManager, storageLocationManager)) {
             URI result1 = session.forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
             URI result2 = session.forDestination(storageLoc2).transfer(binPid2, sourceFile2.toUri());
 
