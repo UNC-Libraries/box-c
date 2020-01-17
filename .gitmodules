@@ -1,6 +1,6 @@
 [submodule "oai4solr"]
 	url = https://github.com/UNC-Libraries/oai4solr.git
-	branch = dynamic-set
+	branch = 7.x-1.0
 	path = oai4solr
 [submodule "clamavj"]
 	url = https://github.com/UNC-Libraries/clamavj.git
