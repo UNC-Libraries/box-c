@@ -55,30 +55,30 @@ public class AddContainerController {
     @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, null, Cdr.AdminUnit);
+        return createContainer(id, label, false, Cdr.AdminUnit);
     }
 
     @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label,
-                                                   @RequestParam("staffOnly") String staffOnly) {
+                                                   @RequestParam(value="staffOnly", defaultValue = "false") boolean staffOnly) {
         return createContainer(id, label, staffOnly, Cdr.Collection);
     }
 
     @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label,
-                                                   @RequestParam("staffOnly") String staffOnly) {
+                                               @RequestParam(value="staffOnly", defaultValue = "false") boolean staffOnly) {
         return createContainer(id, label, staffOnly, Cdr.Folder);
     }
 
     @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createWork(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, null, Cdr.Work);
+        return createContainer(id, label, false, Cdr.Work);
     }
 
-    private ResponseEntity<Object> createContainer(String id, String label, String staff_only,
+    private ResponseEntity<Object> createContainer(String id, String label, boolean staff_only,
                                                    Resource containerType) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");

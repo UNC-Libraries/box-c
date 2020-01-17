@@ -134,7 +134,7 @@ public class AddContainerServiceTest {
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
         try {
-            service.addContainer(agent, parentPid, "folder", "false", Cdr.Folder);
+            service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -150,7 +150,7 @@ public class AddContainerServiceTest {
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
         try {
-            service.addContainer(agent, parentPid, "collection", "false", Cdr.Collection);
+            service.addContainer(agent, parentPid, "collection", false, Cdr.Collection);
         } catch (TransactionCancelledException e) {
             assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -167,7 +167,7 @@ public class AddContainerServiceTest {
         when(folder.getPid()).thenReturn(childPid);
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "folder", "false", Cdr.Folder);
+        service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
@@ -193,7 +193,7 @@ public class AddContainerServiceTest {
         when(work.getPid()).thenReturn(childPid);
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "work", null, Cdr.Work);
+        service.addContainer(agent, parentPid, "work", false, Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();

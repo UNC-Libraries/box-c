@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -90,14 +91,14 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
+        assertPatronDoesNotHaveNonePermission();
     }
 
     @Test
     public void testAddAdminUnit() throws Exception {
         String label = "admin_label";
         MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + CONTENT_ROOT_ID)
-                .param("label", label)
-                .param("patronOnly", (String) null))
+                .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -109,10 +110,11 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(CONTENT_ROOT_ID, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
+        assertPatronDoesNotHaveNonePermission();
     }
 
     @Test
-    public void testAddFolder() throws Exception {
+    public void testAddFolderStaffOnly() throws Exception {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
@@ -121,10 +123,10 @@ public class AddContainerIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
 
         String label = "folder_label";
-        String patronOnly = "true";
+        String staffOnly = "true";
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
                 .param("label", label)
-                .param("patronOnly", patronOnly))
+                .param("staffOnly", staffOnly))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -153,8 +155,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         String label = "work_label";
         MvcResult result = mvc.perform(post("/edit/create/work/" + collObj.getPid().getId())
-                .param("label", label)
-                .param("patronOnly", (String) null))
+                .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -166,6 +167,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
+        assertPatronDoesNotHaveNonePermission();
     }
 
     @Test
@@ -233,4 +235,9 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(parent.getMembers().size() == 0);
     }
 
+    private void assertPatronDoesNotHaveNonePermission() {
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> roles = accessDetails.getRoles();
+        assertNotEquals(roles.get(0).getRole(), none);
+    }
 }

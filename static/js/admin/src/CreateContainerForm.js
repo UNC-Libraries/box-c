@@ -17,7 +17,7 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	CreateContainerForm.prototype.open = function(resultObject) {
 		this.options.containerType = this.getContainerType(resultObject);
 		this.options.title = 'Create ' + this.options.containerType;
-		this.options.privateOnlyBox = this.options.containerType !== "AdminUnit";
+		this.options.staffOnly = this.options.containerType !== "AdminUnit";
 		
 		AbstractForm.prototype.open.apply(this, [resultObject]);
 	};

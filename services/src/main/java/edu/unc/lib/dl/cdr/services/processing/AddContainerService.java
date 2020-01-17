@@ -78,7 +78,7 @@ public class AddContainerService {
      * @param staffOnly whether container should have public access
      * @param containerType the type of new container to be created
      */
-    public void addContainer(AgentPrincipals agent, PID parentPid, String label, String staffOnly, Resource containerType) {
+    public void addContainer(AgentPrincipals agent, PID parentPid, String label, Boolean staffOnly, Resource containerType) {
         notNull(parentPid, "A parent pid must be provided");
         notNull(containerType, "A type must be provided for the next container");
 
@@ -119,7 +119,7 @@ public class AddContainerService {
             ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);
             parent.addMember(child);
 
-            if (Boolean.parseBoolean(staffOnly)) {
+            if (staffOnly && !Cdr.AdminUnit.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
