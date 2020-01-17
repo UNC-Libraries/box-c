@@ -50,12 +50,12 @@ describe('worksOnly.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
     });
 
-    it("updates route to only show works if button is unchecked for a gallery view", () => {
+    it("updates route to only show works and folders if button is unchecked for a gallery view", () => {
         wrapper.vm.$router.currentRoute.query.browse_type='gallery-display';
         wrapper.setData({ works_only: true });
         record_input.trigger('click');
 
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
     it("updates route to only show works if button is checked for a list view", () => {
