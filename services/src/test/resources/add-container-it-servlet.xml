@@ -34,6 +34,7 @@
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
         <property name="aclService" ref="aclService" />
+        <property name="patronService" ref="patronService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="transactionManager" ref="transactionManager" />
@@ -42,5 +43,9 @@
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
+
+    <bean id="patronService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService" />
     </bean>
 </beans>

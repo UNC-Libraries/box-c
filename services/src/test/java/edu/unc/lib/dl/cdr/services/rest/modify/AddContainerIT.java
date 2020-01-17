@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +39,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
@@ -46,6 +48,7 @@ import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
 /**
  *
@@ -72,8 +75,10 @@ public class AddContainerIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
 
         String label = "collection_label";
+        String patronOnly = "false";
         MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getId())
-                .param("label", label))
+                .param("label", label)
+                .param("patronOnly", patronOnly))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -91,7 +96,8 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAddAdminUnit() throws Exception {
         String label = "admin_label";
         MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + CONTENT_ROOT_ID)
-                .param("label", label))
+                .param("label", label)
+                .param("patronOnly", (String) null))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -115,8 +121,10 @@ public class AddContainerIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
 
         String label = "folder_label";
+        String patronOnly = "true";
         MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
-                .param("label", label))
+                .param("label", label)
+                .param("patronOnly", patronOnly))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -128,6 +136,10 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> roles = accessDetails.getRoles();
+        assertEquals(roles.get(0).getRole(), none);
     }
 
     @Test
@@ -141,7 +153,8 @@ public class AddContainerIT extends AbstractAPIIT {
 
         String label = "work_label";
         MvcResult result = mvc.perform(post("/edit/create/work/" + collObj.getPid().getId())
-                .param("label", label))
+                .param("label", label)
+                .param("patronOnly", (String) null))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 
@@ -166,7 +179,8 @@ public class AddContainerIT extends AbstractAPIIT {
 
         String label = "admin_unit";
         MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID())
-                .param("label", label))
+                .param("label", label)
+                .param("patronOnly", (String) null))
             .andExpect(status().isInternalServerError())
             .andReturn();
 

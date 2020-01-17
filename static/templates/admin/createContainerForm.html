@@ -3,6 +3,12 @@
 		<label><%= options.containerType %> Name*</label>
 		<input name="name" size="38"></input>
 	</div>
+	<% if (options.privateOnlyBox) { %>
+		<div class="form_field">
+			<label for="staff_only">Restrict to staff only access?</label>
+			<input id="staff_only" name="staff_only" type="checkbox">
+		</div>
+	<% } %>
 	<div class="update_field">
 		<input type="submit" id="create_container_button" class="update_button" value="Create" />
 	</div>

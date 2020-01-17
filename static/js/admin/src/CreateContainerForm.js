@@ -17,6 +17,7 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	CreateContainerForm.prototype.open = function(resultObject) {
 		this.options.containerType = this.getContainerType(resultObject);
 		this.options.title = 'Create ' + this.options.containerType;
+		this.options.privateOnlyBox = this.options.containerType !== "AdminUnit";
 		
 		AbstractForm.prototype.open.apply(this, [resultObject]);
 	};
@@ -45,6 +46,7 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	
 	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
 		this.containerName = $("input[name='name']", this.$form).val();
+		this.staffOnly = $("input[name='staff_only']", this.$form);
 
 		var pid;
 		if ($.type(resultObject) === 'string') {
@@ -54,7 +56,13 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		}
 
 		var typeName = this.options.containerType.charAt(0).toLowerCase() + this.options.containerType.substr(1);
-		this.action_url = "/services/api/edit/create/" + typeName + "/" + pid + "?label=" + this.containerName;
+		var apiUrl = "/services/api/edit/create/" + typeName + "/" + pid + "?label=" + this.containerName;
+
+		if (this.staffOnly.length > 0) {
+			apiUrl += "&staffOnly=" + this.staffOnly.is(':checked');
+		}
+
+		this.action_url = apiUrl;
 	};
 	
 	CreateContainerForm.prototype.getSuccessMessage = function(data) {

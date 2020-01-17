@@ -55,28 +55,31 @@ public class AddContainerController {
     @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, Cdr.AdminUnit);
+        return createContainer(id, label, null, Cdr.AdminUnit);
     }
 
     @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, Cdr.Collection);
+    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label,
+                                                   @RequestParam("staffOnly") String staffOnly) {
+        return createContainer(id, label, staffOnly, Cdr.Collection);
     }
 
     @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, Cdr.Folder);
+    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label,
+                                                   @RequestParam("staffOnly") String staffOnly) {
+        return createContainer(id, label, staffOnly, Cdr.Folder);
     }
 
     @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createWork(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, Cdr.Work);
+        return createContainer(id, label, null, Cdr.Work);
     }
 
-    private ResponseEntity<Object> createContainer(String id, String label, Resource containerType) {
+    private ResponseEntity<Object> createContainer(String id, String label, String staff_only,
+                                                   Resource containerType) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");
         result.put("pid", id);
@@ -84,7 +87,9 @@ public class AddContainerController {
         PID parentPid = PIDs.get(id);
 
         try {
-            addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, label, containerType);
+            addContainerService.addContainer(
+                    AgentPrincipals.createFromThread(), parentPid, label, staff_only, containerType
+            );
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();
