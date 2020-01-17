@@ -78,8 +78,7 @@ public class AddContainerIT extends AbstractAPIIT {
         String label = "collection_label";
         String patronOnly = "false";
         MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getId())
-                .param("label", label)
-                .param("patronOnly", patronOnly))
+                .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
 

@@ -78,7 +78,8 @@ public class AddContainerService {
      * @param staffOnly whether container should have public access
      * @param containerType the type of new container to be created
      */
-    public void addContainer(AgentPrincipals agent, PID parentPid, String label, Boolean staffOnly, Resource containerType) {
+    public void addContainer(AgentPrincipals agent, PID parentPid, String label,
+                             Boolean staffOnly, Resource containerType) {
         notNull(parentPid, "A parent pid must be provided");
         notNull(containerType, "A type must be provided for the next container");
 

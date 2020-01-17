@@ -54,21 +54,24 @@ public class AddContainerController {
 
     @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @RequestParam("label") String label) {
+    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id,
+                                                  @RequestParam("label") String label) {
         return createContainer(id, label, false, Cdr.AdminUnit);
     }
 
     @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label,
-                                                   @RequestParam(value="staffOnly", defaultValue = "false") boolean staffOnly) {
+                                                   @RequestParam(value = "staffOnly", defaultValue = "false")
+                                                           boolean staffOnly) {
         return createContainer(id, label, staffOnly, Cdr.Collection);
     }
 
     @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label,
-                                               @RequestParam(value="staffOnly", defaultValue = "false") boolean staffOnly) {
+                                               @RequestParam(value = "staffOnly", defaultValue = "false")
+                                                       boolean staffOnly) {
         return createContainer(id, label, staffOnly, Cdr.Folder);
     }
 
