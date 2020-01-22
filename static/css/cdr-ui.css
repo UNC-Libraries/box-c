@@ -427,7 +427,7 @@ p.no-search-results {
   margin: 15px;
 }
 .browse-header h2 span {
-  color: gray;
+  color: #707070;
   font-size: 20px;
   font-weight: normal;
   margin-left: 10px;
@@ -655,6 +655,9 @@ p.no-search-results {
   text-indent: 0;
   width: 100%;
 }
+#full_record_trail a {
+  color: #1A698C;
+}
 
 #expand-breadcrumb {
   font-size: 24px;
@@ -673,6 +676,11 @@ p.no-search-results {
 
 table.dataTable tbody tr.odd {
   background-color: #E1E8FF;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  border-radius: 5px;
 }
 
 .item-actions .actionlink a {

@@ -54,12 +54,11 @@
 <style scoped lang="scss">
     #browse-display-type {
         font-size: 1.2rem;
-        padding-top: 20px;
+        padding-top: 25px;
         margin: inherit;
 
         .checkbox {
             height: 40px;
-            margin-right: 8px;
             margin-top: -10px;
             width: 50px;
             vertical-align: middle;
@@ -69,6 +68,11 @@
         .display-note-btn {
             margin-left: 0;
             margin-right: 8px;
+        }
+
+        p {
+            font-size: 18px;
+            margin: 5px 0;
         }
     }
 
