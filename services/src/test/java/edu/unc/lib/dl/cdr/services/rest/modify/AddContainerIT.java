@@ -17,16 +17,14 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.*;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Resource;
@@ -90,7 +88,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        assertPatronDoesNotHaveNonePermission(parent.getMembers(), label);
+        assertPatronDoesNotHaveNonePermission(parent, label);
     }
 
     @Test
@@ -109,7 +107,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(CONTENT_ROOT_ID, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        assertPatronDoesNotHaveNonePermission(contentRoot.getMembers(), label);
+        assertPatronDoesNotHaveNonePermission(contentRoot, label);
     }
 
     @Test
@@ -138,10 +136,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
 
-        List<ContentObject> members = collObj.getMembers();
-        ContentObject member = members.stream()
-                .filter(m -> m.getResource().hasProperty(DcElements.title, label))
-                .findFirst().get();
+        ContentObject member = getMemberByLabel(collObj, label);
         assertHasAssignment(PUBLIC_PRINC, none, member);
         assertHasAssignment(AUTHENTICATED_PRINC, none, member);
     }
@@ -169,7 +164,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        assertPatronDoesNotHaveNonePermission(collObj.getMembers(), label);
+        assertPatronDoesNotHaveNonePermission(collObj, label);
     }
 
     @Test
@@ -222,26 +217,23 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
+    private ContentObject getMemberByLabel(ContentContainerObject parent, String label) {
+        return parent.getMembers().stream()
+                .filter(m -> m.getResource().hasProperty(DcElements.title, label))
+                .findFirst().get();
+    }
+
     private void assertChildContainerAdded(ContentContainerObject parent, String label, Class<?> memberClass) {
-        List<ContentObject> members = parent.getMembers();
-        if (members.size() > 0) {
-            ContentObject member = members.stream()
-                    .filter(m -> m.getResource().hasProperty(DcElements.title, label))
-                    .findFirst().get();
-            assertTrue(memberClass.isInstance(member));
-        } else {
-            fail("No child container was added to parent");
-        }
+        ContentObject member = getMemberByLabel(parent, label);
+        assertTrue(memberClass.isInstance(member));
     }
 
     private void assertChildContainerNotAdded(ContentContainerObject parent) {
         assertTrue(parent.getMembers().size() == 0);
     }
 
-    private void assertPatronDoesNotHaveNonePermission(List<ContentObject> members , String label) {
-        ContentObject member = members.stream()
-                .filter(m -> m.getResource().hasProperty(DcElements.title, label))
-                .findFirst().get();
+    private void assertPatronDoesNotHaveNonePermission(ContentContainerObject parent, String label) {
+        ContentObject member = getMemberByLabel(parent, label);
 
         assertNoAssignment(PUBLIC_PRINC, none, member);
         assertNoAssignment(AUTHENTICATED_PRINC, none, member);
