@@ -22,6 +22,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="full_record_top">
+    <h1>${briefObject}</h1>
     <div class="collinfo_metadata browse-header column">
         <c:import url="fullRecord/navigationBar.jsp" />
         <div class="columns">
@@ -79,6 +80,12 @@
                             <c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
                             <span class="has-text-weight-bold">Collection:</span>
                             <a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+                        </li>
+                    </c:if>
+                    <c:if test="${not empty parentBriefObject.collectionId}">
+                        <li>
+                            <span class="has-text-weight-bold">Collection Number: </span>
+                            <c:out value="${parentBriefObject.collectionId}"></c:out>
                         </li>
                     </c:if>
                     <li><span class="has-text-weight-bold">Finding Aid: </span>

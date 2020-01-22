@@ -49,6 +49,9 @@
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
             </c:if>
             <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollection}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
+            <c:if test="${not empty parentBriefObject.collectionId}">
+                <p><strong>Collection Number: </strong><c:out value="${parentBriefObject.collectionId}"></c:out></p>
+            </c:if>
             <p><strong>Finding Aid: </strong>
                 <c:choose>
                     <c:when test="${not empty briefObject.findingAidLink}">
