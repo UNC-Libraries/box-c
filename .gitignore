@@ -35,3 +35,4 @@ services-worker
 **/activemq-data
 .sass-cache
 *.css.map
+dependency-reduced-pom.xml
