@@ -15,11 +15,18 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
+import static java.util.Arrays.asList;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.Arrays;
 import java.util.UUID;
 
+import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -58,6 +65,7 @@ public class AddContainerService {
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
     private OperationsMessageSender operationsMessageSender;
+    private PatronAccessAssignmentService patronService;
 
     private static final Timer timer = TimerFactory.createTimerForClass(AddContainerService.class);
 
@@ -67,9 +75,11 @@ public class AddContainerService {
      * @param agent security principals of the agent making request.
      * @param parentPid pid of parent obj to add child container to
      * @param label label for the new container, to be stored as dc:title
+     * @param staffOnly whether container should have public access
      * @param containerType the type of new container to be created
      */
-    public void addContainer(AgentPrincipals agent, PID parentPid, String label, Resource containerType) {
+    public void addContainer(AgentPrincipals agent, PID parentPid, String label,
+                             Boolean staffOnly, Resource containerType) {
         notNull(parentPid, "A parent pid must be provided");
         notNull(containerType, "A type must be provided for the next container");
 
@@ -81,6 +91,7 @@ public class AddContainerService {
             Model containerModel = ModelFactory.createDefaultModel();
             containerModel.add(containerModel.createResource(containerPid.getRepositoryPath()), DcElements.title,
                     label);
+
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
@@ -109,6 +120,13 @@ public class AddContainerService {
             ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);
             parent.addMember(child);
 
+            if (staffOnly && !Cdr.AdminUnit.equals(containerType)) {
+                PatronAccessDetails accessDetails = new PatronAccessDetails();
+                accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
+                        new RoleAssignment(AUTHENTICATED_PRINC, none)));
+                patronService.updatePatronAccess(agent, containerPid, accessDetails);
+            }
+
             child.getPremisLog()
                 .buildEvent(Premis.Creation)
                 .addImplementorAgent(agent.getUsernameUri())
@@ -130,6 +148,10 @@ public class AddContainerService {
      */
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
+    }
+
+    public void setPatronService(PatronAccessAssignmentService patronService) {
+        this.patronService = patronService;
     }
 
     /**
@@ -160,5 +182,4 @@ public class AddContainerService {
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
     }
-
 }
