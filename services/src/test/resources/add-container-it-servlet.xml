@@ -40,12 +40,12 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
-    
-    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
-    </bean>
 
-    <bean id="patronService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService" />
+    <bean id="patronService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
 </beans>
