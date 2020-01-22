@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ADMIN_GROUP;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_IDS;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CITATION;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.COLLECTION_ID;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_MODEL;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_STATUS;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
@@ -71,7 +72,6 @@ import org.apache.solr.client.solrj.beans.Field;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
-
 
 /**
  *
@@ -387,6 +387,15 @@ public class IndexDocumentBean {
 
     public List<String> getKeyword() {
         return (List<String>) fields.get(KEYWORD.getSolrField());
+    }
+
+    @Field
+    public void setCollectionId(String collectionId) {
+        fields.put(COLLECTION_ID.getSolrField(), collectionId);
+    }
+
+    public String getCollectionId() {
+        return (String) fields.get(COLLECTION_ID.getSolrField());
     }
 
     @Field

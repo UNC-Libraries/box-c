@@ -52,5 +52,5 @@
   <mods:accessCondition type="access">Open access</mods:accessCondition>
   <mods:identifier type="uri">http://example.com</mods:identifier>
   <mods:identifier type="local">abc123</mods:identifier>
-  
+  <mods:identifier displayLabel="Collection Number" type="local">40148</mods:identifier>
 </mods:mods>
