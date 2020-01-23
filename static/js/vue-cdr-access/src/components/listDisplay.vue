@@ -20,7 +20,7 @@
                                 <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
                             </div>
                             <div v-if="record.objectPath.length >= 3 && record.objectPath[2].collectionId !== undefined">
-                                <span class="has-text-weight-bold">Collection Number:</span> <p>{{ record.objectPath[2].collectionId }}</p>
+                                <p><span class="has-text-weight-bold">Collection Number:</span> {{ record.objectPath[2].collectionId }}</p>
                             </div>
                             <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>

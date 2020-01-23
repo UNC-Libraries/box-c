@@ -63,6 +63,7 @@ public class ObjectPathFactory {
     private List<String> startObjectFields;
     private String titleFieldName;
     private String typeFieldName;
+    private String collectionId;
 
     @PostConstruct
     public void init() {
@@ -72,6 +73,7 @@ public class ObjectPathFactory {
 
         titleFieldName = solrSettings.getFieldName(SearchFieldKeys.TITLE.name());
         typeFieldName = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
+        collectionId = solrSettings.getFieldName(SearchFieldKeys.COLLECTION_ID.name());
         pathFields = Arrays.asList(titleFieldName, typeFieldName);
         startObjectFields = Arrays.asList(SearchFieldKeys.ID.name(),
                 SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
@@ -129,7 +131,7 @@ public class ObjectPathFactory {
                 PathCacheData pathData = getPathData(pid);
 
                 if (pathData != null) {
-                    entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+                    entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer, pathData.collectionId));
                 }
             }
         }
@@ -138,14 +140,14 @@ public class ObjectPathFactory {
             // Refresh the cache for the object being looked up if it is a container
             if (isContainer(bom.getResourceType())) {
                 try {
-                    pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
+                    pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true, bom.getCollectionId()));
                 } catch (InvalidPathDataException e) {
                     log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
                 }
             }
 
             // Add the provided metadata object into the path as the last entry, if it had a title
-            entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
+            entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true, bom.getCollectionId()));
         }
 
         return new ObjectPath(entries);
@@ -176,7 +178,7 @@ public class ObjectPathFactory {
             }
 
             PathCacheData pathData = new PathCacheData((String) fields.get(titleFieldName),
-                    isContainer((String) fields.get(typeFieldName)));
+                    isContainer((String) fields.get(typeFieldName)), (String) fields.get(collectionId));
 
             // Cache the results for this entry
             pathCache.put(pid, pathData);
@@ -216,14 +218,17 @@ public class ObjectPathFactory {
 
         public boolean isContainer;
 
+        public String collectionId;
+
         public long retrievedAt;
 
-        public PathCacheData(String name, boolean isContainer) throws InvalidPathDataException {
+        public PathCacheData(String name, boolean isContainer, String collectionId) throws InvalidPathDataException {
             if (name == null) {
                 throw new InvalidPathDataException("No name value provided");
             }
             this.name = name;
             this.isContainer = isContainer;
+            this.collectionId = collectionId;
             retrievedAt = System.currentTimeMillis();
         }
     }

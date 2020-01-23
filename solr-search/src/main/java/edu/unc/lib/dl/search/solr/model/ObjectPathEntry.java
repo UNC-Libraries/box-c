@@ -24,11 +24,13 @@ public class ObjectPathEntry {
     private String pid;
     private String name;
     private boolean isContainer;
+    private String collectionId;
 
-    public ObjectPathEntry(String pid, String name, boolean isContainer) {
+    public ObjectPathEntry(String pid, String name, boolean isContainer, String collectionId) {
         this.pid = pid;
         this.name = name;
         this.isContainer = isContainer;
+        this.collectionId = collectionId;
     }
 
     public String getPid() {
@@ -53,6 +55,14 @@ public class ObjectPathEntry {
 
     public void setContainer(boolean isContainer) {
         this.isContainer = isContainer;
+    }
+
+    public String getCollectionId() {
+        return collectionId;
+    }
+
+    public void setCollectionId(String id) {
+        this.collectionId = id;
     }
 
 }

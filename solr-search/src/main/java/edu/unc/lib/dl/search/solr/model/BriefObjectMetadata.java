@@ -145,4 +145,5 @@ public interface BriefObjectMetadata {
 
     public Date getActiveEmbargo();
 
+    String getCollectionId();
 }
