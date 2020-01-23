@@ -62,7 +62,7 @@
             margin-top: -10px;
             width: 50px;
             vertical-align: middle;
-            zoom: .6; /* Needed for webkit browsers */
+            zoom: .7; /* Needed for Chrome */
         }
 
         .display-note-btn {

@@ -148,7 +148,7 @@
         }
 
         .page-number {
-            background: linear-gradient(to bottom, #fff 0%, $link-color 100%);
+            background: linear-gradient(to bottom, #4B9CD3 0%, $link-color 100%);
             border: 1px solid $link-color;
             border-radius: 5px;
             padding: 0.5em 1em;
