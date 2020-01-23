@@ -11,7 +11,11 @@ a {
   background-color: #4B9CD3;
 }
 
-.menu-row, .banner-row, .search-row, footer {
+.logo-row-small {
+  background-color: #13294B;
+}
+
+.menu-row, .banner-row, footer {
   background-color: #13294B;
 }
 
@@ -24,23 +28,23 @@ a {
 }
 
 @media only screen and (max-width: 1088px) {
-  .logo {
+  .logo, .logo-small {
     margin-left: 16px;
     margin-right: 16px;
   }
 }
-.logo a {
-  display: flex;
+.logo a, .logo-small a {
+  display: inline-flex;
   align-items: center;
   max-width: 550px;
 }
-.logo img {
+.logo img, .logo-small img {
   display: inline-block;
   max-width: 250px;
   width: 100%;
   margin: 8px 0;
 }
-.logo h1 {
+.logo h1, .logo-small h1 {
   display: inline-block;
   margin-left: 24px;
   font-family: 'Libre Baskerville', serif;
@@ -48,6 +52,10 @@ a {
   font-style: italic;
   color: white;
   line-height: 1.5;
+}
+
+.logo-small img {
+  max-width: 150px;
 }
 
 .navbar {
@@ -58,6 +66,37 @@ a {
 }
 .navbar .is-active {
   background-color: #13294B;
+}
+
+.menu-row-small {
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.menu-row-small.navbar {
+  box-shadow: none;
+}
+.menu-row-small.navbar a {
+  color: #222222;
+}
+.menu-row-small.navbar a:hover {
+  background-color: transparent;
+  color: #777777;
+}
+.menu-row-small.navbar button {
+  background-color: #4B9CD3;
+  color: white;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  margin-left: -1px;
+}
+.menu-row-small.navbar .navbar-item {
+  padding: .35rem;
+}
+.menu-row-small.navbar .navbar-menu.is-active {
+  background-color: white;
+  margin-top: 65px;
+  position: absolute;
 }
 
 .banner-row {
@@ -110,7 +149,7 @@ header .search label {
 }
 header .search input {
   width: 100%;
-  padding: 8px;
+  padding: 7px;
   font-size: 1rem;
 }
 header .search button {
@@ -256,6 +295,49 @@ footer a:hover, footer a:active {
   color: #4B9CD3;
 }
 
+@media only screen and (min-width: 1088px) {
+  .menu-row-small.navbar > .container .navbar-menu {
+    margin-right: inherit;
+  }
+}
+@media only screen and (max-width: 1087px) {
+  .menu-row-small.navbar > .container {
+    display: inline-flex;
+    flex-direction: row-reverse;
+  }
+
+  .menu-row-small.navbar .navbar-menu.is-active {
+    background-color: white;
+    margin-top: 65px;
+    position: absolute;
+    z-index: 25;
+  }
+
+  .search-row {
+    width: 90%;
+  }
+}
+@media only screen and (max-width: 767px) {
+  .menu-row-small .search {
+    display: block;
+  }
+  .menu-row-small .search button {
+    border-radius: 5px;
+    margin-right: 0;
+    margin-top: 5px;
+  }
+  .menu-row-small .search a {
+    margin-bottom: 5px;
+    margin-right: -15px;
+  }
+  .menu-row-small .search a, .menu-row-small .search button {
+    float: right;
+  }
+
+  .menu-row-small.navbar .navbar-menu.is-active {
+    margin-top: 50px;
+  }
+}
 /**
 *
 * Search pages
