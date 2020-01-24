@@ -247,5 +247,7 @@ public class Premis {
 
     public static final Resource VirusCheck = createResource("http://id.loc.gov/vocabulary/preservation/eventType/vir");
 
+    public static final Resource InformationPackageCreation = createResource("http://id.loc.gov/vocabulary/preservation/eventType/ipc");
+
     public static final Resource Event = createResource("http://www.loc.gov/premis/rdf/v1#Event");
 }
