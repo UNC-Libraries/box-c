@@ -18,7 +18,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.text.ParseException;
 import java.util.Date;
 
 import org.joda.time.DateTime;
@@ -39,16 +38,12 @@ public abstract class DateTimeUtil {
     public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat
             .forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
 
-    public static Date parseUTCDateToDate(String utcDate) throws ParseException {
+    public static Date parseUTCDateToDate(String utcDate) {
         return ISODateTimeFormat.dateParser().parseDateTime(utcDate).toDate();
     }
 
-    public static Date parseUTCToDate(String utcDate) throws ParseException {
-        try {
-            return parseUTCToDateTime(utcDate).toDate();
-        } catch (IllegalArgumentException e) {
-            throw new ParseException("Unparseable date: " + utcDate, 0);
-        }
+    public static Date parseUTCToDate(String utcDate) {
+        return parseUTCToDateTime(utcDate).toDate();
     }
 
     public static DateTime parseUTCToDateTime(String utcDate) {

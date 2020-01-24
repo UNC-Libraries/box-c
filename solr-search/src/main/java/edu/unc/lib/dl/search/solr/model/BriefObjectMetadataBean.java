@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -301,7 +300,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
                             result = embargoDate;
                         }
                     }
-                } catch (ParseException e) {
+                } catch (IllegalArgumentException e) {
                     LOG.error("Failed to parse embargo", e);
                 }
             }

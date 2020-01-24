@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import java.text.ParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,7 +138,7 @@ public class ObjectAclFactory implements AclFactory {
                 .map(p -> {
                     try {
                         return DateTimeUtil.parseUTCToDate(p.getValue());
-                    } catch (IllegalArgumentException | ParseException e) {
+                    } catch (IllegalArgumentException e) {
                         log.warn("Failed to parse embargo {} for {} while retrieving ACLs",
                                 new Object[] {p.getValue(), pid}, e);
                         return null;
