@@ -144,6 +144,7 @@
         <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
+        <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -188,6 +189,8 @@
         <module>deposit</module>
         <module>clamavj</module>
         <module>spoof</module>
+        
+        <module>migration-util</module>
   </modules>
 
     <reporting>
@@ -450,6 +453,23 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven-war-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin.version}</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
             </plugin>
         </plugins>
         </pluginManagement>
