@@ -12,7 +12,8 @@ a {
 }
 
 .logo-row-small {
-  background-color: #13294B;
+  background-color: #4B9CD3;
+  padding: 5px 0;
 }
 
 .menu-row, .banner-row, footer {
@@ -48,7 +49,7 @@ a {
   display: inline-block;
   margin-left: 24px;
   font-family: 'Libre Baskerville', serif;
-  font-size: 1.25rem;
+  font-size: 1.7rem;
   font-style: italic;
   color: white;
   line-height: 1.5;
@@ -56,6 +57,9 @@ a {
 
 .logo-small img {
   max-width: 150px;
+}
+.logo-small h1 {
+  font-size: 1.5rem;
 }
 
 .navbar {
@@ -69,7 +73,7 @@ a {
 }
 
 .menu-row-small {
-  background-color: #f8f8f8;
+  background-color: #13294B;
   border-bottom: 1px solid #e7e7e7;
 }
 
@@ -77,18 +81,18 @@ a {
   box-shadow: none;
 }
 .menu-row-small.navbar a {
-  color: #222222;
+  color: white;
 }
 .menu-row-small.navbar a:hover {
   background-color: transparent;
   color: #777777;
 }
 .menu-row-small.navbar button {
-  background-color: #4B9CD3;
-  color: white;
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
+  height: 35px;
   margin-left: -1px;
+  margin-top: 1px;
 }
 .menu-row-small.navbar .navbar-item {
   padding: .35rem;
@@ -148,9 +152,11 @@ header .search label {
   overflow: hidden;
 }
 header .search input {
-  width: 100%;
-  padding: 7px;
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
   font-size: 1rem;
+  padding: 7px;
+  width: 100%;
 }
 header .search button {
   margin: 0 12px 0 12px;
