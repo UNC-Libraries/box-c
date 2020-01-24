@@ -202,6 +202,18 @@ public class PremisEventBuilder {
         return resource;
     }
 
+    /**
+     * Finalize this builder by pushing the built event back to the log
+     * and then closing the logger
+     *
+     * @return
+     */
+    public Resource writeAndClose() {
+        Resource resc = write();
+        premisLogger.close();
+        return resc;
+    }
+
     private Resource getResource() {
         if (premisObjResc != null) {
             return premisObjResc;

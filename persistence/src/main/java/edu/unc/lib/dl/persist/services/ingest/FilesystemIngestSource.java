@@ -33,7 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.persist.services.storage.StorageType;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.InvalidIngestSourceCandidateException;
+import edu.unc.lib.dl.persist.api.storage.StorageType;
 import edu.unc.lib.dl.util.PackagingType;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;

@@ -45,7 +45,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.DepositHandler;
+import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
 

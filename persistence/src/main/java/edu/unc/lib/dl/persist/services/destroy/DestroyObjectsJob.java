@@ -61,11 +61,11 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferException;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.services.transfer.MultiDestinationTransferSession;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
@@ -166,7 +166,7 @@ public class DestroyObjectsJob implements Runnable {
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
             .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
-            .write();
+            .writeAndClose();
     }
 
     private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)

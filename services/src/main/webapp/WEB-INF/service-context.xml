@@ -277,7 +277,6 @@
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="operationsMessageSender" ref="operationsMessageSender" />
       <property name="modsValidator" ref="modsValidator" />
-      <property name="locationManager" ref="storageLocationManager" />
       <property name="transferService" ref="binaryTransferService" />
   </bean>
   
@@ -349,6 +348,7 @@
     </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
     <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"

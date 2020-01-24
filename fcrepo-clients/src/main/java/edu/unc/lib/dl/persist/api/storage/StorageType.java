@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
-
-import edu.unc.lib.dl.exceptions.RepositoryException;
+package edu.unc.lib.dl.persist.api.storage;
 
 /**
  * @author bbpennel
  *
  */
-public class UnknownIngestSourceException extends RepositoryException {
-    private static final long serialVersionUID = 1L;
+public enum StorageType {
+    FILESYSTEM("filesystem");
+
+    private final String id;
+
+    private StorageType(String id) {
+        this.id = id;
+    }
 
     /**
-     * @param message
+     * @return the id
      */
-    public UnknownIngestSourceException(String message) {
-        super(message);
+    public String getId() {
+        return id;
     }
 }

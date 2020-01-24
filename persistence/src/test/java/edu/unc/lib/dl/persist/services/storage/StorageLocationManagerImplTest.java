@@ -44,6 +44,9 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageType;
+import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**

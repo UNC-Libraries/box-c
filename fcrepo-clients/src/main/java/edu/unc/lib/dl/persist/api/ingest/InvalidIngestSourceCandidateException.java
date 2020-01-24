@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
+package edu.unc.lib.dl.persist.api.ingest;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
- * Interface for a deposit handler used to submit deposits to the deposit pipeline
- *
  * @author bbpennel
  *
  */
-public interface DepositHandler {
+public class InvalidIngestSourceCandidateException extends RepositoryException {
+    private static final long serialVersionUID = 1L;
+
     /**
-     * Perform this deposit handler, submitting a deposit request to the pipeline
-     *
-     * @param destination PID of the object to deposit into
-     * @param deposit details about the deposit
-     * @return PID of the deposit
-     * @throws DepositException
+     * @param message
      */
-    public PID doDeposit(PID destination, DepositData deposit) throws DepositException;
+    public InvalidIngestSourceCandidateException(String message) {
+        super(message);
+    }
+
+    public InvalidIngestSourceCandidateException(String message, Throwable ex) {
+        super(message, ex);
+    }
 }

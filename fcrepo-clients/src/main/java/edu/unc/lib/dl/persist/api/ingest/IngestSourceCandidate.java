@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
+package edu.unc.lib.dl.persist.api.ingest;
 
 import edu.unc.lib.dl.util.PackagingType;
 

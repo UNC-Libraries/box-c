@@ -15,7 +15,10 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.createTempFile;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +27,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 
 /**
  * Client for transferring content to a filesystem storage location from input streams
@@ -69,11 +74,11 @@ public class StreamToFSTransferClient implements StreamTransferClient {
         try {
             // Fill in parent directories if they are not present
             Path parentPath = Paths.get(destUri).getParent();
-            Files.createDirectories(parentPath);
+            createDirectories(parentPath);
 
             // Write content to temp file in case of interruption
-            Path tmpPath = Files.createTempFile(parentPath, null, ".new");
-            FileUtils.copyInputStreamToFile(sourceStream, tmpPath.toFile());
+            Path tmpPath = createTempFile(parentPath, null, ".new");
+            copyInputStreamToFile(sourceStream, tmpPath.toFile());
 
             // Move temp file into final location
             Files.move(tmpPath, destPath, REPLACE_EXISTING);

@@ -89,7 +89,7 @@ public class MarkForDeletionJob implements Runnable {
                     .addImplementorAgent(agent.getUsernameUri())
                     .addEventDetail("Item marked for deletion and not available without permissions")
                     .addEventDetail(message)
-                    .write();
+                    .writeAndClose();
         }
     }
 }

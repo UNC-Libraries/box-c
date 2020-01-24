@@ -132,6 +132,6 @@ public class RestoreDeletedJobTest {
         verify(sparqlUpdateService).executeUpdate(anyString(), anyString());
 
         verify(premisLogger).buildEvent(eq(Premis.Deletion));
-        verify(eventBuilder).write();
+        verify(eventBuilder).writeAndClose();
     }
 }

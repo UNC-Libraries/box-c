@@ -27,7 +27,7 @@ import org.apache.jena.rdf.model.Resource;
  * @author bbpennel
  *
  */
-public interface PremisLogger {
+public interface PremisLogger extends AutoCloseable {
 
     /**
      * Allows for an arbitrary timestamp to be set for a premis event
@@ -64,4 +64,15 @@ public interface PremisLogger {
      * @return a model containing the events in this logger.
      */
     public Model getEventsModel();
+
+    /**
+     * Closes the logger
+     */
+    @Override
+    void close();
+
+    /**
+     * @return true if the logger has been closed
+     */
+    boolean isClosed();
 }

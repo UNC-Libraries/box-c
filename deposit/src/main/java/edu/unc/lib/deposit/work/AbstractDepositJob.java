@@ -34,6 +34,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -56,6 +57,11 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -89,6 +95,11 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Autowired
     protected PremisLoggerFactory premisLoggerFactory;
+
+    @Autowired
+    protected StorageLocationManager locationManager;
+    @Autowired
+    private BinaryTransferService transferService;
 
     // UUID for this deposit and its deposit record
     protected String depositUUID;
@@ -395,5 +406,12 @@ public abstract class AbstractDepositJob implements Runnable {
         } else {
             return null;
         }
+    }
+
+    protected BinaryTransferSession getTransferSession(Model depositModel) {
+        Bag depositBag = depositModel.getBag(getDepositPID().getRepositoryPath());
+        String destLocationId = depositBag.getProperty(Cdr.storageLocation).getString();
+        StorageLocation destLocation = locationManager.getStorageLocationById(destLocationId);
+        return transferService.getSession(destLocation);
     }
 }

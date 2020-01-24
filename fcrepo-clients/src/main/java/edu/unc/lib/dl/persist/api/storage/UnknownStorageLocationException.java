@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.storage;
+package edu.unc.lib.dl.persist.api.storage;
+
+import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
  * @author bbpennel
  *
  */
-public enum StorageType {
-    FILESYSTEM("filesystem");
-
-    private final String id;
-
-    private StorageType(String id) {
-        this.id = id;
-    }
+public class UnknownStorageLocationException extends RepositoryException {
+    private static final long serialVersionUID = 1L;
 
     /**
-     * @return the id
+     * @param message
      */
-    public String getId() {
-        return id;
+    public UnknownStorageLocationException(String message) {
+        super(message);
     }
+
 }

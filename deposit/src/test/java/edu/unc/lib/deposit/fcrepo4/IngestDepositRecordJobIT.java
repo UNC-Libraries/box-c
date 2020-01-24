@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
+import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
@@ -30,6 +31,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -74,10 +77,17 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "repoObjLoader", repoObjLoader);
         setField(job, "repoObjFactory", repoObjFactory);
+        setField(job, "transferService", binaryTransferService);
+        setField(job, "locationManager", storageLocationManager);
         job.init();
 
         // Create deposits container
         setupDestination();
+
+        Model model = job.getWritableModel();
+        Resource depositResc = model.getResource(depositPid.getRepositoryPath());
+        depositResc.addProperty(Cdr.storageLocation, LOC1_ID);
+        job.closeModel();
     }
 
     @Test

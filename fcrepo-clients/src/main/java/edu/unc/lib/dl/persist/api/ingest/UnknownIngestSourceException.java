@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.storage;
+package edu.unc.lib.dl.persist.api.ingest;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
 
@@ -21,14 +21,13 @@ import edu.unc.lib.dl.exceptions.RepositoryException;
  * @author bbpennel
  *
  */
-public class UnknownStorageLocationException extends RepositoryException {
+public class UnknownIngestSourceException extends RepositoryException {
     private static final long serialVersionUID = 1L;
 
     /**
      * @param message
      */
-    public UnknownStorageLocationException(String message) {
+    public UnknownIngestSourceException(String message) {
         super(message);
     }
-
 }

@@ -20,8 +20,12 @@ import static org.springframework.util.Assert.notNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 
 /**
  * Implementation of a multiple destination transfer session
@@ -31,16 +35,20 @@ import edu.unc.lib.dl.persist.services.storage.StorageLocation;
  */
 public class MultiDestinationTransferSessionImpl implements MultiDestinationTransferSession {
 
+    private StorageLocationManager storageLocationManager;
     private IngestSourceManager sourceManager;
     private Map<String, BinaryTransferSession> sessionMap;
 
     /**
      *
      * @param sourceManager
+     * @param storageLocationManager
      */
-    public MultiDestinationTransferSessionImpl(IngestSourceManager sourceManager) {
+    public MultiDestinationTransferSessionImpl(IngestSourceManager sourceManager,
+            StorageLocationManager storageLocationManager) {
         sessionMap = new HashMap<>();
         this.sourceManager = sourceManager;
+        this.storageLocationManager = storageLocationManager;
     }
 
     @Override
@@ -57,5 +65,11 @@ public class MultiDestinationTransferSessionImpl implements MultiDestinationTran
             sessionMap.put(dest.getId(), session);
         }
         return session;
+    }
+
+    @Override
+    public BinaryTransferSession forObject(RepositoryObject repoObj) {
+        StorageLocation loc = storageLocationManager.getStorageLocation(repoObj);
+        return forDestination(loc);
     }
 }

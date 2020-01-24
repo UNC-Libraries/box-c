@@ -44,6 +44,7 @@
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
@@ -138,6 +139,7 @@
     
     <!-- External storage manager -->
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
     <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
@@ -319,7 +321,6 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="modsValidator" ref="modsValidator" />
-        <property name="locationManager" ref="storageLocationManager" />
         <property name="transferService" ref="binaryTransferService" />
     </bean>
     

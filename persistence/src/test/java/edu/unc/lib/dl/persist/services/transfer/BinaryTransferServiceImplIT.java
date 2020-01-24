@@ -37,10 +37,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper;
 import edu.unc.lib.dl.persist.services.storage.HashedFilesystemStorageLocation;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
 
 /**

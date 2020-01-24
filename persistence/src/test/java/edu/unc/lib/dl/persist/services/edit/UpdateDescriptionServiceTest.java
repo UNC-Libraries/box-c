@@ -50,10 +50,9 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
@@ -75,8 +74,6 @@ public class UpdateDescriptionServiceTest {
     private OperationsMessageSender messageSender;
     @Mock
     private MODSValidator modsValidator;
-    @Mock
-    private StorageLocationManager locationManager;
     @Mock
     private StorageLocation destination;
     @Mock
@@ -129,14 +126,12 @@ public class UpdateDescriptionServiceTest {
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setOperationsMessageSender(messageSender);
         service.setModsValidator(modsValidator);
-        service.setLocationManager(locationManager);
         service.setTransferService(transferService);
     }
 
     @Test
     public void updateDescriptionTest() throws Exception {
-        when(locationManager.getStorageLocation(obj)).thenReturn(destination);
-        when(transferService.getSession(destination)).thenReturn(transferSession);
+        when(transferService.getSession(obj)).thenReturn(transferSession);
 
         service.updateDescription(agent, objPid, modsStream);
 

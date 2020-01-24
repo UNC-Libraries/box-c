@@ -15,9 +15,19 @@
  */
 package edu.unc.lib.dl.persist.services.storage;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static java.lang.Runtime.getRuntime;
+import static java.nio.file.Files.createTempDirectory;
+import static java.util.Arrays.asList;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +35,10 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.ContentPathFactory;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl.StorageLocationMapping;
 
 /**
@@ -32,6 +46,7 @@ import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl.Storag
  *
  */
 public class StorageLocationTestHelper {
+    public final static String LOC1_ID = "loc1";
 
     private List<StorageLocationMapping> mappingList;
     private List<Map<String, String>> locationList;
@@ -39,6 +54,10 @@ public class StorageLocationTestHelper {
     public StorageLocationTestHelper() {
         mappingList = new ArrayList<>();
         locationList = new ArrayList<>();
+    }
+
+    public static StorageLocationTestHelper newStorageLocationTestHelper() {
+        return new StorageLocationTestHelper();
     }
 
     public void addStorageLocation(String id, String name, String base) throws IOException {
@@ -70,5 +89,87 @@ public class StorageLocationTestHelper {
         File jsonFile = Files.createTempFile("locMapping", ".json").toFile();
         objectMapper.writeValue(jsonFile, mappingList);
         return jsonFile.getAbsolutePath();
+    }
+
+    /**
+     * Generates a basic test location mapped to the provided id and storage path
+     *
+     * @param mappedPid
+     * @param locPath
+     * @return
+     * @throws Exception
+     */
+    public StorageLocationTestHelper addTestLocation(PID mappedPid, Path locPath) throws Exception {
+        addStorageLocation(LOC1_ID, "Location 1", locPath.toString());
+        addMapping(mappedPid.getId(), LOC1_ID);
+        return this;
+    }
+
+    /**
+     * Generate a test location assigned to the root of the repository in a newly created temp dir
+     *
+     * @return
+     * @throws Exception
+     */
+    public StorageLocationTestHelper addTestLocation() throws Exception {
+        Path locPath = createTempDirectory("loc1");
+        // Cleanup the temp dir after the tests end
+        getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    deleteDirectory(locPath.toFile());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        addStorageLocation(LOC1_ID, "Location 1", locPath.toString());
+        addMapping(getContentRootPid().getId(), LOC1_ID);
+        return this;
+    }
+
+    /**
+     * Construct a storage location manager with a mocked content path factory which
+     * returns the root of the repo as the ancestor for everything.
+     *
+     * @param repoObjLoader
+     * @return
+     * @throws Exception
+     */
+    public StorageLocationManager createLocationManager(RepositoryObjectLoader repoObjLoader)
+            throws Exception {
+        ContentPathFactory pathFactory = mock(ContentPathFactory.class);
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>(asList((getContentRootPid()))));
+
+        return createLocationManager(repoObjLoader, pathFactory);
+    }
+
+    /**
+     * Construct and initialize a storage location manager from the config in this helper using
+     * the provided dependencies
+     *
+     * @param repoObjLoader
+     * @param pathFactory
+     * @return
+     * @throws Exception
+     */
+    public StorageLocationManager createLocationManager(RepositoryObjectLoader repoObjLoader,
+            ContentPathFactory pathFactory) throws Exception {
+        StorageLocationManagerImpl locationManager = new StorageLocationManagerImpl();
+        locationManager.setConfigPath(serializeLocationConfig());
+        locationManager.setMappingPath(serializeLocationMappings());
+        locationManager.setRepositoryObjectLoader(repoObjLoader);
+        locationManager.setPathFactory(pathFactory);
+        locationManager.init();
+        return locationManager;
+    }
+
+    public static StorageLocationManager createLocationManagerWithBasicConfig(RepositoryObjectLoader repoObjLoader)
+            throws Exception {
+
+        return newStorageLocationTestHelper()
+                    .addTestLocation()
+                    .createLocationManager(repoObjLoader);
     }
 }

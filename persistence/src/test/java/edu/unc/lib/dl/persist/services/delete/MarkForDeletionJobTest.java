@@ -149,6 +149,6 @@ public class MarkForDeletionJobTest {
         List<String> details = messageCaptor.getAllValues();
         assertTrue(details.contains(MESSAGE));
 
-        verify(eventBuilder).write();
+        verify(eventBuilder).writeAndClose();
     }
 }

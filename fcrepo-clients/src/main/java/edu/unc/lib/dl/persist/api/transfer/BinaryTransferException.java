@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.transfer;
+package edu.unc.lib.dl.persist.api.transfer;
+
+import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
  * @author bbpennel
  *
  */
-public class BinaryAlreadyExistsException extends BinaryTransferException {
+public class BinaryTransferException extends RepositoryException {
+
     private static final long serialVersionUID = 1L;
 
     /**
      * @param message
      */
-    public BinaryAlreadyExistsException(String message) {
+    public BinaryTransferException(String message) {
         super(message);
     }
 
@@ -33,7 +36,8 @@ public class BinaryAlreadyExistsException extends BinaryTransferException {
      * @param message
      * @param ex
      */
-    public BinaryAlreadyExistsException(String message, Throwable ex) {
+    public BinaryTransferException(String message, Throwable ex) {
         super(message, ex);
     }
+
 }

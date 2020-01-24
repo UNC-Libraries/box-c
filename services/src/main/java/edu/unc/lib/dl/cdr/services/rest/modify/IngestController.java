@@ -39,7 +39,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.DepositData;
+import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;

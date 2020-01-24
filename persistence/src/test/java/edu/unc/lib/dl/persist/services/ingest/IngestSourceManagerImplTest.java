@@ -46,6 +46,9 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl.IngestSourceMapping;
 
 /**

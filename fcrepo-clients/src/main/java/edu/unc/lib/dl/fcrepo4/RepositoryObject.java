@@ -111,7 +111,7 @@ public abstract class RepositoryObject {
      * @return
      */
     public PremisLogger getPremisLog() {
-        if (premisLog == null) {
+        if (premisLog == null || premisLog.isClosed()) {
             premisLog = driver.getPremisLog(this);
         }
         return premisLog;

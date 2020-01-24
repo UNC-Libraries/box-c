@@ -34,12 +34,16 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**
@@ -76,6 +80,8 @@ public class StorageLocationManagerImpl implements StorageLocationManager {
     private void deserializeConfig() throws IOException {
         InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerSubtypes(
+                new NamedType(HashedFilesystemStorageLocation.class, HashedFilesystemStorageLocation.TYPE_NAME));
         storageLocations = mapper.readValue(configStream,
                 new TypeReference<List<StorageLocation>>() {});
         idToStorageLocation = storageLocations.stream()

@@ -23,18 +23,6 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
-        <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="repoObjFactory" ref="repositoryObjectFactory" />
-    </bean>
-    
-    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
-    
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-
     <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
@@ -43,6 +31,28 @@
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
+    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
+            factory-method="createLocationManagerWithBasicConfig">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+    
+    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repoObjFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
+    
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
     <bean id="cacheTimeToLive" class="java.lang.Long">
         <constructor-arg value="5" />
     </bean>

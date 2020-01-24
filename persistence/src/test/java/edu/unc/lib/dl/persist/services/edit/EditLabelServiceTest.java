@@ -150,7 +150,7 @@ public class EditLabelServiceTest {
         verify(premisLogger).buildEvent(eq(Premis.Migration));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from " + "no dc:title" +" to " + label);
-        verify(eventBuilder).write();
+        verify(eventBuilder).writeAndClose();
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
         assertEquals(pid, pidCaptor.getValue().get(0));

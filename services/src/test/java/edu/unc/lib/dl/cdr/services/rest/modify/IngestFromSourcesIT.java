@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.addMapping;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
@@ -55,6 +56,7 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -64,8 +66,9 @@ import edu.unc.lib.dl.cdr.services.rest.modify.IngestSourceController.IngestPack
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.services.ingest.FilesystemIngestSource;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -565,6 +568,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     private ListSourcesResponse deserializeListSources(MvcResult result) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerSubtypes(
+                new NamedType(FilesystemIngestSource.class, FILESYSTEM.getId()));
         return mapper.readValue(result.getResponse().getContentAsString(), ListSourcesResponse.class);
     }
 

@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
+package edu.unc.lib.dl.persist.api.ingest;
 
 import java.net.URI;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import edu.unc.lib.dl.persist.services.storage.StorageType;
+import edu.unc.lib.dl.persist.api.storage.StorageType;
 
 /**
  * A staging location from which objects may be ingested into the repository.
@@ -35,8 +33,6 @@ import edu.unc.lib.dl.persist.services.storage.StorageType;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
-@JsonSubTypes({
-        @Type(value = FilesystemIngestSource.class, name = "filesystem") })
 public interface IngestSource {
 
     /**

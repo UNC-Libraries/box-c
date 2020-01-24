@@ -71,10 +71,8 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
@@ -129,10 +127,10 @@ public class DestroyObjectsJobIT {
     @Mock
     private IndexingMessageSender indexingMessageSender;
 
+    @Autowired
     private StorageLocationManagerImpl locationManager;
+    @Autowired
     private BinaryTransferService transferService;
-    private StorageLocationTestHelper locTestHelper;
-    private Path loc1Path;
 
     private AgentPrincipals agent;
 
@@ -152,24 +150,11 @@ public class DestroyObjectsJobIT {
 
         treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
 
-        loc1Path = tmpFolder.newFolder("loc1").toPath();
         objsToDestroy = createContentTree();
 
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
         when(path.toNamePath()).thenReturn("path/to/object");
         when(path.toIdPath()).thenReturn("pid0/pid1/pid2/pid3");
-
-        transferService = new BinaryTransferServiceImpl();
-
-        locTestHelper = new StorageLocationTestHelper();
-        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
-        locTestHelper.addMapping(getContentRootPid().getId(), LOC1_ID);
-
-        locationManager = new StorageLocationManagerImpl();
-        locationManager.setConfigPath(locTestHelper.serializeLocationConfig());
-        locationManager.setMappingPath(locTestHelper.serializeLocationMappings());
-        locationManager.setRepositoryObjectLoader(repoObjLoader);
-        locationManager.init();
     }
 
     @Test
@@ -321,7 +306,9 @@ public class DestroyObjectsJobIT {
         folder.addMember(work);
         String bodyString = "Content";
         String mimetype = "text/plain";
-        File contentFile = Files.createTempFile(loc1Path, "file", ".txt").toFile();
+        Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getStorageUri(work.getPid()));
+        Files.createDirectories(storagePath);
+        File contentFile = Files.createTempFile(storagePath, "file", ".txt").toFile();
         String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
         String filename = contentFile.getName();
         FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");

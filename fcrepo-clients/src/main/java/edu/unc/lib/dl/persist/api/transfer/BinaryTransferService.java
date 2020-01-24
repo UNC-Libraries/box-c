@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.transfer;
+package edu.unc.lib.dl.persist.api.transfer;
 
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**
  * A service for transferring binaries to preservation storage locations.
@@ -39,4 +40,12 @@ public interface BinaryTransferService {
      * @return new binary transfer session
      */
     BinaryTransferSession getSession(StorageLocation destination);
+
+    /**
+     * Get a new session for transferring binaries to the specified repository object
+     *
+     * @param repoObj object to open the session for
+     * @return new binary transfer session
+     */
+    BinaryTransferSession getSession(RepositoryObject repoObj);
 }

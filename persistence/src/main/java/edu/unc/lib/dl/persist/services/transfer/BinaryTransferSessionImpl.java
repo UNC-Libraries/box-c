@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
 import static org.springframework.util.Assert.notNull;
 
 import java.io.InputStream;
@@ -26,9 +26,12 @@ import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 
 /**
  * Implementation of a session that can be used for single destination binary transfers

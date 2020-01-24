@@ -41,6 +41,8 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -76,6 +78,10 @@ public class AbstractFedoraDepositJobIT {
     protected FcrepoClient client;
     @Autowired
     protected ActivityMetricsClient metricsClient;
+    @Autowired
+    protected BinaryTransferService binaryTransferService;
+    @Autowired
+    protected StorageLocationManager storageLocationManager;
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static edu.unc.lib.dl.persist.services.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -35,9 +35,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**
  * @author bbpennel

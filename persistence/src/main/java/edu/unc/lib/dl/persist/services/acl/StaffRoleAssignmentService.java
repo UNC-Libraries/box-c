@@ -112,7 +112,7 @@ public class StaffRoleAssignmentService {
             repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
                     .addImplementorAgent(agent.getUsernameUri())
                     .addEventDetail(createEventDetails(target))
-                    .write();
+                    .writeAndClose();
 
             return operationsMessageSender.sendOperationMessage(agent.getUsername(),
                     CDRActions.EDIT_ACCESS_CONTROL,

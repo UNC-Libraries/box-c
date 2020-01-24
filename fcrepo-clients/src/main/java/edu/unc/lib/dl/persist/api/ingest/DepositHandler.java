@@ -13,31 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.transfer;
+package edu.unc.lib.dl.persist.api.ingest;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.DepositException;
 
 /**
+ * Interface for a deposit handler used to submit deposits to the deposit pipeline
+ *
  * @author bbpennel
  *
  */
-public class BinaryTransferException extends RepositoryException {
-
-    private static final long serialVersionUID = 1L;
-
+public interface DepositHandler {
     /**
-     * @param message
+     * Perform this deposit handler, submitting a deposit request to the pipeline
+     *
+     * @param destination PID of the object to deposit into
+     * @param deposit details about the deposit
+     * @return PID of the deposit
+     * @throws DepositException
      */
-    public BinaryTransferException(String message) {
-        super(message);
-    }
-
-    /**
-     * @param message
-     * @param ex
-     */
-    public BinaryTransferException(String message, Throwable ex) {
-        super(message, ex);
-    }
-
+    public PID doDeposit(PID destination, DepositData deposit) throws DepositException;
 }

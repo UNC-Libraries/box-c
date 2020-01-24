@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.ingest;
-
-import edu.unc.lib.dl.exceptions.RepositoryException;
+package edu.unc.lib.dl.persist.api.transfer;
 
 /**
  * @author bbpennel
  *
  */
-public class InvalidIngestSourceCandidateException extends RepositoryException {
+public class BinaryAlreadyExistsException extends BinaryTransferException {
+    private static final long serialVersionUID = 1L;
 
     /**
      * @param message
      */
-    public InvalidIngestSourceCandidateException(String message) {
+    public BinaryAlreadyExistsException(String message) {
         super(message);
     }
 
-    public InvalidIngestSourceCandidateException(String message, Throwable ex) {
+    /**
+     * @param message
+     * @param ex
+     */
+    public BinaryAlreadyExistsException(String message, Throwable ex) {
         super(message, ex);
     }
 }

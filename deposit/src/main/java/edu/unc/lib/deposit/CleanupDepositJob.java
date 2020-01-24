@@ -33,8 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.services.ingest.IngestSource;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
