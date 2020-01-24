@@ -118,7 +118,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // Add two of the events together
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
-        Resource event2Resc = logger.buildEvent(Premis.Ingestion, ingestDate)
+        Resource event2Resc = logger.buildEvent(null, Premis.Ingestion, ingestDate)
                 .addEventDetail("Ingested")
                 .create();
 

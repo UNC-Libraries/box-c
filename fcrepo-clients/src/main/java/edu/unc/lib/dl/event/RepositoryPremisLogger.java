@@ -73,18 +73,20 @@ public class RepositoryPremisLogger implements PremisLogger {
     }
 
     @Override
-    public PremisEventBuilder buildEvent(Resource eventType, Date date) {
+    public PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date) {
+        if (eventPid == null) {
+            eventPid = pidMinter.mintPremisEventPid(repoObject.getPid());
+        }
         if (date == null) {
             date = new Date();
         }
 
-        return new PremisEventBuilder(pidMinter.mintPremisEventPid(repoObject.getPid()),
-                eventType, date, this);
+        return new PremisEventBuilder(eventPid, eventType, date, this);
     }
 
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return buildEvent(eventType, null);
+        return buildEvent(null, eventType, null);
     }
 
     @Override

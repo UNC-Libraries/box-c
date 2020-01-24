@@ -54,20 +54,16 @@ public class FilePremisLogger implements PremisLogger {
         this.pidMinter = pidMinter;
     }
 
-    /**
-     * Allows for an arbitrary timestamp to be set for a premis event
-     *
-     * @param eventType
-     * @return PremisEventBuilder
-     */
     @Override
-    public PremisEventBuilder buildEvent(Resource eventType, Date date) {
+    public PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date) {
+        if (eventPid == null) {
+            eventPid = pidMinter.mintPremisEventPid(objectPid);
+        }
         if (date == null) {
             date = new Date();
         }
 
-        return new PremisEventBuilder(pidMinter.mintPremisEventPid(objectPid),
-                eventType, date, this);
+        return new PremisEventBuilder(eventPid, eventType, date, this);
     }
 
     /**
@@ -78,7 +74,7 @@ public class FilePremisLogger implements PremisLogger {
      */
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return buildEvent(eventType, null);
+        return buildEvent(null, eventType, null);
     }
 
     /**

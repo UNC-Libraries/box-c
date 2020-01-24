@@ -21,6 +21,8 @@ import java.util.Date;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.fedora.PID;
+
 /**
  * Logs and provides access to PREMIS events for a repository object
  *
@@ -30,11 +32,13 @@ import org.apache.jena.rdf.model.Resource;
 public interface PremisLogger extends AutoCloseable {
 
     /**
-     * Allows for an arbitrary timestamp to be set for a premis event
+     * Returns an instance of a PremisEventBuilder with the provided event pid and date.
+     * @param eventPid
      * @param eventType
+     * @param date timestamp of the event
      * @return PremisEventBuilder
      */
-    public PremisEventBuilder buildEvent(Resource eventType, Date date);
+    public PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date);
 
     /**
      * Returns an instance of buildEvent with the timestamp automatically set to the current time
