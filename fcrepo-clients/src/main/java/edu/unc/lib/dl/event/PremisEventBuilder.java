@@ -15,8 +15,13 @@
  */
 package edu.unc.lib.dl.event;
 
+import static java.text.Normalizer.Form.NFD;
+import static java.util.Locale.ENGLISH;
+
 import java.text.MessageFormat;
+import java.text.Normalizer;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Model;
@@ -82,7 +87,7 @@ public class PremisEventBuilder {
      * @return this event builder
      */
     public PremisEventBuilder addEventDetail(String message, Object... args) {
-        if (args != null) {
+        if (args != null && args.length > 0) {
             message = MessageFormat.format(message, args);
         }
         Resource premisObjResc = getResource();
@@ -119,7 +124,8 @@ public class PremisEventBuilder {
      * @return this event builder
      */
     public PremisEventBuilder addSoftwareAgent(String agent) {
-        addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.Software, "#softwareAgent", agent);
+        addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.Software,
+                toSlug("#softwareAgent", agent), agent);
 
         return this;
     }
@@ -131,15 +137,31 @@ public class PremisEventBuilder {
      * @return this event builder
      */
     public PremisEventBuilder addAuthorizingAgent(String agent) {
-        addAgent(Premis.hasEventRelatedAgentAuthorizor, PremisAgentType.Person, "#authorizingAgent", agent);
+        addAgent(Premis.hasEventRelatedAgentAuthorizor, PremisAgentType.Person,
+                toSlug("#authorizingAgent", agent), agent);
 
         return this;
     }
 
     public PremisEventBuilder addImplementorAgent(String agent) {
-        addAgent(Premis.hasEventRelatedAgentImplementor, PremisAgentType.Person, "#implementorAgent", agent);
+        addAgent(Premis.hasEventRelatedAgentImplementor, PremisAgentType.Person,
+                toSlug("#implementorAgent", agent), agent);
 
         return this;
+    }
+
+    private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+    private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+
+    /*
+     * Convert an agent plus a prefix into a slug for inclusion in URI of the agent to prevent collisions
+     * in the case of multiple agents of the same type
+     */
+    private static String toSlug(String prefix, String agent) {
+      String nowhitespace = WHITESPACE.matcher(agent).replaceAll("-");
+      String normalized = Normalizer.normalize(nowhitespace, NFD);
+      String slug = NONLATIN.matcher(normalized).replaceAll("");
+      return prefix + "-" + slug.toLowerCase(ENGLISH);
     }
 
     /**
