@@ -186,8 +186,6 @@ public class Premis {
     public static final Resource SignificantProperties = createResource(
             "http://www.loc.gov/premis/rdf/v1#SignificantProperties");
 
-    public static final Resource Software = createResource("http://www.loc.gov/premis/rdf/v1#Software");
-
     public static final Resource StatuteInformation = createResource(
             "http://www.loc.gov/premis/rdf/v1#StatuteInformation");
 
@@ -224,6 +222,9 @@ public class Premis {
     public static final Resource EventRelatedAgentRole = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/exe");
 
+    public static final Resource FilenameChange = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/fil");
+
     public static final Resource FixityCheck = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/fix");
 
@@ -231,6 +232,9 @@ public class Premis {
 
     public static final Resource MessageDigestCalculation = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/mes");
+
+    public static final Resource MetadataModification = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/mem");
 
     public static final Resource Migration = createResource("http://id.loc.gov/vocabulary/preservation/eventType/mig");
 

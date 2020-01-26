@@ -20,26 +20,19 @@ import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
-import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Populates a PREMIS 3 logger with events transformed from an XML PREMIS 2 log for one object.
@@ -47,19 +40,13 @@ import edu.unc.lib.dl.util.URIUtil;
  * @author bbpennel
  *
  */
-public class DepositRecordPremisToRdfTransformer {
+public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTransformer {
     private static final Logger log = getLogger(DepositRecordPremisToRdfTransformer.class);
 
     private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile("Normalized deposit package from ([^ ]+) to.*");
 
-    private PID pid;
-    private PremisLogger premisLogger;
-    private Document doc;
-
     public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
-        this.pid = pid;
-        this.premisLogger = premisLogger;
-        this.doc = doc;
+        super(pid, premisLogger, doc);
     }
 
     public void transform() {
@@ -164,44 +151,5 @@ public class DepositRecordPremisToRdfTransformer {
             .addEventDetail("ingested as format: " + format)
             .addSoftwareAgent(depositService.getFullname())
             .write();
-    }
-
-    private List<String> getEventTypes(Element eventEl) {
-        return eventEl.getChildren("eventType", PREMIS_V2_NS).stream()
-                .map(Element::getTextTrim)
-                .collect(toList());
-    }
-
-    private Date getEventDateTime(Element eventEl) {
-        String eventDateTime = eventEl.getChildTextTrim("eventDateTime", PREMIS_V2_NS);
-        if (eventDateTime == null) {
-            log.warn("No datetime for event on object {}", pid);
-            return null;
-        }
-        return DateTimeUtil.parseUTCToDateTime(eventDateTime).toDate();
-    }
-
-    private String getEventDetail(Element eventEl) {
-        return eventEl.getChildTextTrim("eventDetail", PREMIS_V2_NS);
-    }
-
-    private PID getEventPid(Element eventEl) {
-        String idVal = eventEl.getChild("eventIdentifier", PREMIS_V2_NS)
-                .getChildTextTrim("eventIdentifierValue", PREMIS_V2_NS);
-        idVal = idVal.replaceFirst("urn:uuid:", "");
-
-        String eventUrl = URIUtil.join(pid.getRepositoryPath(), idVal);
-        return PIDs.get(eventUrl);
-    }
-
-    private String getLinkingAgent(Element eventEl) {
-        return eventEl.getChild("linkingAgentIdentifier", PREMIS_V2_NS)
-            .getChildTextTrim("linkingAgentIdentifierValue", PREMIS_V2_NS);
-    }
-
-    private PremisEventBuilder createEventBuilder(Resource eventTypeResc, Element eventEl) {
-        Date dateTime = getEventDateTime(eventEl);
-        PID eventPid = getEventPid(eventEl);
-        return premisLogger.buildEvent(eventPid, eventTypeResc, dateTime);
     }
 }

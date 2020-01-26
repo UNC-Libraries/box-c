@@ -38,4 +38,8 @@ public class Premis2Constants {
     public static final String INGEST_AGENT = "edu.unc.lib.deposit.fcrepo3.IngestDeposit";
     public static final String VALIDATE_MODS_AGENT = "edu.unc.lib.deposit.validate.ValidateMODS";
     public static final String METS_NORMAL_AGENT = "edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob";
+    public static final String FIXITY_AGENT = "edu.unc.lib.dl.cdr.services.fixity.FixityLogTask";
+
+    public static final String SOFTWARE_ROLE = "Software";
+    public static final String INITIATOR_ROLE = "Initiator";
 }

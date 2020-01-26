@@ -36,10 +36,15 @@ public class SoftwareAgentConstants {
     }
 
     public enum SoftwareAgent {
-        depositService("deposit"), servicesWorker("services-worker"), selfDepositForms(
-                "forms"), servicesAPI("services"), fixityCheckingService(
-                "fixity"), embargoUpdateService("embargo-update"), clamav(
-                "clamav", "0.99"), FITS("fits", "1.0.6");
+        depositService("deposit"),
+        servicesWorker("services-worker"),
+        selfDepositForms("forms"),
+        servicesAPI("services"),
+        fixityCheckingService("fixity"),
+        embargoUpdateService("embargo-update"),
+        clamav("clamav", "0.99"),
+        FITS("fits", "1.0.6"),
+        curatorsWorkbench("curators-workbench");
 
         private String value;
         private String version;
@@ -58,6 +63,10 @@ public class SoftwareAgentConstants {
                 return value + "-" + getCdrVersion();
             }
             return value + "-" + version;
+        }
+
+        public String getValue() {
+            return value;
         }
     }
 }

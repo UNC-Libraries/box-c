@@ -23,38 +23,22 @@ import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATE_MODS_AG
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
-import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
-import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jgroups.util.UUID;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import edu.unc.lib.dl.event.FilePremisLogger;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.util.DateTimeUtil;
@@ -63,34 +47,12 @@ import edu.unc.lib.dl.util.DateTimeUtil;
  * @author bbpennel
  *
  */
-public class DepositRecordPremisToRdfTransformerTest {
+public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdfTransformerTest {
 
-    private static final String EVENT_DATE = "2015-10-19T17:06:22";
-    private static final String EVENT_DATE_UTC = formatDateToUTC(parseUTCToDate(EVENT_DATE));
-
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-
-    private File logFile;
-
-    private PID objPid;
-
-    private DepositRecordPremisToRdfTransformer transformer;
-
-    private Document premisDoc;
-
-    private PremisLogger premisLogger;
-    private RepositoryPIDMinter pidMinter;
+    protected DepositRecordPremisToRdfTransformer transformer;
 
     @Before
     public void setup() throws Exception {
-        pidMinter = new RepositoryPIDMinter();
-
-        objPid = makePid();
-        logFile = tmpFolder.newFile(objPid.getId() + ".nt");
-        premisDoc = createPremisDoc(objPid);
-        premisLogger = new FilePremisLogger(objPid, logFile, pidMinter);
-
         transformer = new DepositRecordPremisToRdfTransformer(objPid, premisLogger, premisDoc);
     }
 
@@ -317,58 +279,10 @@ public class DepositRecordPremisToRdfTransformerTest {
         assertAgent(depositService.getFullname(), eventResc);
     }
 
-    private Resource getResourceByEventDate(List<Resource> rescs, String eventDate) {
-        return rescs.stream().filter(r -> eventDate.equals(r.getProperty(Premis.hasEventDateTime).getString()))
-                .findFirst().get();
-    }
-
-    private void assertEventType(Resource expectedType, Resource eventResc) {
-        assertEquals("Event type did not match expected value",
-                expectedType, eventResc.getPropertyResourceValue(Premis.hasEventType));
-    }
-
-    private void assertEventDetail(String expected, Resource eventResc) {
-        assertEquals("Event detail message did not match expected value",
-                expected, eventResc.getProperty(Premis.hasEventDetail).getString());
-    }
-
-    private void assertEventDateTime(String expected, Resource eventResc) {
-        assertEquals("Event date time did not match expected value",
-                expected, eventResc.getProperty(Premis.hasEventDateTime).getString());
-    }
-
     private void assertAgent(String agentName, Resource eventResc) {
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentExecutor);
         assertEquals(PremisAgentType.Software, agentResc.getPropertyResourceValue(Premis.hasAgentType));
         assertEquals(agentName, agentResc.getProperty(Premis.hasAgentName).getString());
-    }
-
-    private Model deserializeLogFile(File logFile) throws IOException {
-        return createModel(new FileInputStream(logFile), "N-TRIPLE");
-    }
-
-    private List<Resource> listEventResources(PID pid, Model model) {
-        Resource objResc = model.getResource(objPid.getRepositoryPath());
-
-        return objResc.listProperties(Premis.hasEvent).toList().stream()
-                .map(Statement::getResource)
-                .collect(toList());
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
-    }
-
-    private Document createPremisDoc(PID pid) {
-        Document doc = new Document();
-        doc.addContent(new Element("premis", PREMIS_V2_NS)
-                .addContent(new Element("object", PREMIS_V2_NS)
-                        .setAttribute("type", "representation", XSI_NS)
-                        .addContent(new Element("objectIdentifier", PREMIS_V2_NS)
-                                .addContent(new Element("objectIdentifierType", PREMIS_V2_NS).setText("PID"))
-                                .addContent(new Element("objectIdentifierValue", PREMIS_V2_NS)
-                                        .setText("uuid:" + pid.getId())))));
-        return doc;
     }
 
     private void addEvent(Document doc, String type, String detail, String dateTime, String agent) {
