@@ -65,9 +65,29 @@ a {
     color: white;
     line-height: 1.5;
   }
+
+  .info-btns {
+    float: right;
+    padding-top: 13px;
+
+    a {
+      margin-left: 10px;
+    }
+  }
+}
+
+.logo-large {
+  a {
+    max-width: 650px;
+  }
 }
 
 .logo-small {
+  a, i {
+    color: white;
+    font-size: 16px;
+  }
+
   img {
     max-width: 150px;
   }
@@ -91,6 +111,12 @@ a {
 .menu-row-small {
   background-color: $unc-navy;
   border-bottom: 1px solid #e7e7e7;
+
+  .search {
+    a {
+      margin-left: 10px;
+    }
+  }
 }
 
 .menu-row-small.navbar {
@@ -106,16 +132,19 @@ a {
   }
 
   button {
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+    border-radius: 0 5px 5px 0;
     height: 35px;
     margin-left: -1px;
-    margin-top: 1px;
+    border: 1px solid #dbdbdb;
   }
 
-  .navbar-item {
-    padding: .35rem;
+  .is-active {
+    .navbar-item {
+      color: black;
+      padding: .35rem;
+    }
   }
+
 
   .navbar-menu.is-active {
     background-color: white;
@@ -158,6 +187,7 @@ header {
     display: flex;
     align-items: center;
     padding: 6px 0;
+
     label {
       position: absolute;
       width: 0;
@@ -168,15 +198,15 @@ header {
       overflow: hidden;
     }
     input {
+      border: 1px solid lightgray;
       border-bottom-left-radius: 5px;
       border-top-left-radius: 5px;
       font-size: 1rem;
+      height: 35px;
       padding: 7px;
       width: 100%;
     }
-    button {
-      margin: 0 12px 0 12px;
-    }
+
     a {
       flex-shrink: 0;
       color: white;
@@ -184,6 +214,22 @@ header {
       &:hover, &:active {
         color: $unc-blue;
       }
+    }
+  }
+
+  .search-large {
+    input, button {
+      height: 50px;
+    }
+
+    input {
+      font-size: 1.5rem;
+    }
+
+    button {
+      border-radius: 0 5px 5px 0;
+      margin-left: -1px;
+      border: 1px solid #dbdbdb;
     }
   }
 }

@@ -1,11 +1,11 @@
 <template>
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
+        <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only" aria-label="Show works only">
+        <p>Show only works</p>
         <div class="display-note-btn">?
             <div class="arrow"></div>
             <span class="browse-tip">Show all files without organizational folders.</span>
         </div>
-        <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only">
-        <p>Show only works</p>
     </div>
 </template>
 
@@ -60,6 +60,8 @@
         .checkbox {
             height: 40px;
             margin-top: -10px;
+            padding-left: 0;
+            padding-right: 0;
             width: 50px;
             vertical-align: middle;
             zoom: .7; /* Needed for Chrome */
@@ -68,11 +70,14 @@
         .display-note-btn {
             margin-left: 0;
             margin-right: 8px;
+            margin-top: 0;
         }
 
         p {
             font-size: 18px;
-            margin: 5px 0;
+            margin: -7px 0 0 0;
+            padding-left: 0;
+            padding-right: 0;
         }
     }
 

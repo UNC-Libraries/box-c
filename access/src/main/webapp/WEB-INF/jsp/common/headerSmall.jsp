@@ -27,6 +27,23 @@
                 <img src="static/front/university-libraries-logo.png" alt="University Libraries Logo">
                 <h1>Digital Collections Repository</h1>
             </a>
+            <span class="info-btns">
+                <a href="${contactUrl}">Contact Us</a>
+                <c:choose>
+                    <c:when test="${not empty pageContext.request.remoteUser}">
+                        <c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
+                            <c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
+                        </c:url>
+                        <a href="<c:out value='${logoutUrl}' />"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+                            <c:param name="target" value="${currentAbsoluteUrl}" />
+                        </c:url>
+                        <a href="<c:out value='${loginUrl}' />"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
+                    </c:otherwise>
+                </c:choose>
+            </span>
         </div>
     </div>
     <nav class="menu-row-small navbar" role="navigation">
@@ -39,10 +56,8 @@
                 </a>
             </div>
             <div id="navbar" class="menu navbar-menu">
-                <a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
                 <a href="collections" class="navbar-item">Browse Collections</a>
                 <a href="aboutRepository" class="navbar-item">What's Here?</a>
-                <a href="${contactUrl}" class="navbar-item">Contact Us</a>
                 <c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
                     <c:choose>
                         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
@@ -57,20 +72,6 @@
                     </c:choose>
                     <a href="${adminBaseUrl}/${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
                 </c:if>
-                <c:choose>
-                    <c:when test="${not empty pageContext.request.remoteUser}">
-                        <c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
-                            <c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
-                        </c:url>
-                        <a href="<c:out value='${logoutUrl}' />" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
-                    </c:when>
-                    <c:otherwise>
-                        <c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
-                            <c:param name="target" value="${currentAbsoluteUrl}" />
-                        </c:url>
-                        <a href="<c:out value='${loginUrl}' />" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
-                    </c:otherwise>
-                </c:choose>
             </div>
             <div class="search-row">
                 <div class="search">
