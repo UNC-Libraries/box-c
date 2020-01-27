@@ -56,7 +56,8 @@ describe('listDisplay.vue', () => {
                             {
                                 "pid": "87e49168-551b-4127-8252-9d13ed8abe24",
                                 "name": "boingo",
-                                "container": true
+                                "container": true,
+                                "collectionId": null
                             }
                         ],
                         "id": "87e49168-551b-4127-8252-9d13ed8abe24",
@@ -95,7 +96,8 @@ describe('listDisplay.vue', () => {
                             {
                                 "pid": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
                                 "name": "Imagy",
-                                "container": true
+                                "container": true,
+                                "collectionId": null
                             }
                         ],
                         "datastream": [
@@ -165,5 +167,77 @@ describe('listDisplay.vue', () => {
             }
         });
         expect(wrapper.vm.linkBrowseType).toBe('list-display');
+    });
+
+    it("doesn't display a collection number if one isn't set", () => {
+        wrapper = shallowMount(listDisplay, {
+            localVue,
+            router,
+            propsData: {
+                useSavedBrowseType: true
+            }
+        });
+        expect(wrapper.findAll('.collection_id').length).toEqual(0);
+    });
+
+    it("displays a collection number if one is set", () => {
+        wrapper = shallowMount(listDisplay, {
+            localVue,
+            router,
+            propsData: {
+                useSavedBrowseType: true
+            }
+        });
+        expect(wrapper.findAll('.collection_id').length).toEqual(0);
+    });
+
+    it("displays a collection number if one is set", () => {
+        wrapper = shallowMount(listDisplay, {
+            localVue,
+            router,
+            propsData: {
+                useSavedBrowseType: true,
+                recordList: [
+                    {
+                        "added": "2019-07-29T19:50:43.588Z",
+                        "counts": {
+                            "child": 0
+                        },
+                        "thumbnail_url": "https:\/\/localhost:8080\/services\/api\/thumb\/aaa66f91-4870-4937-b7ba-06b015959e4f\/large",
+                        "title": "Imagy",
+                        "type": "Work",
+                        "contentStatus": [
+                            "Described",
+                            "Has Primary Object"
+                        ],
+                        "rollup": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+                        "objectPath": [
+                            {
+                                "pid": "collections",
+                                "name": "Content Collections Root",
+                                "container": true
+                            },
+                            {
+                                "pid": "0410e5c1-a036-4b7c-8d7d-63bfda2d6a36",
+                                "name": "testAdminUnit",
+                                "container": true
+                            },
+                            {
+                                "pid": "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
+                                "name": "testCollection",
+                                "container": true
+                            },
+                            {
+                                "pid": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+                                "name": "Imagy",
+                                "container": true,
+                                "collectionId": "12345"
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
+        expect(wrapper.findAll('.collection_id').length).toEqual(1);
     });
 });
