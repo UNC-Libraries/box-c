@@ -72,6 +72,21 @@
                     </c:choose>
                     <a href="${adminBaseUrl}/${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
                 </c:if>
+                <a class="navbar-item navbar-display" href="${contactUrl}">Contact Us</a>
+                <c:choose>
+                    <c:when test="${not empty pageContext.request.remoteUser}">
+                        <c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
+                            <c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
+                        </c:url>
+                        <a class="navbar-item navbar-display" href="<c:out value='${logoutUrl}' />"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+                            <c:param name="target" value="${currentAbsoluteUrl}" />
+                        </c:url>
+                        <a class="navbar-item navbar-display" href="<c:out value='${loginUrl}' />"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
+                    </c:otherwise>
+                </c:choose>
             </div>
             <div class="search-row">
                 <div class="search">

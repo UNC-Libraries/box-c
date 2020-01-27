@@ -88,7 +88,7 @@
         </div>
     </c:if>
 
-    <div class="search-row">
+    <div class="search-row search-row-large">
         <div class="search search-large container">
             <form method="get" action="basicSearch" class="search">
                 <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">

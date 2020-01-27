@@ -68,14 +68,13 @@
         }
 
         .display-note-btn {
-            margin-left: 0;
+            margin-left: 5px;
             margin-right: 8px;
-            margin-top: 0;
+            margin-top: -3px;
         }
 
         p {
             font-size: 18px;
-            margin: -7px 0 0 0;
             padding-left: 0;
             padding-right: 0;
         }
