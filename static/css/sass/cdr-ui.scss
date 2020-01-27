@@ -26,7 +26,12 @@ a {
   background-color: $unc-blue;
 }
 
-.menu-row, .banner-row, .search-row, footer {
+.logo-row-small {
+  background-color: $unc-blue;
+  padding: 5px 0;
+}
+
+.menu-row, .banner-row, footer {
   background-color: $unc-navy;
 }
 
@@ -38,10 +43,10 @@ a {
   padding: 12px 0; // 1rem = 16px
 }
 
-.logo {
+.logo, .logo-small {
   @include mobile-margin;
   a {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     max-width: 550px;
   }
@@ -55,10 +60,20 @@ a {
     display: inline-block;
     margin-left: 24px;
     font-family: 'Libre Baskerville', serif;
-    font-size: 1.25rem;
+    font-size: 1.7rem;
     font-style: italic;
     color: white;
     line-height: 1.5;
+  }
+}
+
+.logo-small {
+  img {
+    max-width: 150px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
   }
 }
 
@@ -70,6 +85,42 @@ a {
 
   .is-active {
     background-color: $unc-navy;
+  }
+}
+
+.menu-row-small {
+  background-color: $unc-navy;
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.menu-row-small.navbar {
+  box-shadow: none;
+
+  a {
+    color: white;
+
+    &:hover {
+      background-color: transparent;
+      color: #777777;
+    }
+  }
+
+  button {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    height: 35px;
+    margin-left: -1px;
+    margin-top: 1px;
+  }
+
+  .navbar-item {
+    padding: .35rem;
+  }
+
+  .navbar-menu.is-active {
+    background-color: white;
+    margin-top: 65px;
+    position: absolute;
   }
 }
 
@@ -117,9 +168,11 @@ header {
       overflow: hidden;
     }
     input {
-      width: 100%;
-      padding: 8px;
+      border-bottom-left-radius: 5px;
+      border-top-left-radius: 5px;
       font-size: 1rem;
+      padding: 7px;
+      width: 100%;
     }
     button {
       margin: 0 12px 0 12px;
@@ -259,6 +312,62 @@ footer {
     font-size: 16px;
     &:hover, &:active {
       color: $unc-blue;
+    }
+  }
+}
+
+@media only screen and (min-width: 1088px) {
+  .menu-row-small.navbar > .container {
+    .navbar-menu {
+      margin-right: inherit;
+    }
+  }
+}
+
+@media only screen and (max-width: 1087px) {
+  .menu-row-small.navbar > .container {
+    display: inline-flex;
+    flex-direction: row-reverse;
+  }
+
+  .menu-row-small.navbar {
+    .navbar-menu.is-active {
+      background-color: white;
+      margin-top: 65px;
+      position: absolute;
+      z-index: 25;
+    }
+  }
+  .search-row {
+    width: 90%;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .menu-row-small {
+    .search {
+      display: block;
+
+      button {
+        border-radius: 5px;
+        margin-right: 0;
+        margin-top: 5px;
+      }
+
+      a {
+        margin-bottom: 5px;
+        margin-right: -15px;
+      }
+
+      a, button {
+        float: right;
+      }
+    }
+  }
+
+  .menu-row-small.navbar {
+    .navbar-menu.is-active {
+      margin-top: 50px;
     }
   }
 }$unc-blue: #4B9CD3;

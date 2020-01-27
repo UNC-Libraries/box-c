@@ -33,7 +33,14 @@
 <c:set var="gaCommands" value="" scope="request" />
 <div id="pagewrap">
 	<div id="pagewrap_inside">
-		<c:import url="common/header.jsp" />
+		<c:choose>
+			<c:when test="${contentPage.equals('frontPage.jsp')}">
+				<c:import url="common/header.jsp" />
+			</c:when>
+			<c:otherwise>
+				<c:import url="common/headerSmall.jsp" />
+			</c:otherwise>
+		</c:choose>
 		<div id="content">
 			<c:choose>
 				<c:when test="${not empty contentPage}">
