@@ -17,31 +17,34 @@ package edu.unc.lib.dcr.migration.premis;
 
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INGESTION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INGEST_AGENT;
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INITIATOR_ROLE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.METS_NORMAL_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.NORMALIZATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATE_MODS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.EVENT_DATE;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.EVENT_DATE_UTC;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addAgent;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addEvent;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.deserializeLogFile;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.listEventResources;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * @author bbpennel
@@ -59,9 +62,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void validVirusEvent() throws Exception {
         String detail = "28 files scanned for viruses.";
-        addEvent(premisDoc, VIRUS_CHECK_TYPE, detail, EVENT_DATE, VIRUS_AGENT);
+        Element eventEl = addEvent(premisDoc, VIRUS_CHECK_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, VIRUS_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -77,9 +81,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void validIngestAsPidEvent() throws Exception {
         String detail = "ingested as PID:uuid:" + objPid.getId();
-        addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE, INGEST_AGENT);
+        Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, INGEST_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -95,9 +100,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void invalidIngestAsPidEvent() throws Exception {
         String detail = "So many things got ingested";
-        addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE, INGEST_AGENT);
+        Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, INGEST_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -107,9 +113,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void discardModsValidationEvent() throws Exception {
         String detail = "10 MODS records validated";
-        addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE, VALIDATE_MODS_AGENT);
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, VALIDATE_MODS_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -119,9 +126,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void validMetsValidationEvent() throws Exception {
         String detail = "METS schema(s) validated";
-        addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE, METS_NORMAL_AGENT);
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, METS_NORMAL_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -137,9 +145,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void unknownValidationEvent() throws Exception {
         String detail = "Validating the data";
-        addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE, "validator");
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, "validator");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -149,9 +158,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void invalidNormalizationEvent() throws Exception {
         String detail = "Validating the data";
-        addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE, "validator");
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, "validator");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -161,9 +171,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void validPidsAssignedToObjectsEvent() throws Exception {
         String detail = "Assigned PIDs to 3 objects";
-        addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE, METS_NORMAL_AGENT);
+        Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, METS_NORMAL_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -180,9 +191,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     public void validFormatNormalizationEvent() throws Exception {
         String detail = "Normalized deposit package from http://cdr.unc.edu/METS/profiles/Simple"
                 + " to http://cdr.unc.edu/BAGIT/profiles/N3";
-        addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE, METS_NORMAL_AGENT);
+        Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, METS_NORMAL_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -198,9 +210,10 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void unknownNormalizationEvent() throws Exception {
         String detail = "Normalizing the things";
-        addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE, "normal_agent");
+        Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, "normal_agent");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -209,7 +222,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
 
     @Test
     public void noEvents() throws Exception {
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -219,9 +232,9 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void unknownEventType() throws Exception {
         String detail = "Preserving this thing";
-        addEvent(premisDoc, "Preserveit", detail, EVENT_DATE, "secret_agent");
+        addEvent(premisDoc, "Preserveit", detail, EVENT_DATE);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -232,15 +245,18 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     public void multipleEvents() throws Exception {
         String detail1 = "Normalized deposit package from http://cdr.unc.edu/METS/profiles/Simple"
                 + " to http://cdr.unc.edu/BAGIT/profiles/N3";
-        addEvent(premisDoc, NORMALIZATION_TYPE, detail1, EVENT_DATE, METS_NORMAL_AGENT);
+        Element eventEl1 = addEvent(premisDoc, NORMALIZATION_TYPE, detail1, EVENT_DATE);
+        addInitiatorAgent(eventEl1, METS_NORMAL_AGENT);
         String detail2 = "Assigned PIDs to 24 objects";
         String date2 = "2015-10-19T22:11:22.000Z";
-        addEvent(premisDoc, NORMALIZATION_TYPE, detail2, date2, METS_NORMAL_AGENT);
+        Element eventEl2 = addEvent(premisDoc, NORMALIZATION_TYPE, detail2, date2);
+        addInitiatorAgent(eventEl2, METS_NORMAL_AGENT);
         String detail3 = "ingested as PID:uuid:" + objPid.getId();
         String date3 = "2015-10-19T22:41:01.000Z";
-        addEvent(premisDoc, INGESTION_TYPE, detail3, date3, INGEST_AGENT);
+        Element eventEl3 = addEvent(premisDoc, INGESTION_TYPE, detail3, date3);
+        addInitiatorAgent(eventEl3, INGEST_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -262,11 +278,12 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
     @Test
     public void multipleEventTypes() throws Exception {
         String detail = "ingested as PID:uuid:" + objPid.getId();
-        addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE, "uuid:c52dc745-4b8b-4d87-af32-21348915c377");
+        Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
+        addInitiatorAgent(eventEl, "uuid:c52dc745-4b8b-4d87-af32-21348915c377");
         premisDoc.getRootElement().getChild("event", PREMIS_V2_NS)
             .addContent(new Element("eventType", PREMIS_V2_NS).setText(NORMALIZATION_TYPE));
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -285,33 +302,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEquals(agentName, agentResc.getProperty(Premis.hasAgentName).getString());
     }
 
-    private void addEvent(Document doc, String type, String detail, String dateTime, String agent) {
-        Element premisEl = doc.getRootElement();
-
-        Element eventEl = new Element("event", PREMIS_V2_NS);
-        premisEl.addContent(eventEl);
-
-        String eventId = "urn:uuid:" + UUID.randomUUID().toString();
-        eventEl.addContent(new Element("eventIdentifier", PREMIS_V2_NS)
-                .addContent(new Element("eventIdentifierType", PREMIS_V2_NS).setText("URN"))
-                .addContent(new Element("eventIdentifierValue", PREMIS_V2_NS).setText(eventId)));
-
-        if (type != null) {
-            eventEl.addContent(new Element("eventType", PREMIS_V2_NS).setText(type));
-        }
-
-        if (detail != null) {
-            eventEl.addContent(new Element("eventDetail", PREMIS_V2_NS).setText(detail));
-        }
-
-        if (dateTime == null) {
-            dateTime = DateTimeUtil.formatDateToUTC(new Date());
-        }
-        eventEl.addContent(new Element("eventDateTime", PREMIS_V2_NS).setText(dateTime));
-
-        eventEl.addContent(new Element("linkingAgentIdentifier", PREMIS_V2_NS)
-                .addContent(new Element("linkingAgentIdentifierType", PREMIS_V2_NS).setText("PID"))
-                .addContent(new Element("linkingAgentRole", PREMIS_V2_NS).setText("Initiator"))
-                .addContent(new Element("linkingAgentIdentifierValue", PREMIS_V2_NS).setText(agent)));
+    private void addInitiatorAgent(Element eventEl, String agent) {
+        addAgent(eventEl, "PID", INITIATOR_ROLE, agent);
     }
 }

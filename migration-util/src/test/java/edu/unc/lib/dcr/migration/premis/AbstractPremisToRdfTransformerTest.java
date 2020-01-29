@@ -15,25 +15,17 @@
  */
 package edu.unc.lib.dcr.migration.premis;
 
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
-import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
-import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.createPremisDoc;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,10 +43,6 @@ import edu.unc.lib.dl.rdf.Premis;
  *
  */
 public abstract class AbstractPremisToRdfTransformerTest {
-
-    protected static final String EVENT_DATE = "2015-10-19T17:06:22";
-    protected static final String EVENT_DATE_UTC = formatDateToUTC(parseUTCToDate(EVENT_DATE));
-
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
@@ -77,32 +65,8 @@ public abstract class AbstractPremisToRdfTransformerTest {
         premisLogger = new FilePremisLogger(objPid, logFile, pidMinter);
     }
 
-    protected Model deserializeLogFile(File logFile) throws IOException {
-        return createModel(new FileInputStream(logFile), "N-TRIPLE");
-    }
-
-    protected List<Resource> listEventResources(PID pid, Model model) {
-        Resource objResc = model.getResource(objPid.getRepositoryPath());
-
-        return objResc.listProperties(Premis.hasEvent).toList().stream()
-                .map(Statement::getResource)
-                .collect(toList());
-    }
-
     protected PID makePid() {
         return PIDs.get(UUID.randomUUID().toString());
-    }
-
-    protected Document createPremisDoc(PID pid) {
-        Document doc = new Document();
-        doc.addContent(new Element("premis", PREMIS_V2_NS)
-                .addContent(new Element("object", PREMIS_V2_NS)
-                        .setAttribute("type", "representation", XSI_NS)
-                        .addContent(new Element("objectIdentifier", PREMIS_V2_NS)
-                                .addContent(new Element("objectIdentifierType", PREMIS_V2_NS).setText("PID"))
-                                .addContent(new Element("objectIdentifierValue", PREMIS_V2_NS)
-                                        .setText("uuid:" + pid.getId())))));
-        return doc;
     }
 
     protected Resource getResourceByEventDate(List<Resource> rescs, String eventDate) {

@@ -31,6 +31,14 @@ import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATE_MODS_AG
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.EVENT_DATE;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.EVENT_DATE_UTC;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addAgent;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addEvent;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addEventOutcome;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.addLinkingObject;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.deserializeLogFile;
+import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.listEventResources;
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentAuthorizor;
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentExecutor;
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentImplementor;
@@ -39,29 +47,23 @@ import static edu.unc.lib.dl.rdf.PremisAgentType.Software;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.servicesAPI;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * @author bbpennel
- *
  */
 public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransformerTest {
 
@@ -78,7 +80,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, VALIDATE_MODS_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -91,7 +93,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "Name", INITIATOR_ROLE, "Repository");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -104,7 +106,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, VALIDATE_MODS_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -117,7 +119,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "Name", INITIATOR_ROLE, "uuid:ff4fac12-0300-474b-841f-4032d041e333");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -137,7 +139,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         addAgent(eventEl, "PID", INITIATOR_ROLE, VIRUS_AGENT);
         addAgent(eventEl, "Name", "ClamAV (ClamAV 0.100.2/25220/Tue Dec 18 21:49:44 2018)", SOFTWARE_ROLE);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -156,7 +158,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -170,7 +172,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -183,7 +185,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "nrmlz");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -196,7 +198,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, NORMALIZATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, METS_NORMAL_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -215,7 +217,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, INGEST_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -234,7 +236,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -253,7 +255,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, INGEST_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -267,7 +269,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, MIGRATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -286,7 +288,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, MIGRATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "username");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -305,7 +307,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, MIGRATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", "Initiator", "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -324,7 +326,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, MIGRATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "username");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -337,7 +339,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, DELETION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -356,7 +358,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, DELETION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -369,7 +371,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, CREATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "username");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -389,7 +391,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         addAgent(eventEl, "Name", "Creator", "CDR Workbench");
         addAgent(eventEl, "Name", "Creator", "username");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -409,7 +411,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, CREATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "creator");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -429,7 +431,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         String linkingObj2 = "myobj/MD_EVENTS";
         addLinkingObject(eventEl, "PID", linkingObj2);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -452,7 +454,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         addEventOutcome(eventEl, "Replicated", eventNote);
         addAgent(eventEl, "Class", "Software", FIXITY_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -472,7 +474,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         String linkingObj1 = "/path/to/missing/myobj+MD_EVENTS+MD_EVENTS.0";
         addLinkingObject(eventEl, "iRODS object path", linkingObj1);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -495,7 +497,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         addEventOutcome(eventEl, "FAILED", eventNote);
         addAgent(eventEl, "Class", "Software", FIXITY_AGENT);
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -526,7 +528,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl3 = addEvent(premisDoc, MIGRATION_TYPE, detail3, date3);
         addAgent(eventEl3, "PID", "Initiator", "uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -550,7 +552,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
 
     @Test
     public void noEvents() throws Exception {
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -562,7 +564,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, "other_event", "details", EVENT_DATE);
         addAgent(eventEl, "Class", "Software", "dcr");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
@@ -574,45 +576,11 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, null, "Doing something", EVENT_DATE);
         addAgent(eventEl, "Class", "Software", "secret_agent");
 
-        transformer.transform();
+        transformer.compute();
 
         Model model = deserializeLogFile(logFile);
         List<Resource> eventRescs = listEventResources(objPid, model);
         assertEquals(0, eventRescs.size());
-    }
-
-    private Element addEvent(Document doc, String type, String detail, String dateTime) {
-        Element premisEl = doc.getRootElement();
-
-        Element eventEl = new Element("event", PREMIS_V2_NS);
-        premisEl.addContent(eventEl);
-
-        String eventId = "urn:uuid:" + UUID.randomUUID().toString();
-        eventEl.addContent(new Element("eventIdentifier", PREMIS_V2_NS)
-                .addContent(new Element("eventIdentifierType", PREMIS_V2_NS).setText("URN"))
-                .addContent(new Element("eventIdentifierValue", PREMIS_V2_NS).setText(eventId)));
-
-        if (type != null) {
-            eventEl.addContent(new Element("eventType", PREMIS_V2_NS).setText(type));
-        }
-
-        if (detail != null) {
-            eventEl.addContent(new Element("eventDetail", PREMIS_V2_NS).setText(detail));
-        }
-
-        if (dateTime == null) {
-            dateTime = DateTimeUtil.formatDateToUTC(new Date());
-        }
-        eventEl.addContent(new Element("eventDateTime", PREMIS_V2_NS).setText(dateTime));
-
-        return eventEl;
-    }
-
-    private void addAgent(Element eventEl, String agentType, String agentRole, String agentVal) {
-        eventEl.addContent(new Element("linkingAgentIdentifier", PREMIS_V2_NS)
-                .addContent(new Element("linkingAgentIdentifierType", PREMIS_V2_NS).setText(agentType))
-                .addContent(new Element("linkingAgentRole", PREMIS_V2_NS).setText(agentRole))
-                .addContent(new Element("linkingAgentIdentifierValue", PREMIS_V2_NS).setText(agentVal)));
     }
 
     private void assertAgent(String agentName, Resource agentType, Resource eventResc) {
@@ -630,18 +598,5 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
 
         fail(String.format("No %s relation to agent of type %s with value %s present",
                 hasProperty, agentType, agentName));
-    }
-
-    private void addEventOutcome(Element eventEl, String outcome, String note) {
-        eventEl.addContent(new Element("eventOutcomeInformation", PREMIS_V2_NS)
-                .addContent(new Element("eventOutcome", PREMIS_V2_NS).setText(outcome))
-                .addContent(new Element("eventOutcomeDetail", PREMIS_V2_NS)
-                        .addContent(new Element("eventOutcomeDetailNote", PREMIS_V2_NS).setText(note))));
-    }
-
-    private void addLinkingObject(Element eventEl, String idType, String idVal) {
-        eventEl.addContent(new Element("linkingObjectIdentifier", PREMIS_V2_NS)
-                .addContent(new Element("linkingObjectIdentifierType", PREMIS_V2_NS).setText(idType))
-                .addContent(new Element("linkingObjectIdentifierValue", PREMIS_V2_NS).setText(idVal)));
     }
 }
