@@ -15,6 +15,12 @@
  */
 package edu.unc.lib.dcr.migration;
 
+import static java.lang.String.format;
+
+import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Constants for the migration itself
  *
@@ -26,5 +32,17 @@ public class MigrationConstants {
     private MigrationConstants() {
     }
 
+    public static final Pattern UUID_PATTERN = Pattern.compile(
+            ".*\\b([0-9oa-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\b.*");
+
     public static final String OUTPUT_LOGGER = "output";
+
+    public static String extractUUIDFromPath(Path path) {
+        Matcher pidMatcher = UUID_PATTERN.matcher(path.toString());
+        if (pidMatcher.matches()) {
+            return pidMatcher.group(1);
+        } else {
+            throw new IllegalArgumentException(format("Path %s does not contain a UUID", path.toString()));
+        }
+    }
 }

@@ -32,6 +32,7 @@ import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.servicesA
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Resource;
@@ -46,10 +47,13 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
- * @author bbpennel
+ * Transforms a PREMIS event log for a content object
  *
+ * @author bbpennel
  */
 public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransformer {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Logger log = getLogger(ContentPremisToRdfTransformer.class);
 
@@ -57,8 +61,13 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
         super(pid, premisLogger, doc);
     }
 
-    public void transform() {
-        List<Element> eventEls = doc.getRootElement().getChildren("event", PREMIS_V2_NS);
+    public ContentPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Path docPath) {
+        super(pid, premisLogger, docPath);
+    }
+
+    @Override
+    public void compute() {
+        List<Element> eventEls = getDocument().getRootElement().getChildren("event", PREMIS_V2_NS);
 
         for (Element eventEl: eventEls) {
             List<String> eventTypes = getEventTypes(eventEl);

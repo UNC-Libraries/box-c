@@ -20,11 +20,14 @@ import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
+import static java.nio.file.Files.newOutputStream;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +36,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.jgroups.util.UUID;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -114,6 +118,13 @@ public class PremisEventXMLHelpers {
 
     public static Model deserializeLogFile(File logFile) throws IOException {
         return createModel(new FileInputStream(logFile), "N-TRIPLE");
+    }
+
+    public static Path serializeXMLFile(Path destDir, PID pid, Document doc) throws IOException {
+        Path xmlPath = destDir.resolve(pid.getId() + ".xml");
+        OutputStream outStream = newOutputStream(xmlPath);
+        new XMLOutputter().output(doc, outStream);
+        return xmlPath;
     }
 
     public static List<Resource> listEventResources(PID pid, Model model) {

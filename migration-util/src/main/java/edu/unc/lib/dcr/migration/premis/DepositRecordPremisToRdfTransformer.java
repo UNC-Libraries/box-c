@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositSe
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,16 +42,24 @@ import edu.unc.lib.dl.rdf.Premis;
  *
  */
 public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTransformer {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = getLogger(DepositRecordPremisToRdfTransformer.class);
 
-    private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile("Normalized deposit package from ([^ ]+) to.*");
+    private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile(
+            "Normalized deposit package from ([^ ]+) to.*");
 
     public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
         super(pid, premisLogger, doc);
     }
 
-    public void transform() {
-        List<Element> eventEls = doc.getRootElement().getChildren("event", PREMIS_V2_NS);
+    public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Path docPath) {
+        super(pid, premisLogger, docPath);
+    }
+
+    @Override
+    public void compute() {
+        List<Element> eventEls = getDocument().getRootElement().getChildren("event", PREMIS_V2_NS);
 
         for (Element eventEl: eventEls) {
             List<String> eventTypes = getEventTypes(eventEl);

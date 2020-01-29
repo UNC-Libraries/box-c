@@ -19,37 +19,66 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.RecursiveAction;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.URIUtil;
+import edu.unc.lib.dl.xml.SecureXMLFactory;
 
 /**
  * @author bbpennel
  *
  */
-public abstract class AbstractPremisToRdfTransformer {
+public abstract class AbstractPremisToRdfTransformer extends RecursiveAction implements PremisToRdfTransformer {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = getLogger(AbstractPremisToRdfTransformer.class);
 
     protected PID pid;
     protected PremisLogger premisLogger;
     protected Document doc;
+    protected Path docPath;
 
     protected AbstractPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
         this.pid = pid;
         this.premisLogger = premisLogger;
         this.doc = doc;
+    }
+
+    protected AbstractPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Path docPath) {
+        this.pid = pid;
+        this.premisLogger = premisLogger;
+        this.docPath = docPath;
+    }
+
+    protected Document getDocument() {
+        if (doc != null) {
+            return doc;
+        }
+        SAXBuilder sb = SecureXMLFactory.createSAXBuilder();
+        try {
+            doc = sb.build(docPath.toFile());
+        } catch (JDOMException | IOException e) {
+            throw new RepositoryException("Failed to load PREMIS document for " + pid, e);
+        }
+        return doc;
     }
 
     protected List<String> getEventTypes(Element eventEl) {
