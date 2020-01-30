@@ -18,12 +18,13 @@ package edu.unc.lib.dcr.migration;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
+import edu.unc.lib.dcr.migration.premis.PremisTransformationService;
 import edu.unc.lib.dcr.migration.premis.TransformContentPremisService;
 import edu.unc.lib.dcr.migration.premis.TransformDepositPremisService;
-import edu.unc.lib.dcr.migration.premis.PremisTransformationService;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 /**
@@ -34,20 +35,21 @@ import picocli.CommandLine.Parameters;
 @Command(name = "transform_premis", aliases = {"tp"},
     description = "Transform a list of PREMIS 2 XML documents into PREMIS 3 serialized as n-triples")
 public class TransformPremis implements Callable<Integer> {
+    @Option(names = {"-d", "--deposits"},
+            description = "Transform PREMIS events for deposit records."
+                    + " If not provided, default to assuming subjects are content objects")
+    private boolean depositRecords;
 
-    private static final String DEPOSIT_RECORD_TYPE = "deposit";
-    private static final String CONTENT_TYPE = "content";
+    @Option(names = {"--no-hash-nesting"}, negatable = true,
+            description = "Nest transformed logs in hashed subdirectories. Default: true")
+    private boolean hashNesting = true;
 
     @Parameters(index = "0",
-            description = "Type of objects having their PREMIS transformed. Options: deposit or content")
-    private String objectType;
-
-    @Parameters(index = "1",
             description = "Path to file listing PREMIS documents to transform."
                     + " The file names must include the PID of the object they describe.")
     private Path premisListPath;
 
-    @Parameters(index = "2", description = "Path where transformed logs will be stored")
+    @Parameters(index = "1", description = "Path where transformed logs will be stored")
     private Path outputPath;
 
     @Override
@@ -56,15 +58,14 @@ public class TransformPremis implements Callable<Integer> {
         RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
 
         PremisTransformationService transformationService;
-        if (DEPOSIT_RECORD_TYPE.equals(objectType)) {
+        if (depositRecords) {
             transformationService = new TransformDepositPremisService(premisListPath, outputPath);
-        } else if (CONTENT_TYPE.equals(objectType)) {
-            transformationService = new TransformContentPremisService(premisListPath, outputPath);
         } else {
-            throw new IllegalArgumentException("Invalid object type " + objectType);
+            transformationService = new TransformContentPremisService(premisListPath, outputPath);
         }
         transformationService.setPidMinter(pidMinter);
         transformationService.setPremisLoggerFactory(premisLoggerFactory);
+        transformationService.setHashNesting(hashNesting);
 
         return transformationService.perform();
     }

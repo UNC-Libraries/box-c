@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dcr.migration.premis;
 
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INGESTION_TYPE;
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INGEST_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INITIATOR_ROLE;
-import static edu.unc.lib.dcr.migration.premis.Premis2Constants.METS_NORMAL_AGENT;
-import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
 import static edu.unc.lib.dcr.migration.premis.PremisTransformationService.getTransformedPremisPath;
@@ -56,7 +56,7 @@ import edu.unc.lib.dl.rdf.Premis;
 /**
  * @author bbpennel
  */
-public class TransformDepositPremisServiceTest {
+public class TransformContentPremisServiceTest {
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -68,7 +68,7 @@ public class TransformDepositPremisServiceTest {
     private RepositoryPIDMinter pidMinter;
     private PremisLoggerFactory premisLoggerFactory;
 
-    private TransformDepositPremisService service;
+    private TransformContentPremisService service;
 
     @Before
     public void setup() throws Exception {
@@ -79,18 +79,18 @@ public class TransformDepositPremisServiceTest {
         originalLogsPath = tmpFolder.newFolder("originals").toPath();
         premisListPath = tmpFolder.newFile("premis_list.txt").toPath();
 
-        service = new TransformDepositPremisService(premisListPath, outputPath);
+        service = new TransformContentPremisService(premisListPath, outputPath);
         service.setPidMinter(pidMinter);
         service.setPremisLoggerFactory(premisLoggerFactory);
     }
 
     @Test
     public void transformMultipleObjectEvents() throws Exception {
-        PID pid1 = pidMinter.mintDepositRecordPid();
+        PID pid1 = pidMinter.mintContentPid();
         createLogWithVirusEvent(pid1);
 
-        PID pid2 = pidMinter.mintDepositRecordPid();
-        createLogWithMetsEvent(pid2);
+        PID pid2 = pidMinter.mintContentPid();
+        createLogWithIngestionEvent(pid2);
 
         buildPremisListFile(originalLogsPath, premisListPath);
 
@@ -104,20 +104,20 @@ public class TransformDepositPremisServiceTest {
 
         Model obj2Model = readTransformedLog(outputPath, pid2);
         List<Resource> obj2Events = listEventResources(pid2, obj2Model);
-        assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Validation));
+        assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Ingestion));
     }
 
     @Test
     public void transformOneFailure() throws Exception {
-        PID pid1 = pidMinter.mintDepositRecordPid();
+        PID pid1 = pidMinter.mintContentPid();
         createLogWithVirusEvent(pid1);
 
-        PID pid2 = pidMinter.mintDepositRecordPid();
+        PID pid2 = pidMinter.mintContentPid();
         Path xmlPath = originalLogsPath.resolve(pid2.getId() + ".xml");
         FileUtils.write(xmlPath.toFile(), "Super bad", UTF_8);
 
-        PID pid3 = pidMinter.mintDepositRecordPid();
-        createLogWithMetsEvent(pid3);
+        PID pid3 = pidMinter.mintContentPid();
+        createLogWithIngestionEvent(pid3);
 
         buildPremisListFile(originalLogsPath, premisListPath);
 
@@ -129,52 +129,30 @@ public class TransformDepositPremisServiceTest {
         assertEquals(1, obj1Events.size());
         assertTrue(obj1Events.get(0).hasProperty(Premis.hasEventType, Premis.VirusCheck));
 
-        Model obj3Model = readTransformedLog(outputPath, pid3);
-        List<Resource> obj3Events = listEventResources(pid3, obj3Model);
-        assertTrue(obj3Events.get(0).hasProperty(Premis.hasEventType, Premis.Validation));
+        Model obj2Model = readTransformedLog(outputPath, pid3);
+        List<Resource> obj2Events = listEventResources(pid3, obj2Model);
+        assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Ingestion));
 
         Path failedPath = getTransformedPremisPath(outputPath, pid2);
         assertFalse("Transformed log for invalid log should not exist",
                 Files.exists(failedPath));
     }
 
-    @Test
-    public void transformManyObjects() throws Exception {
-        for (int i = 0; i < 500; i++) {
-            PID pid = pidMinter.mintDepositRecordPid();
-            createLogWithVirusEvent(pid);
-        }
-        buildPremisListFile(originalLogsPath, premisListPath);
-
-        int result = service.perform();
-        assertEquals(0, result);
-
-        long numTransformed = Files.walk(outputPath)
-                .filter(Files::isRegularFile)
-                .count();
-
-        assertEquals(500, numTransformed);
-    }
-
     private void createLogWithVirusEvent(PID pid) throws Exception {
         Document premisDoc = createPremisDoc(pid);
-        String detail = "28 files scanned for viruses.";
-        Element eventEl1 = addEvent(premisDoc, VIRUS_CHECK_TYPE, detail, EVENT_DATE);
-        addInitiatorAgent(eventEl1, VIRUS_AGENT);
+        String detail = "File passed pre-ingest scan for viruses.";
+        Element eventEl = addEvent(premisDoc, VIRUS_CHECK_TYPE, detail, EVENT_DATE);
+        addAgent(eventEl, "PID", INITIATOR_ROLE, VIRUS_AGENT);
 
         serializeXMLFile(originalLogsPath, pid, premisDoc);
     }
 
-    private void createLogWithMetsEvent(PID pid) throws Exception {
+    private void createLogWithIngestionEvent(PID pid) throws Exception {
         Document premisDoc = createPremisDoc(pid);
-        String detail = "METS schema(s) validated";
-        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
-        addInitiatorAgent(eventEl, METS_NORMAL_AGENT);
+        String detail = "ingested as PID:uuid:" + pid.getId();
+        Element eventEl = addEvent(premisDoc, INGESTION_TYPE, detail, EVENT_DATE);
+        addAgent(eventEl, "PID", INITIATOR_ROLE, INGEST_AGENT);
 
         serializeXMLFile(originalLogsPath, pid, premisDoc);
-    }
-
-    private void addInitiatorAgent(Element eventEl, String agent) {
-        addAgent(eventEl, "PID", INITIATOR_ROLE, agent);
     }
 }

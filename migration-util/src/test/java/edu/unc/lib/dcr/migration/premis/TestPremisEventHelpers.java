@@ -15,11 +15,14 @@
  */
 package edu.unc.lib.dcr.migration.premis;
 
+import static edu.unc.lib.dcr.migration.premis.PremisTransformationService.getTransformedPremisPath;
 import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.newOutputStream;
 import static java.util.stream.Collectors.toList;
 
@@ -27,10 +30,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -49,12 +55,12 @@ import edu.unc.lib.dl.util.DateTimeUtil;
  * @author bbpennel
  *
  */
-public class PremisEventXMLHelpers {
+public class TestPremisEventHelpers {
 
     public static final String EVENT_DATE = "2015-10-19T17:06:22";
     public static final String EVENT_DATE_UTC = formatDateToUTC(parseUTCToDate(EVENT_DATE));
 
-    private PremisEventXMLHelpers() {
+    private TestPremisEventHelpers() {
     }
 
     public static Document createPremisDoc(PID pid) {
@@ -121,7 +127,7 @@ public class PremisEventXMLHelpers {
     }
 
     public static Path serializeXMLFile(Path destDir, PID pid, Document doc) throws IOException {
-        Path xmlPath = destDir.resolve(pid.getId() + ".xml");
+        Path xmlPath = destDir.resolve("uuid_" + pid.getId() + ".xml");
         OutputStream outStream = newOutputStream(xmlPath);
         new XMLOutputter().output(doc, outStream);
         return xmlPath;
@@ -133,5 +139,22 @@ public class PremisEventXMLHelpers {
         return objResc.listProperties(Premis.hasEvent).toList().stream()
                 .map(Statement::getResource)
                 .collect(toList());
+    }
+
+    public static void buildPremisListFile(Path originalLogsPath, Path premisListPath) throws IOException {
+        try (Stream<Path> walk = Files.walk(originalLogsPath)) {
+            List<String> result = walk.filter(Files::isRegularFile)
+                    .map(Path::toString)
+                    .collect(toList());
+
+            FileUtils.write(premisListPath.toFile(),
+                    String.join("\n", result),
+                    UTF_8);
+        }
+    }
+
+    public static Model readTransformedLog(Path outputPath, PID pid) throws IOException{
+        Path premisPath = getTransformedPremisPath(outputPath, pid);
+        return createModel(newInputStream(premisPath), "N-TRIPLE");
     }
 }

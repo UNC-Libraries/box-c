@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 
+import edu.unc.lib.dl.rdf.Premis;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -34,15 +35,15 @@ import picocli.CommandLine.Command;
 @Command(subcommands = {
         TransformPremis.class
     })
-public class MigrationMain implements Callable<Integer> {
+public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
 
-    private MigrationMain() {
+    private MigrationCLI() {
     }
 
     @Override
     public Integer call() throws Exception {
-        output.info(BannerUtility.getBanner());
+        output.info("{} {}", BannerUtility.getBanner(), Premis.VirusCheck);
         return 0;
     }
 
@@ -53,7 +54,7 @@ public class MigrationMain implements Callable<Integer> {
     }
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new MigrationMain()).execute(args);
+        int exitCode = new CommandLine(new MigrationCLI()).execute(args);
         System.exit(exitCode);
     }
 

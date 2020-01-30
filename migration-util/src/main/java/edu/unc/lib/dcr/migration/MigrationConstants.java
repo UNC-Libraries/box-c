@@ -33,7 +33,7 @@ public class MigrationConstants {
     }
 
     public static final Pattern UUID_PATTERN = Pattern.compile(
-            ".*\\b([0-9oa-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})\\b.*");
+            ".*([0-9oa-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}).*");
 
     public static final String OUTPUT_LOGGER = "output";
 

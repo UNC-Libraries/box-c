@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dcr.migration.premis;
 
-import static edu.unc.lib.dcr.migration.premis.PremisEventXMLHelpers.createPremisDoc;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

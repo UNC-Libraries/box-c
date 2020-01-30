@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -51,6 +52,7 @@ public abstract class PremisTransformationService {
     protected PremisLoggerFactory premisLoggerFactory;
     protected Path premisListPath;
     protected Path outputPath;
+    protected boolean hashNesting = true;
 
     protected PremisTransformationService(Path premisListPath, Path outputPath) {
         pidMinter = new RepositoryPIDMinter();
@@ -72,8 +74,6 @@ public abstract class PremisTransformationService {
                 AbstractPremisToRdfTransformer transformer = makeTransformer(pid, premisPath);
                 return transformer.fork();
             }).collect(toList());
-
-
         } catch (IOException e) {
             output.error("Failed to read list file or create log directories", e);
             return 1;
@@ -81,10 +81,10 @@ public abstract class PremisTransformationService {
 
         // Wait for all results and output any failures
         for (ForkJoinTask<Void> future: futures) {
-            future.join();
-            Throwable resultEx = future.getException();
-            if (resultEx != null) {
-                output.error(resultEx.getMessage());
+            try {
+                future.join();
+            } catch (RepositoryException e) {
+                output.error(e.getMessage());
                 result = 1;
             }
         }
@@ -97,11 +97,30 @@ public abstract class PremisTransformationService {
     protected abstract AbstractPremisToRdfTransformer makeTransformer(PID pid, Path docPath);
 
     protected File getTransformedPremisFile(PID pid) throws IOException {
-        String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path premisDir = outputPath.resolve(hashing);
-        createDirectories(premisDir);
+        Path premisPath = getTransformedPremisPath(outputPath, pid, hashNesting);
+        File premisFile = premisPath.toFile();
+        createDirectories(premisFile.getParentFile().toPath());
 
-        return premisDir.resolve(pid.getId()).toFile();
+        return premisFile;
+    }
+
+    /**
+     * Get the path to where a transformed premis log file should be stored.
+     *
+     * @param outputPath
+     * @param pid
+     * @return
+     */
+    public static Path getTransformedPremisPath(Path outputPath, PID pid, boolean hashNesting) {
+        Path premisDir;
+        if (hashNesting) {
+            String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+            premisDir = outputPath.resolve(hashing);
+        } else {
+            premisDir = outputPath;
+        }
+
+        return premisDir.resolve(pid.getId() + ".nt");
     }
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
@@ -110,5 +129,9 @@ public abstract class PremisTransformationService {
 
     public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
         this.premisLoggerFactory = premisLoggerFactory;
+    }
+
+    public void setHashNesting(boolean hashNesting) {
+        this.hashNesting = hashNesting;
     }
 }
