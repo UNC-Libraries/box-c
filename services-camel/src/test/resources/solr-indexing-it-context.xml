@@ -80,6 +80,7 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setAccessControlFilter" />
+                <ref bean="setAccessStatusFilter" />
                 <ref bean="setRelationsFilter" />
             </list>
         </property>
