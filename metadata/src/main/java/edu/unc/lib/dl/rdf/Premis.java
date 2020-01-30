@@ -219,6 +219,9 @@ public class Premis {
     public static final Resource DigitalSignatureValidation = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/dig");
 
+    public static final Resource Dissemination = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/dis");
+
     public static final Resource EventRelatedAgentRole = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/exe");
 

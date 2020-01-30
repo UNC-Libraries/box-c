@@ -154,7 +154,7 @@ public class TestPremisEventHelpers {
     }
 
     public static Model readTransformedLog(Path outputPath, PID pid) throws IOException{
-        Path premisPath = getTransformedPremisPath(outputPath, pid);
+        Path premisPath = getTransformedPremisPath(outputPath, pid, true);
         return createModel(newInputStream(premisPath), "N-TRIPLE");
     }
 }

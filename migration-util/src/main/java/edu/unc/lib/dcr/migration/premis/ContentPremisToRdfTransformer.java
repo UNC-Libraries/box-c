@@ -27,6 +27,7 @@ import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.curatorsWorkbench;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
+import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.embargoUpdateService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.fixityCheckingService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.servicesAPI;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
@@ -162,8 +163,15 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
 
     private void addIngestionEvent(Element eventEl) {
         String eventDetail = getEventDetail(eventEl);
-        if (eventDetail == null
-                || !(eventDetail.contains("ingested as PID") || eventDetail.matches("added .* child object.*"))) {
+        if (eventDetail == null) {
+            log.error("No event details for ingestion event on {}", pid);
+            return;
+        }
+        if (eventDetail.contains("Updated through UI")) {
+            log.debug("Ignoring ingestion event with detail: {}", eventDetail);
+            return;
+        }
+        if (!(eventDetail.contains("ingested as PID") || eventDetail.matches("added .* child object.*"))) {
             log.error("Unknown ingestion event for {}, with detail: {}", pid, eventDetail);
             return;
         }
@@ -190,9 +198,21 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
             addEvent(eventEl, Premis.MetadataModification, eventDetail, isSoftwareAgent, agent);
             return;
         }
-        // Old move operations
+        // Rename representation 1
         if (eventDetail.contains("Object renamed to")) {
             addEvent(eventEl, Premis.FilenameChange, eventDetail, servicesAPI);
+            return;
+        }
+        // Rename representation 2
+        String eventOutcome = getEventOutcomeDetailNote(eventEl);
+        if (eventOutcome.contains("Object renamed successfully")) {
+            eventDetail = eventDetail.replaceFirst("Object", "Object renamed to");
+            addEvent(eventEl, Premis.FilenameChange, eventDetail, servicesAPI);
+            return;
+        }
+
+        if (eventDetail.contains("Embargo expiration")) {
+            addEvent(eventEl, Premis.Dissemination, eventDetail, embargoUpdateService);
             return;
         }
 

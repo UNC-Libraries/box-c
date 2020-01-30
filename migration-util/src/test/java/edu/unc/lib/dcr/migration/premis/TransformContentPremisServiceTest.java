@@ -133,7 +133,7 @@ public class TransformContentPremisServiceTest {
         List<Resource> obj2Events = listEventResources(pid3, obj2Model);
         assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Ingestion));
 
-        Path failedPath = getTransformedPremisPath(outputPath, pid2);
+        Path failedPath = getTransformedPremisPath(outputPath, pid2, true);
         assertFalse("Transformed log for invalid log should not exist",
                 Files.exists(failedPath));
     }

@@ -133,7 +133,7 @@ public class TransformDepositPremisServiceTest {
         List<Resource> obj3Events = listEventResources(pid3, obj3Model);
         assertTrue(obj3Events.get(0).hasProperty(Premis.hasEventType, Premis.Validation));
 
-        Path failedPath = getTransformedPremisPath(outputPath, pid2);
+        Path failedPath = getTransformedPremisPath(outputPath, pid2, true);
         assertFalse("Transformed log for invalid log should not exist",
                 Files.exists(failedPath));
     }
