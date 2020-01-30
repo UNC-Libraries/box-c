@@ -110,7 +110,6 @@ a {
 
 .menu-row-small {
   background-color: $unc-navy;
-  border-bottom: 1px solid #e7e7e7;
 }
 
 .search {
@@ -828,10 +827,8 @@ p.no-search-results {
     padding-left: 0;
   }
 
-  #is-admin-unit, #is-collection {
-    h2 {
-      margin-left: 25px;
-    }
+  h2 {
+    margin-left: 25px;
   }
 
   h2.link-list {
@@ -849,6 +846,12 @@ p.no-search-results {
   .relateditem {
     p {
       font-size: 16px;
+    }
+  }
+
+  .aggregate-info {
+    .is-narrow-tablet {
+      margin-left: 25px;
     }
   }
 }

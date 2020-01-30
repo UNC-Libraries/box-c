@@ -89,7 +89,6 @@ a {
 
 .menu-row-small {
   background-color: #13294B;
-  border-bottom: 1px solid #e7e7e7;
 }
 
 .search a {
@@ -732,7 +731,7 @@ p.no-search-results {
   margin: 0 20px 20px 0;
   padding-left: 0;
 }
-.onecol #is-admin-unit h2, .onecol #is-collection h2, .content-wrap.full_record #is-admin-unit h2, .content-wrap.full_record #is-collection h2 {
+.onecol h2, .content-wrap.full_record h2 {
   margin-left: 25px;
 }
 .onecol h2.link-list, .content-wrap.full_record h2.link-list {
@@ -745,6 +744,9 @@ p.no-search-results {
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
+}
+.onecol .aggregate-info .is-narrow-tablet, .content-wrap.full_record .aggregate-info .is-narrow-tablet {
+  margin-left: 25px;
 }
 
 .contentarea {
