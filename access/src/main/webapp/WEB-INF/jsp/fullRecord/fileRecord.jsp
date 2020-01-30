@@ -22,7 +22,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %> 
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="full_record_top">
-    <h1>${briefObject}</h1>
     <div class="collinfo_metadata browse-header column">
         <c:import url="fullRecord/navigationBar.jsp" />
         <div class="columns">

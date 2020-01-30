@@ -257,7 +257,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractCollectionId(Element mods, IndexDocumentBean idb) {
         List<?> identifiers = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> collectionId = new ArrayList<>();
+        String collectionId = null;
 
         if (identifiers != null && identifiers.size() > 0) {
             for (Object id: identifiers) {
@@ -270,16 +270,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
 
                 if (collection.getValue().equals("Collection Number") && type.getValue().equals("local")) {
-                    collectionId.add(aid.getValue());
+                    collectionId = aid.getValue();
+                    break;
                 }
             }
         }
 
-        if (collectionId.size() > 0) {
-            idb.setCollectionId(collectionId.get(0));
-        } else {
-            idb.setCollectionId(null);
-        }
+        idb.setCollectionId(collectionId);
     }
 
     private void extractFindingAidLink(Element mods, IndexDocumentBean idb) {

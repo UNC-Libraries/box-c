@@ -215,8 +215,8 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         if (resourceType.equals(searchSettings.resourceTypeFolder) ||
-                briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
-                briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+                resourceType.equals(searchSettings.resourceTypeFile) ||
+                resourceType.equals(searchSettings.resourceTypeAggregate)) {
             String parentCollection = briefObject.getParentCollection();
             SimpleIdRequest parentIdRequest = new SimpleIdRequest(parentCollection, principals);
             BriefObjectMetadataBean parentBriefObject = queryLayer.getObjectById(parentIdRequest);
