@@ -30,7 +30,7 @@ export default {
                     rows: this.rows_per_page,
                     start: 0,
                     sort: 'title,normal',
-                    browse_type: 'gallery-display',
+                    browse_type: 'list-display',
                     works_only: false
                 };
             }

@@ -7,6 +7,7 @@ const localVue = createLocalVue();
 localVue.use(VueRouter);
 const router = new VueRouter();
 const gallery = 'gallery-display';
+const list_display = 'list-display';
 let wrapper;
 
 describe('routeUtils', () => {
@@ -23,7 +24,7 @@ describe('routeUtils', () => {
             rows: 20,
             start: 0,
             sort: 'title,normal',
-            browse_type: gallery,
+            browse_type: list_display,
             works_only: false
         };
 
@@ -57,7 +58,7 @@ describe('routeUtils', () => {
             rows: 20,
             start: 0,
             sort: 'title,normal',
-            browse_type: gallery,
+            browse_type: list_display,
             works_only: false
         };
 

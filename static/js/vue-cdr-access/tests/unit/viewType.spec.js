@@ -28,19 +28,19 @@ describe('viewType.vue', () => {
 
     it("sets a browse type when clicked", () => {
         btns.at(1).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('list-display'));
+        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
 
         btns.at(0).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
+        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('list-display'));
     });
 
     it("sets the browse type in sessionStorage when clicked", () => {
         const KEY = 'browse-type';
         btns.at(1).trigger('click');
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'gallery-display');
 
         btns.at(0).trigger('click');
-        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'gallery-display');
+        expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
     });
 
     it("highlights the correct selected browse type", () => {
@@ -54,13 +54,13 @@ describe('viewType.vue', () => {
     });
 
     it("sets browse_type from url, if present", () => {
-        expect(wrapper.vm.browse_type).toEqual('gallery-display');
+        expect(wrapper.vm.browse_type).toEqual('list-display');
 
-        wrapper.vm.$router.currentRoute.query.browse_type = 'list-display';
+        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
         wrapper = shallowMount(viewType, {
             localVue,
             router
         });
-        expect(wrapper.vm.browse_type).toEqual('list-display');
+        expect(wrapper.vm.browse_type).toEqual('gallery-display');
     });
 });

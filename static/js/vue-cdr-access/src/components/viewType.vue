@@ -1,8 +1,8 @@
 <template>
     <div id="browse-display-type" class="display-wrapper">
         <div id="browse-btns" @click="setMode">
-            <i id="gallery-display" title="Gallery View" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
             <i id="list-display" title="List View" class="fas fa-th-list" :class="{'is-selected': !isGallery}"></i>
+            <i id="gallery-display" title="Gallery View" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
         </div>
     </div>
 </template>
@@ -16,7 +16,7 @@
 
         data() {
             return {
-                browse_type: 'gallery-display'
+                browse_type: 'list-display'
             }
         },
 
@@ -64,16 +64,17 @@
                 border: 1px solid lightgray;
                 border-radius: 5px;
                 color: lightgray;
-                font-size: 2.6rem;
+                font-size: 38px;
+                height: 50px;
                 padding: 5px;
             }
 
-            #gallery-display {
+            #list-display {
                 border-bottom-right-radius: 0;
                 border-top-right-radius: 0;
             }
 
-            #list-display {
+            #gallery-display {
                 border-bottom-left-radius: 0;
                 border-top-left-radius: 0;
             }

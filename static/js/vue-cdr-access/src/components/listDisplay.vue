@@ -6,7 +6,7 @@
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
                             <a :href="recordUrl(record.id, linkBrowseType)">
-                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-small">
+                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                                 <i v-else class="fa" :class="recordType(record.type)"></i>
                             </a>
                         </div>
@@ -141,7 +141,7 @@
 
         i {
             color: #007FAE;
-            font-size: 5rem;
+            font-size: 7rem;
         }
 
         img.thumbnail {

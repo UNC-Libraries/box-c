@@ -22,7 +22,7 @@
 
 <header>
     <div class="logo-row">
-        <div class="logo container">
+        <div class="logo logo-large container">
             <a href="/">
                 <img src="static/front/university-libraries-logo.png" alt="University Libraries Logo">
                 <h1>Digital Collections Repository</h1>
@@ -88,8 +88,8 @@
         </div>
     </c:if>
 
-    <div class="search-row">
-        <div class="search container">
+    <div class="search-row search-row-large">
+        <div class="search search-large container">
             <form method="get" action="basicSearch" class="search">
                 <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
                 <label for="hsearch_text">Search the Digital Collections Repository</label>

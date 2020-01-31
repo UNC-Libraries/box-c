@@ -2,8 +2,8 @@
     <div class="columns pagination is-mobile">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">&lt;&lt;</a></li>
-                <li v-else class="no-link start">&lt;&lt;</li>
+                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">Previous</a></li>
+                <li v-else class="no-link start">Previous</li>
                 <li id="first-page-link" v-if="currentPage >= pageLimit - 1 && totalPageCount > pageLimit"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
                                                            :class="{ current: currentPage === 1 }">1</a> ...</li>
                 <li v-for="(page, index) in currentPageList">
@@ -13,8 +13,8 @@
                     ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
                            :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
                 </li>
-                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">&gt;&gt;</a></li>
-                <li v-else class="no-link end">&gt;&gt;</li>
+                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">Next</a></li>
+                <li v-else class="no-link end">Next</li>
             </ul>
         </div>
     </div>
@@ -129,6 +129,9 @@
 </script>
 
 <style scoped lang="scss">
+    $link-color: #007FAE;
+    $no-link-color: gray;
+
     .pagination {
         display: inline-block;
         margin-bottom: 1px;
@@ -145,8 +148,10 @@
         }
 
         .page-number {
-            background-color: #007FAE;
-            padding: 15px;
+            background: linear-gradient(to bottom, #4B9CD3 0%, $link-color 100%);
+            border: 1px solid $link-color;
+            border-radius: 5px;
+            padding: 0.5em 1em;
 
             &:hover {
                 color: white;
@@ -159,16 +164,22 @@
             color: white;
 
             &.back-next {
-                color: #007FAE;
+                color: $link-color;
             }
         }
 
         .current {
-            background-color: gray;
+            background: linear-gradient(to bottom, #fff 0%, #dcdcdc 100%);
+            border-color: $no-link-color;
+            color: black;
+
+            &:hover {
+                color: black;
+            }
         }
 
         .no-link {
-            color: gray;
+            color: $no-link-color;
         }
     }
 </style>
