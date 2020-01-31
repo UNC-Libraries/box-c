@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractTitles(mods, idb);
             this.extractNamesAndAffiliations(mods, idb, true);
             this.extractAbstract(mods, idb);
+            this.extractCollectionId(mods, idb);
             this.extractFindingAidLink(mods, idb);
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
@@ -251,6 +253,30 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setAbstractText(null);
         }
+    }
+
+    private void extractCollectionId(Element mods, IndexDocumentBean idb) {
+        List<?> identifiers = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+        String collectionId = null;
+
+        if (identifiers != null && identifiers.size() > 0) {
+            for (Object id: identifiers) {
+                Element aid = (Element) id;
+                Attribute type = aid.getAttribute("type");
+                Attribute collection = aid.getAttribute("displayLabel");
+
+                if (type == null || collection == null) {
+                    continue;
+                }
+
+                if (collection.getValue().equals("Collection Number") && type.getValue().equals("local")) {
+                    collectionId = aid.getValue();
+                    break;
+                }
+            }
+        }
+
+        idb.setCollectionId(collectionId);
     }
 
     private void extractFindingAidLink(Element mods, IndexDocumentBean idb) {

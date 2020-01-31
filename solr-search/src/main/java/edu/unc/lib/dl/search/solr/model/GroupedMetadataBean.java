@@ -107,6 +107,11 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     }
 
     @Override
+    public String getCollectionId() {
+        return this.representative.getCollectionId();
+    }
+
+    @Override
     public void setCountMap(Map<String,Long> countMap) {
         this.representative.setCountMap(countMap);
     }

@@ -81,6 +81,12 @@
                             <a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
                         </li>
                     </c:if>
+                    <c:if test="${not empty parentBriefObject.collectionId}">
+                        <li>
+                            <span class="has-text-weight-bold">Collection Number: </span>
+                            <c:out value="${parentBriefObject.collectionId}"></c:out>
+                        </li>
+                    </c:if>
                     <li><span class="has-text-weight-bold">Finding Aid: </span>
                         <c:choose>
                             <c:when test="${not empty briefObject.findingAidLink}">

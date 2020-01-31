@@ -59,6 +59,9 @@
                     <c:otherwise>Doesn’t have a finding aid</c:otherwise>
                 </c:choose>
             </p>
+            <c:if test="${not empty briefObject.collectionId}">
+                <p><strong>Collection Number: </strong><c:out value="${briefObject.collectionId}"></c:out></p>
+            </c:if>
             <c:choose>
                 <c:when test="${not empty briefObject.abstractText}">
                     <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>

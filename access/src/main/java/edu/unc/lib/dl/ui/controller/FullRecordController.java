@@ -214,7 +214,9 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("facetFields", resultResponse.getFacetFields());
         }
 
-        if (resourceType.equals(searchSettings.resourceTypeFolder)) {
+        if (resourceType.equals(searchSettings.resourceTypeFolder) ||
+                resourceType.equals(searchSettings.resourceTypeFile) ||
+                resourceType.equals(searchSettings.resourceTypeAggregate)) {
             String parentCollection = briefObject.getParentCollection();
             SimpleIdRequest parentIdRequest = new SimpleIdRequest(parentCollection, principals);
             BriefObjectMetadataBean parentBriefObject = queryLayer.getObjectById(parentIdRequest);

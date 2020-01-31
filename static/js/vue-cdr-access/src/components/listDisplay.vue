@@ -16,8 +16,11 @@
                                 <span v-if="record.type !== 'File'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
-                            <div v-if="record.objectPath.length >= 3">
+                            <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
                                 <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
+                            </div>
+                            <div v-if="record.objectPath.length >= 3 && showCollection(record)">
+                                <p class="collection_id"><span class="has-text-weight-bold">Collection Number:</span> {{ record.objectPath[2].collectionId }}</p>
                             </div>
                             <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
@@ -98,6 +101,11 @@
                 }
 
                 return '';
+            },
+
+            showCollection(record) {
+                return record.type !== 'AdminUnit' && record.type !== 'Collection' &&
+                    record.objectPath[2].collectionId !== null;
             }
         }
     }

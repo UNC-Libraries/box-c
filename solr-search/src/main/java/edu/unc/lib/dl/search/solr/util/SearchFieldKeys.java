@@ -27,6 +27,7 @@ public enum SearchFieldKeys {
     ANCESTOR_IDS("ancestorIds"),
     ANCESTOR_PATH("ancestorPath"),
     CITATION("citation"),
+    COLLECTION_ID("collectionId"),
     CONTENT_MODEL("contentModel"),
     CONTENT_STATUS("contentStatus"),
     CONTENT_TYPE("contentType"),
