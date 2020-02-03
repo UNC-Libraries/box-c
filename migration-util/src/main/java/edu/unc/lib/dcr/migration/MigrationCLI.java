@@ -43,7 +43,7 @@ public class MigrationCLI implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        output.info("{} {}", BannerUtility.getBanner(), Premis.VirusCheck);
+        output.info(BannerUtility.getBanner());
         return 0;
     }
 
