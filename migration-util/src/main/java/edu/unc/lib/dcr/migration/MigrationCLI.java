@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.rdf.Premis;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
