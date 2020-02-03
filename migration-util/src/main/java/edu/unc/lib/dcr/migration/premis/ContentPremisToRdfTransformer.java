@@ -205,7 +205,7 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
         }
         // Rename representation 2
         String eventOutcome = getEventOutcomeDetailNote(eventEl);
-        if (eventOutcome.contains("Object renamed successfully")) {
+        if (eventOutcome != null && eventOutcome.contains("Object renamed successfully")) {
             eventDetail = eventDetail.replaceFirst("Object", "Object renamed to");
             addEvent(eventEl, Premis.FilenameChange, eventDetail, servicesAPI);
             return;
