@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.xml;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -75,8 +74,6 @@ public class JDOMQueryUtil {
         if (dateString != null) {
             try {
                 return DateTimeUtil.parseUTCToDate(dateString);
-            } catch (ParseException e) {
-                // Wasn't a valid date, ignore it.
             } catch (IllegalArgumentException e) {
                 // Wasn't a valid date, ignore it.
             }

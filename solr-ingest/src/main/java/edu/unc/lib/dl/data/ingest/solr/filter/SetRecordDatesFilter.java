@@ -42,7 +42,7 @@ public class SetRecordDatesFilter implements IndexDocumentFilter {
         try {
             dip.getDocument().setDateAdded(dateAdded);
             dip.getDocument().setDateUpdated(dateUpdated);
-        } catch (ParseException e) {
+        } catch (IllegalArgumentException | ParseException e) {
             throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
         }
     }

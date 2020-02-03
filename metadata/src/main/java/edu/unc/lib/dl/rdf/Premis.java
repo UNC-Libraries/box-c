@@ -186,8 +186,6 @@ public class Premis {
     public static final Resource SignificantProperties = createResource(
             "http://www.loc.gov/premis/rdf/v1#SignificantProperties");
 
-    public static final Resource Software = createResource("http://www.loc.gov/premis/rdf/v1#Software");
-
     public static final Resource StatuteInformation = createResource(
             "http://www.loc.gov/premis/rdf/v1#StatuteInformation");
 
@@ -221,8 +219,14 @@ public class Premis {
     public static final Resource DigitalSignatureValidation = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/dig");
 
+    public static final Resource Dissemination = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/dis");
+
     public static final Resource EventRelatedAgentRole = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/exe");
+
+    public static final Resource FilenameChange = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/fil");
 
     public static final Resource FixityCheck = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/fix");
@@ -231,6 +235,9 @@ public class Premis {
 
     public static final Resource MessageDigestCalculation = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/mes");
+
+    public static final Resource MetadataModification = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/mem");
 
     public static final Resource Migration = createResource("http://id.loc.gov/vocabulary/preservation/eventType/mig");
 
@@ -246,6 +253,9 @@ public class Premis {
     public static final Resource Validation = createResource("http://id.loc.gov/vocabulary/preservation/eventType/val");
 
     public static final Resource VirusCheck = createResource("http://id.loc.gov/vocabulary/preservation/eventType/vir");
+
+    public static final Resource InformationPackageCreation = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/ipc");
 
     public static final Resource Event = createResource("http://www.loc.gov/premis/rdf/v1#Event");
 }

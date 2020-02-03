@@ -9,3 +9,7 @@ or
 
 #### To debug the built jar:
 `java -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y -jar migration-util/target/dcr-migration-util.jar`
+
+#### Bulk transforming PREMIS
+Transforming deposit record PREMIS
+`java -Dfcrepo.baseUri=http://dcr.lib.unc.edu/fcrepo/rest/ -jar migration-util/target/dcr-migration-util.jar transform_premis -d /path/to/premis_transform/deposit_list.txt /path/to/premis_transform/deposit_out/`

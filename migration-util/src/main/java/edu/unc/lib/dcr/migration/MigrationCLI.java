@@ -18,7 +18,12 @@ package edu.unc.lib.dcr.migration;
 import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.concurrent.Callable;
+
 import org.slf4j.Logger;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 /**
  * Main class for the migration tool
@@ -26,21 +31,32 @@ import org.slf4j.Logger;
  * @author bbpennel
  *
  */
-public class MigrationMain {
+@Command(subcommands = {
+        TransformPremis.class
+    })
+public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
 
-    private MigrationMain() {
+    private MigrationCLI() {
+    }
+
+    @Override
+    public Integer call() throws Exception {
+        output.info(BannerUtility.getBanner());
+        return 0;
+    }
+
+    @Command(name = "chomp")
+    public int chomp() {
+        output.info(BannerUtility.getErrorBanner());
+        return 0;
     }
 
     public static void main(String[] args) {
-        // This will be replaced with a CLI framework later
-        if (args.length > 0 && args[0].equals("chomp")) {
-            output.info(BannerUtility.getErrorBanner());
-            return;
-        }
-
-        output.info(BannerUtility.getBanner());
-        output.info("Performing migration");
+        int exitCode = new CommandLine(new MigrationCLI()).execute(args);
+        System.exit(exitCode);
     }
+
+
 
 }

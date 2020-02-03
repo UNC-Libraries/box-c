@@ -67,7 +67,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
     @Test
     public void testEventbuilderCreation() {
-        PremisEventBuilder builder = premis.buildEvent(eventType, date);
+        PremisEventBuilder builder = premis.buildEvent(null, eventType, date);
 
         assertTrue("Returned object is not a PremisLogger", premis instanceof PremisLogger);
         assertTrue("Returned object is not a PremisEventBuilder", builder instanceof PremisEventBuilder);
@@ -78,7 +78,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         String message = "Test event successfully added";
         String detailedNote = "No viruses found";
 
-        Resource premisBuilder = premis.buildEvent(eventType, date)
+        Resource premisBuilder = premis.buildEvent(null, eventType, date)
                 .addEventDetail(message)
                 .addEventDetailOutcomeNote(detailedNote)
                 .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
@@ -111,12 +111,12 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
     @Test
     public void testMultipleEvents() throws Exception {
-        Resource event1 = premis.buildEvent(Premis.Normalization, date)
+        Resource event1 = premis.buildEvent(null, Premis.Normalization, date)
                 .addEventDetail("Event 1")
                 .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
                 .write();
 
-        Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
+        Resource event2 = premis.buildEvent(null, Premis.VirusCheck, date)
                 .addEventDetail("Event 2")
                 .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
                 .write();
@@ -153,11 +153,11 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     @Test
     public void testGetEventsModel() {
 
-        Resource event1 = premis.buildEvent(Premis.Normalization, date)
+        Resource event1 = premis.buildEvent(null, Premis.Normalization, date)
                 .addEventDetail("Event 1").addSoftwareAgent("Agent 1")
                 .write();
 
-        Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
+        Resource event2 = premis.buildEvent(null, Premis.VirusCheck, date)
                 .addEventDetail("Event 2").addAuthorizingAgent("Agent 2")
                 .write();
 

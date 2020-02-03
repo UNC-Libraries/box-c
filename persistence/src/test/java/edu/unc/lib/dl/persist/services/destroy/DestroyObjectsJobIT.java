@@ -267,7 +267,7 @@ public class DestroyObjectsJobIT {
     public void destroySingleObjectWithPreexistingPremisEventTest() {
         PID fileObjPid = objsToDestroy.get(2);
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        Resource event = fileObj.getPremisLog().buildEvent(Premis.Ingestion, new Date(1L)).write();
+        Resource event = fileObj.getPremisLog().buildEvent(null, Premis.Ingestion, new Date(1L)).write();
 
         initializeJob(Arrays.asList(fileObjPid));
 
