@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static org.junit.Assert.assertEquals;
@@ -26,13 +27,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Test;
@@ -45,7 +46,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.DcElements;
 
 /**
  *
@@ -80,10 +80,15 @@ public class EditTitleIT extends AbstractAPIIT {
     public void testReplaceTitle() throws Exception {
         PID pid = makePid();
         String oldTitle = "old_work_title";
-        Model workModel = ModelFactory.createDefaultModel();
-        workModel.add(workModel.createResource(pid.getRepositoryPath()), DcElements.title,
-                oldTitle);
-        WorkObject work = repositoryObjectFactory.createWorkObject(pid, workModel);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+
+        Document document = new Document();
+        document.addContent(new Element("mods", MODS_V3_NS)
+                .addContent(new Element("titleInfo", MODS_V3_NS)
+                        .addContent(new Element("title", MODS_V3_NS).setText(oldTitle))));
+
+        File workModsFile = writeToFile(document);
+        work.setDescription(workModsFile.toPath().toUri());
 
         String newTitle = "new_work_title";
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
