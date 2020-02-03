@@ -157,11 +157,11 @@
             },
 
             sortedInheritedRoles() {
-                return this.display_roles.inherited.roles.sort((a, b) => b.principal.localeCompare(a.principal));
+                return  this.formatDisplay(this.display_roles.inherited.roles);
             },
 
             sortedAssignedRoles() {
-                return this.display_roles.assigned.roles.sort((a, b) => b.principal.localeCompare(a.principal));
+                return this.formatDisplay(this.display_roles.assigned.roles);
             },
 
             compareRoles() {
@@ -177,8 +177,8 @@
              */
             assignedPatronRoles() {
                 return [
-                    { principal: 'everyone', role: this.everyone_role },
-                    { principal: 'authenticated', role: this.authenticated_role }
+                    { principal: 'everyone', role: this.everyone_role, principal_display: 'everyone' },
+                    { principal: 'authenticated', role: this.authenticated_role, principal_display: 'authenticated' }
                 ];
             },
 
@@ -200,6 +200,16 @@
         },
 
         methods: {
+            formatDisplay(user_roles) {
+                let users = cloneDeep(user_roles);
+
+                if (users.length > 1 && users[0].principal_display === users[1].principal_display) {
+                    return [users[0]];
+                }
+
+                return users.sort((a, b) => b.principal.localeCompare(a.principal));
+            },
+
             defaultRoles(perms, type) {
                 if (perms.roles === null) {
                     perms.roles = [];
@@ -218,7 +228,7 @@
 
             defaultPublicDisplayRoles(perms) {
                 if (perms.inherited.roles.length === 1 && perms.inherited.roles[0].principal === 'authenticated') {
-                    perms.inherited.roles.push({ principal: 'everyone', role: 'none'});
+                    perms.inherited.roles.push({ principal: 'everyone', role: 'none', principal_display: 'everyone' });
                 }
 
                 return perms;
@@ -233,13 +243,13 @@
 
                         if (this.isCollection) {
                             assigned_defaults = [
-                                { principal: 'everyone', role: 'none' },
-                                { principal: 'authenticated', role: 'none' }
+                                { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                                { principal: 'authenticated', role: 'none', principal_display: 'authenticated' }
                             ]
                         } else {
                             assigned_defaults = [
-                                { principal: 'everyone', role: 'canViewOriginals' },
-                                { principal: 'authenticated', role: 'canViewOriginals' }
+                                { principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' },
+                                { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
                             ]
                         }
 
@@ -275,12 +285,16 @@
                     * Merge principals for display if role values are the same and update public user name
                     * Reset effective display roles if embargoes present
                     */
-                    this.display_roles.inherited.roles = this.publicUserText(this.displayRolesMerge(this.display_roles.inherited.roles));
+                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
 
                     if (!this.isDeleted) {
-                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles('loading'));
+                        this.display_roles.assigned.roles = this.embargoedRoles('loading');
                     } else {
-                        this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                        this.display_roles.assigned.roles = [{
+                            principal: 'staff',
+                            role: STAFF_ONLY_ROLE_TEXT,
+                            principal_display: 'staff'
+                        }]
                     }
                 }).catch((error) => {
                     let response_msg = `Unable to load current patron roles for: ${this.title}`;
@@ -320,7 +334,7 @@
             _defaultInherited() {
                 let default_inherited;
                 if (!this.isCollection) {
-                    default_inherited = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    default_inherited = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' }]
                 } else {
                     default_inherited = [];
                 }
@@ -333,26 +347,24 @@
              * @return {{principal: string, role: *}[] | *}
              */
             displayRolesMerge(users) {
+                let type;
+                let role;
                 if (users.length === 2 && users[0].role === users[1].role) {
+                    type = 'patron';
+                    role = users[0].role;
+
                     if (users[0].role === 'none') {
-                        return [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }];
-                    } else {
-                        return [{ principal: 'patron', role: users[0].role }];
+                        type = 'staff';
+                        role = STAFF_ONLY_ROLE_TEXT;
                     }
                 }
 
-                return users;
-            },
-
-            /**
-             * Updates display text of everyone user to 'Public Users'
-             * @param level
-             * @returns {*}
-             */
-            publicUserText(level) {
-                return level.map((u) => {
-                    return u.principal === 'everyone' ? { principal: 'Public Users', role: u.role } : u;
+                users.forEach((u) => {
+                    u.principal_display = type || u.principal;
+                    u.role = role || u.role;
                 });
+
+                return users;
             },
 
             /**
@@ -434,7 +446,8 @@
                 } else {
                     this.display_roles.assigned.roles.push({
                         principal: principal,
-                        role: this.embargoReduceRole(this[`${principal}_role`])
+                        role: this.embargoReduceRole(this[`${principal}_role`]),
+                        principal_display: principal
                     });
                 }
 
@@ -449,10 +462,16 @@
              */
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }];
+                    this.display_roles.assigned.roles = [
+                        { principal: 'everyone', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' },
+                        { principal: 'authenticated', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' }
+                        ];
                 } else {
                     if (this.display_roles.assigned.embargo !== null) {
-                        this.display_roles.assigned.roles = [{ principal: 'patron', role: 'canViewMetadata' }];
+                        this.display_roles.assigned.roles = [
+                            { principal: 'everyone', role: 'canViewMetadata', principal_display: 'patron' },
+                            { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'patron' }
+                            ];
                     }
 
                     this.dedupeDisplayRoles();
@@ -507,9 +526,9 @@
              */
             dedupeDisplayRoles() {
                 if (this.embargoed) {
-                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.embargoedRoles()));
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.embargoedRoles());
                 } else {
-                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.assignedPatronRoles));
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
                 }
             },
 
@@ -568,7 +587,7 @@
                 if (embargo_info !== null) {
                     let roles = this.display_roles.assigned.roles;
                     if (roles.length > 0 && roles[0].principal !== 'staff') {
-                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles());
+                        this.display_roles.assigned.roles = this.embargoedRoles();
                     }
                 } else {
                     this.loadPreviousRole();

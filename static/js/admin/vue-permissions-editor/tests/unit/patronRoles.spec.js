@@ -8,13 +8,13 @@ const STAFF_ONLY_ROLE_TEXT = '\u2014';
 let embargo_date = '2099-01-01';
 
 let response = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals',  }], deleted: false, embargo: null },
     assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }], deleted: false, embargo: null }
 };
 
 let response_display = {
-    inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
-    assigned: { roles: [{ principal: 'Public Users', role: 'canViewMetadata' }], deleted: false, embargo: null }
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }], deleted: false, embargo: null },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' }], deleted: false, embargo: null }
 }
 
 let none_response = {
@@ -34,8 +34,8 @@ let empty_response = {
 };
 
 let empty_defaults = [
-    { principal: 'everyone', role: 'canViewOriginals' },
-    { principal: 'authenticated', role: 'canViewOriginals' }
+    { principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' },
+    { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
 ];
 
 let empty_response_no_inherited = {
@@ -44,30 +44,47 @@ let empty_response_no_inherited = {
 };
 
 let same_roles = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, {principal: 'authenticated', role: 'canViewOriginals'}],
-        deleted: false, embargo: null  },
-    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' }, { principal: 'authenticated', role: 'canViewMetadata'}],
-        deleted: false, embargo: null  }
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata' },
+            {principal: 'authenticated', role: 'canViewOriginals' }],
+        deleted: false, embargo: null },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata' },
+            { principal: 'authenticated', role: 'canViewMetadata' }],
+        deleted: false, embargo: null }
+};
+
+let same_roles_display = {
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' },
+            {principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }],
+        deleted: false, embargo: null },
+    assigned: { roles: [{ principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' },
+            { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated' }],
+        deleted: false, embargo: null }
 };
 
 let full_roles = {
     inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
     assigned: { roles: [
-            { principal: 'everyone', role: 'none'},
+            { principal: 'everyone', role: 'none' },
             { principal: 'authenticated', role: "canViewOriginals" }
         ],
         deleted: false, embargo: null }
 };
 
 let full_roles_display = {
-    inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }],
+        deleted: false, embargo: null },
     assigned: { roles: [
-            { principal: 'Public Users', role: 'none'},
-            { principal: 'authenticated', role: "canViewOriginals" }
+            { principal: 'everyone', role: 'none', principal_display: 'everyone'},
+            { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }
         ],
         deleted: false, embargo: null }
 };
 
+const STAFF_PERMS = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' }];
+const PATRON_PERMS =  [
+    {principal: 'everyone', principal_display: 'patron', role: 'canViewOriginals'},
+    {principal: 'authenticated', principal_display: 'patron', role: 'canViewOriginals'}
+];
 const setRoles = jest.fn();
 let wrapper, selects;
 
@@ -127,8 +144,8 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
+            expect(wrapper.vm.display_roles.inherited.roles).toEqual(STAFF_PERMS);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(PATRON_PERMS);
             expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
             expect(wrapper.vm.submit_roles.roles).toEqual(empty_defaults);
@@ -144,8 +161,8 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles.inherited.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewOriginals' }]);
+            expect(wrapper.vm.display_roles.inherited.roles).toEqual(STAFF_PERMS);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(PATRON_PERMS);
             expect(wrapper.vm.patron_roles.inherited.roles).toEqual([]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(empty_defaults);
             expect(wrapper.vm.submit_roles.roles).toEqual(empty_defaults);
@@ -166,7 +183,10 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([]);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                {principal: "everyone", principal_display: "staff", "role": "—"},
+                {principal: "authenticated", principal_display: "staff", "role": "—"}
+            ]);
             done();
         })
     });
@@ -179,7 +199,10 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                {principal: "everyone", principal_display: "staff", "role": "—"},
+                {principal: "authenticated", principal_display: "staff", "role": "—"}
+            ]);
             done();
         })
     });
@@ -310,11 +333,12 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.authenticated_role).toBe('none');
 
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                {principal: 'staff', role: STAFF_ONLY_ROLE_TEXT}
+                {principal: 'everyone', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' },
+                {principal: 'authenticated', role: STAFF_ONLY_ROLE_TEXT, principal_display: 'staff' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual([
-                {principal: 'everyone', role: 'none'},
-                {principal: 'authenticated', role: 'none'}
+                {principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                {principal: 'authenticated', role: 'none', principal_display: 'authenticated' }
             ]);
             done();
         });
@@ -334,11 +358,12 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.authenticated_role).toBe('none');
 
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                {principal: 'staff', role: STAFF_ONLY_ROLE_TEXT}
+                {principal: "everyone", principal_display: "staff", "role": "—"},
+                {principal: "authenticated", principal_display: "staff", "role": "—"}
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual([
-                {principal: 'everyone', role: 'none'},
-                {principal: 'authenticated', role: 'none'}
+                {principal: 'everyone', role: 'none', principal_display: 'everyone'},
+                {principal: 'authenticated', role: 'none', principal_display: 'authenticated'}
             ]);
             done();
         });
@@ -390,19 +415,23 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{
+                principal: 'everyone',
+                role: 'canViewMetadata',
+                principal_display: 'everyone'
+            }]);
 
             wrapper.findAll('#public option').at(2).setSelected();
 
             let updated_public_roles =  [
-                { principal: 'everyone', role: 'canViewAccessCopies' },
-                { principal: 'authenticated', role: 'none' }
+                { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'none', principal_display: 'authenticated' }
             ];
 
             expect(wrapper.vm.everyone_role).toBe('canViewAccessCopies');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                { principal: 'Public Users', role: 'canViewAccessCopies' },
-                { principal: 'authenticated', role: 'none' }
+                { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'none', principal_display: 'authenticated' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_public_roles);
 
@@ -419,19 +448,22 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'patron' },
+                { principal: 'authenticated', role: 'canViewMetadata',  principal_display: 'patron' },
+            ]);
 
             wrapper.findAll('#authenticated option').at(3).setSelected();
 
             let updated_authenticated_roles =  [
-                { principal: 'everyone', role: 'canViewMetadata' },
-                { principal: 'authenticated', role: 'canViewOriginals' }
+                { principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
             ];
 
             expect(wrapper.vm.authenticated_role).toBe('canViewOriginals');
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                { principal: 'Public Users', role: 'canViewMetadata' },
-                { principal: 'authenticated', role: 'canViewOriginals' }
+                { principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual(updated_authenticated_roles);
 
@@ -449,7 +481,10 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
             expect(wrapper.vm.authenticated_role).toBe('canViewMetadata');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'patron' },
+                { principal: 'authenticated', role: 'canViewMetadata',  principal_display: 'patron' },
+            ]);
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(same_roles.assigned.roles);
             done();
         });
@@ -469,19 +504,22 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'patron' },
+                { principal: 'authenticated', role: 'canViewMetadata',  principal_display: 'patron' },
+            ]);
             done();
         })
     });
 
     it("updates display roles if an embargo is set from server response on the object", (done) => {
         let values = {
-            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
+            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }],
+                deleted: false, embargo: null },
             assigned: { roles: [
-                    { principal: 'everyone', role: 'canViewAccessCopies'},
-                    { principal: 'authenticated', role: "canViewOriginals" }
-                ],
-                deleted: false, embargo: embargo_date }
+                    { principal: 'everyone', role: 'canViewAccessCopies' },
+                    { principal: 'authenticated', role: 'canViewOriginals' }
+                ], deleted: false, embargo: embargo_date }
         };
 
         wrapper.vm.getRoles();
@@ -491,26 +529,29 @@ describe('patronRoles.vue', () => {
         });
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', principal_display: 'patron' },
+                { principal: 'authenticated', role: "canViewMetadata", principal_display: 'patron' }
+            ]);
             done();
         })
     });
 
     it("updates display roles if an embargo is set", (done) => {
         let values = {
-            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
+            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }], deleted: false, embargo: null },
             assigned: { roles: [
-                    { principal: 'everyone', role: 'canViewAccessCopies'},
-                    { principal: 'authenticated', role: "canViewOriginals" }
+                    { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'everyone'},
+                    { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }
                 ],
                 deleted: false, embargo: null }
         };
 
         let values_display = {
-            inherited: { roles: [{ principal: 'Public Users', role: 'canViewOriginals' }], deleted: false, embargo: null },
+            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }], deleted: false, embargo: null },
             assigned: { roles: [
-                    { principal: 'Public Users', role: 'canViewAccessCopies'},
-                    { principal: 'authenticated', role: "canViewOriginals" }
+                    { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'everyone' },
+                    { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
                 ],
                 deleted: false, embargo: null }
         };
@@ -524,9 +565,12 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.display_roles).toEqual(values_display);
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'patron', role: 'canViewMetadata' }]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', principal_display: 'patron' },
+                { principal: 'authenticated', role: "canViewMetadata", principal_display: 'patron' }
+            ]);
             done();
-        })
+        });
     });
 
     it("updates display roles to 'canViewMetadata or lowest assigned role if an embargo is set", (done) => {
@@ -539,8 +583,10 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.display_roles).toEqual(full_roles_display);
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'none' },
-                { principal: 'authenticated', role: 'canViewMetadata'}]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated'}
+            ]);
             done();
         })
     });
@@ -585,10 +631,16 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(() => {
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([{ principal: 'Public Users', role: 'none' }, { principal: 'authenticated', role: 'canViewMetadata'}]);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(
+                [{ principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: "canViewMetadata", principal_display: 'authenticated' }]
+            );
 
             wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
-            expect(wrapper.vm.display_roles).toEqual(full_roles_display);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual(
+                [{ principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }]
+            );
             done();
         })
     });
