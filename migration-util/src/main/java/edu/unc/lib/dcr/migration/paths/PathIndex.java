@@ -25,6 +25,9 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.h2.tools.DeleteDbFiles;
+
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -46,9 +49,9 @@ public class PathIndex {
     private static final String SELECT_ALL_PATHS_UUID_QUERY =
             "select path, file_type from PathIndex where uuid = ?";
     private static final String COUNT_FILES_QUERY =
-            "select COUNT(*) from PathIndex where file_type = ?";
+            "select COUNT(path) from PathIndex where file_type = ?";
     private static final String COUNT_ALL_FILES_QUERY =
-            "select COUNT(*) from PathIndex";
+            "select COUNT(path) from PathIndex";
 
     private String databaseUrl;
 
@@ -103,13 +106,23 @@ public class PathIndex {
      * Retrieve all the paths associated with an object
      *
      * @param pid
-     * @return map of file type to
+     * @return
      */
     public Map<Integer, Path> getPaths(PID pid) {
+        return getPaths(pid.getId());
+    }
+
+    /**
+     * Retrieve all the paths associated with an object
+     *
+     * @param pid
+     * @return map of file type to
+     */
+    public Map<Integer, Path> getPaths(String pid) {
         Map<Integer, Path> result = new HashMap<>();
 
         try (PreparedStatement select = getConnection().prepareStatement(SELECT_ALL_PATHS_UUID_QUERY)) {
-            select.setString(1, pid.getId());
+            select.setString(1, pid);
             try (ResultSet results = select.executeQuery()) {
                 while (results.next()) {
                     result.put(Integer.valueOf(results.getInt(2)), Paths.get(results.getString(1)));
@@ -155,7 +168,29 @@ public class PathIndex {
         throw new RepositoryException("Failed to calculate counts for " + fileType);
     }
 
+    /**
+     * Delete the path index
+     */
+    public void deleteIndex() {
+        String db = StringUtils.substringAfterLast(databaseUrl, "/");
+        if (db.isEmpty()) {
+            db = databaseUrl;
+        }
+        String parent = Paths.get(databaseUrl).getParent().toString();
+        DeleteDbFiles.execute(parent, db, false);
+    }
+
     public void setDatabaseUrl(String url) {
         this.databaseUrl = url;
+    }
+
+    public void close() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new RepositoryException("Failed to close database", e);
+            }
+        }
     }
 }

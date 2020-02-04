@@ -32,7 +32,8 @@ import picocli.CommandLine.Command;
  *
  */
 @Command(subcommands = {
-        TransformPremis.class
+        TransformPremis.class,
+        PathIndexCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
@@ -48,7 +49,7 @@ public class MigrationCLI implements Callable<Integer> {
 
     @Command(name = "chomp")
     public int chomp() {
-        output.info(BannerUtility.getErrorBanner());
+        output.info(BannerUtility.getChompBanner());
         return 0;
     }
 

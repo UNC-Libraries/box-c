@@ -116,7 +116,7 @@ public class PathIndexingService {
         try {
             uuid = extractUUIDFromPath(path);
         } catch (IllegalArgumentException e) {
-            log.warn("Skipping path not containing a UUID: {}", path);
+            log.info("Skipping path not containing a UUID: {}", path);
             return;
         }
 
