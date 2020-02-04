@@ -11,6 +11,9 @@
         <artifactId>cdr</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>
+    <properties>
+        <h2.version>1.4.200</h2.version>
+    </properties>
     <build>
         <finalName>dcr-migration-util</finalName>
         <plugins>
@@ -45,6 +48,12 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+    
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

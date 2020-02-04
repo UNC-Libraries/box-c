@@ -37,7 +37,24 @@ public class MigrationConstants {
 
     public static final String OUTPUT_LOGGER = "output";
 
+    /**
+     * Extract the UUID portion of a file path
+     *
+     * @param path path of the file
+     * @return
+     */
     public static String extractUUIDFromPath(Path path) {
+        return extractUUIDFromPath(path.toString());
+    }
+
+    /**
+     * Extract the UUID portion of a string. If no uuid found, then an
+     * IllegalArgumentException is thrown.
+     *
+     * @param path string representation of a path
+     * @return uuid
+     */
+    public static String extractUUIDFromPath(String path) {
         Matcher pidMatcher = UUID_PATTERN.matcher(path.toString());
         if (pidMatcher.matches()) {
             return pidMatcher.group(1);
@@ -45,4 +62,9 @@ public class MigrationConstants {
             throw new IllegalArgumentException(format("Path %s does not contain a UUID", path.toString()));
         }
     }
+
+    public static final String PREMIS_DS = "MD_EVENTS";
+    public static final String ORIGINAL_DS = "DATA_FILE";
+    public static final String FITS_DS = "MD_TECHNICAL";
+    public static final String MANIFEST_DS = "DATA_MANIFEST";
 }
