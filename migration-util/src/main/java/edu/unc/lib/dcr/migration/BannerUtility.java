@@ -40,7 +40,14 @@ public class BannerUtility {
         return loadFile("boxc_banner.txt");
     }
 
-    public static String getErrorBanner() {
+    public static String getChompBanner(String title) {
+        String result = "======================================================================================\n"
+                + title + "\n"
+                + "======================================================================================\n";
+        return result + loadFile("chomp.txt");
+    }
+
+    public static String getChompBanner() {
         return loadFile("chomp.txt");
     }
 
