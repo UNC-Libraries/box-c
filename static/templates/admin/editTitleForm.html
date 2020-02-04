@@ -1,0 +1,16 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="edit_title_form" class="edit_form edit_title_form">
+    <div class="form_field">
+        <label for="title_change">Title</label>
+        <input id="title_change" name="title" size="40" value="<%= metadata.title %>" />
+    </div>
+
+    <div class="update_field">
+        <input type="submit" id="edit_title_submit_button" class="update_button" value="Save Changes" />
+    </div>
+
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack"></div>
+    </div>
+</form>

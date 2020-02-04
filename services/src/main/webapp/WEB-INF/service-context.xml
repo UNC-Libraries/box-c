@@ -228,6 +228,12 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
+
+    <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
+        <property name="aclService" ref="aclService" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="updateDescriptionService" ref="updateDescriptionService" />
+    </bean>
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
