@@ -7,7 +7,7 @@
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal_display)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal_display)}"></div>
                 <div class="browse-tip">
-                    <p><strong>Everyone:</strong> Applies to unauthenticated users.</p>
+                    <p><strong>Public Users:</strong> Applies to unauthenticated users.</p>
                     <p><strong>Patrons:</strong> Applies to all patron users, whether authenticated or unauthenticated.</p>
                 </div>
             </div>
@@ -61,7 +61,7 @@
             },
 
             authenticatedUser() {
-                return this.user.principal === 'authenticated'
+                return this.user.principal_display === 'authenticated'
             },
 
             fromText() {
@@ -101,6 +101,9 @@
             },
 
             displayRole(role) {
+                if (this.user.principal_display === 'staff') {
+                    return this.possibleRoles[0].text;
+                }
                 let selected_role = this.possibleRoles.find((r) => r.role === role);
                 return selected_role.text;
             },
