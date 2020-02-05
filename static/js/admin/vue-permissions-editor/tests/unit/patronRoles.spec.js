@@ -61,7 +61,9 @@ let same_all_roles = {
 };
 
 let full_roles = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' },
+            { principal: 'authenticated', role: 'canViewMetadata' }
+        ], deleted: false, embargo: null },
     assigned: { roles: [
             { principal: 'everyone', role: 'none' },
             { principal: 'authenticated', role: "canViewOriginals" }
@@ -70,8 +72,9 @@ let full_roles = {
 };
 
 let full_roles_display = {
-    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }],
-        deleted: false, embargo: null },
+    inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' },
+            { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated' }
+        ], deleted: false, embargo: null },
     assigned: { roles: [
             { principal: 'everyone', role: 'none', principal_display: 'everyone'},
             { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }
@@ -692,10 +695,10 @@ describe('patronRoles.vue', () => {
 
     it("updates display roles if an embargo is set", (done) => {
         let values = {
-            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' }], deleted: false, embargo: null },
+            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' }], deleted: false, embargo: null },
             assigned: { roles: [
-                    { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'everyone'},
-                    { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }
+                    { principal: 'everyone', role: 'canViewAccessCopies' },
+                    { principal: 'authenticated', role: "canViewOriginals" }
                 ],
                 deleted: false, embargo: null }
         };
@@ -763,6 +766,64 @@ describe('patronRoles.vue', () => {
         })
     });
 
+    it("updates display roles if an embargo is added or removed", (done) => {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(full_roles)
+        });
+
+        moxios.wait(() => {
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated'}
+            ]);
+
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
+            expect(wrapper.vm.display_roles).toEqual(full_roles_display);
+            done();
+        });
+    });
+
+    it("does not set assigned principal display to staff if one assigned role is 'none' and the other is not", (done) => {
+        let role_list = {
+            inherited: { roles: [{ principal: 'everyone', role: 'canViewOriginals' },
+                    { principal: 'authenticated', role: 'canViewMetadata' }
+                ], deleted: false, embargo: null },
+            assigned: { roles: [
+                    { principal: 'everyone', role: 'none' },
+                    { principal: 'authenticated', role: "canViewOriginals" }
+                ], deleted: false, embargo: null }
+        };
+
+        let role_list_display = [
+            { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+            { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated'}
+        ];
+
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200,
+            response: JSON.stringify(role_list)
+        });
+
+        moxios.wait(() => {
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated'}
+            ]);
+
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
+            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
+                { principal: 'everyone', role: 'none', principal_display: 'everyone' },
+                { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated'}
+            ]);
+            done();
+        });
+    });
+
     it("removes embargoes", () => {
         wrapper.setData({
             submit_roles: {
@@ -773,29 +834,6 @@ describe('patronRoles.vue', () => {
         expect(wrapper.vm.submit_roles.embargo).toEqual(embargo_date);
         wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
         expect(wrapper.vm.submit_roles.embargo).toEqual(null);
-    });
-
-    it("updates display roles to their assigned values if an embargo is removed", (done) => {
-        wrapper.vm.getRoles();
-        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
-            status: 200,
-            response: JSON.stringify(full_roles)
-        });
-
-        moxios.wait(() => {
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(
-                [{ principal: 'everyone', role: 'none', principal_display: 'everyone' },
-                    { principal: 'authenticated', role: "canViewMetadata", principal_display: 'authenticated' }]
-            );
-
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual(
-                [{ principal: 'everyone', role: 'none', principal_display: 'everyone' },
-                    { principal: 'authenticated', role: "canViewOriginals", principal_display: 'authenticated' }]
-            );
-            done();
-        });
     });
 
     it("disables 'submit' by default", () => {

@@ -367,7 +367,7 @@
 
                 if (this.isCollection || users.length === 0) {
                     return users;
-                } else if (this.hasSameAssignedRoles && users[0].role === 'none') {
+                } else if (this.hasSameAssignedRoles && users[0].role === 'none' && users[1].role === 'none') {
                     type = 'staff';
                 } else if (this.hasSameInheritedRoles && this.hasSameAssignedRoles) {
                     type = 'patron';
