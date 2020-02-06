@@ -62,7 +62,7 @@
 	<c:set var="facetLimit">
 		<c:if test="${not empty searchState.facetLimits[facetField.name]}">${searchState.facetLimits[facetField.name]}</c:if>
 	</c:set>
-	<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
+	<div class="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
 		<c:choose>
 			<c:when test="${empty facetField.values && not empty facetLimit}">
 				<c:url var="facetOpenUrl" scope="page" value='${queryPath}${searchStateParameters}'>
@@ -74,7 +74,7 @@
 				<c:url var="facetCollapseUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 					<c:param name="a.${searchSettings.actions['SET_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]},0'/>
 				</c:url>
-				<h3 class="facet_name"><c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></h3>
+				<h3 class="facet_name"><a href="<c:out value="${facetCollapseUrl}"/>">&#9660; <c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></a></h3>
 			</c:when>
 		</c:choose>
 		<c:if test="${not empty facetField.values}">
@@ -105,10 +105,7 @@
 											</c:url>
 										</c:otherwise>
 									</c:choose>
-									<label class="checkbox">
-										<input class="check-facet" type="checkbox" name="${facetValue.displayValue}" value="${facetActionUrl}">
-										<c:out value="${facetValue.displayValue}" /> (<c:out value="${facetValue.count}" />)
-									</label>
+									<a class="res_link" href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
 								</li>
 							</c:if>
 							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty facetLimit}">
