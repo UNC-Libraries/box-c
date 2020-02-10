@@ -21,10 +21,14 @@ import static edu.unc.lib.dcr.migration.paths.PathIndex.OBJECT_TYPE;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.ORIGINAL_TYPE;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.PREMIS_TYPE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -165,6 +169,25 @@ public class PathIndexingServiceTest {
         assertPathEquals(path3, objPaths.get(FITS_TYPE));
 
         assertPathEquals(pathUnaffiliated, pathIndex.getPath(pid2, ORIGINAL_TYPE));
+    }
+
+    @Test
+    public void indexMultipleVersionsSameObject() throws Exception {
+        PID pid1 = PIDs.get("de4a7ac8-acd2-40cc-9ac2-213519f00a90");
+
+        String path1 = "/path/to/fedora/datastreams/2016/1122/01/09/uuid_de4a7ac8-acd2-40cc-9ac2-213519f00a90+DATA_FILE+DATA_FILE.1";
+        String path2 = "/path/to/fedora/datastreams/2016/1122/01/09/uuid_de4a7ac8-acd2-40cc-9ac2-213519f00a90+DATA_FILE+DATA_FILE.2";
+        String path3 = "/path/to/fedora/datastreams/2016/1122/01/09/uuid_de4a7ac8-acd2-40cc-9ac2-213519f00a90+DATA_FILE+DATA_FILE.0";
+        Path dsListPath = createListFile(path1, path2, path3);
+
+        service.indexDatastreams(dsListPath);
+
+        Path originalPath = pathIndex.getPath(pid1, ORIGINAL_TYPE);
+        assertPathEquals(path2, originalPath);
+
+        List<Path> allOriginals = pathIndex.getPathVersions(pid1, ORIGINAL_TYPE);
+        assertEquals(3, allOriginals.size());
+        assertTrue(allOriginals.containsAll(asList(Paths.get(path1), Paths.get(path2), Paths.get(path3))));
     }
 
     private Path createListFile(String... paths) throws Exception {

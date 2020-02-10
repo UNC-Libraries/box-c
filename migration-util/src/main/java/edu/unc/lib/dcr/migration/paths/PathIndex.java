@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dcr.migration.paths;
 
+import static java.lang.Integer.parseInt;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -22,7 +25,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +86,8 @@ public class PathIndex {
     }
 
     /**
-     * Lookup the path for the file of the provided type from the specified object
+     * Lookup the path for the file of the provided type from the specified
+     * object. If multiple versions exist, the most recent is returned.
      *
      * @param pid pid of the object to seek
      * @param fileType the file type to retrieve
@@ -91,15 +97,59 @@ public class PathIndex {
         try (PreparedStatement select = getConnection().prepareStatement(SELECT_UUID_QUERY)) {
             select.setString(1, pid.getId());
             select.setInt(2, fileType);
+
+            String highestMatch = null;
+            int vHighest = -1;
             try (ResultSet results = select.executeQuery()) {
+                // Scan the resulting rows for the highest datastream version number
                 while (results.next()) {
-                    return Paths.get(results.getString(1));
+                    String current = results.getString(1);
+                    // No version number for foxml files
+                    if (fileType == OBJECT_TYPE) {
+                        return Paths.get(current);
+                    }
+                    int vCurrent = parseInt(substringAfterLast(current, "."));
+                    if (vCurrent > vHighest) {
+                        highestMatch = current;
+                        vHighest = vCurrent;
+                    }
                 }
             }
+            return Paths.get(highestMatch);
         } catch (SQLException e) {
             throw new RepositoryException("Failed to look up path for " + pid, e);
         }
-        return null;
+    }
+
+    /**
+     * Return paths for all versions of the specified file type associated with
+     * the given pid.
+     *
+     * @param pid pid of the object to seek
+     * @param fileType the file type to retrieve
+     * @return list of paths in no particular order.
+     */
+    public List<Path> getPathVersions(PID pid, int fileType) {
+        if (fileType == OBJECT_TYPE) {
+            throw new IllegalArgumentException("Cannot get versions of FOXML file");
+        }
+
+        try (PreparedStatement select = getConnection().prepareStatement(SELECT_UUID_QUERY)) {
+            select.setString(1, pid.getId());
+            select.setInt(2, fileType);
+
+            List<Path> paths = new ArrayList<>();
+
+            try (ResultSet results = select.executeQuery()) {
+                while (results.next()) {
+                    String current = results.getString(1);
+                    paths.add(Paths.get(current));
+                }
+            }
+            return paths;
+        } catch (SQLException e) {
+            throw new RepositoryException("Failed to look up path for " + pid, e);
+        }
     }
 
     /**
