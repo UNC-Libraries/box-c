@@ -97,6 +97,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var self = this;
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
+		var isContentRoot = metadata.type === 'ContentRoot';
 		
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
@@ -116,7 +117,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		
 		// Modification options
 		items["sepedit"] = "";
-		if ($.inArray('editResourceType', metadata.permissions) != -1) {
+		if (!isContentRoot && $.inArray('editResourceType', metadata.permissions) != -1) {
 			if (metadata.type == 'File') {
 				if ($.inArray('Is Primary Object', metadata.contentStatus) != -1) {
 					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
@@ -135,7 +136,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		*/
 		
-		if ($.inArray('editDescription', metadata.permissions) != -1) {
+		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			if (isContainerFlag) {
 				items["editLabel"] = {name : 'Edit Label'};
 			} else {
@@ -152,12 +153,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		*/
 		
-		if ($.inArray('editDescription', metadata.permissions) != -1) {
+		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
 		// Add files to work objects
-		if (metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
+		if (!isContentRoot && metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
 		}
 
@@ -166,7 +167,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (metadata.type !== 'File' ) {
 			items["exportCSV"] = {name : 'Export as CSV'};
 		}
-		if ($.inArray('editDescription', metadata.permissions) != -1) {
+		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
@@ -179,13 +180,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				items["runEnhancements"] = {name : 'Run enhancements'};
 				items["reindex"] = {name : 'Reindex'};
 			}
-			if ($.inArray('destroy', metadata.permissions) != -1) {
+			if (!isContentRoot && $.inArray('destroy', metadata.permissions) != -1) {
 				items["destroy"] = {name : 'Destroy', disabled :  !metadata.isDeleted};
 			}
 		}
 		
 		// Trash actions
-		if ($.inArray('markForDeletionUnit', metadata.permissions) != -1 || ($.inArray('markForDeletion', metadata.permissions) != -1 && metadata.type !== 'Unit')) {
+		if (!isContentRoot && ($.inArray('markForDeletionUnit', metadata.permissions) != -1 || ($.inArray('markForDeletion', metadata.permissions) != -1))) {
 			items["septrash"] = "";
 			items["restoreResult"] = {name : 'Restore', disabled : !metadata.isDeleted};
 			items["deleteResult"] = {name : 'Delete', disabled : metadata.isDeleted};
@@ -196,15 +197,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var canAssignStaffRoles = $.inArray('assignStaffRoles', metadata.permissions) !== -1;
 		var isAdminUnit = metadata.type === 'AdminUnit';
 
-		if (canAssignStaffRoles || (!isAdminUnit && canChangePatronAccess)) {
+		if (!isContentRoot && (canAssignStaffRoles || (!isAdminUnit && canChangePatronAccess))) {
 			items["seppermission"] = "";
 		}
 
-		if (!isAdminUnit && canChangePatronAccess) {
+		if (!isContentRoot && !isAdminUnit && canChangePatronAccess) {
 			items["patronPermissions"] = {name : 'Patron permissions'};
 		}
 
-		if (canAssignStaffRoles) {
+		if (!isContentRoot && canAssignStaffRoles) {
 			items["staffPermissions"] = {name : 'Staff permissions'};
 		}
 
