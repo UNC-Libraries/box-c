@@ -51,6 +51,9 @@ public class FoxmlDocumentHelpers {
     public static final String MANIFEST_DS = "DATA_MANIFEST";
     public static final String ORIGINAL_DS = "DATA_FILE";
 
+    private FoxmlDocumentHelpers() {
+    }
+
     /**
      * List the names of all datastreams present in the foxml
      *

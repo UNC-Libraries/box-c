@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dcr.migration.fcrepo3;
 
+import static edu.unc.lib.dcr.migration.MigrationConstants.toBxc3Uri;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel.CONTAINER;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel.PRESERVEDOBJECT;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty.hasModel;
@@ -47,7 +48,7 @@ public class FoxmlDocumentHelpersTest {
         Document foxml = createSAXBuilder().build(getClass().getResource("/foxml/folderSmall.xml"));
         Model model = FoxmlDocumentHelpers.getObjectModel(foxml);
 
-        Resource resultResc = model.getResource(pid.getRepositoryPath());
+        Resource resultResc = model.getResource(toBxc3Uri(pid));
 
         List<Statement> containsList = resultResc.listProperties(contains.getProperty()).toList();
         assertEquals(6, containsList.size());
