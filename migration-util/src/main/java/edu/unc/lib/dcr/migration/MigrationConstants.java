@@ -16,10 +16,16 @@
 package edu.unc.lib.dcr.migration;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.jena.rdf.model.Resource;
+
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Constants for the migration itself
@@ -61,6 +67,30 @@ public class MigrationConstants {
         } else {
             throw new IllegalArgumentException(format("Path %s does not contain a UUID", path.toString()));
         }
+    }
+
+    /**
+     * @param pid
+     * @return string representation of pid as a boxc3 uri
+     */
+    public static String toBxc3Uri(PID pid) {
+        return "info:fedora/uuid:" + pid.getId();
+    }
+
+    /**
+     * Takes a resource referencing an object in bxc3 and converts it to a PID
+     * in the current format.
+     *
+     * @param resc
+     * @return
+     */
+    public static PID convertBxc3RefToPid(Resource resc) {
+        return convertBxc3RefToPid(resc.toString());
+    }
+
+    public static PID convertBxc3RefToPid(String bxc3Uri) {
+        String uuid = substringAfter(bxc3Uri, "/");
+        return PIDs.get(uuid);
     }
 
     public static final String PREMIS_DS = "MD_EVENTS";

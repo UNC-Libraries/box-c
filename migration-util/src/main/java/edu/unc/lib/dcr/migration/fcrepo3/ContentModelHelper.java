@@ -118,7 +118,8 @@ public class ContentModelHelper {
         disseminates(JDOMNamespaceUtil.FEDORA_VIEW_NS, "disseminates"),
         mimeType(JDOMNamespaceUtil.FEDORA_VIEW_NS, "mimeType"),
         lastModifiedDate(JDOMNamespaceUtil.FEDORA_VIEW_NS, "lastModifiedDate"),
-        createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS, "createdDate");
+        createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS, "createdDate"),
+        ownerId(JDOMNamespaceUtil.FEDORA_MODEL_NS, "ownerId");
 
         private URI uri;
         private Property property;

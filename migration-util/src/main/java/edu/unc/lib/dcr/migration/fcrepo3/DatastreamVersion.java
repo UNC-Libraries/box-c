@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dcr.migration.fcrepo3;
 
+import org.jdom2.Element;
+
 /**
  * Version of a datastream from a fedora 3 object.
  *
@@ -28,6 +30,7 @@ public class DatastreamVersion {
     private String created;
     private String size;
     private String mimeType;
+    private Element bodyEl;
 
     /**
      * Construct a datastream with the provided fields
@@ -89,5 +92,19 @@ public class DatastreamVersion {
      */
     public String getMimeType() {
         return mimeType;
+    }
+
+    /**
+     * @return the bodyEl
+     */
+    public Element getBodyEl() {
+        return bodyEl;
+    }
+
+    /**
+     * @param bodyEl the bodyEl to set
+     */
+    public void setBodyEl(Element bodyEl) {
+        this.bodyEl = bodyEl;
     }
 }

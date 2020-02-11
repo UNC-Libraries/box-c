@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FOXML_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.util.ResourceUtils.renameResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,8 +36,6 @@ import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Utility methods for pulling data from foxml documents
@@ -91,8 +88,6 @@ public class FoxmlDocumentHelpers {
         String foxmlPid = getFoxmlPid(foxml);
         String relsRescUri = "info:fedora/" + foxmlPid;
         Resource resc = model.getResource(relsRescUri);
-        PID pid = PIDs.get(foxmlPid);
-        renameResource(resc, pid.getRepositoryPath());
 
         // Add the object properties to the model
         for (Element propEl : foxml.getRootElement().getChild("objectProperties", FOXML_NS).getChildren()) {

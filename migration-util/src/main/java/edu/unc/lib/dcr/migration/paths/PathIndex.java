@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dcr.migration.paths;
 
+import static edu.unc.lib.dcr.migration.MigrationConstants.MANIFEST_DS;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.FITS_DS;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.PREMIS_DS;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
@@ -243,4 +247,21 @@ public class PathIndex {
             }
         }
     }
+
+    public static int getFileType(String dsName) {
+        if (ORIGINAL_DS.equals(dsName)) {
+            return ORIGINAL_TYPE;
+        }
+        if (PREMIS_DS.equals(dsName)) {
+            return PREMIS_TYPE;
+        }
+        if (FITS_DS.equals(dsName)) {
+            return FITS_TYPE;
+        }
+        if (MANIFEST_DS.equals(dsName)) {
+            return MANIFEST_TYPE;
+        }
+        return -1;
+    }
+
 }

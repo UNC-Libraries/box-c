@@ -18,12 +18,11 @@ package edu.unc.lib.dcr.migration.deposit;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.tdb.TDBFactory.createDataset;
 
-import java.util.List;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Statement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 
@@ -35,9 +34,10 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class DepositModelManager {
 
+    private static final Logger log = LoggerFactory.getLogger(DepositModelManager.class);
+
     private PID depositPid;
     private Dataset dataset;
-    private Model depositModel;
     private String tdbDir;
 
     /**
@@ -53,23 +53,34 @@ public class DepositModelManager {
     /**
      * Start a write transaction for the deposit model/dataset
      */
-    public synchronized void startWriteModel() {
+    public synchronized Model getWriteModel() {
         String uri = depositPid.getURI();
         dataset.begin(ReadWrite.WRITE);
         if (!dataset.containsNamedModel(uri)) {
             dataset.addNamedModel(uri, createDefaultModel());
         }
-        depositModel = dataset.getNamedModel(uri);
+        return dataset.getNamedModel(uri);
+    }
+
+    public synchronized Model getReadModel() {
+        String uri = depositPid.getURI();
+        dataset.begin(ReadWrite.READ);
+        return dataset.getNamedModel(uri);
     }
 
     /**
-     * Add triples to the managed deposit model
+     * Add triples from the provided model to the deposit model
      *
-     * @param triples
+     * @param model
      */
-    public void addTriples(List<Statement> triples) {
-        synchronized(depositModel) {
-            depositModel.add(triples);
+    public synchronized void addTriples(Model model) {
+        Model depositModel = getWriteModel();
+        try {
+            log.debug("Adding triples to deposit model: {}", model);
+            depositModel.add(model);
+            dataset.commit();
+        } finally {
+            dataset.end();
         }
     }
 

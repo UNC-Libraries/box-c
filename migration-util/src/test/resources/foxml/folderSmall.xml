@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject VERSION="1.1" PID="uuid:c9b95252-ca53-4e38-9155-81f3304ed3d5"
+xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Field notes"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2011-10-04T20:36:44.902Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2011-10-04T20:36:44.902Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2011-10-04T20:36:44.902Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID></audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2011-10-04T20:36:44.902Z</audit:date>
+<audit:justification>Added through UI</audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.0" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2011-10-04T20:36:44.914Z" MIMETYPE="text/xml" SIZE="1770">
+<foxml:contentDigest TYPE="MD5" DIGEST="9c975fd3e2bbc34a4912adb5aea99e02"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#" xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                    <rdf:Description rdf:about="info:fedora/uuid:c9b95252-ca53-4e38-9155-81f3304ed3d5">
+                        <ns5:allowIndexing>yes</ns5:allowIndexing>
+                        <ns5:contains rdf:resource="info:fedora/uuid:0f7343da-2c6f-48e2-9a2c-225e37cff2f6"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:2b975165-182a-435f-abc5-34b1fe5ee580"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:3e938ea3-e08f-4050-a407-bb7b909e5f98"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:a8e33b2f-c27e-41a2-9c62-83aa40f31bc6"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:c1e12d41-dcee-4c7c-9d5e-4d3e4b4fffeb"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:e14acb11-b6a8-462f-8f21-aeb8ba9cff41"></ns5:contains>
+                        <ns5:owner rdf:resource="info:fedora/uuid:4e6425d9-79d4-4d94-af51-c49ee7f31cf8"></ns5:owner>
+                        <ns5:sortOrder rdf:resource="http://cdr.unc.edu/definitions/1.0/base-model#ordered"></ns5:sortOrder>
+                        <ns5:slug>Field_notes</ns5:slug>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:Container"></ns6:hasModel>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject"></ns6:hasModel>
+                    </rdf:Description>
+                </rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_CONTENTS" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_CONTENTS.0" LABEL="List of Contents" CREATED="2011-10-04T20:36:44.914Z" MIMETYPE="text/xml" SIZE="741">
+<foxml:contentDigest TYPE="MD5" DIGEST="ff234db729e65c60dc03d8b6cdb37bda"/>
+<foxml:xmlContent>
+<m:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:m="http://www.loc.gov/METS/">
+               <m:div TYPE="Container">
+                  <m:div ID="uuid:3e938ea3-e08f-4050-a407-bb7b909e5f98" ORDER="1"></m:div>
+                  <m:div ID="uuid:a8e33b2f-c27e-41a2-9c62-83aa40f31bc6" ORDER="2"></m:div>
+                  <m:div ID="uuid:c1e12d41-dcee-4c7c-9d5e-4d3e4b4fffeb" ORDER="3"></m:div>
+                  <m:div ID="uuid:0f7343da-2c6f-48e2-9a2c-225e37cff2f6" ORDER="4"></m:div>
+                  <m:div ID="uuid:e14acb11-b6a8-462f-8f21-aeb8ba9cff41" ORDER="5"></m:div>
+                  <m:div ID="uuid:2b975165-182a-435f-abc5-34b1fe5ee580" ORDER="6"></m:div>
+               </m:div>
+            </m:structMap>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC.0" LABEL="Internal XML Metadata" CREATED="2011-10-04T20:36:44.914Z" MIMETYPE="text/xml" SIZE="405">
+<foxml:contentDigest TYPE="MD5" DIGEST="e9f9b5ac744374e659fce6c65e2dd4c0"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>Field notes</dc:title>
+  <dc:identifier>uuid:c9b95252-ca53-4e38-9155-81f3304ed3d5</dc:identifier>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2011-10-04T20:36:44.914Z" MIMETYPE="text/xml" SIZE="4014">
+<foxml:contentDigest TYPE="MD5" DIGEST="a8f0eefc12e12d8d42d2048c6a49cf48"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:c9b95252-ca53-4e38-9155-81f3304ed3d5+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>
