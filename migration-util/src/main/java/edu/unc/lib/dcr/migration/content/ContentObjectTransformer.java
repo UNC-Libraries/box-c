@@ -109,7 +109,6 @@ public class ContentObjectTransformer extends RecursiveAction {
             throw new RepositoryException("Failed to read FOXML for " + pid, e);
         }
 
-        try {
         // Retrieve all properties/relationships for the object
         Model model = getObjectModel(foxml);
         Resource bxc3Resc = model.getResource(toBxc3Uri(pid));
@@ -146,10 +145,6 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // Push triples for this object to the shared model for this deposit
         modelManager.addTriples(depositModel);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void populateTimestamps(Resource bxc3Resc, Resource depResc) {
