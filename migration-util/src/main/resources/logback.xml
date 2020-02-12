@@ -35,17 +35,18 @@
       <pattern>%msg%n</pattern>
     </encoder>
   </appender>
-  <appender name="APP_LOG" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <charset>UTF-8</charset>
-      <pattern>%d %-5level [%thread] %logger{20} - %msg%n</pattern>
-    </encoder>
+  <appender name="APP_LOG" class="ch.qos.logback.core.FileAppender">
+      <file>target/current.log</file>
+      <append>true</append>
+      <encoder>
+          <pattern>%d %-5level [%thread] %logger{35} - %msg%n</pattern>
+      </encoder>
   </appender>
   <logger name="output" level="INFO" additivity="false">
       <appender-ref ref="STDOUT"/>
       <appender-ref ref="STDERR"/>
   </logger>
-  <root level="WARN">
+  <root level="INFO">
     <appender-ref ref="APP_LOG"/>
   </root>
 </configuration>

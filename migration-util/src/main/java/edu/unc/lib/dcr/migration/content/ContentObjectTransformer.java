@@ -98,6 +98,7 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     @Override
     protected void compute() {
+        log.info("Tranforming {}", pid.getId());
         Path foxmlPath = pathIndex.getPath(pid);
 
         // Deserialize the foxml document

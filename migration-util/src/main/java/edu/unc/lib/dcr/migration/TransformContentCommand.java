@@ -15,7 +15,12 @@
  */
 package edu.unc.lib.dcr.migration;
 
+import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.util.concurrent.Callable;
+
+import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
@@ -26,6 +31,7 @@ import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Command for transforming content objects
@@ -36,19 +42,14 @@ import picocli.CommandLine.Parameters;
     description = "Transforms a tree of content objects starting from a single uuid")
 public class TransformContentCommand implements Callable<Integer> {
 
+    private static final Logger output = getLogger(OUTPUT_LOGGER);
+
+    @ParentCommand
+    private MigrationCLI parentCommand;
+
     @Parameters(index = "0",
             description = "UUID of the content object from which to start the transformation")
     private String startingId;
-
-    @Option(names = {"-d", "--database-url"},
-            defaultValue = "${sys:dcr.migration.index.url:-~/bxc_pindex",
-            description = "Path where the database for the index is stored. Defaults to home dir.")
-    private String databaseUrl;
-
-    @Option(names = {"--tdb-dir"},
-            defaultValue = "${sys:dcr.tdb.dir:-~/bxc_tdb",
-            description = "Path where the jena TDB deposit dataset is stored. Defaults to home dir.")
-    private String tdbDir;
 
     @Option(names = {"-u", "--as-admin-units"},
             description = "Top level collections will be transformed into admin units")
@@ -56,13 +57,20 @@ public class TransformContentCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        long start = System.currentTimeMillis();
+
+        output.info("Transforming content tree starting from {}", startingId);
+        output.info("===========================================");
         RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
         PID depositPid = pidMinter.mintDepositRecordPid();
 
-        DepositModelManager depositModelManager = new DepositModelManager(depositPid, tdbDir);
+        output.info("Populating deposit:");
+        output.info(depositPid.getId());
+
+        DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
 
         PathIndex pathIndex = new PathIndex();
-        pathIndex.setDatabaseUrl(databaseUrl);
+        pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
         ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
         transformerManager.setModelManager(depositModelManager);
@@ -73,6 +81,10 @@ public class TransformContentCommand implements Callable<Integer> {
         ContentTransformationService transformService = new ContentTransformationService(startingId, topLevelAsUnit);
         transformService.setTransformerManager(transformerManager);
 
-        return transformService.perform();
+        int result = transformService.perform();
+
+        output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+
+        return result;
     }
 }

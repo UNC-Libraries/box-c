@@ -19,6 +19,8 @@ import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
 import static java.util.stream.Collectors.joining;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
@@ -29,6 +31,7 @@ import edu.unc.lib.dcr.migration.paths.PathIndexingService;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Commands for populating or pulling data from the path index
@@ -43,10 +46,8 @@ public class PathIndexCommand implements Callable<Integer> {
 
     private PathIndex pathIndex;
 
-    @Option(names = {"-d", "--database-url"},
-            defaultValue = "${sys:dcr.migration.index.url:-~/bxc_pindex",
-            description = "Path where the database for the index is stored. Defaults to home dir.")
-    private String databaseUrl;
+    @ParentCommand
+    private MigrationCLI parentCommand;
 
     @Command(name = "populate",
             description = "Populate the index of file paths")
@@ -61,7 +62,7 @@ public class PathIndexCommand implements Callable<Integer> {
 
         output.info(BannerUtility.getChompBanner("Populating path index"));
 
-        output.info("Creating index at path {}", databaseUrl);
+        output.info("Creating index at path {}", parentCommand.databaseUrl);
         service.createIndexTable();
         output.info("Populating object files from {}", objectListPath);
         service.indexObjects(objectListPath);
@@ -84,6 +85,30 @@ public class PathIndexCommand implements Callable<Integer> {
                 .map(Path::toString)
                 .collect(joining("\n"));
         output.info(paths);
+
+        getPathIndex().close();
+
+        return 0;
+    }
+
+    @Command(name = "list_paths",
+            description = "List file paths objects and datastreams all objects in the provided list")
+    public int listPaths(
+            @Parameters(index = "0", description = "File containing the list of object ids")
+            Path listPath) {
+
+        output.info("Listing paths objects listed in {}:", listPath);
+        try {
+            Files.lines(listPath).forEach(id -> {
+                id = id.replace("uuid:", "");
+                String paths = getPathIndex().getPaths(id).values().stream()
+                        .map(Path::toString)
+                        .collect(joining("\n"));
+                output.info(paths);
+            });
+        } catch (IOException e) {
+            output.error("Failed to read list file: {}", e.getMessage());
+        }
 
         getPathIndex().close();
 
@@ -128,7 +153,7 @@ public class PathIndexCommand implements Callable<Integer> {
     private PathIndex getPathIndex() {
         if (pathIndex == null) {
             pathIndex = new PathIndex();
-            pathIndex.setDatabaseUrl(databaseUrl);
+            pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
         }
         return pathIndex;
     }

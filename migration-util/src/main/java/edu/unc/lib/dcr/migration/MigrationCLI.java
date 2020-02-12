@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 /**
  * Main class for the migration tool
@@ -33,10 +34,22 @@ import picocli.CommandLine.Command;
  */
 @Command(subcommands = {
         TransformPremis.class,
-        PathIndexCommand.class
+        PathIndexCommand.class,
+        TransformContentCommand.class,
+        ViewDepositModelCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
+
+    @Option(names = {"-d", "--database-url"},
+            defaultValue = "${sys:dcr.migration.index.url:-${sys:user.home}/bxc_pindex",
+            description = "Path where the database for the index is stored. Defaults to home dir.")
+    protected String databaseUrl;
+
+    @Option(names = {"--tdb-dir"},
+            defaultValue = "${sys:dcr.tdb.dir:-${sys:user.home}/bxc_tdb",
+            description = "Path where the jena TDB deposit dataset is stored. Defaults to home dir.")
+    protected String tdbDir;
 
     private MigrationCLI() {
     }
@@ -57,7 +70,5 @@ public class MigrationCLI implements Callable<Integer> {
         int exitCode = new CommandLine(new MigrationCLI()).execute(args);
         System.exit(exitCode);
     }
-
-
 
 }

@@ -18,6 +18,11 @@ package edu.unc.lib.dcr.migration.deposit;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.tdb.TDBFactory.createDataset;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
@@ -43,10 +48,17 @@ public class DepositModelManager {
     /**
      * @param depositPid
      * @param tdbDir
+     * @throws IOException
      */
-    public DepositModelManager(PID depositPid, String tdbDir) {
+    public DepositModelManager(PID depositPid, String tdbDir) throws IOException {
         this.depositPid = depositPid;
         this.tdbDir = tdbDir;
+
+        Path tdbPath = Paths.get(tdbDir).toAbsolutePath();
+        if (Files.notExists(tdbPath)) {
+            Files.createDirectories(tdbPath);
+        }
+
         initDataset();
     }
 
@@ -95,6 +107,7 @@ public class DepositModelManager {
     }
 
     private void initDataset() {
+        log.info("Initiating deposit dataset at {}", tdbDir);
         dataset = createDataset(tdbDir);
     }
 }
