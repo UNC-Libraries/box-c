@@ -100,7 +100,7 @@
         <commons-fileupload.version>1.3.3</commons-fileupload.version>
         <abdera.version>1.1.3</abdera.version>
         
-        <activemq.version>5.15.7</activemq.version>
+        <activemq.version>5.15.11</activemq.version>
         <activemq-protobuf.version>1.1</activemq-protobuf.version>
         
         <slf4j.version>1.7.25</slf4j.version>
