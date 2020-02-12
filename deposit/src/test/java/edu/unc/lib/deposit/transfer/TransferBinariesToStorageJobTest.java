@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
@@ -169,7 +172,23 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         job.closeModel();
 
         String modsContent = "This is pretty much mods";
-        addModsFile(workBag, modsContent);
+        addModsFile(workBag, modsContent, false);
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postWorkResc = model.getResource(workBag.getURI());
+
+        assertModsFileTransferred(postWorkResc, modsContent);
+    }
+
+    @Test
+    public void depositWithFolderWithHashedMods() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Folder);
+        job.closeModel();
+
+        String modsContent = "This is pretty much mods";
+        addModsFile(workBag, modsContent, true);
 
         job.run();
 
@@ -322,9 +341,16 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         return objResc;
     }
 
-    private void addModsFile(Resource resc, String content) throws Exception {
+    private void addModsFile(Resource resc, String content, boolean hashed) throws Exception {
         PID pid = PIDs.get(resc.getURI());
+        Path modsPath = modsDir.toPath();
         File modsFile = new File(modsDir, pid.getId() + ".xml");
+        if (hashed) {
+            String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+            modsPath = modsPath.resolve(hashing);
+        }
+        modsPath = modsPath.resolve(pid.getId() + ".xml");
+
         modsFile.createNewFile();
         FileUtils.writeStringToFile(modsFile, content, UTF_8);
     }

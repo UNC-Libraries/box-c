@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
@@ -131,13 +132,13 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferModsFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         // add descStorageUri if doesn't already exist. It will exist in a resume scenario.
         if (!resc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
-            File modsFile = new File(getDescriptionDir(), objPid.getUUID() + ".xml");
-            if (!modsFile.exists()) {
+            Path modsPath = getModsPath(objPid);
+            if (modsPath == null) {
                 return;
             }
 
             PID originalPid = getMdDescriptivePid(objPid);
-            URI storageUri = transferSession.transferReplaceExisting(originalPid, modsFile.toURI());
+            URI storageUri = transferSession.transferReplaceExisting(originalPid, modsPath.toUri());
             resc.addLiteral(CdrDeposit.descriptiveStorageUri, storageUri.toString());
         }
     }

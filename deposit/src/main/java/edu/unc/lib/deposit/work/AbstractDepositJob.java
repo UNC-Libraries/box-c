@@ -15,12 +15,16 @@
  */
 package edu.unc.lib.deposit.work;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
@@ -213,6 +217,27 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public File getDescriptionDir() {
         return new File(getDepositDirectory(), DESCRIPTION_DIR);
+    }
+
+    /**
+     * Get the path to an existing MODS file for the given pid.
+     *
+     * @param pid
+     * @return
+     */
+    protected Path getModsPath(PID pid) {
+        Path descDir = getDescriptionDir().toPath();
+        Path modsPath = descDir.resolve(pid.getId() + ".xml");
+        if (Files.exists(modsPath)) {
+            return modsPath;
+        }
+        String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        Path hashedPath = modsPath.resolve(hashing).resolve(pid.getId() + ".xml");
+
+        if (Files.exists(hashedPath)) {
+            return hashedPath;
+        }
+        return null;
     }
 
     public File getDepositsDirectory() {
