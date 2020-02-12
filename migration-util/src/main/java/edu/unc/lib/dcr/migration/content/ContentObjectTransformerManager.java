@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.dcr.migration.content;
 
+import static edu.unc.lib.dcr.migration.utils.DisplayProgressUtil.displayProgress;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
@@ -24,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dcr.migration.utils.DisplayProgressUtil;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -41,9 +45,11 @@ public class ContentObjectTransformerManager {
     private RepositoryPIDMinter pidMinter;
 
     private BlockingQueue<ContentObjectTransformer> createdTransformers;
+    private AtomicInteger totalAdded;
 
     public ContentObjectTransformerManager() {
         this.createdTransformers = new LinkedBlockingQueue<>();
+        totalAdded = new AtomicInteger();
     }
 
     /**
@@ -62,6 +68,7 @@ public class ContentObjectTransformerManager {
         transformer.setPidMinter(pidMinter);
 
         createdTransformers.add(transformer);
+        totalAdded.incrementAndGet();
         return transformer;
     }
 
@@ -71,13 +78,17 @@ public class ContentObjectTransformerManager {
      */
     public int awaitTransformers() {
         int result = 0;
+        long completed = 0;
         do {
             ContentObjectTransformer transformer = createdTransformers.poll();
             try {
+                displayProgress(completed, totalAdded.get());
                 if (transformer == null) {
+                    DisplayProgressUtil.finishProgress();
                     return result;
                 }
                 transformer.join();
+                completed++;
             } catch (RuntimeException e) {
                 log.error("Failed to transform {}", transformer.getPid(), e);
                 result = 1;
