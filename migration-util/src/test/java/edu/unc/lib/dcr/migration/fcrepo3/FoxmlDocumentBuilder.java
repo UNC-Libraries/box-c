@@ -161,7 +161,7 @@ public class FoxmlDocumentBuilder {
 
                 if (dsVersion.getBodyEl() != null) {
                     dsvEl.addContent(new Element("xmlContent", FOXML_NS)
-                            .addContent(dsVersion.getBodyEl()));
+                            .addContent(dsVersion.getBodyEl().detach()));
                 } else {
                     String ref = "uuid:" + pid.getId() + "+" + dsVersion.getDsName()
                             + "+" + dsVersion.getVersionName();

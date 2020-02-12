@@ -25,6 +25,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dcr.migration.utils.DisplayProgressUtil;
@@ -43,6 +44,7 @@ public class ContentObjectTransformerManager {
     private DepositModelManager modelManager;
     private boolean topLevelAsUnit;
     private RepositoryPIDMinter pidMinter;
+    private DepositDirectoryManager directoryManager;
 
     private BlockingQueue<ContentObjectTransformer> createdTransformers;
     private AtomicInteger totalAdded;
@@ -66,6 +68,7 @@ public class ContentObjectTransformerManager {
         transformer.setTopLevelAsUnit(topLevelAsUnit);
         transformer.setManager(this);
         transformer.setPidMinter(pidMinter);
+        transformer.setDirectoryManager(directoryManager);
 
         createdTransformers.add(transformer);
         totalAdded.incrementAndGet();
@@ -110,5 +113,9 @@ public class ContentObjectTransformerManager {
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
         this.pidMinter = pidMinter;
+    }
+
+    public void setDirectoryManager(DepositDirectoryManager directoryManager) {
+        this.directoryManager = directoryManager;
     }
 }

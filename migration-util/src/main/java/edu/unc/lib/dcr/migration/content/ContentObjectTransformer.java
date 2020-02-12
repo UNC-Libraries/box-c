@@ -28,6 +28,7 @@ import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraPropert
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty.lastModifiedDate;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.contains;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.originalDeposit;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.listDatastreamVersions;
@@ -57,6 +58,7 @@ import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 
+import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
@@ -84,6 +86,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     private boolean topLevelAsUnit;
     private ContentObjectTransformerManager manager;
     private RepositoryPIDMinter pidMinter;
+    private DepositDirectoryManager directoryManager;
 
     private PID pid;
     private Resource parentType;
@@ -141,7 +144,8 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // TODO set title, based on dc title and/or label
 
-        // TODO copy most recent MODS to deposit directory
+        // copy most recent MODS to deposit directory
+        extractMods(foxml);
 
         // Push triples for this object to the shared model for this deposit
         modelManager.addTriples(depositModel);
@@ -281,6 +285,20 @@ public class ContentObjectTransformer extends RecursiveAction {
         return contained;
     }
 
+    private void extractMods(Document foxml) {
+        log.info("Checking for MODS {}", pid);
+        List<DatastreamVersion> modsVersions = listDatastreamVersions(foxml, MODS_DS);
+        if (modsVersions == null || modsVersions.isEmpty()) {
+            log.debug("No MODS for {}" , pid);
+            return;
+        }
+
+        log.info("Found mods for {}", pid);
+
+        DatastreamVersion current = modsVersions.get(modsVersions.size() - 1);
+        directoryManager.writeMods(pid, current.getBodyEl());
+    }
+
     private boolean isMarkedForDeletion(Resource resc) {
         return resc.hasLiteral(FedoraProperty.state.getProperty(), "Deleted");
     }
@@ -303,6 +321,10 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
         this.pidMinter = pidMinter;
+    }
+
+    public void setDirectoryManager(DepositDirectoryManager directoryManager) {
+        this.directoryManager = directoryManager;
     }
 
     public PID getPid() {

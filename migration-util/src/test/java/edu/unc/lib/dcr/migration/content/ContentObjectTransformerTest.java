@@ -26,7 +26,10 @@ import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraPropert
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.contains;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder.DEFAULT_CREATED_DATE;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder.DEFAULT_LAST_MODIFIED;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.file.Files.newOutputStream;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertEquals;
@@ -38,6 +41,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -48,6 +52,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 import org.jgroups.util.UUID;
 import org.junit.Before;
@@ -56,6 +61,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
@@ -82,11 +88,15 @@ public class ContentObjectTransformerTest {
 
     private Path datastreamsPath;
 
+    private Path depositBasePath;
+
     private PID depositPid;
 
     private ContentObjectTransformerManager factory;
 
     private DepositModelManager modelManager;
+
+    private DepositDirectoryManager directoryManager;
 
     private RepositoryPIDMinter pidMinter;
 
@@ -100,17 +110,20 @@ public class ContentObjectTransformerTest {
         datastreamsPath = tmpFolder.newFolder("datastreams").toPath();
         objectsPath = tmpFolder.newFolder("objects").toPath();
         File tdbDir = tmpFolder.newFolder("tdb");
+        depositBasePath = tmpFolder.newFolder("deposits").toPath();
 
         pidMinter = new RepositoryPIDMinter();
 
         depositPid = pidMinter.mintDepositRecordPid();
         modelManager = new DepositModelManager(depositPid, tdbDir.toString());
+        directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
         factory = new ContentObjectTransformerManager();
         factory.setPathIndex(pathIndex);
         factory.setModelManager(modelManager);
         factory.setPidMinter(pidMinter);
         factory.setTopLevelAsUnit(true);
+        factory.setDirectoryManager(directoryManager);
     }
 
     @Test
@@ -205,6 +218,31 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformWorkWithMods() throws Exception {
+        PID workPid = makePid();
+
+        Model model = createContainerModel(workPid, AGGREGATE_WORK);
+
+        Document foxml = new FoxmlDocumentBuilder(workPid, "work")
+                .relsExtModel(model)
+                .withDatastreamVersion(makeModsDatastream("My Work"))
+                .build();
+        serializeFoxml(objectsPath, workPid, foxml);
+
+        ContentObjectTransformer transformer = factory.createTransformer(workPid, Cdr.Folder);
+        transformer.invoke();
+
+        Model depModel = modelManager.getReadModel();
+        Resource resc = depModel.getResource(workPid.getRepositoryPath());
+
+        assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(resc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(resc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+
+        assertMods(workPid, "My Work");
+    }
+
+    @Test
     public void transformWorkWithFile() throws Exception {
         PID child1Pid = makePid();
         Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
@@ -263,6 +301,7 @@ public class ContentObjectTransformerTest {
                 .relsExtModel(createFileModel(originalPid))
                 .withDatastreamVersion(createDataFileVersion())
                 .createdDate(objectCreated)
+                .withDatastreamVersion(makeModsDatastream("My File"))
                 .build();
         serializeFoxml(objectsPath, originalPid, foxml1);
 
@@ -295,6 +334,9 @@ public class ContentObjectTransformerTest {
         assertTrue(fileResc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
         assertTrue(fileResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
         assertTrue(fileResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+
+        // Work should have the MODS
+        assertMods(originalPid, "My File");
     }
 
     @Test
@@ -509,11 +551,32 @@ public class ContentObjectTransformerTest {
         return PIDs.get(UUID.randomUUID().toString());
     }
 
-    public Path serializeFoxml(Path destDir, PID pid, Document doc) throws IOException {
+    private DatastreamVersion makeModsDatastream(String title) {
+        Document doc = new Document();
+        doc.addContent(new Element("mods", MODS_V3_NS)
+                .addContent(new Element("titleInfo", MODS_V3_NS)
+                        .addContent(new Element("title", MODS_V3_NS)
+                                .setText(title))));
+        DatastreamVersion modsDs = new DatastreamVersion(null, MODS_DS, MODS_DS + ".0", DEFAULT_CREATED_DATE, "100", "text/xml");
+        modsDs.setBodyEl(doc.getRootElement());
+        return modsDs;
+    }
+
+    private Path serializeFoxml(Path destDir, PID pid, Document doc) throws IOException {
         Path xmlPath = destDir.resolve("uuid_" + pid.getId() + ".xml");
         OutputStream outStream = newOutputStream(xmlPath);
         new XMLOutputter().output(doc, outStream);
         when(pathIndex.getPath(pid)).thenReturn(xmlPath);
         return xmlPath;
+    }
+
+    private void assertMods(PID pid, String expectedTitle) throws Exception {
+        Path modsPath = directoryManager.getDescriptionDir().resolve(pid.getId() + ".xml");
+        assertTrue("MODS did not exist", Files.exists(modsPath));
+        Document modsDoc = createSAXBuilder().build(modsPath.toFile());
+        String resultTitle = modsDoc.getRootElement().getChild("titleInfo", MODS_V3_NS)
+                .getChild("title", MODS_V3_NS)
+                .getText();
+        assertEquals("MODS title did not match", expectedTitle, resultTitle);
     }
 }
