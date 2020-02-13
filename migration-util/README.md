@@ -43,5 +43,10 @@ java -jar migration-util/target/dcr-migration-util.jar path_index list_paths <li
 for file in $(</tmp/pull_list.txt); do cp "$file" /path/to/dest; done
 ```
 
+## Transform a tree of content objects
+```
+java -Dfcrepo.baseUri=http://dcr.lib.unc.edu/fcrepo/rest/ -jar migration-util/target/dcr-migration-util.jar transform_content <id of top level object to transform>
+```
+
 ## Retrieve generate deposit model in turtle format
 `java -Dfcrepo.baseUri=http://dcr.lib.unc.edu/fcrepo/rest/ -jar migration-util/target/dcr-migration-util.jar view_deposit_model <deposit id> -t`
