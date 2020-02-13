@@ -15,18 +15,15 @@
  */
 package edu.unc.lib.deposit.transfer;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -136,8 +133,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         techmdDir = new File(depositDir, TECHMD_DIR);
         techmdDir.mkdir();
-        modsDir = new File(depositDir, DESCRIPTION_DIR);
-        modsDir.mkdir();
     }
 
     @Test
@@ -173,22 +168,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         String modsContent = "This is pretty much mods";
         addModsFile(workBag, modsContent, false);
-
-        job.run();
-
-        Model model = job.getReadOnlyModel();
-        Resource postWorkResc = model.getResource(workBag.getURI());
-
-        assertModsFileTransferred(postWorkResc, modsContent);
-    }
-
-    @Test
-    public void depositWithFolderWithHashedMods() throws Exception {
-        Bag workBag = addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
-
-        String modsContent = "This is pretty much mods";
-        addModsFile(workBag, modsContent, true);
 
         job.run();
 
@@ -343,15 +322,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private void addModsFile(Resource resc, String content, boolean hashed) throws Exception {
         PID pid = PIDs.get(resc.getURI());
-        Path modsPath = modsDir.toPath();
-        File modsFile = new File(modsDir, pid.getId() + ".xml");
-        if (hashed) {
-            String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            modsPath = modsPath.resolve(hashing);
-        }
-        modsPath = modsPath.resolve(pid.getId() + ".xml");
-
-        modsFile.createNewFile();
-        FileUtils.writeStringToFile(modsFile, content, UTF_8);
+        File modsFile = job.getModsPath(pid, true).toFile();
+        writeStringToFile(modsFile, content, UTF_8);
     }
 }

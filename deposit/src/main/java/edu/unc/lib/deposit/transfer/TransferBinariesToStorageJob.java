@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -133,7 +134,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         // add descStorageUri if doesn't already exist. It will exist in a resume scenario.
         if (!resc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
             Path modsPath = getModsPath(objPid);
-            if (modsPath == null) {
+            if (!Files.exists(modsPath)) {
                 return;
             }
 

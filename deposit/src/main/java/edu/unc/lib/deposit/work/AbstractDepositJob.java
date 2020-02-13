@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -220,24 +219,24 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     /**
-     * Get the path to an existing MODS file for the given pid.
+     * Get the path where MODS should be stored for the given pid
      *
-     * @param pid
-     * @return
+     * @param pid pid of the object
+     * @return path for mods
      */
-    protected Path getModsPath(PID pid) {
-        Path descDir = getDescriptionDir().toPath();
-        Path modsPath = descDir.resolve(pid.getId() + ".xml");
-        if (Files.exists(modsPath)) {
-            return modsPath;
-        }
-        String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path hashedPath = modsPath.resolve(hashing).resolve(pid.getId() + ".xml");
+    public Path getModsPath(PID pid) {
+        return getModsPath(pid, false);
+    }
 
-        if (Files.exists(hashedPath)) {
-            return hashedPath;
-        }
-        return null;
+    /**
+     * Get the path where MODS should be stored for the given pid
+     *
+     * @param pid pid of the object
+     * @param createDirs if true, then parent directories for path will be created
+     * @return path for mods
+     */
+    public Path getModsPath(PID pid, boolean createDirs) {
+        return getMetadataPath(getDescriptionDir(), pid, ".xml", createDirs);
     }
 
     public File getDepositsDirectory() {
@@ -312,9 +311,24 @@ public abstract class AbstractDepositJob implements Runnable {
         }
     }
 
-    protected File getPremisFile(PID pid) {
-        return Paths.get(depositDirectory.getAbsolutePath(), DepositConstants.EVENTS_DIR,
-                pid.getUUID() + ".nt").toFile();
+    public File getPremisFile(PID pid) {
+        return getMetadataPath(eventsDirectory, pid, ".nt", true).toFile();
+    }
+
+    private Path getMetadataPath(File baseDir, PID pid, String extension, boolean createDirs) {
+        Path mdBasePath = baseDir.toPath();
+
+        String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        Path hashedPath = mdBasePath.resolve(hashing);
+        if (createDirs) {
+            try {
+                Files.createDirectories(hashedPath);
+            } catch (IOException e) {
+                failJob(e, "Unable to create metadata path {0}", hashedPath);
+            }
+        }
+
+        return hashedPath.resolve(pid.getId() + extension);
     }
 
     /**

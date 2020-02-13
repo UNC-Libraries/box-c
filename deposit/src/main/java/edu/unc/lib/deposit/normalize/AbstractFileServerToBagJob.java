@@ -236,9 +236,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         // Persist the MODS file to disk if there were any fields added
         if (!mods.getChildren().isEmpty()) {
-            final File modsFolder = getDescriptionDir();
-            modsFolder.mkdirs();
-            File modsFile = new File(modsFolder, containerPID.getUUID() + ".xml");
+            File modsFile = getModsPath(containerPID, true).toFile();
             try (FileOutputStream fos = new FileOutputStream(modsFile)) {
                 new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
             } catch (IOException e) {

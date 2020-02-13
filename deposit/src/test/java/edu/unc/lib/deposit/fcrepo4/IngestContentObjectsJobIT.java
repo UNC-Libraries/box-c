@@ -27,6 +27,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -515,13 +517,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void addDescriptionTest() throws Exception {
-        File modsFolder = job.getDescriptionDir();
-        modsFolder.mkdir();
-
         PID folderPid = pidMinter.mintContentPid();
 
-        File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
-        modsFile.createNewFile();
+        Path modsPath = job.getModsPath(folderPid, true);
+        Files.createFile(modsPath);
 
         String label = "testfolder";
 
@@ -533,7 +532,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
         folderBag.addProperty(CdrDeposit.label, label);
-        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsFile.toPath().toUri().toString());
+        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsPath.toUri().toString());
 
         depBag.add(folderBag);
 
@@ -588,12 +587,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void addPremisEventsTest() throws Exception {
-        File premisEventsDir = job.getEventsDirectory();
-        premisEventsDir.mkdir();
-
         PID folderObjPid = pidMinter.mintContentPid();
 
-        File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".nt");
+        File premisEventsFile = job.getPremisFile(folderObjPid);
         premisEventsFile.createNewFile();
 
         String label = "testfolder";

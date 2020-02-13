@@ -84,7 +84,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 
         for (String resourcePID : resourcePIDs) {
             PID pid = PIDs.get(resourcePID);
-            File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
+            File modsFile = getModsPath(pid).toFile();
 
             // Check if the resource has a description
             if (modsFile.exists()) {
