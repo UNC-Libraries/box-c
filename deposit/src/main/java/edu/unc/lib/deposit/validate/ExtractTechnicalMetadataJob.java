@@ -23,15 +23,17 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newBufferedWriter;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
@@ -109,9 +111,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         Model model = getWritableModel();
-
-        // Create the techmd report directory if it doesn't exist
-        getTechMdDirectory().mkdir();
 
         // Get the list of files that need processing
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
@@ -228,24 +227,22 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
         // Get the list of existing techmd reports from previous runs
         File techmdDir = getTechMdDirectory();
-        String[] techmdFilenames = techmdDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".xml");
-            }
-        });
-
-        // Remove the previously processed objects from the list of staging areas to work on
-        for (String existingFilename : techmdFilenames) {
-            String existingUuid = existingFilename.substring(0,  existingFilename.lastIndexOf('.'));
-
-            Iterator<Entry<PID, String>> stagingIt = stagingList.iterator();
-            while (stagingIt.hasNext()) {
-                Entry<PID, String> entry = stagingIt.next();
-                if (entry.getKey().getId().equals(existingUuid)) {
-                    stagingIt.remove();
-                }
-            }
+        try {
+            Files.walk(techmdDir.toPath())
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".xml"))
+                    .map(p -> PIDs.get(substringBeforeLast(p.getFileName().toString(), ".")))
+                    .forEach(existingPid -> {
+                        Iterator<Entry<PID, String>> stagingIt = stagingList.iterator();
+                        while (stagingIt.hasNext()) {
+                            Entry<PID, String> entry = stagingIt.next();
+                            if (entry.getKey().equals(existingPid)) {
+                                stagingIt.remove();
+                            }
+                        }
+                    });
+        } catch (IOException e) {
+            failJob(e, "Failed to list techmd files in {0}", techmdDir);
         }
 
         return stagingList;
@@ -452,10 +449,9 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     }
 
     private void writePremisReport(PID objPid, Document premisDoc) {
-        String uuid = objPid.getUUID();
-        File reportFile = new File(getTechMdDirectory(), uuid + ".xml");
+        Path reportFile = getTechMdPath(objPid, true);
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile))) {
+        try (BufferedWriter writer = newBufferedWriter(reportFile)) {
             xmlOutputter.output(premisDoc, writer);
         } catch (IOException e) {
             failJob(e, "Failed to persist premis report for object {0} to path {1}", objPid, reportFile);

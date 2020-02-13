@@ -27,7 +27,6 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -147,7 +146,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
-            URI stagingUri = Paths.get(getTechMdDirectory().getAbsolutePath(), objPid.getId() + ".xml").toUri();
+            URI stagingUri = getTechMdPath(objPid, false).toUri();
             URI storageUri = transferSession.transfer(fitsPid, stagingUri);
             resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
         }

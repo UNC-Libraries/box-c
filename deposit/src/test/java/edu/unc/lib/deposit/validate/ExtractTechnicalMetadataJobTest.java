@@ -30,6 +30,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -262,8 +264,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         techmdDir.mkdir();
         PID skippedPid = addFileObject(depositBag, "/skipped/object.jpg", null, null);
-        File skippedFile = new File(techmdDir, skippedPid.getUUID() + ".xml");
-        skippedFile.createNewFile();
+        Path skippedPath = job.getTechMdPath(skippedPid, true);
+        Files.createFile(skippedPath);
 
         PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, null, null);
 
@@ -309,7 +311,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         assertEquals("Incorrect number of reports in output dir",
                 numberReports, techmdDir.list().length);
 
-        File reportFile = new File(techmdDir, filePid.getUUID() + ".xml");
+        File reportFile = job.getTechMdPath(filePid, false).toFile();
         assertTrue("Report file not created", reportFile.exists());
 
         Document premisDoc = new SAXBuilder().build(new FileInputStream(reportFile));

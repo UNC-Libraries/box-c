@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
@@ -34,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -158,7 +158,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
 
-    private File techmdDir;
     private Path storageLocPath;
 
     @Mock
@@ -195,9 +194,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setupDestination();
 
         FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
-
-        techmdDir = new File(depositDir, TECHMD_DIR);
-        techmdDir.mkdir();
 
         storageLocPath = tmpFolder.newFolder("storageLoc").toPath();
 
@@ -654,9 +650,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         parent.add(fileResc);
 
         // Create the accompanying fake FITS report file
-        File fitsFile = new File(techmdDir, filePid.getUUID() + ".xml");
-        fitsFile.createNewFile();
-        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsFile.toPath().toUri().toString());
+        Path fitsPath = job.getTechMdPath(filePid, true);
+        Files.createFile(fitsPath);
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsPath.toUri().toString());
 
         return filePid;
     }

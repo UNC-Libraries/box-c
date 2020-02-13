@@ -315,6 +315,10 @@ public abstract class AbstractDepositJob implements Runnable {
         return getMetadataPath(eventsDirectory, pid, ".nt", true).toFile();
     }
 
+    public Path getTechMdPath(PID pid, boolean createDirs) {
+        return getMetadataPath(getTechMdDirectory(), pid, ".xml", createDirs);
+    }
+
     private Path getMetadataPath(File baseDir, PID pid, String extension, boolean createDirs) {
         Path mdBasePath = baseDir.toPath();
 
