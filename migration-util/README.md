@@ -36,4 +36,17 @@ java -jar migration-util/target/dcr-migration-util.jar path_index count
 
 # Get all the paths for a uuid
 java -jar migration-util/target/dcr-migration-util.jar path_index get_paths <uuid>
+	
+# List all paths for multiple uuids
+java -jar migration-util/target/dcr-migration-util.jar path_index list_paths <list file>
+### the result could then be used to pull files
+for file in $(</tmp/pull_list.txt); do cp "$file" /path/to/dest; done
 ```
+
+## Transform a tree of content objects
+```
+java -Dfcrepo.baseUri=http://dcr.lib.unc.edu/fcrepo/rest/ -jar migration-util/target/dcr-migration-util.jar transform_content <id of top level object to transform>
+```
+
+## Retrieve generate deposit model in turtle format
+`java -Dfcrepo.baseUri=http://dcr.lib.unc.edu/fcrepo/rest/ -jar migration-util/target/dcr-migration-util.jar view_deposit_model <deposit id> -t`

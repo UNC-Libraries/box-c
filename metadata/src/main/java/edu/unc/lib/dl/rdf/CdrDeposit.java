@@ -48,6 +48,10 @@ public class CdrDeposit {
     public static final Property createTime = createProperty(
             "http://cdr.unc.edu/definitions/deposit#createTime" );
 
+    /** Last modified timestamp of this file on its original storage */
+    public static final Property lastModifiedTime = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#lastModifiedTime");
+
     /** Filename to provide for this object in the repository */
     public static final Property label = createProperty(
             "http://cdr.unc.edu/definitions/deposit#label" );
@@ -67,6 +71,10 @@ public class CdrDeposit {
     /** Location URI for this object in its original storage location */
     public static final Property originalLocation = createProperty(
             "http://cdr.unc.edu/definitions/deposit#originalLocation" );
+
+    /** URI referencing the resource which represents the original deposit for an object */
+    public static final Property originalDeposit = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#originalDeposit" );
 
     /** SHA1 checksum for this binary object */
     public static final Property sha1sum = createProperty(
