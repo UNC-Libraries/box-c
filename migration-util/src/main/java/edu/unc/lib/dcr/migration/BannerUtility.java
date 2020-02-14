@@ -16,14 +16,12 @@
 package edu.unc.lib.dcr.migration;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.InputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 /**
@@ -52,11 +50,10 @@ public class BannerUtility {
     }
 
     private static String loadFile(String rescPath) {
-        URL fileUrl = BannerUtility.class.getResource("/classes/" + rescPath);
+        InputStream stream = BannerUtility.class.getResourceAsStream("/" + rescPath);
         try {
-            File file = new File(fileUrl.toURI());
-            return readFileToString(file, UTF_8);
-        } catch (IOException | URISyntaxException e) {
+            return IOUtils.toString(stream, UTF_8);
+        } catch (IOException e) {
             log.error("Failed to load banner", e);
             return "";
         }
