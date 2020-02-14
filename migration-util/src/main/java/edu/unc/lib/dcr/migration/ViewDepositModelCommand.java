@@ -65,8 +65,6 @@ public class ViewDepositModelCommand implements Callable<Integer> {
 
         DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
 
-        depositModelManager.commit();
-
         RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
 
         output.info(IOUtils.toString(streamModel(depositModelManager.getReadModel(), format), UTF_8));
