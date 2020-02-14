@@ -26,7 +26,9 @@ import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
+import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
@@ -60,6 +62,10 @@ public class TransformContentCommand implements Callable<Integer> {
             description = "Nest transformed logs in hashed subdirectories. Default: true")
     private boolean hashNesting = true;
 
+    @Option(names = {"--deposit-into"},
+            description = "Submits the transformed content for deposit to the provided container UUID")
+    private String depositInto;
+
     @Override
     public Integer call() throws Exception {
         long start = System.currentTimeMillis();
@@ -92,6 +98,25 @@ public class TransformContentCommand implements Callable<Integer> {
         int result = transformService.perform();
 
         output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+
+        if (depositInto != null) {
+            if (result != 0) {
+                output.info("Encountered issues during transformation, skipping deposit submission");
+                return result;
+            }
+
+            PID destinationPid = PIDs.get(depositInto);
+
+            DepositSubmissionService depositService = new DepositSubmissionService(
+                    parentCommand.redisHost, parentCommand.redisPort);
+
+            output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
+
+            result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
+                    depositPid, destinationPid);
+
+            output.info("Deposit submitted");
+        }
 
         return result;
     }

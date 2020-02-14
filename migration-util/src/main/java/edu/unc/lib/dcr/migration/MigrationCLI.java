@@ -57,6 +57,27 @@ public class MigrationCLI implements Callable<Integer> {
             description = "Path where deposit directories will be stored. Defaults to home dir.")
     protected Path depositBaseDir;
 
+    @Option(names = {"-u", "--username"},
+            defaultValue = "${sys:user.name}",
+            description = "User performing this action. Defaults to current user.")
+    protected String username;
+
+    @Option(names = {"--groups"},
+            defaultValue = "unc:app:lib:cdr:migrationGroup",
+            description = "Groups used for permissions evaluations. Defaults to the migration group.")
+    protected String groups;
+
+    @Option(names = {"--redis-host"},
+            defaultValue = "localhost",
+            description = "Host name for redis. Default localhost.")
+    protected String redisHost;
+
+    @Option(names = {"--redis-port"},
+            defaultValue = "6379",
+            description = "Port for redis. Default 6379.")
+    protected int redisPort;
+>>>>>>> Add command for submitting deposit to deposit pipeline, and flag for immediately sending transformed deposits to pipeline
+
     private MigrationCLI() {
     }
 
