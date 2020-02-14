@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -31,6 +32,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Collection;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.ModelCom;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +60,8 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -68,6 +73,8 @@ import edu.unc.lib.dl.test.SelfReturningAnswer;
  *
  */
 public class AddContainerServiceTest {
+
+    private static final String STORAGE_LOC_ID = "loc1";
 
     @Mock
     private AccessControlService aclService;
@@ -87,11 +94,17 @@ public class AddContainerServiceTest {
     private AccessGroupSet groups;
     @Mock
     private PremisLogger premisLogger;
+    @Mock
+    private StorageLocationManager storageLocationManager;
+    @Mock
+    private StorageLocation storageLocation;
 
     @Captor
     private ArgumentCaptor<Collection<PID>> destinationsCaptor;
     @Captor
     private ArgumentCaptor<Collection<PID>> addedContainersCaptor;
+    @Captor
+    private ArgumentCaptor<Model> modelCaptor;
 
     private PremisEventBuilder eventBuilder;
     private PID parentPid;
@@ -117,6 +130,9 @@ public class AddContainerServiceTest {
 
         }).when(tx).cancel(any(Throwable.class));
 
+        when(storageLocationManager.getStorageLocation(any(PID.class))).thenReturn(storageLocation);
+        when(storageLocation.getId()).thenReturn(STORAGE_LOC_ID);
+
         parentPid = PIDs.get(UUID.randomUUID().toString());
         childPid = PIDs.get(UUID.randomUUID().toString());
 
@@ -126,6 +142,7 @@ public class AddContainerServiceTest {
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setTransactionManager(txManager);
         service.setOperationsMessageSender(messageSender);
+        service.setStorageLocationManager(storageLocationManager);
     }
 
     @Test(expected = TransactionCancelledException.class)
@@ -157,14 +174,19 @@ public class AddContainerServiceTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void addFolderToCollectionTest() {
         CollectionObject collection = mock(CollectionObject.class);
         FolderObject folder = mock(FolderObject.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
-        when(repoObjFactory.createFolderObject(any(PID.class), any(ModelCom.class))).thenReturn(folder);
-        when(folder.getPid()).thenReturn(childPid);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<FolderObject>() {
+            @Override
+            public FolderObject answer(InvocationOnMock invocation) throws Throwable {
+                childPid = (PID) invocation.getArguments()[0];
+                when(folder.getPid()).thenReturn(childPid);
+                return folder;
+            }
+        });
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
         service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
@@ -172,7 +194,12 @@ public class AddContainerServiceTest {
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
-                addedContainersCaptor.capture(), any(Collection.class), anyString());
+                addedContainersCaptor.capture(), anyCollectionOf(PID.class), anyString());
+
+        verify(repoObjFactory).createFolderObject(any(PID.class), modelCaptor.capture());
+        Model model = modelCaptor.getValue();
+        Resource folderResc = model.getResource(childPid.getRepositoryPath());
+        assertTrue(folderResc.hasLiteral(Cdr.storageLocation, STORAGE_LOC_ID));
 
         Collection<PID> collections = destinationsCaptor.getValue();
         assertEquals(collections.size(), 1);
@@ -182,15 +209,20 @@ public class AddContainerServiceTest {
         assertTrue(folders.contains(childPid));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void addWorkToFolderTest() {
         WorkObject work = mock(WorkObject.class);
         FolderObject folder = mock(FolderObject.class);
 
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
-        when(repoObjFactory.createWorkObject(any(PID.class), any(ModelCom.class))).thenReturn(work);
-        when(work.getPid()).thenReturn(childPid);
+        when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<WorkObject>() {
+            @Override
+            public WorkObject answer(InvocationOnMock invocation) throws Throwable {
+                childPid = (PID) invocation.getArguments()[0];
+                when(work.getPid()).thenReturn(childPid);
+                return work;
+            }
+        });
         when(work.getPremisLog()).thenReturn(premisLogger);
 
         service.addContainer(agent, parentPid, "work", false, Cdr.Work);
@@ -198,7 +230,12 @@ public class AddContainerServiceTest {
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
-                addedContainersCaptor.capture(), any(Collection.class), anyString());
+                addedContainersCaptor.capture(), anyCollectionOf(PID.class), anyString());
+
+        verify(repoObjFactory).createWorkObject(any(PID.class), modelCaptor.capture());
+        Model model = modelCaptor.getValue();
+        Resource folderResc = model.getResource(childPid.getRepositoryPath());
+        assertTrue(folderResc.hasLiteral(Cdr.storageLocation, STORAGE_LOC_ID));
 
         Collection<PID> folders = destinationsCaptor.getValue();
         assertEquals(folders.size(), 1);
