@@ -16,7 +16,7 @@
 package edu.unc.lib.dcr.migration.deposit;
 
 import static edu.unc.lib.dl.util.DepositMethod.BXC3_TO_5_MIGRATION_UTIL;
-import static edu.unc.lib.dl.util.PackagingType.PRECONSTRUCTED_DEPOSIT;
+import static edu.unc.lib.dl.util.PackagingType.BAG_WITH_N3;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -64,7 +64,7 @@ public class DepositSubmissionService {
     public int submitDeposit(String depositorName, String depositorGroup, PID depositPid, PID destination) {
         AgentPrincipals principals = new AgentPrincipals(depositorName, new AccessGroupSet(depositorGroup));
 
-        DepositData depositData = new DepositData(null, null, PRECONSTRUCTED_DEPOSIT,
+        DepositData depositData = new DepositData(null, null, BAG_WITH_N3,
                 BXC3_TO_5_MIGRATION_UTIL.getLabel(), principals);
         depositData.setDepositorEmail(depositorName + EMAIL_SUFFIX);
 

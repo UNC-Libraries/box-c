@@ -19,7 +19,7 @@ import static edu.unc.lib.dcr.migration.deposit.DepositSubmissionService.EMAIL_S
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositMethod.BXC3_TO_5_MIGRATION_UTIL;
-import static edu.unc.lib.dl.util.PackagingType.PRECONSTRUCTED_DEPOSIT;
+import static edu.unc.lib.dl.util.PackagingType.BAG_WITH_N3;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -91,7 +91,7 @@ public class DepositSubmissionServiceTest {
             Map<String, String> status) {
         assertEquals(depositPid.getId(), status.get(DepositField.uuid.name()));
         assertNotNull("Deposit submission time must be set", status.get(DepositField.submitTime.name()));
-        assertEquals(PRECONSTRUCTED_DEPOSIT.getUri(), status.get(DepositField.packagingType.name()));
+        assertEquals(BAG_WITH_N3.getUri(), status.get(DepositField.packagingType.name()));
         assertEquals(BXC3_TO_5_MIGRATION_UTIL.getLabel(), status.get(DepositField.depositMethod.name()));
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR + EMAIL_SUFFIX, status.get(DepositField.depositorEmail.name()));
