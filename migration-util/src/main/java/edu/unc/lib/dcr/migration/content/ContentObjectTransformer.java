@@ -168,7 +168,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     private void populateContainerObject(Resource bxc3Resc, Resource resourceType, Model depositModel) {
-        Bag containerBag = depositModel.getBag(pid.getRepositoryPath());
+        Bag containerBag = depositModel.createBag(pid.getRepositoryPath());
         containerBag.addProperty(RDF.type, resourceType);
 
         List<PID> contained = listContained(bxc3Resc);
@@ -207,7 +207,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             fileResc = depositModel.getResource(pid.getRepositoryPath());
         } else {
             // Use the pid of the current object to make a new work object
-            workBag = depositModel.getBag(pid.getRepositoryPath());
+            workBag = depositModel.createBag(pid.getRepositoryPath());
             workBag.addProperty(RDF.type, Cdr.Work);
 
             // Build a new resource for the file object

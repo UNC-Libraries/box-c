@@ -15,6 +15,13 @@
  */
 package edu.unc.lib.dcr.migration.content;
 
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+
+import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -26,10 +33,13 @@ import edu.unc.lib.dl.fedora.PID;
 public class ContentTransformationService {
 
     private PID startingPid;
+    private PID depositPid;
     private ContentObjectTransformerManager transformerManager;
+    private DepositModelManager modelManager;
 
-    public ContentTransformationService(String startingId, boolean topLevelAsUnit) {
+    public ContentTransformationService(PID depositPid, String startingId, boolean topLevelAsUnit) {
         this.startingPid = PIDs.get(startingId);
+        this.depositPid = depositPid;
     }
 
     /**
@@ -38,13 +48,25 @@ public class ContentTransformationService {
      * @return result code
      */
     public int perform() {
+        // Populate the bag for the deposit itself
+        Model depositObjModel = createDefaultModel();
+        Bag depResc = depositObjModel.createBag(depositPid.getRepositoryPath());
+        depResc.add(createResource(startingPid.getRepositoryPath()));
+        modelManager.addTriples(depositObjModel);
+
+        // Kick off transformation of the tree from the starting object
         transformerManager.createTransformer(startingPid, null)
                 .fork();
 
+        // Wait for all transformers to finish
         return transformerManager.awaitTransformers();
     }
 
     public void setTransformerManager(ContentObjectTransformerManager transformerManager) {
         this.transformerManager = transformerManager;
+    }
+
+    public void setModelManager(DepositModelManager modelManager) {
+        this.modelManager = modelManager;
     }
 }

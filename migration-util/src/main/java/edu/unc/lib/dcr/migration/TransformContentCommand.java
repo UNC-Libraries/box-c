@@ -92,8 +92,10 @@ public class TransformContentCommand implements Callable<Integer> {
         transformerManager.setPidMinter(pidMinter);
         transformerManager.setDirectoryManager(depositDirectoryManager);
 
-        ContentTransformationService transformService = new ContentTransformationService(startingId, topLevelAsUnit);
+        ContentTransformationService transformService = new ContentTransformationService(
+                depositPid, startingId, topLevelAsUnit);
         transformService.setTransformerManager(transformerManager);
+        transformService.setModelManager(depositModelManager);
 
         int result = transformService.perform();
 
