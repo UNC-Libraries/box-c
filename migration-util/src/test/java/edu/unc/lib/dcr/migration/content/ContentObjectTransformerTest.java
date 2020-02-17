@@ -34,6 +34,7 @@ import static java.nio.file.Files.newOutputStream;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -137,7 +138,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, folderPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(folderPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(folderPid, folderPid, Cdr.Folder);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -173,7 +174,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, folderPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(folderPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(folderPid, folderPid, Cdr.Folder);
         transformer.fork();
 
         int result = factory.awaitTransformers();
@@ -198,6 +199,51 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformFolderWithChildGenerateIds() throws Exception {
+        // Enable id generation
+        factory.setGenerateIds(true);
+
+        // Create the children objects' foxml
+        PID child1Pid = makePid();
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "work child")
+                .relsExtModel(createContainerModel(child1Pid, AGGREGATE_WORK))
+                .build();
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        // Create the parent's foxml
+        PID folderPid = makePid();
+        Model model = createContainerModel(folderPid);
+        addContains(model, folderPid, child1Pid);
+        Document foxml = new FoxmlDocumentBuilder(folderPid, "folder")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, folderPid, foxml);
+
+        ContentTransformationService service = new ContentTransformationService(depositPid, folderPid.getId(), false);
+        service.setModelManager(modelManager);
+        service.setTransformerManager(factory);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag depositBag = depModel.getBag(depositPid.getRepositoryPath());
+        List<RDFNode> depChildren = depositBag.iterator().toList();
+        assertEquals(1, depChildren.size());
+
+        Bag parentBag = depModel.getBag(depChildren.get(0).asResource());
+        assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
+        assertNotEquals(folderPid.getRepositoryPath(), parentBag.getURI());
+
+        List<RDFNode> bagChildren = parentBag.iterator().toList();
+        assertEquals(1, bagChildren.size());
+        Resource child1Resc = (Resource) bagChildren.get(0);
+
+        assertNotEquals(child1Pid.getRepositoryPath(), child1Resc.getURI());
+        assertTrue(child1Resc.hasProperty(RDF.type, Cdr.Work));
+    }
+
+    @Test
     public void transformWorkWithNoChildren() throws Exception {
         PID workPid = makePid();
 
@@ -206,7 +252,7 @@ public class ContentObjectTransformerTest {
         Document foxml = new FoxmlDocumentBuilder(workPid, "work").relsExtModel(model).build();
         serializeFoxml(objectsPath, workPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(workPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(workPid, workPid, Cdr.Folder);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -262,7 +308,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, workPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(workPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(workPid, workPid, Cdr.Folder);
         transformer.fork();
 
         int result = factory.awaitTransformers();
@@ -292,6 +338,51 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformWorkWithFileWithGeneratedIds() throws Exception {
+        factory.setGenerateIds(true);
+
+        PID child1Pid = makePid();
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
+                .relsExtModel(createFileModel(child1Pid))
+                .withDatastreamVersion(createDataFileVersion())
+                .build();
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        PID workPid = makePid();
+        Model model = createContainerModel(workPid, AGGREGATE_WORK);
+        addContains(model, workPid, child1Pid);
+        addRelationship(model, workPid, defaultWebObject.getProperty(), child1Pid);
+
+        Document foxml = new FoxmlDocumentBuilder(workPid, "work")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, workPid, foxml);
+
+        ContentTransformationService service = new ContentTransformationService(depositPid, workPid.getId(), false);
+        service.setModelManager(modelManager);
+        service.setTransformerManager(factory);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag depositBag = depModel.getBag(depositPid.getRepositoryPath());
+        List<RDFNode> depChildren = depositBag.iterator().toList();
+        assertEquals(1, depChildren.size());
+
+        Bag parentBag = depModel.getBag(depChildren.get(0).asResource());
+        assertTrue(parentBag.hasProperty(RDF.type, Cdr.Work));
+        assertNotEquals(workPid.getRepositoryPath(), parentBag.getURI());
+
+        List<RDFNode> bagChildren = parentBag.iterator().toList();
+        assertEquals(1, bagChildren.size());
+        Resource child1Resc = (Resource) bagChildren.get(0);
+
+        assertNotEquals(child1Pid.getRepositoryPath(), child1Resc.getURI());
+        assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
+    }
+
+    @Test
     public void transformStandaloneFile() throws Exception {
         // Give the object a separate created time from its data file
         String objectCreated = "2011-10-01T11:11:11.111Z";
@@ -305,7 +396,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, originalPid, foxml1);
 
-        ContentObjectTransformer transformer = factory.createTransformer(originalPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(originalPid, originalPid, Cdr.Folder);
         transformer.fork();
 
         int result = factory.awaitTransformers();
@@ -350,7 +441,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, collPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(collPid, Cdr.AdminUnit);
+        ContentObjectTransformer transformer = factory.createTransformer(collPid, collPid, Cdr.AdminUnit);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -374,7 +465,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, collPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(collPid, null);
+        ContentObjectTransformer transformer = factory.createTransformer(collPid, collPid, null);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -398,7 +489,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, collPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(collPid, null);
+        ContentObjectTransformer transformer = factory.createTransformer(collPid, collPid, null);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -422,7 +513,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, pid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(pid, Cdr.AdminUnit);
+        ContentObjectTransformer transformer = factory.createTransformer(pid, pid, Cdr.AdminUnit);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();
@@ -448,7 +539,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, folderPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(folderPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(folderPid, folderPid, Cdr.Folder);
         transformer.fork();
 
         int result = factory.awaitTransformers();
@@ -480,7 +571,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, folderPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(folderPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(folderPid, folderPid, Cdr.Folder);
         transformer.fork();
 
         int result = factory.awaitTransformers();

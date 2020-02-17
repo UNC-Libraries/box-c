@@ -62,6 +62,10 @@ public class TransformContentCommand implements Callable<Integer> {
             description = "Nest transformed logs in hashed subdirectories. Default: true")
     private boolean hashNesting = true;
 
+    @Option(names = {"-g", "--generate-ids"},
+            description = "Generate new ids for transformed objects, for testing.")
+    private boolean generateIds;
+
     @Option(names = {"--deposit-into"},
             description = "Submits the transformed content for deposit to the provided container UUID")
     private String depositInto;
@@ -91,6 +95,7 @@ public class TransformContentCommand implements Callable<Integer> {
         transformerManager.setTopLevelAsUnit(topLevelAsUnit);
         transformerManager.setPidMinter(pidMinter);
         transformerManager.setDirectoryManager(depositDirectoryManager);
+        transformerManager.setGenerateIds(generateIds);
 
         ContentTransformationService transformService = new ContentTransformationService(
                 depositPid, startingId, topLevelAsUnit);

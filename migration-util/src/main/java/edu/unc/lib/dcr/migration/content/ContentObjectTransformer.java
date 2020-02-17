@@ -43,8 +43,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
@@ -88,36 +90,38 @@ public class ContentObjectTransformer extends RecursiveAction {
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
 
-    private PID pid;
+    private PID originalPid;
+    private PID newPid;
     private Resource parentType;
 
     /**
      *
      */
-    public ContentObjectTransformer(PID pid, Resource parentType) {
-        this.pid = pid;
+    public ContentObjectTransformer(PID originalPid, PID newPid, Resource parentType) {
+        this.originalPid = originalPid;
+        this.newPid = newPid;
         this.parentType = parentType;
     }
 
     @Override
     protected void compute() {
-        log.info("Tranforming {}", pid.getId());
-        Path foxmlPath = pathIndex.getPath(pid);
+        log.info("Tranforming {}", originalPid.getId());
+        Path foxmlPath = pathIndex.getPath(originalPid);
 
         // Deserialize the foxml document
         Document foxml;
         try {
             foxml = createSAXBuilder().build(newInputStream(foxmlPath));
         } catch (IOException | JDOMException e) {
-            throw new RepositoryException("Failed to read FOXML for " + pid, e);
+            throw new RepositoryException("Failed to read FOXML for " + originalPid, e);
         }
 
         // Retrieve all properties/relationships for the object
         Model model = getObjectModel(foxml);
-        Resource bxc3Resc = model.getResource(toBxc3Uri(pid));
+        Resource bxc3Resc = model.getResource(toBxc3Uri(originalPid));
 
         if (isMarkedForDeletion(bxc3Resc)) {
-            log.warn("Skipping transformation of object {}, it is marked for deletion", pid);
+            log.warn("Skipping transformation of object {}, it is marked for deletion", originalPid);
             return;
         }
 
@@ -135,7 +139,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             populateContainerObject(bxc3Resc, resourceType, depositModel);
         }
 
-        Resource depResc = depositModel.getResource(pid.getRepositoryPath());
+        Resource depResc = depositModel.getResource(newPid.getRepositoryPath());
 
         populateTimestamps(bxc3Resc, depResc);
         populateOriginalDeposit(bxc3Resc, depResc);
@@ -168,9 +172,10 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     private void populateContainerObject(Resource bxc3Resc, Resource resourceType, Model depositModel) {
-        Bag containerBag = depositModel.createBag(pid.getRepositoryPath());
+        Bag containerBag = depositModel.createBag(newPid.getRepositoryPath());
         containerBag.addProperty(RDF.type, resourceType);
 
+        Map<PID, PID> oldToNewPids = new HashMap<>();
         List<PID> contained = listContained(bxc3Resc);
         for (PID containedPid : contained) {
             // Make sure we can find FOXML for the child before we add it
@@ -180,11 +185,15 @@ public class ContentObjectTransformer extends RecursiveAction {
                 continue;
             }
 
+            // Determine PID to use for transformed child, in case we are generating or preserving ids.
+            PID newPid = manager.getTransformedPid(containedPid);
+            oldToNewPids.put(containedPid, newPid);
+
             // Add the child to its parent bag
-            containerBag.add(createResource(containedPid.getRepositoryPath()));
+            containerBag.add(createResource(newPid.getRepositoryPath()));
 
             // Spawn and execute transformer for children
-            ContentObjectTransformer childTransformer = manager.createTransformer(containedPid, resourceType);
+            ContentObjectTransformer childTransformer = manager.createTransformer(containedPid, newPid, resourceType);
             childTransformer.fork();
         }
 
@@ -192,6 +201,8 @@ public class ContentObjectTransformer extends RecursiveAction {
             Statement dwoStmt = bxc3Resc.getProperty(defaultWebObject.getProperty());
             if (dwoStmt != null) {
                 PID primaryObjPid = convertBxc3RefToPid(dwoStmt.getResource());
+                // Determine out the new pid of the primary object
+                primaryObjPid = oldToNewPids.get(primaryObjPid);
                 containerBag.addProperty(Cdr.primaryObject, createResource(primaryObjPid.getRepositoryPath()));
             }
         }
@@ -204,10 +215,10 @@ public class ContentObjectTransformer extends RecursiveAction {
         Resource fileResc;
         Bag workBag = null;
         if (Cdr.Work.equals(parentType)) {
-            fileResc = depositModel.getResource(pid.getRepositoryPath());
+            fileResc = depositModel.getResource(newPid.getRepositoryPath());
         } else {
             // Use the pid of the current object to make a new work object
-            workBag = depositModel.createBag(pid.getRepositoryPath());
+            workBag = depositModel.createBag(newPid.getRepositoryPath());
             workBag.addProperty(RDF.type, Cdr.Work);
 
             // Build a new resource for the file object
@@ -236,9 +247,9 @@ public class ContentObjectTransformer extends RecursiveAction {
         }
 
         // Populate the original file path
-        Path originalPath = pathIndex.getPath(pid, ORIGINAL_TYPE);
+        Path originalPath = pathIndex.getPath(originalPid, ORIGINAL_TYPE);
         if (originalPath == null) {
-            log.warn("No original file path for {}", pid);
+            log.warn("No original file path for {}", originalPid);
         } else {
             fileResc.addLiteral(stagingLocation, originalPath.toUri().toString());
         }
@@ -328,6 +339,6 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     public PID getPid() {
-        return pid;
+        return originalPid;
     }
 }

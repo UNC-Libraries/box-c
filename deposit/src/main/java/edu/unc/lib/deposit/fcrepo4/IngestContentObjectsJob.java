@@ -328,6 +328,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      */
     private FileObject addFileToWork(WorkObject work, Resource childResc)
             throws DepositException {
+        log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
 
         URI storageUri = URI.create(getPropertyValue(childResc, CdrDeposit.storageUri));

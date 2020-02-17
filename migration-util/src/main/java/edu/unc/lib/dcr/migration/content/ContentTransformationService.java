@@ -48,14 +48,18 @@ public class ContentTransformationService {
      * @return result code
      */
     public int perform() {
+        // Determine transformed id of starting object
+        PID newPid = transformerManager.getTransformedPid(startingPid);
+
         // Populate the bag for the deposit itself
         Model depositObjModel = createDefaultModel();
         Bag depResc = depositObjModel.createBag(depositPid.getRepositoryPath());
-        depResc.add(createResource(startingPid.getRepositoryPath()));
+        depResc.add(createResource(newPid.getRepositoryPath()));
         modelManager.addTriples(depositObjModel);
 
         // Kick off transformation of the tree from the starting object
-        transformerManager.createTransformer(startingPid, null)
+
+        transformerManager.createTransformer(startingPid, newPid, null)
                 .fork();
 
         // Wait for all transformers to finish
