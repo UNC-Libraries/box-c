@@ -164,11 +164,12 @@
 
             sortedRoles() {
                 let assigned = this.sortedUsers(this.display_roles.assigned.roles);
-                if (assigned.length > 0  && (this.sameRolesAll || assigned[0].principal_display === 'staff')) {
+                let inherited = this.sortedUsers(this.display_roles.inherited.roles);
+
+                if (assigned.length > 0  && (this.sameRolesAll || this.sameRolesNoInherited || [0].principal_display === 'staff')) {
                     assigned = [this.display_roles.assigned.roles[0]];
                 }
 
-                let inherited = this.sortedUsers(this.display_roles.inherited.roles);
                 if (this.sameRolesAll) {
                     inherited =  [this.display_roles.inherited.roles[0]];
                 }
@@ -178,6 +179,11 @@
 
             sameRolesAll() {
               return this.hasSameAssignedRoles && this.hasSameInheritedRoles;
+            },
+
+            sameRolesNoInherited() {
+                let inherited = this.display_roles.inherited.roles;
+                return inherited.length === 0 && this.hasSameAssignedRoles;
             },
 
             compareRoles() {
@@ -373,7 +379,7 @@
                     return users;
                 } else if (this.hasSameAssignedRoles && users[0].role === 'none' && users[1].role === 'none') {
                     type = 'staff';
-                } else if (this.hasSameInheritedRoles && this.hasSameAssignedRoles) {
+                } else if (this.sameRolesAll || this.sameRolesNoInherited) {
                     type = 'patron';
                 }
 
