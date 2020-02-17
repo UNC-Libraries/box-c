@@ -355,8 +355,8 @@ describe('patronRoles.vue', () => {
                 {principal: 'authenticated', role: 'none', principal_display: 'staff' }
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual([
-                {principal: 'everyone', role: 'none', principal_display: 'everyone' },
-                {principal: 'authenticated', role: 'none', principal_display: 'authenticated' }
+                {principal: 'everyone', role: 'none', principal_display: 'staff' },
+                {principal: 'authenticated', role: 'none', principal_display: 'staff' }
             ]);
             done();
         });
@@ -380,8 +380,8 @@ describe('patronRoles.vue', () => {
                 {principal: "authenticated", principal_display: "staff", role: 'none'}
             ]);
             expect(wrapper.vm.submit_roles.roles).toEqual([
-                {principal: 'everyone', role: 'none', principal_display: 'everyone'},
-                {principal: 'authenticated', role: 'none', principal_display: 'authenticated'}
+                {principal: 'everyone', role: 'none', principal_display: 'staff'},
+                {principal: 'authenticated', role: 'none', principal_display: 'staff'}
             ]);
             done();
         });
@@ -641,7 +641,54 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewOriginal',  principal_display: 'authenticated' },
             ],
             assigned: [
+                { principal: 'everyone', role: 'none',  principal_display: 'staff' },
+                { principal: 'authenticated', role: 'none',  principal_display: 'staff' }
+            ]
+        });
+    });
+
+    it("calculates display rows if there are no inherited roles and assigned roles are 'none'", () => {
+        wrapper.setData({
+            display_roles: {
+                inherited: {
+                    roles: []},
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'none',  principal_display: 'staff' },
+                        { principal: 'authenticated', role: 'none',  principal_display: 'staff' },
+                    ]
+                }
+
+            }
+        });
+
+        expect(wrapper.vm.sortedRoles).toEqual({
+            inherited: [],
+            assigned: [
                 { principal: 'everyone', role: 'none',  principal_display: 'staff' }
+            ]
+        });
+    });
+
+    it("calculates display rows if there are no inherited roles and assigned roles are the same", () => {
+        wrapper.setData({
+            display_roles: {
+                inherited: {
+                    roles: []},
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'patron' },
+                        { principal: 'authenticated', role: 'canViewMetadata',  principal_display: 'patron' },
+                    ]
+                }
+
+            }
+        });
+
+        expect(wrapper.vm.sortedRoles).toEqual({
+            inherited: [],
+            assigned: [
+                { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'patron' }
             ]
         });
     });
@@ -796,11 +843,6 @@ describe('patronRoles.vue', () => {
                     { principal: 'authenticated', role: "canViewOriginals" }
                 ], deleted: false, embargo: null }
         };
-
-        let role_list_display = [
-            { principal: 'everyone', role: 'none', principal_display: 'everyone' },
-            { principal: 'authenticated', role: 'canViewMetadata', principal_display: 'authenticated'}
-        ];
 
         wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
