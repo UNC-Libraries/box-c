@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,8 +99,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE2_MIMETYPE = "text/plain";
     private static final long FILE2_SIZE = 4L;
 
-    private File techmdDir;
-
     @Autowired
     private AccessControlService aclService;
     @Autowired
@@ -147,9 +146,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setupDestination();
 
         FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
-
-        techmdDir = new File(depositDir, TECHMD_DIR);
-        techmdDir.mkdir();
 
         // Create deposit record for this deposit to reference
         depositRecord = repoObjFactory.createDepositRecord(depositPid, null);
@@ -515,13 +511,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void addDescriptionTest() throws Exception {
-        File modsFolder = job.getDescriptionDir();
-        modsFolder.mkdir();
-
         PID folderPid = pidMinter.mintContentPid();
 
-        File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
-        modsFile.createNewFile();
+        Path modsPath = job.getModsPath(folderPid, true);
+        Files.createFile(modsPath);
 
         String label = "testfolder";
 
@@ -533,7 +526,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
         folderBag.addProperty(CdrDeposit.label, label);
-        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsFile.toPath().toUri().toString());
+        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsPath.toUri().toString());
 
         depBag.add(folderBag);
 
@@ -588,12 +581,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void addPremisEventsTest() throws Exception {
-        File premisEventsDir = job.getEventsDirectory();
-        premisEventsDir.mkdir();
-
         PID folderObjPid = pidMinter.mintContentPid();
 
-        File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".nt");
+        File premisEventsFile = job.getPremisFile(folderObjPid);
         premisEventsFile.createNewFile();
 
         String label = "testfolder";
@@ -644,7 +634,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         PID folderObjPid = pidMinter.mintContentPid();
 
-        File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
+        File premisEventsFile = job.getPremisFile(folderObjPid);
         premisEventsFile.createNewFile();
 
         String label = "testfolder";
@@ -718,9 +708,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         parent.add(fileResc);
 
         // Create the accompanying fake premis report file
-        File fitsFile = new File(techmdDir, filePid.getUUID() + ".xml");
-        fitsFile.createNewFile();
-        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsFile.toPath().toUri().toString());
+        Path fitsPath = job.getTechMdPath(filePid, true);
+        Files.createFile(fitsPath);
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsPath.toUri().toString());
 
         return filePid;
     }

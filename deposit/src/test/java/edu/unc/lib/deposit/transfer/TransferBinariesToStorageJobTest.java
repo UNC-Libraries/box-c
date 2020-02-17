@@ -19,11 +19,10 @@ import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.crea
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -84,8 +83,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private Model depositModel;
     private Bag depBag;
-    private File techmdDir;
-    private File modsDir;
 
     private Path loc1Path;
     private Path loc2Path;
@@ -130,11 +127,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         depositModel = job.getWritableModel();
         depBag = depositModel.createBag(depositPid.getRepositoryPath());
         depBag.addProperty(Cdr.storageLocation, LOC1_ID);
-
-        techmdDir = new File(depositDir, TECHMD_DIR);
-        techmdDir.mkdir();
-        modsDir = new File(depositDir, DESCRIPTION_DIR);
-        modsDir.mkdir();
     }
 
     @Test
@@ -169,7 +161,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         job.closeModel();
 
         String modsContent = "This is pretty much mods";
-        addModsFile(workBag, modsContent);
+        addModsFile(workBag, modsContent, false);
 
         job.run();
 
@@ -281,7 +273,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     private void assertFitsFileTransferred(Resource resc) throws Exception {
         PID objPid = PIDs.get(resc.getURI());
 
-        File fitsSource = new File(techmdDir, objPid.getId() + ".xml");
+        File fitsSource = job.getTechMdPath(objPid, false).toFile();
         assertFalse("FITS file should no longer exist in deposits directory", fitsSource.exists());
 
         URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
@@ -293,7 +285,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     private void assertModsFileTransferred(Resource resc, String expectedContent) throws Exception {
         PID objPid = PIDs.get(resc.getURI());
 
-        File modsSource = new File(modsDir, objPid.getId() + ".xml");
+        File modsSource = job.getModsPath(objPid).toFile();
         assertFalse("MODS file should no longer exist in deposits directory", modsSource.exists());
 
         URI modsUri = URI.create(resc.getProperty(CdrDeposit.descriptiveStorageUri).getString());
@@ -314,18 +306,16 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         objResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
 
         if (withFits) {
-            File fitsFile = new File(techmdDir, objPid.getId() + ".xml");
-            fitsFile.createNewFile();
+            Files.createFile(job.getTechMdPath(objPid, true));
         }
 
         parent.add(objResc);
         return objResc;
     }
 
-    private void addModsFile(Resource resc, String content) throws Exception {
+    private void addModsFile(Resource resc, String content, boolean hashed) throws Exception {
         PID pid = PIDs.get(resc.getURI());
-        File modsFile = new File(modsDir, pid.getId() + ".xml");
-        modsFile.createNewFile();
-        FileUtils.writeStringToFile(modsFile, content, UTF_8);
+        File modsFile = job.getModsPath(pid, true).toFile();
+        writeStringToFile(modsFile, content, UTF_8);
     }
 }

@@ -15,9 +15,13 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,21 +57,27 @@ public class ValidateDescriptionJob extends AbstractDepositJob {
     public void runJob() {
         int invalidCount = 0;
 
-        if (!getDescriptionDir().exists()) {
+        File descriptionDir = getDescriptionDir();
+        if (!descriptionDir.exists()) {
             log.debug("MODS directory does not exist");
             return;
         }
 
-        File[] modsFiles = getDescriptionDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return (f.isFile() && f.getName().endsWith(".xml"));
-            }
-        });
+        // List all description files at any depth
+        List<File> modsFiles = null;
+        try {
+            modsFiles = Files.walk(descriptionDir.toPath())
+                    .filter(Files::isRegularFile)
+                    .filter(p -> p.toString().endsWith(".xml"))
+                    .map(Path::toFile)
+                    .collect(toList());
+        } catch (IOException e) {
+            failJob(e, "Failed to list description files in {0}", descriptionDir);
+        }
 
         StringBuilder errors = new StringBuilder();
 
-        setTotalClicks(modsFiles.length);
+        setTotalClicks(modsFiles.size());
         for (File f : modsFiles) {
             PID p = getPIDFromFile(f);
 

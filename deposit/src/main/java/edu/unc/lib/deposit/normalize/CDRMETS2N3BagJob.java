@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,13 +75,11 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         extractor.addAccessControls(model);
         LOG.info("Extractor access controls added");
 
-        final File modsFolder = getDescriptionDir();
-        modsFolder.mkdir();
         extractor.saveDescriptions(new FilePathFunction() {
         @Override
             public String getPath(String piduri) {
-                String uuid = PIDs.get(piduri).getUUID();
-                return new File(modsFolder, uuid + ".xml").getAbsolutePath();
+                PID pid = PIDs.get(piduri);
+                return getModsPath(pid, true).toAbsolutePath().toString();
             }
         });
         LOG.info("MODS descriptions saved");

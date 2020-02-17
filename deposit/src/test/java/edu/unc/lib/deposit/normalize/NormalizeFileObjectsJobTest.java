@@ -195,8 +195,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         Resource childResc = addFileObject(folderBag);
         PID childPid = PIDs.get(childResc.getURI());
 
-        job.getDescriptionDir().mkdir();
-        File childModsFile = new File(job.getDescriptionDir(), childPid.getUUID() + ".xml");
+        File childModsFile = job.getModsPath(childPid, true).toFile();
         childModsFile.createNewFile();
 
         job.closeModel();
@@ -209,7 +208,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         // Verify that the MODS file was renamed to match work uuid
         PID workPid = PIDs.get(workResc.getURI());
-        File workModsFile = new File(job.getDescriptionDir(), workPid.getUUID() + ".xml");
+        File workModsFile = job.getModsPath(workPid).toFile();
 
         assertTrue(workModsFile.exists());
         assertFalse(childModsFile.exists());

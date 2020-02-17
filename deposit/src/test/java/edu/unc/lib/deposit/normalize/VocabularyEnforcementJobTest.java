@@ -47,9 +47,11 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.SecureXMLFactory;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
@@ -89,8 +91,6 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
         depositStatus.put(DepositField.containerId.name(), depositPid.toString());
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
-        job.getDescriptionDir().mkdir();
-
         Model model = job.getWritableModel();
         Bag depositBag = model.createBag(job.getDepositPID().getURI());
         rescPid = pidMinter.mintContentPid();
@@ -102,7 +102,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
     @Test
     public void rewriteMODSTest() throws Exception {
         Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
-                job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml"));
+                job.getModsPath(rescPid, true));
 
         Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
         when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
@@ -128,7 +128,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
     @Test
     public void noRewriteMODSTest() throws Exception {
-        Path path = job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml");
+        Path path = job.getModsPath(rescPid, true);
         Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), path);
         long modified = path.toFile().lastModified();
 
@@ -144,11 +144,10 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
         assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
     }
 
-    @SuppressWarnings("deprecation")
     private Document getMODSDocument(String uuid) throws Exception {
-        File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
+        File modsFile = job.getModsPath(PIDs.get(uuid)).toFile();
 
-        SAXBuilder sb = new SAXBuilder(false);
+        SAXBuilder sb = SecureXMLFactory.createSAXBuilder();
         return sb.build(modsFile);
     }
 }

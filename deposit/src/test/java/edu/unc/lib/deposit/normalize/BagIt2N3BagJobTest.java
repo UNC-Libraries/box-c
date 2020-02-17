@@ -128,7 +128,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
                 sourceUri.toString() + "data/test/ipsum.txt");
 
         // Verify that the description file for the bag exists
-        File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
+        File modsFile = job.getModsPath(PIDs.get(bagFolder.getURI())).toFile();
         assertTrue(modsFile.exists());
 
         Set<String> cleanupSet = new HashSet<>();

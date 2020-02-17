@@ -68,18 +68,16 @@ public class ValidateDescriptionJobTest extends AbstractDepositJobTest {
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.setModsValidator(modsValidator);
         job.init();
-
-        job.getDescriptionDir().mkdir();
     }
 
     @Test
     public void testNoDescriptions() {
-        job.getDescriptionDir().delete();
         job.run();
     }
 
     @Test
     public void testNoFiles() {
+        job.getDescriptionDir().mkdir();
         job.run();
     }
 
@@ -154,12 +152,12 @@ public class ValidateDescriptionJobTest extends AbstractDepositJobTest {
 
     private PID makeDescriptionFile() throws IOException {
         PID pid = makePid();
-        File descriptFile = getDescriptionFile(pid);
+        File descriptFile = job.getModsPath(pid, true).toFile();
         Files.createFile(descriptFile.toPath());
         return pid;
     }
 
     private File getDescriptionFile(PID pid) {
-        return new File(job.getDescriptionDir(), pid.getUUID() + ".xml");
+        return job.getModsPath(pid).toFile();
     }
 }

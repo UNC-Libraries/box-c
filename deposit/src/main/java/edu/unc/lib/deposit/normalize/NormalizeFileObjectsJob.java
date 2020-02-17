@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,14 +131,14 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
     }
 
     private void transferDescription(PID filePid, PID workPid) {
-        File modsFile = new File(getDescriptionDir(), filePid.getUUID() + ".xml");
-        if (modsFile.exists()) {
-            File modsDest = new File(getDescriptionDir(), workPid.getUUID() + ".xml");
+        Path modsFile = getModsPath(filePid);
+        if (Files.exists(modsFile)) {
+            Path modsDest = getModsPath(workPid, true);
             try {
-                Files.move(modsFile.toPath(), modsDest.toPath());
+                Files.move(modsFile, modsDest);
             } catch (IOException e) {
                 failJob(e, "Failed to transfer description file {0} to work at {1}",
-                        modsFile.getAbsolutePath(), modsDest.getAbsolutePath());
+                        modsFile, modsDest);
             }
         }
     }

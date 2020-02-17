@@ -57,7 +57,6 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
@@ -111,10 +110,6 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         depositDir.mkdir();
         FileUtils.copyDirectory(new File(packagePath), depositDir);
 
-        File eventsDir = new File(depositDir, DepositConstants.EVENTS_DIR);
-        eventsDir.mkdir();
-        FileUtils.writeStringToFile(new File(eventsDir, depositPid.getUUID() + ".nt"), "loggin", "UTF-8");
-
         Dataset dataset = TDBFactory.createDataset();
 
         job = new IngestDepositRecordJob();
@@ -129,6 +124,8 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         setField(job, "locationManager", storageLocationManager);
 
         job.init();
+
+        FileUtils.writeStringToFile(job.getPremisFile(depositPid), "loggin", "UTF-8");
 
         Model model = job.getWritableModel();
         model.read(new File(n3File).getAbsolutePath());
