@@ -50,6 +50,7 @@ public class FoxmlDocumentBuilder {
 
     private PID pid;
     private String label;
+    private String dcTitle;
     private String createdDate;
     private String lastModifiedDate;
     private String state;
@@ -60,6 +61,7 @@ public class FoxmlDocumentBuilder {
     public FoxmlDocumentBuilder(PID pid, String label) {
         this.pid = pid;
         this.label = label;
+        this.dcTitle = label;
         this.state = "Active";
         this.createdDate = DEFAULT_CREATED_DATE;
         this.lastModifiedDate = DEFAULT_LAST_MODIFIED;
@@ -82,9 +84,14 @@ public class FoxmlDocumentBuilder {
         return this;
     }
 
+    public FoxmlDocumentBuilder label(String label) {
+        this.label = label;
+        return this;
+    }
+
     public FoxmlDocumentBuilder withInternalXmlDatastream(String dsName, Element bodyEl) {
         DatastreamVersion ds = new DatastreamVersion(null, dsName, dsName + ".0", DEFAULT_CREATED_DATE, "55",
-                "text/xml");
+                "text/xml", null);
         ds.setBodyEl(bodyEl);
         datastreamVersions.put(dsName, asList(ds));
 
@@ -133,11 +140,15 @@ public class FoxmlDocumentBuilder {
         if (!datastreamVersions.containsKey(DC_DS)) {
             Document dcDoc = new Document()
                     .addContent(new Element("dc", OAI_DC_NS)
-                            .addContent(new Element("title", DC_NS).setText(label)));
+                            .addContent(new Element("title", DC_NS).setText(dcTitle)));
             withInternalXmlDatastream(DC_DS, dcDoc.detachRootElement());
         }
 
         for (Entry<String, List<DatastreamVersion>> dsEntry: datastreamVersions.entrySet()) {
+            if (dsEntry.getValue() == null) {
+                continue;
+            }
+
             Element dsEl = new Element("datastream", FOXML_NS)
                     .setAttribute("ID", dsEntry.getKey())
                     .setAttribute("STATE", "A")
@@ -151,6 +162,9 @@ public class FoxmlDocumentBuilder {
                         .setAttribute("CREATED", dsVersion.getCreated())
                         .setAttribute("MIMETYPE", dsVersion.getMimeType())
                         .setAttribute("SIZE", dsVersion.getSize());
+                if (dsVersion.getAltIds() != null) {
+                    dsvEl.setAttribute("ALT_IDS", dsVersion.getAltIds());
+                }
                 dsEl.addContent(dsvEl);
 
                 if (dsVersion.getMd5() != null) {

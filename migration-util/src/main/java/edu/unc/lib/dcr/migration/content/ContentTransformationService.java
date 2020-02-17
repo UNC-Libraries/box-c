@@ -58,7 +58,6 @@ public class ContentTransformationService {
         modelManager.addTriples(depositObjModel);
 
         // Kick off transformation of the tree from the starting object
-
         transformerManager.createTransformer(startingPid, newPid, null)
                 .fork();
 
