@@ -219,6 +219,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
     <bean id="editLabelService" class="edu.unc.lib.dl.persist.services.edit.EditLabelService">

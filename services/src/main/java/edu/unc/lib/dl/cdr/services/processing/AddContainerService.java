@@ -19,16 +19,13 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static java.util.Arrays.asList;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.Arrays;
 import java.util.UUID;
 
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +34,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -45,6 +43,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
@@ -66,6 +68,7 @@ public class AddContainerService {
     private TransactionManager txManager;
     private OperationsMessageSender operationsMessageSender;
     private PatronAccessAssignmentService patronService;
+    private StorageLocationManager storageLocationManager;
 
     private static final Timer timer = TimerFactory.createTimerForClass(AddContainerService.class);
 
@@ -88,9 +91,13 @@ public class AddContainerService {
 
         try (Timer.Context context = timer.time()) {
             PID containerPid = PIDs.get(UUID.randomUUID().toString());
-            Model containerModel = ModelFactory.createDefaultModel();
-            containerModel.add(containerModel.createResource(containerPid.getRepositoryPath()), DcElements.title,
-                    label);
+            Model containerModel = createDefaultModel();
+            Resource containerResc = containerModel.createResource(containerPid.getRepositoryPath());
+            containerResc.addLiteral(DcElements.title, label);
+
+            StorageLocation storageLoc = storageLocationManager.getStorageLocation(parentPid);
+            containerResc.addLiteral(Cdr.storageLocation, storageLoc.getId());
+            log.debug("Adding new container to storage location {}", storageLoc.getId());
 
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
@@ -181,5 +188,9 @@ public class AddContainerService {
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
+    }
+
+    public void setStorageLocationManager(StorageLocationManager storageLocationManager) {
+        this.storageLocationManager = storageLocationManager;
     }
 }
