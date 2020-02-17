@@ -18,6 +18,7 @@ package edu.unc.lib.dcr.migration;
 import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
@@ -50,6 +51,11 @@ public class MigrationCLI implements Callable<Integer> {
             defaultValue = "${sys:dcr.tdb.dir:-${sys:user.home}/bxc_tdb",
             description = "Path where the jena TDB deposit dataset is stored. Defaults to home dir.")
     protected String tdbDir;
+
+    @Option(names = {"--deposit-dir"},
+            defaultValue = "${sys:dcr.migration.index.url:-${sys:user.home}/bxc_deposits",
+            description = "Path where deposit directories will be stored. Defaults to home dir.")
+    protected Path depositBaseDir;
 
     private MigrationCLI() {
     }

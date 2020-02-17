@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
+import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
@@ -55,6 +56,10 @@ public class TransformContentCommand implements Callable<Integer> {
             description = "Top level collections will be transformed into admin units")
     private boolean topLevelAsUnit;
 
+    @Option(names = {"--no-hash-nesting"}, negatable = true,
+            description = "Nest transformed logs in hashed subdirectories. Default: true")
+    private boolean hashNesting = true;
+
     @Override
     public Integer call() throws Exception {
         long start = System.currentTimeMillis();
@@ -68,6 +73,8 @@ public class TransformContentCommand implements Callable<Integer> {
         output.info(depositPid.getId());
 
         DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
+        DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
+                depositPid, parentCommand.depositBaseDir, hashNesting);
 
         PathIndex pathIndex = new PathIndex();
         pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
@@ -77,6 +84,7 @@ public class TransformContentCommand implements Callable<Integer> {
         transformerManager.setPathIndex(pathIndex);
         transformerManager.setTopLevelAsUnit(topLevelAsUnit);
         transformerManager.setPidMinter(pidMinter);
+        transformerManager.setDirectoryManager(depositDirectoryManager);
 
         ContentTransformationService transformService = new ContentTransformationService(startingId, topLevelAsUnit);
         transformService.setTransformerManager(transformerManager);
