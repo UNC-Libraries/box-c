@@ -275,7 +275,7 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, workPid, foxml);
 
-        ContentObjectTransformer transformer = factory.createTransformer(workPid, Cdr.Folder);
+        ContentObjectTransformer transformer = factory.createTransformer(workPid, workPid, Cdr.Folder);
         transformer.invoke();
 
         Model depModel = modelManager.getReadModel();

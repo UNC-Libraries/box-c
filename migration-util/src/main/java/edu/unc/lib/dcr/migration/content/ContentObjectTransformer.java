@@ -297,17 +297,17 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     private void extractMods(Document foxml) {
-        log.info("Checking for MODS {}", pid);
+        log.info("Checking for MODS {}", originalPid);
         List<DatastreamVersion> modsVersions = listDatastreamVersions(foxml, MODS_DS);
         if (modsVersions == null || modsVersions.isEmpty()) {
-            log.debug("No MODS for {}" , pid);
+            log.debug("No MODS for {}" , originalPid);
             return;
         }
 
-        log.info("Found mods for {}", pid);
+        log.info("Found mods for {}", originalPid);
 
         DatastreamVersion current = modsVersions.get(modsVersions.size() - 1);
-        directoryManager.writeMods(pid, current.getBodyEl());
+        directoryManager.writeMods(newPid, current.getBodyEl());
     }
 
     private boolean isMarkedForDeletion(Resource resc) {

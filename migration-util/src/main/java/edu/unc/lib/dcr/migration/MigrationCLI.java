@@ -77,7 +77,6 @@ public class MigrationCLI implements Callable<Integer> {
             defaultValue = "6379",
             description = "Port for redis. Default 6379.")
     protected int redisPort;
->>>>>>> Add command for submitting deposit to deposit pipeline, and flag for immediately sending transformed deposits to pipeline
 
     private MigrationCLI() {
     }
