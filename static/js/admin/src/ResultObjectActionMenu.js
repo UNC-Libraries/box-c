@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm, EditTitleForm, DeleteForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm', 'EditLabelForm', 'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditLabelForm, EditFilenameForm, EditTitleForm, DeleteForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -153,7 +153,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
 		}
 		*/
-		
+		if (metadata.type === 'Collection') {
+			items["editThumbnail"] = {name : 'Edit Thumbnail'};
+		}
+
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
@@ -295,6 +298,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							action : 'EditCollectionSettings',
 							target : resultObject
 						});
+						break;
+					case "editThumbnail":
+						self.editThumbnail(resultObject);
 						break;
 					case "clearPrimaryObject" :
 						self.actionHandler.addEvent({
@@ -445,6 +451,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		});
 		editTitleForm.open(resultObject);
 
+	};
+
+	ResultObjectActionMenu.prototype.editThumbnail = function(resultObject) {
+		var editThumbnailForm = new EditThumbnailForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editThumbnailForm.open(resultObject);
 	};
 	
 	ResultObjectActionMenu.prototype.disable = function() {
