@@ -17,12 +17,19 @@ package edu.unc.lib.dl.event;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getMdEventsPid;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static java.lang.System.lineSeparator;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
@@ -30,6 +37,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFFormat;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -53,6 +61,8 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  *
  */
 public class RepositoryPremisLogger implements PremisLogger {
+
+    private static final Logger log = getLogger(RepositoryPremisLogger.class);
 
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
@@ -111,12 +121,15 @@ public class RepositoryPremisLogger implements PremisLogger {
         if (s == null) {
             createLog(modelStream);
         } else {
-            PID logPid = getMdEventsPid(repoObject.getPid());
+            PID objPid = repoObject.getPid();
+            log.debug("Adding events to PREMIS log for {}", objPid);
+
+            PID logPid = getMdEventsPid(objPid);
             // Event log exists, append new events to it
             BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
 
             InputStream newContentStream = new SequenceInputStream(
-                    new ByteArrayInputStream("\n".getBytes()),
+                    new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
                     modelStream);
 
             InputStream mergedStream = new SequenceInputStream(
@@ -142,9 +155,23 @@ public class RepositoryPremisLogger implements PremisLogger {
     private BinaryObject updateOrCreateLog(InputStream contentStream) {
         PID logPid = getMdEventsPid(repoObject.getPid());
         URI logUri = transferSession.transferReplaceExisting(logPid, contentStream);
+        Path logPath = Paths.get(logUri);
+
+        // For the time being, explicitly setting file size in fedora due to bug
+        // https://jira.lib.unc.edu/browse/BXC-2561
+        long size;
+        try {
+            size = Files.size(logPath);
+        } catch (IOException e) {
+            throw new ObjectPersistenceException("Unable to find log file " + logPath, e);
+        }
+
+        Model model = createDefaultModel();
+        Resource resc = model.getResource(logPid.getRepositoryPath());
+        resc.addLiteral(Premis.hasSize, size);
 
         return repoObjFactory.createOrUpdateBinary(logPid, logUri,
-                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), null, null, null);
+                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), null, null, model);
     }
 
     @Override
