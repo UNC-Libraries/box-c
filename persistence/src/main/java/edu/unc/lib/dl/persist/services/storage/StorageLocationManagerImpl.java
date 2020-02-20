@@ -81,7 +81,8 @@ public class StorageLocationManagerImpl implements StorageLocationManager {
         InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerSubtypes(
-                new NamedType(HashedFilesystemStorageLocation.class, HashedFilesystemStorageLocation.TYPE_NAME));
+                new NamedType(HashedFilesystemStorageLocation.class, HashedFilesystemStorageLocation.TYPE_NAME),
+                new NamedType(HashedPosixStorageLocation.class, HashedPosixStorageLocation.TYPE_NAME));
         storageLocations = mapper.readValue(configStream,
                 new TypeReference<List<StorageLocation>>() {});
         idToStorageLocation = storageLocations.stream()

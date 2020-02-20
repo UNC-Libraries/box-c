@@ -36,7 +36,7 @@ public class HashedFilesystemStorageLocationTest {
 
     private static final String TEST_UUID = "2e8f7551-ef3c-4387-8c3d-a38609927800";
 
-    private HashedFilesystemStorageLocation loc;
+    protected HashedFilesystemStorageLocation loc;
 
     @Before
     public void setup() {

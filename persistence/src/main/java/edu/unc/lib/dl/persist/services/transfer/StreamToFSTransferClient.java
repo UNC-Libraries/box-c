@@ -43,7 +43,7 @@ import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
  */
 public class StreamToFSTransferClient implements StreamTransferClient {
 
-    private StorageLocation destination;
+    protected StorageLocation destination;
 
     /**
      * @param destination destination storage location
@@ -62,7 +62,7 @@ public class StreamToFSTransferClient implements StreamTransferClient {
         return writeStream(binPid, sourceStream, true);
     }
 
-    private URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
+    protected URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         Path destPath = Paths.get(destUri);
 

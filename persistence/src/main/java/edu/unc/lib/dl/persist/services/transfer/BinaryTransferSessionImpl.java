@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.dl.persist.api.storage.StorageType.POSIX_FS;
 import static org.springframework.util.Assert.notNull;
 
 import java.io.InputStream;
@@ -101,6 +102,8 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
         BinaryTransferClient client = null;
         if (FILESYSTEM.equals(source.getStorageType()) && FILESYSTEM.equals(storageLocation.getStorageType())) {
             client = new FSToFSTransferClient(source, storageLocation);
+        } else if (FILESYSTEM.equals(source.getStorageType()) && POSIX_FS.equals(storageLocation.getStorageType())) {
+            client = new FSToPosixTransferClient(source, storageLocation);
         } else {
             throw new NotImplementedException("Transfer from " + source.getId() + " to " + storageLocation.getId()
                 + " is not currently supported.");
@@ -132,6 +135,8 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
         if (FILESYSTEM.equals(storageLocation.getStorageType())) {
             streamClient = new StreamToFSTransferClient(storageLocation);
+        } else if (POSIX_FS.equals(storageLocation.getStorageType())) {
+            streamClient = new StreamToPosixTransferClient(storageLocation);
         } else {
             throw new NotImplementedException("Write stream to " + storageLocation.getId()
                 + " is not currently supported.");

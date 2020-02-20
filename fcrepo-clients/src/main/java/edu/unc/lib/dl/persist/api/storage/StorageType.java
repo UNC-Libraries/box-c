@@ -20,7 +20,8 @@ package edu.unc.lib.dl.persist.api.storage;
  *
  */
 public enum StorageType {
-    FILESYSTEM("filesystem");
+    FILESYSTEM("filesystem"),
+    POSIX_FS("posix");
 
     private final String id;
 

@@ -45,7 +45,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 public class FSToFSTransferClient implements BinaryTransferClient {
 
     private IngestSource source;
-    private StorageLocation destination;
+    protected StorageLocation destination;
 
     private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
     private static final CopyOption[] COPY_ALLOW_OVERWRITE = { COPY_ATTRIBUTES, REPLACE_EXISTING };
