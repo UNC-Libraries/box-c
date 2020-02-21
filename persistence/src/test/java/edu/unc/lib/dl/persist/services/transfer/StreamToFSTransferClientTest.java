@@ -47,20 +47,20 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
  */
 public class StreamToFSTransferClientTest {
 
-    private static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
-    private static final String ORIGINAL_CONTENT = "Some original stuff";
-    private static final String STREAM_CONTENT = "Stream content";
+    protected static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
+    protected static final String ORIGINAL_CONTENT = "Some original stuff";
+    protected static final String STREAM_CONTENT = "Stream content";
 
-    private StreamToFSTransferClient client;
+    protected StreamToFSTransferClient client;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private Path storagePath;
+    protected Path storagePath;
     @Mock
     private StorageLocation storageLoc;
 
-    private PID binPid;
-    private Path binDestPath;
+    protected PID binPid;
+    protected Path binDestPath;
 
     @Before
     public void setup() throws Exception {
@@ -139,12 +139,12 @@ public class StreamToFSTransferClientTest {
         }
     }
 
-    private void assertContent(Path path, String content) throws Exception {
+    protected void assertContent(Path path, String content) throws Exception {
         assertTrue("Source content was not present at " + path, path.toFile().exists());
         assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
 
-    private InputStream toStream(String content) {
+    protected InputStream toStream(String content) {
         return new ByteArrayInputStream(content.getBytes());
     }
 }

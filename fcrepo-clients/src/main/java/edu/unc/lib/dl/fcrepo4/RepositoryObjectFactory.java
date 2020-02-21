@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_METADATA;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
@@ -347,7 +348,12 @@ public class RepositoryObjectFactory {
             updateBinaryDescription(pid, describedBy, model);
         }
 
-        return new BinaryObject(PIDs.get(resultUri), storageUri, repoObjDriver, this);
+        String resultUriString = resultUri.toString();
+        if (resultUriString.endsWith(FCR_METADATA)) {
+            resultUriString = resultUriString.replace("/" + FCR_METADATA, "");
+        }
+
+        return new BinaryObject(PIDs.get(resultUriString), storageUri, repoObjDriver, this);
     }
 
     private void updateBinaryDescription(PID binPid, URI describedBy, Model model) {

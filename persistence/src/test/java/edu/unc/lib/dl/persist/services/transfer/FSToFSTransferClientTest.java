@@ -46,22 +46,22 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
  */
 public class FSToFSTransferClientTest {
 
-    private static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
-    private static final String FILE_CONTENT = "File content";
+    protected static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
+    protected static final String FILE_CONTENT = "File content";
 
-    private FSToFSTransferClient client;
+    protected FSToFSTransferClient client;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private Path sourcePath;
-    private Path storagePath;
+    protected Path sourcePath;
+    protected Path storagePath;
     @Mock
-    private IngestSource ingestSource;
+    protected IngestSource ingestSource;
     @Mock
     private StorageLocation storageLoc;
 
-    private PID binPid;
-    private Path binDestPath;
+    protected PID binPid;
+    protected Path binDestPath;
 
     @Before
     public void setup() throws Exception {
@@ -174,7 +174,7 @@ public class FSToFSTransferClientTest {
         client.shutdown();
     }
 
-    private Path createSourceFile() throws Exception {
+    protected Path createSourceFile() throws Exception {
         return createFile(sourcePath.resolve("file.txt"), FILE_CONTENT);
     }
 
@@ -183,7 +183,7 @@ public class FSToFSTransferClientTest {
         return filePath;
     }
 
-    private void assertIsSourceFile(Path path) throws Exception {
+    protected void assertIsSourceFile(Path path) throws Exception {
         assertTrue("Source file was not present at " + path, path.toFile().exists());
         assertEquals(FILE_CONTENT, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
