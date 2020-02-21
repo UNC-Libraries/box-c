@@ -54,7 +54,7 @@ public class MigrationCLI implements Callable<Integer> {
     protected String tdbDir;
 
     @Option(names = {"--deposit-dir"},
-            defaultValue = "${sys:dcr.migration.index.url:-${sys:user.home}/bxc_deposits",
+            defaultValue = "${sys:dcr.deposit.dir:-${sys:user.home}/bxc_deposits",
             description = "Path where deposit directories will be stored. Defaults to home dir.")
     protected Path depositBaseDir;
 

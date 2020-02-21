@@ -248,6 +248,49 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformFolderWithDeletedChild() throws Exception {
+        // Create the children objects' foxml
+        PID child1Pid = makePid();
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "child1")
+                .relsExtModel(createContainerModel(child1Pid))
+                .state("Deleted")
+                .build();
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        PID child2Pid = makePid();
+        Document foxml2 = new FoxmlDocumentBuilder(child2Pid, "child2")
+                .relsExtModel(createContainerModel(child2Pid))
+                .build();
+        serializeFoxml(objectsPath, child2Pid, foxml2);
+
+        // Create the parent's foxml
+        Model model = createContainerModel(startingPid);
+        addContains(model, startingPid, child1Pid);
+        addContains(model, startingPid, child2Pid);
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
+
+        assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(parentBag.hasProperty(CdrDeposit.label, "folder"));
+
+        Resource child2Resc = depModel.getResource(child2Pid.getRepositoryPath());
+        List<RDFNode> bagChildren = parentBag.iterator().toList();
+        assertEquals(1, bagChildren.size());
+        assertTrue(bagChildren.contains(child2Resc));
+
+        assertTrue(child2Resc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(child2Resc.hasProperty(CdrDeposit.label, "child2"));
+    }
+
+    @Test
     public void transformWorkWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
 

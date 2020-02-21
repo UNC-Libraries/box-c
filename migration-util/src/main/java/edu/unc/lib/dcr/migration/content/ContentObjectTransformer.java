@@ -99,6 +99,7 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     private PID originalPid;
     private PID newPid;
+    private PID parentPid;
     private Resource parentType;
 
     private Document foxml;
@@ -106,9 +107,10 @@ public class ContentObjectTransformer extends RecursiveAction {
     /**
      *
      */
-    public ContentObjectTransformer(PID originalPid, PID newPid, Resource parentType) {
+    public ContentObjectTransformer(PID originalPid, PID newPid, PID parentPid, Resource parentType) {
         this.originalPid = originalPid;
         this.newPid = newPid;
+        this.parentPid = parentPid;
         this.parentType = parentType;
     }
 
@@ -116,6 +118,10 @@ public class ContentObjectTransformer extends RecursiveAction {
     protected void compute() {
         log.info("Tranforming {}", originalPid.getId());
         Path foxmlPath = pathIndex.getPath(originalPid);
+        if (foxmlPath == null) {
+            log.warn("Unable to find foxml for {}", originalPid.getId());
+            return;
+        }
 
         // Deserialize the foxml document
         try {
@@ -157,7 +163,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         extractMods();
 
         // Push triples for this object to the shared model for this deposit
-        modelManager.addTriples(depositModel);
+        modelManager.addTriples(depositModel, newPid, parentPid);
     }
 
     private void populateTimestamps(Resource bxc3Resc, Resource depResc) {
@@ -187,23 +193,13 @@ public class ContentObjectTransformer extends RecursiveAction {
         Map<PID, PID> oldToNewPids = new HashMap<>();
         List<PID> contained = listContained(bxc3Resc);
         for (PID containedPid : contained) {
-            // Make sure we can find FOXML for the child before we add it
-            if (pathIndex.getPath(containedPid) == null) {
-                log.error("Dangling containment: {} references {}, but no foxml found for the child",
-                        bxc3Resc, containedPid);
-                continue;
-            }
-
             // Determine PID to use for transformed child, in case we are generating or preserving ids.
-            PID newPid = manager.getTransformedPid(containedPid);
-            oldToNewPids.put(containedPid, newPid);
-
-            // Add the child to its parent bag
-            containerBag.add(createResource(newPid.getRepositoryPath()));
+            PID newContainedPid = manager.getTransformedPid(containedPid);
+            oldToNewPids.put(containedPid, newContainedPid);
 
             // Spawn and execute transformer for children
-            ContentObjectTransformer childTransformer = manager.createTransformer(containedPid, newPid, resourceType);
-            childTransformer.fork();
+            manager.createTransformer(containedPid, newContainedPid, newPid, resourceType)
+                   .fork();
         }
 
         if (Cdr.Work.equals(resourceType)) {

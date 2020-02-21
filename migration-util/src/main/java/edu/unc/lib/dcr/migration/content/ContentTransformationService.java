@@ -16,9 +16,7 @@
 package edu.unc.lib.dcr.migration.content;
 
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
@@ -53,12 +51,11 @@ public class ContentTransformationService {
 
         // Populate the bag for the deposit itself
         Model depositObjModel = createDefaultModel();
-        Bag depResc = depositObjModel.createBag(depositPid.getRepositoryPath());
-        depResc.add(createResource(newPid.getRepositoryPath()));
+        depositObjModel.createBag(depositPid.getRepositoryPath());
         modelManager.addTriples(depositObjModel);
 
         // Kick off transformation of the tree from the starting object
-        transformerManager.createTransformer(startingPid, newPid, null)
+        transformerManager.createTransformer(startingPid, newPid, depositPid, null)
                 .fork();
 
         // Wait for all transformers to finish

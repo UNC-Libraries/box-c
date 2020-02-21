@@ -124,7 +124,11 @@ public class PathIndex {
                     }
                 }
             }
-            return Paths.get(highestMatch);
+            if (highestMatch == null) {
+                return null;
+            } else {
+                return Paths.get(highestMatch);
+            }
         } catch (SQLException e) {
             throw new RepositoryException("Failed to look up path for " + pid, e);
         }

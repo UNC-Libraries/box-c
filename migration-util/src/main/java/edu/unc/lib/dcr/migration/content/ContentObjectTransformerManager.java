@@ -60,11 +60,14 @@ public class ContentObjectTransformerManager {
      *
      * @param originalPid
      * @param newPid
+     * @param parentPid
      * @param parentType
      * @return
      */
-    public ContentObjectTransformer createTransformer(PID originalPid, PID newPid, Resource parentType) {
-        ContentObjectTransformer transformer = new ContentObjectTransformer(originalPid, newPid, parentType);
+    public ContentObjectTransformer createTransformer(PID originalPid, PID newPid, PID parentPid,
+            Resource parentType) {
+        ContentObjectTransformer transformer = new ContentObjectTransformer(
+                originalPid, newPid, parentPid, parentType);
         transformer.setModelManager(modelManager);
         transformer.setPathIndex(pathIndex);
         transformer.setTopLevelAsUnit(topLevelAsUnit);
