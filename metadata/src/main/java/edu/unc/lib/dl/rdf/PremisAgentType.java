@@ -26,7 +26,7 @@ import org.apache.jena.rdf.model.Resource;
 public class PremisAgentType {
 
     /** The namespace of the vocabulary as a string */
-    public static final String NS = "http://id.loc.gov/vocabulary/preservation/agentType";
+    public static final String NS = "http://www.loc.gov/premis/rdf/v3/";
 
     private PremisAgentType() {
     }
@@ -42,15 +42,15 @@ public class PremisAgentType {
 
     /**
      * A high-level characterization of the type of agent.
-     * See http://id.loc.gov/vocabulary/preservation/agentType/collection_PREMIS
+     * See http://id.loc.gov/ontologies/premis-3-0-0.html#c_Agent
      */
 
-    public static final Resource Hardware = createResource("http://id.loc.gov/vocabulary/preservation/agentType/har");
+    public static final Resource Hardware = createResource("http://www.loc.gov/premis/rdf/v3/HardwareAgent");
 
     public static final Resource Organization = createResource(
-            "http://id.loc.gov/vocabulary/preservation/agentType/org");
+            "http://www.loc.gov/premis/rdf/v3/Organization");
 
-    public static final Resource Person = createResource("http://id.loc.gov/vocabulary/preservation/agentType/per");
+    public static final Resource Person = createResource("http://www.loc.gov/premis/rdf/v3/Person");
 
-    public static final Resource Software = createResource("http://id.loc.gov/vocabulary/preservation/agentType/sof");
+    public static final Resource Software = createResource("http://www.loc.gov/premis/rdf/v3/SoftwareAgent");
 }
