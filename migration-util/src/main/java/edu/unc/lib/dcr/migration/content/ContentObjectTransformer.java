@@ -47,6 +47,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +73,9 @@ import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dcr.migration.premis.ContentPremisToRdfTransformer;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
@@ -96,6 +100,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     private ContentObjectTransformerManager manager;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private PID originalPid;
     private PID newPid;
@@ -217,8 +222,25 @@ public class ContentObjectTransformer extends RecursiveAction {
             containerBag.addLiteral(CdrDeposit.label, label);
         }
 
-        // TODO transform PREMIS and copy to deposit directory
+        // transform PREMIS and copy to deposit directory
+        transformPremis();
+
         // TODO set staff access
+    }
+
+    private void transformPremis() {
+        Path originalPremisPath = pathIndex.getPath(originalPid, PathIndex.PREMIS_TYPE);
+        if (originalPremisPath == null || !Files.exists(originalPremisPath)) {
+            log.info("No premis for {}, skipping transformation", originalPid.getId());
+            return;
+        }
+
+        Path transformedPremisPath = directoryManager.getPremisPath(newPid);
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(newPid, transformedPremisPath.toFile());
+        ContentPremisToRdfTransformer premisTransformer =
+                new ContentPremisToRdfTransformer(newPid, premisLogger, originalPremisPath);
+
+        premisTransformer.compute();
     }
 
     private void populateFileObject(Resource bxc3Resc, Model depositModel) {
@@ -401,6 +423,10 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     public void setDirectoryManager(DepositDirectoryManager directoryManager) {
         this.directoryManager = directoryManager;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public PID getPid() {

@@ -28,6 +28,7 @@ import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
@@ -89,6 +90,8 @@ public class TransformContentCommand implements Callable<Integer> {
         PathIndex pathIndex = new PathIndex();
         pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
+        PremisLoggerFactory premisLoggerFactory = new PremisLoggerFactory();
+
         ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
         transformerManager.setModelManager(depositModelManager);
         transformerManager.setPathIndex(pathIndex);
@@ -96,6 +99,7 @@ public class TransformContentCommand implements Callable<Integer> {
         transformerManager.setPidMinter(pidMinter);
         transformerManager.setDirectoryManager(depositDirectoryManager);
         transformerManager.setGenerateIds(generateIds);
+        transformerManager.setPremisLoggerFactory(premisLoggerFactory);
 
         ContentTransformationService transformService = new ContentTransformationService(
                 depositPid, startingId, topLevelAsUnit);
