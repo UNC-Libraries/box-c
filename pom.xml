@@ -382,9 +382,9 @@
 
 	<repositories>
 		<repository>
-			<id>maven-central-repository</id>
-			<name>Maven Central Repository</name>
-			<url>http://repo1.maven.org/maven2/</url>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2/</url>
 		</repository>
 		<repository>
 			<id>aduna</id>
@@ -398,24 +398,19 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>java-net-maven2-repository</id>
-			<name>Java.net Maven 2 Repository</name>
-			<url>http://download.java.net/maven/2</url>
-		</repository>
-		<repository>
-			<id>maven-restlet</id>
-			<name>Public online Restlet repository</name>
-			<url>http://maven.restlet.org</url>
-		</repository>
+			<id>maven.restlet.org</id>
+			<name>maven.restlet.org</name>
+			<url>https://maven.restlet.talend.com/</url>
+		</repository> 
 		<repository>
 			<id>renci-snapshots</id>
 			<name>RENCI Maven repository</name>
-			<url>http://ci-dev.renci.org/nexus/content/repositories/snapshots/</url>
+			<url>https://ci-dev.renci.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
 			<id>renci-releases</id>
 			<name>RENCI Maven repository</name>
-			<url>http://ci-dev.renci.org/nexus/content/repositories/releases/</url>
+			<url>https://ci-dev.renci.org/nexus/content/repositories/releases/</url>
 		</repository>
 		<repository>
 			<id>jboss</id>
@@ -430,9 +425,9 @@
 		<repository>
 			<id>duraspace-releases</id>
 			<name>DuraSpace Releases Maven Repository</name>
-			<url>http://m2.duraspace.org/content/repositories/releases</url>
+			<url>https://m2.duraspace.org/content/repositories/releases</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
@@ -441,9 +436,9 @@
 		<repository>
 			<id>duraspace-thirdparty</id>
 			<name>Duraspace Thirdparty Maven Repository</name>
-			<url>http://m2.duraspace.org/content/repositories/thirdparty</url>
+			<url>https://m2.duraspace.org/content/repositories/thirdparty</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
@@ -452,12 +447,12 @@
 		<repository>
 			<id>duraspace-snapshots</id>
 			<name>DuraSpace Snapshots Maven Repository</name>
-			<url>http://m2.duraspace.org/content/repositories/snapshots</url>
+			<url>https://m2.duraspace.org/content/repositories/snapshots</url>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
