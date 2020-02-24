@@ -344,6 +344,7 @@
                     this.unsaved_changes = false;
                     this.is_submitting = false;
                     this.response_message = '';
+                    this.patron_roles.assigned = cloneDeep(this.submit_roles);
                 }).catch((error) => {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
                     this.is_submitting = false;

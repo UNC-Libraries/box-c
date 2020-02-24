@@ -109,8 +109,7 @@ describe('patronRoles.vue', () => {
                 changesCheck: false,
                 containerType: 'Folder',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
-            },
-            methods: {setRoles}
+            }
         });
 
         global.confirm = jest.fn().mockReturnValue(true);
@@ -118,6 +117,19 @@ describe('patronRoles.vue', () => {
     });
 
     it("submits updated roles to the server", (done) => {
+        wrapper = shallowMount(patronRoles, {
+            localVue,
+            propsData: {
+                alertHandler: {
+                    alertHandler: jest.fn() // This method lives outside of the Vue app
+                },
+                changesCheck: false,
+                containerType: 'Folder',
+                uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
+            },
+            methods: {setRoles}
+        });
+
         stubDataLoad();
 
         moxios.wait(() => {
@@ -131,6 +143,35 @@ describe('patronRoles.vue', () => {
             expect(setRoles).toHaveBeenCalled();
             done();
         });
+    });
+
+    it("updates assigned permissions after saving to the server", () => {
+        wrapper.setData({
+            patron_roles: full_roles,
+            submit_roles: { roles: [
+                    { principal: 'everyone', role: 'none' },
+                    { principal: 'authenticated', role: "none" }
+                ],
+                deleted: false, embargo: null
+            },
+            unsaved_changes: true
+        });
+
+        expect(wrapper.vm.patron_roles.inherited).toEqual(full_roles.inherited);
+        expect(wrapper.vm.patron_roles.assigned).toEqual(full_roles.assigned);
+
+        wrapper.find('#is-submitting').trigger('click');
+
+        // moxios.wait() from moxios and wrapper.vm.$nextTick() from vue-test-utils don't work
+        // So using a timeout
+        setTimeout(function() {
+            expect(wrapper.vm.patron_roles.assigned).toEqual({ roles: [
+                    { principal: 'everyone', role: 'none' },
+                    { principal: 'authenticated', role: "none" }
+                ],
+                deleted: false, embargo: null
+            });
+        }, 5000);
     });
 
     it("retrieves patron roles from the server", (done) => {
