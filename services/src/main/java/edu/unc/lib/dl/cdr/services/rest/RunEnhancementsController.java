@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.admin.controller;
+package edu.unc.lib.dl.cdr.services.rest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +22,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import org.apache.activemq.broker.scheduler.Job;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,19 +37,15 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
-import net.greghaines.jesque.client.Client;
 
 /**
  * @author bbpennel
- * @date Aug 14, 2015
+ * @author lfarrell
  */
 @Controller
 public class RunEnhancementsController {
-
     @Autowired
-    private Client jesqueClient;
-    @Autowired
-    private String runEnhancementQueueName;
+    private RunEnhancementsService enhService;
     @Autowired
     private AccessControlService aclService;
 
@@ -58,20 +57,20 @@ public class RunEnhancementsController {
 
         // Check that the user has permission to all requested objects
         AccessGroupSet groups = GroupsThreadStore.getGroups();
+
         for (String pid : data.getPids()) {
-            if (!aclService.hasAccess(new PID(pid), groups, Permission.changePatronAccess)) {
+            if (!aclService.hasAccess(new PID(pid), groups, Permission.runEnhancements)) {
                 result.put("error", "Insufficient permissions to perform operation");
                 return result;
             }
         }
 
-//        Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
-//        jesqueClient.enqueue(runEnhancementQueueName, job);
-//
-//        result.put("message", "Enhancement of " + data.getPids().size()
-//                + " object(s) and their children has begun");
-//
-//        result.put("success", true);
+        result.put("message", "Enhancement of " + data.getPids().size()
+                + " object(s) and their children has begun");
+        result.put("success", true);
+
+        enhService.run(GroupsThreadStore.getAgentPrincipals(), data.getPids(), data.isForce());
+
         return result;
     }
 
@@ -83,17 +82,8 @@ public class RunEnhancementsController {
             return pids;
         }
 
-        public void setPids(List<String> pids) {
-            this.pids = pids;
-        }
-
         public boolean isForce() {
             return force;
         }
-
-        public void setForce(boolean force) {
-            this.force = force;
-        }
-
     }
 }

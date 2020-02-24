@@ -236,6 +236,10 @@
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
+
+    <bean id="runEnhancementService" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService">
+        <property name="aclService" ref="aclService" />
+    </bean>
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
