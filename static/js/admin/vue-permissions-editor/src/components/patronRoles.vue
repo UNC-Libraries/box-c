@@ -12,7 +12,7 @@
             </tr>
             </thead>
             <tbody>
-            <template v-if="hasParentRole" v-for="user in sortedInheritedRoles">
+            <template v-if="hasParentRole" v-for="user in sortedRoles.inherited">
                 <patron-display-row
                         :container-type="containerType"
                         :display-roles="display_roles"
@@ -20,7 +20,7 @@
                         type="inherited"
                         :user="user"></patron-display-row>
             </template>
-            <template v-if="hasObjectRole" v-for="user in sortedAssignedRoles">
+            <template v-if="hasObjectRole" v-for="user in sortedRoles.assigned">
                 <patron-display-row
                         :container-type="containerType"
                         :display-roles="display_roles"
@@ -97,7 +97,13 @@
     import isEmpty from 'lodash.isempty';
 
     const STAFF_ONLY_ROLE_TEXT = '\u2014';
-    let initial_roles = () => cloneDeep({ roles: [], embargo: null, deleted: false });
+    let staffOnlyRoles = () => {
+        return [
+            { principal: 'everyone', role: 'none', principal_display: 'staff' },
+            { principal: 'authenticated', role: 'none', principal_display: 'staff' }
+        ];
+    };
+    let initialRoles = () => cloneDeep({ roles: [], embargo: null, deleted: false });
 
     export default {
         name: 'patronRoles',
@@ -117,14 +123,14 @@
         data() {
             return {
                 display_roles: {
-                    inherited: initial_roles(),
-                    assigned: initial_roles()
+                    inherited: initialRoles(),
+                    assigned: initialRoles()
                 },
                 patron_roles: {
-                    inherited: initial_roles(),
-                    assigned: initial_roles()
+                    inherited: initialRoles(),
+                    assigned: initialRoles()
                 },
-                submit_roles: initial_roles(),
+                submit_roles: initialRoles(),
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
@@ -156,12 +162,28 @@
                 return this.display_roles.assigned.roles.length > 0;
             },
 
-            sortedInheritedRoles() {
-                return this.display_roles.inherited.roles.sort((a, b) => b.principal.localeCompare(a.principal));
+            sortedRoles() {
+                let assigned = this.sortedUsers(this.display_roles.assigned.roles);
+                let inherited = this.sortedUsers(this.display_roles.inherited.roles);
+
+                if (assigned.length > 0  && (this.sameRolesAll || this.sameRolesNoInherited || [0].principal_display === 'staff')) {
+                    assigned = [this.display_roles.assigned.roles[0]];
+                }
+
+                if (this.sameRolesAll) {
+                    inherited =  [this.display_roles.inherited.roles[0]];
+                }
+
+                return { inherited: inherited, assigned: assigned };
             },
 
-            sortedAssignedRoles() {
-                return this.display_roles.assigned.roles.sort((a, b) => b.principal.localeCompare(a.principal));
+            sameRolesAll() {
+              return this.hasSameAssignedRoles && this.hasSameInheritedRoles;
+            },
+
+            sameRolesNoInherited() {
+                let inherited = this.display_roles.inherited.roles;
+                return inherited.length === 0 && this.hasSameAssignedRoles;
             },
 
             compareRoles() {
@@ -177,8 +199,8 @@
              */
             assignedPatronRoles() {
                 return [
-                    { principal: 'everyone', role: this.everyone_role },
-                    { principal: 'authenticated', role: this.authenticated_role }
+                    { principal: 'everyone', role: this.everyone_role, principal_display: 'everyone' },
+                    { principal: 'authenticated', role: this.authenticated_role, principal_display: 'authenticated' }
                 ];
             },
 
@@ -196,10 +218,24 @@
 
             isCollection() {
                 return this.containerType.toLowerCase() === 'collection';
+            },
+
+            hasSameInheritedRoles() {
+                let inherited = this.display_roles.inherited.roles;
+                return inherited.length > 1 && inherited[0].role === inherited[1].role;
+            },
+
+            hasSameAssignedRoles() {
+                let assigned = this.display_roles.assigned.roles;
+                return assigned.length > 1 && assigned[0].role === assigned[1].role;
             }
         },
 
         methods: {
+            sortedUsers(users) {
+                return users.sort((a, b) => b.principal.localeCompare(a.principal));
+            },
+
             defaultRoles(perms, type) {
                 if (perms.roles === null) {
                     perms.roles = [];
@@ -218,7 +254,7 @@
 
             defaultPublicDisplayRoles(perms) {
                 if (perms.inherited.roles.length === 1 && perms.inherited.roles[0].principal === 'authenticated') {
-                    perms.inherited.roles.push({ principal: 'everyone', role: 'none'});
+                    perms.inherited.roles.push({ principal: 'everyone', role: 'none', principal_display: 'everyone' });
                 }
 
                 return perms;
@@ -227,19 +263,16 @@
             getRoles() {
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     if ((response.data.inherited.roles === null || response.data.inherited.roles.length === 0) &&
-                            response.data.assigned.roles.length === 0) {
+                        response.data.assigned.roles.length === 0) {
                         let assigned_defaults;
                         response.data.inherited.roles = this._defaultInherited();
 
                         if (this.isCollection) {
-                            assigned_defaults = [
-                                { principal: 'everyone', role: 'none' },
-                                { principal: 'authenticated', role: 'none' }
-                            ]
+                            assigned_defaults = staffOnlyRoles();
                         } else {
                             assigned_defaults = [
-                                { principal: 'everyone', role: 'canViewOriginals' },
-                                { principal: 'authenticated', role: 'canViewOriginals' }
+                                { principal: 'everyone', role: 'canViewOriginals', principal_display: 'everyone' },
+                                { principal: 'authenticated', role: 'canViewOriginals', principal_display: 'authenticated' }
                             ]
                         }
 
@@ -275,12 +308,15 @@
                     * Merge principals for display if role values are the same and update public user name
                     * Reset effective display roles if embargoes present
                     */
-                    this.display_roles.inherited.roles = this.publicUserText(this.displayRolesMerge(this.display_roles.inherited.roles));
+                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
 
                     if (!this.isDeleted) {
-                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles('loading'));
+                        this.display_roles.assigned.roles = this.embargoedRoles('loading');
                     } else {
-                        this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                        this.display_roles.assigned.roles = [
+                            { principal: 'everyone', role: 'none', principal_display: 'staff' },
+                            { principal: 'authenticated', role: 'none', principal_display: 'staff' }
+                        ]
                     }
                 }).catch((error) => {
                     let response_msg = `Unable to load current patron roles for: ${this.title}`;
@@ -292,6 +328,10 @@
             setRoles() {
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
+                // Remove display role before submitting
+                this.submit_roles.roles.forEach((d) => {
+                    delete d.principal_display;
+                });
 
                 axios({
                     method: 'put',
@@ -304,6 +344,7 @@
                     this.unsaved_changes = false;
                     this.is_submitting = false;
                     this.response_message = '';
+                    this.patron_roles.assigned = cloneDeep(this.submit_roles);
                 }).catch((error) => {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
                     this.is_submitting = false;
@@ -320,7 +361,7 @@
             _defaultInherited() {
                 let default_inherited;
                 if (!this.isCollection) {
-                    default_inherited = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }]
+                    default_inherited = staffOnlyRoles();
                 } else {
                     default_inherited = [];
                 }
@@ -333,26 +374,21 @@
              * @return {{principal: string, role: *}[] | *}
              */
             displayRolesMerge(users) {
-                if (users.length === 2 && users[0].role === users[1].role) {
-                    if (users[0].role === 'none') {
-                        return [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }];
-                    } else {
-                        return [{ principal: 'patron', role: users[0].role }];
-                    }
+                let type;
+
+                if (users.length === 0) {
+                    return users;
+                } else if (this.hasSameAssignedRoles && users[0].role === 'none' && users[1].role === 'none') {
+                    type = 'staff';
+                } else if (this.sameRolesAll || this.sameRolesNoInherited) {
+                    type = 'patron';
                 }
 
-                return users;
-            },
-
-            /**
-             * Updates display text of everyone user to 'Public Users'
-             * @param level
-             * @returns {*}
-             */
-            publicUserText(level) {
-                return level.map((u) => {
-                    return u.principal === 'everyone' ? { principal: 'Public Users', role: u.role } : u;
+                users.forEach((u) => {
+                    u.principal_display = type || u.principal;
                 });
+
+                return users;
             },
 
             /**
@@ -434,7 +470,8 @@
                 } else {
                     this.display_roles.assigned.roles.push({
                         principal: principal,
-                        role: this.embargoReduceRole(this[`${principal}_role`])
+                        role: this.embargoReduceRole(this[`${principal}_role`]),
+                        principal_display: principal
                     });
                 }
 
@@ -449,14 +486,24 @@
              */
             updateDisplayRoles(type) {
                 if (type === 'staff') {
-                    this.display_roles.assigned.roles = [{ principal: 'staff', role: STAFF_ONLY_ROLE_TEXT }];
+                    this.display_roles.assigned.roles = staffOnlyRoles();
                 } else {
                     if (this.display_roles.assigned.embargo !== null) {
-                        this.display_roles.assigned.roles = [{ principal: 'patron', role: 'canViewMetadata' }];
-                    }
+                        let everyone_display = 'everyone';
+                        let authenticated_display = 'authenticated';
 
-                    this.dedupeDisplayRoles();
+                        if (this.hasSameInheritedRoles) {
+                            everyone_display = 'patron';
+                            authenticated_display = 'patron';
+                        }
+                        this.display_roles.assigned.roles = [
+                            { principal: 'everyone', role: 'canViewMetadata', principal_display: everyone_display },
+                            { principal: 'authenticated', role: 'canViewMetadata', principal_display: authenticated_display }
+                        ];
+                    }
                 }
+
+                this.dedupeDisplayRoles();
             },
 
             /**
@@ -467,7 +514,8 @@
             embargoedRoles(role_list = 'updated') {
                 let updated_display = (role_list === 'updated') ? this.assignedPatronRoles : this.display_roles.assigned.roles;
                 let updated = updated_display.map((u) => {
-                    return { principal: u.principal, role: this.embargoReduceRole(u.role) }
+                    let display_text = (u.principal_display === undefined) ? u.principal : u.principal_display;
+                    return { principal: u.principal, role: this.embargoReduceRole(u.role), principal_display: display_text }
                 });
 
                 return this.displayRolesMerge(updated);
@@ -507,10 +555,12 @@
              */
             dedupeDisplayRoles() {
                 if (this.embargoed) {
-                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.embargoedRoles()));
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.embargoedRoles());
                 } else {
-                    this.display_roles.assigned.roles = this.publicUserText(this.displayRolesMerge(this.assignedPatronRoles));
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
                 }
+
+                this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
             },
 
             updateSubmitRoles() {
@@ -568,7 +618,7 @@
                 if (embargo_info !== null) {
                     let roles = this.display_roles.assigned.roles;
                     if (roles.length > 0 && roles[0].principal !== 'staff') {
-                        this.display_roles.assigned.roles = this.publicUserText(this.embargoedRoles());
+                        this.display_roles.assigned.roles = this.embargoedRoles();
                     }
                 } else {
                     this.loadPreviousRole();

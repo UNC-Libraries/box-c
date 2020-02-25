@@ -166,7 +166,7 @@
         fieldset {
             div {
                 cursor: default;
-                width: 80px;
+                width: 100px;
             }
         }
 

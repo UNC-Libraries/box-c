@@ -3,11 +3,11 @@
         <td>{{ fromText }}</td>
         <td class="access-display">
             {{ formattedPrincipal }}
-            <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
-                <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
-                <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
+            <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal_display)}">
+                <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal_display)}"></i>
+                <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal_display)}"></div>
                 <div class="browse-tip">
-                    <p><strong>Everyone:</strong> Applies to unauthenticated users.</p>
+                    <p><strong>Public Users:</strong> Applies to unauthenticated users.</p>
                     <p><strong>Patrons:</strong> Applies to all patron users, whether authenticated or unauthenticated.</p>
                 </div>
             </div>
@@ -31,7 +31,6 @@
 
 <script>
     import patronHelpers from '../mixins/patronHelpers';
-    import capitalize from 'lodash.capitalize';
 
     export default {
         name: 'patronDisplayRow',
@@ -52,11 +51,17 @@
             },
 
             formattedPrincipal() {
-                return capitalize(this.user.principal);
+                let user = this.user.principal_display;
+
+                if (user === 'everyone') {
+                    user = 'Public Users';
+                }
+
+                return user;
             },
 
             authenticatedUser() {
-                return this.user.principal === 'authenticated'
+                return this.user.principal_display === 'authenticated'
             },
 
             fromText() {
@@ -72,13 +77,13 @@
 
         methods: {
             nonPublicRole(text) {
-                return text !== 'everyone' && text !== 'patron' && text !== 'Public Users';
+                return text !== 'everyone' && text !== 'patron';
             },
 
             currentUserRoles(user = 'staff') {
                 // Since we only care about the returned role, checking for 'everyone' if user is 'patron'
                 // is fine since 'everyone' and 'authenticated' will have the same role
-                if (user === 'Public Users' || user === 'patron') {
+                if (user === 'patron') {
                     user = 'everyone';
                 }
 
@@ -96,6 +101,9 @@
             },
 
             displayRole(role) {
+                if (this.user.principal_display === 'staff') {
+                    return this.possibleRoles[0].text;
+                }
                 let selected_role = this.possibleRoles.find((r) => r.role === role);
                 return selected_role.text;
             },
@@ -178,6 +186,7 @@
 
     .access-display {
         max-width: 100px;
+        text-transform: capitalize;
 
         span {
             width: auto
