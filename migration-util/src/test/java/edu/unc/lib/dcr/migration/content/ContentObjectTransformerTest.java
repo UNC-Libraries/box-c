@@ -308,13 +308,7 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformFolderWithPremis() throws Exception {
-        Document premisDoc = createPremisDoc(startingPid);
-        String detail = "virus scan";
-        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
-        addAgent(eventEl, "Name", INITIATOR_ROLE, "virusscanner");
-        Path originalPremisPath = serializeXMLFile(tmpFolder.getRoot().toPath(), startingPid, premisDoc);
-
-        when(pathIndex.getPath(startingPid, PathIndex.PREMIS_TYPE)).thenReturn(originalPremisPath);
+        addPremisLog(startingPid);
 
         Model model = createContainerModel(startingPid);
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
@@ -330,16 +324,7 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(RDF.type, Cdr.Folder));
         assertTrue(resc.hasProperty(CdrDeposit.label, "folder"));
 
-        Path expectedTransformedPath = directoryManager.getPremisPath(startingPid);
-        assertTrue(Files.exists(expectedTransformedPath));
-
-        Model eventsModel = deserializeLogFile(expectedTransformedPath.toFile());
-        List<Resource> eventRescs = listEventResources(startingPid, eventsModel);
-        assertEquals(1, eventRescs.size());
-
-        Resource eventResc = eventRescs.get(0);
-        assertEquals("Event type did not match expected value",
-                Premis.VirusCheck, eventResc.getPropertyResourceValue(Premis.hasEventType));
+        assertPremisTransformed(startingPid);
     }
 
     @Test
@@ -443,6 +428,8 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, child1Pid, foxml1);
 
+        addPremisLog(startingPid);
+
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
         addContains(model, startingPid, child1Pid);
         addRelationship(model, startingPid, defaultWebObject.getProperty(), child1Pid);
@@ -464,6 +451,8 @@ public class ContentObjectTransformerTest {
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Work));
         assertNotEquals(startingPid.getRepositoryPath(), parentBag.getURI());
 
+        assertPremisTransformed(PIDs.get(parentBag.getURI()));
+
         List<RDFNode> bagChildren = parentBag.iterator().toList();
         assertEquals(1, bagChildren.size());
         Resource child1Resc = (Resource) bagChildren.get(0);
@@ -474,6 +463,8 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformWorkWithFileNoDcTitle() throws Exception {
+        addPremisLog(startingPid);
+
         PID child1Pid = makePid();
         Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "label.txt")
@@ -504,6 +495,8 @@ public class ContentObjectTransformerTest {
         assertTrue(workBag.hasProperty(RDF.type, Cdr.Work));
         assertTrue(workBag.hasProperty(CdrDeposit.label, "work"));
 
+        assertPremisTransformed(startingPid);
+
         // Verify file properties
         List<RDFNode> bagChildren = workBag.iterator().toList();
         assertEquals(1, bagChildren.size());
@@ -515,6 +508,8 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformStandaloneFile() throws Exception {
+        addPremisLog(startingPid);
+
         // Give the object a separate created time from its data file
         String objectCreated = "2011-10-01T11:11:11.111Z";
         Path dataFilePath = mockDatastreamFile(startingPid, ORIGINAL_DS, 0);
@@ -557,6 +552,9 @@ public class ContentObjectTransformerTest {
 
         // Work should have the MODS
         assertMods(startingPid, "My File");
+
+        // Original premis must stay with file
+        assertPremisTransformed(PIDs.get(fileResc.getURI()));
     }
 
     @Test
@@ -813,5 +811,28 @@ public class ContentObjectTransformerTest {
 
     private void assertDoesNotContainSubject(Model model, PID pid) {
         assertFalse(model.listSubjects().toSet().contains(createResource(pid.getRepositoryPath())));
+    }
+
+    private void addPremisLog(PID originalPid) throws IOException {
+        Document premisDoc = createPremisDoc(originalPid);
+        String detail = "virus scan";
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addAgent(eventEl, "Name", INITIATOR_ROLE, "virusscanner");
+        Path originalPremisPath = serializeXMLFile(tmpFolder.getRoot().toPath(), startingPid, premisDoc);
+
+        when(pathIndex.getPath(originalPid, PathIndex.PREMIS_TYPE)).thenReturn(originalPremisPath);
+    }
+
+    private void assertPremisTransformed(PID originalPid) throws IOException {
+        Path expectedTransformedPath = directoryManager.getPremisPath(originalPid);
+        assertTrue(Files.exists(expectedTransformedPath));
+
+        Model eventsModel = deserializeLogFile(expectedTransformedPath.toFile());
+        List<Resource> eventRescs = listEventResources(originalPid, eventsModel);
+        assertEquals(1, eventRescs.size());
+
+        Resource eventResc = eventRescs.get(0);
+        assertEquals("Event type did not match expected value",
+                Premis.VirusCheck, eventResc.getPropertyResourceValue(Premis.hasEventType));
     }
 }

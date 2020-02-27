@@ -223,39 +223,26 @@ public class ContentObjectTransformer extends RecursiveAction {
         }
 
         // transform PREMIS and copy to deposit directory
-        transformPremis();
+        transformPremis(originalPid, newPid);
 
         // TODO set staff access
     }
 
-    private void transformPremis() {
-        Path originalPremisPath = pathIndex.getPath(originalPid, PathIndex.PREMIS_TYPE);
-        if (originalPremisPath == null || !Files.exists(originalPremisPath)) {
-            log.info("No premis for {}, skipping transformation", originalPid.getId());
-            return;
-        }
-
-        Path transformedPremisPath = directoryManager.getPremisPath(newPid);
-        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(newPid, transformedPremisPath.toFile());
-        ContentPremisToRdfTransformer premisTransformer =
-                new ContentPremisToRdfTransformer(newPid, premisLogger, originalPremisPath);
-
-        premisTransformer.compute();
-    }
-
     private void populateFileObject(Resource bxc3Resc, Model depositModel) {
         Resource fileResc;
+        PID filePid;
         Bag workBag = null;
         if (Cdr.Work.equals(parentType)) {
             fileResc = depositModel.getResource(newPid.getRepositoryPath());
+            filePid = newPid;
         } else {
             // Use the pid of the current object to make a new work object
             workBag = depositModel.createBag(newPid.getRepositoryPath());
             workBag.addProperty(RDF.type, Cdr.Work);
 
             // Build a new resource for the file object
-            PID newFilePid = pidMinter.mintContentPid();
-            fileResc = depositModel.getResource(newFilePid.getRepositoryPath());
+            filePid = pidMinter.mintContentPid();
+            fileResc = depositModel.getResource(filePid.getRepositoryPath());
 
             // Add the new file resource as the primary object of the work
             workBag.add(fileResc);
@@ -294,8 +281,23 @@ public class ContentObjectTransformer extends RecursiveAction {
             }
         }
 
-        // TODO transform PREMIS, making it refer to the FILE object rather than
-        // work, and copy to deposit directory
+        // transform existing PREMIS as the events for the file object, rather than work
+        transformPremis(originalPid, filePid);
+    }
+
+    private void transformPremis(PID bxc3Pid, PID bxc5Pid) {
+        Path originalPremisPath = pathIndex.getPath(bxc3Pid, PathIndex.PREMIS_TYPE);
+        if (originalPremisPath == null || !Files.exists(originalPremisPath)) {
+            log.info("No premis for {}, skipping transformation", bxc3Pid.getId());
+            return;
+        }
+
+        Path transformedPremisPath = directoryManager.getPremisPath(bxc5Pid);
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(bxc5Pid, transformedPremisPath.toFile());
+        ContentPremisToRdfTransformer premisTransformer =
+                new ContentPremisToRdfTransformer(bxc5Pid, premisLogger, originalPremisPath);
+
+        premisTransformer.compute();
     }
 
     /**
