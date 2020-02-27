@@ -46,7 +46,7 @@
         },
 
         mounted() {
-            this.works_only = this.$route.query.works_only === 'true';
+            this.works_only = this.coerceWorksOnly(this.$route.query.works_only);
         }
     }
 </script>
