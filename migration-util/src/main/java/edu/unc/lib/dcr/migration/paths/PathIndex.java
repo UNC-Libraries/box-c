@@ -36,6 +36,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.h2.tools.DeleteDbFiles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
@@ -46,6 +48,8 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  */
 public class PathIndex {
+
+    private static final Logger log = LoggerFactory.getLogger(PathIndex.class);
 
     public static final int OBJECT_TYPE = 0;
     public static final int ORIGINAL_TYPE = 1;
@@ -74,6 +78,7 @@ public class PathIndex {
      */
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
+            log.info("Opening path index connection to {}", "jdbc:h2:" + databaseUrl);
             connection = DriverManager.getConnection("jdbc:h2:" + databaseUrl, "test", "test");
         }
         return connection;
@@ -119,7 +124,11 @@ public class PathIndex {
                     }
                 }
             }
-            return Paths.get(highestMatch);
+            if (highestMatch == null) {
+                return null;
+            } else {
+                return Paths.get(highestMatch);
+            }
         } catch (SQLException e) {
             throw new RepositoryException("Failed to look up path for " + pid, e);
         }

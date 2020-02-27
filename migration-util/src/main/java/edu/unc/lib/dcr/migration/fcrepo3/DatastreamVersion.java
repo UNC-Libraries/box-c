@@ -30,6 +30,7 @@ public class DatastreamVersion {
     private String created;
     private String size;
     private String mimeType;
+    private String altIds;
     private Element bodyEl;
 
     /**
@@ -43,13 +44,14 @@ public class DatastreamVersion {
      * @param mimeType
      */
     public DatastreamVersion(String md5, String dsName, String versionName, String created,
-            String size, String mimeType) {
+            String size, String mimeType, String altIds) {
         this.md5 = md5;
         this.dsName = dsName;
         this.versionName = versionName;
         this.created = created;
         this.size = size;
         this.mimeType = mimeType;
+        this.altIds = altIds;
     }
 
     /**
@@ -92,6 +94,14 @@ public class DatastreamVersion {
      */
     public String getMimeType() {
         return mimeType;
+    }
+
+    public String getAltIds() {
+        return altIds;
+    }
+
+    public void setAltIds(String altIds) {
+        this.altIds = altIds;
     }
 
     /**

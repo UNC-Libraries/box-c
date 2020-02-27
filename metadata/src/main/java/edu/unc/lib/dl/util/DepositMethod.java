@@ -21,9 +21,13 @@ package edu.unc.lib.dl.util;
  *
  */
 public enum DepositMethod {
-    Unspecified("Unspecified Method"), WebForm("CDR Web Form"), SWORD13(
-            "SWORD 1.3"), SWORD20("SWORD 2.0"), CDRAPI1("CDR API 1.0"), CDRCollector(
-            "CDR Collector 1.0");
+    Unspecified("Unspecified Method"),
+    WebForm("CDR Web Form"),
+    SWORD13("SWORD 1.3"),
+    SWORD20("SWORD 2.0"),
+    CDRAPI1("CDR API 1.0"),
+    CDRCollector("CDR Collector 1.0"),
+    BXC3_TO_5_MIGRATION_UTIL("BXC3 To BXC5 Migration Utility");
 
     private String label;
 

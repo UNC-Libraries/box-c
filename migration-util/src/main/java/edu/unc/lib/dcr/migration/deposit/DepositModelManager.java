@@ -25,7 +25,9 @@ import java.nio.file.Paths;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,8 +88,28 @@ public class DepositModelManager {
      * @param model
      */
     public synchronized void addTriples(Model model) {
+        addTriples(model, null, null);
+    }
+
+    /**
+     * Add triples from the provided model to the deposit model, inserting the
+     * new resource as the child of the provided parent
+     *
+     * @param model
+     * @param newPid
+     * @param parentPid
+     */
+    public synchronized void addTriples(Model model, PID newPid, PID parentPid) {
         Model depositModel = getWriteModel();
         try {
+            // Insert reference from parent to new resource
+            if (newPid != null && parentPid != null) {
+                Resource newResc = model.getResource(newPid.getRepositoryPath());
+                Bag parentBag = depositModel.getBag(parentPid.getRepositoryPath());
+
+                parentBag.add(newResc);
+            }
+
             log.debug("Adding triples to deposit model: {}", model);
             depositModel.add(model);
             dataset.commit();

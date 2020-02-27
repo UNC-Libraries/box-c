@@ -155,8 +155,10 @@ public class FoxmlDocumentHelpers {
             String created = dsvEl.getAttributeValue("CREATED");
             Element digestEl = dsvEl.getChild("contentDigest", FOXML_NS);
             String md5 = digestEl == null ? null : digestEl.getAttributeValue("DIGEST");
+            String altIds = dsvEl.getAttributeValue("ALT_IDS");
 
-            DatastreamVersion dsVersion = new DatastreamVersion(md5, name, versionName, created, size, mimeType);
+            DatastreamVersion dsVersion = new DatastreamVersion(md5, name, versionName,
+                    created, size, mimeType, altIds);
 
             Element bodyEl = dsvEl.getChild("xmlContent", FOXML_NS);
             if (bodyEl != null) {

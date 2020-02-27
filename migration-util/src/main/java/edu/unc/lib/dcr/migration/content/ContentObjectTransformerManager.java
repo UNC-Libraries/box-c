@@ -43,6 +43,7 @@ public class ContentObjectTransformerManager {
     private PathIndex pathIndex;
     private DepositModelManager modelManager;
     private boolean topLevelAsUnit;
+    private boolean generateIds;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
 
@@ -57,12 +58,16 @@ public class ContentObjectTransformerManager {
     /**
      * Construct a new content object transformer
      *
-     * @param pid
+     * @param originalPid
+     * @param newPid
+     * @param parentPid
      * @param parentType
      * @return
      */
-    public ContentObjectTransformer createTransformer(PID pid, Resource parentType) {
-        ContentObjectTransformer transformer = new ContentObjectTransformer(pid, parentType);
+    public ContentObjectTransformer createTransformer(PID originalPid, PID newPid, PID parentPid,
+            Resource parentType) {
+        ContentObjectTransformer transformer = new ContentObjectTransformer(
+                originalPid, newPid, parentPid, parentType);
         transformer.setModelManager(modelManager);
         transformer.setPathIndex(pathIndex);
         transformer.setTopLevelAsUnit(topLevelAsUnit);
@@ -99,6 +104,10 @@ public class ContentObjectTransformerManager {
         } while (true);
     }
 
+    public PID getTransformedPid(PID originalPid) {
+        return generateIds ? pidMinter.mintContentPid() : originalPid;
+    }
+
     public void setPathIndex(PathIndex pathIndex) {
         this.pathIndex = pathIndex;
     }
@@ -117,5 +126,9 @@ public class ContentObjectTransformerManager {
 
     public void setDirectoryManager(DepositDirectoryManager directoryManager) {
         this.directoryManager = directoryManager;
+    }
+
+    public void setGenerateIds(boolean generateIds) {
+        this.generateIds = generateIds;
     }
 }

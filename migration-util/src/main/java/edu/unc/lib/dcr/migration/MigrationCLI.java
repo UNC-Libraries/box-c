@@ -37,7 +37,8 @@ import picocli.CommandLine.Option;
         TransformPremis.class,
         PathIndexCommand.class,
         TransformContentCommand.class,
-        ViewDepositModelCommand.class
+        ViewDepositModelCommand.class,
+        SubmitDepositCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
@@ -53,9 +54,29 @@ public class MigrationCLI implements Callable<Integer> {
     protected String tdbDir;
 
     @Option(names = {"--deposit-dir"},
-            defaultValue = "${sys:dcr.migration.index.url:-${sys:user.home}/bxc_deposits",
+            defaultValue = "${sys:dcr.deposit.dir:-${sys:user.home}/bxc_deposits",
             description = "Path where deposit directories will be stored. Defaults to home dir.")
     protected Path depositBaseDir;
+
+    @Option(names = {"-u", "--username"},
+            defaultValue = "${sys:user.name}",
+            description = "User performing this action. Defaults to current user.")
+    protected String username;
+
+    @Option(names = {"--groups"},
+            defaultValue = "unc:app:lib:cdr:migrationGroup",
+            description = "Groups used for permissions evaluations. Defaults to the migration group.")
+    protected String groups;
+
+    @Option(names = {"--redis-host"},
+            defaultValue = "localhost",
+            description = "Host name for redis. Default localhost.")
+    protected String redisHost;
+
+    @Option(names = {"--redis-port"},
+            defaultValue = "6379",
+            description = "Port for redis. Default 6379.")
+    protected int redisPort;
 
     private MigrationCLI() {
     }

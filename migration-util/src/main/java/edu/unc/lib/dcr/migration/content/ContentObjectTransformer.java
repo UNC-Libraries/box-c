@@ -28,23 +28,31 @@ import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraPropert
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty.lastModifiedDate;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.contains;
 import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.originalDeposit;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.DC_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.listDatastreamVersions;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.ORIGINAL_TYPE;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DC_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.file.Files.newInputStream;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.RecursiveAction;
 
@@ -55,6 +63,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 
@@ -88,54 +97,60 @@ public class ContentObjectTransformer extends RecursiveAction {
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
 
-    private PID pid;
+    private PID originalPid;
+    private PID newPid;
+    private PID parentPid;
     private Resource parentType;
+
+    private Document foxml;
 
     /**
      *
      */
-    public ContentObjectTransformer(PID pid, Resource parentType) {
-        this.pid = pid;
+    public ContentObjectTransformer(PID originalPid, PID newPid, PID parentPid, Resource parentType) {
+        this.originalPid = originalPid;
+        this.newPid = newPid;
+        this.parentPid = parentPid;
         this.parentType = parentType;
     }
 
     @Override
     protected void compute() {
-        log.info("Tranforming {}", pid.getId());
-        Path foxmlPath = pathIndex.getPath(pid);
+        log.info("Tranforming {}", originalPid.getId());
+        Path foxmlPath = pathIndex.getPath(originalPid);
+        if (foxmlPath == null) {
+            log.warn("Unable to find foxml for {}", originalPid.getId());
+            return;
+        }
 
         // Deserialize the foxml document
-        Document foxml;
         try {
             foxml = createSAXBuilder().build(newInputStream(foxmlPath));
         } catch (IOException | JDOMException e) {
-            throw new RepositoryException("Failed to read FOXML for " + pid, e);
+            throw new RepositoryException("Failed to read FOXML for " + originalPid, e);
         }
 
         // Retrieve all properties/relationships for the object
         Model model = getObjectModel(foxml);
-        Resource bxc3Resc = model.getResource(toBxc3Uri(pid));
+        Resource bxc3Resc = model.getResource(toBxc3Uri(originalPid));
 
         if (isMarkedForDeletion(bxc3Resc)) {
-            log.warn("Skipping transformation of object {}, it is marked for deletion", pid);
+            log.warn("Skipping transformation of object {}, it is marked for deletion", originalPid);
             return;
         }
 
         // Determine what type of resource this should be in boxc5
         Resource resourceType = getResourceType(bxc3Resc);
-        if (resourceType == null) {
-            return;
-        }
 
         Model depositModel = createDefaultModel();
 
         if (resourceType.equals(Cdr.FileObject)) {
-            populateFileObject(bxc3Resc, depositModel, foxml);
+            populateFileObject(bxc3Resc, depositModel);
         } else {
             populateContainerObject(bxc3Resc, resourceType, depositModel);
         }
 
-        Resource depResc = depositModel.getResource(pid.getRepositoryPath());
+        Resource depResc = depositModel.getResource(newPid.getRepositoryPath());
 
         populateTimestamps(bxc3Resc, depResc);
         populateOriginalDeposit(bxc3Resc, depResc);
@@ -145,17 +160,21 @@ public class ContentObjectTransformer extends RecursiveAction {
         // TODO set title, based on dc title and/or label
 
         // copy most recent MODS to deposit directory
-        extractMods(foxml);
+        extractMods();
 
         // Push triples for this object to the shared model for this deposit
-        modelManager.addTriples(depositModel);
+        modelManager.addTriples(depositModel, newPid, parentPid);
     }
 
     private void populateTimestamps(Resource bxc3Resc, Resource depResc) {
-        String created = bxc3Resc.getProperty(createdDate.getProperty()).getString();
-        String updated = bxc3Resc.getProperty(lastModifiedDate.getProperty()).getString();
-        depResc.addLiteral(CdrDeposit.createTime, created);
-        depResc.addLiteral(CdrDeposit.lastModifiedTime, updated);
+        if (!depResc.hasProperty(CdrDeposit.createTime)) {
+            String created = bxc3Resc.getProperty(createdDate.getProperty()).getString();
+            depResc.addLiteral(CdrDeposit.createTime, created);
+        }
+        if (!depResc.hasProperty(CdrDeposit.lastModifiedTime)) {
+            String updated = bxc3Resc.getProperty(lastModifiedDate.getProperty()).getString();
+            depResc.addLiteral(CdrDeposit.lastModifiedTime, updated);
+        }
     }
 
     private void populateOriginalDeposit(Resource bxc3Resc, Resource depResc) {
@@ -168,46 +187,48 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     private void populateContainerObject(Resource bxc3Resc, Resource resourceType, Model depositModel) {
-        Bag containerBag = depositModel.getBag(pid.getRepositoryPath());
+        Bag containerBag = depositModel.createBag(newPid.getRepositoryPath());
         containerBag.addProperty(RDF.type, resourceType);
 
+        Map<PID, PID> oldToNewPids = new HashMap<>();
         List<PID> contained = listContained(bxc3Resc);
         for (PID containedPid : contained) {
-            // Make sure we can find FOXML for the child before we add it
-            if (pathIndex.getPath(containedPid) == null) {
-                log.error("Dangling containment: {} references {}, but no foxml found for the child",
-                        bxc3Resc, containedPid);
-                continue;
-            }
-
-            // Add the child to its parent bag
-            containerBag.add(createResource(containedPid.getRepositoryPath()));
+            // Determine PID to use for transformed child, in case we are generating or preserving ids.
+            PID newContainedPid = manager.getTransformedPid(containedPid);
+            oldToNewPids.put(containedPid, newContainedPid);
 
             // Spawn and execute transformer for children
-            ContentObjectTransformer childTransformer = manager.createTransformer(containedPid, resourceType);
-            childTransformer.fork();
+            manager.createTransformer(containedPid, newContainedPid, newPid, resourceType)
+                   .fork();
         }
 
         if (Cdr.Work.equals(resourceType)) {
             Statement dwoStmt = bxc3Resc.getProperty(defaultWebObject.getProperty());
             if (dwoStmt != null) {
                 PID primaryObjPid = convertBxc3RefToPid(dwoStmt.getResource());
+                // Determine out the new pid of the primary object
+                primaryObjPid = oldToNewPids.get(primaryObjPid);
                 containerBag.addProperty(Cdr.primaryObject, createResource(primaryObjPid.getRepositoryPath()));
             }
+        }
+
+        String label = getLabel(bxc3Resc, null);
+        if (label != null) {
+            containerBag.addLiteral(CdrDeposit.label, label);
         }
 
         // TODO transform PREMIS and copy to deposit directory
         // TODO set staff access
     }
 
-    private void populateFileObject(Resource bxc3Resc, Model depositModel, Document foxml) {
+    private void populateFileObject(Resource bxc3Resc, Model depositModel) {
         Resource fileResc;
         Bag workBag = null;
         if (Cdr.Work.equals(parentType)) {
-            fileResc = depositModel.getResource(pid.getRepositoryPath());
+            fileResc = depositModel.getResource(newPid.getRepositoryPath());
         } else {
             // Use the pid of the current object to make a new work object
-            workBag = depositModel.getBag(pid.getRepositoryPath());
+            workBag = depositModel.createBag(newPid.getRepositoryPath());
             workBag.addProperty(RDF.type, Cdr.Work);
 
             // Build a new resource for the file object
@@ -236,15 +257,71 @@ public class ContentObjectTransformer extends RecursiveAction {
         }
 
         // Populate the original file path
-        Path originalPath = pathIndex.getPath(pid, ORIGINAL_TYPE);
+        Path originalPath = pathIndex.getPath(originalPid, ORIGINAL_TYPE);
         if (originalPath == null) {
-            log.warn("No original file path for {}", pid);
+            log.warn("No original file path for {}", originalPid);
         } else {
             fileResc.addLiteral(stagingLocation, originalPath.toUri().toString());
         }
 
+        String label = getLabel(bxc3Resc, originalVersions);
+        if (label != null) {
+            fileResc.addLiteral(CdrDeposit.label, label);
+            if (workBag != null) {
+                workBag.addLiteral(CdrDeposit.label, label);
+            }
+        }
+
         // TODO transform PREMIS, making it refer to the FILE object rather than
         // work, and copy to deposit directory
+    }
+
+    /**
+     * Retrieve the label for this object, first pulling from dc:title, falling back to
+     * the fedora label, then the DATA_FILE ALT_IDS.
+     *
+     * @param bxc3Resc
+     * @param originalVersions
+     * @return
+     */
+    private String getLabel(Resource bxc3Resc, List<DatastreamVersion> originalVersions) {
+        List<DatastreamVersion> dcVersions = listDatastreamVersions(foxml, DC_DS);
+        String filename;
+        if (dcVersions != null && !dcVersions.isEmpty() ) {
+            DatastreamVersion dcVersion = dcVersions.get(0);
+            Element dcEl = dcVersion.getBodyEl();
+            filename = dcEl.getChildTextTrim("title", DC_NS);
+            if (!isEmpty(filename)) {
+                return filename;
+            }
+        }
+
+        Statement labelStmt = bxc3Resc.getProperty(FedoraProperty.label.getProperty());
+        if (labelStmt != null) {
+            filename = labelStmt.getString();
+            if (!isEmpty(filename)) {
+                return filename;
+            }
+        }
+
+        if (!isEmpty(originalVersions)) {
+            DatastreamVersion dsVersion = originalVersions.get(originalVersions.size() - 1);
+            String altIds = dsVersion.getAltIds();
+            if (altIds != null) {
+                try {
+                    URI altUri = URI.create(altIds);
+                    String path = altUri.getPath();
+                    filename = substringAfterLast(path, "/");
+                    if (!isEmpty(filename)) {
+                        return filename;
+                    }
+                } catch (IllegalArgumentException e) {
+                    log.debug("Unable to parse alt id for {}", originalPid);
+                }
+            }
+        }
+
+        return null;
     }
 
     private Resource getResourceType(Resource bxc3Resc) {
@@ -271,8 +348,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             return Cdr.Folder;
         }
 
-        log.warn("Unsupported content type for {} with models: {}", bxc3Resc, contentModels);
-        return null;
+        throw new RepositoryException("Unsupported content type for " + bxc3Resc + " with models: " + contentModels);
     }
 
     private List<PID> listContained(Resource bxc3Resc) {
@@ -285,18 +361,18 @@ public class ContentObjectTransformer extends RecursiveAction {
         return contained;
     }
 
-    private void extractMods(Document foxml) {
-        log.info("Checking for MODS {}", pid);
+    private void extractMods() {
+        log.info("Checking for MODS {}", originalPid);
         List<DatastreamVersion> modsVersions = listDatastreamVersions(foxml, MODS_DS);
         if (modsVersions == null || modsVersions.isEmpty()) {
-            log.debug("No MODS for {}" , pid);
+            log.debug("No MODS for {}" , originalPid);
             return;
         }
 
-        log.info("Found mods for {}", pid);
+        log.info("Found mods for {}", originalPid);
 
         DatastreamVersion current = modsVersions.get(modsVersions.size() - 1);
-        directoryManager.writeMods(pid, current.getBodyEl());
+        directoryManager.writeMods(newPid, current.getBodyEl());
     }
 
     private boolean isMarkedForDeletion(Resource resc) {
@@ -328,6 +404,6 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     public PID getPid() {
-        return pid;
+        return originalPid;
     }
 }
