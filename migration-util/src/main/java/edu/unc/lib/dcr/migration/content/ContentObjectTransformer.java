@@ -160,7 +160,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         populateTimestamps(bxc3Resc, depResc);
         populateOriginalDeposit(bxc3Resc, depResc);
 
-        // TODO set patron access
+        // set patron access
+        ACLTransformationHelpers.transformPatronAccess(bxc3Resc, depResc, parentPid);
 
         // TODO set title, based on dc title and/or label
 

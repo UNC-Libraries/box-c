@@ -62,6 +62,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -75,15 +76,18 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
+import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 
@@ -158,6 +162,7 @@ public class ContentObjectTransformerTest {
     @Test
     public void transformFolderWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid);
+        addPatronAccess(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
                 .relsExtModel(model)
@@ -173,6 +178,8 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(resc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(resc.hasProperty(CdrDeposit.label, "folder"));
+
+        assertHasPatronAccess(resc);
     }
 
     @Test
@@ -238,6 +245,7 @@ public class ContentObjectTransformerTest {
         // Create the parent's foxml
         Model model = createContainerModel(startingPid);
         addContains(model, startingPid, child1Pid);
+        addPatronAccess(model, startingPid);
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
                 .relsExtModel(model)
                 .build();
@@ -254,6 +262,7 @@ public class ContentObjectTransformerTest {
         Bag parentBag = depModel.getBag(depChildren.get(0).asResource());
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
         assertNotEquals(startingPid.getRepositoryPath(), parentBag.getURI());
+        assertHasPatronAccess(parentBag);
 
         List<RDFNode> bagChildren = parentBag.iterator().toList();
         assertEquals(1, bagChildren.size());
@@ -513,8 +522,10 @@ public class ContentObjectTransformerTest {
         // Give the object a separate created time from its data file
         String objectCreated = "2011-10-01T11:11:11.111Z";
         Path dataFilePath = mockDatastreamFile(startingPid, ORIGINAL_DS, 0);
+        Model bxc3Model = createFileModel(startingPid);
+        addPatronAccess(bxc3Model, startingPid);
         Document foxml1 = new FoxmlDocumentBuilder(startingPid, "file1")
-                .relsExtModel(createFileModel(startingPid))
+                .relsExtModel(bxc3Model)
                 .withDatastreamVersion(createDataFileVersion())
                 .createdDate(objectCreated)
                 .withDatastreamVersion(makeModsDatastream("My File"))
@@ -538,6 +549,7 @@ public class ContentObjectTransformerTest {
                 workBag.hasProperty(CdrDeposit.createTime, objectCreated));
         assertTrue(workBag.hasProperty(Cdr.primaryObject, fileResc));
         assertTrue(workBag.hasProperty(CdrDeposit.label, "file1"));
+        assertHasPatronAccess(workBag);
 
         // Verify file properties
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
@@ -555,6 +567,8 @@ public class ContentObjectTransformerTest {
 
         // Original premis must stay with file
         assertPremisTransformed(PIDs.get(fileResc.getURI()));
+        // ACLs should now be on the work
+        assertNoPatronAccess(fileResc);
     }
 
     @Test
@@ -602,6 +616,7 @@ public class ContentObjectTransformerTest {
         // Create the parent's foxml
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
         addContains(model, startingPid, child1Pid);
+        addPatronAccess(model, startingPid);
         Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
                 .relsExtModel(model)
                 .build();
@@ -616,6 +631,8 @@ public class ContentObjectTransformerTest {
         assertTrue(unitResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(unitResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
+        // patron ACLs should have migrated from unit to collection
+        assertNoPatronAccess(unitResc);
 
         Resource collResc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -623,6 +640,8 @@ public class ContentObjectTransformerTest {
         assertTrue(collResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(collResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(collResc.hasProperty(CdrDeposit.label, "collection"));
+        // Coll should now have the ACLs from the unit
+        assertHasPatronAccess(collResc);
     }
 
     @Test
@@ -834,5 +853,25 @@ public class ContentObjectTransformerTest {
         Resource eventResc = eventRescs.get(0);
         assertEquals("Event type did not match expected value",
                 Premis.VirusCheck, eventResc.getPropertyResourceValue(Premis.hasEventType));
+    }
+
+    private void addPatronAccess(Model bxc3Model, PID startingPid) {
+        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(startingPid));
+        bxc3Resc.addLiteral(Bxc3UserRole.metadataPatron.getProperty(), ACLTransformationHelpers.BXC3_PUBLIC_GROUP);
+        bxc3Resc.addLiteral(Bxc3UserRole.patron.getProperty(), ACLTransformationHelpers.BXC3_AUTHENTICATED_GROUP);
+    }
+
+    private void assertHasPatronAccess(Resource bxc5Resc) {
+        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canViewMetadata, AccessPrincipalConstants.PUBLIC_PRINC));
+        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canViewOriginals, AccessPrincipalConstants.AUTHENTICATED_PRINC));
+    }
+
+    private void assertNoPatronAccess(Resource bxc5Resc) {
+        List<Statement> publicRoles = bxc5Resc.getModel().listStatements(
+                bxc5Resc, null, AccessPrincipalConstants.PUBLIC_PRINC).toList();
+        assertTrue("Expected no roles for everyone group on " + bxc5Resc.getURI(), publicRoles.isEmpty());
+        List<Statement> authRoles = bxc5Resc.getModel().listStatements(
+                bxc5Resc, null, AccessPrincipalConstants.AUTHENTICATED_PRINC).toList();
+        assertTrue("Expected no roles for authenticated group on " + bxc5Resc.getURI(), authRoles.isEmpty());
     }
 }
