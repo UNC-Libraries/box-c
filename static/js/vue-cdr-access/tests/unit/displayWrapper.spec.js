@@ -133,6 +133,22 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
+    it("displays a 'works only' option if the 'works only' box is checked and no records are works", () => {
+        wrapper.vm.$router.currentRoute.query.works_only = 'true';
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        let works_only = wrapper.find('.container-note');
+        expect(works_only.exists()).toBe(true);
+    });
+
+    it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", () => {
+        wrapper.vm.$router.currentRoute.query.works_only = 'false';
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        let works_only = wrapper.find('.container-note');
+        expect(works_only.exists()).toBe(false)
+    });
+
     afterEach(() => {
         moxios.uninstall();
     });

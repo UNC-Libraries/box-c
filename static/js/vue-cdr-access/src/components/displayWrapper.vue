@@ -1,20 +1,20 @@
 <template>
     <div>
-        <div v-if="record_list.length > 0">
-            <div class="columns is-tablet">
-                <div class="column is-6">
-                    <browse-search></browse-search>
-                </div>
-                <div class="column is-2">
-                    <browse-sort browse-type="display"></browse-sort>
-                </div>
-                <div class="column is-2 container-note">
-                    <works-only :admin-unit="is_admin_unit"></works-only>
-                </div>
-                <div class="column is-narrow-tablet">
-                    <view-type></view-type>
-                </div>
+        <div class="columns is-tablet">
+            <div class="column is-6">
+                <browse-search></browse-search>
             </div>
+            <div class="column is-2" v-if="showWidget">
+                <browse-sort browse-type="display"></browse-sort>
+            </div>
+            <div class="column is-2 container-note" v-if="showWorksOnly">
+                <works-only :admin-unit="is_admin_unit"></works-only>
+            </div>
+            <div class="column is-narrow-tablet" v-if="showWidget">
+                <view-type></view-type>
+            </div>
+        </div>
+        <div v-if="showWidget">
             <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
             <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
         </div>
@@ -79,6 +79,14 @@
         computed: {
             isBrowseDisplay() {
                 return this.urlParams().browse_type === 'gallery-display';
+            },
+
+            showWidget() {
+                return this.record_list.length > 0;
+            },
+
+            showWorksOnly() {
+                return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
             }
         },
 
@@ -105,7 +113,7 @@
 
             updateParams() {
                 let params = this.setTypes();
-                this.search_method = (params.works_only === 'true') ? 'searchJson' : 'listJson';
+                this.search_method = (this.coerceWorksOnly(params.works_only)) ? 'searchJson' : 'listJson';
                 return params;
             },
 
