@@ -209,4 +209,31 @@ public class ContentModelHelper {
             return property;
         }
     }
+
+    public enum Bxc3UserRole {
+        list("list"),
+        accessCopiesPatron("access-copies-patron"),
+        metadataPatron("metadata-patron"),
+        patron("patron"),
+        observer("observer"),
+        ingester("ingester"),
+        metadataEditor("metadata-editor"),
+        processor("processor"),
+        curator("curator"),
+        administrator("administrator");
+
+        private Property property;
+
+        Bxc3UserRole(String predicate) {
+            property = createProperty(JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + predicate);
+        }
+
+        public Property getProperty() {
+            return property;
+        }
+
+        public boolean equals(Property property) {
+            return this.property.equals(property);
+        }
+    }
 }
