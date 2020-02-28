@@ -113,7 +113,7 @@
 
             updateParams() {
                 let params = this.setTypes();
-                this.search_method = (params.works_only === 'true') ? 'searchJson' : 'listJson';
+                this.search_method = (this.coerceWorksOnly(params.works_only)) ? 'searchJson' : 'listJson';
                 return params;
             },
 
