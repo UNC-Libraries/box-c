@@ -18,9 +18,12 @@ package edu.unc.lib.dcr.migration.content;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -28,6 +31,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.solr.common.StringUtils;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.CDRProperty;
@@ -43,6 +48,8 @@ import edu.unc.lib.dl.rdf.CdrAcl;
  * @author bbpennel
  */
 public class ACLTransformationHelpers {
+
+    private static final Logger log = getLogger(ACLTransformationHelpers.class);
 
     public final static String BXC3_PUBLIC_GROUP = "public";
     public final static String BXC3_AUTHENTICATED_GROUP = "authenticated";
@@ -72,15 +79,18 @@ public class ACLTransformationHelpers {
             destResc = bxc5Resc;
         }
 
+        // Migrate existing embargoes
         if (bxc3Resc.hasProperty(CDRProperty.embargoUntil.getProperty())) {
             destResc.addLiteral(CdrAcl.embargoUntil,
                     bxc3Resc.getProperty(CDRProperty.embargoUntil.getProperty()).getString());
         }
 
+        // Calculate the most restrictive roles assigned to each patron group
         Property[] patronRoles = calculatePatronRoles(bxc3Resc);
         Property everyoneRole = patronRoles[0];
         Property authRole = patronRoles[1];
 
+        // assign the patron groups roles if they were specified
         if (everyoneRole != null) {
             destResc.addLiteral(everyoneRole, PUBLIC_PRINC);
         }
@@ -90,6 +100,18 @@ public class ACLTransformationHelpers {
 
         // Merge in access settings from parent if present in the cache
         mergeParentPatronAcls(parentPid, destResc, everyoneRole, authRole);
+
+        // For collections if no roles specified or inherited, default to open permissions
+        // as they would normally inherit from the root in bxc3.
+        if (bxc5Resc.hasProperty(RDF.type, Cdr.Collection)) {
+            if (!(bxc5Resc.hasProperty(CdrAcl.canViewMetadata)
+                    || bxc5Resc.hasProperty(CdrAcl.canViewAccessCopies)
+                    || bxc5Resc.hasProperty(CdrAcl.canViewOriginals)
+                    || bxc5Resc.hasProperty(CdrAcl.none))) {
+                destResc.addLiteral(CdrAcl.canViewOriginals, PUBLIC_PRINC);
+                destResc.addLiteral(CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
+            }
+        }
     }
 
     private static Property[] calculatePatronRoles(Resource bxc3Resc) {
@@ -189,5 +211,67 @@ public class ACLTransformationHelpers {
                 }
             }
         }
+    }
+
+    /**
+     * Transforms BXC3 staff role assignments to BXC5 staff role assignments
+     *
+     * @param bxc3Resc
+     * @param bxc5Resc
+     */
+    public static void transformStaffRoles(Resource bxc3Resc, Resource bxc5Resc) {
+        Set<String> principalsAssigned = new HashSet<>();
+        // Order matters here, as a principal can only be assigned a single role, so we
+        // prioritize the higher permission granting role first.
+        mapStaffRole(Bxc3UserRole.curator, CdrAcl.canManage, bxc3Resc, bxc5Resc, principalsAssigned);
+        mapStaffRole(Bxc3UserRole.processor, CdrAcl.canProcess, bxc3Resc, bxc5Resc, principalsAssigned);
+        mapStaffRole(Bxc3UserRole.metadataEditor, CdrAcl.canDescribe, bxc3Resc, bxc5Resc, principalsAssigned);
+        mapStaffRole(Bxc3UserRole.ingester, CdrAcl.canIngest, bxc3Resc, bxc5Resc, principalsAssigned);
+        mapStaffRole(Bxc3UserRole.observer, CdrAcl.canAccess, bxc3Resc, bxc5Resc, principalsAssigned);
+    }
+
+    /**
+     * Map all values of bxc3 user role to a bxc5 role, unless the principal is invalid
+     *
+     * @param bxc3Role
+     * @param bxc5Role
+     * @param bxc3Resc
+     * @param bxc5Resc
+     */
+    private static void mapStaffRole(Bxc3UserRole bxc3Role, Property bxc5Role,
+            Resource bxc3Resc, Resource bxc5Resc, Set<String> principalsAssigned) {
+        if (bxc3Resc.hasProperty(bxc3Role.getProperty())) {
+            StmtIterator stmtIt = bxc3Resc.listProperties(bxc3Role.getProperty());
+
+            while (stmtIt.hasNext()) {
+                Statement stmt = stmtIt.next();
+
+                String principal = stmt.getString().trim();
+                if (StringUtils.isEmpty(principal)) {
+                    log.warn("Ignoring role {} with empty principal on {}",
+                            bxc3Role.name(), bxc3Resc.getURI());
+                    continue;
+                }
+                if (isPatronPrincipal(principal)) {
+                    log.warn("Ignoring patron principal {} assigned staff role {} on {}",
+                            principal, bxc3Role.name(), bxc3Resc.getURI());
+                    continue;
+                }
+                // Cannot assign the same principal multiple roles
+                if (principalsAssigned.contains(principal)) {
+                    log.warn("Ignoring extra role assignment {} for principal {} on {}",
+                            bxc3Role.name(), principal, bxc3Resc.getURI());
+                    continue;
+                }
+
+                principalsAssigned.add(principal);
+                bxc5Resc.addLiteral(bxc5Role, principal);
+            }
+        }
+    }
+
+    private static boolean isPatronPrincipal(String principal) {
+        return BXC3_PUBLIC_GROUP.equalsIgnoreCase(principal)
+                || BXC3_AUTHENTICATED_GROUP.equalsIgnoreCase(principal);
     }
 }

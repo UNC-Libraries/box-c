@@ -163,6 +163,7 @@ public class ContentObjectTransformerTest {
     public void transformFolderWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid);
         addPatronAccess(model, startingPid);
+        addStaffRoles(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
                 .relsExtModel(model)
@@ -180,6 +181,8 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.label, "folder"));
 
         assertHasPatronAccess(resc);
+        // Cannot assign staff roles to folders
+        assertNoStaffRoles(resc);
     }
 
     @Test
@@ -339,6 +342,8 @@ public class ContentObjectTransformerTest {
     @Test
     public void transformWorkWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
+        addPatronAccess(model, startingPid);
+        addStaffRoles(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
                 .relsExtModel(model)
@@ -354,6 +359,9 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(resc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(resc.hasProperty(CdrDeposit.label, "work"));
+
+        assertHasPatronAccess(resc);
+        assertNoStaffRoles(resc);
     }
 
     @Test
@@ -617,6 +625,7 @@ public class ContentObjectTransformerTest {
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
         addContains(model, startingPid, child1Pid);
         addPatronAccess(model, startingPid);
+        addStaffRoles(model, startingPid);
         Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
                 .relsExtModel(model)
                 .build();
@@ -633,6 +642,7 @@ public class ContentObjectTransformerTest {
         assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
         // patron ACLs should have migrated from unit to collection
         assertNoPatronAccess(unitResc);
+        assertHasStaffRoles(unitResc);
 
         Resource collResc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -642,6 +652,7 @@ public class ContentObjectTransformerTest {
         assertTrue(collResc.hasProperty(CdrDeposit.label, "collection"));
         // Coll should now have the ACLs from the unit
         assertHasPatronAccess(collResc);
+        assertNoStaffRoles(collResc);
     }
 
     @Test
@@ -649,6 +660,8 @@ public class ContentObjectTransformerTest {
         manager.setTopLevelAsUnit(false);
 
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
+        addStaffRoles(model, startingPid);
+        addPatronAccess(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "top collection")
                 .relsExtModel(model)
@@ -664,6 +677,9 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(resc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(resc.hasProperty(CdrDeposit.label, "top collection"));
+
+        assertHasPatronAccess(resc);
+        assertHasStaffRoles(resc);
     }
 
     @Test
@@ -873,5 +889,25 @@ public class ContentObjectTransformerTest {
         List<Statement> authRoles = bxc5Resc.getModel().listStatements(
                 bxc5Resc, null, AccessPrincipalConstants.AUTHENTICATED_PRINC).toList();
         assertTrue("Expected no roles for authenticated group on " + bxc5Resc.getURI(), authRoles.isEmpty());
+    }
+
+    private void addStaffRoles(Model bxc3Model, PID startingPid) {
+        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(startingPid));
+        bxc3Resc.addLiteral(Bxc3UserRole.curator.getProperty(), "admin_grp");
+        bxc3Resc.addLiteral(Bxc3UserRole.observer.getProperty(), "viewer_grp");
+    }
+
+    private void assertHasStaffRoles(Resource bxc5Resc) {
+        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canManage, "admin_grp"));
+        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canAccess, "viewer_grp"));
+    }
+
+    private void assertNoStaffRoles(Resource bxc5Resc) {
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.canAccess));
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.canIngest));
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.canDescribe));
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.canManage));
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.canProcess));
+        assertFalse(bxc5Resc.hasProperty(CdrAcl.unitOwner));
     }
 }

@@ -276,6 +276,26 @@ public class ACLTransformationHelpersTest {
     }
 
     @Test
+    public void transformPatronAccess_Collection_NoAssignments_SetsDefaults() throws Exception {
+        PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, UUID.randomUUID().toString());
+
+        // First transform the unit
+        Resource unitBxc3Resc = buildBoxc3Resource(parentPid, ContentModel.COLLECTION);
+        Resource unitBxc5Resc = buildBoxc5Resource(parentPid, Cdr.AdminUnit);
+        ACLTransformationHelpers.transformPatronAccess(unitBxc3Resc, unitBxc5Resc, depositPid);
+
+        // now transform the child collection, which has its own ACLs
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.COLLECTION);
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Collection);
+
+        ACLTransformationHelpers.transformPatronAccess(bxc3Resc, bxc5Resc, parentPid);
+
+        // Default collection assignments
+        assertEveryoneHasRole(CdrAcl.canViewOriginals, bxc5Resc);
+        assertAuthenticatedHasRole(CdrAcl.canViewOriginals, bxc5Resc);
+    }
+
+    @Test
     public void transformPatronAccess_DifferentBxc5Pid() throws Exception {
         PID bxc5Pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -359,5 +379,128 @@ public class ACLTransformationHelpersTest {
     private void assertHasEmbargo(String embargoEndDate, Resource bxc5Resc) {
         assertTrue("Resource " + bxc5Resc.getURI() + " did not have expected embargo with end date " + embargoEndDate,
                 bxc5Resc.hasLiteral(CdrAcl.embargoUntil, embargoEndDate));
+    }
+
+    @Test
+    public void transformStaffRoles_AllRoles() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+        addStaffRole(bxc3Resc, Bxc3UserRole.observer, "obs_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.ingester, "ingest_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.metadataEditor, "describe_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "proc_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.curator, "curator_grp");
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        assertHasStaffRole(CdrAcl.canAccess, "obs_grp", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canIngest, "ingest_grp", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canDescribe, "describe_grp", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canProcess, "proc_grp", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canManage, "curator_grp", bxc5Resc);
+    }
+
+    @Test
+    public void transformStaffRoles_NoRoles() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        assertDoesNotHaveStaffRole(CdrAcl.canAccess, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canIngest, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canDescribe, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canProcess, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canManage, bxc5Resc);
+    }
+
+    @Test
+    public void transformStaffRoles_MultipleOfRole() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "proc_grp1");
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "proc_grp2");
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        assertHasStaffRole(CdrAcl.canProcess, "proc_grp1", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canProcess, "proc_grp2", bxc5Resc);
+    }
+
+    @Test
+    public void transformStaffRoles_EmptyPrincipal_Ignore() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "");
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "curator_grp");
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        assertDoesNotHaveStaffAssignment(CdrAcl.canProcess, "", bxc5Resc);
+        assertHasStaffRole(CdrAcl.canProcess, "curator_grp", bxc5Resc);
+    }
+
+    @Test
+    public void transformStaffRoles_PatronPrincipal_Ignore() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, ACLTransformationHelpers.BXC3_PUBLIC_GROUP);
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "processor_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.curator, ACLTransformationHelpers.BXC3_AUTHENTICATED_GROUP);
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        assertHasStaffRole(CdrAcl.canProcess, "processor_grp", bxc5Resc);
+        assertDoesNotHaveStaffAssignment(CdrAcl.canProcess, ACLTransformationHelpers.BXC3_PUBLIC_GROUP, bxc5Resc);
+        assertDoesNotHaveStaffAssignment(CdrAcl.canProcess, AccessPrincipalConstants.PUBLIC_PRINC, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canAccess, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canIngest, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canDescribe, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canManage, bxc5Resc);
+    }
+
+    @Test
+    public void transformStaffRoles_MultipleRolesSamePrincipal() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+        addStaffRole(bxc3Resc, Bxc3UserRole.observer, "curator_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.processor, "curator_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.curator, "curator_grp");
+        addStaffRole(bxc3Resc, Bxc3UserRole.ingester, "curator_grp");
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformStaffRoles(bxc3Resc, bxc5Resc);
+
+        // Only the fittest permission survives
+        assertHasStaffRole(CdrAcl.canManage, "curator_grp", bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canAccess, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canIngest, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canDescribe, bxc5Resc);
+        assertDoesNotHaveStaffRole(CdrAcl.canProcess, bxc5Resc);
+    }
+
+    private void addStaffRole(Resource bxc3Resc, Bxc3UserRole role, Object obj) {
+        bxc3Resc.addLiteral(role.getProperty(), obj);
+    }
+
+    private void assertHasStaffRole(Property role, String principal, Resource bxc5Resc) {
+        assertTrue("Expected " + bxc5Resc.getURI() + " to have role " + role.getLocalName()
+            + " with principal " + principal,
+            bxc5Resc.hasLiteral(role, principal));
+    }
+
+    private void assertDoesNotHaveStaffRole(Property role, Resource bxc5Resc) {
+        assertFalse("Expected " + bxc5Resc + " to not have role " + role.getLocalName(),
+                bxc5Resc.hasProperty(role));
+    }
+
+    private void assertDoesNotHaveStaffAssignment(Property role, String principal, Resource bxc5Resc) {
+        assertFalse("Expected " + bxc5Resc + " to not have assignment " + role.getLocalName() + " " + principal,
+                bxc5Resc.hasLiteral(role, principal));
     }
 }
