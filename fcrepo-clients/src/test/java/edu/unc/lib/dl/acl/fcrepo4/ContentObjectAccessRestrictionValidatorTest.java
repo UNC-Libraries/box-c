@@ -151,6 +151,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canViewAccessCopies, PUBLIC_PRINC);
         model.add(resc, CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
         model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
+        model.add(resc, CdrAcl.canProcess, "processor_grp");
         model.add(resc, CdrAcl.canManage, OWNER_PRINC);
 
         validator.validate(resc);

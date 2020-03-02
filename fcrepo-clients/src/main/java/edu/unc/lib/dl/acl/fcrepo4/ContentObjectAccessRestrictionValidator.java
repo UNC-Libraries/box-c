@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.rdf.CdrAcl.canAccess;
 import static edu.unc.lib.dl.rdf.CdrAcl.canDescribe;
 import static edu.unc.lib.dl.rdf.CdrAcl.canIngest;
 import static edu.unc.lib.dl.rdf.CdrAcl.canManage;
+import static edu.unc.lib.dl.rdf.CdrAcl.canProcess;
 import static edu.unc.lib.dl.rdf.CdrAcl.canViewAccessCopies;
 import static edu.unc.lib.dl.rdf.CdrAcl.canViewMetadata;
 import static edu.unc.lib.dl.rdf.CdrAcl.canViewOriginals;
@@ -56,17 +57,34 @@ import edu.unc.lib.dl.rdf.CdrAcl;
 public class ContentObjectAccessRestrictionValidator {
 
     private static final Set<Property> collectionProperties = new HashSet<>(Arrays.asList(
-            canViewMetadata, canViewAccessCopies, canViewOriginals,
-            canAccess, canDescribe, canIngest, canManage, none,
-            embargoUntil, markedForDeletion));
+            canViewMetadata,
+            canViewAccessCopies,
+            canViewOriginals,
+            canAccess,
+            canDescribe,
+            canIngest,
+            canProcess,
+            canManage,
+            none,
+            embargoUntil,
+            markedForDeletion));
 
     private static final Set<Property> adminUnitProperties = new HashSet<>(Arrays.asList(
-            canAccess, canDescribe, canIngest, canManage, unitOwner,
+            canAccess,
+            canDescribe,
+            canIngest,
+            canProcess,
+            canManage,
+            unitOwner,
             markedForDeletion));
 
     private static final Set<Property> contentProperties = new HashSet<>(Arrays.asList(
-            canViewMetadata, canViewAccessCopies, canViewOriginals, none,
-            embargoUntil, markedForDeletion));
+            canViewMetadata,
+            canViewAccessCopies,
+            canViewOriginals,
+            none,
+            embargoUntil,
+            markedForDeletion));
 
     private final Set<Resource> validObjectTypes;
 
