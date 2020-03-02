@@ -56,6 +56,9 @@ public class ACLTransformationHelpers {
 
     private static final Map<PID, Model> unitPatronAccessCache = new HashMap<>();
 
+    private ACLTransformationHelpers() {
+    }
+
     /**
      * Transforms the bxc3 patron access control settings into bxc5
      *
@@ -185,7 +188,8 @@ public class ACLTransformationHelpers {
         return existingRole;
     }
 
-    private static void mergeParentPatronAcls(PID parentPid, Resource destResc, Property everyoneRole, Property authRole) {
+    private static void mergeParentPatronAcls(PID parentPid, Resource destResc, Property everyoneRole,
+            Property authRole) {
         // Merge in access settings from parent if present in the cache
         Model parentUnitModel = unitPatronAccessCache.get(parentPid);
         if (parentUnitModel != null) {
