@@ -239,8 +239,15 @@
 
     <bean id="runEnhancementService" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService">
         <property name="aclService" ref="aclService" />
+        <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
     </bean>
-    
+
+    <bean id="enhancementsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.enhancement.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />

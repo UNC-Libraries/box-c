@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,21 +23,17 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import org.apache.activemq.broker.scheduler.Job;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService;
 
 /**
  * @author bbpennel
@@ -46,39 +43,32 @@ import edu.unc.lib.dl.fedora.PID;
 public class RunEnhancementsController {
     @Autowired
     private RunEnhancementsService enhService;
-    @Autowired
-    private AccessControlService aclService;
 
     @RequestMapping(value = "runEnhancements", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody Map<String, Object> reviewJSON(@RequestBody RunEnhancementsRequest data,
+    public @ResponseBody ResponseEntity<Object> runEnhancements(@RequestBody RunEnhancementsRequest data,
             HttpServletRequest request, HttpServletResponse response) {
-
         Map<String, Object> result = new HashMap<>();
 
-        // Check that the user has permission to all requested objects
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
-
-        for (String pid : data.getPids()) {
-            if (!aclService.hasAccess(new PID(pid), groups, Permission.runEnhancements)) {
-                result.put("error", "Insufficient permissions to perform operation");
-                return result;
-            }
+        try {
+            enhService.run(GroupsThreadStore.getAgentPrincipals(), data.getPids(), data.isForce());
+            result.put("message", "Enhancement of " + data.getPids().size()
+                    + " object(s) and their children has begun");
+            result.put("action", "runEnhancements");
+        } catch (Exception e) {
+            result.put("message", "Unable to run enhancements of " + data.getPids().size()
+                    + " object(s) and their children");
+            result.put("error", e.getMessage());
         }
 
-        result.put("message", "Enhancement of " + data.getPids().size()
-                + " object(s) and their children has begun");
-        result.put("success", true);
-
-        enhService.run(GroupsThreadStore.getAgentPrincipals(), data.getPids(), data.isForce());
-
-        return result;
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     public static class RunEnhancementsRequest {
-        private List<String> pids;
+        private ArrayList<HashMap> pids;
         private boolean force;
 
-        public List<String> getPids() {
+        public ArrayList<HashMap> getPids() {
             return pids;
         }
 

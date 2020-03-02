@@ -15,24 +15,7 @@
  */
 package edu.unc.lib.dl.acl.util;
 
-import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
-import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
-import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
-import static edu.unc.lib.dl.acl.util.Permission.createAdminUnit;
-import static edu.unc.lib.dl.acl.util.Permission.createCollection;
-import static edu.unc.lib.dl.acl.util.Permission.destroy;
-import static edu.unc.lib.dl.acl.util.Permission.destroyUnit;
-import static edu.unc.lib.dl.acl.util.Permission.editDescription;
-import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
-import static edu.unc.lib.dl.acl.util.Permission.ingest;
-import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
-import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
-import static edu.unc.lib.dl.acl.util.Permission.move;
-import static edu.unc.lib.dl.acl.util.Permission.reindex;
-import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
-import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
-import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
-import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
+import static edu.unc.lib.dl.acl.util.Permission.*;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
@@ -72,19 +55,19 @@ public enum UserRole {
     canIngest("canIngest", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest),
     canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            editDescription, bulkUpdateDescription),
+            editDescription, bulkUpdateDescription, runEnhancements),
     canProcess("canProcess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            editDescription, bulkUpdateDescription, move, markForDeletion, changePatronAccess),
+            editDescription, bulkUpdateDescription, move, markForDeletion, changePatronAccess, runEnhancements),
     canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-            changePatronAccess, editResourceType, createCollection),
+            changePatronAccess, editResourceType, createCollection, runEnhancements),
     unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
-            changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
+            changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles, runEnhancements),
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
-            createAdminUnit, assignStaffRoles, reindex);
+            createAdminUnit, assignStaffRoles, runEnhancements, reindex);
 
     private URI uri;
     private String predicate;

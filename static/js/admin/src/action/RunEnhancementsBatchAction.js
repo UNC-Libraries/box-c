@@ -47,11 +47,11 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 
 			var pids = [];
 			for (var index in self.targets) {
-				pids.push(self.targets[index].getPid());
+				pids.push({ pid: self.targets[index].getPid(), objectType: self.targets[index].getMetadata().type });
 			}
 			
 			$.ajax({
-				url : "runEnhancements",
+				url : "/services/api/runEnhancements",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
