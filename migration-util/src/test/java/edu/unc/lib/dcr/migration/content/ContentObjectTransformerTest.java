@@ -29,6 +29,15 @@ import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder.DEFAULT_LAS
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.DC_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INITIATOR_ROLE;
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.EVENT_DATE;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addAgent;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addEvent;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.deserializeLogFile;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventResources;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.serializeXMLFile;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.file.Files.newOutputStream;
@@ -70,11 +79,13 @@ import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
 
 /**
  * @author bbpennel
@@ -107,6 +118,8 @@ public class ContentObjectTransformerTest {
 
     private RepositoryPIDMinter pidMinter;
 
+    private PremisLoggerFactory premisLoggerFactory;
+
     @Mock
     private PathIndex pathIndex;
 
@@ -127,12 +140,15 @@ public class ContentObjectTransformerTest {
         modelManager = new DepositModelManager(depositPid, tdbDir.toString());
         directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
+        premisLoggerFactory = new PremisLoggerFactory();
+
         manager = new ContentObjectTransformerManager();
         manager.setPathIndex(pathIndex);
         manager.setModelManager(modelManager);
         manager.setPidMinter(pidMinter);
         manager.setTopLevelAsUnit(true);
         manager.setDirectoryManager(directoryManager);
+        manager.setPremisLoggerFactory(premisLoggerFactory);
 
         service = new ContentTransformationService(depositPid, startingPid.getId(), true);
         service.setModelManager(modelManager);
@@ -291,6 +307,27 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformFolderWithPremis() throws Exception {
+        addPremisLog(startingPid);
+
+        Model model = createContainerModel(startingPid);
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        service.perform();
+
+        Model depModel = modelManager.getReadModel();
+        Resource resc = depModel.getResource(startingPid.getRepositoryPath());
+
+        assertTrue(resc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resc.hasProperty(CdrDeposit.label, "folder"));
+
+        assertPremisTransformed(startingPid);
+    }
+
+    @Test
     public void transformWorkWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
 
@@ -391,6 +428,8 @@ public class ContentObjectTransformerTest {
                 .build();
         serializeFoxml(objectsPath, child1Pid, foxml1);
 
+        addPremisLog(startingPid);
+
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
         addContains(model, startingPid, child1Pid);
         addRelationship(model, startingPid, defaultWebObject.getProperty(), child1Pid);
@@ -412,6 +451,8 @@ public class ContentObjectTransformerTest {
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Work));
         assertNotEquals(startingPid.getRepositoryPath(), parentBag.getURI());
 
+        assertPremisTransformed(PIDs.get(parentBag.getURI()));
+
         List<RDFNode> bagChildren = parentBag.iterator().toList();
         assertEquals(1, bagChildren.size());
         Resource child1Resc = (Resource) bagChildren.get(0);
@@ -422,6 +463,8 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformWorkWithFileNoDcTitle() throws Exception {
+        addPremisLog(startingPid);
+
         PID child1Pid = makePid();
         Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "label.txt")
@@ -452,6 +495,8 @@ public class ContentObjectTransformerTest {
         assertTrue(workBag.hasProperty(RDF.type, Cdr.Work));
         assertTrue(workBag.hasProperty(CdrDeposit.label, "work"));
 
+        assertPremisTransformed(startingPid);
+
         // Verify file properties
         List<RDFNode> bagChildren = workBag.iterator().toList();
         assertEquals(1, bagChildren.size());
@@ -463,6 +508,8 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformStandaloneFile() throws Exception {
+        addPremisLog(startingPid);
+
         // Give the object a separate created time from its data file
         String objectCreated = "2011-10-01T11:11:11.111Z";
         Path dataFilePath = mockDatastreamFile(startingPid, ORIGINAL_DS, 0);
@@ -505,6 +552,9 @@ public class ContentObjectTransformerTest {
 
         // Work should have the MODS
         assertMods(startingPid, "My File");
+
+        // Original premis must stay with file
+        assertPremisTransformed(PIDs.get(fileResc.getURI()));
     }
 
     @Test
@@ -761,5 +811,28 @@ public class ContentObjectTransformerTest {
 
     private void assertDoesNotContainSubject(Model model, PID pid) {
         assertFalse(model.listSubjects().toSet().contains(createResource(pid.getRepositoryPath())));
+    }
+
+    private void addPremisLog(PID originalPid) throws IOException {
+        Document premisDoc = createPremisDoc(originalPid);
+        String detail = "virus scan";
+        Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
+        addAgent(eventEl, "Name", INITIATOR_ROLE, "virusscanner");
+        Path originalPremisPath = serializeXMLFile(tmpFolder.getRoot().toPath(), startingPid, premisDoc);
+
+        when(pathIndex.getPath(originalPid, PathIndex.PREMIS_TYPE)).thenReturn(originalPremisPath);
+    }
+
+    private void assertPremisTransformed(PID originalPid) throws IOException {
+        Path expectedTransformedPath = directoryManager.getPremisPath(originalPid);
+        assertTrue(Files.exists(expectedTransformedPath));
+
+        Model eventsModel = deserializeLogFile(expectedTransformedPath.toFile());
+        List<Resource> eventRescs = listEventResources(originalPid, eventsModel);
+        assertEquals(1, eventRescs.size());
+
+        Resource eventResc = eventRescs.get(0);
+        assertEquals("Event type did not match expected value",
+                Premis.VirusCheck, eventResc.getPropertyResourceValue(Premis.hasEventType));
     }
 }

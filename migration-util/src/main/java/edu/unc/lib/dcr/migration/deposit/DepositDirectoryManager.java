@@ -75,17 +75,7 @@ public class DepositDirectoryManager {
      * @param modsEl
      */
     public void writeMods(PID pid, Element modsEl) {
-        Path modsPath = descriptionDir;
-        if (hashNesting) {
-            String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            modsPath = modsPath.resolve(hashing);
-            try {
-                Files.createDirectories(modsPath);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to hashed mods directory: " + modsPath, e);
-            }
-        }
-        modsPath = modsPath.resolve(pid.getId() + ".xml");
+        Path modsPath = makeMetadataFilePath(descriptionDir, pid, ".xml");
 
         try (OutputStream fos = newOutputStream(modsPath)) {
             // Make a new document for just the MODS, which should add in the xml declaration
@@ -95,6 +85,30 @@ public class DepositDirectoryManager {
         } catch (IOException e) {
             throw new RepositoryException("Unable to write MODS for " + pid.getId(), e);
         }
+    }
+
+    /**
+     * Get the path in which the PREMIS event log for the provided object should be written.
+     *
+     * @param pid
+     * @return
+     */
+    public Path getPremisPath(PID pid) {
+        return makeMetadataFilePath(eventsDir, pid, ".nt");
+    }
+
+    private Path makeMetadataFilePath(Path parentPath, PID pid, String extension) {
+        Path mdPath = parentPath;
+        if (hashNesting) {
+            String hashing = idToPath(pid.getId(), HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+            mdPath = mdPath.resolve(hashing);
+            try {
+                Files.createDirectories(mdPath);
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to create hashed metadata directory: " + mdPath, e);
+            }
+        }
+        return mdPath.resolve(pid.getId() + extension);
     }
 
     public Path getDepositDir() {

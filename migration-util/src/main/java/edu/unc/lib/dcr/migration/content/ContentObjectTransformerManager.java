@@ -29,6 +29,7 @@ import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dcr.migration.utils.DisplayProgressUtil;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -46,6 +47,7 @@ public class ContentObjectTransformerManager {
     private boolean generateIds;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private BlockingQueue<ContentObjectTransformer> createdTransformers;
     private AtomicInteger totalAdded;
@@ -74,6 +76,7 @@ public class ContentObjectTransformerManager {
         transformer.setManager(this);
         transformer.setPidMinter(pidMinter);
         transformer.setDirectoryManager(directoryManager);
+        transformer.setPremisLoggerFactory(premisLoggerFactory);
 
         createdTransformers.add(transformer);
         totalAdded.incrementAndGet();
@@ -126,6 +129,10 @@ public class ContentObjectTransformerManager {
 
     public void setDirectoryManager(DepositDirectoryManager directoryManager) {
         this.directoryManager = directoryManager;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public void setGenerateIds(boolean generateIds) {

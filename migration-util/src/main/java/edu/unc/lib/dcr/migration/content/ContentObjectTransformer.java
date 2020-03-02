@@ -47,6 +47,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,6 +73,9 @@ import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
+import edu.unc.lib.dcr.migration.premis.ContentPremisToRdfTransformer;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
@@ -96,6 +100,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     private ContentObjectTransformerManager manager;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private PID originalPid;
     private PID newPid;
@@ -217,23 +222,27 @@ public class ContentObjectTransformer extends RecursiveAction {
             containerBag.addLiteral(CdrDeposit.label, label);
         }
 
-        // TODO transform PREMIS and copy to deposit directory
+        // transform PREMIS and copy to deposit directory
+        transformPremis(originalPid, newPid);
+
         // TODO set staff access
     }
 
     private void populateFileObject(Resource bxc3Resc, Model depositModel) {
         Resource fileResc;
+        PID filePid;
         Bag workBag = null;
         if (Cdr.Work.equals(parentType)) {
             fileResc = depositModel.getResource(newPid.getRepositoryPath());
+            filePid = newPid;
         } else {
             // Use the pid of the current object to make a new work object
             workBag = depositModel.createBag(newPid.getRepositoryPath());
             workBag.addProperty(RDF.type, Cdr.Work);
 
             // Build a new resource for the file object
-            PID newFilePid = pidMinter.mintContentPid();
-            fileResc = depositModel.getResource(newFilePid.getRepositoryPath());
+            filePid = pidMinter.mintContentPid();
+            fileResc = depositModel.getResource(filePid.getRepositoryPath());
 
             // Add the new file resource as the primary object of the work
             workBag.add(fileResc);
@@ -272,8 +281,23 @@ public class ContentObjectTransformer extends RecursiveAction {
             }
         }
 
-        // TODO transform PREMIS, making it refer to the FILE object rather than
-        // work, and copy to deposit directory
+        // transform existing PREMIS as the events for the file object, rather than work
+        transformPremis(originalPid, filePid);
+    }
+
+    private void transformPremis(PID bxc3Pid, PID bxc5Pid) {
+        Path originalPremisPath = pathIndex.getPath(bxc3Pid, PathIndex.PREMIS_TYPE);
+        if (originalPremisPath == null || !Files.exists(originalPremisPath)) {
+            log.info("No premis for {}, skipping transformation", bxc3Pid.getId());
+            return;
+        }
+
+        Path transformedPremisPath = directoryManager.getPremisPath(bxc5Pid);
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(bxc5Pid, transformedPremisPath.toFile());
+        ContentPremisToRdfTransformer premisTransformer =
+                new ContentPremisToRdfTransformer(bxc5Pid, premisLogger, originalPremisPath);
+
+        premisTransformer.compute();
     }
 
     /**
@@ -401,6 +425,10 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     public void setDirectoryManager(DepositDirectoryManager directoryManager) {
         this.directoryManager = directoryManager;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public PID getPid() {
