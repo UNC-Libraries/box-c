@@ -48,7 +48,7 @@ public class BinaryEnhancementProcessor implements Processor {
             String mimeType = body.getChild("mimeType", ATOM_NS).getTextTrim();
 
             log.info("Adding enhancement headers for " + pidValue);
-            in.setHeader(FCREPO_URI, pidValue + "/datafs/original_file");
+            in.setHeader(FCREPO_URI, pidValue);
             in.setHeader(CdrBinaryMimeType, mimeType);
         }
     }

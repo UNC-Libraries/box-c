@@ -21,6 +21,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
+import edu.unc.lib.dl.model.DatastreamPids;
 import io.dropwizard.metrics5.Timer;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -32,7 +33,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -51,6 +51,7 @@ public class RunEnhancementsService extends AbstractMessageSender {
 
     @Autowired
     protected SolrQueryLayerService queryLayer;
+    private Datastream recordInfo;
 
     public void run(AgentPrincipals agent, ArrayList<HashMap> objectPids, Boolean force) {
         try (Timer.Context context = timer.time()) {
@@ -74,16 +75,16 @@ public class RunEnhancementsService extends AbstractMessageSender {
                     SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
                     for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
-                        createMessage(metadata, agent.getUsername(), force);
+                        createMessage(metadata, pid, agent.getUsername(), force);
                     }
                 } else {
                     SimpleIdRequest searchRequest = new SimpleIdRequest(uuid, agent.getPrincipals());
                     BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
-                    createMessage(metadata, agent.getUsername(), force);
+                    createMessage(metadata, pid, agent.getUsername(), force);
                 }
             }
-        } catch (AccessRestrictionException e) {
-            throw new AccessRestrictionException();
+        } catch (Exception e) {
+            LOG.warn(e.getMessage());
         }
     }
 
@@ -91,26 +92,27 @@ public class RunEnhancementsService extends AbstractMessageSender {
         this.aclService = aclService;
     }
 
-    private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
+    private void createMessage(BriefObjectMetadata metadata, PID pid, String username, Boolean force) {
         List<String> ids = metadata.getDatastream();
 
         for (String id : ids) {
-            String[] recordInfo = id.split("\\|");
+            recordInfo = new Datastream(id);
+            String filePath = DatastreamPids.getOriginalFilePid(pid).toString();
 
-            if (recordInfo[0].equals("original_file")) {
+            if (recordInfo.getName().equals("original_file")) {
                 Document msg = makeEnhancementOperationBody(username,
-                        PIDs.get(recordInfo[recordInfo.length - 1]), recordInfo[1], force);
+                        filePath, recordInfo.getMimetype(), force);
                 sendMessage(msg);
             }
         }
     }
 
-    private Document makeEnhancementOperationBody(String userid, PID targetPid, String mimeType, Boolean force) {
+    private Document makeEnhancementOperationBody(String userid, String filePath, String mimeType, Boolean force) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getRepositoryPath()));
+        entry.addContent(new Element("pid", ATOM_NS).setText(filePath));
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
 
         if (force) {
