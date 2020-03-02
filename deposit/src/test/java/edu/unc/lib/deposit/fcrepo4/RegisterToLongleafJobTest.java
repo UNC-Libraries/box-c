@@ -42,7 +42,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     private final static String LOC3_ID = "loc3";
     private final static String FILE_CONTENT1 = "Some content";
     private final static String FILE_CONTENT2 = "Other stuff";
-    private final static String SHA1 = "sha1 checksum";
+    private final static String MD5 = "MD5 checksum";
 
     private RegisterToLongleafJob job;
     private PID depositPid;
@@ -50,6 +50,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     private Model model;
     private Path storageLocPath;
     private String outputPath;
+    private String logPath;
     private String longleafScript;
 
     @Before
@@ -63,8 +64,10 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         setField(job, "dataset", dataset);
 
         outputPath = createOutputFile();
+        logPath = createOutputFile();
         longleafScript = getLongleafScript(outputPath);
         job.setLongleafBaseCommand(longleafScript);
+        job.setLongleafLogPath(logPath);
 
         job.init();
 
@@ -91,7 +94,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC2_ID + " --checksums 'sha1:" + SHA1 + "' --force";
+        String registrationArguments = "register -f " + LOC2_ID + " --checksums 'md5:" + MD5 + "' --force";
 
         File file = new File(outputPath);
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -134,8 +137,8 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments1 = "register -f " + LOC2_ID + " --checksums 'sha1:" + SHA1 + "' --force";
-        String registrationArguments2 = "register -f " + LOC3_ID + " --checksums 'sha1:" + SHA1 + "' --force";
+        String registrationArguments1 = "register -f " + LOC2_ID + " --checksums 'md5:" + MD5 + "' --force";
+        String registrationArguments2 = "register -f " + LOC3_ID + " --checksums 'md5:" + MD5 + "' --force";
 
         File file = new File(outputPath);
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -160,7 +163,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC3_ID + " --checksums 'sha1:" + SHA1 + "' --force";
+        String registrationArguments = "register -f " + LOC3_ID + " --checksums 'md5:" + MD5 + "' --force";
 
         File file = new File(outputPath);
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -197,7 +200,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         File originalFile = storageLocPath.resolve(objPid.getId() + ".txt").toFile();
         FileUtils.writeStringToFile(originalFile, content, "UTF-8");
         objResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
-        objResc.addProperty(CdrDeposit.sha1sum, SHA1);
+        objResc.addProperty(CdrDeposit.md5sum, MD5);
 
         parent.add(objResc);
         return objResc;

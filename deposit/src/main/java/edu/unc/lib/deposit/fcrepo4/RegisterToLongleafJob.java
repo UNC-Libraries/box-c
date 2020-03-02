@@ -27,7 +27,11 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
@@ -42,6 +46,7 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(RegisterToLongleafJob.class);
 
     private String longleafBaseCommand;
+    private String longleafLogPath;
 
     public RegisterToLongleafJob() {
         super();
@@ -53,7 +58,7 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        log.debug("Registering files from deposit {} to longleaf", getDepositPID());
+        log.info("Registering files from deposit {} to longleaf", getDepositPID());
 
         Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
@@ -66,13 +71,14 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
                 .map(Statement::getResource).collect(toSet());
 
         if (rescTypes.contains(Cdr.FileObject)) {
-            String checksum = resc.getProperty(CdrDeposit.sha1sum).getString();
+            String checksum = resc.getProperty(CdrDeposit.md5sum).getString();
             if (resc.hasProperty(CdrDeposit.storageUri)) {
-                registerFile(resc.getProperty(CdrDeposit.storageUri).getString(), resc.getURI(), checksum);
+                registerFile(resc.getProperty(CdrDeposit.storageUri).getString().replace("file:", ""),
+                        resc.getURI(), checksum);
             } else if (resc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
                 registerFile(resc.getProperty(CdrDeposit.descriptiveStorageUri).getString(), resc.getURI(), checksum);
             } else {
-                log.debug("File {} does not have storageUri or descriptiveStorageUri properties", resc.getURI());
+                log.info("File {} does not have storageUri or descriptiveStorageUri properties", resc.getURI());
             }
         }
 
@@ -96,13 +102,32 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
         long start = System.currentTimeMillis();
 
         try {
-            String longleafCommmand = longleafBaseCommand + " register -f " + fileLocation + " --checksums 'sha1:" +
+            System.out.println(fileLocation);
+            String longleafCommmand = longleafBaseCommand + " register -f " + fileLocation + " --checksums 'md5:" +
                     checksum + "' --force";
-            log.debug("Registering with longleaf: {}", longleafCommmand);
+            log.info("Registering with longleaf: {}", longleafCommmand);
 
             Process process = Runtime.getRuntime().exec(longleafCommmand);
 
             int exitVal = process.waitFor();
+
+            // log longleaf output
+            String line;
+            BufferedWriter longleafLogWriter = new BufferedWriter(new FileWriter(longleafLogPath, true));
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()) );
+            while ((line = in.readLine()) != null) {
+                longleafLogWriter.write(line + "\n");
+            }
+            in.close();
+            BufferedReader err = new BufferedReader(
+                    new InputStreamReader(process.getErrorStream()) );
+            while ((line = err.readLine()) != null) {
+                longleafLogWriter.write(line + "\n");
+            }
+            err.close();
+            longleafLogWriter.close();
+
             if (exitVal == 0) {
                 log.info("Successfully registered: {}", fileId);
             } else {
@@ -114,10 +139,14 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
             log.error("InterruptedException while trying to register {} to longleaf: {}", fileId, e);
         }
 
-        log.debug("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
+        log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
     }
 
     public void setLongleafBaseCommand(String longleafBaseCommand) {
         this.longleafBaseCommand = longleafBaseCommand;
+    }
+
+    public void setLongleafLogPath(String longleafLogPath) {
+        this.longleafLogPath = longleafLogPath;
     }
 }
