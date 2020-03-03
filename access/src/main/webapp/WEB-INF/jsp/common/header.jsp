@@ -40,7 +40,6 @@
             </div>
             <div id="navbar" class="menu navbar-menu">
                 <div class="navbar-start">
-                    <a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
                     <a href="collections" class="navbar-item">Browse Collections</a>
                     <a href="aboutRepository" class="navbar-item">What's Here?</a>
                     <a href="${contactUrl}" class="navbar-item">Contact Us</a>
