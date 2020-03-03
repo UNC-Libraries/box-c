@@ -19,6 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
+<%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 
 <header>
     <div class="logo-row-small">
@@ -61,16 +62,22 @@
                 <c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
                     <c:choose>
                         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-                            <c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
+                            <s:eval var="jumpToAdmin" expression=
+                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)" />
                         </c:when>
                         <c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
-                            <c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
+                            <s:eval var="jumpToAdmin" expression=
+                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', briefObject.ancestorPathFacet.searchKey)" />
                         </c:when>
                         <c:when test="${not empty briefObject}">
-                            <c:set var="jumpToAdmin" value="list/${briefObject.id}" />
+                            <s:eval var="jumpToAdmin" expression=
+                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', briefObject.id)" />
                         </c:when>
+                        <c:otherwise>
+                            <c:set var="jumpToAdmin" value="${adminBaseUrl}" />
+                        </c:otherwise>
                     </c:choose>
-                    <a href="${adminBaseUrl}/${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
+                    <a href="${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
                 </c:if>
                 <a class="navbar-item navbar-display" href="${contactUrl}">Contact Us</a>
                 <c:choose>

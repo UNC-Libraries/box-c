@@ -18,6 +18,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
+
 <div class="dark shadowbottom" id="header">
 	<ul id="topbar">
 		<c:choose>
@@ -34,22 +36,9 @@
 				<li class="topbar-menu-option"><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
 			</c:otherwise>
 		</c:choose>
-		<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
-			<c:choose>
-				<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-					<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
-				</c:when>
-				<c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
-					<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
-				</c:when>
-				<c:when test="${not empty briefObject}">
-					<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
-				</c:when>
-			</c:choose>
-			<li class="topbar-menu-option">
-				<a href="${accessBaseUrl}/" data-base-href="${accessBaseUrl}/" id="public_ui_link" target="_blank">Public</a>
-			</li>
-		</c:if>
+		<li class="topbar-menu-option">
+			<a href="${accessBaseUrl}" data-base-href="${accessBaseUrl}" id="public_ui_link" target="_blank">Public</a>
+		</li>
 		<li class="topbar-menu-option">
 		<a href="https://library.unc.edu/wilson/contact/?refer=https%3a%2f%2fdcr.lib.unc.edu%2f">Contact</a></li>
 		<li class="topbar-menu-option">
