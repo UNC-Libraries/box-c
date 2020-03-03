@@ -15,16 +15,19 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
 
 /**
@@ -34,6 +37,7 @@ import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
  * @author bbpennel
  */
 public class FSToPosixTransferClient extends FSToFSTransferClient {
+    private static final Logger log = getLogger(FSToPosixTransferClient.class);
 
     /**
      * @param source
@@ -54,8 +58,7 @@ public class FSToPosixTransferClient extends FSToFSTransferClient {
             try {
                 Files.setPosixFilePermissions(binPath, posixLoc.getPermissions());
             } catch (IOException e) {
-                throw new BinaryTransferException("Failed to set permissions in destination "
-                        + destination.getId(), e);
+                log.debug("Failed to set permissions in destination {}", destination.getId());
             }
         }
 
