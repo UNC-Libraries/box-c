@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -57,8 +58,9 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
         Map<String, String> status = getDepositStatus();
-        String sourcePath = status.get(DepositField.sourceUri.name());
-        File sourceFile = new File(sourcePath);
+        URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
+        Path sourcePath = Paths.get(sourceUri);
+        File sourceFile = sourcePath.toFile();
 
         // List all files and directories in the deposit, excluding the base directory
         Collection<File> fileListings =
@@ -82,7 +84,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
             Boolean isDir = file.isDirectory();
 
-            Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
+            Path filePath = sourcePath.getParent().relativize(file.toPath());
             String filePathString = filePath.toString();
             String filename = filePath.getFileName().toString();
 

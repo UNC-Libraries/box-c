@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.net.URI;
 import java.nio.file.Paths;
@@ -74,7 +74,7 @@ public class IngestSourceController {
     @Autowired
     private DepositSubmissionService depositService;
 
-    @GetMapping(value = "/edit/ingestSources/list/{pid}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/edit/ingestSources/list/{pid}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> listIngestSources(@PathVariable("pid") String pid) {
         PID destination = PIDs.get(pid);
@@ -97,7 +97,7 @@ public class IngestSourceController {
         }
     }
 
-    @PostMapping(value = "/edit/ingestSources/ingest/{pid}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/edit/ingestSources/ingest/{pid}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> ingestFromSource(@PathVariable("pid") String pid,
             @RequestBody List<IngestPackageDetails> packages) {
@@ -114,7 +114,6 @@ public class IngestSourceController {
         results.put("destination", pid);
 
         List<String> depositIds = new ArrayList<>();
-        List<URI> candidateUris = new ArrayList<>();
 
         // Validate the packages requested for deposit
         for (IngestPackageDetails packageDetails : packages) {
@@ -140,8 +139,6 @@ public class IngestSourceController {
 
         // Build deposit entries and add to queue
         for (IngestPackageDetails packageDetails : packages) {
-            IngestSource source = sourceManager.getIngestSourceById(packageDetails.getSourceId());
-
             // Generate a filename if one was not provided
             String filename = packageDetails.getLabel();
             if (isBlank(filename)) {
