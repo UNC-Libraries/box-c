@@ -237,10 +237,11 @@ public class ACLTransformationHelpers {
     /**
      * Map all values of bxc3 user role to a bxc5 role, unless the principal is invalid
      *
-     * @param bxc3Role
-     * @param bxc5Role
-     * @param bxc3Resc
-     * @param bxc5Resc
+     * @param bxc3Role bxc3 role to transform if present
+     * @param bxc5Role bxc5 role which will be generated if the bxc3 role is found
+     * @param bxc3Resc bxc3 resource
+     * @param bxc5Resc bxc5 resource
+     * @param principalsAssigned principals which have had roles assigned so far
      */
     private static void mapStaffRole(Bxc3UserRole bxc3Role, Property bxc5Role,
             Resource bxc3Resc, Resource bxc5Resc, Set<String> principalsAssigned) {
