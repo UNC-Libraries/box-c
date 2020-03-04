@@ -26,7 +26,7 @@ import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
-import static org.h2.util.IOUtils.getInputStreamFromString;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
@@ -258,7 +259,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         assertEquals("text/turtle", response.getContentType());
         assertEquals("inline; filename=\"" + id + "_event_log.ttl\"", response.getHeader(CONTENT_DISPOSITION));
 
-        Model premisModel = createModel(getInputStreamFromString(response.getContentAsString()), "TURTLE");
+        Model premisModel = createModel(IOUtils.toInputStream(response.getContentAsString(), UTF_8), "TURTLE");
         assertEquals("Response did not contain expected premis event",
                 1, premisModel.listStatements(null, RDF.type, Premis.Event).toList().size());
 
