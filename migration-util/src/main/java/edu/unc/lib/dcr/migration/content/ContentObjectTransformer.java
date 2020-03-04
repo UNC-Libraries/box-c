@@ -160,7 +160,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         populateTimestamps(bxc3Resc, depResc);
         populateOriginalDeposit(bxc3Resc, depResc);
 
-        // TODO set patron access
+        // set patron access
+        ACLTransformationHelpers.transformPatronAccess(bxc3Resc, depResc, parentPid);
 
         // TODO set title, based on dc title and/or label
 
@@ -225,7 +226,10 @@ public class ContentObjectTransformer extends RecursiveAction {
         // transform PREMIS and copy to deposit directory
         transformPremis(originalPid, newPid);
 
-        // TODO set staff access
+        // set staff access if a unit or collection
+        if (Cdr.AdminUnit.equals(resourceType) || Cdr.Collection.equals(resourceType)) {
+            ACLTransformationHelpers.transformStaffRoles(bxc3Resc, containerBag);
+        }
     }
 
     private void populateFileObject(Resource bxc3Resc, Model depositModel) {
