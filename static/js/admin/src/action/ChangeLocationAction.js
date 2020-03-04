@@ -7,6 +7,8 @@ define('ChangeLocationAction', [ 'jquery', 'URLUtilities'], function($, URLUtili
 		var url;
 		if (this.context.application == "access") {
 			url = URLUtilities.getAccessUrl();
+		} else if (this.context.application == "services") {
+			url = URLUtilities.getServicesUrl();
 		} else {
 			url = URLUtilities.getAdminUrl();
 		}

@@ -20,10 +20,14 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
+import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
+import static org.h2.util.IOUtils.getInputStreamFromString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -37,6 +41,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,8 +61,10 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
 import edu.unc.lib.dl.util.DerivativeService;
 
@@ -228,6 +236,70 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         mvc.perform(get("/thumb/" + filePid.getId()))
                 .andExpect(status().isNotFound())
                 .andReturn();
+    }
+
+    @Test
+    public void testGetEventLog() throws Exception {
+        PID folderPid = makePid();
+        String id = folderPid.getId();
+
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        folderObj.getPremisLog().buildEvent(Premis.Creation)
+            .addAuthorizingAgent("some_user")
+            .writeAndClose();
+
+        MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals("text/turtle", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "_event_log.ttl\"", response.getHeader(CONTENT_DISPOSITION));
+
+        Model premisModel = createModel(getInputStreamFromString(response.getContentAsString()), "TURTLE");
+        assertEquals("Response did not contain expected premis event",
+                1, premisModel.listStatements(null, RDF.type, Premis.Event).toList().size());
+
+        assertTrue("Expected content length to be set", response.getContentLength() > 0);
+    }
+
+    @Test
+    public void testGetEventLogNotPresent() throws Exception {
+        PID folderPid = makePid();
+        String id = folderPid.getId();
+
+        repositoryObjectFactory.createFolderObject(folderPid, null);
+
+        MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+
+        assertEquals("text/turtle", response.getContentType());
+        assertEquals("Expected empty response", 0, response.getContentLength());
+    }
+
+    @Test
+    public void testGetEventLogNoPermissions() throws Exception {
+        PID folderPid = makePid();
+        String id = folderPid.getId();
+
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        folderObj.getPremisLog().buildEvent(Premis.Creation)
+            .addAuthorizingAgent("some_user")
+            .writeAndClose();
+
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(folderPid), any(AccessGroupSet.class), eq(viewMetadata));
+
+        MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals("Content must not be returned", "", response.getContentAsString());
     }
 
     private File createDerivative(String id, DatastreamType dsType, byte[] content) throws Exception {

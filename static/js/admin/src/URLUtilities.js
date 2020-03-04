@@ -60,6 +60,10 @@ define('URLUtilities', ['jquery'], function($) {
 			return baseURL;
 		},
 
+		getServicesUrl: function() {
+			return this.getServerUrl() + 'services/';
+		},
+
 		getAdminUrl: function() {
 			return this.getServerUrl() + 'admin/';
 		},
