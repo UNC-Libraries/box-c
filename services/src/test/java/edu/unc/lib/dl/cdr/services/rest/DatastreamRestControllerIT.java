@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
@@ -292,7 +293,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
             .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(folderPid), any(AccessGroupSet.class), eq(viewMetadata));
+                .assertHasAccess(anyString(), eq(folderPid), any(AccessGroupSet.class), eq(viewHidden));
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
                 .andExpect(status().isForbidden())
