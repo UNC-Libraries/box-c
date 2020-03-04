@@ -21,6 +21,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
+<%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 
 <c:choose>
 	<c:when test="${not empty briefObject.countMap}">
@@ -42,7 +43,9 @@
 					</div>
 					<div class="column is-narrow-desktop action-btn item-actions">
 						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-							<div class="actionlink right"><a class="button" href="${adminBaseUrl}/describe/${briefObject.id}"><i class="fa fa-edit"></i> Edit</a></div>
+							<s:eval var="editDescriptionUrl" expression=
+								"T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
+							<div class="actionlink right"><a class="button" href="${editDescriptionUrl}"><i class="fa fa-edit"></i> Edit</a></div>
 						</c:if>
 
 						<c:choose>
