@@ -32,7 +32,6 @@ import org.apache.jena.util.FileManager;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 
 /**
@@ -63,7 +62,7 @@ public class FilePremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(eventPid, eventType, date, this);
+        return new PremisEventBuilder(objectPid, eventPid, eventType, date, this);
     }
 
     /**
@@ -86,11 +85,8 @@ public class FilePremisLogger implements PremisLogger {
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
         Model logModel = getModel();
-        String pidString = objectPid.getRepositoryPath();
-        Resource objResc = logModel.getResource(pidString);
         // Add the events to the model for this event log
         for (Resource eventResc: eventResources) {
-            objResc.addProperty(Premis.hasEvent, eventResc);
             logModel.add(eventResc.getModel());
         }
 

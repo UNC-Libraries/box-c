@@ -223,7 +223,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals("Folder title was not correctly set", label, title);
         // Verify that ingestion event gets added for folder
         Model logModel = folder.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventDetail,
+        assertTrue(logModel.contains(null, Premis.note,
                 "ingested as PID: " + folder.getPid().getQualifiedId()));
 
         assertClickCount(1);
@@ -287,20 +287,20 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
         // Verify that ingestion event gets added for work
         Model workLogModel = mWork.getPremisLog().getEventsModel();
-        assertTrue(workLogModel.contains(null, Premis.hasEventDetail,
+        assertTrue(workLogModel.contains(null, Premis.note,
                 "ingested as PID: " + mWork.getPid().getQualifiedId()));
-        assertTrue(workLogModel.contains(null, Premis.hasEventDetail,
+        assertTrue(workLogModel.contains(null, Premis.note,
                 "added 2 child objects to this container"));
 
         // Verify that ingestion event gets added for primary object
         Model primLogModel = primaryObj.getPremisLog().getEventsModel();
-        assertTrue(primLogModel.contains(null, Premis.hasEventDetail,
+        assertTrue(primLogModel.contains(null, Premis.note,
                 "ingested as PID: " + mainPid.getQualifiedId()
                 + "\n ingested as filename: " + FILE1_LOC));
 
         // Verify that ingestion event gets added for supplementary object
         Model supLogModel = supObj.getPremisLog().getEventsModel();
-        assertTrue(supLogModel.contains(null, Premis.hasEventDetail,
+        assertTrue(supLogModel.contains(null, Premis.note,
                 "ingested as PID: " + supPid.getQualifiedId()
                 + "\n ingested as filename: " + FILE2_LOC));
 
@@ -620,9 +620,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Ingestion));
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Normalization));
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Normalization));
+        assertTrue(logModel.contains(null, RDF.type, Premis.VirusCheck));
 
         assertLinksToDepositRecord(folder);
     }
@@ -659,7 +659,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Ingestion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

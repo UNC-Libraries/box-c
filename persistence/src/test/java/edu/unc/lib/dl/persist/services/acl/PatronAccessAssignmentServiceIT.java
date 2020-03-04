@@ -50,6 +50,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -681,11 +682,11 @@ public class PatronAccessAssignmentServiceIT {
             Resource eventResc = stmt.getResource();
 
             assertTrue("Event type was not set",
-                    eventResc.hasProperty(Premis.hasEventType, Premis.PolicyAssignment));
+                    eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
             assertTrue("Event agent was not set",
                     agentResc.hasLiteral(Premis.hasAgentName, USER_NAMESPACE + USER_PRINC));
-            details.add(eventResc.getProperty(Premis.hasEventDetail).getString());
+            details.add(eventResc.getProperty(Premis.note).getString());
         }
 
         return details;

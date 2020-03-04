@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -93,9 +94,9 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
         assertTrue("File doesn't exist", premisFile.exists());
         assertEquals("Virus check property event not written to file", eventType,
-                resource.getProperty(Premis.hasEventType).getObject());
+                resource.getProperty(RDF.type).getObject());
         assertEquals("Virus check property message not written to file", message,
-                resource.getProperty(Premis.hasEventDetail).getObject().toString());
+                resource.getProperty(Premis.note).getObject().toString());
         assertEquals("Virus check property detailed note not written to file", detailedNote,
                 resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
         assertEquals("Virus check property depositing agent not written to file", SoftwareAgent.clamav.getFullname(),
@@ -130,17 +131,17 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         assertNotEquals("Events must have separate uris", resc1, resc2);
 
         assertEquals("Normalization type not written to file", Premis.Normalization,
-                resc1.getProperty(Premis.hasEventType).getObject());
+                resc1.getProperty(RDF.type).getObject());
         assertEquals("Event detail not written to file", "Event 1",
-                resc1.getProperty(Premis.hasEventDetail).getObject().toString());
+                resc1.getProperty(Premis.note).getObject().toString());
         assertEquals("Authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
                 resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor)
                         .getProperty(Premis.hasAgentName).getObject().toString());
 
         assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
-                resc2.getProperty(Premis.hasEventType).getObject());
+                resc2.getProperty(RDF.type).getObject());
         assertEquals("Event detail not written to file", "Event 2",
-                resc2.getProperty(Premis.hasEventDetail).getObject().toString());
+                resc2.getProperty(Premis.note).getObject().toString());
         assertEquals("Related agent not written to file", SoftwareAgent.clamav.getFullname(),
                 resc2.getProperty(Premis.hasEventRelatedAgentExecutor)
                         .getProperty(Premis.hasAgentName).getObject().toString());
@@ -166,9 +167,9 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         Resource logEvent2Resc = logModel.getResource(event2.getURI());
 
         assertEquals("Normalization type not written to file", Premis.Normalization,
-                logEvent1Resc.getProperty(Premis.hasEventType).getObject());
+                logEvent1Resc.getProperty(RDF.type).getObject());
         assertEquals("Event detail not written to file", "Event 1",
-                logEvent1Resc.getProperty(Premis.hasEventDetail).getString());
+                logEvent1Resc.getProperty(Premis.note).getString());
         assertEquals("Software agent not written to file", PremisAgentType.Software,
                 logEvent1Resc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource()
                     .getProperty(Premis.hasAgentType).getObject());
@@ -177,9 +178,9 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                     .getProperty(Premis.hasAgentName).getObject().toString());
 
         assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
-                logEvent2Resc.getProperty(Premis.hasEventType).getObject());
+                logEvent2Resc.getProperty(RDF.type).getObject());
         assertEquals("Event detail not written to file", "Event 2",
-                logEvent2Resc.getProperty(Premis.hasEventDetail).getString());
+                logEvent2Resc.getProperty(Premis.note).getString());
         assertEquals("Authorizing agent not written to file", PremisAgentType.Person,
                 logEvent2Resc.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource()
                     .getProperty(Premis.hasAgentType).getObject());

@@ -91,7 +91,7 @@ public class RepositoryPremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(eventPid, eventType, date, this);
+        return new PremisEventBuilder(repoObject.getPid(), eventPid, eventType, date, this);
     }
 
     @Override
@@ -99,12 +99,12 @@ public class RepositoryPremisLogger implements PremisLogger {
         return buildEvent(null, eventType, null);
     }
 
+
+
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
         Model logModel = ModelFactory.createDefaultModel();
         for (Resource eventResc: eventResources) {
-            // Add link from the object to this event
-            logModel.add(repoObject.getResource(), Premis.hasEvent, eventResc);
             logModel.add(eventResc.getModel());
         }
 

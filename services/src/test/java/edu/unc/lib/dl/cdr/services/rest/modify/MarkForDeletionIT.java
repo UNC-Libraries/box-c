@@ -33,6 +33,7 @@ import java.util.Map;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -180,7 +181,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertTrue(resc.getProperty(CdrAcl.markedForDeletion).getBoolean());
 
         Model logModel = repoObj.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Deletion));
     }
 
     private void assertNotMarkedForDeletion(PID pid) {

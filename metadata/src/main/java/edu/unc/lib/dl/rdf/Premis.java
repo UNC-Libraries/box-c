@@ -258,4 +258,6 @@ public class Premis {
             "http://id.loc.gov/vocabulary/preservation/eventType/ipc");
 
     public static final Resource Event = createResource("http://www.loc.gov/premis/rdf/v1#Event");
+
+    public static final Property note = createProperty("http://www.loc.gov/premis/rdf/v3/note");
 }

@@ -31,6 +31,8 @@ import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -104,7 +106,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         assertTrue("Must contain premis:hasEvent references from obj to event",
                 logModel.contains(parentObject.getResource(), Premis.hasEvent, logEventResc));
-        assertTrue(logEventResc.hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(logEventResc.hasProperty(RDF.type, Premis.VirusCheck));
     }
 
     @Test
@@ -136,15 +138,17 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
         Resource logEvent3Resc = logModel.getResource(event3Resc.getURI());
 
-        assertTrue(logEvent1Resc.hasProperty(Premis.hasEventType, Premis.VirusCheck));
-        assertTrue(logEvent2Resc.hasProperty(Premis.hasEventType, Premis.Ingestion));
-        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(Premis.hasEventDateTime).getString());
-        assertTrue(logEvent3Resc.hasProperty(Premis.hasEventType, Premis.MessageDigestCalculation));
+        assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+        assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
+        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
+        assertTrue(logEvent3Resc.hasProperty(RDF.type, Premis.MessageDigestCalculation));
 
         // Verify that hasEvent relations are present
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent1Resc));
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent2Resc));
         assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent3Resc));
+
+        retrieveLogger.close();
     }
 
     @Test

@@ -41,6 +41,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
@@ -100,11 +101,11 @@ public class TransformContentPremisServiceTest {
         Model obj1Model = readTransformedLog(outputPath, pid1);
         List<Resource> obj1Events = listEventResources(pid1, obj1Model);
         assertEquals(1, obj1Events.size());
-        assertTrue(obj1Events.get(0).hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(obj1Events.get(0).hasProperty(RDF.type, Premis.VirusCheck));
 
         Model obj2Model = readTransformedLog(outputPath, pid2);
         List<Resource> obj2Events = listEventResources(pid2, obj2Model);
-        assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Ingestion));
+        assertTrue(obj2Events.get(0).hasProperty(RDF.type, Premis.Ingestion));
     }
 
     @Test
@@ -127,11 +128,11 @@ public class TransformContentPremisServiceTest {
         Model obj1Model = readTransformedLog(outputPath, pid1);
         List<Resource> obj1Events = listEventResources(pid1, obj1Model);
         assertEquals(1, obj1Events.size());
-        assertTrue(obj1Events.get(0).hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(obj1Events.get(0).hasProperty(RDF.type, Premis.VirusCheck));
 
         Model obj2Model = readTransformedLog(outputPath, pid3);
         List<Resource> obj2Events = listEventResources(pid3, obj2Model);
-        assertTrue(obj2Events.get(0).hasProperty(Premis.hasEventType, Premis.Ingestion));
+        assertTrue(obj2Events.get(0).hasProperty(RDF.type, Premis.Ingestion));
 
         Path failedPath = getTransformedPremisPath(outputPath, pid2, true);
         assertFalse("Transformed log for invalid log should not exist",

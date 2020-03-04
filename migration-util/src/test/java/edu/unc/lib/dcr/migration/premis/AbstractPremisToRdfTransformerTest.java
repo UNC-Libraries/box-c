@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jgroups.util.UUID;
 import org.junit.Before;
@@ -70,17 +72,17 @@ public abstract class AbstractPremisToRdfTransformerTest {
     }
 
     protected Resource getResourceByEventDate(List<Resource> rescs, String eventDate) {
-        return rescs.stream().filter(r -> eventDate.equals(r.getProperty(Premis.hasEventDateTime).getString()))
+        return rescs.stream().filter(r -> eventDate.equals(r.getProperty(DCTerms.date).getString()))
                 .findFirst().get();
     }
 
     protected void assertEventType(Resource expectedType, Resource eventResc) {
         assertEquals("Event type did not match expected value",
-                expectedType, eventResc.getPropertyResourceValue(Premis.hasEventType));
+                expectedType, eventResc.getPropertyResourceValue(RDF.type));
     }
 
     protected void assertEventDetail(String expected, Resource eventResc) {
-        List<String> details = eventResc.listProperties(Premis.hasEventDetail).toList().stream()
+        List<String> details = eventResc.listProperties(Premis.note).toList().stream()
                 .map(Statement::getString).collect(toList());
         if (details.contains(expected)) {
             return;
@@ -91,6 +93,6 @@ public abstract class AbstractPremisToRdfTransformerTest {
 
     protected void assertEventDateTime(String expected, Resource eventResc) {
         assertEquals("Event date time did not match expected value",
-                expected, eventResc.getProperty(Premis.hasEventDateTime).getString());
+                expected, eventResc.getProperty(DCTerms.date).getString());
     }
 }
