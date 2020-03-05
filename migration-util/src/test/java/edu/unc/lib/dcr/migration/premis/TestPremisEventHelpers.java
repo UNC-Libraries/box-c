@@ -46,7 +46,7 @@ import org.jdom2.output.XMLOutputter;
 import org.jgroups.util.UUID;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -135,8 +135,10 @@ public class TestPremisEventHelpers {
 
     public static List<Resource> listEventResources(PID pid, Model model) {
         Resource objResc = model.getResource(pid.getRepositoryPath());
+        List<Statement> usedBy = objResc.listProperties(Prov.wasUsedBy).toList();
+        List<Statement> generatedBy = objResc.listProperties(Prov.wasGeneratedBy).toList();
 
-        return objResc.listProperties(Premis.hasEvent).toList().stream()
+        return Stream.concat(usedBy.stream(), generatedBy.stream())
                 .map(Statement::getResource)
                 .collect(toList());
     }

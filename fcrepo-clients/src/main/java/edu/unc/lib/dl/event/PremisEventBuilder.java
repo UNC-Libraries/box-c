@@ -34,6 +34,7 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -68,16 +69,12 @@ public class PremisEventBuilder {
 
         Model logModel = getModel();
         Resource eventSubjectResc = logModel.getResource(eventSubject.getRepositoryPath());
-//        if (Premis.InformationPackageCreation.equals(eventType)
-//                || Premis.VirusCheck.equals(eventType)
-//                || Premis.Validation.equals(eventType)) {
-//            premisObjResc.addProperty(Prov.wasUsedBy, eventSubjectResc);
-//        } else if (Premis.Ingestion.equals(eventType)) {
-//            premisObjResc.addProperty(Prov.wasGeneratedBy, eventSubjectResc);
-//        } else {
-            eventSubjectResc.addProperty(Premis.hasEvent, premisObjResc);
-//        }
-        premisObjResc.addProperty(RDF.type, Premis.Event);
+        if (Premis.Ingestion.equals(eventType)
+                || Premis.Creation.equals(eventType)) {
+            eventSubjectResc.addProperty(Prov.wasGeneratedBy, premisObjResc);
+        } else {
+            eventSubjectResc.addProperty(Prov.wasUsedBy, premisObjResc);
+        }
         premisObjResc.addProperty(RDF.type, eventType);
         premisObjResc.addProperty(DCTerms.date,
                 DateTimeUtil.formatDateToUTC(date), XSDDatatype.XSDdateTime);

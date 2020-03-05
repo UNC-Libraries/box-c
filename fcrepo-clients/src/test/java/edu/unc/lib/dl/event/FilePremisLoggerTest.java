@@ -39,6 +39,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -107,7 +108,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
-        assertTrue(objResc.hasProperty(Premis.hasEvent, resource));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resource));
     }
 
     @Test
@@ -147,8 +148,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                         .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
-        assertTrue(objResc.hasProperty(Premis.hasEvent, resc1));
-        assertTrue(objResc.hasProperty(Premis.hasEvent, resc2));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc1));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc2));
     }
 
     @Test
@@ -189,7 +190,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                     .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = logModel.getResource(pid.getRepositoryPath());
-        assertTrue(objResc.hasProperty(Premis.hasEvent, logEvent1Resc));
-        assertTrue(objResc.hasProperty(Premis.hasEvent, logEvent2Resc));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent1Resc));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent2Resc));
     }
 }

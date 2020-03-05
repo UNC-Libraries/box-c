@@ -222,7 +222,7 @@ public class Premis {
     public static final Resource Dissemination = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/dis");
 
-    public static final Resource EventRelatedAgentRole = createResource(
+    public static final Resource Execution = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/exe");
 
     public static final Resource FilenameChange = createResource(

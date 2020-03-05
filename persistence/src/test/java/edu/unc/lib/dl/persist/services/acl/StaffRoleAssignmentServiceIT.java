@@ -83,6 +83,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -508,7 +509,7 @@ public class StaffRoleAssignmentServiceIT {
     private String assertEventCreatedAndGetDetail(ContentObject repoObj) {
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
-        Resource eventResc = objResc.getPropertyResourceValue(Premis.hasEvent);
+        Resource eventResc = objResc.getPropertyResourceValue(Prov.wasUsedBy);
         assertTrue("Event type was not set",
                 eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);

@@ -86,6 +86,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -676,7 +677,7 @@ public class PatronAccessAssignmentServiceIT {
 
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
-        StmtIterator it = objResc.listProperties(Premis.hasEvent);
+        StmtIterator it = objResc.listProperties(Prov.wasUsedBy);
         while (it.hasNext()) {
             Statement stmt = it.next();
             Resource eventResc = stmt.getResource();

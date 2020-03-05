@@ -46,6 +46,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -105,7 +106,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Resource logEventResc = logModel.getResource(eventResc.getURI());
 
         assertTrue("Must contain premis:hasEvent references from obj to event",
-                logModel.contains(parentObject.getResource(), Premis.hasEvent, logEventResc));
+                logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEventResc));
         assertTrue(logEventResc.hasProperty(RDF.type, Premis.VirusCheck));
     }
 
@@ -144,9 +145,9 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertTrue(logEvent3Resc.hasProperty(RDF.type, Premis.MessageDigestCalculation));
 
         // Verify that hasEvent relations are present
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent1Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent2Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent3Resc));
+        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEvent1Resc));
+        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasGeneratedBy, logEvent2Resc));
+        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEvent3Resc));
 
         retrieveLogger.close();
     }
