@@ -96,6 +96,10 @@ public class CdrDeposit {
     public static final Property fitsStorageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#fitsStorageUri" );
 
+    /** URI of Premis log file within a storage location. */
+    public static final Property premisStorageUri = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#premisStorageUri" );
+
     /** URI of descriptive metadata file within a storage location. */
     public static final Property descriptiveStorageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#descriptiveStorageUri" );
