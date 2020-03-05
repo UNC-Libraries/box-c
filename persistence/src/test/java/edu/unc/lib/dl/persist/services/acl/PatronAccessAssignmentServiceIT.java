@@ -50,6 +50,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +88,6 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -687,7 +687,7 @@ public class PatronAccessAssignmentServiceIT {
                     eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
             assertTrue("Event agent was not set",
-                    agentResc.hasLiteral(Rdf.label, USER_NAMESPACE + USER_PRINC));
+                    agentResc.hasLiteral(FOAF.name, USER_NAMESPACE + USER_PRINC));
             details.add(eventResc.getProperty(Premis.note).getString());
         }
 

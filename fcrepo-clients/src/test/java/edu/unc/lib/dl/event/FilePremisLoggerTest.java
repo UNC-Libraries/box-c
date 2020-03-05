@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
@@ -111,7 +112,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 .getProperty(Rdf.label).getObject().toString());
         assertEquals("Virus check property authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
                 resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
-                .getProperty(Rdf.label).getObject().toString());
+                .getProperty(FOAF.name).getObject().toString());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
@@ -144,7 +145,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 resc1.getProperty(Premis.note).getObject().toString());
         assertEquals("Authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
                 resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor)
-                        .getProperty(Rdf.label).getObject().toString());
+                        .getProperty(FOAF.name).getObject().toString());
 
         assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
                 resc2.getProperty(RDF.type).getObject());
@@ -193,7 +194,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         assertEquals("Authorizing agent not written to file", PremisAgentType.Person,
                 event2AgentAuth.getProperty(RDF.type).getObject());
         assertEquals("Authorizing agent name not written to file", "Agent 2",
-                event2AgentAuth.getProperty(Rdf.label).getObject().toString());
+                event2AgentAuth.getProperty(FOAF.name).getObject().toString());
 
         Resource objResc = logModel.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));

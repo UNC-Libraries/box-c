@@ -28,6 +28,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
@@ -178,7 +179,12 @@ public class PremisEventBuilder {
         Resource linkingAgentInfo = model.createResource(eventPid.getRepositoryPath() + agentId);
 
         linkingAgentInfo.addProperty(RDF.type, type);
-        linkingAgentInfo.addProperty(Rdf.label, name);
+        if (PremisAgentType.Person.equals(type) || PremisAgentType.Organization.equals(type)) {
+            linkingAgentInfo.addProperty(FOAF.name, name);
+        } else {
+            linkingAgentInfo.addProperty(Rdf.label, name);
+        }
+
         premisObjResc.addProperty(role, linkingAgentInfo);
 
         return this;
