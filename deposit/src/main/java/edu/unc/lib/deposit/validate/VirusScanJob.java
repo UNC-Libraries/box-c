@@ -101,6 +101,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
                 premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
                     .addEventDetail("File passed pre-ingest scan for viruses")
+                    .addOutcome(true)
                     .write();
 
                 scannedObjects++;
