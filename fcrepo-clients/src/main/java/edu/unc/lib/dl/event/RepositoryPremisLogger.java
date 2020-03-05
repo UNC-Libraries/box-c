@@ -37,6 +37,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -104,6 +105,17 @@ public class RepositoryPremisLogger implements PremisLogger {
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
         Model logModel = ModelFactory.createDefaultModel();
+
+        Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+        boolean isNewLog = s == null;
+
+        // For new logs, add in representation statement
+        if (isNewLog) {
+            Resource repoObjResc = logModel.getResource(repoObject.getPid().getRepositoryPath());
+            repoObjResc.addProperty(RDF.type, Premis.Representation);
+        }
+
+        // Add new events to log
         for (Resource eventResc: eventResources) {
             logModel.add(eventResc.getModel());
         }
@@ -116,9 +128,8 @@ public class RepositoryPremisLogger implements PremisLogger {
             throw new ObjectPersistenceException("Failed to serialize event to RDF for " + repoObject.getPid(), e);
         }
 
-        Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
         // Premis event log not created yet
-        if (s == null) {
+        if (isNewLog) {
             createLog(modelStream);
         } else {
             PID objPid = repoObject.getPid();

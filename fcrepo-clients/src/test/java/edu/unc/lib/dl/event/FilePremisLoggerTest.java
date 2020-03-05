@@ -31,7 +31,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -55,14 +57,18 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     private PremisLogger premis;
     private Date date;
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     @Before
     public void setup() throws Exception {
 
         depositUUID = UUID.randomUUID().toString();
         pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
         eventType = Premis.VirusCheck;
-        premisFile = File.createTempFile(depositUUID, ".nt");
-        premisFile.deleteOnExit();
+
+        tmpFolder.create();
+        premisFile = new File(tmpFolder.getRoot(), depositUUID + ".nt");
         premis = new FilePremisLogger(pid, premisFile, pidMinter);
         date = new Date();
     }
@@ -107,6 +113,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(objResc.hasProperty(Prov.wasUsedBy, resource));
     }
 
@@ -147,6 +154,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                         .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc1));
         assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc2));
     }
@@ -189,6 +197,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                     .getProperty(Premis.hasAgentName).getObject().toString());
 
         Resource objResc = logModel.getResource(pid.getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
         assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent1Resc));
         assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent2Resc));
     }

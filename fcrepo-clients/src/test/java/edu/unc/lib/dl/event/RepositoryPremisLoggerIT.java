@@ -108,6 +108,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertTrue("Must contain premis:hasEvent references from obj to event",
                 logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEventResc));
         assertTrue(logEventResc.hasProperty(RDF.type, Premis.VirusCheck));
+
+        Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
+        assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEventResc));
     }
 
     @Test
@@ -145,9 +149,11 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertTrue(logEvent3Resc.hasProperty(RDF.type, Premis.MessageDigestCalculation));
 
         // Verify that hasEvent relations are present
-        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEvent1Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasGeneratedBy, logEvent2Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Prov.wasUsedBy, logEvent3Resc));
+        Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
+        assertTrue(logModel.contains(objResc, Prov.wasUsedBy, logEvent1Resc));
+        assertTrue(logModel.contains(objResc, Prov.wasGeneratedBy, logEvent2Resc));
+        assertTrue(logModel.contains(objResc, Prov.wasUsedBy, logEvent3Resc));
 
         retrieveLogger.close();
     }
