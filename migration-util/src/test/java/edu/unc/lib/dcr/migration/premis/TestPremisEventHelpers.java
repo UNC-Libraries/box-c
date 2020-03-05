@@ -110,10 +110,15 @@ public class TestPremisEventHelpers {
     }
 
     public static void addEventOutcome(Element eventEl, String outcome, String note) {
-        eventEl.addContent(new Element("eventOutcomeInformation", PREMIS_V2_NS)
-                .addContent(new Element("eventOutcome", PREMIS_V2_NS).setText(outcome))
-                .addContent(new Element("eventOutcomeDetail", PREMIS_V2_NS)
-                        .addContent(new Element("eventOutcomeDetailNote", PREMIS_V2_NS).setText(note))));
+        Element outcomeInfoEl = new Element("eventOutcomeInformation", PREMIS_V2_NS);
+        if (note != null) {
+            outcomeInfoEl.addContent(new Element("eventOutcomeDetail", PREMIS_V2_NS)
+                    .addContent(new Element("eventOutcomeDetailNote", PREMIS_V2_NS).setText(note)));
+        }
+        if (outcome != null) {
+            outcomeInfoEl.addContent(new Element("eventOutcome", PREMIS_V2_NS).setText(outcome));
+        }
+        eventEl.addContent(outcomeInfoEl);
     }
 
     public static void addLinkingObject(Element eventEl, String idType, String idVal) {

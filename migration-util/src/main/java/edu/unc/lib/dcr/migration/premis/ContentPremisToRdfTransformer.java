@@ -290,20 +290,20 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
         PremisEventBuilder builder = createEventBuilder(Premis.FixityCheck, eventEl)
                 .addEventDetail(eventOutcome);
 
-            eventEl.getChildren("linkingAgentIdentifier", PREMIS_V2_NS).forEach(agentEl -> {
-                String idType = agentEl.getChildTextTrim("linkingAgentIdentifierType", PREMIS_V2_NS);
-                String idVal = agentEl.getChildTextTrim("linkingAgentIdentifierValue", PREMIS_V2_NS);
-                builder.addSoftwareAgent(idType + " " + idVal);
-            });
-            builder.addSoftwareAgent(fixityCheckingService.getFullname());
+        eventEl.getChildren("linkingAgentIdentifier", PREMIS_V2_NS).forEach(agentEl -> {
+            String idType = agentEl.getChildTextTrim("linkingAgentIdentifierType", PREMIS_V2_NS);
+            String idVal = agentEl.getChildTextTrim("linkingAgentIdentifierValue", PREMIS_V2_NS);
+            builder.addSoftwareAgent(idType + " " + idVal);
+        });
+        builder.addSoftwareAgent(fixityCheckingService.getFullname());
 
-            eventEl.getChildren("linkingObjectIdentifier", PREMIS_V2_NS).stream().forEach(objEl -> {
-                String objectType = objEl.getChildTextTrim("linkingObjectIdentifierType", PREMIS_V2_NS);
-                String objectPath = objEl.getChildTextTrim("linkingObjectIdentifierValue", PREMIS_V2_NS);
-                builder.addEventDetail(objectType + " " + objectPath);
-            });
+        eventEl.getChildren("linkingObjectIdentifier", PREMIS_V2_NS).stream().forEach(objEl -> {
+            String objectType = objEl.getChildTextTrim("linkingObjectIdentifierType", PREMIS_V2_NS);
+            String objectPath = objEl.getChildTextTrim("linkingObjectIdentifierValue", PREMIS_V2_NS);
+            builder.addEventDetail(objectType + " " + objectPath);
+        });
 
-            builder.write();
+        builder.write();
     }
 
     private void addEvent(Element eventEl, Resource eventType, String eventDetail, SoftwareAgent agent) {

@@ -103,22 +103,15 @@ public class PremisEventBuilder {
     }
 
     /**
-     * Add an event detail outcome note property to this event
+     * Add an event outcome property
      *
-     * @param detailNote
-     *            The message for this outcome detail
-     * @param args
-     *            Optional parameters that should be formatted into the message,
-     *            using String.format syntax.
+     * @param success if true, the outcome will be Success, otherwise Fail
      * @return this event builder
      */
-    public PremisEventBuilder addEventDetailOutcomeNote(String detailNote, Object... args) {
-        if (args != null) {
-            detailNote = MessageFormat.format(detailNote, args);
-        }
-
+    public PremisEventBuilder addOutcome(boolean success) {
         Resource premisObjResc = getResource();
-        premisObjResc.addProperty(Premis.hasEventOutcomeDetailNote, detailNote);
+        premisObjResc.addProperty(Premis.outcome, success ?
+                Premis.Success : Premis.Fail);
 
         return this;
     }

@@ -18,6 +18,8 @@ package edu.unc.lib.dcr.migration.premis;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -94,5 +96,20 @@ public abstract class AbstractPremisToRdfTransformerTest {
     protected void assertEventDateTime(String expected, Resource eventResc) {
         assertEquals("Event date time did not match expected value",
                 expected, eventResc.getProperty(DCTerms.date).getString());
+    }
+
+    protected void assertEventOutcomeSuccess(Resource eventResc) {
+        assertTrue("Expected event outcome to be Success",
+                eventResc.hasProperty(Premis.outcome, Premis.Success));
+    }
+
+    protected void assertEventOutcomeFail(Resource eventResc) {
+        assertTrue("Expected event outcome to be Fail",
+                eventResc.hasProperty(Premis.outcome, Premis.Fail));
+    }
+
+    protected void assertNoEventOutcome(Resource eventResc) {
+        assertFalse("Expected event to have no outcome status",
+                eventResc.hasProperty(Premis.outcome));
     }
 }

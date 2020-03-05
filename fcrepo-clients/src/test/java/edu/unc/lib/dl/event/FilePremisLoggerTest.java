@@ -78,11 +78,10 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     @Test
     public void testTripleWrite() throws IOException {
         String message = "Test event successfully added";
-        String detailedNote = "No viruses found";
 
         Resource premisBuilder = premis.buildEvent(null, eventType, date)
                 .addEventDetail(message)
-                .addEventDetailOutcomeNote(detailedNote)
+                .addOutcome(true)
                 .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
                 .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
                 .create();
@@ -98,8 +97,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 resource.getProperty(RDF.type).getObject());
         assertEquals("Virus check property message not written to file", message,
                 resource.getProperty(Premis.note).getObject().toString());
-        assertEquals("Virus check property detailed note not written to file", detailedNote,
-                resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
+        assertEquals("Virus check did not have success outcome", Premis.Success,
+                resource.getProperty(Premis.outcome).getResource());
         assertEquals("Virus check property depositing agent not written to file", SoftwareAgent.clamav.getFullname(),
                 resource.getProperty(Premis.hasEventRelatedAgentExecutor)
                 .getProperty(Premis.hasAgentName).getObject().toString());

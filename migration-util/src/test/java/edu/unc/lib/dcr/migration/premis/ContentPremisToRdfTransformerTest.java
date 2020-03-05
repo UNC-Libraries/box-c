@@ -130,6 +130,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertEventDetail("File passed pre-ingest scan for viruses.", eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
         assertAgent(clamav.getFullname(), Software, eventResc);
+        assertNoEventOutcome(eventResc);
     }
 
     @Test
@@ -138,6 +139,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, VIRUS_CHECK_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, VIRUS_AGENT);
         addAgent(eventEl, "Name", "ClamAV (ClamAV 0.100.2/25220/Tue Dec 18 21:49:44 2018)", SOFTWARE_ROLE);
+        addEventOutcome(eventEl, "success", null);
 
         transformer.compute();
 
@@ -150,6 +152,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
         assertAgent(clamav.getFullname(), Software, eventResc);
+        assertEventOutcomeSuccess(eventResc);
     }
 
     @Test
@@ -445,6 +448,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertAgent("Class " + FIXITY_AGENT, Software, eventResc);
         assertAgent("Jargon version 2.2", Software, eventResc);
         assertAgent("iRODS release version rods3.2", Software, eventResc);
+        assertNoEventOutcome(eventResc);
     }
 
     @Test
@@ -488,6 +492,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertAgent("Class " + FIXITY_AGENT, Software, eventResc);
         assertAgent("Jargon version 2.2", Software, eventResc);
         assertAgent("iRODS release version rods3.2", Software, eventResc);
+        assertEventOutcomeFail(eventResc);
     }
 
     @Test
