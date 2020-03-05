@@ -84,6 +84,7 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -514,7 +515,7 @@ public class StaffRoleAssignmentServiceIT {
                 eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
         assertTrue("Event agent was not set",
-                agentResc.hasLiteral(Premis.hasAgentName, USER_NAMESPACE + USER_PRINC));
+                agentResc.hasLiteral(Rdf.label, USER_NAMESPACE + USER_PRINC));
         String eventDetail = eventResc.getProperty(Premis.note).getString();
         assertThat(eventDetail, containsString("Staff roles for item set to:"));
         return eventDetail;

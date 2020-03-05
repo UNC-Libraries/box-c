@@ -35,6 +35,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -164,26 +165,6 @@ public class PremisEventBuilder {
     }
 
     /**
-     * Add details describing the creation of a derivative datastream
-     *
-     * @param sourceDataStream
-     *            The identifier of source datastream
-     * @param destDataStream
-     *            The identifier of the datastream derived from the source.
-     * @return this event builder
-     */
-    public PremisEventBuilder addDerivative(String sourceDataStream, String destDataStream) {
-        Resource premisObjResc = getResource();
-
-        premisObjResc.addProperty(Premis.hasAgentName, sourceDataStream);
-        premisObjResc.addProperty(Premis.hasAgentType, "Source Data");
-        premisObjResc.addProperty(Premis.hasAgentName, destDataStream);
-        premisObjResc.addProperty(Premis.hasAgentType, "Derived Data");
-
-        return this;
-    }
-
-    /**
      * Add an agent to this event
      *
      * @param role
@@ -196,8 +177,8 @@ public class PremisEventBuilder {
         Resource premisObjResc = getResource();
         Resource linkingAgentInfo = model.createResource(eventPid.getRepositoryPath() + agentId);
 
-        linkingAgentInfo.addProperty(Premis.hasAgentType, type);
-        linkingAgentInfo.addProperty(Premis.hasAgentName, name);
+        linkingAgentInfo.addProperty(RDF.type, type);
+        linkingAgentInfo.addProperty(Rdf.label, name);
         premisObjResc.addProperty(role, linkingAgentInfo);
 
         return this;

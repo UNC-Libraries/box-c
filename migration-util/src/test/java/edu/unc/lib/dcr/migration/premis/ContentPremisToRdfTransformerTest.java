@@ -56,11 +56,13 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Rdf;
 
 /**
  * @author bbpennel
@@ -595,8 +597,8 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
     private void assertAgent(String agentName, Property hasProperty, Resource agentType, Resource eventResc) {
         for (Statement stmt: eventResc.listProperties(hasProperty).toList()) {
             Resource agentResc = stmt.getResource();
-            if (agentType.equals(agentResc.getPropertyResourceValue(Premis.hasAgentType))
-                    && agentName.equals(agentResc.getProperty(Premis.hasAgentName).getString())) {
+            if (agentType.equals(agentResc.getPropertyResourceValue(RDF.type))
+                    && agentName.equals(agentResc.getProperty(Rdf.label).getString())) {
                 return;
             }
         }
