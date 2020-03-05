@@ -267,6 +267,5 @@
     <bean id="RegisterToLongleafJob" class="edu.unc.lib.deposit.fcrepo4.RegisterToLongleafJob"
           scope="prototype">
         <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
-        <property name="longleafLogPath" value="${longleaf.logPath}" />
     </bean>
 </beans>

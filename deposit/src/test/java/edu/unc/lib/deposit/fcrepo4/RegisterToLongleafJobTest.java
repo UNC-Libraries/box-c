@@ -24,22 +24,28 @@ import org.apache.jena.rdf.model.*;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private final static String LOC1_ID = "loc1";
-    private final static String LOC2_ID = "loc2";
-    private final static String LOC3_ID = "loc3";
+    private final static String FILE_SCHEME = "file:";
+    private final static String LOC1_ID = "/some/path/loc1";
+    private final static String LOC2_ID = "/some/path/loc2";
+    private final static String LOC3_ID = "/some/path/loc3";
     private final static String FILE_CONTENT1 = "Some content";
     private final static String FILE_CONTENT2 = "Other stuff";
     private final static String MD5 = "MD5 checksum";
@@ -50,11 +56,12 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     private Model model;
     private Path storageLocPath;
     private String outputPath;
-    private String logPath;
     private String longleafScript;
 
     @Before
     public void init() throws Exception {
+        tmpFolder.create();
+
         Dataset dataset = TDBFactory.createDataset();
 
         job = new RegisterToLongleafJob();
@@ -63,11 +70,9 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         job.setDepositDirectory(depositDir);
         setField(job, "dataset", dataset);
 
-        outputPath = createOutputFile();
-        logPath = createOutputFile();
+        outputPath = tmpFolder.newFile().getPath();
         longleafScript = getLongleafScript(outputPath);
         job.setLongleafBaseCommand(longleafScript);
-        job.setLongleafLogPath(logPath);
 
         job.init();
 
@@ -80,32 +85,23 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         depBag.addProperty(Cdr.storageLocation, LOC1_ID);
     }
 
-    /**
-     * Test that a single file in an ingested work is registered to longleaf
-     */
     @Test
     public void registerSingleFileToLongleaf() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
-        fileResc.addProperty(CdrDeposit.storageUri, LOC2_ID);
+        fileResc.addProperty(CdrDeposit.storageUri, FILE_SCHEME + LOC2_ID + "/original_file");
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         job.closeModel();
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC2_ID + " --checksums 'md5:" + MD5 + "' --force";
-
-        File file = new File(outputPath);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String output = br.readLine();
+        String registrationArguments = "register -f " + LOC2_ID  + "/original_file --checksums 'md5:" + MD5 + "'\n";
+        String output = FileUtils.readFileToString(new File(outputPath));
 
         assertEquals(registrationArguments, output);
     }
 
-    /**
-     * Test that longleaf registration is not triggered for works with no files
-     */
     @Test
     public void registerWorkWithNoFilesToLongleaf() throws Exception {
         addContainerObject(depBag, Cdr.Work);
@@ -114,67 +110,82 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        File file = new File(outputPath);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String output = br.readLine();
+        String output = FileUtils.readFileToString(new File(outputPath));
 
-        assertNull(output);
+        assertEquals("", output);
     }
 
-    /**
-     * Test that multiple files in an ingested work are registered to longleaf
-     */
     @Test
     public void registerWorkWithMultipleFilesToLongleaf() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc1 = addFileObject(workBag, FILE_CONTENT1, true);
-        fileResc1.addProperty(CdrDeposit.storageUri, LOC2_ID);
+        fileResc1.addProperty(CdrDeposit.storageUri, FILE_SCHEME + LOC2_ID + "/original_file");
         workBag.addProperty(Cdr.primaryObject, fileResc1);
         Resource fileResc2 = addFileObject(workBag, FILE_CONTENT2, true);
-        fileResc2.addProperty(CdrDeposit.storageUri, LOC3_ID);
+        fileResc2.addProperty(CdrDeposit.storageUri, FILE_SCHEME + LOC3_ID);
 
         job.closeModel();
 
         job.run();
 
-        String registrationArguments1 = "register -f " + LOC2_ID + " --checksums 'md5:" + MD5 + "' --force";
-        String registrationArguments2 = "register -f " + LOC3_ID + " --checksums 'md5:" + MD5 + "' --force";
+        String registrationArguments = "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
+                "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath));
 
-        File file = new File(outputPath);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String firstLine = br.readLine();
-        String secondLine = br.readLine();
-
-        assertEquals(registrationArguments1, firstLine);
-        assertEquals(registrationArguments2, secondLine);
+        assertEquals(registrationArguments, output);
     }
 
-    /**
-     * Test that a mods file in an ingested work is registered to longleaf
-     */
     @Test
     public void registerModsFilesToLongleaf() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
-        fileResc.addProperty(CdrDeposit.descriptiveStorageUri, LOC3_ID);
+        fileResc.addProperty(CdrDeposit.descriptiveStorageUri, FILE_SCHEME + LOC3_ID);
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         job.closeModel();
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC3_ID + " --checksums 'md5:" + MD5 + "' --force";
-
-        File file = new File(outputPath);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String output = br.readLine();
+        String registrationArguments = "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath));
 
         assertEquals(registrationArguments, output);
     }
 
-    /**
-     * Test that a file in a non-ingested work is not registered to longleaf
-     */
+    @Test
+    public void registerFitsExtractFilesToLongleaf() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, FILE_SCHEME + LOC3_ID);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        job.closeModel();
+
+        job.run();
+
+        String registrationArguments = "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath));
+
+        assertEquals(registrationArguments, output);
+    }
+
+    @Test
+    public void registerPremisLogFilesToLongleaf() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        fileResc.addProperty(CdrDeposit.premisStorageUri, FILE_SCHEME + LOC3_ID);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        job.closeModel();
+
+        job.run();
+
+        String registrationArguments = "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath));
+
+        assertEquals(registrationArguments, output);
+    }
+
     @Test
     public void registerFilesWhichHaveNotBeenIngestedToLongleaf() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
@@ -185,11 +196,9 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        File file = new File(outputPath);
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String output = br.readLine();
+        String output = FileUtils.readFileToString(new File(outputPath));
 
-        assertNull(output);
+        assertEquals("", output);
     }
 
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
@@ -215,13 +224,6 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         return objBag;
     }
 
-    private String createOutputFile() throws Exception {
-        File outputFile = File.createTempFile("output", ".txt");
-        outputFile.deleteOnExit();
-
-        return outputFile.getAbsolutePath();
-    }
-
     private String getLongleafScript(String outputPath) throws Exception {
         String scriptContent = "#!/usr/bin/env bash\necho $@ >> " + outputPath;
         File longleafScript = File.createTempFile("longleaf", ".sh");
@@ -230,7 +232,8 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         longleafScript.deleteOnExit();
 
-        Runtime.getRuntime().exec("chmod u+x " + longleafScript.getAbsolutePath());
+        Set<PosixFilePermission> ownerExecutable = PosixFilePermissions.fromString("r-x------");
+        Files.setPosixFilePermissions(longleafScript.toPath(), ownerExecutable);
 
         return longleafScript.getAbsolutePath();
     }
