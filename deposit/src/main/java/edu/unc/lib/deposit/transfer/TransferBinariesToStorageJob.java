@@ -103,10 +103,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             transferDepositManifests(objPid, resc, transferSession);
         }
 
-        // Add premis log location to deposit model
-        Path premisLogPath = getPremisFile(objPid).toPath();
-        resc.addProperty(CdrDeposit.premisStorageUri, premisLogPath.toUri().toString());
-
         NodeIterator iterator = getChildIterator(resc);
         // No more children, nothing further to do in this tree
         if (iterator == null) {

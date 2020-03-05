@@ -16,6 +16,11 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Bag;
@@ -25,6 +30,7 @@ import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,6 +49,9 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
     private static final Logger longleafLog = LoggerFactory.getLogger("longleaf");
 
     private String longleafBaseCommand;
+
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     public RegisterToLongleafJob() {
         super();
@@ -69,19 +78,27 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
      * @param resc
      */
     public void registerFilesToLongleaf(Resource resc) {
+        PID objPid = PIDs.get(resc.toString());
+        BinaryObject premisBin = repoObjLoader.getBinaryObject(DatastreamPids.getMdEventsPid(objPid));
+        URI premisStorageUri = premisBin.getContentUri();
+
+        if (premisStorageUri != null) {
+            registerFile(premisStorageUri, null);
+        }
+
         StmtIterator statementIterator = resc.listProperties();
         try {
             while (statementIterator.hasNext()) {
                 Statement currentStatement = statementIterator.nextStatement();
 
-                // find storageUri, descriptiveStorageUri, fitsStorageUri, premisStorageUri
+                // find storageUri, descriptiveStorageUri, fitsStorageUri
                 if (currentStatement.getPredicate().toString().matches(".*Uri")) {
                     URI storageUri = URI.create(currentStatement.getString());
                     if (currentStatement.getString().matches(".*original_file")) {
                         String checksum = resc.getProperty(CdrDeposit.md5sum).getString();
                         registerFile(storageUri, checksum);
                     } else {
-                        registerFile(storageUri, "");
+                        registerFile(storageUri, null);
                     }
                 }
             }
@@ -119,7 +136,7 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
         try {
             // only register binaries with md5sum
             String longleafCommmand;
-            if (!checksum.equals("")) {
+            if (checksum != null) {
                 longleafCommmand = longleafBaseCommand + " register -f " + fileLocation + " --checksums 'md5:" +
                         checksum + "'";
             } else {

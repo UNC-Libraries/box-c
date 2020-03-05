@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -27,8 +29,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -37,6 +42,9 @@ import java.util.Set;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     @Rule
@@ -57,6 +65,11 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     private Path storageLocPath;
     private String outputPath;
     private String longleafScript;
+    private BinaryObject destinationObj;
+    private URI desitnationUri;
+
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
 
     @Before
     public void init() throws Exception {
@@ -68,6 +81,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
+        setField(job, "repoObjLoader", repoObjLoader);
         setField(job, "dataset", dataset);
 
         outputPath = tmpFolder.newFile().getPath();
@@ -83,6 +97,12 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         storageLocPath = tmpFolder.newFolder("storageLoc").toPath();
         depBag = model.createBag(depositPid.getRepositoryPath());
         depBag.addProperty(Cdr.storageLocation, LOC1_ID);
+
+        // set up mock for premis uri
+        destinationObj = mock(BinaryObject.class);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(destinationObj);
+        desitnationUri = URI.create(FILE_SCHEME + LOC1_ID + "/event_log");
+        when(destinationObj.getContentUri()).thenReturn(desitnationUri);
     }
 
     @Test
@@ -96,8 +116,11 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC2_ID  + "/original_file --checksums 'md5:" + MD5 + "'\n";
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n" + // file
+                "register -f " + LOC2_ID  + "/original_file --checksums 'md5:" + MD5 + "'\n";
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
         assertEquals(registrationArguments, output);
     }
@@ -110,9 +133,11 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n"; // work
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals("", output);
+        assertEquals(registrationArguments, output);
     }
 
     @Test
@@ -128,9 +153,37 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n" + // file1
+                "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
+                "register -f " + LOC1_ID + "/event_log\n" + // file2
                 "register -f " + LOC3_ID + "\n";
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
+
+        assertEquals(registrationArguments, output);
+    }
+
+    @Test
+    public void registerWorkWithMetadataFilesToLongleaf() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        fileResc.addProperty(CdrDeposit.storageUri, FILE_SCHEME + LOC2_ID + "/original_file");
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+        fileResc.addProperty(CdrDeposit.fitsStorageUri, FILE_SCHEME + LOC3_ID + "/techmd_fits");
+        fileResc.addProperty(CdrDeposit.descriptiveStorageUri, FILE_SCHEME + LOC3_ID + "/md_descriptive");
+
+        job.closeModel();
+
+        job.run();
+
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n" + // file
+                "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
+                "register -f " + LOC3_ID + "/techmd_fits\n" +
+                "register -f " + LOC3_ID + "/md_descriptive\n";
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
         assertEquals(registrationArguments, output);
     }
@@ -146,8 +199,11 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC3_ID + "\n";
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n" + // file
+                "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
         assertEquals(registrationArguments, output);
     }
@@ -163,31 +219,17 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC3_ID + "\n";
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n" + // file
+                "register -f " + LOC3_ID + "\n";
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
         assertEquals(registrationArguments, output);
     }
 
     @Test
-    public void registerPremisLogFilesToLongleaf() throws Exception {
-        Bag workBag = addContainerObject(depBag, Cdr.Work);
-        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
-        fileResc.addProperty(CdrDeposit.premisStorageUri, FILE_SCHEME + LOC3_ID);
-        workBag.addProperty(Cdr.primaryObject, fileResc);
-
-        job.closeModel();
-
-        job.run();
-
-        String registrationArguments = "register -f " + LOC3_ID + "\n";
-        String output = FileUtils.readFileToString(new File(outputPath));
-
-        assertEquals(registrationArguments, output);
-    }
-
-    @Test
-    public void registerFilesWhichHaveNotBeenIngestedToLongleaf() throws Exception {
+    public void registerFilesWithoutStorageUris() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
         workBag.addProperty(Cdr.primaryObject, fileResc);
@@ -196,9 +238,12 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String output = FileUtils.readFileToString(new File(outputPath));
+        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
+                "register -f " + LOC1_ID + "/event_log\n" + // work
+                "register -f " + LOC1_ID + "/event_log\n"; // file
+        String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals("", output);
+        assertEquals(registrationArguments, output);
     }
 
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
