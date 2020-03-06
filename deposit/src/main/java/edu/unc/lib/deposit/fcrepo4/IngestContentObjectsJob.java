@@ -131,6 +131,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     private boolean skipDepositLink;
     private Resource depositResc;
 
+    private String depositor;
+
     public IngestContentObjectsJob() {
         super();
     }
@@ -187,6 +189,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
+        depositor = depositStatus.get(DepositField.depositorName.name());
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
@@ -707,7 +710,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 builder.addEventDetail("added {0} child objects to this container", numChildren);
             }
             builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                    .addAuthorizingAgent(DepositField.depositorName.name())
+                    .addAuthorizingAgent(depositor)
                     .write();
         }
     }
@@ -724,7 +727,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     obj.getPid().getQualifiedId());
         }
         builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .addAuthorizingAgent(DepositField.depositorName.name())
+                .addAuthorizingAgent(depositor)
                 .write();
     }
 
