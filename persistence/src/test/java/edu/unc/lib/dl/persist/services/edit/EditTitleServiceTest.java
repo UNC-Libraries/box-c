@@ -33,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 import org.jdom2.Document;
@@ -56,6 +57,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 
 public class EditTitleServiceTest {
 
@@ -73,9 +75,13 @@ public class EditTitleServiceTest {
     private BinaryObject binaryObj;
     @Mock
     private UpdateDescriptionService updateDescriptionService;
+    @Mock
+    private OperationsMessageSender operationsMessageSender;
 
     @Captor
     private ArgumentCaptor<PID> pidCaptor;
+    @Captor
+    private ArgumentCaptor<List<PID>> pidListCaptor;
     @Captor
     private ArgumentCaptor<InputStream> inputStreamCaptor;
     @Captor
@@ -95,6 +101,7 @@ public class EditTitleServiceTest {
         service.setAclService(aclService);
         service.setUpdateDescriptionService(updateDescriptionService);
         service.setRepoObjLoader(repoObjLoader);
+        service.setOperationsMessageSender(operationsMessageSender);
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getDescription()).thenReturn(binaryObj);
@@ -124,6 +131,9 @@ public class EditTitleServiceTest {
 
         Document updatedDoc = getUpdatedDescriptionDocument();
         assertTrue(hasTitleValue(updatedDoc, title));
+
+        verify(operationsMessageSender).sendUpdateDescriptionOperation(anyString(), pidListCaptor.capture());
+        assertEquals(pid, pidListCaptor.getValue().get(0));
     }
 
     @Test(expected = AccessRestrictionException.class)

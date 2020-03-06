@@ -234,6 +234,7 @@
         <property name="aclService" ref="aclService" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
