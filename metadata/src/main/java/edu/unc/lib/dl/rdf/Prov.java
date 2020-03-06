@@ -36,6 +36,6 @@ public class Prov {
         return NS;
     }
 
-    public static final Property wasGeneratedBy = createProperty(NS + "wasGeneratedBy");
-    public static final Property wasUsedBy = createProperty(NS + "wasUsedBy");
+    public static final Property generated = createProperty(NS + "generated");
+    public static final Property used = createProperty(NS + "used");
 }

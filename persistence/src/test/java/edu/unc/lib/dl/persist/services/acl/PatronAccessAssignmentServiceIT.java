@@ -678,10 +678,10 @@ public class PatronAccessAssignmentServiceIT {
 
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
-        StmtIterator it = objResc.listProperties(Prov.wasUsedBy);
+        StmtIterator it = eventsModel.listStatements(null, Prov.used, objResc);
         while (it.hasNext()) {
             Statement stmt = it.next();
-            Resource eventResc = stmt.getResource();
+            Resource eventResc = stmt.getSubject();
 
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));

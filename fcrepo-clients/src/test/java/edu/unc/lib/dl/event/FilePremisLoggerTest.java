@@ -116,7 +116,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
-        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resource));
+        assertTrue(resource.hasProperty(Prov.used, objResc));
     }
 
     @Test
@@ -157,8 +157,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
-        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc1));
-        assertTrue(objResc.hasProperty(Prov.wasUsedBy, resc2));
+        assertTrue(resc1.hasProperty(Prov.used, objResc));
+        assertTrue(resc2.hasProperty(Prov.used, objResc));
     }
 
     @Test
@@ -198,7 +198,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
         Resource objResc = logModel.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
-        assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent1Resc));
-        assertTrue(objResc.hasProperty(Prov.wasUsedBy, logEvent2Resc));
+        assertTrue(logEvent1Resc.hasProperty(Prov.used, objResc));
+        assertTrue(logEvent2Resc.hasProperty(Prov.used, objResc));
     }
 }

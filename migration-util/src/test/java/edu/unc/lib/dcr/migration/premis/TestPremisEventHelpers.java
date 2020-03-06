@@ -140,11 +140,11 @@ public class TestPremisEventHelpers {
 
     public static List<Resource> listEventResources(PID pid, Model model) {
         Resource objResc = model.getResource(pid.getRepositoryPath());
-        List<Statement> usedBy = objResc.listProperties(Prov.wasUsedBy).toList();
-        List<Statement> generatedBy = objResc.listProperties(Prov.wasGeneratedBy).toList();
+        List<Statement> used = model.listStatements(null, Prov.used, objResc).toList();
+        List<Statement> generated = model.listStatements(null, Prov.generated, objResc).toList();
 
-        return Stream.concat(usedBy.stream(), generatedBy.stream())
-                .map(Statement::getResource)
+        return Stream.concat(used.stream(), generated.stream())
+                .map(Statement::getSubject)
                 .collect(toList());
     }
 

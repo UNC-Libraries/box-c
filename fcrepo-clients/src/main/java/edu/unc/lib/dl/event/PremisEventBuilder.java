@@ -73,9 +73,9 @@ public class PremisEventBuilder {
         Resource eventSubjectResc = logModel.getResource(eventSubject.getRepositoryPath());
         if (Premis.Ingestion.equals(eventType)
                 || Premis.Creation.equals(eventType)) {
-            eventSubjectResc.addProperty(Prov.wasGeneratedBy, premisObjResc);
+            premisObjResc.addProperty(Prov.generated, eventSubjectResc);
         } else {
-            eventSubjectResc.addProperty(Prov.wasUsedBy, premisObjResc);
+            premisObjResc.addProperty(Prov.used, eventSubjectResc);
         }
         premisObjResc.addProperty(RDF.type, eventType);
         premisObjResc.addProperty(DCTerms.date,
