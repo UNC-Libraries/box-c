@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.WebRequest;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -121,5 +122,11 @@ public class FedoraContentController {
     public String handleObjectTypeMismatchException(HttpServletRequest request) {
         request.setAttribute("pageSubtitle", "Invalid content");
         return "error/invalidRecord";
+    }
+
+    @ExceptionHandler(value = { RuntimeException.class })
+    protected String handleUncaught(RuntimeException ex, WebRequest request) {
+        log.error("Uncaught exception while streaming content", ex);
+        return "error/exception";
     }
 }
