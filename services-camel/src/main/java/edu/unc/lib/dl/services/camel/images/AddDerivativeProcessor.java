@@ -70,8 +70,8 @@ public class AddDerivativeProcessor implements Processor {
         try {
             // Prevent further processing if the execution failed
             if (result.getExitValue() != 0) {
-                String stdout = result.getStdout() == null? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
-                String stderr = result.getStderr() == null? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
+                String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
+                String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
                 log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
                 return;
             }

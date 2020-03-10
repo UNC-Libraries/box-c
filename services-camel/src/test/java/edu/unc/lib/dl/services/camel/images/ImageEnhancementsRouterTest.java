@@ -108,6 +108,21 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
+    public void testThumbDisallowedImageType() throws Exception {
+        createContext(thumbnailRoute);
+
+        getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        headers.put(CdrBinaryMimeType, "image/vnd.fpx");
+
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
     public void testThumbSmallRoute() throws Exception {
         createContext(smallThumbRoute);
 
@@ -157,6 +172,21 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         Map<String, Object> headers = createEvent(fileID, eventTypes);
         headers.put(CdrBinaryMimeType, "plain/text");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyDisallowedImageType() throws Exception {
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        headers.put(CdrBinaryMimeType, "image/vnd.fpx");
 
         template.sendBodyAndHeaders("", headers);
 
