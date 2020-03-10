@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -112,5 +114,22 @@ public class AddDerivativeProcessorTest {
         processor.process(exchange);
 
         assertTrue(mvFile.exists());
+    }
+
+    @Test
+    public void executionFailedTest() throws Exception {
+        when(result.getExitValue()).thenReturn(1);
+
+        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
+        processor.process(exchange);
+
+        assertFalse(mvFile.exists());
+    }
+
+    @Test(expected = IOException.class)
+    public void resultFileDoesNotExistTest() throws Exception {
+        when(result.getStdout()).thenReturn(new ByteArrayInputStream(".png".getBytes()));
+
+        processor.process(exchange);
     }
 }
