@@ -35,6 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -772,7 +773,8 @@ public class DepositSupervisor implements WorkerListener {
         Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
         try {
-            Model model = dataset.getNamedModel(depositPid.getRepositoryPath()).begin();
+            dataset.begin(ReadWrite.READ);
+            Model model = dataset.getNamedModel(depositPid.getRepositoryPath());
 
             Bag depositBag = model.getBag(depositPid.getRepositoryPath());
 

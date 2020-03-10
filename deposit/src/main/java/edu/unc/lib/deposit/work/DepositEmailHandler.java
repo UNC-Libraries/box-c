@@ -261,7 +261,7 @@ public class DepositEmailHandler {
 
             String uri = depositPID.getURI();
             this.dataset.begin(ReadWrite.READ);
-            Model model = this.dataset.getNamedModel(uri).begin();
+            Model model = this.dataset.getNamedModel(uri);
 
             String depositPid = depositPID.getURI();
             Bag depositBag = model.getBag(depositPid);
