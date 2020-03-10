@@ -164,8 +164,13 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					if (data.container) {
 						var $publicLink = $("#public_ui_link");
 						var baseHref = $publicLink.data("base-href");
-						var show_record_text = data.container.id === "collections" ? "" : "record";
-						$publicLink.attr("href", baseHref + show_record_text + "/" + data.container.id);
+						var public_link_path;
+						if (data.container.id === "collections") {
+							public_link_path = data.container.id;
+						} else {
+							public_link_path = "record" + "/" + data.container.id;
+						}
+						$publicLink.attr("href", baseHref + public_link_path);
 					}
 					
 					$("#result_loading_icon").addClass("hidden");

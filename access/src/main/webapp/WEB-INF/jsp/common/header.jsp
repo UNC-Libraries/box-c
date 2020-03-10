@@ -40,23 +40,11 @@
             </div>
             <div id="navbar" class="menu navbar-menu">
                 <div class="navbar-start">
-                    <a href="${pageContext.request.contextPath}/" class="navbar-item">Home</a>
                     <a href="collections" class="navbar-item">Browse Collections</a>
                     <a href="aboutRepository" class="navbar-item">What's Here?</a>
                     <a href="${contactUrl}" class="navbar-item">Contact Us</a>
                     <c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
-                        <c:choose>
-                            <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-                                <c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
-                            </c:when>
-                            <c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
-                                <c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
-                            </c:when>
-                            <c:when test="${not empty briefObject}">
-                                <c:set var="jumpToAdmin" value="list/${briefObject.id}" />
-                            </c:when>
-                        </c:choose>
-                        <a href="${adminBaseUrl}/${jumpToAdmin}" class="navbar-item" target="_blank">Admin</a>
+                        <a href="${adminBaseUrl}" class="navbar-item" target="_blank">Admin</a>
                     </c:if>
                 </div>
                 <div class="navbar-end">
