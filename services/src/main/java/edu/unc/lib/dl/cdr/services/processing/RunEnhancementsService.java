@@ -21,7 +21,6 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
-import edu.unc.lib.dl.model.DatastreamPids;
 import io.dropwizard.metrics5.Timer;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -39,7 +38,13 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.search.solr.model.*;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.services.AbstractMessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 

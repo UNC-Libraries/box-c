@@ -15,7 +15,25 @@
  */
 package edu.unc.lib.dl.acl.util;
 
-import static edu.unc.lib.dl.acl.util.Permission.*;
+import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
+import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
+import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
+import static edu.unc.lib.dl.acl.util.Permission.createAdminUnit;
+import static edu.unc.lib.dl.acl.util.Permission.createCollection;
+import static edu.unc.lib.dl.acl.util.Permission.destroy;
+import static edu.unc.lib.dl.acl.util.Permission.destroyUnit;
+import static edu.unc.lib.dl.acl.util.Permission.editDescription;
+import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
+import static edu.unc.lib.dl.acl.util.Permission.ingest;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
+import static edu.unc.lib.dl.acl.util.Permission.move;
+import static edu.unc.lib.dl.acl.util.Permission.reindex;
+import static edu.unc.lib.dl.acl.util.Permission.runEnhancements;
+import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
+import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
+import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
+import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
