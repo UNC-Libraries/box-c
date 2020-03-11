@@ -78,7 +78,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				navigationBar : navigationBar,
 				containerPath : containerPath,
 				queryMethod : data.queryMethod,
-				icon : ResourceTypeUtilities.getIconNameForType(container.type)
+				icon : container ? ResourceTypeUtilities.getIconNameForType(container.type) : null
 			});
 			
 			var headerHeightClass = self.options.headerHeightClass;
