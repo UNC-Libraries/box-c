@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -37,6 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -50,6 +52,7 @@ public class EditTitleService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private UpdateDescriptionService updateDescriptionService;
+    private OperationsMessageSender operationsMessageSender;
 
     private static final Timer timer = TimerFactory.createTimerForClass(EditTitleService.class);
 
@@ -106,6 +109,10 @@ public class EditTitleService {
         } catch (IOException e) {
             throw new ServiceException("Unable to build new mods stream for " + pid, e);
         }
+
+        // Send message that the action completed
+        operationsMessageSender.sendUpdateDescriptionOperation(
+                agent.getUsername(), Arrays.asList(pid));
     }
 
     /**
@@ -175,5 +182,12 @@ public class EditTitleService {
      */
     public void setUpdateDescriptionService(UpdateDescriptionService updateDescriptionService) {
         this.updateDescriptionService = updateDescriptionService;
+    }
+
+    /**
+     * @param operationsMessageSender
+     */
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
     }
 }
