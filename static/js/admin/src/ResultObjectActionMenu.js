@@ -114,6 +114,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
 		}
+    items["viewEventLog"] = {name : "View Event Log"};
 		
 		// Modification options
 		items["sepedit"] = "";
@@ -234,6 +235,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 								application : "access"
 							});
 						}
+						break;
+					case "viewEventLog" :
+						self.actionHandler.addEvent({
+							action : 'ChangeLocation',
+							url : "api/file/" + metadata.id + "/event_log",
+							newWindow : true,
+							application : "services"
+						});
 						break;
 					case "openContainer" :
 						self.actionHandler.addEvent({

@@ -43,6 +43,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
@@ -87,6 +88,8 @@ public class DatastreamController {
         try {
             if (isDerivative(datastream)) {
                 derivativeContentService.streamData(pid, datastream, principals, false, response);
+            } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
+                fedoraContentService.streamEventLog(pid, principals, download, response);
             } else {
                 fedoraContentService.streamData(pid, datastream, principals, download, response);
                 recordDownloadEvent(pid, datastream, principals, request);

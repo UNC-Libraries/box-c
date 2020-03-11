@@ -20,12 +20,17 @@ import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.WebContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +38,10 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 
 /**
  * Streams binary content from repository objects.
@@ -97,6 +104,34 @@ public class FedoraContentService {
         // Stream binary content to http response
         OutputStream outStream = response.getOutputStream();
         IOUtils.copy(binObj.getBinaryStream(), outStream, BUFFER_SIZE);
+    }
+
+    public void streamEventLog(PID pid, AccessGroupSet principals, boolean asAttachment,
+            HttpServletResponse response) throws IOException {
+
+        DatastreamType dsType = DatastreamType.MD_EVENTS;
+        String datastream = dsType.getId();
+
+        accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
+                pid, principals, getPermissionForDatastream(datastream));
+
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+
+        String filename = pid.getId() + "_" + datastream + ".ttl";
+        if (asAttachment) {
+            response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        } else {
+            response.setHeader(CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+        }
+
+        // Stream the premis model out as turtle
+        response.setHeader(CONTENT_TYPE, WebContent.contentTypeTurtle);
+        Model premisModel = repoObj.getPremisLog().getEventsModel();
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            RDFDataMgr.write(bos, premisModel, RDFFormat.TURTLE);
+            response.setHeader(CONTENT_LENGTH, Integer.toString(bos.size()));
+            bos.writeTo(response.getOutputStream());
+        }
     }
 
     /**
