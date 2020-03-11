@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -110,6 +111,9 @@ public class EnhancementRouterIT {
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
+
+    @BeanInject(value = "binaryEnhancementProcessor")
+    private BinaryEnhancementProcessor binaryEnhancementProcessor;
 
     @Before
     public void init() throws Exception {

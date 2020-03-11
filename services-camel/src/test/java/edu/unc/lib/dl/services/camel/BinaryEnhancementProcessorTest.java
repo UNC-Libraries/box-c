@@ -15,32 +15,24 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -56,11 +48,8 @@ public class BinaryEnhancementProcessorTest {
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
-    private String binaryBase;
-    private PID binaryPid;
-
     private static final String RESC_ID = "de75d811-9e0f-4b1f-8631-2060ab3580cc";
-    private static final String RESC_URI = FEDORA_BASE + "content/de/75/d8/11/" + RESC_ID;
+    private static final String RESC_URI = FEDORA_BASE + "content/de/75/d8/11/" + RESC_ID + "/original_file";
 
     @Mock
     private Exchange exchange;
@@ -68,8 +57,6 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private Message message;
 
-    @Mock
-    private BinaryObject binaryObject;
 
     @Before
     public void init() throws Exception {
@@ -77,30 +64,54 @@ public class BinaryEnhancementProcessorTest {
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        binaryBase = tmpFolder.newFolder().getAbsolutePath();
-
         processor = new BinaryEnhancementProcessor();
 
         when(exchange.getIn()).thenReturn(message);
-        when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_ID);
-
-        binaryPid = PIDs.get(RESC_ID);
+        when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
     }
 
     @Test
-    public void updateHeaders() throws Exception {
+    public void testUpdateHeadersText() throws Exception {
+        setMessageBody("text/plain");
+
         processor.process(exchange);
 
-        verify(message).setHeader(FCREPO_URI, "");
-        verify(message).setHeader(CdrBinaryMimeType, "");
+        verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(CdrBinaryMimeType, "text/plain");
         verify(message).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
     }
 
-    private void setMessageBody(Model model) throws Exception {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
-            when(message.getBody(eq(InputStream.class)))
-                    .thenReturn(new ByteArrayInputStream(bos.toByteArray()));
-        }
+    @Test
+    public void testUpdateHeadersImage() throws Exception {
+        setMessageBody("image/png");
+
+        processor.process(exchange);
+
+        verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(CdrBinaryMimeType, "image/png");
+        verify(message).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+    }
+
+    @Test
+    public void testExistingUriHeader() throws Exception {
+        when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
+        setMessageBody("image/png");
+
+        processor.process(exchange);
+
+        verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
+        verify(message, never()).setHeader(CdrBinaryMimeType, "image/png");
+        verify(message, never()).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+    }
+
+    private void setMessageBody(String mimeType) {
+        Document msg = new Document();
+        Element entry = new Element("entry", ATOM_NS);
+        entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
+        entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
+
+        msg.addContent(entry);
+
+        when(message.getBody()).thenReturn(msg);
     }
 }
