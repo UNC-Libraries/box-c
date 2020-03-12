@@ -222,7 +222,7 @@ public class Premis {
     public static final Resource Dissemination = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/dis");
 
-    public static final Resource EventRelatedAgentRole = createResource(
+    public static final Resource Execution = createResource(
             "http://id.loc.gov/vocabulary/preservation/eventType/exe");
 
     public static final Resource FilenameChange = createResource(
@@ -258,4 +258,12 @@ public class Premis {
             "http://id.loc.gov/vocabulary/preservation/eventType/ipc");
 
     public static final Resource Event = createResource("http://www.loc.gov/premis/rdf/v1#Event");
+
+    public static final Property note = createProperty("http://www.loc.gov/premis/rdf/v3/note");
+
+    public static final Property outcome = createProperty("http://www.loc.gov/premis/rdf/v3/outcome");
+
+    public static final Resource Fail = createResource("http://id.loc.gov/vocabulary/preservation/eventOutcome/fai");
+
+    public static final Resource Success = createResource("http://id.loc.gov/vocabulary/preservation/eventOutcome/suc");
 }

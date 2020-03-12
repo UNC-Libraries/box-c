@@ -31,6 +31,8 @@ import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -44,6 +46,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -102,9 +105,12 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model logModel = logger.getEventsModel();
         Resource logEventResc = logModel.getResource(eventResc.getURI());
 
-        assertTrue("Must contain premis:hasEvent references from obj to event",
-                logModel.contains(parentObject.getResource(), Premis.hasEvent, logEventResc));
-        assertTrue(logEventResc.hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue("Must contain prov:used references from obj to event",
+                logModel.contains(logEventResc, Prov.used, parentObject.getResource()));
+        assertTrue(logEventResc.hasProperty(RDF.type, Premis.VirusCheck));
+
+        Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
     }
 
     @Test
@@ -136,15 +142,19 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
         Resource logEvent3Resc = logModel.getResource(event3Resc.getURI());
 
-        assertTrue(logEvent1Resc.hasProperty(Premis.hasEventType, Premis.VirusCheck));
-        assertTrue(logEvent2Resc.hasProperty(Premis.hasEventType, Premis.Ingestion));
-        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(Premis.hasEventDateTime).getString());
-        assertTrue(logEvent3Resc.hasProperty(Premis.hasEventType, Premis.MessageDigestCalculation));
+        assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+        assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
+        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
+        assertTrue(logEvent3Resc.hasProperty(RDF.type, Premis.MessageDigestCalculation));
 
         // Verify that hasEvent relations are present
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent1Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent2Resc));
-        assertTrue(logModel.contains(parentObject.getResource(), Premis.hasEvent, logEvent3Resc));
+        Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
+        assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
+        assertTrue(logModel.contains(logEvent1Resc, Prov.used, objResc));
+        assertTrue(logModel.contains(logEvent2Resc, Prov.generated, objResc));
+        assertTrue(logModel.contains(logEvent3Resc, Prov.used, objResc));
+
+        retrieveLogger.close();
     }
 
     @Test

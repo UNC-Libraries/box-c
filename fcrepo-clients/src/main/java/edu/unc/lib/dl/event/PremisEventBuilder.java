@@ -28,13 +28,15 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -44,18 +46,17 @@ import edu.unc.lib.dl.util.DateTimeUtil;
  *
  */
 public class PremisEventBuilder {
-    private static final Logger log = LoggerFactory.getLogger(PremisEventBuilder.class);
 
     private PID eventPid;
     private Model model;
     private PremisLogger premisLogger;
     private Resource premisObjResc;
 
-    public PremisEventBuilder(PID eventPid, Resource eventType, Date date,
+    public PremisEventBuilder(PID eventSubject, PID eventPid, Resource eventType, Date date,
             PremisLogger premisLogger) {
         this.eventPid = eventPid;
         this.premisLogger = premisLogger;
-        addEvent(eventType, date);
+        addEvent(eventSubject, eventType, date);
     }
 
     /**
@@ -65,12 +66,19 @@ public class PremisEventBuilder {
      * @param date
      * @return
      */
-    private PremisEventBuilder addEvent(Resource eventType, Date date) {
+    private PremisEventBuilder addEvent(PID eventSubject, Resource eventType, Date date) {
         Resource premisObjResc = getResource();
 
-        premisObjResc.addProperty(RDF.type, Premis.Event);
-        premisObjResc.addProperty(Premis.hasEventType, eventType);
-        premisObjResc.addProperty(Premis.hasEventDateTime,
+        Model logModel = getModel();
+        Resource eventSubjectResc = logModel.getResource(eventSubject.getRepositoryPath());
+        if (Premis.Ingestion.equals(eventType)
+                || Premis.Creation.equals(eventType)) {
+            premisObjResc.addProperty(Prov.generated, eventSubjectResc);
+        } else {
+            premisObjResc.addProperty(Prov.used, eventSubjectResc);
+        }
+        premisObjResc.addProperty(RDF.type, eventType);
+        premisObjResc.addProperty(DCTerms.date,
                 DateTimeUtil.formatDateToUTC(date), XSDDatatype.XSDdateTime);
 
         return this;
@@ -91,28 +99,21 @@ public class PremisEventBuilder {
             message = MessageFormat.format(message, args);
         }
         Resource premisObjResc = getResource();
-        premisObjResc.addProperty(Premis.hasEventDetail, message);
+        premisObjResc.addProperty(Premis.note, message);
 
         return this;
     }
 
     /**
-     * Add an event detail outcome note property to this event
+     * Add an event outcome property
      *
-     * @param detailNote
-     *            The message for this outcome detail
-     * @param args
-     *            Optional parameters that should be formatted into the message,
-     *            using String.format syntax.
+     * @param success if true, the outcome will be Success, otherwise Fail
      * @return this event builder
      */
-    public PremisEventBuilder addEventDetailOutcomeNote(String detailNote, Object... args) {
-        if (args != null) {
-            detailNote = MessageFormat.format(detailNote, args);
-        }
-
+    public PremisEventBuilder addOutcome(boolean success) {
         Resource premisObjResc = getResource();
-        premisObjResc.addProperty(Premis.hasEventOutcomeDetailNote, detailNote);
+        premisObjResc.addProperty(Premis.outcome, success ?
+                Premis.Success : Premis.Fail);
 
         return this;
     }
@@ -165,26 +166,6 @@ public class PremisEventBuilder {
     }
 
     /**
-     * Add details describing the creation of a derivative datastream
-     *
-     * @param sourceDataStream
-     *            The identifier of source datastream
-     * @param destDataStream
-     *            The identifier of the datastream derived from the source.
-     * @return this event builder
-     */
-    public PremisEventBuilder addDerivative(String sourceDataStream, String destDataStream) {
-        Resource premisObjResc = getResource();
-
-        premisObjResc.addProperty(Premis.hasAgentName, sourceDataStream);
-        premisObjResc.addProperty(Premis.hasAgentType, "Source Data");
-        premisObjResc.addProperty(Premis.hasAgentName, destDataStream);
-        premisObjResc.addProperty(Premis.hasAgentType, "Derived Data");
-
-        return this;
-    }
-
-    /**
      * Add an agent to this event
      *
      * @param role
@@ -197,8 +178,13 @@ public class PremisEventBuilder {
         Resource premisObjResc = getResource();
         Resource linkingAgentInfo = model.createResource(eventPid.getRepositoryPath() + agentId);
 
-        linkingAgentInfo.addProperty(Premis.hasAgentType, type);
-        linkingAgentInfo.addProperty(Premis.hasAgentName, name);
+        linkingAgentInfo.addProperty(RDF.type, type);
+        if (PremisAgentType.Person.equals(type) || PremisAgentType.Organization.equals(type)) {
+            linkingAgentInfo.addProperty(FOAF.name, name);
+        } else {
+            linkingAgentInfo.addProperty(Rdf.label, name);
+        }
+
         premisObjResc.addProperty(role, linkingAgentInfo);
 
         return this;

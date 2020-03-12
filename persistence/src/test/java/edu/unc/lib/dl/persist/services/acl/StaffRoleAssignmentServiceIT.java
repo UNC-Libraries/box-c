@@ -46,6 +46,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,6 +84,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -507,13 +510,14 @@ public class StaffRoleAssignmentServiceIT {
     private String assertEventCreatedAndGetDetail(ContentObject repoObj) {
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
-        Resource eventResc = objResc.getPropertyResourceValue(Premis.hasEvent);
+        List<Resource> eventRescs = eventsModel.listResourcesWithProperty(Prov.used, objResc).toList();
+        Resource eventResc = eventRescs.get(0);
         assertTrue("Event type was not set",
-                eventResc.hasProperty(Premis.hasEventType, Premis.PolicyAssignment));
+                eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
         assertTrue("Event agent was not set",
-                agentResc.hasLiteral(Premis.hasAgentName, USER_NAMESPACE + USER_PRINC));
-        String eventDetail = eventResc.getProperty(Premis.hasEventDetail).getString();
+                agentResc.hasLiteral(FOAF.name, USER_NAMESPACE + USER_PRINC));
+        String eventDetail = eventResc.getProperty(Premis.note).getString();
         assertThat(eventDetail, containsString("Staff roles for item set to:"));
         return eventDetail;
     }

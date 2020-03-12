@@ -18,6 +18,8 @@ package edu.unc.lib.dcr.migration.premis;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -25,6 +27,8 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jgroups.util.UUID;
 import org.junit.Before;
@@ -70,17 +74,17 @@ public abstract class AbstractPremisToRdfTransformerTest {
     }
 
     protected Resource getResourceByEventDate(List<Resource> rescs, String eventDate) {
-        return rescs.stream().filter(r -> eventDate.equals(r.getProperty(Premis.hasEventDateTime).getString()))
+        return rescs.stream().filter(r -> eventDate.equals(r.getProperty(DCTerms.date).getString()))
                 .findFirst().get();
     }
 
     protected void assertEventType(Resource expectedType, Resource eventResc) {
         assertEquals("Event type did not match expected value",
-                expectedType, eventResc.getPropertyResourceValue(Premis.hasEventType));
+                expectedType, eventResc.getPropertyResourceValue(RDF.type));
     }
 
     protected void assertEventDetail(String expected, Resource eventResc) {
-        List<String> details = eventResc.listProperties(Premis.hasEventDetail).toList().stream()
+        List<String> details = eventResc.listProperties(Premis.note).toList().stream()
                 .map(Statement::getString).collect(toList());
         if (details.contains(expected)) {
             return;
@@ -91,6 +95,21 @@ public abstract class AbstractPremisToRdfTransformerTest {
 
     protected void assertEventDateTime(String expected, Resource eventResc) {
         assertEquals("Event date time did not match expected value",
-                expected, eventResc.getProperty(Premis.hasEventDateTime).getString());
+                expected, eventResc.getProperty(DCTerms.date).getString());
+    }
+
+    protected void assertEventOutcomeSuccess(Resource eventResc) {
+        assertTrue("Expected event outcome to be Success",
+                eventResc.hasProperty(Premis.outcome, Premis.Success));
+    }
+
+    protected void assertEventOutcomeFail(Resource eventResc) {
+        assertTrue("Expected event outcome to be Fail",
+                eventResc.hasProperty(Premis.outcome, Premis.Fail));
+    }
+
+    protected void assertNoEventOutcome(Resource eventResc) {
+        assertFalse("Expected event to have no outcome status",
+                eventResc.hasProperty(Premis.outcome));
     }
 }

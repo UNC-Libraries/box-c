@@ -112,6 +112,26 @@ public abstract class AbstractPremisToRdfTransformer extends RecursiveAction imp
         return outcomeDetailEl.getChildTextTrim("eventOutcomeDetailNote", PREMIS_V2_NS);
     }
 
+    protected Boolean getEventOutcome(Element eventEl) {
+        Element infoEl = eventEl.getChild("eventOutcomeInformation", PREMIS_V2_NS);
+        if (infoEl == null) {
+            return null;
+        }
+        Element outcomeEl = infoEl.getChild("eventOutcome", PREMIS_V2_NS);
+        if (outcomeEl == null) {
+            return null;
+        }
+
+        String outcomeText = outcomeEl.getTextTrim();
+        if ("success".equalsIgnoreCase(outcomeText) ) {
+            return true;
+        } else if ("failed".equalsIgnoreCase(outcomeText) || "fail".equalsIgnoreCase(outcomeText)) {
+            return false;
+        } else {
+            return null;
+        }
+    }
+
     protected PID getEventPid(Element eventEl) {
         String idVal = eventEl.getChild("eventIdentifier", PREMIS_V2_NS)
                 .getChildTextTrim("eventIdentifierValue", PREMIS_V2_NS);
@@ -135,6 +155,12 @@ public abstract class AbstractPremisToRdfTransformer extends RecursiveAction imp
     protected PremisEventBuilder createEventBuilder(Resource eventTypeResc, Element eventEl) {
         Date dateTime = getEventDateTime(eventEl);
         PID eventPid = getEventPid(eventEl);
-        return premisLogger.buildEvent(eventPid, eventTypeResc, dateTime);
+        Boolean outcome = getEventOutcome(eventEl);
+        PremisEventBuilder builder = premisLogger.buildEvent(eventPid, eventTypeResc, dateTime);
+        if (outcome != null) {
+            builder.addOutcome(outcome);
+        }
+
+        return builder;
     }
 }

@@ -868,7 +868,7 @@ public class ContentObjectTransformerTest {
 
         Resource eventResc = eventRescs.get(0);
         assertEquals("Event type did not match expected value",
-                Premis.VirusCheck, eventResc.getPropertyResourceValue(Premis.hasEventType));
+                Premis.VirusCheck, eventResc.getPropertyResourceValue(RDF.type));
     }
 
     private void addPatronAccess(Model bxc3Model, PID startingPid) {

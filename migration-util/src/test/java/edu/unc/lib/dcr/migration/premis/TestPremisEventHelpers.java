@@ -46,7 +46,7 @@ import org.jdom2.output.XMLOutputter;
 import org.jgroups.util.UUID;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -110,10 +110,15 @@ public class TestPremisEventHelpers {
     }
 
     public static void addEventOutcome(Element eventEl, String outcome, String note) {
-        eventEl.addContent(new Element("eventOutcomeInformation", PREMIS_V2_NS)
-                .addContent(new Element("eventOutcome", PREMIS_V2_NS).setText(outcome))
-                .addContent(new Element("eventOutcomeDetail", PREMIS_V2_NS)
-                        .addContent(new Element("eventOutcomeDetailNote", PREMIS_V2_NS).setText(note))));
+        Element outcomeInfoEl = new Element("eventOutcomeInformation", PREMIS_V2_NS);
+        if (note != null) {
+            outcomeInfoEl.addContent(new Element("eventOutcomeDetail", PREMIS_V2_NS)
+                    .addContent(new Element("eventOutcomeDetailNote", PREMIS_V2_NS).setText(note)));
+        }
+        if (outcome != null) {
+            outcomeInfoEl.addContent(new Element("eventOutcome", PREMIS_V2_NS).setText(outcome));
+        }
+        eventEl.addContent(outcomeInfoEl);
     }
 
     public static void addLinkingObject(Element eventEl, String idType, String idVal) {
@@ -135,9 +140,11 @@ public class TestPremisEventHelpers {
 
     public static List<Resource> listEventResources(PID pid, Model model) {
         Resource objResc = model.getResource(pid.getRepositoryPath());
+        List<Statement> used = model.listStatements(null, Prov.used, objResc).toList();
+        List<Statement> generated = model.listStatements(null, Prov.generated, objResc).toList();
 
-        return objResc.listProperties(Premis.hasEvent).toList().stream()
-                .map(Statement::getResource)
+        return Stream.concat(used.stream(), generated.stream())
+                .map(Statement::getSubject)
                 .collect(toList());
     }
 

@@ -29,6 +29,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,7 +64,7 @@ public class FilePremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(eventPid, eventType, date, this);
+        return new PremisEventBuilder(objectPid, eventPid, eventType, date, this);
     }
 
     /**
@@ -86,21 +87,22 @@ public class FilePremisLogger implements PremisLogger {
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
         Model logModel = getModel();
-        String pidString = objectPid.getRepositoryPath();
-        Resource objResc = logModel.getResource(pidString);
+        // For new logs, add in representation statement
+        if (!premisFile.exists()) {
+            Resource repoObjResc = logModel.getResource(objectPid.getRepositoryPath());
+            repoObjResc.addProperty(RDF.type, Premis.Representation);
+        }
+
         // Add the events to the model for this event log
         for (Resource eventResc: eventResources) {
-            objResc.addProperty(Premis.hasEvent, eventResc);
             logModel.add(eventResc.getModel());
         }
 
-        if (premisFile != null) {
-            // Persist the log to file
-            try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
-                RDFDataMgr.write(rdfFile, logModel, RDFFormat.NTRIPLES);
-            } catch (IOException e) {
-                throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
-            }
+        // Persist the log to file
+        try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
+            RDFDataMgr.write(rdfFile, logModel, RDFFormat.NTRIPLES);
+        } catch (IOException e) {
+            throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
         }
 
         return this;

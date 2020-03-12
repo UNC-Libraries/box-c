@@ -39,12 +39,14 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Rdf;
 
 /**
  * @author bbpennel
@@ -298,8 +300,8 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
 
     private void assertAgent(String agentName, Resource eventResc) {
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentExecutor);
-        assertEquals(PremisAgentType.Software, agentResc.getPropertyResourceValue(Premis.hasAgentType));
-        assertEquals(agentName, agentResc.getProperty(Premis.hasAgentName).getString());
+        assertEquals(PremisAgentType.Software, agentResc.getPropertyResourceValue(RDF.type));
+        assertEquals(agentName, agentResc.getProperty(Rdf.label).getString());
     }
 
     private void addInitiatorAgent(Element eventEl, String agent) {

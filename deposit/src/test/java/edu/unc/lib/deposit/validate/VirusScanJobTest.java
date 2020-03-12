@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.validate;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -110,6 +111,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         File examplesFile = new File("src/test/resources/examples");
         FileUtils.copyDirectory(examplesFile, depositDir);
+
+        when(premisEventBuilder.addOutcome(anyBoolean())).thenReturn(premisEventBuilder);
     }
 
     @Test
@@ -135,6 +138,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
         verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
         verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder, times(2)).addOutcome(true);
     }
 
     @Test
@@ -168,6 +172,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
             verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class));
             verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
+            verify(premisEventBuilder).addOutcome(true);
         }
     }
 

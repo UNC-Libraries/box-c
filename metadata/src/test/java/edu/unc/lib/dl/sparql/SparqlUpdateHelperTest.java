@@ -63,7 +63,7 @@ public class SparqlUpdateHelperTest {
         // Define a hash uri resource off of the main resource
         String hashUri = RESC_URI + "#event";
         Resource hashResc = insertModel.createResource(hashUri);
-        hashResc.addProperty(Premis.hasEventType, Premis.Capture);
+        hashResc.addProperty(RDF.type, Premis.Capture);
 
         // Build the update query
         String query = SparqlUpdateHelper.createSparqlInsert(insertModel);
@@ -83,7 +83,7 @@ public class SparqlUpdateHelperTest {
 
         // Make sure the hash uri got added too
         Resource destHash = destModel.getResource(hashUri);
-        assertTrue(destHash.hasProperty(Premis.hasEventType, Premis.Capture));
+        assertTrue(destHash.hasProperty(RDF.type, Premis.Capture));
     }
 
     @Test

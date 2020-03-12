@@ -261,7 +261,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         Model premisModel = createModel(IOUtils.toInputStream(response.getContentAsString(), UTF_8), "TURTLE");
         assertEquals("Response did not contain expected premis event",
-                1, premisModel.listStatements(null, RDF.type, Premis.Event).toList().size());
+                1, premisModel.listResourcesWithProperty(RDF.type, Premis.Creation).toList().size());
 
         assertTrue("Expected content length to be set", response.getContentLength() > 0);
     }

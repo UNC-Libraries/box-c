@@ -205,8 +205,8 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Folder));
 
         Model logModel = stoneFolder.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
-        assertTrue(logModel.contains(null, Premis.hasEventDetail,
+        assertTrue(logModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logModel.contains(null, Premis.note,
                 "Item deleted from repository and replaced by tombstone"));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
@@ -233,13 +233,13 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneFolder2.getModel().contains(stoneFolder2.getResource(), RDF.type, Cdr.Tombstone));
 
         Model logModel1 = stoneFolder1.getPremisLog().getEventsModel();
-        assertTrue(logModel1.contains(null, Premis.hasEventType, Premis.Deletion));
-        assertTrue(logModel1.contains(null, Premis.hasEventDetail,
+        assertTrue(logModel1.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logModel1.contains(null, Premis.note,
                 "Item deleted from repository and replaced by tombstone"));
 
         Model logModel2 = stoneFolder2.getPremisLog().getEventsModel();
-        assertTrue(logModel2.contains(null, Premis.hasEventType, Premis.Deletion));
-        assertTrue(logModel2.contains(null, Premis.hasEventDetail,
+        assertTrue(logModel2.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logModel2.contains(null, Premis.note,
                 "Item deleted from repository and replaced by tombstone"));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObj1Pid), eq(DELETE_SOLR_TREE));
@@ -277,8 +277,8 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
 
         Model logModel = stoneFile.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.hasEventType, Premis.Deletion));
-        assertTrue(logModel.contains(event, Premis.hasEventType, Premis.Ingestion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logModel.contains(event, RDF.type, Premis.Ingestion));
     }
 
     private List<PID> createContentTree() throws Exception {
