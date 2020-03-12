@@ -22,6 +22,7 @@
 	version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
 
 	<display-name>CDR Administrative Interface</display-name>
+	<absolute-ordering />
 
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
