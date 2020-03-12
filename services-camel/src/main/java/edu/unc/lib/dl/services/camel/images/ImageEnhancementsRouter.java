@@ -20,6 +20,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.SimpleUuidGenerator;
 
+import edu.unc.lib.dl.exceptions.RepositoryException;
+
 /**
  * Router which triggers the creation of thumbnails when applicable binaries
  * are written.
@@ -27,8 +29,6 @@ import org.apache.camel.impl.SimpleUuidGenerator;
  * @author lfarrell
  */
 public class ImageEnhancementsRouter extends RouteBuilder {
-
-    private static final String MIMETYPE_PATTERN = "^(image.*$|application.*?(photoshop|psd)$)";
 
     @BeanInject(value = "addSmallThumbnailProcessor")
     private AddDerivativeProcessor addSmallThumbnailProcessor;
@@ -46,9 +46,11 @@ public class ImageEnhancementsRouter extends RouteBuilder {
      */
     @Override
     public void configure() throws Exception {
+        ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
+
         uuidGenerator = new SimpleUuidGenerator();
 
-        onException(Exception.class)
+        onException(RepositoryException.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
             .backOffMultiplier("{{error.backOffMultiplier}}")
@@ -57,9 +59,10 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct-vm:process.enhancement.thumbnails")
             .routeId("ProcessThumbnails")
             .log(LoggingLevel.INFO, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
-            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+            .filter().method(imageDerivProcessor, "allowedImageType")
                 .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
+                .bean(imageDerivProcessor)
                 // Generate an random identifier to avoid derivative collisions
                 .bean(uuidGenerator)
                 .multicast()
@@ -67,29 +70,30 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 
         from("direct:small.thumbnail")
             .routeId("SmallThumbnail")
-            .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrBinaryPath]}")
+            .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrBinaryPath]} png 64 64 "
+                    + "${headers[CdrImagePath]} png 64 64 "
                     + "${properties:services.tempDirectory}/${body}-small"))
             .bean(addSmallThumbnailProcessor);
 
         from("direct:large.thumbnail")
             .routeId("LargeThumbnail")
-            .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrBinaryPath]}")
+            .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrBinaryPath]} png 128 128 "
+                    + "${headers[CdrImagePath]} png 128 128 "
                     + "${properties:services.tempDirectory}/${body}-large"))
             .bean(addLargeThumbProcessor);
 
         from("direct-vm:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
             .log(LoggingLevel.DEBUG, "Access copy triggered")
-            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
-                .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
+            .filter().method(imageDerivProcessor, "allowedImageType")
+                .bean(imageDerivProcessor)
+                .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
                 // Generate an random identifier to avoid derivative collisions
                 .bean(uuidGenerator)
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                        + "${headers[CdrBinaryPath]} jp2 "
+                        + "${headers[CdrImagePath]} jp2 "
                         + "${properties:services.tempDirectory}/${body}-access"))
                 .bean(addAccessCopyProcessor);
     }

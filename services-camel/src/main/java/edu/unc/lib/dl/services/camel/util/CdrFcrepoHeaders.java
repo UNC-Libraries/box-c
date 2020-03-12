@@ -30,6 +30,9 @@ public abstract class CdrFcrepoHeaders {
     // URI identifying the location of content for a binary
     public static final String CdrBinaryPath = "CdrBinaryPath";
 
+    // URI identifying the location
+    public static final String CdrImagePath = "CdrImagePath";
+
     public static final String CdrUpdateAction = "CdrUpdateAction";
 
     public static final String CdrEnhancementSet = "CdrEnhancementSet";

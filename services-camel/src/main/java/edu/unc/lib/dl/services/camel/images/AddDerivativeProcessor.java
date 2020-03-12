@@ -59,6 +59,7 @@ public class AddDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
+
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryId = PIDs.get(binaryUri).getId();
@@ -66,14 +67,31 @@ public class AddDerivativeProcessor implements Processor {
 
         final ExecResult result = (ExecResult) in.getBody();
 
-        // Read command result as path to derived file, and trim off trailing whitespace
-        String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
-        derivativeTmpPath += "." + fileExtension;
+        try {
+            // Prevent further processing if the execution failed
+            if (result.getExitValue() != 0) {
+                String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
+                String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
+                log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
+                return;
+            }
 
-        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
+            // Read command result as path to derived file, and trim off trailing whitespace
+            String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
+            derivativeTmpPath += "." + fileExtension;
 
-        moveFile(derivativeTmpPath, derivativeFinalPath);
-        log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
+            Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
+
+            moveFile(derivativeTmpPath, derivativeFinalPath);
+            log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
+        } catch (IOException e) {
+            String stderr = "";
+            if (result != null && result.getStderr() != null) {
+                stderr = IOUtils.toString(result.getStderr(), UTF_8).trim();
+            }
+            log.error("Failed to generated derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
+            throw e;
+        }
     }
 
     private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)
