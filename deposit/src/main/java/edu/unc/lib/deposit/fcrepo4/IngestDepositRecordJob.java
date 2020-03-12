@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -88,14 +89,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         Resource aipObjResc = makeDepositRecord(deposit, status);
         Model aipModel = aipObjResc.getModel();
 
-        // Add ingestion event to PREMIS log
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        premisDepositLogger.buildEvent(Premis.Ingestion)
-                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
-                        aipObjResc.getProperty(DcElements.title).getObject().toString())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .addAuthorizingAgent(DepositField.depositorName.name())
-                .write();
+        addIngestionEvent(aipObjResc, status);
 
         logTransferSession = getTransferSession(dModel);
 
@@ -161,6 +155,30 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         }
 
         return aipObjResc;
+    }
+
+    // Add ingestion event to PREMIS log
+    private void addIngestionEvent(Resource aipObjResc, Map<String, String> status) {
+        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+        PremisEventBuilder eventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion)
+                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
+                        aipObjResc.getProperty(DcElements.title).getObject().toString())
+                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(status.get(DepositField.depositorName.name()));
+
+        // Add in deposit format if present
+        String depositFormat = null;
+        String depositPackageType = status.get(DepositField.packagingType.name());
+        if (depositPackageType != null) {
+            depositFormat = depositPackageType;
+            String depositPackageProfile = status.get(DepositField.packageProfile.name());
+            if (depositPackageProfile != null) {
+                depositFormat += " with profile " + depositPackageProfile;
+            }
+            eventBuilder.addEventDetail("ingested as format: {0}", depositFormat);
+        }
+
+        eventBuilder.write();
     }
 
     private void addPremisEvents(RepositoryObject obj) {

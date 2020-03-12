@@ -38,6 +38,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
@@ -70,6 +71,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -85,6 +87,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private static final String INGESTOR_PRINC = "ingestor";
+    private static final String DEPOSITOR_NAME = "boxy_depositor";
 
     private IngestContentObjectsJob job;
 
@@ -153,6 +156,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource depositResc = model.getResource(depositPid.getRepositoryPath());
         depositResc.addProperty(Cdr.storageLocation, LOC1_ID);
         job.closeModel();
+
+        depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
     }
 
     private void setupDestination() throws Exception {
@@ -223,8 +228,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals("Folder title was not correctly set", label, title);
         // Verify that ingestion event gets added for folder
         Model logModel = folder.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, Premis.note,
-                "ingested as PID: " + folder.getPid().getQualifiedId()));
+        Resource eventResc = logModel.listResourcesWithProperty(Prov.generated).toList().get(0);
+        assertTrue("Ingestion event did not have expected note",
+                eventResc.hasProperty(Premis.note, "ingested as PID: " + folder.getPid().getQualifiedId()));
+        Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
+        assertTrue("Authorizing agent name missing from ingestion event",
+                authAgent.hasProperty(FOAF.name, DEPOSITOR_NAME));
 
         assertClickCount(1);
         ingestedObjectsCount(1);
@@ -291,6 +300,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 "ingested as PID: " + mWork.getPid().getQualifiedId()));
         assertTrue(workLogModel.contains(null, Premis.note,
                 "added 2 child objects to this container"));
+        List<Resource> eventRescs = workLogModel.listResourcesWithProperty(Prov.generated).toList();
+        for (Resource eventResc: eventRescs) {
+            Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
+            assertTrue("Authorizing agent name missing from ingestion event",
+                    authAgent.hasProperty(FOAF.name, DEPOSITOR_NAME));
+        }
 
         // Verify that ingestion event gets added for primary object
         Model primLogModel = primaryObj.getPremisLog().getEventsModel();
@@ -625,6 +640,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue(logModel.contains(null, RDF.type, Premis.VirusCheck));
 
         assertLinksToDepositRecord(folder);
+
+        premisLogger.close();
     }
 
     @Test

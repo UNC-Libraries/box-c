@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -32,6 +33,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,13 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.rdf.Rdf;
+import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -51,6 +61,8 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
+
+    private static final String DEPOSITOR_NAME = "boxy_depositor";
 
     private static final String MANIFEST_BODY1 = "Manifested";
     private static final String MANIFEST_BODY2 = "Things";
@@ -92,6 +104,10 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void depositWithManifests() throws Exception {
+        depositStatusFactory.set(depositUUID, DepositField.packagingType, PackagingType.BAGIT.getUri());
+        depositStatusFactory.set(depositUUID, DepositField.packageProfile, "no profile");
+        depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
+
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
         URI manifestUri1 = Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toUri();
@@ -117,6 +133,27 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
 
         assertEquals(MANIFEST_BODY1, IOUtils.toString(manifest1Binary.getBinaryStream(), UTF_8));
         assertEquals(MANIFEST_BODY2, IOUtils.toString(manifest2Binary.getBinaryStream(), UTF_8));
+
+        // Verify that the ingestion event was created
+        Model premisModel = record.getPremisLog().getEventsModel();
+        List<Resource> eventRescs = premisModel.listResourcesWithProperty(Prov.generated).toList();
+        assertEquals(1, eventRescs.size());
+        Resource ingestEvent = eventRescs.get(0);
+        assertTrue(ingestEvent.hasProperty(RDF.type, Premis.Ingestion));
+        assertTrue(ingestEvent.hasLiteral(Premis.note, "ingested as format: "
+                + PackagingType.BAGIT.getUri() + " with profile no profile"));
+
+        Resource execAgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
+        assertTrue("Executing agent did not have software type",
+                execAgent.hasProperty(RDF.type, PremisAgentType.Software));
+        assertTrue("Executing agent did not have name",
+                execAgent.hasLiteral(Rdf.label, SoftwareAgent.depositService.getFullname()));
+
+        Resource authgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource();
+        assertTrue("Authorizing agent did not have person type",
+                authgent.hasProperty(RDF.type, PremisAgentType.Person));
+        assertTrue("Authorizing agent did not have name",
+                authgent.hasLiteral(FOAF.name, DEPOSITOR_NAME));
     }
 
     private PID getPidBySuffix(List<PID> pids, String suffix) {
