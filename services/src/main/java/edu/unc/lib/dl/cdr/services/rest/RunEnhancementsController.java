@@ -17,12 +17,15 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.fedora.AuthorizationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +44,8 @@ import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService;
  */
 @Controller
 public class RunEnhancementsController {
+    private static final Logger log = LoggerFactory.getLogger(RunEnhancementsController.class);
+
     @Autowired
     private RunEnhancementsService enhService;
 
@@ -58,6 +63,12 @@ public class RunEnhancementsController {
             result.put("message", "Unable to run enhancements of " + data.getPids().size()
                     + " object(s) and their children");
             result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to run enhancements for {}", data.getPids().toString(), e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         result.put("timestamp", System.currentTimeMillis());

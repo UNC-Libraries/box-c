@@ -90,6 +90,7 @@ public class RunEnhancementsService extends AbstractMessageSender {
             }
         } catch (Exception e) {
             LOG.warn(e.getMessage());
+            throw e;
         }
     }
 
