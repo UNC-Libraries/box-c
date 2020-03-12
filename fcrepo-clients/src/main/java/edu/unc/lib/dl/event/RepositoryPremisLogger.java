@@ -40,6 +40,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -143,11 +144,15 @@ public class RepositoryPremisLogger implements PremisLogger {
                     new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
                     modelStream);
 
-            InputStream mergedStream = new SequenceInputStream(
-                    logObj.getBinaryStream(),
-                    newContentStream);
+            try (InputStream existingLogStream = logObj.getBinaryStream()) {
+                InputStream mergedStream = new SequenceInputStream(
+                        existingLogStream,
+                        newContentStream);
 
-            updateOrCreateLog(mergedStream);
+                updateOrCreateLog(mergedStream);
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to close log existing stream", e);
+            }
         }
 
         return this;

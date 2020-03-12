@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,7 +60,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
@@ -85,8 +85,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
-    @Autowired
-    private SearchStateFactory stateFactory;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
@@ -128,9 +126,11 @@ public class FullRecordController extends AbstractSolrSearchController {
             BinaryObject modsObj = contentObj.getDescription();
             if (modsObj != null) {
                 SAXBuilder builder = createSAXBuilder();
-                Document modsDoc = builder.build(modsObj.getBinaryStream());
+                try (InputStream modsStream = modsObj.getBinaryStream()) {
+                    Document modsDoc = builder.build(modsStream);
 
-                fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
+                    fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
+                }
             }
         } catch (NotFoundException e) {
             throw new InvalidRecordRequestException(e);

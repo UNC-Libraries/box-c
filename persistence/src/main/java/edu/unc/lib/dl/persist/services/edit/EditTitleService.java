@@ -77,21 +77,17 @@ public class EditTitleService {
             BinaryObject mods = obj.getDescription();
 
             Document newMods;
-            InputStream modsStream;
+
             if (mods != null) {
-                modsStream = mods.getBinaryStream();
-            } else {
-                modsStream = null;
-            }
+                try (InputStream modsStream = mods.getBinaryStream()) {
+                    Document document = createSAXBuilder().build(modsStream);
+                    Element rootEl = document.getRootElement();
 
-            if (modsStream != null) {
-                Document document = createSAXBuilder().build(modsStream);
-                Element rootEl = document.getRootElement();
-
-                if (hasExistingTitle(rootEl)) {
-                    newMods = updateTitle(document, title);
-                } else {
-                    newMods = addTitleToMODS(document, title);
+                    if (hasExistingTitle(rootEl)) {
+                        newMods = updateTitle(document, title);
+                    } else {
+                        newMods = addTitleToMODS(document, title);
+                    }
                 }
             } else {
                 Document document = new Document();

@@ -27,6 +27,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 
+import edu.unc.lib.dl.exceptions.RepositoryException;
+
 /**
  * Utility containing common methods for manipulating and transforming RDF
  * models
@@ -91,9 +93,13 @@ public class RDFModelUtil {
      * @return
      */
     public static Model createModel(InputStream inStream, String lang) {
-        Model model = ModelFactory.createDefaultModel();
-        model.read(inStream, null, lang);
-        return model;
+        try (InputStream stream = inStream) {
+            Model model = ModelFactory.createDefaultModel();
+            model.read(inStream, null, lang);
+            return model;
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to close model stream", e);
+        }
     }
 
 

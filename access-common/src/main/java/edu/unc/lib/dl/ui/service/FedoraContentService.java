@@ -22,6 +22,7 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
@@ -102,8 +103,10 @@ public class FedoraContentService {
         }
 
         // Stream binary content to http response
-        OutputStream outStream = response.getOutputStream();
-        IOUtils.copy(binObj.getBinaryStream(), outStream, BUFFER_SIZE);
+        try (InputStream binStream = binObj.getBinaryStream()) {
+            OutputStream outStream = response.getOutputStream();
+            IOUtils.copy(binStream, outStream, BUFFER_SIZE);
+        }
     }
 
     public void streamEventLog(PID pid, AccessGroupSet principals, boolean asAttachment,
