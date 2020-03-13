@@ -35,7 +35,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			}
 			
 			if (!workOrFile) {
-				items["ingestPackage"] = { name : "Add Ingest Package" }
+				// items["ingestPackage"] = { name : "Add Ingest Package" }
 				items["ingestSource"] = { name : "Add from File Server" }
 			}
 		}
