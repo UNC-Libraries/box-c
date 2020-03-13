@@ -105,11 +105,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
 
-        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
-        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
-
         BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setId(fileObj.getPid().toString());
         md.setTitle("Test Item");
         md.setDatastream(asList("original_file|image/png|small|png|3333||"));
 
