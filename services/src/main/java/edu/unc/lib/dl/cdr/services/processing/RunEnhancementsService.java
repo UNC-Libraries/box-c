@@ -19,14 +19,13 @@ import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
-import io.dropwizard.metrics5.Timer;
+import java.util.List;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -47,6 +46,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.services.AbstractMessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import edu.unc.lib.dl.util.ResourceType;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Queries solr and creates JMS message(s) to run enhancements on returned File objects
@@ -95,12 +95,12 @@ public class RunEnhancementsService extends AbstractMessageSender {
                     SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
                     for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
-                        createMessage(metadata, pid, agent.getUsername(), force);
+                        createMessage(metadata, agent.getUsername(), force);
                     }
                 } else {
                     SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
                     BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
-                    createMessage(metadata, pid, agent.getUsername(), force);
+                    createMessage(metadata, agent.getUsername(), force);
                 }
             }
         }
@@ -110,19 +110,17 @@ public class RunEnhancementsService extends AbstractMessageSender {
         this.aclService = aclService;
     }
 
-    private void createMessage(BriefObjectMetadata metadata, PID pid, String username, Boolean force) {
-        List<String> datastreams = metadata.getDatastream();
-
-        for (String id : datastreams) {
-            Datastream datastream = new Datastream(id);
-            String filePath = DatastreamPids.getOriginalFilePid(pid).toString();
-
-            if (datastream.getName().equals(ORIGINAL_FILE.getId())) {
-                Document msg = makeEnhancementOperationBody(username,
-                        filePath, datastream.getMimetype(), force);
-                sendMessage(msg);
-            }
+    private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
+        PID pid = metadata.getPid();
+        Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
+        if (originalDs == null) {
+            return;
         }
+
+        String filePath = DatastreamPids.getOriginalFilePid(pid).toString();
+        Document msg = makeEnhancementOperationBody(username,
+                filePath, originalDs.getMimetype(), force);
+        sendMessage(msg);
     }
 
     private Document makeEnhancementOperationBody(String userid, String filePath, String mimeType, Boolean force) {

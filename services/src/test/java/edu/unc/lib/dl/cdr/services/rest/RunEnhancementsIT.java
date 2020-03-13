@@ -21,12 +21,9 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -76,7 +73,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/acl-service-context.xml"),
         @ContextConfiguration("/run-enhancements-it-servlet.xml")
 })
 public class RunEnhancementsIT extends AbstractAPIIT {
@@ -93,6 +89,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Autowired
     private SolrQueryLayerService queryLayer;
 
+    private SearchResultResponse results;
+
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
@@ -105,17 +103,9 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
 
-        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setTitle("Test Item");
-        md.setDatastream(asList("original_file|image/png|small|png|3333||"));
-
         // Non file
-        SearchResultResponse results = mock(SearchResultResponse.class);
+        results = mock(SearchResultResponse.class);
         when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
-        when(results.getResultList()).thenReturn(Arrays.asList(md));
-
-        // File
-        when(queryLayer.getObjectById(any(SimpleIdRequest.class))).thenReturn(md);
 
         setupContentRoot();
     }
@@ -124,6 +114,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public void runEnhancementsFileObject() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        setResultMetadataObject(fileObj.getPid());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -140,7 +131,9 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNonFileObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
-        folderObj.addWork().addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        FileObject fileObj = folderObj.addWork()
+                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        setResultMetadataObject(fileObj.getPid());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -158,6 +151,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public void runEnhancementsNoAccess() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        setResultMetadataObject(fileObj.getPid());
 
         PID objPid = fileObj.getPid();
         doThrow(new AccessRestrictionException()).when(aclServices)
@@ -183,5 +177,15 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         File dataFile = tmpFolder.newFile();
         FileUtils.write(dataFile, content, "UTF-8");
         return dataFile.toPath().toUri();
+    }
+
+    private void setResultMetadataObject(PID pid) {
+        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
+        md.setId(pid.getId());
+        md.setDatastream(asList("original_file|image/png|small|png|3333||"));
+
+        when(results.getResultList()).thenReturn(Arrays.asList(md));
+
+        when(queryLayer.getObjectById(any(SimpleIdRequest.class))).thenReturn(md);
     }
 }
