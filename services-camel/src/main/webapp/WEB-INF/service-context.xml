@@ -167,12 +167,6 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="enhancementsUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.enhancement.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />

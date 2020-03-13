@@ -15,12 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -30,16 +29,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService;
 
 /**
- * @author bbpennel
+ * Receives list of PIDs to run enhancements on
+ * and runs service to create messages to kick off enhancement processing
+ *
  * @author lfarrell
  */
 @Controller
@@ -49,9 +49,8 @@ public class RunEnhancementsController {
     @Autowired
     private RunEnhancementsService enhService;
 
-    @RequestMapping(value = "runEnhancements", method = RequestMethod.POST, produces = "application/json")
-    public @ResponseBody ResponseEntity<Object> runEnhancements(@RequestBody RunEnhancementsRequest data,
-            HttpServletRequest request, HttpServletResponse response) {
+    @PostMapping(value = "runEnhancements", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<Object> runEnhancements(@RequestBody RunEnhancementsRequest data) {
         Map<String, Object> result = new HashMap<>();
 
         try {
@@ -63,10 +62,12 @@ public class RunEnhancementsController {
             result.put("message", "Unable to run enhancements of " + data.getPids().size()
                     + " object(s) and their children");
             result.put("error", e.getMessage());
+
+            log.error("Failed to run enhancements for {} {}", data.getPids().toString(), e.getMessage());
+
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
-                log.error("Failed to run enhancements for {}", data.getPids().toString(), e);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -76,10 +77,10 @@ public class RunEnhancementsController {
     }
 
     public static class RunEnhancementsRequest {
-        private ArrayList<HashMap> pids;
+        private List<String> pids;
         private boolean force;
 
-        public ArrayList<HashMap> getPids() {
+        public List<String> getPids() {
             return pids;
         }
 

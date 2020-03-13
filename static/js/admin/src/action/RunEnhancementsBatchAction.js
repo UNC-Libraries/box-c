@@ -47,7 +47,7 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 
 			var pids = [];
 			for (var index in self.targets) {
-				pids.push({ pid: self.targets[index].getPid(), objectType: self.targets[index].getMetadata().type });
+				pids.push(self.targets[index].getPid());
 			}
 			
 			$.ajax({

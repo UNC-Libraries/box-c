@@ -31,10 +31,13 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
+ * Sets headers related to identifying binary objects to run enhancement operations on
+ *
  * @author lfarrell
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
+    public static final String FCREPO_RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
 
     @Override
     public void process(final Exchange exchange) throws Exception {
@@ -51,7 +54,7 @@ public class BinaryEnhancementProcessor implements Processor {
             log.info("Adding enhancement headers for " + pidValue);
             in.setHeader(FCREPO_URI, pidValue);
             in.setHeader(CdrBinaryMimeType, mimeType);
-            in.setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+            in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
         }
     }
 }

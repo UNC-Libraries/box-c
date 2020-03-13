@@ -15,9 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-/**
- * @author lfarrell
- */
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
@@ -28,14 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -45,9 +43,16 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.services.AbstractMessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.dl.util.ResourceType;
 
+/**
+ * Queries solr and creates JMS message(s) to run enhancements on returned File objects
+ *
+ * @author lfarrell
+ */
 public class RunEnhancementsService extends AbstractMessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(RunEnhancementsService.class);
     private static final Timer timer = TimerFactory.createTimerForClass(RunEnhancementsService.class);
@@ -55,26 +60,35 @@ public class RunEnhancementsService extends AbstractMessageSender {
     private AccessControlService aclService;
 
     @Autowired
-    protected SolrQueryLayerService queryLayer;
-    private Datastream recordInfo;
+    private RepositoryObjectLoader repositoryObjectLoader;
 
-    public void run(AgentPrincipals agent, ArrayList<HashMap> objectPids, Boolean force) {
+    @Autowired
+    protected SolrQueryLayerService queryLayer;
+
+    /**
+     * Service to take a list of pids to search for file objects and run enhancements on.
+     *
+     * @param agent security principals of the agent making request.
+     * @param objectPids List of pids to run enhancements on
+     * @param force whether enhancements should run if derivatives are already present
+     */
+    public void run(AgentPrincipals agent, List<String> objectPids, boolean force) {
         try (Timer.Context context = timer.time()) {
-            for (HashMap objectPid : objectPids) {
-                String uuid = (String) objectPid.get("pid");
-                PID pid = PIDs.get(uuid);
+            for (String objectPid : objectPids) {
+                PID pid = PIDs.get(objectPid);
 
                 aclService.assertHasAccess("User does not have permission to run enhancements",
                         pid, agent.getPrincipals(), Permission.runEnhancements);
 
-                LOG.debug("sending solr update message for {} of type {}", pid, "runEnhancements");
+                LOG.debug("sending solr update message for {} of type runEnhancements", pid);
 
-                String objectType = (String) objectPid.get("objectType");
+                if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
+                    SearchState searchState = new SearchState();
+                    searchState.getFacets().put(SearchFieldKeys.RESOURCE_TYPE.name(), ResourceType.File.name());
 
-                if (!objectType.equals("File")) {
                     SearchRequest searchRequest = new SearchRequest();
                     searchRequest.setAccessGroups(agent.getPrincipals());
-                    searchRequest.setSearchState(new SearchState());
+                    searchRequest.setSearchState(searchState);
                     searchRequest.setRootPid(pid);
                     searchRequest.setApplyCutoffs(false);
                     SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
@@ -83,14 +97,11 @@ public class RunEnhancementsService extends AbstractMessageSender {
                         createMessage(metadata, pid, agent.getUsername(), force);
                     }
                 } else {
-                    SimpleIdRequest searchRequest = new SimpleIdRequest(uuid, agent.getPrincipals());
+                    SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
                     BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
                     createMessage(metadata, pid, agent.getUsername(), force);
                 }
             }
-        } catch (Exception e) {
-            LOG.warn(e.getMessage());
-            throw e;
         }
     }
 
@@ -99,15 +110,15 @@ public class RunEnhancementsService extends AbstractMessageSender {
     }
 
     private void createMessage(BriefObjectMetadata metadata, PID pid, String username, Boolean force) {
-        List<String> ids = metadata.getDatastream();
+        List<String> datastreams = metadata.getDatastream();
 
-        for (String id : ids) {
-            recordInfo = new Datastream(id);
+        for (String id : datastreams) {
+            Datastream datastream = new Datastream(id);
             String filePath = DatastreamPids.getOriginalFilePid(pid).toString();
 
-            if (recordInfo.getName().equals("original_file")) {
+            if (datastream.getName().equals(ORIGINAL_FILE.getId())) {
                 Document msg = makeEnhancementOperationBody(username,
-                        filePath, recordInfo.getMimetype(), force);
+                        filePath, datastream.getMimetype(), force);
                 sendMessage(msg);
             }
         }
@@ -123,7 +134,7 @@ public class RunEnhancementsService extends AbstractMessageSender {
 
         if (force) {
             Element paramForce = new Element("force", CDR_MESSAGE_NS);
-            paramForce.setText("force");
+            paramForce.setText("true");
         }
         msg.addContent(entry);
 

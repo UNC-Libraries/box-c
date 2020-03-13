@@ -112,9 +112,6 @@ public class EnhancementRouterIT {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
-    @BeanInject(value = "binaryEnhancementProcessor")
-    private BinaryEnhancementProcessor binaryEnhancementProcessor;
-
     @Before
     public void init() throws Exception {
         initMocks(this);

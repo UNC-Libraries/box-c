@@ -57,7 +57,6 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private Message message;
 
-
     @Before
     public void init() throws Exception {
         initMocks(this);
