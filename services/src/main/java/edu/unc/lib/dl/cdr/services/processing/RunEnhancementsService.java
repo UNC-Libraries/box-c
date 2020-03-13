@@ -66,7 +66,8 @@ public class RunEnhancementsService extends AbstractMessageSender {
     protected SolrQueryLayerService queryLayer;
 
     /**
-     * Service to take a list of pids to search for file objects and run enhancements on.
+     * Service to take a list of pids searches for file objects which are in the list of pids
+     * or children of those objects and run enhancements on.
      *
      * @param agent security principals of the agent making request.
      * @param objectPids List of pids to run enhancements on

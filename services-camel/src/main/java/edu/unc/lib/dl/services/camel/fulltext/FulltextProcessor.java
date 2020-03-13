@@ -87,8 +87,7 @@ public class FulltextProcessor implements Processor {
             try {
                 Files.createDirectories(parentDir.toPath());
             } catch (IOException e) {
-                throw new IOException("Failed to create parent directories for " + derivativePath + "." +
-                        e.getMessage());
+                throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
             }
 
             FileUtils.write(derivative, text, UTF_8);

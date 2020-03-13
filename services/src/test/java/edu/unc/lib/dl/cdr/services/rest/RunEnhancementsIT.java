@@ -83,9 +83,6 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     private static final String BINARY_CONTENT = "binary content";
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
-    private static final String UUID_TEST = "c9876360-18f0-460e-bcbe-f626c26e851e";
-    private static final String UUID_TEST_2 = "b7876360-18f0-460e-bcbe-f626c26e851e";
-    private static final String UUID_TEST_3 = "b7876360-18f0-460e-bcbe-f626c26e8571";
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -108,9 +105,11 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
 
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
 
         BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setId(UUID_TEST);
+        md.setId(fileObj.getPid().toString());
         md.setTitle("Test Item");
         md.setDatastream(asList("original_file|image/png|small|png|3333||"));
 
@@ -127,12 +126,12 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsFileObject() throws Exception {
-        FileObject fileObj = repositoryObjectFactory.createFileObject(PIDs.get(UUID_TEST), null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + UUID_TEST + "\"]}")
+                .content("{\"force\":false,\"pids\":[\"" + fileObj.getPid().toString() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -144,12 +143,12 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsNonFileObject() throws Exception {
-        FolderObject folderObj = repositoryObjectFactory.createFolderObject(PIDs.get(UUID_TEST_2), null);
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
         folderObj.addWork().addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + UUID_TEST_2 + "\"]}")
+                .content("{\"force\":false,\"pids\":[\"" + folderObj.getPid().toString() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -161,7 +160,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsNoAccess() throws Exception {
-        FileObject fileObj = repositoryObjectFactory.createFileObject(PIDs.get(UUID_TEST_3), null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
 
         PID objPid = fileObj.getPid();
@@ -170,7 +169,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + UUID_TEST_3 + "\"]}")
+                .content("{\"force\":false,\"pids\":[\"" + objPid.toString() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andReturn();;
