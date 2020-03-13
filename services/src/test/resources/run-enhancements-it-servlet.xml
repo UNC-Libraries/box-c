@@ -47,10 +47,16 @@
     <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.search.solr.model.FacetFieldFactory" />
     </bean>
+    
+    <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.MessageSender"/>
+    </bean>
 
     <bean id="runEnhancementService" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService">
         <property name="aclService" ref="aclServices" />
-        <property name="jmsTemplate" ref="jmsTemplate"/>
+        <property name="messageSender" ref="messageSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="queryLayer" ref="queryLayer" />
     </bean>
 
     <bean id="aclServices" class="org.mockito.Mockito" factory-method="mock">

@@ -25,7 +25,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -43,7 +42,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.services.AbstractMessageSender;
+import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import edu.unc.lib.dl.util.ResourceType;
 import io.dropwizard.metrics5.Timer;
@@ -53,17 +52,17 @@ import io.dropwizard.metrics5.Timer;
  *
  * @author lfarrell
  */
-public class RunEnhancementsService extends AbstractMessageSender {
+public class RunEnhancementsService {
     private static final Logger LOG = LoggerFactory.getLogger(RunEnhancementsService.class);
     private static final Timer timer = TimerFactory.createTimerForClass(RunEnhancementsService.class);
 
     private AccessControlService aclService;
 
-    @Autowired
+    private MessageSender messageSender;
+
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @Autowired
-    protected SolrQueryLayerService queryLayer;
+    private SolrQueryLayerService queryLayer;
 
     /**
      * Service to take a list of pids searches for file objects which are in the list of pids
@@ -120,7 +119,7 @@ public class RunEnhancementsService extends AbstractMessageSender {
         String filePath = DatastreamPids.getOriginalFilePid(pid).toString();
         Document msg = makeEnhancementOperationBody(username,
                 filePath, originalDs.getMimetype(), force);
-        sendMessage(msg);
+        messageSender.sendMessage(msg);
     }
 
     private Document makeEnhancementOperationBody(String userid, String filePath, String mimeType, Boolean force) {
@@ -138,5 +137,17 @@ public class RunEnhancementsService extends AbstractMessageSender {
         msg.addContent(entry);
 
         return msg;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setQueryLayer(SolrQueryLayerService queryLayer) {
+        this.queryLayer = queryLayer;
+    }
+
+    public void setMessageSender(MessageSender messageSender) {
+        this.messageSender = messageSender;
     }
 }

@@ -236,10 +236,16 @@
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
+    
+    <bean id="runEnhancementMessageSender" class="edu.unc.lib.dl.services.MessageSender">
+        <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
+    </bean>
 
     <bean id="runEnhancementService" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService">
         <property name="aclService" ref="aclService" />
-        <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
+        <property name="messageSender" ref="runEnhancementMessageSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="queryLayer" ref="queryLayer" />
     </bean>
 
     <bean id="enhancementsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

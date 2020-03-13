@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.services.AbstractMessageSender;
+import edu.unc.lib.dl.services.MessageSender;
 
 /**
  * A service for performing import of bulk metadata updates
@@ -40,7 +40,7 @@ import edu.unc.lib.dl.services.AbstractMessageSender;
  * @author harring
  *
  */
-public class ImportXMLService extends AbstractMessageSender {
+public class ImportXMLService extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(ImportXMLService.class);
 
     private String dataDir;
