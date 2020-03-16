@@ -98,7 +98,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
 		var isContentRoot = metadata.type === 'ContentRoot';
-		
+
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
 		
@@ -182,15 +182,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				items["reindex"] = {name : 'Reindex'};
 			}
 			if (!isContentRoot && $.inArray('destroy', metadata.permissions) != -1) {
-				items["destroy"] = {name : 'Destroy', disabled :  !metadata.isDeleted};
+				items["destroy"] = {name : 'Destroy', disabled :  !resultObject.isDeleted};
 			}
 		}
 		
 		// Trash actions
 		if (!isContentRoot && ($.inArray('markForDeletionUnit', metadata.permissions) != -1 || ($.inArray('markForDeletion', metadata.permissions) != -1))) {
 			items["septrash"] = "";
-			items["restoreResult"] = {name : 'Restore', disabled : !metadata.isDeleted};
-			items["deleteResult"] = {name : 'Delete', disabled : metadata.isDeleted};
+			items["restoreResult"] = {name : 'Restore', disabled : !resultObject.isDeleted};
+			items["deleteResult"] = {name : 'Delete', disabled : resultObject.isDeleted};
 		}
 
 		// Set/Update permission actions
