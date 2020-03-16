@@ -51,7 +51,7 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 			}
 			
 			$.ajax({
-				url : "runEnhancements",
+				url : "/services/api/runEnhancements",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",

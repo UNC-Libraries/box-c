@@ -40,6 +40,7 @@ public enum Permission {
     changePatronAccess,
     assignStaffRoles,
     editResourceType,
+    runEnhancements,
     reindex;
 
     private Permission() {

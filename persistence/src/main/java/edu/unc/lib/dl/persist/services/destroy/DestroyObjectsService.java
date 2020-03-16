@@ -29,7 +29,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.AbstractMessageSender;
+import edu.unc.lib.dl.services.MessageSender;
 
 /**
  * Service that manages the destruction of objects in the repository and their replacement by tombstones
@@ -37,7 +37,7 @@ import edu.unc.lib.dl.services.AbstractMessageSender;
  * @author harring
  *
  */
-public class DestroyObjectsService extends AbstractMessageSender {
+public class DestroyObjectsService extends MessageSender {
 
     private static final Logger log = LoggerFactory.getLogger(DestroyObjectsService.class);
 

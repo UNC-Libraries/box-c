@@ -29,6 +29,7 @@ import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.acl.util.Permission.move;
 import static edu.unc.lib.dl.acl.util.Permission.reindex;
+import static edu.unc.lib.dl.acl.util.Permission.runEnhancements;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
@@ -84,7 +85,7 @@ public enum UserRole {
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
-            createAdminUnit, assignStaffRoles, reindex);
+            createAdminUnit, assignStaffRoles, runEnhancements, reindex);
 
     private URI uri;
     private String predicate;

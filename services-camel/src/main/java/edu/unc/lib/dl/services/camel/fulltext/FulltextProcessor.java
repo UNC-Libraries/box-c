@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -82,11 +83,15 @@ public class FulltextProcessor implements Processor {
         File parentDir = derivative.getParentFile();
 
         // Create missing parent directories if necessary
-        if (parentDir != null && !parentDir.mkdirs()) {
-            throw new IOException("Failed to create parent directories for " + derivativePath);
-        }
+        if (parentDir != null) {
+            try {
+                Files.createDirectories(parentDir.toPath());
+            } catch (IOException e) {
+                throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
+            }
 
-        FileUtils.write(derivative, text, UTF_8);
+            FileUtils.write(derivative, text, UTF_8);
+        }
     }
 
     private String extractText(String binaryPath) throws IOException, SAXException, TikaException {

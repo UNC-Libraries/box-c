@@ -27,6 +27,7 @@ import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.INFO;
 
+import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
@@ -44,6 +45,9 @@ public class EnhancementRouter extends RouteBuilder {
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
 
+    @BeanInject(value = "binaryEnhancementProcessor")
+    private BinaryEnhancementProcessor enProcessor;
+
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
@@ -55,11 +59,12 @@ public class EnhancementRouter extends RouteBuilder {
         from("direct-vm:enhancements.fedora")
             .routeId("QueueEnhancementsFromFedora")
             .log(INFO, "Queuing enhancements from Fedora message for ${headers[CamelFcrepoUri]}")
-            .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .to("{{cdr.enhancement.stream.camel}}");
 
         from("{{cdr.enhancement.stream.camel}}")
             .routeId("ProcessEnhancementQueue")
+            .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
+            .process(enProcessor)
             .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .multicast()

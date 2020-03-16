@@ -33,7 +33,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
  * @author harring
  *
  */
-public class IndexingMessageSender extends AbstractMessageSender {
+public class IndexingMessageSender extends MessageSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(IndexingMessageSender.class);
 

@@ -42,7 +42,7 @@ import edu.unc.lib.dl.util.ResourceType;
  * @author harring
  *
  */
-public class OperationsMessageSender extends AbstractMessageSender {
+public class OperationsMessageSender extends MessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
 
     /**

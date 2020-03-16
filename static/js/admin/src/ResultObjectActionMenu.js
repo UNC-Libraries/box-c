@@ -153,7 +153,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
 		}
 		*/
-		
+
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}

@@ -32,16 +32,16 @@ import org.springframework.jms.core.MessageCreator;
  * @author harring
  *
  */
-public abstract class AbstractMessageSender {
+public class MessageSender {
     protected JmsTemplate jmsTemplate;
 
-    protected void sendMessage(Document msg) {
+    public void sendMessage(Document msg) {
         XMLOutputter out = new XMLOutputter();
         final String msgStr = out.outputString(msg);
         sendMessage(msgStr);
     }
 
-    protected void sendMessage(String msgStr) {
+    public void sendMessage(String msgStr) {
         jmsTemplate.send(new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
