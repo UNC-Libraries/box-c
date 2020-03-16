@@ -121,15 +121,6 @@ a {
 .menu-row-small.navbar {
   box-shadow: none;
 
-  a {
-    color: white;
-
-    &:hover {
-      background-color: transparent;
-      color: #777777;
-    }
-  }
-
   button {
     border-radius: 0 5px 5px 0;
     height: 35px;

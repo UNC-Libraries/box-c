@@ -98,13 +98,6 @@ a {
 .menu-row-small.navbar {
   box-shadow: none;
 }
-.menu-row-small.navbar a {
-  color: white;
-}
-.menu-row-small.navbar a:hover {
-  background-color: transparent;
-  color: #777777;
-}
 .menu-row-small.navbar button {
   border-radius: 0 5px 5px 0;
   height: 35px;
