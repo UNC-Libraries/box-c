@@ -220,12 +220,13 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				var ds = this.metadata.datastream[dsIndex];
 				if (ds.indexOf(dsName + "|") == 0) {
 					var fields = ds.split("|");
+
 					return {
 						name : fields[0],
 						mimeType : fields[1],
-						extension : fields[2],
-						fileSize : fields[3],
-						checksum : fields[4],
+						extension : fields[3],
+						fileSize : fields[4],
+						checksum : fields[5],
 						defaultWebObject : fields.length > 5? fields[5] : null
 					};
 				}
