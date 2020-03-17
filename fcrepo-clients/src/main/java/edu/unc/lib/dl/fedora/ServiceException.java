@@ -15,11 +15,13 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import edu.unc.lib.dl.exceptions.RepositoryException;
+
 /**
  * @author Gregory Jansen
  *
  */
-public class ServiceException extends RuntimeException {
+public class ServiceException extends RepositoryException {
 
     public ServiceException(String message) {
         super(message);
