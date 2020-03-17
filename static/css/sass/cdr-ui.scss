@@ -449,15 +449,65 @@ $box-shadow-color: rgba(211,211,211,0.5);
 $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box-shadow-color;
 
 /* Items marked for deletion */
-.marked-delete {
+.thumbnail.deleted.placeholder  {
+  .thumbnail-placeholder {
+    opacity: 0.3;
+  }
+
+  .thumbnail-preview {
+    opacity: 0;
+  }
+
+}
+
+.thumbnail.deleted  {
+  .thumbnail-preview {
+    opacity: 0.3;
+  }
+
+  .thumbnail-badge {
+    .background {
+      color: #777;
+    }
+
+    .foreground {
+      color: #fff;
+    }
+  }
+
+}
+
+.searchitem.deleted,
+.browseitem.deleted {
+  color: #888;
+}
+
+.deleted .full_record_top h2 > span,
+.searchitem.deleted h2 > span,
+.browseitem.deleted h2 > span {
+  color: #bbb;
+}
+
+
+.deleted {
   color: #8CB4C6;
+
+  .collinfo {
+    color: #888;
+  }
+
+  .full_record_top {
+    h2 {
+      color: #bbb;
+    }
+  }
 
   &:hover {
     color: #8CB4C6;
   }
 
   img {
-    opacity: .8;
+    opacity: .5;
   }
 }
 

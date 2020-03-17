@@ -4,7 +4,7 @@
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <a :href="recordUrl(record.id, 'gallery-display')" :class="{'marked-delete': markedForDeletion(record)}">
+                        <a :href="recordUrl(record.id, 'gallery-display')" :class="{deleted: markedForDeletion(record)}">
                             <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
                                  :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>

@@ -392,14 +392,48 @@ footer a:hover, footer a:active {
   }
 }
 /* Items marked for deletion */
-.marked-delete {
+.thumbnail.deleted.placeholder .thumbnail-placeholder {
+  opacity: 0.3;
+}
+.thumbnail.deleted.placeholder .thumbnail-preview {
+  opacity: 0;
+}
+
+.thumbnail.deleted .thumbnail-preview {
+  opacity: 0.3;
+}
+.thumbnail.deleted .thumbnail-badge .background {
+  color: #777;
+}
+.thumbnail.deleted .thumbnail-badge .foreground {
+  color: #fff;
+}
+
+.searchitem.deleted,
+.browseitem.deleted {
+  color: #888;
+}
+
+.deleted .full_record_top h2 > span,
+.searchitem.deleted h2 > span,
+.browseitem.deleted h2 > span {
+  color: #bbb;
+}
+
+.deleted {
   color: #8CB4C6;
 }
-.marked-delete:hover {
+.deleted .collinfo {
+  color: #888;
+}
+.deleted .full_record_top h2 {
+  color: #bbb;
+}
+.deleted:hover {
   color: #8CB4C6;
 }
-.marked-delete img {
-  opacity: .8;
+.deleted img {
+  opacity: .5;
 }
 
 /**
