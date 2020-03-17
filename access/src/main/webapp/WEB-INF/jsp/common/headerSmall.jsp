@@ -103,7 +103,7 @@
                         <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                         <button type="submit" class="button">Search</button>
                     </form>
-                    <a href="advancedSearch">Advanced Search</a>
+                    <a class="navbar-item" href="advancedSearch">Advanced Search</a>
                 </div>
             </div>
         </div>
