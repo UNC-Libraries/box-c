@@ -24,7 +24,7 @@
 <div class="contentarea">
 	<h2>Advanced Search</h2>
 </div>
-<form>
+<form id="advanced-search-form">
 	<div class="lightest">
 		<div class="twocol lightest shadowtop">
 			<div class="contentarea">
