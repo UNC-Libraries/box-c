@@ -22,6 +22,10 @@ export default {
 
         altText(title) {
             return `Thumbnail for ${title}`;
+        },
+
+        markedForDeletion(record) {
+            return record.status !== undefined && record.status.indexOf('Marked For Deletion') !== -1;
         }
     }
 }

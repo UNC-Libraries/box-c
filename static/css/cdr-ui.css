@@ -391,6 +391,17 @@ footer a:hover, footer a:active {
     display: block;
   }
 }
+/* Items marked for deletion */
+.marked-delete {
+  color: #8CB4C6;
+}
+.marked-delete:hover {
+  color: #8CB4C6;
+}
+.marked-delete img {
+  opacity: .8;
+}
+
 /**
 *
 * Search pages
