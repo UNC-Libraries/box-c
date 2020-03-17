@@ -227,7 +227,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 						extension : fields[3],
 						fileSize : fields[4],
 						checksum : fields[5],
-						defaultWebObject : fields.length > 5? fields[5] : null
+						defaultWebObject : fields.length > 6? fields[6] : null
 					};
 				}
 			}
