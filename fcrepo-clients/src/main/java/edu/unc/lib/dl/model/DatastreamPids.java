@@ -35,6 +35,8 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class DatastreamPids {
 
+    public static final String HISTORY_SUFFIX = "_history";
+
     private DatastreamPids() {
     }
 
@@ -60,6 +62,17 @@ public class DatastreamPids {
 
     public static PID getDepositManifestPid(PID pid, String name) {
         String path = URIUtil.join(pid.getRepositoryPath(), DEPOSIT_MANIFEST_CONTAINER, name);
+        return PIDs.get(path);
+    }
+
+    /**
+     * Get the PID for the history object for the given datastream.
+     *
+     * @param datastreamPid pid of the datastream binary
+     * @return history object pid
+     */
+    public static PID getDatastreamHistoryPid(PID datastreamPid) {
+        String path = datastreamPid.getRepositoryPath() + HISTORY_SUFFIX;
         return PIDs.get(path);
     }
 }
