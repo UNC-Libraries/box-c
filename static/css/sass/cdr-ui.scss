@@ -474,7 +474,6 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
       color: #fff;
     }
   }
-
 }
 
 .searchitem.deleted,
@@ -487,7 +486,6 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 .browseitem.deleted h2 > span {
   color: #bbb;
 }
-
 
 .deleted {
   color: #8CB4C6;
@@ -508,6 +506,19 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 
   img {
     opacity: .5;
+  }
+}
+
+.thumbnail-badge-trash {
+  opacity: 1;
+  position: absolute;
+
+  .fa-circle {
+    color: gray;
+  }
+
+  .fa-trash {
+    color: white;
   }
 }
 

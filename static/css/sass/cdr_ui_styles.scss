@@ -65,6 +65,19 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
+.thumbnail-badge-trash {
+  opacity: 1;
+  position: absolute;
+
+  .fa-circle {
+    color: gray;
+  }
+
+  .fa-trash {
+    color: white;
+  }
+}
+
 /**
 *
 * Search pages

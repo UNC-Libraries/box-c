@@ -436,6 +436,17 @@ footer a:hover, footer a:active {
   opacity: .5;
 }
 
+.thumbnail-badge-trash {
+  opacity: 1;
+  position: absolute;
+}
+.thumbnail-badge-trash .fa-circle {
+  color: gray;
+}
+.thumbnail-badge-trash .fa-trash {
+  color: white;
+}
+
 /**
 *
 * Search pages

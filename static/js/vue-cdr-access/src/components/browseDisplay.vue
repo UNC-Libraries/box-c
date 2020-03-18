@@ -9,6 +9,13 @@
                                  :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                             <div class="record-title">{{ record.title }}</div>
+                            <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
+                                 :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
+                                <div class="fa-stack">
+                                    <i class="fa fa-circle fa-stack-2x background"></i>
+                                    <i class="fa fa-trash fa-stack-1x foreground"></i>
+                                </div>
+                            </div>
                         </a>
                     </li>
                 </ul>
@@ -89,6 +96,7 @@
         }
 
         li {
+            position: relative;
             text-indent: 0;
         }
 
@@ -107,5 +115,23 @@
         .thumbnail + .record-title {
             margin-top: 165px;
         }
+    }
+
+    .thumbnail-badge-trash {
+        top: 90px;
+        left: 105px;
+
+        .fa-circle {
+            font-size: 4rem;
+        }
+
+        .fa-trash {
+            font-size: 2rem;
+            margin: 12px 8px;
+        }
+    }
+
+    .deleted-image-icon {
+        left: 85px
     }
 </style>
