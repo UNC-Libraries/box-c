@@ -124,7 +124,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 					var parentId = "";
 					if (resultObject.ancestorPath) {
 						parentId = resultObject.ancestorPath[resultObject.ancestorPath.length - 1];
-						parentId = parentId.substring(parentId.indexOf(',') + 1);
+						parentId = parentId.id;
 					}
 					window.location.href = "/admin/list/" + parentId;
 				}
