@@ -45,8 +45,12 @@ public class DatastreamHistoryLog {
     private static final String XML_TYPE_TEXT = "text/xml";
     private static final String XML_TYPE_APP = "application/xml";
 
-    private static final String HISTORY_TAG = "datastreamHistory";
-    private static final String VERSION_TAG = "version";
+    public static final String HISTORY_TAG = "datastreamHistory";
+    public static final String VERSION_TAG = "version";
+    public static final String ID_ATTR = "id";
+    public static final String CONTENT_TYPE_ATTR = "contentType";
+    public static final String CREATED_ATTR = "created";
+
 
     private Document historyDoc;
     private PID datastreamPid;
@@ -60,7 +64,7 @@ public class DatastreamHistoryLog {
         this.datastreamPid = datastreamPid;
         historyDoc = new Document();
         Element historyEl = new Element(HISTORY_TAG)
-                .setAttribute("id", datastreamPid.getQualifiedId());
+                .setAttribute(ID_ATTR, datastreamPid.getQualifiedId());
         historyDoc.addContent(historyEl);
     }
 
@@ -89,8 +93,8 @@ public class DatastreamHistoryLog {
      */
     public void addVersion(InputStream content, String contentType, Date created) {
         Element versionEl = new Element(VERSION_TAG)
-                .setAttribute("created", DateTimeUtil.formatDateToUTC(created))
-                .setAttribute("contentType", contentType);
+                .setAttribute(CREATED_ATTR, DateTimeUtil.formatDateToUTC(created))
+                .setAttribute(CONTENT_TYPE_ATTR, contentType);
 
         try {
             if (XML_TYPE_TEXT.equals(contentType) || XML_TYPE_APP.equals(contentType)) {

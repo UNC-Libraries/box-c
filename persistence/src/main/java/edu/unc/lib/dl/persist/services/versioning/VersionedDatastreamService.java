@@ -60,8 +60,8 @@ public class VersionedDatastreamService {
         BinaryObject dsObj = getBinaryObject(dsPid);
 
         // Get a session for transferring the binary and its history
-        try (BinaryTransferSession session = getTransferSession(newVersion, dsObj)) {
-
+        BinaryTransferSession session = getTransferSession(newVersion, dsObj);
+        try {
             // if datastream is new, go ahead and create it
             if (dsObj == null) {
                 return updateHeadVersion(newVersion, session);
@@ -72,6 +72,11 @@ public class VersionedDatastreamService {
 
                 // Replace the head version with the new content
                 return updateHeadVersion(newVersion, session);
+            }
+        } finally {
+            // Only close the transfer session if it was created within this method call
+            if (newVersion.getTransferSession() == null) {
+                session.close();
             }
         }
     }
