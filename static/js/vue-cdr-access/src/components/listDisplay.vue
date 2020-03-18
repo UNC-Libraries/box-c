@@ -6,10 +6,12 @@
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
                             <a :href="recordUrl(record.id, linkBrowseType)" :class="{deleted: markedForDeletion(record)}">
-                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
+                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
+                                     :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                                 <i v-else class="fa" :class="recordType(record.type)"></i>
                                 <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
-                                     :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
+                                     :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     'thumbnail-badge-trash-search ': !isRecordBrowse}">
                                     <div class="fa-stack">
                                         <i class="fa fa-circle fa-stack-2x background"></i>
                                         <i class="fa fa-trash fa-stack-1x foreground"></i>
@@ -188,6 +190,10 @@
                 font-size: 2rem;
                 margin: 8px 0;
             }
+        }
+
+        .thumbnail-badge-trash.thumbnail-badge-trash-search {
+            left: 110px;
         }
 
         .deleted-image-icon {

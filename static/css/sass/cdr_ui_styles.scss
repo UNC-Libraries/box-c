@@ -56,7 +56,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
     }
   }
 
-  &:hover {
+  &:hover, a {
     color: #8CB4C6;
   }
 

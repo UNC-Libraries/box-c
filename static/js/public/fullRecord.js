@@ -86,10 +86,11 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				var img;
 
 				if ('thumbnail_url' in row) {
-					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">'
+					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">';
 				} else {
 					img = '<i class="fa fa-file default-img-icon" title="Default thumbnail image"></i>';
 				}
+
 				return img
 				}, targets: 0
 			},
@@ -135,7 +136,12 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search for keywords' },
-			order: [[1, 'asc']]
+			order: [[1, 'asc']],
+			rowCallback: function(row, data) {
+				if ($.inArray('Marked for Deletion', data.status)) {
+					$(row).addClass('deleted')
+				}
+			}
 		});
 
 		$('#child-files_filter input').addClass('input');

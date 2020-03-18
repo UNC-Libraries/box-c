@@ -429,7 +429,7 @@ footer a:hover, footer a:active {
 .deleted .full_record_top h2 {
   color: #bbb;
 }
-.deleted:hover {
+.deleted:hover, .deleted a {
   color: #8CB4C6;
 }
 .deleted img {

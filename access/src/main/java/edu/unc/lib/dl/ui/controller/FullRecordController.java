@@ -234,6 +234,14 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("neighborList", neighbors);
         }
 
+        List<String> objectStatus = briefObject.getStatus();
+        boolean isMarkedForDeletion = false;
+
+        if (objectStatus != null) {
+            isMarkedForDeletion = objectStatus.contains("Marked For Deletion");
+        }
+        model.addAttribute("markedForDeletion", isMarkedForDeletion);
+
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
     }

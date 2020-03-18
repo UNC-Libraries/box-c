@@ -44,7 +44,12 @@
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
-            <h2><i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span></h2>
+            <c:choose>
+                <c:when test="${markedForDeletion}"><h2 class="deleted"></c:when>
+                <c:otherwise><h2></c:otherwise>
+            </c:choose>
+                <i class="fa fa-folder" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>
+            </h2>
             <c:if test="${not empty briefObject.dateAdded}">
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
             </c:if>

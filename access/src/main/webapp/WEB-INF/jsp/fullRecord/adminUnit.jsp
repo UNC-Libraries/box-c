@@ -45,7 +45,12 @@
     <div id="is-admin-unit" class="columns browse-header">
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
-            <h2><i class="fa fa-university" aria-hidden="true"></i> <c:out value="${briefObject.title}" /></h2>
+            	<c:choose>
+                	<c:when test="${markedForDeletion}"><h2 class="deleted"></c:when>
+                	<c:otherwise><h2></c:otherwise>
+                </c:choose>
+                <i class="fa fa-university" aria-hidden="true"></i> <c:out value="${briefObject.title}" />
+            </h2>
             <p><strong>Subjects:</strong>
                 <c:choose>
                     <c:when test="${not empty briefObject.subject}">
