@@ -15,7 +15,7 @@
                     <li v-for="value in facet.values">
                         <label :aria-label="value.displayValue">
                             <input type="checkbox" v-model="selected_facets" @click="updateAll(value)" :value="facetValue(value)">
-                            {{ value.displayValue }} ({{ value.count }})
+                            <p>{{ value.displayValue }} ({{ value.count }})</p>
                         </label>
                     </li>
                 </ul>
@@ -347,11 +347,17 @@
 <style scoped lang="scss">
     #facetList {
         h3 {
+            font-size: 18px;
             margin-bottom: 5px;
+        }
+
+        li {
+            margin-left: 5px;
         }
 
         input {
             height: 25px;
+            min-width: 25px;
             position: relative;
             top: 5px;
             width: 25px;
@@ -359,9 +365,16 @@
 
         .facet-display {
             margin-bottom: 25px;
+
+            p {
+                padding-left: 5px;
+                padding-top: 10px;
+                text-indent: 1px;
+            }
         }
 
         label {
+            display: inline-flex;
             float: none;
             width: 100%;
 
