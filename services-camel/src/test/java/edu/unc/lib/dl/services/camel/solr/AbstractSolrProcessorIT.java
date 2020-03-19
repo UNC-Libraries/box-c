@@ -22,6 +22,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 
 import org.apache.camel.Exchange;
@@ -31,7 +32,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.tika.io.IOUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,8 +138,7 @@ public abstract class AbstractSolrProcessorIT {
         return contentFile.toPath().toUri();
     }
 
-    protected URI makeContentUriFromResource(String resourcePath) throws Exception {
-        return makeContentUri(IOUtils.toString(
-                getClass().getResourceAsStream(resourcePath)));
+    protected InputStream streamResource(String resourcePath) throws Exception {
+        return getClass().getResourceAsStream(resourcePath);
     }
 }

@@ -81,5 +81,37 @@
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
     </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
+    
+    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
+            factory-method="createLocationManagerWithBasicConfig">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+    
+    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
+    </bean>
+
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="validate" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+    </bean>
 
 </beans>

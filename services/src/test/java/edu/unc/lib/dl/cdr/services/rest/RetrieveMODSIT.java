@@ -17,7 +17,6 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -25,25 +24,28 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.File;
-import java.net.URI;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 
 /**
  *
@@ -56,16 +58,10 @@ import edu.unc.lib.dl.fedora.PID;
     @ContextConfiguration("/retrieve-mods-it-servlet.xml")
 })
 public class RetrieveMODSIT extends AbstractAPIIT {
-    private static URI modsUri;
-    private static File modsFile;
+    private static Path modsPath = Paths.get("src/test/resources/mods/work-mods.xml");
 
-    @BeforeClass
-    public static void classSetup() throws Exception {
-        modsFile = File.createTempFile("mods", ".xml");
-        modsFile.deleteOnExit();
-        Files.copy(Paths.get("src/test/resources/mods/work-mods.xml"), modsFile.toPath(), REPLACE_EXISTING);
-        modsUri = modsFile.toPath().toUri();
-    }
+    @Autowired
+    private UpdateDescriptionService updateDescriptionService;
 
     @Test
     public void testRetrieveMODSFromWork() throws Exception {
@@ -79,7 +75,7 @@ public class RetrieveMODSIT extends AbstractAPIIT {
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        String expectedResponseBody = readFileToString(modsFile, UTF_8);
+        String expectedResponseBody = readFileToString(modsPath.toFile(), UTF_8);
         assertEquals(expectedResponseBody, responseBody);
     }
 
@@ -118,8 +114,10 @@ public class RetrieveMODSIT extends AbstractAPIIT {
                 .andReturn();
     }
 
-    private void setupWorkWithMODS(PID pid) {
-        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
-        work.setDescription(modsUri);
+    private void setupWorkWithMODS(PID pid) throws Exception {
+        repositoryObjectFactory.createWorkObject(pid, null);
+        InputStream modsStream = Files.newInputStream(modsPath);
+        updateDescriptionService.updateDescription(
+                mock(AgentPrincipals.class), pid, modsStream);
     }
 }

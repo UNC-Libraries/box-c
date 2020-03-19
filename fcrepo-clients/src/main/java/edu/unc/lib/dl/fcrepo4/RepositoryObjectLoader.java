@@ -23,6 +23,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -144,4 +145,23 @@ public class RepositoryObjectLoader {
         }
     }
 
+    /**
+     * @param pid
+     * @return true if an object exists with the given pid
+     */
+    public boolean exists(PID pid) {
+        try {
+            repositoryObjCache.get(pid);
+            return true;
+        } catch (NotFoundException e) {
+            return false;
+        } catch (UncheckedExecutionException | ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else {
+                throw new FedoraException((Exception) cause);
+            }
+        }
+    }
 }

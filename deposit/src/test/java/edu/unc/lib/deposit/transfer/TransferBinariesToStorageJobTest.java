@@ -19,10 +19,8 @@ import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.crea
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -156,22 +154,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     @Test
-    public void depositWithFolderWithMods() throws Exception {
-        Bag workBag = addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
-
-        String modsContent = "This is pretty much mods";
-        addModsFile(workBag, modsContent, false);
-
-        job.run();
-
-        Model model = job.getReadOnlyModel();
-        Resource postWorkResc = model.getResource(workBag.getURI());
-
-        assertModsFileTransferred(postWorkResc, modsContent);
-    }
-
-    @Test
     public void depositWithMultipleFilesResumed() throws Exception {
         String manifest1Name = "manifest1.txt";
         File manifestFile1 = new File(depositDir, manifest1Name);
@@ -282,20 +264,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertTrue("Transfered FITS must be in the expected storage location", storageLoc.isValidUri(fitsUri));
     }
 
-    private void assertModsFileTransferred(Resource resc, String expectedContent) throws Exception {
-        PID objPid = PIDs.get(resc.getURI());
-
-        File modsSource = job.getModsPath(objPid).toFile();
-        assertFalse("MODS file should no longer exist in deposits directory", modsSource.exists());
-
-        URI modsUri = URI.create(resc.getProperty(CdrDeposit.descriptiveStorageUri).getString());
-        Path modsPath = Paths.get(modsUri);
-        assertTrue("MODS file should exist at storage uri", Files.exists(modsPath));
-        assertTrue("Transfered MODS must be in the expected storage location", storageLoc.isValidUri(modsUri));
-
-        assertEquals(expectedContent, FileUtils.readFileToString(modsPath.toFile(), "UTF-8"));
-    }
-
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
         PID objPid = makePid();
         Resource objResc = depositModel.getResource(objPid.getRepositoryPath());
@@ -311,11 +279,5 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         parent.add(objResc);
         return objResc;
-    }
-
-    private void addModsFile(Resource resc, String content, boolean hashed) throws Exception {
-        PID pid = PIDs.get(resc.getURI());
-        File modsFile = job.getModsPath(pid, true).toFile();
-        writeStringToFile(modsFile, content, UTF_8);
     }
 }

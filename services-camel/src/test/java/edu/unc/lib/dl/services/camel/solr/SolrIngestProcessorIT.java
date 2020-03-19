@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -33,12 +34,15 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -59,6 +63,10 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Autowired
     private DocumentIndexingPipeline solrFullUpdatePipeline;
+    @Autowired
+    private UpdateDescriptionService updateDescriptionService;
+    @Mock
+    private AgentPrincipals agent;
 
     @Before
     public void setUp() throws Exception {
@@ -81,7 +89,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
-        workObj.setDescription(makeContentUriFromResource("/datastreams/simpleMods.xml"));
+        InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
+        updateDescriptionService.updateDescription(agent, workObj.getPid(), modsStream);
 
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
 

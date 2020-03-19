@@ -16,26 +16,34 @@
 package edu.unc.lib.dl.persist.services.edit;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.toByteArray;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
+import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService.DatastreamVersion;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
@@ -52,16 +60,21 @@ public class UpdateDescriptionService {
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectFactory repoObjFactory;
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
-    private BinaryTransferService transferService;
+    private VersionedDatastreamService versioningService;
 
     private boolean validate;
+    private boolean sendsMessages;
+    private boolean checksAccess;
 
     private static final Timer timer = TimerFactory.createTimerForClass(UpdateDescriptionService.class);
 
     public UpdateDescriptionService() {
         validate = true;
+        sendsMessages = true;
+        checksAccess = true;
     }
 
     /**
@@ -73,14 +86,12 @@ public class UpdateDescriptionService {
      * @throws MetadataValidationException
      * @throws IOException
      */
-    public void updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
+    public BinaryObject updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
             throws MetadataValidationException, IOException {
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
 
-        try (BinaryTransferSession transferSession = transferService.getSession(obj)) {
-            updateDescription(transferSession, agent, obj, modsStream);
-        }
+        return updateDescription(null, agent, obj, modsStream);
     }
 
     /**
@@ -93,21 +104,23 @@ public class UpdateDescriptionService {
      * @throws MetadataValidationException
      * @throws IOException
      */
-    public void updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
+    public BinaryObject updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
             PID pid, InputStream modsStream) throws MetadataValidationException, IOException {
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
 
-        updateDescription(transferSession, agent, obj, modsStream);
+        return updateDescription(transferSession, agent, obj, modsStream);
     }
 
-    private void updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
+    public BinaryObject updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
             ContentObject obj, InputStream modsStream) throws IOException {
 
         log.debug("Updating description for {}", obj.getPid().getId());
         try (Timer.Context context = timer.time()) {
-            aclService.assertHasAccess("User does not have permissions to update description",
+            if (checksAccess) {
+                aclService.assertHasAccess("User does not have permissions to update description",
                     obj.getPid(), agent.getPrincipals(), Permission.editDescription);
+            }
 
             String username = agent.getUsername();
             if (validate) {
@@ -119,12 +132,34 @@ public class UpdateDescriptionService {
 
             // Transfer the description to its storage location
             PID modsDsPid = getMdDescriptivePid(obj.getPid());
-            URI modsUri = transferSession.transferReplaceExisting(modsDsPid, modsStream);
 
-            obj.setDescription(modsUri);
-            log.debug("Successfully set desc to {}", modsUri);
+            DatastreamVersion newVersion = new DatastreamVersion(modsDsPid);
+            newVersion.setContentStream(modsStream);
+            newVersion.setContentType(MD_DESCRIPTIVE.getMimetype());
+            newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
+            newVersion.setTransferSession(transferSession);
 
-            operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
+            BinaryObject descBinary;
+            if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {
+                descBinary = versioningService.addVersion(newVersion);
+                log.debug("Successfully updated description for {}", obj.getPid());
+            } else {
+                // setup description for object for the first time
+                Model descModel = createDefaultModel();
+                descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
+                newVersion.setProperties(descModel);
+
+                descBinary = versioningService.addVersion(newVersion);
+
+                repoObjFactory.createRelationship(obj, Cdr.hasMods, createResource(modsDsPid.getRepositoryPath()));
+                log.debug("Successfully set new description for {}", obj.getPid());
+            }
+
+            if (sendsMessages) {
+                operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
+            }
+
+            return descBinary;
         }
     }
 
@@ -140,6 +175,10 @@ public class UpdateDescriptionService {
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
     }
 
     /**
@@ -158,11 +197,8 @@ public class UpdateDescriptionService {
         this.modsValidator = modsValidator;
     }
 
-    /**
-     * @param transferService the transferService to set
-     */
-    public void setTransferService(BinaryTransferService transferService) {
-        this.transferService = transferService;
+    public void setVersionedDatastreamService(VersionedDatastreamService versioningService) {
+        this.versioningService = versioningService;
     }
 
     /**
@@ -170,5 +206,13 @@ public class UpdateDescriptionService {
      */
     public void setValidate(boolean validate) {
         this.validate = validate;
+    }
+
+    public void setSendsMessages(boolean sendsMessages) {
+        this.sendsMessages = sendsMessages;
+    }
+
+    public void setChecksAccess(boolean checksAccess) {
+        this.checksAccess = checksAccess;
     }
 }

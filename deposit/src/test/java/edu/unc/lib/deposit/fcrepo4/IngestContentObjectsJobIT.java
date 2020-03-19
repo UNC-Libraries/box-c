@@ -68,6 +68,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -118,6 +119,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
+    @Autowired
+    private UpdateDescriptionService updateDescService;
 
     private DepositRecord depositRecord;
 
@@ -143,6 +146,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "verificationService", verificationService);
         setField(job, "transferService", binaryTransferService);
         setField(job, "locationManager", storageLocationManager);
+        setField(job, "updateDescService", updateDescService);
         job.init();
 
         // Create a destination folder where deposits will be ingested to
@@ -541,7 +545,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
         folderBag.addProperty(CdrDeposit.label, label);
-        folderBag.addProperty(CdrDeposit.descriptiveStorageUri, modsPath.toUri().toString());
 
         depBag.add(folderBag);
 

@@ -38,10 +38,6 @@
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
-    </bean>
-    
     <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.persist.services.EmailHandler" />
     </bean>

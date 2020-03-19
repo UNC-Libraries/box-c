@@ -15,21 +15,17 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -146,52 +142,6 @@ public class WorkObjectIT extends AbstractFedoraIT {
         FileObject suppMember = (FileObject) findContentObjectByPid(members, supp.getPid());
         BinaryObject suppFile = suppMember.getOriginalFile();
         assertEquals(filenameS, suppFile.getFilename());
-    }
-
-    @Test
-    public void addModsTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(null);
-        String bodyString = "some MODS content";
-        Path modsPath = Files.createTempFile(null, null);
-        writeStringToFile(modsPath.toFile(), bodyString, UTF_8);
-        BinaryObject modsObj = obj.setDescription(modsPath.toUri());
-
-        assertObjectExists(obj.getDescription().getPid());
-        assertObjectExists(modsObj.getPid());
-        // make sure content is added to MODS
-        String respString = new BufferedReader(new InputStreamReader(modsObj.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", bodyString, respString);
-    }
-
-    @Test
-    public void addSourceMdTest() throws Exception {
-        // Setup work with MODS and source description
-        WorkObject anotherObj = repoObjFactory.createWorkObject(null);
-        String sourceProfile = "some source md";
-        String sourceMdBodyString = "source md content";
-        String modsBodyString = "MODS content";
-        InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
-        Path modsPath = Files.createTempFile(null, null);
-        writeStringToFile(modsPath.toFile(), modsBodyString, UTF_8);
-        BinaryObject modsObj = anotherObj.setDescription(modsPath.toUri());
-        BinaryObject sourceObj = anotherObj.addSourceMetadata(sourceMdStream, sourceProfile);
-
-        // tests that listDescriptions returns binary objects for source md and mods
-        List<BinaryObject> descs = anotherObj.listMetadata();
-        assertTrue("Result must contain mods object", descs.contains(modsObj));
-        assertTrue("Result must contain source md object", descs.contains(sourceObj));
-
-        assertObjectExists(modsObj.getPid());
-        assertObjectExists(sourceObj.getPid());
-
-        String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceObj.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
-        assertEquals("Source content did not match submitted value", sourceMdBodyString, sourceMdRespString);
-
-        String modsRespString = new BufferedReader(new InputStreamReader(modsObj.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
-        assertEquals("MODS content did not match submitted value", modsBodyString, modsRespString);
     }
 
     @Test

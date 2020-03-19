@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
-import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.createLocationManagerWithBasicConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -45,10 +44,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 
 /**
  *
@@ -61,18 +59,16 @@ import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
     @ContextConfiguration("/update-description-it-servlet.xml")
 })
 public class UpdateDescriptionIT extends AbstractAPIIT {
-    @Autowired
-    private RepositoryObjectLoader repoObjLoader;
     @Mock
     private ContentPathFactory pathFactory;
     @Autowired
-    private BinaryTransferServiceImpl transferService;
+    private UpdateDescriptionService updateDescriptionService;
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        transferService.setStorageLocationManager(createLocationManagerWithBasicConfig(repoObjLoader));
+        updateDescriptionService.setValidate(true);
     }
 
     @Test

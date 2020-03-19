@@ -17,17 +17,12 @@ package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
-import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -57,9 +52,6 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(TransferBinariesToStorageJob.class);
-
-    private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
-            Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
 
     /**
      *
@@ -92,10 +84,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         Set<Resource> rescTypes = resc.listProperties(RDF.type).toList().stream()
                 .map(Statement::getResource).collect(toSet());
 
-        if (TYPES_ALLOWING_DESC.stream().anyMatch(rescTypes::contains)) {
-            transferModsFile(objPid, resc, transferSession);
-        }
-
         if (rescTypes.contains(Cdr.FileObject)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
@@ -126,20 +114,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
             URI storageUri = transferSession.transfer(originalPid, stagingUri);
             resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-        }
-    }
-
-    private void transferModsFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        // add descStorageUri if doesn't already exist. It will exist in a resume scenario.
-        if (!resc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
-            Path modsPath = getModsPath(objPid);
-            if (!Files.exists(modsPath)) {
-                return;
-            }
-
-            PID originalPid = getMdDescriptivePid(objPid);
-            URI storageUri = transferSession.transferReplaceExisting(originalPid, modsPath.toUri());
-            resc.addLiteral(CdrDeposit.descriptiveStorageUri, storageUri.toString());
         }
     }
 
