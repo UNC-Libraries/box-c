@@ -76,11 +76,9 @@
 	</c:choose>
 </c:set>
 
-<c:set var="deleted" value="${cdr:contains(thumbnailObject.status, 'Deleted') || cdr:contains(thumbnailObject.status, 'Parent Deleted')}" />
-
 <c:set var="badgeIcon">
 	<c:choose>
-		<c:when test="${deleted}">
+		<c:when test="${markedForDeletion}">
 			trash
 		</c:when>
 		<c:when test="${not empty thumbnailObject && (not permsHelper.allowsPublicAccess(thumbnailObject) || not empty thumbnailObject.activeEmbargo)}">

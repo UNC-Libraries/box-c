@@ -25,7 +25,19 @@ export default {
         },
 
         markedForDeletion(record) {
-            return record.status !== undefined && record.status.indexOf('Marked For Deletion') !== -1;
+            return /marked.*?deletion/.test(this.restrictions(record));
+        },
+
+        isRestricted(record) {
+            return /embargoed|staff-only/.test(this.restrictions(record));
+        },
+
+        restrictions(record) {
+            if (record.status === undefined) {
+                return '';
+            }
+
+            return record.status.join(',').toLowerCase();
         }
     }
 }

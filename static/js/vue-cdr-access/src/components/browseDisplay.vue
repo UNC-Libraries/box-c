@@ -8,7 +8,6 @@
                             <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
                                  :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
-                            <div class="record-title">{{ record.title }}</div>
                             <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
                                  :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
                                 <div class="fa-stack">
@@ -16,6 +15,14 @@
                                     <i class="fa fa-trash fa-stack-1x foreground"></i>
                                 </div>
                             </div>
+                            <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
+                                 :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
+                                <div class="fa-stack">
+                                    <i class="fa fa-circle fa-stack-2x background"></i>
+                                    <i class="fa fa-lock fa-stack-1x foreground"></i>
+                                </div>
+                            </div>
+                            <div class="record-title">{{ record.title }}</div>
                         </a>
                     </li>
                 </ul>
@@ -115,23 +122,22 @@
         .thumbnail + .record-title {
             margin-top: 165px;
         }
-    }
 
-    .thumbnail-badge-trash {
-        top: 90px;
-        left: 105px;
+        .thumbnail-badge-trash,
+        .thumbnail-badge-lock {
+            margin-top: -55px;
+            padding-bottom: 15px;
+            padding-left: 65px;
 
-        .fa-circle {
-            font-size: 4rem;
+            .fa-circle {
+                font-size: 4rem;
+            }
+
+            .fa-trash,
+            .fa-lock {
+                font-size: 2rem;
+                margin: 12px 8px;
+            }
         }
-
-        .fa-trash {
-            font-size: 2rem;
-            margin: 12px 8px;
-        }
-    }
-
-    .deleted-image-icon {
-        left: 85px
     }
 </style>

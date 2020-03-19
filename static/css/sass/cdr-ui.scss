@@ -489,6 +489,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
 
 .deleted {
   color: #8CB4C6;
+  display: inline-grid;
 
   .collinfo {
     color: #888;
@@ -509,15 +510,18 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
-.thumbnail-badge-trash {
+.thumbnail-badge-trash,
+.thumbnail-badge-trash-search,
+.thumbnail-badge-lock,
+.thumbnail-badge-lock-search {
   opacity: 1;
-  position: absolute;
 
   .fa-circle {
-    color: gray;
+    color: black;
   }
 
-  .fa-trash {
+  .fa-trash,
+  .fa-lock {
     color: white;
   }
 }
@@ -1071,6 +1075,18 @@ table.dataTable {
     padding: 10px;
     text-align: center;
     vertical-align: middle;
+  }
+
+  .thumbnail-badge {
+    font-size: 10px;
+    position: relative;
+    margin-left: 15px !important;
+    margin-top: -15px !important;
+
+    .fa-trash, .fa-lock {
+      left: 5px;
+      top: 1px;
+    }
   }
 }
 

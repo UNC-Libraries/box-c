@@ -422,6 +422,7 @@ footer a:hover, footer a:active {
 
 .deleted {
   color: #8CB4C6;
+  display: inline-grid;
 }
 .deleted .collinfo {
   color: #888;
@@ -436,14 +437,26 @@ footer a:hover, footer a:active {
   opacity: .5;
 }
 
-.thumbnail-badge-trash {
+.thumbnail-badge-trash,
+.thumbnail-badge-trash-search,
+.thumbnail-badge-lock,
+.thumbnail-badge-lock-search {
   opacity: 1;
-  position: absolute;
 }
-.thumbnail-badge-trash .fa-circle {
-  color: gray;
+.thumbnail-badge-trash .fa-circle,
+.thumbnail-badge-trash-search .fa-circle,
+.thumbnail-badge-lock .fa-circle,
+.thumbnail-badge-lock-search .fa-circle {
+  color: black;
 }
-.thumbnail-badge-trash .fa-trash {
+.thumbnail-badge-trash .fa-trash,
+.thumbnail-badge-trash .fa-lock,
+.thumbnail-badge-trash-search .fa-trash,
+.thumbnail-badge-trash-search .fa-lock,
+.thumbnail-badge-lock .fa-trash,
+.thumbnail-badge-lock .fa-lock,
+.thumbnail-badge-lock-search .fa-trash,
+.thumbnail-badge-lock-search .fa-lock {
   color: white;
 }
 
@@ -918,6 +931,16 @@ table.dataTable tbody tr.odd {
   padding: 10px;
   text-align: center;
   vertical-align: middle;
+}
+#child-files .thumbnail-badge {
+  font-size: 10px;
+  position: relative;
+  margin-left: 15px !important;
+  margin-top: -15px !important;
+}
+#child-files .thumbnail-badge .fa-trash, #child-files .thumbnail-badge .fa-lock {
+  left: 5px;
+  top: 1px;
 }
 
 #is-folder .is-12 {

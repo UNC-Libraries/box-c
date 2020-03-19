@@ -33,7 +33,7 @@
 				<c:when test="${markedForDeletion}">
 					<div class="relateditem deleted ${currentItemClass}">
 				</c:when>
-				<c:otherwise><div class="relateditem ${currentItemClass}">></c:otherwise>
+				<c:otherwise><div class="relateditem ${currentItemClass}"></c:otherwise>
 			</c:choose>
 				<div class="relatedthumb">
 					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />

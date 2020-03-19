@@ -17,6 +17,14 @@
                                         <i class="fa fa-trash fa-stack-1x foreground"></i>
                                     </div>
                                 </div>
+                                <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
+                                     :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     'thumbnail-badge-lock-search ': !isRecordBrowse}">
+                                    <div class="fa-stack">
+                                        <i class="fa fa-circle fa-stack-2x background"></i>
+                                        <i class="fa fa-lock fa-stack-1x foreground"></i>
+                                    </div>
+                                </div>
                             </a>
                         </div>
                         <div class="column is-10">
@@ -178,26 +186,37 @@
             background-color: #f7f7f7;
         }
 
-        .thumbnail-badge-trash {
-            top: 80px;
-            left: 140px;
+        .thumbnail-badge-trash,
+        .thumbnail-badge-lock {
+            margin-top: -55px;
+            padding-bottom: 15px;
+            padding-left: 75px;
 
             .fa-circle {
                 font-size: 4rem;
             }
 
-            .fa-trash {
+            .fa-trash,
+            .fa-lock {
                 font-size: 2rem;
                 margin: 8px 0;
             }
         }
 
-        .thumbnail-badge-trash.thumbnail-badge-trash-search {
-            left: 110px;
-        }
 
         .deleted-image-icon {
             top: 100px;
+        }
+
+        @media screen and (max-width: 1024px) {
+            .is-2 {
+                margin-right: 25px;
+            }
+
+            .thumbnail-badge-trash,
+            .thumbnail-badge-lock {
+                padding-left: 55px;
+            }
         }
 
         @media screen and (max-width: 768px) {
