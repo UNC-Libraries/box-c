@@ -11,7 +11,7 @@
 	<div class="file_browse_list">
 	<table>
 	<%
-	_.each(selectedCandidates, function(candidate, index) { 
+	_.each(selectedCandidates, function(candidate, index) {
 		%>
 		<tr class="file_browse_entry">
 			<td class="file_browse_type_icon">
@@ -21,7 +21,7 @@
 					<i class="fas fa-folder"></i>
 				<% } %>
 			</td>
-			
+
 			<td class="file_browse_entry_data">
 				<h2><%= candidate.patternMatched %></h2>
 				<p><%= candidate.base %><br/>
@@ -42,7 +42,7 @@
 					<input type="text" name="file_media_id" size="40"/>
 				</div>
 			</td>
-			
+
 		</tr>
 	<% }); %>
 	</table>

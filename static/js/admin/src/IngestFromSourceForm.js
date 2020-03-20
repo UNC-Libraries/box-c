@@ -117,13 +117,26 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		// Bind selection events for result entries
 		form.on("click", ".file_browse_entry", function(e){
 			var $this = $(this);
+			var whichAction = e.target.name;
+			var staffOnly = $("input[name=staff-only]", $this);
+			var selected = $this.hasClass("selected");
+
 			e.stopPropagation();
-			if ($this.hasClass("selected")) {
+
+			if (selected && whichAction === 'ingest') {
 				$this.removeClass("selected");
 				$("input", $this).prop("checked", false);
+			} else if (selected && whichAction === 'staff-only') {
+				var action = staffOnly.prop("checked");
+				staffOnly.prop("checked", action);
 			} else {
 				$this.addClass("selected");
-				$("input", $this).prop("checked", true);
+
+				if (whichAction === 'staff-only') {
+					$("input", $this).prop("checked", true);
+				} else if (whichAction === 'ingest') {
+					$("input[name=ingest]", $this).prop("checked", true);
+				}
 			}
 			
 			self.updateCandidateSubmitButton();
@@ -139,10 +152,12 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			$this.parents(".file_browse_heading").first().nextUntil(".file_browse_heading", ".file_browse_entry").each(function() {
 				if (select) {
 					$(this).addClass("selected");
+					$("input[name=ingest]").prop("checked", select);
 				} else {
 					$(this).removeClass("selected");
+					$("input").prop("checked", select);
 				}
-				$("input", $(this)).prop("checked", select);
+
 			});
 			self.updateCandidateSubmitButton();
 		});
@@ -182,7 +197,9 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			// Determine which files were selected and match the current filter, to avoid hidden files getting chosen
 			var selectedIndexes = [];
 			self.dialog.find(".file_browse_entry.selected:visible").each(function() {
-				selectedIndexes.push($(this).data("index"));
+				var self = $(this);
+				var isPrivate = self.find("input[name=staff-only]").prop("checked");
+				selectedIndexes.push({ index: self.data("index"), staffPermission: isPrivate });
 			});
 			
 			self.renderCandidateConfirmation(sources, candidates, selectedIndexes);
@@ -196,14 +213,15 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 	
 	IngestFromSourceForm.prototype.renderCandidateConfirmation = function(sources, candidates, selectedIndexes) {
 		var self = this;
-		
 		var selectedCandidates = [];
+
 		for (var i = 0; i < selectedIndexes.length; i++) {
-			selectedCandidates.push(candidates[selectedIndexes[i]]);
+			var selectedIndex = selectedIndexes[i].index;
+			candidates[selectedIndex].staffPermission = selectedIndexes[i].staffPermission;
+			selectedCandidates.push(candidates[selectedIndex]);
 		}
-		
+
 		var candidatesForm = metadataTemplate({selectedCandidates : selectedCandidates});
-		
 		this.dialog.html(candidatesForm);
 		
 		this.dialog.find("#ingest_source_choose").click(function(e) {
@@ -229,9 +247,9 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				}
 				
 				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'DIRECTORY';
-				
 				var info = {
 					sourceId : candidate.sourceId,
+					staffPermission: candidate.staffPermission,
 					packagePath : candidate.patternMatched,
 					packagingType : packagingType,
 					label : $this.find("input[name='file_label']").val(),
@@ -253,7 +271,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				dialog : self.dialog
 			});
 			loadingOverlay.open();
-			
+
 			// Make request to server
 			$.ajax({
 				url : "/services/api/edit/ingestSources/ingest/" + self.pid,
