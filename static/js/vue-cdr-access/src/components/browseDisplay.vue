@@ -6,7 +6,8 @@
                     <li v-for="record in records" class="column" :class="column_size">
                         <a :href="recordUrl(record.id, 'gallery-display')" :class="{deleted: markedForDeletion(record)}">
                             <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
-                                 :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
+                                 :alt="altText(record.title)" class="thumbnail thumbnail-size-large"
+                                 :class="{restricted: markedForDeletion(record) || isRestricted(record)}">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
                             <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
                                  :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
@@ -121,6 +122,10 @@
 
         .thumbnail + .record-title {
             margin-top: 165px;
+        }
+
+        img.restricted {
+            float: none;
         }
 
         .thumbnail-badge-trash,
