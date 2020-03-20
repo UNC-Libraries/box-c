@@ -408,9 +408,14 @@ p.no-search-results {
 
 
 /* DataTables  */
-#child-files_filter label {
-  float: right;
-  width: 250px;
+
+#child-files_filter {
+  margin-bottom: 25px;
+
+  label {
+    float: right;
+    width: 250px;
+  }
 }
 
 .input::placeholder, .input {
@@ -433,6 +438,12 @@ p.no-search-results {
   .fa.default-img-icon {
     font-size: 32px;
     color: #1A698C;
+  }
+
+  .deleted {
+    .fa.default-img-icon {
+      color: #8CB4C6;
+    }
   }
 
   .is-icon {
@@ -618,7 +629,7 @@ table.dataTable {
   }
 
   tr.deleted {
-    display: inherit;
+    display: table-row;
   }
 
   td {
@@ -638,7 +649,7 @@ table.dataTable {
 
     .fa-trash, .fa-lock {
       left: 0;
-      top: 1px;
+      top: 0;
     }
   }
 }

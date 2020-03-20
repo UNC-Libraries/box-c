@@ -751,6 +751,9 @@ p.no-search-results {
 }
 
 /* DataTables  */
+#child-files_filter {
+  margin-bottom: 25px;
+}
 #child-files_filter label {
   float: right;
   width: 250px;
@@ -775,6 +778,9 @@ p.no-search-results {
 .child-records .fa.default-img-icon {
   font-size: 32px;
   color: #1A698C;
+}
+.child-records .deleted .fa.default-img-icon {
+  color: #8CB4C6;
 }
 .child-records .is-icon {
   background-color: #1A698C;
@@ -919,7 +925,7 @@ table.dataTable tbody tr.odd {
   border: 1px solid #E1E1E1;
 }
 #child-files tr.deleted {
-  display: inherit;
+  display: table-row;
 }
 #child-files td {
   border-left: 1px solid #E1E1E1;
