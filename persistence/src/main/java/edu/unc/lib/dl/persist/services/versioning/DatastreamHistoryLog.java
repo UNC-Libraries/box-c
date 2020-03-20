@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
@@ -63,7 +64,7 @@ public class DatastreamHistoryLog {
     public DatastreamHistoryLog(PID datastreamPid) {
         this.datastreamPid = datastreamPid;
         historyDoc = new Document();
-        Element historyEl = new Element(HISTORY_TAG)
+        Element historyEl = new Element(HISTORY_TAG, DCR_PACKAGING_NS)
                 .setAttribute(ID_ATTR, datastreamPid.getQualifiedId());
         historyDoc.addContent(historyEl);
     }
@@ -92,7 +93,7 @@ public class DatastreamHistoryLog {
      * @param created timestamp the datastream version was created
      */
     public void addVersion(InputStream content, String contentType, Date created) {
-        Element versionEl = new Element(VERSION_TAG)
+        Element versionEl = new Element(VERSION_TAG, DCR_PACKAGING_NS)
                 .setAttribute(CREATED_ATTR, DateTimeUtil.formatDateToUTC(created))
                 .setAttribute(CONTENT_TYPE_ATTR, contentType);
 

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.versioning;
 
 import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -70,7 +71,7 @@ public class DatastreamHistoryLogTest {
         Document logDoc = inputStreamToDocument(historyLog.toInputStream());
         assertLogObjectIdEquals(dsPid, logDoc);
 
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(1, versions.size());
 
         Element versionEl = versions.get(0);
@@ -90,7 +91,7 @@ public class DatastreamHistoryLogTest {
         Document logDoc = inputStreamToDocument(historyLog.toInputStream());
         assertLogObjectIdEquals(dsPid, logDoc);
 
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(1, versions.size());
 
         Element versionEl = versions.get(0);
@@ -121,7 +122,7 @@ public class DatastreamHistoryLogTest {
         Document logDoc = inputStreamToDocument(historyLog.toInputStream());
         assertLogObjectIdEquals(dsPid, logDoc);
 
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(2, versions.size());
 
         Element versionEl = versions.get(0);
@@ -150,7 +151,7 @@ public class DatastreamHistoryLogTest {
         Document logDoc = inputStreamToDocument(historyLog.toInputStream());
         assertLogObjectIdEquals(dsPid, logDoc);
 
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(2, versions.size());
 
         Element versionEl = versions.get(0);
@@ -171,6 +172,11 @@ public class DatastreamHistoryLogTest {
 
         List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
         assertEquals(0, versions.size());
+    }
+
+    private List<Element> listVersions(Document logDoc) {
+        return logDoc.getRootElement()
+                .getChildren(DatastreamHistoryLog.VERSION_TAG, DCR_PACKAGING_NS);
     }
 
     private void assertLogObjectIdEquals(PID expected, Document logDoc) {

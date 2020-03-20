@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -180,7 +181,7 @@ public class VersionedDatastreamServiceIT {
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
 
         Document logDoc = inputStreamToDocument(dsHistoryObj.getBinaryStream());
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(1, versions.size());
 
         Element versionEl = versions.get(0);
@@ -221,7 +222,7 @@ public class VersionedDatastreamServiceIT {
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
 
         Document logDoc = inputStreamToDocument(dsHistoryObj.getBinaryStream());
-        List<Element> versions = logDoc.getRootElement().getChildren(DatastreamHistoryLog.VERSION_TAG);
+        List<Element> versions = listVersions(logDoc);
         assertEquals(2, versions.size());
 
         Element versionEl = versions.get(0);
@@ -310,5 +311,10 @@ public class VersionedDatastreamServiceIT {
         assertEquals(expectedTime, DateTimeUtil.parseUTCToDate(created));
         String contentType = versionEl.getAttributeValue(DatastreamHistoryLog.CONTENT_TYPE_ATTR);
         assertEquals(expectedType, contentType);
+    }
+
+    private List<Element> listVersions(Document logDoc) {
+        return logDoc.getRootElement()
+                .getChildren(DatastreamHistoryLog.VERSION_TAG, DCR_PACKAGING_NS);
     }
 }
