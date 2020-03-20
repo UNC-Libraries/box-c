@@ -852,10 +852,6 @@ p.no-search-results {
 
 
 /* DataTables  */
-#child-files_wrapper div {
-  margin: 15px 0 !important;
-}
-
 #child-files_filter label {
   float: right;
   width: 250px;
@@ -1065,26 +1061,27 @@ table.dataTable {
     border: $border-style;
   }
 
+  tr.deleted {
+    display: inherit;
+  }
+
   td {
     border-left: $border-style;
     border-right: $border-style;
   }
 
   th, td {
-    border-collapse: collapse;
-    padding: 10px;
     text-align: center;
     vertical-align: middle;
   }
 
   .thumbnail-badge {
     font-size: 10px;
-    position: relative;
     margin-left: 15px !important;
     margin-top: -15px !important;
 
     .fa-trash, .fa-lock {
-      left: 5px;
+      left: 0;
       top: 1px;
     }
   }

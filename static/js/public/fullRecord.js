@@ -91,13 +91,19 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					img = '<i class="fa fa-file default-img-icon" title="Default thumbnail image"></i>';
 				}
 
-				var trashBadge = showBadge(row).markDeleted ? 'trash' : undefined;
-				var lockBadge = showBadge(row).restricted ? 'lock' : undefined;
+				var trashBadge = showBadge(row).markDeleted;
+				var lockBadge = showBadge(row).restricted;
 
-				if (trashBadge !== undefined || lockBadge !== undefined) {
-					var whichBadge = trashBadge !== undefined ? trashBadge : lockBadge;
+				if (trashBadge || lockBadge) {
+					var whichBadge = '';
 
-					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '>' +
+					if (trashBadge) {
+						whichBadge = 'trash';
+					} else if (lockBadge) {
+						whichBadge = 'lock';
+					}
+
+					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '">' +
 							'<div class="fa-stack">' +
 								'<i class="fas fa-circle fa-stack-2x background"></i>' +
 								'<i class="fas fa-trash fa-stack-1x foreground"></i>' +
