@@ -942,7 +942,7 @@ table.dataTable tbody tr.odd {
 }
 #child-files .thumbnail-badge .fa-trash, #child-files .thumbnail-badge .fa-lock {
   left: 0;
-  top: 1px;
+  top: 0;
 }
 
 #is-folder .is-12 {

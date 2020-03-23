@@ -106,7 +106,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '">' +
 							'<div class="fa-stack">' +
 								'<i class="fas fa-circle fa-stack-2x background"></i>' +
-								'<i class="fas fa-trash fa-stack-1x foreground"></i>' +
+								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i>' +
 							'</div>' +
 						'</div>';
 				}
@@ -191,7 +191,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				markedForDeletion = /marked.*?deletion/.test(restrictions);
 				restrictedAccess = /embargoed|staff-only/.test(restrictions);
 			}
-
+console.log({ markDeleted: markedForDeletion, restricted: restrictedAccess })
 			return { markDeleted: markedForDeletion, restricted: restrictedAccess };
 		}
 
