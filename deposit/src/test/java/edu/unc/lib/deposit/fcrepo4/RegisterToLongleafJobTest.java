@@ -116,13 +116,10 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n" + // file
-                "register -f " + LOC2_ID  + "/original_file --checksums 'md5:" + MD5 + "'\n";
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 3, output); // bag, work, file
+        assertRegisterCalled(LOC2_ID + "/original_file --checksums \"md5:" + MD5 + "\"", 1, output);
     }
 
     @Test
@@ -133,11 +130,9 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n"; // work
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 2, output);
     }
 
     @Test
@@ -153,15 +148,11 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n" + // file1
-                "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
-                "register -f " + LOC1_ID + "/event_log\n" + // file2
-                "register -f " + LOC3_ID + "\n";
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 4, output); // bag, work, file1, file2
+        assertRegisterCalled(LOC2_ID + "/original_file --checksums \"md5:" + MD5 + "\"", 1, output);
+        assertRegisterCalled(LOC3_ID, 1, output);
     }
 
     @Test
@@ -177,15 +168,12 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n" + // file
-                "register -f " + LOC2_ID + "/original_file --checksums 'md5:" + MD5 + "'\n" +
-                "register -f " + LOC3_ID + "/techmd_fits\n" +
-                "register -f " + LOC3_ID + "/md_descriptive\n";
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 3, output); // bag, work, file
+        assertRegisterCalled(LOC2_ID + "/original_file --checksums \"md5:" + MD5 + "\"", 1, output);
+        assertRegisterCalled(LOC3_ID + "/techmd_fits", 1, output);
+        assertRegisterCalled(LOC3_ID + "/md_descriptive", 1, output);
     }
 
     @Test
@@ -199,13 +187,10 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n" + // file
-                "register -f " + LOC3_ID + "\n";
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 3, output); // bag, work, file
+        assertRegisterCalled(LOC3_ID, 1, output);
     }
 
     @Test
@@ -219,13 +204,10 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n" + // file
-                "register -f " + LOC3_ID + "\n";
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 3, output); // bag, work, file
+        assertRegisterCalled(LOC3_ID, 1, output);
     }
 
     @Test
@@ -238,12 +220,9 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        String registrationArguments = "register -f " + LOC1_ID + "/event_log\n" + // bag
-                "register -f " + LOC1_ID + "/event_log\n" + // work
-                "register -f " + LOC1_ID + "/event_log\n"; // file
         String output = FileUtils.readFileToString(new File(outputPath), StandardCharsets.UTF_8);
 
-        assertEquals(registrationArguments, output);
+        assertRegisterCalled(LOC1_ID + "/event_log", 3, output);
     }
 
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
@@ -281,5 +260,18 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         Files.setPosixFilePermissions(longleafScript.toPath(), ownerExecutable);
 
         return longleafScript.getAbsolutePath();
+    }
+
+    private void assertRegisterCalled(String expectedMessage, int expectedCount, String output) {
+        String lines[] = output.split("\n");
+
+        int count = 0;
+        for (int i = 0; i < lines.length; i++) {
+            if (("register -f " + expectedMessage).equals(lines[i])) {
+                count++;
+            }
+        }
+
+        assertEquals(expectedCount, count);
     }
 }

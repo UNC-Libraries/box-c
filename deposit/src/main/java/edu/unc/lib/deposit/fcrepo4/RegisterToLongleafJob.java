@@ -137,8 +137,8 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
             // only register binaries with md5sum
             String longleafCommmand;
             if (checksum != null) {
-                longleafCommmand = longleafBaseCommand + " register -f " + fileLocation + " --checksums 'md5:" +
-                        checksum + "'";
+                longleafCommmand = longleafBaseCommand + " register -f " + fileLocation + " --checksums \"md5:" +
+                        checksum + "\"";
             } else {
                 longleafCommmand = longleafBaseCommand + " register -f " + fileLocation;
             }
