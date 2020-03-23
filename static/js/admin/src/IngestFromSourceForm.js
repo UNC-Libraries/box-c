@@ -123,13 +123,15 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 
 			e.stopPropagation();
 
+			// Add action check as final else if block so correct action happens
+			// if a user clicks the row itself before clicking a checkbox
 			if (selected && whichAction === 'ingest') {
 				$this.removeClass("selected");
 				$("input", $this).prop("checked", false);
 			} else if (selected && whichAction === 'staff-only') {
 				var action = staffOnly.prop("checked");
 				staffOnly.prop("checked", action);
-			} else {
+			} else if (!selected && whichAction !== undefined) {
 				$this.addClass("selected");
 
 				if (whichAction === 'staff-only') {
@@ -199,7 +201,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			self.dialog.find(".file_browse_entry.selected:visible").each(function() {
 				var self = $(this);
 				var isPrivate = self.find("input[name=staff-only]").prop("checked");
-				selectedIndexes.push({ index: self.data("index"), staffPermission: isPrivate });
+				selectedIndexes.push({ index: self.data("index"), staffOnly: isPrivate });
 			});
 			
 			self.renderCandidateConfirmation(sources, candidates, selectedIndexes);
@@ -217,7 +219,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 
 		for (var i = 0; i < selectedIndexes.length; i++) {
 			var selectedIndex = selectedIndexes[i].index;
-			candidates[selectedIndex].staffPermission = selectedIndexes[i].staffPermission;
+			candidates[selectedIndex].staffOnly = selectedIndexes[i].staffOnly;
 			selectedCandidates.push(candidates[selectedIndex]);
 		}
 
@@ -249,12 +251,12 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'DIRECTORY';
 				var info = {
 					sourceId : candidate.sourceId,
-					staffPermission: candidate.staffPermission,
 					packagePath : candidate.patternMatched,
 					packagingType : packagingType,
 					label : $this.find("input[name='file_label']").val(),
 					accessionNumber : $this.find("input[name='file_acc_number']").val(),
-					mediaId : $this.find("input[name='file_media_id']").val()
+					mediaId : $this.find("input[name='file_media_id']").val(),
+					staffOnly: candidate.staffOnly,
 				};
 				fileInfo.push(info);
 			});
