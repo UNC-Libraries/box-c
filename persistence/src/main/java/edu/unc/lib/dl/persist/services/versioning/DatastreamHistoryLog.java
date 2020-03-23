@@ -52,7 +52,6 @@ public class DatastreamHistoryLog {
     public static final String CONTENT_TYPE_ATTR = "contentType";
     public static final String CREATED_ATTR = "created";
 
-
     private Document historyDoc;
     private PID datastreamPid;
 

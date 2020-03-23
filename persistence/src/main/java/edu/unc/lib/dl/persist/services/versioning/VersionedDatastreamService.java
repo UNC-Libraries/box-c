@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Date;
 
 import org.apache.jena.rdf.model.Model;
 
@@ -109,15 +110,19 @@ public class VersionedDatastreamService {
         BinaryObject dsHistory = getBinaryObject(dsHistoryPid);
         // No history, start new one
         DatastreamHistoryLog historyLog;
+        // For the first entry in the log, use when the datastream was created. After use modified date
+        Date versionDate;
         if (dsHistory == null) {
             historyLog = new DatastreamHistoryLog(currentDsPid);
+            versionDate = currentDsObj.getCreatedDate();
         } else {
             historyLog = new DatastreamHistoryLog(currentDsPid, dsHistory.getBinaryStream());
+            versionDate = currentDsObj.getLastModified();
         }
 
         historyLog.addVersion(currentDsObj.getBinaryStream(),
                 currentDsObj.getMimetype(),
-                currentDsObj.getCreatedDate());
+                versionDate);
 
         URI historyStorageUri;
         try {

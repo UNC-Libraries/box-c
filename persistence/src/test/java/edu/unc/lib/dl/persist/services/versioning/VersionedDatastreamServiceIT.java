@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -199,14 +200,14 @@ public class VersionedDatastreamServiceIT {
         newV1.setContentType("text/xml");
 
         BinaryObject dsObj = service.addVersion(newV1);
-        Date created1 = dsObj.getCreatedDate();
+        Date version1Date = dsObj.getCreatedDate();
 
         DatastreamVersion newV2 = new DatastreamVersion(dsPid);
         newV2.setContentStream(getModsDocumentStream("more titles"));
         newV2.setContentType("text/xml");
 
         BinaryObject dsObj2 = service.addVersion(newV2);
-        Date created2 = dsObj2.getCreatedDate();
+        Date version2Date = dsObj2.getLastModified();
 
         DatastreamVersion newV3 = new DatastreamVersion(dsPid);
         newV3.setContentStream(getModsDocumentStream("lets leave it here"));
@@ -217,6 +218,9 @@ public class VersionedDatastreamServiceIT {
         Document headDoc = inputStreamToDocument(dsObjFinal.getBinaryStream());
         assertHasModsTitle("lets leave it here", headDoc);
 
+        assertNotEquals("Second version timestamp should not match head version",
+                version2Date, dsObjFinal.getLastModified());
+
         // check historic versions
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
@@ -226,11 +230,11 @@ public class VersionedDatastreamServiceIT {
         assertEquals(2, versions.size());
 
         Element versionEl = versions.get(0);
-        assertVersionAttributes(created1, "text/xml", versionEl);
+        assertVersionAttributes(version1Date, "text/xml", versionEl);
         assertVersionHasModsTitle(TEST_TITLE, versionEl);
 
         Element versionEl2 = versions.get(1);
-        assertVersionAttributes(created2, "text/xml", versionEl2);
+        assertVersionAttributes(version2Date, "text/xml", versionEl2);
         assertVersionHasModsTitle("more titles", versionEl2);
     }
 
