@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.jena.rdf.model.Model;
 
@@ -34,6 +35,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.PidLockManager;
 
 /**
  * Service for managing versions of a datastream using an XML based history log.
@@ -46,6 +48,7 @@ public class VersionedDatastreamService {
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
     private BinaryTransferService transferService;
+    private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
     /**
      * Update a versioned datastream. If the datastream already exists, its previous
@@ -55,9 +58,9 @@ public class VersionedDatastreamService {
      * @return the BinaryObject representation of the datastream updated
      */
     public BinaryObject addVersion(DatastreamVersion newVersion) {
-
         PID dsPid = newVersion.getDsPid();
 
+        Lock dsLock = lockManager.awaitWriteLock(dsPid);
         BinaryObject dsObj = getBinaryObject(dsPid);
 
         // Get a session for transferring the binary and its history
@@ -75,6 +78,7 @@ public class VersionedDatastreamService {
                 return updateHeadVersion(newVersion, session);
             }
         } finally {
+            dsLock.unlock();
             // Only close the transfer session if it was created within this method call
             if (newVersion.getTransferSession() == null) {
                 session.close();
