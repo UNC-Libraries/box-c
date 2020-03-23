@@ -155,6 +155,7 @@ public class IngestSourceController {
 
             deposit.setAccessionNumber(packageDetails.getAccessionNumber());
             deposit.setMediaId(packageDetails.getMediaId());
+            deposit.setStaffOnly(packageDetails.getStaffOnly());
 
             try {
                 depositIds.add(depositService.submitDeposit(destination, deposit).getId());
@@ -179,18 +180,20 @@ public class IngestSourceController {
         private String label;
         private String accessionNumber;
         private String mediaId;
+        private boolean staffOnly;
 
         public IngestPackageDetails() {
         }
 
         public IngestPackageDetails(String sourceId, String packagePath, PackagingType packagingType, String label,
-                String accessionNumber, String mediaId) {
+                String accessionNumber, String mediaId, boolean staffOnly) {
             this.sourceId = sourceId;
             this.packagePath = packagePath;
             this.packagingType = packagingType;
             this.label = label;
             this.accessionNumber = accessionNumber;
             this.mediaId = mediaId;
+            this.staffOnly = staffOnly;
         }
 
         public String getSourceId() {
@@ -239,6 +242,14 @@ public class IngestSourceController {
 
         public void setMediaId(String mediaId) {
             this.mediaId = mediaId;
+        }
+
+        public boolean getStaffOnly() {
+            return staffOnly;
+        }
+
+        public void setStaffOnly(boolean staffOnly) {
+            this.staffOnly = staffOnly;
         }
 
         public URI getPackageUri() {

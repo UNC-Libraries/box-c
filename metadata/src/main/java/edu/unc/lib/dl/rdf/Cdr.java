@@ -140,6 +140,12 @@ public class Cdr {
      */
     public static final Property replaceInvalidTerms = createProperty(
             "http://cdr.unc.edu/definitions/model#replaceInvalidTerms" );
+
+    /**
+     * Relation which denotes the permissions for the subject object
+     */
+    public static final Property staffOnly = createProperty(
+            "http://cdr.unc.edu/definitions/model#staffOnly");
     /**
      *
      */

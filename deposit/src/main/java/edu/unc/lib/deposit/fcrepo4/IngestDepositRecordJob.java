@@ -145,6 +145,10 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         if (onBehalfOf != null) {
             aipObjResc.addProperty(Cdr.depositedOnBehalfOf, onBehalfOf);
         }
+        String staffOnly = status.get(DepositField.staffOnly.name());
+        if (staffOnly != null) {
+            aipObjResc.addProperty(Cdr.staffOnly, staffOnly);
+        }
         String depositPackageType = status.get(DepositField.packagingType.name());
         if (depositPackageType != null) {
             aipObjResc.addProperty(Cdr.depositPackageType, depositPackageType);
