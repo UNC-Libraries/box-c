@@ -146,6 +146,7 @@ public class Cdr {
      */
     public static final Property staffOnly = createProperty(
             "http://cdr.unc.edu/definitions/model#staffOnly");
+
     /**
      *
      */

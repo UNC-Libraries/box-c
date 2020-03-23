@@ -110,4 +110,7 @@ public class CdrDeposit {
 
     public static final Property hasSourceMetadata = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasSourceMetadata");
+
+    public static final Property staffOnly = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#staffOnly");
 }

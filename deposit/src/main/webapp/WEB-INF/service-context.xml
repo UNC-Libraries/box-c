@@ -244,4 +244,12 @@
         <property name="configPath" value="${storageLocations.path}" />
         <property name="mappingPath" value="${storageLocationMappings.path}" />
     </bean>
+
+    <bean id="patronService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+    </bean>
 </beans>

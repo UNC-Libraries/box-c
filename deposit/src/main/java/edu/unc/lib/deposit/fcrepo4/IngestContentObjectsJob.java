@@ -15,10 +15,14 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
+import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.File;
@@ -34,6 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -125,6 +133,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
+
+    @Autowired
+    private PatronAccessAssignmentService patronService;
 
     private AccessGroupSet groupSet;
 
@@ -308,6 +319,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addPremisEvents(obj);
         // add MODS
         addDescription(obj, childResc);
+        // Add marked private, if ingest set to staff only
+        setStaffOnly(obj.getPid());
 
         // Increment the count of objects deposited
         addClicks(1);
@@ -347,6 +360,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
 
         String label = getPropertyValue(childResc, CdrDeposit.label);
+
+
 
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
@@ -434,6 +449,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
+        // Add marked private, if ingest set to staff only
+        setStaffOnly(childPid);
     }
 
     private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc)
@@ -593,6 +610,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForContainer(obj, childResc);
                 // write premis events for the work to fedora
                 addPremisEvents(obj);
+                // Add marked private, if ingest set to staff only
+                setStaffOnly(childPid);
             } catch (Exception e) {
                 tx.cancel(e);
             } finally {
@@ -600,6 +619,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             }
 
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
+        }
+    }
+
+    private void setStaffOnly(PID pid) {
+        Map<String, String> depositStatus = getDepositStatus();
+        String staffOnly = depositStatus.get(DepositField.staffOnly.name());
+
+        if (Boolean.parseBoolean(staffOnly)) {
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
+                    new RoleAssignment(AUTHENTICATED_PRINC, none)));
+            patronService.updatePatronAccess(AgentPrincipals.createFromThread(), pid, accessDetails);
         }
     }
 
