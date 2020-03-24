@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
-import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.File;
@@ -38,10 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -319,8 +315,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addPremisEvents(obj);
         // add MODS
         addDescription(obj, childResc);
-        // Add marked private, if ingest set to staff only
-        setStaffOnly(obj.getPid());
 
         // Increment the count of objects deposited
         addClicks(1);
@@ -366,6 +360,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
         Resource aResc = aipModel.getResource(childResc.getURI());
+
 
         addAclProperties(childResc, aResc);
         populateAIPProperties(childResc, aResc);
@@ -418,6 +413,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             Model model = ModelFactory.createDefaultModel();
             Resource folderResc = model.getResource(childPid.getRepositoryPath());
 
+            // Add marked private, if ingest set to staff only
+            model = setStaffOnly(folderResc, model);
+
             populateAIPProperties(childResc, folderResc);
             // Add acls to AIP
             addAclProperties(childResc, folderResc);
@@ -449,8 +447,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
-        // Add marked private, if ingest set to staff only
-        setStaffOnly(childPid);
     }
 
     private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc)
@@ -584,6 +580,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             Model model = ModelFactory.createDefaultModel();
             Resource workResc = model.getResource(childPid.getRepositoryPath());
 
+            // Add marked private, if ingest set to staff only
+            model = setStaffOnly(workResc, model);
+
             populateAIPProperties(childResc, workResc);
             // Add acls to AIP
             addAclProperties(childResc, workResc);
@@ -610,8 +609,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForContainer(obj, childResc);
                 // write premis events for the work to fedora
                 addPremisEvents(obj);
-                // Add marked private, if ingest set to staff only
-                setStaffOnly(childPid);
             } catch (Exception e) {
                 tx.cancel(e);
             } finally {
@@ -622,16 +619,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void setStaffOnly(PID pid) {
+    private Model setStaffOnly(Resource resc, Model model) {
         Map<String, String> depositStatus = getDepositStatus();
         String staffOnly = depositStatus.get(DepositField.staffOnly.name());
 
         if (Boolean.parseBoolean(staffOnly)) {
-            PatronAccessDetails accessDetails = new PatronAccessDetails();
-            accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
-                    new RoleAssignment(AUTHENTICATED_PRINC, none)));
-            patronService.updatePatronAccess(AgentPrincipals.createFromThread(), pid, accessDetails);
+            model.add(resc, CdrAcl.none, PUBLIC_PRINC);
+            model.add(resc, CdrAcl.none, AUTHENTICATED_PRINC);
+
         }
+
+        return model;
     }
 
     private void addPrimaryObject(WorkObject obj, Resource childResc) {
