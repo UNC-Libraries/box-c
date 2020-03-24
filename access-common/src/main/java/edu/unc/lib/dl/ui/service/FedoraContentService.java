@@ -39,10 +39,14 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.model.StoragePolicy;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Streams binary content from repository objects.
@@ -78,17 +82,28 @@ public class FedoraContentService {
         // Default datastream is DATA_FILE
         String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
 
+        DatastreamType dsType = DatastreamType.getByIdentifier(datastream);
+        if (dsType == null) {
+            throw new NotFoundException("Provided value is not the name of a known datastream type");
+        }
+        if (dsType.getStoragePolicy().equals(StoragePolicy.EXTERNAL)) {
+            throw new IllegalArgumentException("Cannot stream external datastream " + datastream);
+        }
+
         accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                 pid, principals, getPermissionForDatastream(datastream));
 
         LOG.debug("Streaming datastream {} from object {}", datastream, pid);
 
-        FileObject fileObj = repositoryObjectLoader.getFileObject(pid);
+
         BinaryObject binObj;
         if (ORIGINAL_FILE.getId().equals(datastream)) {
+            FileObject fileObj = repositoryObjectLoader.getFileObject(pid);
             binObj = fileObj.getOriginalFile();
         } else {
-            binObj = fileObj.getBinaryObject(datastream);
+            String dsPath = URIUtil.join(pid.getQualifiedId(), dsType.getContainer(), dsType.getId());
+            PID dsPid = PIDs.get(dsPath);
+            binObj = repositoryObjectLoader.getBinaryObject(dsPid);
         }
 
         // Set binary detail response headers
