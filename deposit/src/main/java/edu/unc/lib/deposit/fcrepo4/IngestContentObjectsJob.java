@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
@@ -37,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -129,9 +125,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
-
-    @Autowired
-    private PatronAccessAssignmentService patronService;
 
     private AccessGroupSet groupSet;
 
@@ -355,12 +348,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         String label = getPropertyValue(childResc, CdrDeposit.label);
 
-
-
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
         Resource aResc = aipModel.getResource(childResc.getURI());
-
 
         addAclProperties(childResc, aResc);
         populateAIPProperties(childResc, aResc);
@@ -412,9 +402,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Create the new folder
             Model model = ModelFactory.createDefaultModel();
             Resource folderResc = model.getResource(childPid.getRepositoryPath());
-
-            // Add marked private, if ingest set to staff only
-            model = setStaffOnly(folderResc, model);
 
             populateAIPProperties(childResc, folderResc);
             // Add acls to AIP
@@ -580,9 +567,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             Model model = ModelFactory.createDefaultModel();
             Resource workResc = model.getResource(childPid.getRepositoryPath());
 
-            // Add marked private, if ingest set to staff only
-            model = setStaffOnly(workResc, model);
-
             populateAIPProperties(childResc, workResc);
             // Add acls to AIP
             addAclProperties(childResc, workResc);
@@ -617,19 +601,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
-    }
-
-    private Model setStaffOnly(Resource resc, Model model) {
-        Map<String, String> depositStatus = getDepositStatus();
-        String staffOnly = depositStatus.get(DepositField.staffOnly.name());
-
-        if (Boolean.parseBoolean(staffOnly)) {
-            model.add(resc, CdrAcl.none, PUBLIC_PRINC);
-            model.add(resc, CdrAcl.none, AUTHENTICATED_PRINC);
-
-        }
-
-        return model;
     }
 
     private void addPrimaryObject(WorkObject obj, Resource childResc) {

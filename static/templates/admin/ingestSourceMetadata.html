@@ -3,51 +3,51 @@
 		<a class="complete" id="ingest_source_choose" href="#">Choose materials</a>
 		<span class="bold"> &rarr; Assign metadata</span>
 	</div>
-	
+
 	<div class="errors hidden">
 		<div class="error_stack"></div>
 	</div>
-	
+
 	<div class="file_browse_list">
-	<table>
-	<%
-	_.each(selectedCandidates, function(candidate, index) {
-		%>
-		<tr class="file_browse_entry">
-			<td class="file_browse_type_icon">
-				<% if (candidate.type == "BagIt") { %>
+		<table>
+			<%
+			_.each(selectedCandidates, function(candidate, index) {
+			%>
+			<tr class="file_browse_entry">
+				<td class="file_browse_type_icon">
+					<% if (candidate.type == "BagIt") { %>
 					<i class="fas fa-suitcase"></i>
-				<% } else { %>
+					<% } else { %>
 					<i class="fas fa-folder"></i>
-				<% } %>
-			</td>
+					<% } %>
+				</td>
 
-			<td class="file_browse_entry_data">
-				<h2><%= candidate.patternMatched %></h2>
-				<p><%= candidate.base %><br/>
-					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
-					<% if ("files" in candidate) { %>
+				<td class="file_browse_entry_data">
+					<h2><%= candidate.patternMatched %></h2>
+					<p><%= candidate.base %><br/>
+						<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
+						<% if ("files" in candidate) { %>
 						&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
-					<% } %>
-					<% if ("sizeFormatted" in candidate) { %>
+						<% } %>
+						<% if ("sizeFormatted" in candidate) { %>
 						&ndash; <%= candidate.sizeFormatted %>
-					<% } %>
-				</p>
-				<div class="file_browse_entry_inputs">
-					<label for="file_label">Label <span class="required">*</span></label>
-					<input type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
-					<label for="file_acc_number">Accession Number</label>
-					<input type="text" name="file_acc_number" size="40"/>
-					<label for="file_media_id">Media ID</label>
-					<input type="text" name="file_media_id" size="40"/>
-				</div>
-			</td>
+						<% } %>
+					</p>
+					<div class="file_browse_entry_inputs">
+						<label for="file_label">Label <span class="required">*</span></label>
+						<input type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
+						<label for="file_acc_number">Accession Number</label>
+						<input type="text" name="file_acc_number" size="40"/>
+						<label for="file_media_id">Media ID</label>
+						<input type="text" name="file_media_id" size="40"/>
+					</div>
+				</td>
 
-		</tr>
-	<% }); %>
-	</table>
+			</tr>
+			<% }); %>
+		</table>
 	</div>
-	
+
 	<div class="update_field">
 		<input value="Ingest" class="update_button" type="submit">
 	</div>

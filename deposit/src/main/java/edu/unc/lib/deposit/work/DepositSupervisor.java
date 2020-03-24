@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
+import edu.unc.lib.deposit.fcrepo4.StaffOnlyPermissionJob;
 import edu.unc.lib.deposit.normalize.AssignStorageLocationsJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
@@ -586,7 +587,9 @@ public class DepositSupervisor implements WorkerListener {
                 conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
             } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
                 conversion = makeJob(DirectoryToBagJob.class, depositUUID);
-             }
+            } else if (DepositField.staffOnly.name().equals("true")) {
+                conversion = makeJob(StaffOnlyPermissionJob.class, depositUUID);
+            }
 
             if (conversion == null) {
                 String msg = MessageFormat
@@ -659,6 +662,12 @@ public class DepositSupervisor implements WorkerListener {
         // Ingest all content objects to repository
         if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
+        }
+
+        // Mark objects staff only if flag is set
+        boolean runStaffOnlyJob = Boolean.parseBoolean(status.get(DepositField.staffOnly.name()));
+        if (runStaffOnlyJob && !successfulJobs.contains(StaffOnlyPermissionJob.class.getName())) {
+            return makeJob(StaffOnlyPermissionJob.class, depositUUID);
         }
 
         return null;

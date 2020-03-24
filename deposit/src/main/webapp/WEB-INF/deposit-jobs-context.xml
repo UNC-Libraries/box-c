@@ -213,6 +213,10 @@
     <bean id="ingestDepositRecordJob" class="edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob"
         scope="prototype">
     </bean>
+
+    <bean id="staffOnlyPermissionJob" class="edu.unc.lib.deposit.fcrepo4.StaffOnlyPermissionJob"
+          scope="prototype">
+    </bean>
     
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${smtp.host:localhost}" />
