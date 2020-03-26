@@ -393,12 +393,14 @@ p.no-search-results {
   .browse-header {
     h2.item-title {
       padding-left: 15px;
+      word-wrap: break-word;
     }
   }
 
   .relateditem {
     p {
       font-size: 16px;
+      word-wrap: break-word;
     }
   }
 
@@ -415,6 +417,7 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
+  word-wrap: break-word;
 }
 
 .item-actions {
@@ -668,6 +671,7 @@ table.dataTable {
   .collinfo_metadata {
     margin: auto 0;
   }
+
   .item-title {
     margin-bottom: 0;
   }

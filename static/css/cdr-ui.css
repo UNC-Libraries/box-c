@@ -738,9 +738,11 @@ p.no-search-results {
 }
 .onecol .browse-header h2.item-title, .content-wrap.full_record .browse-header h2.item-title {
   padding-left: 15px;
+  word-wrap: break-word;
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
+  word-wrap: break-word;
 }
 .onecol .aggregate-info .is-narrow-tablet, .content-wrap.full_record .aggregate-info .is-narrow-tablet {
   margin-left: 25px;
@@ -752,6 +754,7 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
+  word-wrap: break-word;
 }
 
 .item-actions {
