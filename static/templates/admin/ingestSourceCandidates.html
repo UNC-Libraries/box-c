@@ -29,7 +29,7 @@
 		%>
 		<tr class="file_browse_entry" data-index="<%= index %>">
 			<td class="file_browse_checkbox">
-				<input type="checkbox" />
+				<input type="checkbox" name="ingest" aria-label="Select for ingest" />
 			</td>
 			<td class="file_browse_type_icon">
 				<% if (candidate.type == "BagIt") { %>
@@ -48,6 +48,11 @@
 						&ndash; <%= candidate.sizeFormatted %>
 					<% } %>
 				</p>
+			</td>
+			<td>
+				<label>
+					Staff Only: <input type="checkbox" name="staff-only" />
+				</label>
 			</td>
 		</tr>
 	<% }); %>
