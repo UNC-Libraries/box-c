@@ -587,8 +587,6 @@ public class DepositSupervisor implements WorkerListener {
                 conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
             } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
                 conversion = makeJob(DirectoryToBagJob.class, depositUUID);
-            } else if (DepositField.staffOnly.name().equals("true")) {
-                conversion = makeJob(StaffOnlyPermissionJob.class, depositUUID);
             }
 
             if (conversion == null) {
@@ -653,6 +651,12 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(TransferBinariesToStorageJob.class, depositUUID);
         }
 
+        // Mark objects staff only if flag is set
+        boolean runStaffOnlyJob = Boolean.parseBoolean(status.get(DepositField.staffOnly.name()));
+        if (runStaffOnlyJob && !successfulJobs.contains(StaffOnlyPermissionJob.class.getName())) {
+            return makeJob(StaffOnlyPermissionJob.class, depositUUID);
+        }
+
         boolean excludeDepositRecord = Boolean.parseBoolean(status.get(DepositField.excludeDepositRecord.name()));
         // Ingest the deposit record
         if (!excludeDepositRecord && !successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
@@ -662,12 +666,6 @@ public class DepositSupervisor implements WorkerListener {
         // Ingest all content objects to repository
         if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
-        }
-
-        // Mark objects staff only if flag is set
-        boolean runStaffOnlyJob = Boolean.parseBoolean(status.get(DepositField.staffOnly.name()));
-        if (runStaffOnlyJob && !successfulJobs.contains(StaffOnlyPermissionJob.class.getName())) {
-            return makeJob(StaffOnlyPermissionJob.class, depositUUID);
         }
 
         return null;

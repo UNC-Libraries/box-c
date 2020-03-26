@@ -32,6 +32,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
+ * Marks file server ingests "staff only", if the appropriate flag is set on the deposit
  *
  * @author lfarrell
  *
@@ -50,6 +51,12 @@ public class StaffOnlyPermissionJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         log.debug("Setting staff only permissions for deposit {}", getDepositPID());
+        Map<String, String> depositStatus = getDepositStatus();
+        String staffOnly = depositStatus.get(DepositField.staffOnly.name());
+
+        if (!Boolean.parseBoolean(staffOnly)) {
+            return;
+        }
 
         Model model = getWritableModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
@@ -62,12 +69,7 @@ public class StaffOnlyPermissionJob extends AbstractDepositJob {
     }
 
     private void setStaffOnly(Resource resc, Model model) {
-        Map<String, String> depositStatus = getDepositStatus();
-        String staffOnly = depositStatus.get(DepositField.staffOnly.name());
-
-        if (Boolean.parseBoolean(staffOnly)) {
             model.add(resc, CdrAcl.none, PUBLIC_PRINC);
             model.add(resc, CdrAcl.none, AUTHENTICATED_PRINC);
-        }
     }
 }

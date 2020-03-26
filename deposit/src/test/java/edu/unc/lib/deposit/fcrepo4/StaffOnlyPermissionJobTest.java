@@ -25,8 +25,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,32 +48,19 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
     private final static String LOC1_ID = "loc1";
-    private final static String LOC2_ID = "loc2";
     private final static String FILE_CONTENT1 = "Some content";
-    private final static String SOURCE_ID = "source1";
 
     private StaffOnlyPermissionJob job;
     private Model model;
     private StorageLocationManager locationManager;
     private Bag depBag;
     private StorageLocationTestHelper locTestHelper;
-    private Path loc1Path;
-    private Path loc2Path;
-    private Path candidatePath;
-    private Path sourcePath;
+    private File originalFile;
 
     @Before
     public void setup() throws Exception {
-        loc1Path = tmpFolder.newFolder("loc1").toPath();
-        loc2Path = tmpFolder.newFolder("loc2").toPath();
-
         locTestHelper = new StorageLocationTestHelper();
-        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
-        locTestHelper.addStorageLocation(LOC2_ID, "Location 2", loc2Path.toString());
-
-        sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();
         locationManager = locTestHelper.createLocationManager(null);
-        candidatePath = Files.createDirectories(sourcePath.resolve(depositUUID));
 
         job = new StaffOnlyPermissionJob();
 
@@ -92,6 +77,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         model = job.getWritableModel();
         depBag = model.createBag(depositPid.getRepositoryPath());
         depBag.addProperty(Cdr.storageLocation, LOC1_ID);
+
+        originalFile = File.createTempFile("txt", "test");
     }
 
     @Test
@@ -102,7 +89,7 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
 
         PID objPid = makePid();
         Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Folder);
+        objBag.addProperty(RDF.type, Cdr.Work);
 
         Resource fileResc = addFileObject(objBag, FILE_CONTENT1);
         objBag.addProperty(Cdr.primaryObject, fileResc);
@@ -120,6 +107,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertTrue(roles.hasProperty(none.getProperty(), PUBLIC_PRINC));
 
         assertFalse(fileResc.hasProperty(none.getProperty()));
+
+        originalFile.deleteOnExit();
     }
 
     @Test
@@ -130,7 +119,7 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
 
         PID objPid = makePid();
         Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Folder);
+        objBag.addProperty(RDF.type, Cdr.Work);
 
         Resource fileResc = addFileObject(objBag, FILE_CONTENT1);
         objBag.addProperty(Cdr.primaryObject, fileResc);
@@ -148,6 +137,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertFalse(roles.hasProperty(none.getProperty()));
 
         assertFalse(fileResc.hasProperty(none.getProperty()));
+
+        originalFile.deleteOnExit();
     }
 
     private Resource addFileObject(Bag parent, String content) throws Exception {
@@ -155,7 +146,6 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         Resource objResc = model.getResource(objPid.getRepositoryPath());
         objResc.addProperty(RDF.type, Cdr.FileObject);
 
-        File originalFile = candidatePath.resolve(objPid.getId() + ".txt").toFile();
         FileUtils.writeStringToFile(originalFile, content, "UTF-8");
         objResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
 
