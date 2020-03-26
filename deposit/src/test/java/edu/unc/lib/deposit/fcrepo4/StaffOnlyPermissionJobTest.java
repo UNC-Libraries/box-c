@@ -18,54 +18,80 @@ package edu.unc.lib.deposit.fcrepo4;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
-import static org.junit.Assert.assertEquals;
+import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.fcrepo4.AclFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
  * @author lfarrell
  */
 public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
-    @Mock
-    private DepositRecord depositRecord;
-    @Mock
-    private RepositoryObjectFactory repoObjFactory;
-    @Mock
-    private AclFactory aclFactory;
+    private final static String LOC1_ID = "loc1";
+    private final static String LOC2_ID = "loc2";
+    private final static String FILE_CONTENT1 = "Some content";
+    private final static String SOURCE_ID = "source1";
 
     private StaffOnlyPermissionJob job;
+    private Model model;
+    private StorageLocationManager locationManager;
+    private Bag depBag;
+    private StorageLocationTestHelper locTestHelper;
+    private Path loc1Path;
+    private Path loc2Path;
+    private Path candidatePath;
+    private Path sourcePath;
 
     @Before
     public void setup() throws Exception {
-        when(repoObjFactory.createDepositRecord(any(PID.class), any(Model.class)))
-                .thenReturn(depositRecord);
-        PID eventPid = makePid("content");
-        when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
+        loc1Path = tmpFolder.newFolder("loc1").toPath();
+        loc2Path = tmpFolder.newFolder("loc2").toPath();
 
-        depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
-        when(depositRecord.getPid()).thenReturn(depositPid);
+        locTestHelper = new StorageLocationTestHelper();
+        locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
+        locTestHelper.addStorageLocation(LOC2_ID, "Location 2", loc2Path.toString());
+
+        sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();
+        locationManager = locTestHelper.createLocationManager(null);
+        candidatePath = Files.createDirectories(sourcePath.resolve(depositUUID));
+
+        job = new StaffOnlyPermissionJob();
+
+        job.setJobUUID(jobUUID);
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        setField(job, "locationManager", locationManager);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
+        job.init();
+
+        model = job.getWritableModel();
+        depBag = model.createBag(depositPid.getRepositoryPath());
+        depBag.addProperty(Cdr.storageLocation, LOC1_ID);
     }
 
     @Test
@@ -74,15 +100,26 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         depositStatus.put(DepositField.staffOnly.name(), "true");
         when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
-        job = new StaffOnlyPermissionJob();
-        job.setDepositUUID(depositUUID);
+        PID objPid = makePid();
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Folder);
 
-        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(depositPid);
+        Resource fileResc = addFileObject(objBag, FILE_CONTENT1);
+        objBag.addProperty(Cdr.primaryObject, fileResc);
+        objBag.addProperty(RDF.type, Cdr.FileObject);
 
-        assertPrincipalHasRoles("Role not found for public user",
-                princRoles, PUBLIC_PRINC, none);
-        assertPrincipalHasRoles("Role not found for authenticated user",
-                princRoles, AUTHENTICATED_PRINC, none);
+        depBag.add(objBag);
+        job.closeModel();
+
+        job.run();
+
+        model = job.getReadOnlyModel();
+        Resource roles = model.getResource(objPid.getRepositoryPath());
+
+        assertTrue(roles.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
+        assertTrue(roles.hasProperty(none.getProperty(), PUBLIC_PRINC));
+
+        assertFalse(fileResc.hasProperty(none.getProperty()));
     }
 
     @Test
@@ -91,43 +128,38 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         depositStatus.put(DepositField.staffOnly.name(), "false");
         when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
-        job = new StaffOnlyPermissionJob();
-        job.setDepositUUID(depositUUID);
+        PID objPid = makePid();
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Folder);
 
-        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(depositPid);
-        assertPrincipalDoesNotHasRoles("Role found for public user",
-                princRoles, PUBLIC_PRINC, none);
-        assertPrincipalDoesNotHasRoles("Role found for authenticated user",
-                princRoles, AUTHENTICATED_PRINC, none);
+        Resource fileResc = addFileObject(objBag, FILE_CONTENT1);
+        objBag.addProperty(Cdr.primaryObject, fileResc);
+        objBag.addProperty(RDF.type, Cdr.FileObject);
+
+        depBag.add(objBag);
+        job.closeModel();
+
+        job.run();
+
+        model = job.getReadOnlyModel();
+        Resource roles = model.getResource(objPid.getRepositoryPath());
+
+        assertFalse(roles.hasProperty(none.getProperty()));
+        assertFalse(roles.hasProperty(none.getProperty()));
+
+        assertFalse(fileResc.hasProperty(none.getProperty()));
     }
 
-    private static void assertPrincipalHasRoles(String message, Map<String, Set<String>> princRoles,
-                                                String principal, UserRole... expectedRoles) {
-        try {
-            Set<String> roles = princRoles.get(principal);
-            assertNotNull(roles);
-            assertEquals(expectedRoles.length, roles.size());
-            for (UserRole expectedRole : expectedRoles) {
-                assertTrue(roles.contains(expectedRole.getPropertyString()));
-            }
-        } catch (Error e) {
-            throw new AssertionError(message, e);
+    private Resource addFileObject(Bag parent, String content) throws Exception {
+        PID objPid = makePid();
+        Resource objResc = model.getResource(objPid.getRepositoryPath());
+        objResc.addProperty(RDF.type, Cdr.FileObject);
 
-        }
-    }
+        File originalFile = candidatePath.resolve(objPid.getId() + ".txt").toFile();
+        FileUtils.writeStringToFile(originalFile, content, "UTF-8");
+        objResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
 
-    private static void assertPrincipalDoesNotHasRoles(String message, Map<String, Set<String>> princRoles,
-                                                String principal, UserRole... expectedRoles) {
-        try {
-            Set<String> roles = princRoles.get(principal);
-            assertNotNull(roles);
-            assertEquals(expectedRoles.length, roles.size());
-            for (UserRole expectedRole : expectedRoles) {
-                assertFalse(roles.contains(expectedRole.getPropertyString()));
-            }
-        } catch (Error e) {
-            throw new AssertionError(message, e);
-
-        }
+        parent.add(objResc);
+        return objResc;
     }
 }
