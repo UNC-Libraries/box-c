@@ -140,8 +140,6 @@ public class UpdateDescriptionServiceTest {
         assertEquals("text/xml", version.getContentType());
         assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
 
-        verify(versioningService).addVersion(any(DatastreamVersion.class));
-
         assertMessageSent();
     }
 
@@ -156,8 +154,6 @@ public class UpdateDescriptionServiceTest {
         assertEquals(modsPid, version.getDsPid());
         assertEquals("text/xml", version.getContentType());
         assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
-
-        verify(versioningService).addVersion(any(DatastreamVersion.class));
 
         assertMessageSent();
     }
@@ -221,8 +217,6 @@ public class UpdateDescriptionServiceTest {
         assertEquals(modsPid, version.getDsPid());
         assertEquals("text/xml", version.getContentType());
         assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
-
-        verify(versioningService).addVersion(any(DatastreamVersion.class));
 
         verify(messageSender, never()).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
     }

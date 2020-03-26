@@ -32,25 +32,6 @@
 
     <context:component-scan resource-pattern="**/RetrieveMODSController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
-    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="binaryTransferService" ref="binaryTransferService" />
-    </bean>
-    
-    <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
-    </bean>
-    
-    <bean id="updateService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
-        <property name="aclService" ref="aclService" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="validate" value="false" />
-        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
-    </bean>
-    
     <bean id="modsRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.MODSRetrievalService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
