@@ -191,7 +191,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				markedForDeletion = /marked.*?deletion/.test(restrictions);
 				restrictedAccess = /embargoed|staff-only/.test(restrictions);
 			}
-console.log({ markDeleted: markedForDeletion, restricted: restrictedAccess })
+
 			return { markDeleted: markedForDeletion, restricted: restrictedAccess };
 		}
 

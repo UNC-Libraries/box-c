@@ -10,7 +10,7 @@
                                      :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                                 <i v-else class="fa" :class="recordType(record.type)"></i>
                                 <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
-                                     :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
                                      'thumbnail-badge-trash-search ': !isRecordBrowse}">
                                     <div class="fa-stack">
                                         <i class="fa fa-circle fa-stack-2x background"></i>
@@ -18,7 +18,7 @@
                                     </div>
                                 </div>
                                 <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
-                                     :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
                                      'thumbnail-badge-lock-search ': !isRecordBrowse}">
                                     <div class="fa-stack">
                                         <i class="fa fa-circle fa-stack-2x background"></i>
@@ -204,7 +204,7 @@
         }
 
 
-        .deleted-image-icon {
+        .has-image-icon {
             top: 100px;
         }
 

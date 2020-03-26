@@ -790,6 +790,13 @@ p.no-search-results {
   padding: 7px;
 }
 
+.full_record.deleted a {
+  color: #007FAE;
+}
+.full_record.deleted a:hover {
+  color: #007FAE;
+}
+
 .onecol, .content-wrap.full_record {
   width: 100%;
 }
@@ -801,6 +808,9 @@ p.no-search-results {
 }
 .onecol h2, .content-wrap.full_record h2 {
   margin-left: 25px;
+}
+.onecol h2.deleted, .content-wrap.full_record h2.deleted {
+  display: block;
 }
 .onecol h2.link-list, .content-wrap.full_record h2.link-list {
   font-size: 20px;

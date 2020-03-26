@@ -39,12 +39,7 @@
 				<c:import url="fullRecord/navigationBar.jsp" />
 				<div class="columns">
 					<div class="column is-8">
-						<c:choose>
-							<c:when test="${markedForDeletion}">
-								<h2 class="item-title deleted"><c:out value="${briefObject.title}" /></h2>
-							</c:when>
-							<c:otherwise><h2 class="item-title"><c:out value="${briefObject.title}" /></h2></c:otherwise>
-						</c:choose>
+						<h2 class="item-title ${isDeleted}"><c:out value="${briefObject.title}" /></h2>
 					</div>
 					<div class="column is-narrow-desktop action-btn item-actions">
 						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
@@ -68,12 +63,7 @@
 					</div>
 				</div>
 				<div class="columns columns-resize aggregate-info">
-					<c:choose>
-						<c:when test="${markedForDeletion}">
-							<div class="column is-narrow-tablet deleted">
-						</c:when>
-						<c:otherwise><div class="column is-narrow-tablet"></c:otherwise>
-					</c:choose>
+					<div class="column is-narrow-tablet ${isDeleted}">
 						<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
 						<c:import url="common/thumbnail.jsp">
 							<c:param name="target" value="file" />

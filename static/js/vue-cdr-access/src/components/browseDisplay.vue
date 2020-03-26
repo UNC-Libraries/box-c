@@ -9,15 +9,13 @@
                                  :alt="altText(record.title)" class="thumbnail thumbnail-size-large"
                                  :class="{restricted: markedForDeletion(record) || isRestricted(record)}">
                             <i v-else class="fa" :class="recordType(record.type)"></i>
-                            <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
-                                 :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
+                            <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash">
                                 <div class="fa-stack">
                                     <i class="fa fa-circle fa-stack-2x background"></i>
                                     <i class="fa fa-trash fa-stack-1x foreground"></i>
                                 </div>
                             </div>
-                            <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
-                                 :class="{'deleted-image-icon': thumbnailPresent(record.thumbnail_url)}">
+                            <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock">
                                 <div class="fa-stack">
                                     <i class="fa fa-circle fa-stack-2x background"></i>
                                     <i class="fa fa-lock fa-stack-1x foreground"></i>

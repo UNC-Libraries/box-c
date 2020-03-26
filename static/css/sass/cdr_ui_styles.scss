@@ -455,6 +455,16 @@ p.no-search-results {
   }
 }
 
+.full_record.deleted {
+  a {
+    color: #007FAE;
+
+    &:hover {
+      color: #007FAE;
+    }
+  }
+}
+
 .onecol, .content-wrap.full_record {
   width: 100%;
 
@@ -467,6 +477,10 @@ p.no-search-results {
 
   h2 {
     margin-left: 25px;
+  }
+
+  h2.deleted {
+    display: block;
   }
 
   h2.link-list {

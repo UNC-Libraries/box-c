@@ -41,14 +41,12 @@
 </c:choose>
 
 <c:url var="fullRecordUrl" scope="page" value="record/${briefObject.id}"/>
+
 <div class="contentarea">
     <div id="is-collection" class="columns browse-header">
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
-            <c:choose>
-                <c:when test="${markedForDeletion}"><h2 class="deleted"></c:when>
-                <c:otherwise><h2></c:otherwise>
-                </c:choose>
+            <h2 class="${isDeleted}">
                 <i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>
             </h2>
             <c:if test="${not empty briefObject.dateAdded}">
