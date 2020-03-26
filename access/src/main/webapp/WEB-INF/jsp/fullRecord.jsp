@@ -21,7 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
 <c:if test="${markedForDeletion}">
-	<c:set var="isDeleted" value="deleted" scope="session"/>
+	<c:set var="isDeleted" value="deleted" scope="request"/>
 </c:if>
 
 <c:set var="allowsPublicAccess" value="${permsHelper.allowsPublicAccess(briefObject)}" />

@@ -30,7 +30,7 @@
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
 			</c:set>
 			<div class="relateditem ${currentItemClass}">
-				<div class="relatedthumb ${isDeleted} ${currentItemClass}">
+				<div class="relatedthumb ${isDeleted}">
 					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />
 					<c:import url="common/thumbnail.jsp">
 						<c:param name="target" value="record" />
