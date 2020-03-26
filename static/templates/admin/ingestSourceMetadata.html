@@ -35,11 +35,13 @@
 				</p>
 				<div class="file_browse_entry_inputs">
 					<label for="file_label">Label <span class="required">*</span></label>
-					<input type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
+					<input id="file_label" type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
 					<label for="file_acc_number">Accession Number</label>
-					<input type="text" name="file_acc_number" size="40"/>
+					<input id="file_acc_number" type="text" name="file_acc_number" size="40"/>
 					<label for="file_media_id">Media ID</label>
-					<input type="text" name="file_media_id" size="40"/>
+					<input id="file_media_id" type="text" name="file_media_id" size="40"/>
+					<label for="staff_only">Staff only</label>
+					<input id="staff_only" type="checkbox" name="staff-only"/>
 				</div>
 			</td>
 			

@@ -117,28 +117,13 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		// Bind selection events for result entries
 		form.on("click", ".file_browse_entry", function(e){
 			var $this = $(this);
-			var whichAction = e.target.name;
-			var staffOnly = $("input[name=staff-only]", $this);
-			var selected = $this.hasClass("selected");
-
 			e.stopPropagation();
-
-			// Add action check as final else if block so correct action happens
-			// if a user clicks the row itself before clicking a checkbox
-			if (selected && whichAction === 'ingest') {
+			if ($this.hasClass("selected")) {
 				$this.removeClass("selected");
 				$("input", $this).prop("checked", false);
-			} else if (selected && whichAction === 'staff-only') {
-				var action = staffOnly.prop("checked");
-				staffOnly.prop("checked", action);
-			} else if (!selected && whichAction !== undefined) {
+			} else {
 				$this.addClass("selected");
-
-				if (whichAction === 'staff-only') {
-					$("input", $this).prop("checked", true);
-				} else if (whichAction === 'ingest') {
-					$("input[name=ingest]", $this).prop("checked", true);
-				}
+				$("input", $this).prop("checked", true);
 			}
 			
 			self.updateCandidateSubmitButton();
@@ -154,12 +139,10 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			$this.parents(".file_browse_heading").first().nextUntil(".file_browse_heading", ".file_browse_entry").each(function() {
 				if (select) {
 					$(this).addClass("selected");
-					$("input[name=ingest]").prop("checked", select);
 				} else {
 					$(this).removeClass("selected");
-					$("input").prop("checked", select);
 				}
-
+				$("input", $(this)).prop("checked", select);
 			});
 			self.updateCandidateSubmitButton();
 		});
@@ -199,9 +182,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			// Determine which files were selected and match the current filter, to avoid hidden files getting chosen
 			var selectedIndexes = [];
 			self.dialog.find(".file_browse_entry.selected:visible").each(function() {
-				var self = $(this);
-				var isPrivate = self.find("input[name=staff-only]").prop("checked");
-				selectedIndexes.push({ index: self.data("index"), staffOnly: isPrivate });
+				selectedIndexes.push($(this).data("index"));
 			});
 			
 			self.renderCandidateConfirmation(sources, candidates, selectedIndexes);
@@ -215,15 +196,14 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 	
 	IngestFromSourceForm.prototype.renderCandidateConfirmation = function(sources, candidates, selectedIndexes) {
 		var self = this;
+		
 		var selectedCandidates = [];
-
 		for (var i = 0; i < selectedIndexes.length; i++) {
-			var selectedIndex = selectedIndexes[i].index;
-			candidates[selectedIndex].staffOnly = selectedIndexes[i].staffOnly;
-			selectedCandidates.push(candidates[selectedIndex]);
+			selectedCandidates.push(candidates[selectedIndexes[i]]);
 		}
-
+		
 		var candidatesForm = metadataTemplate({selectedCandidates : selectedCandidates});
+		
 		this.dialog.html(candidatesForm);
 		
 		this.dialog.find("#ingest_source_choose").click(function(e) {
@@ -249,6 +229,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				}
 				
 				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'DIRECTORY';
+				
 				var info = {
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,
@@ -256,7 +237,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					label : $this.find("input[name='file_label']").val(),
 					accessionNumber : $this.find("input[name='file_acc_number']").val(),
 					mediaId : $this.find("input[name='file_media_id']").val(),
-					staffOnly: candidate.staffOnly,
+					staffOnly: $this.find("input[name=staff-only]").prop("checked")
 				};
 				fileInfo.push(info);
 			});
@@ -273,7 +254,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				dialog : self.dialog
 			});
 			loadingOverlay.open();
-
+			
 			// Make request to server
 			$.ajax({
 				url : "/services/api/edit/ingestSources/ingest/" + self.pid,
