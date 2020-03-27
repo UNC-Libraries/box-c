@@ -32,7 +32,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 	var loadingIcon = $("#loading-icon");
 	loadingIcon.removeClass("hidden");
 	
-	var fields = "id,title,path,contentStatus,type"
+	var fields = "id,title,path,contentStatus,type";
 	$.getJSON("/services/api/record/" + pid + "?fields=" + fields, function(data) {
 		var resultObject = data;
 		
@@ -59,7 +59,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			itemClass : "header_menu_link",
 			action : recordUrl
 		}];
-		if (originalUrl && originalUrl.length > 1){
+		if ((data.type === 'File' || data.type === 'Work') && originalUrl && originalUrl.length > 1) {
 			menuEntries.push({
 				insertPath : ["View"],
 				label : "View original file",
