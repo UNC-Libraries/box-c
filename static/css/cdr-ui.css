@@ -796,6 +796,12 @@ p.no-search-results {
 .full_record.deleted a:hover {
   color: #007FAE;
 }
+.full_record.deleted a.button {
+  color: white;
+}
+.full_record.deleted a.button:hover {
+  color: white;
+}
 
 .onecol, .content-wrap.full_record {
   width: 100%;
@@ -822,6 +828,9 @@ p.no-search-results {
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
+}
+.onecol .relateditem .deleted, .content-wrap.full_record .relateditem .deleted {
+  display: block;
 }
 .onecol .aggregate-info .is-narrow-tablet, .content-wrap.full_record .aggregate-info .is-narrow-tablet {
   margin-left: 25px;

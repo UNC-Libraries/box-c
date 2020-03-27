@@ -116,6 +116,11 @@
 	transition: opacity 0s;
 }
 
+.relatedthumb.deleted .thumbnail.placeholder .thumbnail-placeholder,
+.is-narrow-tablet.deleted .thumbnail.placeholder .thumbnail-placeholder {
+	opacity: .3;
+}
+
 .thumbnail.thumbnail-resource-type-collection .thumbnail-placeholder {
 	background: url('/static/images/placeholder/collection-small.png');
 }

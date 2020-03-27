@@ -907,6 +907,14 @@ p.no-search-results {
       color: #007FAE;
     }
   }
+
+  a.button {
+    color: white;
+
+    &:hover {
+      color: white;
+    }
+  }
 }
 
 .onecol, .content-wrap.full_record {
@@ -942,6 +950,10 @@ p.no-search-results {
   .relateditem {
     p {
       font-size: 16px;
+    }
+
+    .deleted {
+      display: block;
     }
   }
 
