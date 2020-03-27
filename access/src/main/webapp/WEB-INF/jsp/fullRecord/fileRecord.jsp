@@ -64,8 +64,7 @@
             </div>
         </div>
         <div class="columns columns-resize file-info">
-            <c:choose>
-                <div class="column is-narrow-tablet ${isDeleted}">
+            <div class="column is-narrow-tablet ${isDeleted}">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="target" value="file" />

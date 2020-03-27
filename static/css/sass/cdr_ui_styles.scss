@@ -479,12 +479,14 @@ p.no-search-results {
   h2 {
     font-size: 2.5rem;
     line-height: 1;
-    margin: 0 20px 20px 0;
+    margin: 0 20px 20px 25px;
     padding-left: 0;
-  }
 
-  h2 {
-    margin-left: 25px;
+    .thumbnail-badge {
+      font-size: 15px;
+      margin-left: 10px;
+      margin-top: -25px;
+    }
   }
 
   h2.deleted {
@@ -497,6 +499,7 @@ p.no-search-results {
     }
 
   }
+
 
   h2.link-list {
     font-size: 20px;
@@ -513,6 +516,10 @@ p.no-search-results {
   .relateditem {
     p {
       font-size: 16px;
+    }
+
+    .deleted {
+      display: block;
     }
 
     .deleted {

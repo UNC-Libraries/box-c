@@ -50,6 +50,14 @@
                 	<c:otherwise><h2></c:otherwise>
                 </c:choose>
                 <i class="fa fa-university" aria-hidden="true"></i> <c:out value="${briefObject.title}" />
+                <c:if test="${not empty badgeIcon}">
+                    <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
+                        <div class="fa-stack">
+                            <i class="fas fa-circle fa-stack-2x background"></i>
+                            <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
+                        </div>
+                    </div>
+                </c:if>
             </h2>
             <p><strong>Subjects:</strong>
                 <c:choose>

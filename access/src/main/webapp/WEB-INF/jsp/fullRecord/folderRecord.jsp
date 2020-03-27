@@ -41,7 +41,6 @@
 </c:choose>
 <c:url var="fullRecordUrl" scope="page" value="record/${briefObject.id}"/>
 <div class="contentarea">
-    ${badgeIcon}
     <div id="is-folder" class="columns browse-header">
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
