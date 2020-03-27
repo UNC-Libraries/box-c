@@ -25,7 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,10 +61,12 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -77,6 +82,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -126,7 +132,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
 
+    @Autowired
+    private UpdateDescriptionService updateDescService;
+
     private AccessGroupSet groupSet;
+    private AgentPrincipals agent;
 
     private boolean skipDepositLink;
     private Resource depositResc;
@@ -183,7 +193,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         log.debug("Creating content AIPS for deposit {}", getDepositPID());
 
-        Model model = getReadOnlyModel();
+        Model model = getWritableModel();
 
         PID destPid = getDestinationPID();
 
@@ -198,6 +208,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
         String groups = depositStatus.get(DepositField.permissionGroups.name());
         groupSet = new AccessGroupSet(groups);
+        agent = new AgentPrincipals(depositor, groupSet);
 
         // Verify that the depositor is allowed to ingest to the given destination
         aclService.assertHasAccess(
@@ -666,11 +677,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addDescription(ContentObject obj, Resource dResc) throws IOException {
-        if (!dResc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
+        Path modsPath = getModsPath(obj.getPid());
+        if (!Files.exists(modsPath) || dResc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
             return;
         }
-        URI descUri = URI.create(dResc.getProperty(CdrDeposit.descriptiveStorageUri).getString());
-        obj.setDescription(descUri);
+
+        InputStream modsStream = Files.newInputStream(modsPath);
+        BinaryObject descBin = updateDescService.updateDescription(
+                logTransferSession, agent, obj, modsStream);
+        dResc.addLiteral(CdrDeposit.descriptiveStorageUri, descBin.getContentUri().toString());
     }
 
     private void addPremisEvents(ContentObject obj) {

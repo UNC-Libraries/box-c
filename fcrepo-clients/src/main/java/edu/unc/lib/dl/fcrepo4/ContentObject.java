@@ -16,8 +16,6 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
-import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
-import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import java.io.InputStream;
@@ -49,32 +47,6 @@ public abstract class ContentObject extends RepositoryObject {
     protected ContentObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);
-    }
-
-    /**
-     * If no description exists, adds description information to this object (which includes a MODS record).
-     * If description already exists, updates description information for this object.
-     * @param modsStream
-     * @return the BinaryObject for the descriptive record
-     */
-    public BinaryObject setDescription(URI modsUri) {
-        PID modsPid = getMdDescriptivePid(pid);
-
-        BinaryObject descObj = this.getDescription();
-        if (descObj == null) {
-            Model descModel = createDefaultModel();
-            descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
-
-            descObj = repoObjFactory.createOrUpdateBinary(modsPid, modsUri, MD_DESCRIPTIVE.getDefaultFilename(),
-                    MD_DESCRIPTIVE.getMimetype(), null, null, descModel);
-
-            repoObjFactory.createRelationship(this, Cdr.hasMods, descObj.getResource());
-
-            return descObj;
-        } else {
-            return repoObjFactory.createOrUpdateBinary(modsPid, modsUri, MD_DESCRIPTIVE.getDefaultFilename(),
-                    MD_DESCRIPTIVE.getMimetype(), null, null, null);
-        }
     }
 
     /**

@@ -22,13 +22,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -48,11 +47,13 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
+import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService.DatastreamVersion;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
@@ -71,15 +72,19 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
+    private RepositoryObjectFactory repoObjFactory;
+    @Mock
     private OperationsMessageSender messageSender;
     @Mock
     private MODSValidator modsValidator;
     @Mock
     private StorageLocation destination;
     @Mock
-    private BinaryTransferService transferService;
-    @Mock
     private BinaryTransferSession transferSession;
+    @Mock
+    private VersionedDatastreamService versioningService;
+    @Mock
+    private BinaryObject mockDescBin;
 
     @Mock
     private AgentPrincipals agent;
@@ -88,12 +93,10 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private ContentObject obj;
 
-    private URI transferredUri;
-
-    @Captor
-    private ArgumentCaptor<InputStream> inputStreamCaptor;
     @Captor
     private ArgumentCaptor<Collection<PID>> pidsCaptor;
+    @Captor
+    private ArgumentCaptor<DatastreamVersion> versionCaptor;
 
     private UpdateDescriptionService service;
     private PID objPid;
@@ -114,34 +117,45 @@ public class UpdateDescriptionServiceTest {
         objPid = PIDs.get(UUID.randomUUID().toString());
         modsPid = getMdDescriptivePid(objPid);
         modsStream = new ByteArrayInputStream(FILE_CONTENT.getBytes());
-        transferredUri = URI.create("file:///path/to/transferred/file.txt");
 
-        when(obj.setDescription(any(URI.class))).thenReturn(mock(BinaryObject.class));
+        when(versioningService.addVersion(any(DatastreamVersion.class))).thenReturn(mockDescBin);
         when(obj.getPid()).thenReturn(objPid);
-
-        when(transferSession.transferReplaceExisting(modsPid, modsStream)).thenReturn(transferredUri);
 
         service = new UpdateDescriptionService();
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repoObjLoader);
+        service.setRepositoryObjectFactory(repoObjFactory);
         service.setOperationsMessageSender(messageSender);
         service.setModsValidator(modsValidator);
-        service.setTransferService(transferService);
+        service.setVersionedDatastreamService(versioningService);
     }
 
     @Test
     public void updateDescriptionTest() throws Exception {
-        when(transferService.getSession(obj)).thenReturn(transferSession);
+        service.updateDescription(agent, objPid, modsStream);
+
+        verify(versioningService).addVersion(versionCaptor.capture());
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(modsPid, version.getDsPid());
+        assertEquals("text/xml", version.getContentType());
+        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
+
+        assertMessageSent();
+    }
+
+    @Test
+    public void updateDescriptionAlreadyExistsTest() throws Exception {
+        when(repoObjFactory.objectExists(modsPid.getRepositoryUri())).thenReturn(true);
 
         service.updateDescription(agent, objPid, modsStream);
 
-        verify(transferSession).transferReplaceExisting(eq(modsPid), inputStreamCaptor.capture());
-        assertEquals(FILE_CONTENT, IOUtils.toString(inputStreamCaptor.getValue()));
-
-        verify(obj).setDescription(transferredUri);
+        verify(versioningService).addVersion(versionCaptor.capture());
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(modsPid, version.getDsPid());
+        assertEquals("text/xml", version.getContentType());
+        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
 
         assertMessageSent();
-
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -150,6 +164,19 @@ public class UpdateDescriptionServiceTest {
                 .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
 
         service.updateDescription(agent, objPid, modsStream);
+    }
+
+    @Test
+    public void insufficientAccessDisableAccessCheckTest() throws Exception {
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
+
+        service.setChecksAccess(false);
+
+        service.updateDescription(agent, objPid, modsStream);
+
+        verify(versioningService).addVersion(any());
+        assertMessageSent();
     }
 
     @Test(expected = MetadataValidationException.class)
@@ -171,12 +198,27 @@ public class UpdateDescriptionServiceTest {
     public void updateDescriptionProvidedSession() throws Exception {
         service.updateDescription(transferSession, agent, objPid, modsStream);
 
-        verify(transferSession).transferReplaceExisting(eq(modsPid), inputStreamCaptor.capture());
-        assertEquals(FILE_CONTENT, IOUtils.toString(inputStreamCaptor.getValue()));
-
-        verify(obj).setDescription(transferredUri);
+        verify(versioningService).addVersion(versionCaptor.capture());
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
+        assertEquals(transferSession, version.getTransferSession());
 
         assertMessageSent();
+    }
+
+    @Test
+    public void updateDescriptionDisableMassgesTest() throws Exception {
+        service.setSendsMessages(false);
+
+        service.updateDescription(agent, objPid, modsStream);
+
+        verify(versioningService).addVersion(versionCaptor.capture());
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(modsPid, version.getDsPid());
+        assertEquals("text/xml", version.getContentType());
+        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
+
+        verify(messageSender, never()).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
     }
 
     private void assertMessageSent() {

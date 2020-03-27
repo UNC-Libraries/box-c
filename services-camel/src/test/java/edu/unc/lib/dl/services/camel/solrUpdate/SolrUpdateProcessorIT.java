@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -44,15 +45,18 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
@@ -76,6 +80,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Autowired
     private CamelContext cdrServiceSolrUpdate;
+    @Autowired
+    private UpdateDescriptionService updateDescriptionService;
+    @Mock
+    private AgentPrincipals agent;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -135,7 +143,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testUpdateDescription() throws Exception {
-        collObj.setDescription(makeContentUriFromResource("/datastreams/simpleMods.xml"));
+        InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
+        updateDescriptionService.updateDescription(agent, collObj.getPid(), modsStream);
 
         indexObjectsInTripleStore(rootObj, unitObj, collObj);
 

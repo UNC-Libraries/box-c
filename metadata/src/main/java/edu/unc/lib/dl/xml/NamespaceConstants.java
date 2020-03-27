@@ -58,6 +58,12 @@ public final class NamespaceConstants {
 
     public static final String CDR_MESSAGE_PREFIX = "cdrmsg";
 
+    public static final String DCR_PACKAGING_PREFIX = "dcr-packaging";
+    /**
+     * Namespace URI for DCR packaging elements
+     */
+    public static final String DCR_PACKAGING_URI = "https://library.unc.edu/dcr/packaging/";
+
     /**
      * The Dublin Core namespace prefix.
      */

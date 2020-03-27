@@ -47,6 +47,7 @@ public abstract class RepositoryObject {
     protected Model model;
 
     protected Date lastModified;
+    protected Date created;
     protected String etag;
 
     protected List<String> types;
@@ -181,6 +182,18 @@ public abstract class RepositoryObject {
      */
     public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
+    }
+
+    /**
+     * Get the creation date for this object
+     * @return
+     */
+    public Date getCreatedDate() {
+        if (created == null) {
+            created = ((XSDDateTime) getResource().getProperty(Fcrepo4Repository.created)
+                    .getLiteral().getValue()).asCalendar().getTime();
+        }
+        return created;
     }
 
     /**

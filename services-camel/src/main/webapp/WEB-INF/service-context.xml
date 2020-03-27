@@ -318,13 +318,20 @@
             </bean>
         </property>
     </bean>
+    
+    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
 
     <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="modsValidator" ref="modsValidator" />
-        <property name="transferService" ref="binaryTransferService" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
     </bean>
     
     <bean id="importXMLProcessor" class="edu.unc.lib.dl.services.camel.importxml.ImportXMLProcessor">

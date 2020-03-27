@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.importxml;
 
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
@@ -293,8 +294,8 @@ public class ImportXMLJobIT {
         workObj = factory.createWorkObject(workPid, null);
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
-        File workModsFile = writeToFile(doc);
-        workObj.setDescription(workModsFile.toPath().toUri());
+        InputStream modsStream = documentToInputStream(doc);
+        updateService.updateDescription(null, agent, workObj, modsStream);
         return workPid;
     }
 

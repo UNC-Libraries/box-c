@@ -13,43 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fedora;
+package edu.unc.lib.dl.persist.services;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
- * @author Gregory Jansen
+ * Exception indicating that a lock or acquisition of one was interrupted
  *
+ * @author bbpennel
  */
-public class ServiceException extends RepositoryException {
+public class InterruptedLockException extends RepositoryException {
 
-    public ServiceException(String message) {
-        super(message);
-    }
-
-    public ServiceException(Throwable cause) {
-        super(cause);
-    }
-
-    public ServiceException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public Throwable getRootCause() {
-        Throwable cause = this.getCause();
-        if (cause == null) {
-            return null;
-        }
-        while (cause.getCause() != null) {
-            cause = cause.getCause();
-        }
-
-        return cause;
-    }
+    private static final long serialVersionUID = 1L;
 
     /**
-     *
+     * @param message
      */
-    private static final long serialVersionUID = -8344216562020118505L;
+    public InterruptedLockException(String message) {
+        super(message);
+    }
 
 }

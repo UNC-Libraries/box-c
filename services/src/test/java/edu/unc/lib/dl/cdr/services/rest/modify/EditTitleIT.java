@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
+import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static org.junit.Assert.assertEquals;
@@ -24,28 +24,32 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 
 /**
  *
@@ -58,6 +62,9 @@ import edu.unc.lib.dl.fedora.PID;
         @ContextConfiguration("/edit-title-it-servlet.xml")
 })
 public class EditTitleIT extends AbstractAPIIT {
+    @Autowired
+    private UpdateDescriptionService updateDescriptionService;
+
     @Test
     public void testCreateTitleWhereNoneExists() throws Exception {
         PID pid = makePid();
@@ -87,8 +94,8 @@ public class EditTitleIT extends AbstractAPIIT {
                 .addContent(new Element("titleInfo", MODS_V3_NS)
                         .addContent(new Element("title", MODS_V3_NS).setText(oldTitle))));
 
-        File workModsFile = writeToFile(document);
-        work.setDescription(workModsFile.toPath().toUri());
+        InputStream modsStream = documentToInputStream(document);
+        updateDescriptionService.updateDescription(mock(AgentPrincipals.class), pid, modsStream);
 
         String newTitle = "new_work_title";
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())

@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -29,8 +28,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -53,10 +51,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.persist.services.EmailHandler;
 
 /**
@@ -70,11 +70,17 @@ import edu.unc.lib.persist.services.EmailHandler;
     @ContextConfiguration("/export-xml-it-servlet.xml")
 })
 public class ExportXMLIT extends AbstractAPIIT {
+    private static Path MODS_PATH_1 = Paths.get("src/test/resources/mods/valid-mods.xml");
+    private static Path MODS_PATH_2 = Paths.get("src/test/resources/mods/valid-mods2.xml");
 
     @Autowired
     private EmailHandler emailHandler;
     @Mock
     private MimeMessage mimeMessage;
+    @Mock
+    private AgentPrincipals agent;
+    @Autowired
+    private UpdateDescriptionService updateDescriptionService;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -87,29 +93,11 @@ public class ExportXMLIT extends AbstractAPIIT {
     @Captor
     private ArgumentCaptor<File> attachmentCaptor;
 
-    private static URI modsUri1;
-    private static File modsFile1;
-    private static URI modsUri2;
-    private static File modsFile2;
-
     @Before
     public void init_() throws Exception {
         initMocks(this);
         when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription)))
                 .thenReturn(true);
-    }
-
-    @BeforeClass
-    public static void classSetup() throws Exception {
-        modsFile1 = File.createTempFile("mods", ".xml");
-        modsFile1.deleteOnExit();
-        Files.copy(Paths.get("src/test/resources/mods/valid-mods.xml"), modsFile1.toPath(), REPLACE_EXISTING);
-        modsUri1 = modsFile1.toPath().toUri();
-
-        modsFile2 = File.createTempFile("mods", ".xml");
-        modsFile2.deleteOnExit();
-        Files.copy(Paths.get("src/test/resources/mods/valid-mods2.xml"), modsFile2.toPath(), REPLACE_EXISTING);
-        modsUri2 = modsFile2.toPath().toUri();
     }
 
     @Test
@@ -155,8 +143,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     private String createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
-        folder.setDescription(modsUri1);
-        work.setDescription(modsUri2);
+        updateDescriptionService.updateDescription(agent, folder.getPid(), Files.newInputStream(MODS_PATH_1));
+        updateDescriptionService.updateDescription(agent, work.getPid(), Files.newInputStream(MODS_PATH_2));
 
         String pid1 = folder.getPid().getRepositoryPath();
         String pid2 = work.getPid().getRepositoryPath();

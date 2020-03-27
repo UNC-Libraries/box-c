@@ -21,6 +21,8 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.DCR_PACKAGING_PREFIX;
+import static edu.unc.lib.dl.xml.NamespaceConstants.DCR_PACKAGING_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DCTERMS_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DCTERMS_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.DC_PREFIX;
@@ -90,6 +92,9 @@ public class JDOMNamespaceUtil {
      */
     public static final Namespace CDR_MESSAGE_NS = Namespace.getNamespace(
             CDR_MESSAGE_PREFIX, CDR_MESSAGE_URI);
+
+    public static final Namespace DCR_PACKAGING_NS = Namespace.getNamespace(DCR_PACKAGING_PREFIX,
+            DCR_PACKAGING_URI);
 
     /**
      * DCMI namespace with standard prefix.

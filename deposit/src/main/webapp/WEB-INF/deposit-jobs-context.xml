@@ -96,6 +96,22 @@
             </bean>
         </property>
     </bean>
+    
+    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="validate" value="false" />
+        <property name="checksAccess" value="false" />
+        <property name="sendsMessages" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+    </bean>
 
     <bean id="metsSipSchema" class="javax.xml.validation.Schema"
         factory-bean="schemaFactory" factory-method="newSchema">

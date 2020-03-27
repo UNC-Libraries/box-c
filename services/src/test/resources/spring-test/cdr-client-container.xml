@@ -98,6 +98,26 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
+    
+    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="validate" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+        <property name="modsValidator" ref="modsValidator" />
+    </bean>
+    
     <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
     </bean>

@@ -92,7 +92,9 @@ public class DatastreamController {
                 fedoraContentService.streamEventLog(pid, principals, download, response);
             } else {
                 fedoraContentService.streamData(pid, datastream, principals, download, response);
-                recordDownloadEvent(pid, datastream, principals, request);
+                if (datastream == null || DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
+                    recordDownloadEvent(pid, datastream, principals, request);
+                }
             }
         } catch (IOException e) {
             log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
