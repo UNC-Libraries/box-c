@@ -489,6 +489,13 @@ p.no-search-results {
 
   h2.deleted {
     display: block;
+
+    .thumbnail-badge {
+      font-size: 15px;
+      margin-left: 10px;
+      margin-top: -25px;
+    }
+
   }
 
   h2.link-list {

@@ -29,6 +29,17 @@
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
+<c:set var="badgeIcon" scope="request">
+	<c:choose>
+		<c:when test="${markedForDeletion}">
+			trash
+		</c:when>
+		<c:when test="${not empty briefObject && (not permsHelper.allowsPublicAccess(briefObject) || not empty briefObject.activeEmbargo)}">
+			lock
+		</c:when>
+	</c:choose>
+</c:set>
+
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 
 <c:choose>

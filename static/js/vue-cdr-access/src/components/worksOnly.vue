@@ -74,6 +74,7 @@
         }
 
         p {
+            color: #222;
             font-size: 18px;
             padding-left: 0;
             padding-right: 0;

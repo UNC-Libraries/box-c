@@ -818,6 +818,11 @@ p.no-search-results {
 .onecol h2.deleted, .content-wrap.full_record h2.deleted {
   display: block;
 }
+.onecol h2.deleted .thumbnail-badge, .content-wrap.full_record h2.deleted .thumbnail-badge {
+  font-size: 15px;
+  margin-left: 10px;
+  margin-top: -25px;
+}
 .onecol h2.link-list, .content-wrap.full_record h2.link-list {
   font-size: 20px;
   padding-left: 15px;

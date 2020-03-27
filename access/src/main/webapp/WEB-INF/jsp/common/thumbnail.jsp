@@ -76,17 +76,6 @@
 	</c:choose>
 </c:set>
 
-<c:set var="badgeIcon">
-	<c:choose>
-		<c:when test="${markedForDeletion}">
-			trash
-		</c:when>
-		<c:when test="${not empty thumbnailObject && (not permsHelper.allowsPublicAccess(thumbnailObject) || not empty thumbnailObject.activeEmbargo)}">
-			lock
-		</c:when>
-	</c:choose>
-</c:set>
-
 <a href="${href}" title="<c:out value='${tooltip}' />" class="thumbnail ${empty src ? ' placeholder' : ''} ${deleted ? ' deleted' : ''} ${not empty tooltip ? ' has_tooltip' : ''} thumbnail-resource-type-${resourceType} thumbnail-size-${param.size}">
 	<div class="thumbnail-placeholder">
 		<c:if test="${not empty contentType}">

@@ -48,6 +48,14 @@
             <c:import url="fullRecord/navigationBar.jsp" />
             <h2 class="${isDeleted}">
                 <i class="fa fa-archive" aria-hidden="true"></i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>
+                <c:if test="${not empty badgeIcon}">
+                    <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
+                        <div class="fa-stack">
+                            <i class="fas fa-circle fa-stack-2x background"></i>
+                            <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
+                        </div>
+                    </div>
+                </c:if>
             </h2>
             <c:if test="${not empty briefObject.dateAdded}">
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
