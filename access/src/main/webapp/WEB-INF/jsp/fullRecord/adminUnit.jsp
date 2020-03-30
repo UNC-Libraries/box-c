@@ -49,15 +49,16 @@
                 	<c:when test="${markedForDeletion}"><h2 class="deleted"></c:when>
                 	<c:otherwise><h2></c:otherwise>
                 </c:choose>
-                <i class="fa fa-university" aria-hidden="true"></i> <c:out value="${briefObject.title}" />
-                <c:if test="${not empty badgeIcon}">
-                    <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
-                        <div class="fa-stack">
-                            <i class="fas fa-circle fa-stack-2x background"></i>
-                            <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
+                <i class="fa fa-university" aria-hidden="true">
+                    <c:if test="${not empty badgeIcon}">
+                        <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
+                            <div class="fa-stack">
+                                <i class="fas fa-circle fa-stack-2x background"></i>
+                                <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
+                            </div>
                         </div>
-                    </div>
-                </c:if>
+                    </c:if>
+                </i> <c:out value="${briefObject.title}" />
             </h2>
             <p><strong>Subjects:</strong>
                 <c:choose>
