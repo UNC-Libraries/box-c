@@ -27,8 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.rdf.Cdr;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -48,23 +46,16 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
 
     private StaffOnlyPermissionJob job;
     private Model model;
-    private StorageLocationManager locationManager;
     private Bag depBag;
-    private StorageLocationTestHelper locTestHelper;
 
     @Before
     public void setup() throws Exception {
-        locTestHelper = new StorageLocationTestHelper();
-        locationManager = locTestHelper.createLocationManager(null);
-
         job = new StaffOnlyPermissionJob();
 
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        setField(job, "locationManager", locationManager);
         setField(job, "dataset", dataset);
-        setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.init();
