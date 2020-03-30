@@ -34,6 +34,17 @@
 	</c:if>
 </c:set>
 
+<c:set var="badgeIcon" scope="request">
+	<c:choose>
+		<c:when test="${markedForDeletion}">
+			trash
+		</c:when>
+		<c:when test="${not empty thumbnailObject && (not permsHelper.allowsPublicAccess(thumbnailObject) || not empty thumbnailObject.activeEmbargo)}">
+			lock
+		</c:when>
+	</c:choose>
+</c:set>
+
 <c:set var="href">
 	<c:choose>
 		<c:when test="${param.target == 'file' && permsHelper.hasOriginalAccess(requestScope.accessGroupSet, thumbnailObject)}">

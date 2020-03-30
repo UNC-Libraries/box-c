@@ -436,6 +436,12 @@ footer a:hover, footer a:active {
 .deleted img {
   opacity: .5;
 }
+.deleted .fa-folder,
+.deleted .fa-file,
+.deleted .fa-archive,
+.deleted .fa-university {
+  color: #8CB4C6;
+}
 
 .thumbnail-badge-trash,
 .thumbnail-badge-trash-search,
@@ -835,9 +841,6 @@ p.no-search-results {
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
-}
-.onecol .relateditem .deleted, .content-wrap.full_record .relateditem .deleted {
-  display: block;
 }
 .onecol .relateditem .deleted, .content-wrap.full_record .relateditem .deleted {
   display: block;

@@ -508,6 +508,13 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   img {
     opacity: .5;
   }
+
+  .fa-folder,
+  .fa-file,
+  .fa-archive,
+  .fa-university {
+    color: #8CB4C6;
+  }
 }
 
 .thumbnail-badge-trash,
@@ -960,10 +967,6 @@ p.no-search-results {
   .relateditem {
     p {
       font-size: 16px;
-    }
-
-    .deleted {
-      display: block;
     }
 
     .deleted {
