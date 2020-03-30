@@ -105,7 +105,7 @@ public class MarkForDeletionJobTest {
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(contentObj.getPremisLog()).thenReturn(premisLogger);
-        when(premisLogger.buildEvent(eq(Premis.Deletion))).thenReturn(eventBuilder);
+        when(premisLogger.buildEvent(eq(Premis.Deaccession))).thenReturn(eventBuilder);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -143,7 +143,7 @@ public class MarkForDeletionJobTest {
 
         verify(sparqlUpdateService).executeUpdate(anyString(), anyString());
 
-        verify(premisLogger).buildEvent(eq(Premis.Deletion));
+        verify(premisLogger).buildEvent(eq(Premis.Deaccession));
 
         verify(eventBuilder, times(2)).addEventDetail(messageCaptor.capture());
         List<String> details = messageCaptor.getAllValues();
