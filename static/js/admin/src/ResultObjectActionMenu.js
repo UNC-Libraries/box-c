@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm, EditTitleForm, DeleteForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditFilenameForm, EditTitleForm, DeleteForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -138,9 +138,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		*/
 		
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
-			if (isContainerFlag) {
-				items["editLabel"] = {name : 'Edit Label'};
-			} else {
+			if (metadata.type === 'File') {
 				items["editFilename"] = {name : 'Edit Filename'};
 			}
 
@@ -267,9 +265,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						new AddFileForm({
 							alertHandler : self.options.alertHandler
 						}).open(resultObject);
-						break;
-					case "editLabel" :
-						self.editLabel(resultObject);
 						break;
 					case "editFilename" :
 						self.editFilename(resultObject);
@@ -420,22 +415,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		this.selectedCount = selectedCount;
 	};
 
-	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
-		var editLabelForm = new EditLabelForm({
-			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler
-		});
-		editLabelForm.open(resultObject);
-		
-	};
-
 	ResultObjectActionMenu.prototype.editFilename = function(resultObject) {
 		var editFilenameForm = new EditFilenameForm({
 			alertHandler : this.options.alertHandler,
 			actionHandler : this.actionHandler
 		});
 		editFilenameForm.open(resultObject);
-		
 	};
 
 	ResultObjectActionMenu.prototype.editTitle = function(resultObject) {

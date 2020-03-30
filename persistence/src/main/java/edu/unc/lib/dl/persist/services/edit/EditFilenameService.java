@@ -17,6 +17,7 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
+import edu.unc.lib.dl.util.ObjectPersistenceException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -25,6 +26,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -42,7 +44,7 @@ import io.dropwizard.metrics5.Timer;
  * @author harring
  *
  */
-public class EditLabelService {
+public class EditFilenameService {
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -50,9 +52,9 @@ public class EditLabelService {
     private TransactionManager txManager;
     private OperationsMessageSender operationsMessageSender;
 
-    private static final Timer timer = TimerFactory.createTimerForClass(EditLabelService.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(EditFilenameService.class);
 
-    public EditLabelService() {
+    public EditFilenameService() {
     }
 
     /**
@@ -67,17 +69,21 @@ public class EditLabelService {
 
         try (Timer.Context context = timer.time()) {
             aclService.assertHasAccess(
-                    "User does not have permissions to edit labels",
+                    "User does not have permissions to edit filenames",
                     pid, agent.getPrincipals(), Permission.editDescription);
 
             RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
+
+            if (!(obj instanceof FileObject)) {
+                throw new Exception("Failed to edit filename for " + obj.getPid());
+            }
 
             String oldLabel = getOldLabel(obj);
 
             repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
 
             obj.getPremisLog()
-                .buildEvent(Premis.Migration)
+                .buildEvent(Premis.FilenameChange)
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
                 .writeAndClose();

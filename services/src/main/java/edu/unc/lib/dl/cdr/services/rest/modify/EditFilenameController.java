@@ -35,7 +35,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.persist.services.edit.EditLabelService;
+import edu.unc.lib.dl.persist.services.edit.EditFilenameService;
 
 /**
  * API controller that updates the dc:title of a given object
@@ -44,13 +44,13 @@ import edu.unc.lib.dl.persist.services.edit.EditLabelService;
  *
  */
 @Controller
-public class EditLabelController {
-    private static final Logger log = LoggerFactory.getLogger(EditLabelController.class);
+public class EditFilenameController {
+    private static final Logger log = LoggerFactory.getLogger(EditFilenameController.class);
 
     @Autowired
-    private EditLabelService service;
+    private EditFilenameService editFilenameService;
 
-    @RequestMapping(value = "/edit/label/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/edit/filename/{id}", method = RequestMethod.PUT)
     @ResponseBody
     public ResponseEntity<Object> editLabel(@PathVariable("id") String id, @RequestParam("label") String label) {
         Map<String, Object> result = new HashMap<>();
@@ -60,7 +60,7 @@ public class EditLabelController {
         PID pid = PIDs.get(id);
 
         try {
-            service.editLabel(AgentPrincipals.createFromThread(), pid, label);
+            editFilenameService.editLabel(AgentPrincipals.createFromThread(), pid, label);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

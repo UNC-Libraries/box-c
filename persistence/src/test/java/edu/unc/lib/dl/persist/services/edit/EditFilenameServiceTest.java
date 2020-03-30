@@ -30,6 +30,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
@@ -65,7 +67,7 @@ import edu.unc.lib.dl.test.SelfReturningAnswer;
  * @author harring
  *
  */
-public class EditLabelServiceTest {
+public class EditFilenameServiceTest {
 
     @Mock
     private AccessControlService aclService;
@@ -80,7 +82,9 @@ public class EditLabelServiceTest {
     @Mock
     private FedoraTransaction tx;
     @Mock
-    private RepositoryObject repoObj;
+    private FileObject repoObj;
+    @Mock
+    private WorkObject workObj;
     @Mock
     private Model model;
     @Mock
@@ -102,7 +106,7 @@ public class EditLabelServiceTest {
     private PID pid;
     private URI uri;
 
-    private EditLabelService service;
+    private EditFilenameService service;
 
     @Before
     public void init() throws Exception {
@@ -111,7 +115,7 @@ public class EditLabelServiceTest {
         pid = PIDs.get(UUID.randomUUID().toString());
         uri = new URI("path/to/obj");
 
-        service = new EditLabelService();
+        service = new EditFilenameService();
 
         service.setAclService(aclService);
         service.setRepositoryObjectFactory(repoObjFactory);
@@ -127,7 +131,7 @@ public class EditLabelServiceTest {
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(repoObj.getPremisLog()).thenReturn(premisLogger);
-        when(premisLogger.buildEvent(eq(Premis.Migration))).thenReturn(eventBuilder);
+        when(premisLogger.buildEvent(eq(Premis.FilenameChange))).thenReturn(eventBuilder);
         when(agent.getUsernameUri()).thenReturn("agentname");
         when(eventBuilder.write()).thenReturn(resc);
 
@@ -142,18 +146,27 @@ public class EditLabelServiceTest {
     }
 
     @Test
-    public void editLabelTest() {
+    public void editFilenameTest() {
         String label = "a brand-new title!";
         service.editLabel(agent, pid, label);
 
         verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(DcElements.title), any(Resource.class));
-        verify(premisLogger).buildEvent(eq(Premis.Migration));
+        verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from " + "no dc:title" +" to " + label);
         verify(eventBuilder).writeAndClose();
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
         assertEquals(pid, pidCaptor.getValue().get(0));
+    }
+
+    @Test(expected = TransactionCancelledException.class)
+    public void editFilenamelNonFileObjTest() {
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(workObj);
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));
+
+        service.editLabel(agent, pid, "label");
     }
 
     @Test(expected = TransactionCancelledException.class)

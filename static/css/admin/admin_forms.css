@@ -183,11 +183,11 @@
 }
 
 /** Edit Label Form */
-#edit_label_form {
+#edit_filename_form {
 	margin-top: 10px;
 }
 
-#edit_label_form label {
+#edit_filename_form label {
 	width: 135px;
 }
 
