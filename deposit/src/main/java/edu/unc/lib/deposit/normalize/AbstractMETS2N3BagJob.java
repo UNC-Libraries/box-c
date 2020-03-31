@@ -128,7 +128,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             }
 
             PremisLogger premisLogger = getPremisLogger(pid);
-            premisLogger.buildEvent(Premis.Normalization)
+            premisLogger.buildEvent(Premis.Accession)
                     .addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
                     .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
                     .write();
@@ -139,7 +139,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
         PID depositPID = getDepositPID();
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        premisDepositLogger.buildEvent(Premis.Normalization)
+        premisDepositLogger.buildEvent(Premis.Accession)
                 .addEventDetail("Assigned {0,choice,1#PID|2#PIDs}"
                         + " to {0,choice,1#one object|2#{0,number} objects} ", count)
                 .write();
