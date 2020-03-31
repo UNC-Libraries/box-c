@@ -77,7 +77,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(0);
+        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.solr").expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
@@ -92,7 +92,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilterValid() throws Exception {
-        getMockEndpoint("mock:direct-vm:enhancements.fedora").expectedMessageCount(1);
+        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
