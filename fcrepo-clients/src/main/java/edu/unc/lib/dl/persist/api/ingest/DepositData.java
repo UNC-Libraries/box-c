@@ -43,6 +43,7 @@ public class DepositData {
     private String depositorEmail;
     private PackagingType packagingType;
     private String depositMethod;
+    private boolean staffOnly;
 
     public DepositData(InputStream inputStream, String filename, String mimeType, PackagingType packagingType,
             String depositMethod, AgentPrincipals depositingAgent) {
@@ -246,5 +247,20 @@ public class DepositData {
      */
     public void setMediaId(String mediaId) {
         this.mediaId = mediaId;
+    }
+
+    /**
+     * @return staffOnly status
+     */
+    public boolean getStaffOnly() {
+        return staffOnly;
+    }
+
+    /**
+     * Set staffOnly status
+     * @param staffOnly staffOnly permission true/false
+     */
+    public void setStaffOnly(boolean staffOnly) {
+        this.staffOnly = staffOnly;
     }
 }
