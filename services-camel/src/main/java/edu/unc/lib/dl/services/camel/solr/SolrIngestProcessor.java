@@ -19,7 +19,8 @@ package edu.unc.lib.dl.services.camel.solr;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -32,7 +33,11 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -46,19 +51,18 @@ import edu.unc.lib.dl.util.IndexingActionType;
 public class SolrIngestProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrIngestProcessor.class);
 
-    private final int maxRetries;
-    private final long retryDelay;
     private DocumentIndexingPackageFactory factory;
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
+    private RepositoryObjectLoader repoObjLoader;
 
     public SolrIngestProcessor(DocumentIndexingPackageFactory factory,
-            DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver, int maxRetries, long retryDelay) {
-        this.maxRetries = maxRetries;
-        this.retryDelay = retryDelay;
+            DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver,
+            RepositoryObjectLoader repoObjLoader) {
         this.factory = factory;
         this.pipeline = pipeline;
         this.solrUpdateDriver = solrUpdateDriver;
+        this.repoObjLoader = repoObjLoader;
     }
 
     @Override
@@ -66,38 +70,33 @@ public class SolrIngestProcessor implements Processor {
         final Message in = exchange.getIn();
         String fcrepoUri = (String) in.getHeader(FCREPO_URI);
 
+        List<PID> targetPids = new ArrayList<>();
         PID targetPid = PIDs.get(fcrepoUri);
         String resourceTypes = (String) in.getHeader(FCREPO_RESOURCE_TYPE);
 
-        // for binaries, need to index the file object which contains it
+        // for binaries, need to index the file and work objects which contain it
         if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
             targetPid = PIDs.get(targetPid.getId());
+            FileObject parentFile = repoObjLoader.getFileObject(targetPid);
+            RepositoryObject grandParent = parentFile.getParent();
+            // Index both the parent file and work
+            if (grandParent instanceof WorkObject) {
+                targetPids.add(grandParent.getPid());
+            }
         }
 
-        int retryAttempt = 0;
+        targetPids.add(targetPid);
 
-        while (true) {
-            try {
-                SolrUpdateRequest updateRequest = new SolrUpdateRequest(
-                        targetPid.getRepositoryPath(), IndexingActionType.ADD);
+        log.debug("Indexing objects {}", targetPids);
+        for (PID pid: targetPids) {
+            SolrUpdateRequest updateRequest = new SolrUpdateRequest(
+                    pid.getRepositoryPath(), IndexingActionType.ADD);
 
-                DocumentIndexingPackage dip = factory.createDip(targetPid);
-                updateRequest.setDocumentIndexingPackage(dip);
+            DocumentIndexingPackage dip = factory.createDip(pid);
+            updateRequest.setDocumentIndexingPackage(dip);
 
-                pipeline.process(dip);
-                solrUpdateDriver.addDocument(dip.getDocument());
-
-                return;
-            } catch (Exception e) {
-                if (retryAttempt == maxRetries) {
-                    throw e;
-                }
-
-                retryAttempt++;
-                log.info("Unable to update solr for {}. Retrying, attempt {}",
-                        fcrepoUri, retryAttempt);
-                TimeUnit.MILLISECONDS.sleep(retryDelay);
-            }
+            pipeline.process(dip);
+            solrUpdateDriver.addDocument(dip.getDocument());
         }
     }
 }

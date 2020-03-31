@@ -19,7 +19,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -35,6 +34,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.test.TestHelper;
@@ -62,8 +62,8 @@ public class SolrIngestProcessorTest {
     private DocumentIndexingPipeline pipeline;
     @Mock
     private SolrUpdateDriver solrUpdateDriver;
-    private int maxRetries = 3;
-    private long retryDelay = 10;
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -74,7 +74,7 @@ public class SolrIngestProcessorTest {
     public void init() throws Exception {
         TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
-        processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, maxRetries, retryDelay);
+        processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, repoObjLoader);
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))
@@ -97,15 +97,5 @@ public class SolrIngestProcessorTest {
         doThrow(new IndexingException("Fail")).when(pipeline).process(any(DocumentIndexingPackage.class));
 
         processor.process(exchange);
-    }
-
-    @Test
-    public void testIndexRetry() throws Exception {
-        doThrow(new IndexingException("Fail")).doNothing().when(pipeline).process(any(DocumentIndexingPackage.class));
-
-        processor.process(exchange);
-
-        verify(pipeline, times(2)).process(eq(dip));
-        verify(solrUpdateDriver).addDocument(eq(docBean));
     }
 }
