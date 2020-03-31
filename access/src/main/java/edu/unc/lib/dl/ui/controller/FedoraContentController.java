@@ -23,6 +23,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,9 +93,12 @@ public class FedoraContentController {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        RepositoryObject updatedPid = repoObjLoader.getRepositoryObject(pid);
-        if (updatedPid.getClass() == WorkObject.class) {
-            pid = ((WorkObject) updatedPid).getPrimaryObject().getPid();
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        if (repoObj instanceof WorkObject) {
+            FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
+            if (primaryObj != null) {
+                pid = primaryObj.getPid();
+            }
         }
 
         try {
