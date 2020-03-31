@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -49,6 +51,7 @@ public class BinaryEnhancementProcessor implements Processor {
 
             log.info("Adding enhancement headers for " + pidValue);
             in.setHeader(FCREPO_URI, pidValue);
+            in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
         }
     }
 }

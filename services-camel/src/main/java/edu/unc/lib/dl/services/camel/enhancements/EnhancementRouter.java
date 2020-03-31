@@ -62,11 +62,13 @@ public class EnhancementRouter extends RouteBuilder {
                     .log(DEBUG, "Processing binary ${headers[CamelFcrepoUri]}")
                     .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
                     .to("direct:process.binary")
-                // Process all other content object enhancement requests
-                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '"
-                        + Cdr.DepositRecord.getURI() + "'"))
-                    .log(DEBUG, "Ignoring update of ${headers[CamelFcrepoUri]}")
-                .otherwise()
+                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
+                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
+                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
+                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Collection.getURI() + "'"
+                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
+                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
+                        ))
                     .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .to("direct-vm:solrIndexing")
             .end();

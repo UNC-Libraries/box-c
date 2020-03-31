@@ -21,6 +21,8 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
+import edu.unc.lib.dl.fedora.NotFoundException;
+
 /**
  * Route for performing solr updates for update requests.
  *
@@ -33,6 +35,12 @@ public class SolrUpdateRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        onException(NotFoundException.class)
+        .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
+        .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
+        .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
+        .retryAttemptedLogLevel(LoggingLevel.DEBUG);
+
         onException(Exception.class)
         .redeliveryDelay("{{error.retryDelay}}")
         .maximumRedeliveries("{{error.maxRedeliveries}}")
