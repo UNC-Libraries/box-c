@@ -17,7 +17,7 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
-import edu.unc.lib.dl.util.ObjectPersistenceException;
+import edu.unc.lib.dl.rdf.Ebucore;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -33,7 +33,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
@@ -75,12 +74,12 @@ public class EditFilenameService {
             RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
 
             if (!(obj instanceof FileObject)) {
-                throw new Exception("Failed to edit filename for " + obj.getPid());
+                throw new IllegalArgumentException("Failed to edit filename for " + obj.getPid());
             }
 
             String oldLabel = getOldLabel(obj);
 
-            repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
+            repoObjFactory.createExclusiveRelationship(obj, Ebucore.filename, label);
 
             obj.getPremisLog()
                 .buildEvent(Premis.FilenameChange)
@@ -134,11 +133,11 @@ public class EditFilenameService {
     }
 
     private String getOldLabel(RepositoryObject obj) {
-        String oldLabel = "no dc:title";
+        String oldLabel = "no ebucore:filename";
         Model objModel = obj.getModel();
         Resource resc = obj.getResource();
-        if (objModel.contains(resc, DcElements.title)) {
-            Statement s = objModel.getRequiredProperty(resc, DcElements.title);
+        if (objModel.contains(resc, Ebucore.filename)) {
+            Statement s = objModel.getRequiredProperty(resc, Ebucore.filename);
             oldLabel = s.getLiteral().getString();
         }
         return oldLabel;

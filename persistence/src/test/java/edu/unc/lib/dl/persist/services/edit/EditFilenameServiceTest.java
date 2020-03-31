@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.rdf.Ebucore;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
@@ -51,13 +52,11 @@ import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
@@ -150,23 +149,27 @@ public class EditFilenameServiceTest {
         String label = "a brand-new title!";
         service.editLabel(agent, pid, label);
 
-        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(DcElements.title), any(Resource.class));
+        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(Ebucore.filename), any(Resource.class));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
-        assertEquals(labelCaptor.getValue(), "Object renamed from " + "no dc:title" +" to " + label);
+        assertEquals(labelCaptor.getValue(), "Object renamed from " + "no ebucore:filename" +" to " + label);
         verify(eventBuilder).writeAndClose();
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
         assertEquals(pid, pidCaptor.getValue().get(0));
     }
 
-    @Test(expected = TransactionCancelledException.class)
+    @Test
     public void editFilenamelNonFileObjTest() {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(workObj);
-        doThrow(new AccessRestrictionException()).when(aclService)
+        doThrow(new IllegalArgumentException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));
 
-        service.editLabel(agent, pid, "label");
+        try {
+            service.editLabel(agent, pid, "label");
+        } catch (Exception e) {
+           assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
     }
 
     @Test(expected = TransactionCancelledException.class)

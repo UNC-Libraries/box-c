@@ -5,7 +5,8 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 	var defaultOptions = {
 			title : 'Edit Filename',
 			createFormTemplate : editFilenameForm,
-			submitMethod: 'PUT'
+			submitMethod: 'PUT',
+			showCurrentFilename: true
 	};
 	
 	function EditFilenameForm(options) {
