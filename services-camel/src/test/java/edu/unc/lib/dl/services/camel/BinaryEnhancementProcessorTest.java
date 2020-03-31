@@ -15,7 +15,15 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import edu.unc.lib.dl.test.TestHelper;
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
@@ -26,14 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -76,8 +77,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(CdrBinaryMimeType, "text/plain");
-        verify(message).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
     }
 
     @Test
@@ -87,8 +87,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(CdrBinaryMimeType, "image/png");
-        verify(message).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
     }
 
     @Test
@@ -99,8 +98,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
-        verify(message, never()).setHeader(CdrBinaryMimeType, "image/png");
-        verify(message, never()).setHeader("org.fcrepo.jms.resourceType", Binary.getURI());
+        verify(message, never()).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
     }
 
     private void setMessageBody(String mimeType) {
