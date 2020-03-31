@@ -68,8 +68,8 @@ public class UpdateDescriptionController {
         try (InputStream modsStream = request.getInputStream()) {
             updateService.updateDescription(agent, pid, modsStream);
         } catch (MetadataValidationException e) {
-            if (e.getCause() != null) {
-                result.put("error", e.getMessage() + "\n" + e.getCause().getMessage());
+            if (e.getMessage() != null) {
+                result.put("error", e.getMessage());
             }
             return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
         } catch (IOException e) {

@@ -123,7 +123,7 @@ public class MODSValidator {
                     .collect(Collectors.joining("\n"));
 
             throw new MetadataValidationException("MODS is not valid with respect to local conventions"
-                    + " (Schematron rules)", failedAssertionMessage);
+                    + " (Schematron rules)" + failedAssertionMessage, failedAssertionMessage);
         }
 
         log.debug("Document passed vocabulary schematron validation");
