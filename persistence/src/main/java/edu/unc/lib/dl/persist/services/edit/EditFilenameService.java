@@ -17,7 +17,6 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
-import edu.unc.lib.dl.rdf.Ebucore;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -33,6 +32,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
