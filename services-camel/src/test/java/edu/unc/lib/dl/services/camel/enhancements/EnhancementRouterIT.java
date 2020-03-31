@@ -92,7 +92,10 @@ public class EnhancementRouterIT {
     @Autowired
     private CamelContext cdrEnhancements;
 
-    @Produce(uri = "direct-vm:enhancements.fedora")
+    @Autowired
+    private CamelContext cdrServiceSolr;
+
+    @Produce(uri = "{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
 
     @BeanInject(value = "addSmallThumbnailProcessor")
@@ -141,12 +144,19 @@ public class EnhancementRouterIT {
                 Cdr.Folder.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(3)
+        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        NotifyBuilder notify2 = new NotifyBuilder(cdrServiceSolr)
+                .whenCompleted(1)
+                .create();
+
+        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Enhancement route not satisfied", result1);
+
+        boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Indexing route not satisfied", result2);
 
         verify(solrIngestProcessor).process(any(Exchange.class));
     }
@@ -163,18 +173,25 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         // Separate exchanges when multicasting
-        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(2)
+        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(3)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        NotifyBuilder notify2 = new NotifyBuilder(cdrServiceSolr)
+                .whenCompleted(1)
+                .create();
+
+        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Enhancement route not satisfied", result1);
+
+        boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Indexing route not satisfied", result2);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).process(any(Exchange.class));
-        // Indexing not triggered on binary object
-        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        // Indexing triggered for binary parent
+        verify(solrIngestProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -191,9 +208,8 @@ public class EnhancementRouterIT {
         final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        // Separate exchanges when multicasting
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(2)
+                .whenCompleted(1)
                 .create();
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
@@ -238,7 +254,7 @@ public class EnhancementRouterIT {
                 fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes()));
 
         Map<String, Object> headers = createEvent(descObj.getPid(),
-                Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());
+                Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
