@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static java.nio.file.Files.createTempFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
@@ -52,12 +54,16 @@ import edu.unc.lib.dl.rdf.Ebucore;
     @ContextConfiguration("/edit-filename-it-servlet.xml")
 })
 public class EditFilenameIT extends AbstractAPIIT {
+    private String filename = "file.txt";
+    private String mimetype = "text/plain";
 
     @Test
     public void testCreateLabelWhereNoneExists() throws UnsupportedOperationException, Exception {
         PID pid = makePid();
 
-        FileObject work = repositoryObjectFactory.createFileObject(pid, null);
+        Path file = createTempFile("test", "txt");
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, ModelFactory.createDefaultModel());
+        fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
         String label = "work_filename";
         MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
@@ -71,7 +77,8 @@ public class EditFilenameIT extends AbstractAPIIT {
         assertEquals("editLabel", respMap.get("action"));
 
         assertEquals("work_filename",
-                work.getModel().getRequiredProperty(work.getResource(), Ebucore.filename).getLiteral().toString());
+                fileObj.getOriginalFile().getModel().getRequiredProperty(
+                        fileObj.getOriginalFile().getResource(), Ebucore.filename).getLiteral().toString());
     }
 
     @Test
@@ -81,7 +88,10 @@ public class EditFilenameIT extends AbstractAPIIT {
         Model fileModel = ModelFactory.createDefaultModel();
         fileModel.add(fileModel.createResource(pid.getRepositoryPath()), Ebucore.filename,
                 oldLabel);
-        FileObject work = repositoryObjectFactory.createFileObject(pid, fileModel);
+        Path file = createTempFile("test", "txt");
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, fileModel);
+        fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
         String newLabel = "new_work_filename";
         MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
@@ -94,8 +104,9 @@ public class EditFilenameIT extends AbstractAPIIT {
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
 
-        assertEquals("new_work_filename",
-                work.getModel().getRequiredProperty(work.getResource(), Ebucore.filename).getLiteral().toString());
+        assertEquals(newLabel,
+                fileObj.getOriginalFile().getModel().getRequiredProperty(
+                        fileObj.getOriginalFile().getResource(), Ebucore.filename).getLiteral().toString());
     }
 
     @Test
@@ -105,7 +116,7 @@ public class EditFilenameIT extends AbstractAPIIT {
         WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
 
         String label = "work_filename";
-        MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
+        mvc.perform(put("/edit/filename/" + pid.getUUID())
                 .param("label", label))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
