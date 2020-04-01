@@ -74,7 +74,7 @@
 }
 .xml_dialog .ui-icon {
 	display: block;
-	padding: .4em .3em;
+	padding: inherit;
 }
 .xml_dialog .ui-resizable-se {
 	width: 12px;
@@ -95,11 +95,13 @@
 	position: absolute;
 	top: 0;
 	left: 0;
+	z-index: 1011;
 }
 
 .ui-widget-content {
 	border: 1px solid #aaaaaa;
 	background: #ffffff;
+	z-index: 1012;
 }
 
 .xml_export_filename {
@@ -672,7 +674,7 @@
 	*display: inline;
 	font-size: 14px;
 	margin: 0;
-	text-indent: 0px;
+	text-indent: 0;
 }
 
 .xml_menu_bar > ul > li > a > span {
@@ -729,6 +731,10 @@
 .xml_menu_bar.active > ul > li > ul > li {
 	padding: 5px 7px;
 	cursor: pointer;
+}
+
+.xml_menu_bar.active > ul > li > ul > li > span {
+	text-indent: 0;
 }
 
 .xml_menu_bar.active > ul > li > ul > .disabled {
