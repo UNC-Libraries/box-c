@@ -136,7 +136,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), "image/png");
+        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), USER_NAME);
     }
 
     @Test
@@ -158,7 +158,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), "image/png");
+        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), USER_NAME);
     }
 
     @Test
@@ -203,12 +203,13 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         when(queryLayer.getObjectById(any(SimpleIdRequest.class))).thenReturn(md);
     }
 
-    private void assertMessageValues(Document msgDoc, PID expectedPid, String expectedType) {
+    private void assertMessageValues(Document msgDoc, PID expectedPid, String expectedAuthor) {
         Element entry = msgDoc.getRootElement();
         String pidString = entry.getChildText("pid", ATOM_NS);
-        String mimetype = entry.getChildText("mimeType", ATOM_NS);
+        String author = entry.getChild("author", ATOM_NS)
+                             .getChildText("name", ATOM_NS);
 
         assertEquals(expectedPid, PIDs.get(pidString));
-        assertEquals(expectedType, mimetype);
+        assertEquals(expectedAuthor, author);
     }
 }

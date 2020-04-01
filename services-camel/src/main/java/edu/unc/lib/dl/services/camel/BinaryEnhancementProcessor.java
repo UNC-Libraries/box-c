@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -37,7 +37,6 @@ import edu.unc.lib.dl.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-    public static final String FCREPO_RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
 
     @Override
     public void process(final Exchange exchange) throws Exception {
@@ -49,11 +48,9 @@ public class BinaryEnhancementProcessor implements Processor {
             Element body = msgBody.getRootElement();
 
             String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
-            String mimeType = body.getChild("mimeType", ATOM_NS).getTextTrim();
 
             log.info("Adding enhancement headers for " + pidValue);
             in.setHeader(FCREPO_URI, pidValue);
-            in.setHeader(CdrBinaryMimeType, mimeType);
             in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
         }
     }

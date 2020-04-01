@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,12 +40,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.test.TestHelper;
@@ -65,6 +69,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private DocumentIndexingPipeline solrFullUpdatePipeline;
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
+    @Autowired
+    private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private AgentPrincipals agent;
 
@@ -74,7 +80,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         TestHelper.setContentBase(baseAddress);
 
-        processor = new SolrIngestProcessor(dipFactory, solrFullUpdatePipeline, driver, 5, 100);
+        processor = new SolrIngestProcessor(dipFactory, solrFullUpdatePipeline, driver, repositoryObjectLoader);
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -194,6 +200,45 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertFalse("Read group should not be assigned", fileMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", fileMd.getAdminGroup().contains("admin"));
+    }
+
+    @Test
+    public void testIndexBinaryInWork() throws Exception {
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        collObj.addMember(workObj);
+
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+                "text.txt", "text/plain", null, null);
+        workObj.setPrimaryObject(fileObj.getPid());
+
+        BinaryObject binObj = fileObj.getOriginalFile();
+
+        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj, binObj);
+
+        setMessageTarget(binObj);
+        when(message.getHeader(FCREPO_RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
+        processor.process(exchange);
+        server.commit();
+
+        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid().getId(), accessGroups);
+        BriefObjectMetadata workMd = solrSearchService.getObjectById(idRequest);
+
+        assertEquals("Work", workMd.getResourceType());
+
+        assertEquals(1, workMd.getDatastream().size());
+        assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
+
+        assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
+
+        idRequest = new SimpleIdRequest(fileObj.getPid().getId(), accessGroups);
+        BriefObjectMetadata fileMd = solrSearchService.getObjectById(idRequest);
+
+        assertEquals(ResourceType.File.name(), fileMd.getResourceType());
+
+        assertEquals("text.txt", fileMd.getTitle());
+
+        assertEquals(1, fileMd.getDatastream().size());
+        assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
     }
 
     private void assertAncestorIds(BriefObjectMetadata md, RepositoryObject... ancestorObjs) {

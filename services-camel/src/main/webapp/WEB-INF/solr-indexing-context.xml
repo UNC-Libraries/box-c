@@ -390,8 +390,7 @@
         <constructor-arg ref="dipFactory" />
         <constructor-arg ref="solrFullUpdatePipeline" />
         <constructor-arg ref="solrUpdateDriver" />
-        <constructor-arg value="${error.maxRedeliveries}" />
-        <constructor-arg value="${error.retryDelay}" />
+        <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">

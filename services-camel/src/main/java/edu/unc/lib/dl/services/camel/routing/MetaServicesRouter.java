@@ -49,6 +49,6 @@ public class MetaServicesRouter extends RouteBuilder {
                 .log("Performing enhancements for ${headers[org.fcrepo.jms.identifier]}")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
                 .removeHeaders("CamelHttp*")
-                .to("direct-vm:enhancements.fedora");
+                .to("{{cdr.enhancement.stream.camel}}");
     }
 }
