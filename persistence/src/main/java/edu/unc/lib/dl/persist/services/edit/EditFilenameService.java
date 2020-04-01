@@ -15,16 +15,10 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import java.util.Arrays;
-
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -38,8 +32,10 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
+import java.util.Arrays;
+
 /**
- * Service that manages editing of the dc:title property on an object
+ * Service that manages editing of the ebucore:filename property on an object
  *
  * @author harring
  *
