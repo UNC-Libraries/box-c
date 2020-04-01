@@ -15,6 +15,22 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.nio.file.Paths;
+
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -22,21 +38,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.nio.file.Paths;
 
 /**
  * Job which registers ingested files to longleaf
@@ -91,7 +92,7 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
             while (statementIterator.hasNext()) {
                 Statement currentStatement = statementIterator.nextStatement();
 
-                // find storageUri, descriptiveStorageUri, fitsStorageUri
+                // find storageUri, descriptiveStorageUri, descriptiveHistoryStorageUri, fitsStorageUri
                 if (currentStatement.getPredicate().toString().matches(".*Uri")) {
                     URI storageUri = URI.create(currentStatement.getString());
                     if (currentStatement.getString().matches(".*original_file")) {

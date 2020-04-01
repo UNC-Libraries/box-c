@@ -45,11 +45,15 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +70,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
@@ -79,8 +84,11 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Action to transform a content object from bxc3 into a depositable structure
@@ -401,6 +409,31 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         DatastreamVersion current = modsVersions.get(modsVersions.size() - 1);
         directoryManager.writeMods(newPid, current.getBodyEl());
+
+        PID modsPid = DatastreamPids.getMdDescriptivePid(newPid);
+
+        // If more than one version, then put all versions but the last one in history
+        if (modsVersions.size() > 1) {
+            DatastreamHistoryLog modsHistory = new DatastreamHistoryLog(modsPid);
+            for (int i = 0; i < modsVersions.size() - 1; i++) {
+                DatastreamVersion modsV = modsVersions.get(i);
+
+                try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                    new XMLOutputter().output(modsV.getBodyEl(), bos);
+                    InputStream modsInputStream = new ByteArrayInputStream(bos.toByteArray());
+                    Date created = DateTimeUtil.parseUTCToDate(modsV.getCreated());
+                    modsHistory.addVersion(modsInputStream, modsV.getMimeType(), created);
+                } catch (IOException e) {
+                    throw new RepositoryException("Failed to add MODS version from " + originalPid, e);
+                }
+            }
+
+            try (InputStream historyStream = modsHistory.toInputStream()) {
+                directoryManager.writeModsHistory(newPid, modsHistory.toInputStream());
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to write MODS history for " + originalPid, e);
+            }
+        }
     }
 
     private boolean isMarkedForDeletion(Resource resc) {

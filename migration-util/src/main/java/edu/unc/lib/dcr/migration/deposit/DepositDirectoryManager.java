@@ -19,10 +19,12 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_HISTORY_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.EVENTS_DIR;
 import static java.nio.file.Files.newOutputStream;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +46,7 @@ public class DepositDirectoryManager {
 
     private Path depositDir;
     private Path descriptionDir;
+    private Path descriptionHistoryDir;
     private Path eventsDir;
     private PID depositPid;
     private boolean hashNesting;
@@ -52,6 +55,7 @@ public class DepositDirectoryManager {
         this.depositPid = depositPid;
         this.depositDir = depositBaseDir.resolve(this.depositPid.getId());
         this.descriptionDir = depositDir.resolve(DESCRIPTION_DIR);
+        this.descriptionHistoryDir = depositDir.resolve(DESCRIPTION_HISTORY_DIR);
         this.eventsDir = depositDir.resolve(EVENTS_DIR);
         this.hashNesting = hashNesting;
 
@@ -62,6 +66,7 @@ public class DepositDirectoryManager {
         try {
             Files.createDirectories(depositDir);
             Files.createDirectory(descriptionDir);
+            Files.createDirectory(descriptionHistoryDir);
             Files.createDirectory(eventsDir);
         } catch (IOException e) {
             throw new RepositoryException("Failed to create deposit directory: " + depositDir, e);
@@ -84,6 +89,16 @@ public class DepositDirectoryManager {
             new XMLOutputter(Format.getPrettyFormat()).output(modsDoc, fos);
         } catch (IOException e) {
             throw new RepositoryException("Unable to write MODS for " + pid.getId(), e);
+        }
+    }
+
+    public void writeModsHistory(PID pid, InputStream historyStream) {
+        Path modsHistoryPath = makeMetadataFilePath(descriptionHistoryDir, pid, ".xml");
+
+        try {
+            Files.copy(historyStream, modsHistoryPath);
+        } catch (IOException e) {
+            throw new RepositoryException("Unable to write MODS history for " + pid.getId(), e);
         }
     }
 
@@ -117,6 +132,10 @@ public class DepositDirectoryManager {
 
     public Path getDescriptionDir() {
         return descriptionDir;
+    }
+
+    public Path getDescriptionHistoryDir() {
+        return descriptionHistoryDir;
     }
 
     public Path getEventsDir() {

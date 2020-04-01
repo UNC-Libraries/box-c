@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -68,6 +70,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -327,6 +330,49 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         ingestedObjectsCount(3);
 
         assertLinksToDepositRecord(mWork, primaryObj);
+    }
+
+    @Test
+    public void ingestWorkObjectWithModsHistoryTest() throws Exception {
+        String label = "testwork";
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // Constructing the work in the deposit model with a label
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+
+        depBag.add(workBag);
+
+        Path modsPath = job.getModsPath(workPid, true);
+        FileUtils.writeStringToFile(modsPath.toFile(), "Mods content", UTF_8);
+        Path modsHistoryPath = job.getModsHistoryPath(workPid);
+        FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
+        workBag.addProperty(CdrDeposit.descriptiveHistoryStorageUri,
+                modsHistoryPath.toUri().toString());
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
+        List<ContentObject> destMembers = destObj.getMembers();
+        assertEquals("Incorrect number of children at destination", 1, destMembers.size());
+
+        // Make sure that the work is present and is actually a work
+        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+        BinaryObject descBin = mWork.getDescription();
+        assertEquals("Mods content", IOUtils.toString(descBin.getBinaryStream(), UTF_8));
+
+        PID historyPid = DatastreamPids.getDatastreamHistoryPid(descBin.getPid());
+        BinaryObject historyBin = repoObjLoader.getBinaryObject(historyPid);
+        assertEquals("History content", IOUtils.toString(historyBin.getBinaryStream(), UTF_8));
     }
 
     /**

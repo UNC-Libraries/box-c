@@ -38,6 +38,7 @@ import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPrem
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.deserializeLogFile;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventResources;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.serializeXMLFile;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.file.Files.newOutputStream;
@@ -55,6 +56,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Bag;
@@ -86,6 +88,7 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -385,6 +388,53 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.label, "work"));
 
         assertMods(startingPid, "My Work");
+    }
+
+    @Test
+    public void transformWorkWithModsHistory() throws Exception {
+        Model model = createContainerModel(startingPid, AGGREGATE_WORK);
+
+        List<DatastreamVersion> modsVersions = new ArrayList<>();
+        modsVersions.add(makeModsDatastream("Original title", "2011-01-05T20:00:00.000Z", 0));
+        modsVersions.add(makeModsDatastream("Updated title", "2011-02-05T20:00:00.500Z", 1));
+        modsVersions.add(makeModsDatastream("Current title", DEFAULT_CREATED_DATE, 2));
+
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
+                .relsExtModel(model)
+                .withDatastreamVersions(MODS_DS, modsVersions)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        service.perform();
+
+        Model depModel = modelManager.getReadModel();
+        Resource resc = depModel.getResource(startingPid.getRepositoryPath());
+        assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
+
+        Path historyPath = directoryManager.getDescriptionHistoryDir().resolve(startingPid.getId() + ".xml");
+        assertTrue("History did not exist", Files.exists(historyPath));
+        Document historyDoc = createSAXBuilder().build(historyPath.toFile());
+        List<Element> versionEls = historyDoc.getRootElement()
+            .getChildren(DatastreamHistoryLog.VERSION_TAG, DCR_PACKAGING_NS);
+
+        Element v1El = versionEls.get(0);
+        assertModsVersionDetails(v1El, "Original title", "2011-01-05T20:00:00.000Z");
+        Element v2El = versionEls.get(1);
+        assertModsVersionDetails(v2El, "Updated title", "2011-02-05T20:00:00.500Z");
+
+        assertMods(startingPid, "Current title");
+    }
+
+    private void assertModsVersionDetails(Element versionEl, String expectedTitle, String expectedCreated) {
+        String created = versionEl.getAttributeValue(DatastreamHistoryLog.CREATED_ATTR);
+        assertEquals(expectedCreated, created);
+        String contentType = versionEl.getAttributeValue(DatastreamHistoryLog.CONTENT_TYPE_ATTR);
+        assertEquals("text/xml", contentType);
+
+        String titleVal = versionEl.getChild("mods", MODS_V3_NS)
+                .getChild("titleInfo", MODS_V3_NS)
+                .getChildText("title", MODS_V3_NS);
+        assertEquals(expectedTitle, titleVal);
     }
 
     @Test
@@ -815,13 +865,17 @@ public class ContentObjectTransformerTest {
     }
 
     private DatastreamVersion makeModsDatastream(String title) {
+        return makeModsDatastream(title, DEFAULT_CREATED_DATE, 0);
+    }
+
+    private DatastreamVersion makeModsDatastream(String title, String created, int versionNum) {
         Document doc = new Document();
         doc.addContent(new Element("mods", MODS_V3_NS)
                 .addContent(new Element("titleInfo", MODS_V3_NS)
                         .addContent(new Element("title", MODS_V3_NS)
                                 .setText(title))));
-        DatastreamVersion modsDs = new DatastreamVersion(null, MODS_DS, MODS_DS + ".0", DEFAULT_CREATED_DATE,
-                "100", "text/xml", null);
+        DatastreamVersion modsDs = new DatastreamVersion(null, MODS_DS, MODS_DS + "." + versionNum,
+                created, "100", "text/xml", null);
         modsDs.setBodyEl(doc.getRootElement());
         return modsDs;
     }

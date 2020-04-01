@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.crea
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
@@ -151,6 +152,31 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
+    }
+
+    @Test
+    public void depositWithFolderWithModsHistory() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Folder);
+        job.closeModel();
+
+        String historyContent = "This is pretty much history";
+        PID pid = PIDs.get(workBag.getURI());
+        File historyFile = job.getModsHistoryPath(pid).toFile();
+        FileUtils.writeStringToFile(historyFile, historyContent, UTF_8);
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postWorkResc = model.getResource(workBag.getURI());
+
+        assertFalse("History file should no longer exist in deposits directory", historyFile.exists());
+
+        URI historyUri = URI.create(postWorkResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
+        Path historyPath = Paths.get(historyUri);
+        assertTrue("History file should exist at storage uri", Files.exists(historyPath));
+        assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+
+        assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
     }
 
     @Test

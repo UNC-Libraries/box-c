@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_HISTORY_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
@@ -218,6 +219,10 @@ public abstract class AbstractDepositJob implements Runnable {
         return new File(getDepositDirectory(), DESCRIPTION_DIR);
     }
 
+    public File getDescriptionHistoryDir() {
+        return new File(getDepositDirectory(), DESCRIPTION_HISTORY_DIR);
+    }
+
     /**
      * Get the path where MODS should be stored for the given pid
      *
@@ -237,6 +242,16 @@ public abstract class AbstractDepositJob implements Runnable {
      */
     public Path getModsPath(PID pid, boolean createDirs) {
         return getMetadataPath(getDescriptionDir(), pid, ".xml", createDirs);
+    }
+
+    /**
+     * Get path to where MODS history should be stored
+     *
+     * @param pid
+     * @return
+     */
+    public Path getModsHistoryPath(PID pid) {
+        return getMetadataPath(getDescriptionHistoryDir(), pid, ".xml", false);
     }
 
     public File getDepositsDirectory() {

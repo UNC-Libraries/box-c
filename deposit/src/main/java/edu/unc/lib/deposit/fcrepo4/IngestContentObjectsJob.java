@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
@@ -81,6 +82,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -677,6 +679,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addDescription(ContentObject obj, Resource dResc) throws IOException {
+        addDescriptionHistory(obj, dResc);
+
         Path modsPath = getModsPath(obj.getPid());
         if (!Files.exists(modsPath) || dResc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
             return;
@@ -686,6 +690,23 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         BinaryObject descBin = updateDescService.updateDescription(
                 logTransferSession, agent, obj, modsStream);
         dResc.addLiteral(CdrDeposit.descriptiveStorageUri, descBin.getContentUri().toString());
+    }
+
+    private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
+        if (!dResc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
+            return;
+        }
+
+        PID modsPid = DatastreamPids.getMdDescriptivePid(obj.getPid());
+        PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
+        URI storageUri = URI.create(dResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
+        repoObjFactory.createOrUpdateBinary(dsHistoryPid,
+                storageUri,
+                null,
+                "text/xml",
+                null,
+                null,
+                null);
     }
 
     private void addPremisEvents(ContentObject obj) {
