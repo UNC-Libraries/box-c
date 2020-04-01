@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import edu.unc.lib.deposit.fcrepo4.RegisterToLongleafJob;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -661,10 +660,11 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
         }
 
+        // TODO Re-enable once the test environment is setup for longleaf
         // Register files to longleaf
-        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
-            return makeJob(RegisterToLongleafJob.class, depositUUID);
-        }
+//        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
+//            return makeJob(RegisterToLongleafJob.class, depositUUID);
+//        }
 
         return null;
     }
