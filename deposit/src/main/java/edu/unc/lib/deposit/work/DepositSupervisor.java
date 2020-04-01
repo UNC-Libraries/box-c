@@ -668,6 +668,12 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
         }
 
+        // TODO Re-enable once the test environment is setup for longleaf
+        // Register files to longleaf
+//        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
+//            return makeJob(RegisterToLongleafJob.class, depositUUID);
+//        }
+
         return null;
     }
 

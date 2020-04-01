@@ -283,4 +283,10 @@
         <property name="ingestSourceManager" ref="ingestSourceManager" />
         <property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
     </bean>
+
+    <!-- TODO Re-enable once the test environment is setup for longleaf -->
+    <!-- <bean id="RegisterToLongleafJob" class="edu.unc.lib.deposit.fcrepo4.RegisterToLongleafJob"
+          scope="prototype">
+        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+    </bean> -->
 </beans>
