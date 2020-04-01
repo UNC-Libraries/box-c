@@ -737,10 +737,14 @@ p.no-search-results {
   padding-top: 10px;
 }
 .onecol .browse-header h2.item-title, .content-wrap.full_record .browse-header h2.item-title {
+  line-height: 1.2;
   padding-left: 15px;
+  word-break: break-all;
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
+  line-height: 1.2;
+  word-break: break-all;
 }
 .onecol .aggregate-info .is-narrow-tablet, .content-wrap.full_record .aggregate-info .is-narrow-tablet {
   margin-left: 25px;
@@ -752,6 +756,8 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
+  line-height: 1.2;
+  word-break: break-all;
 }
 
 .item-actions {

@@ -100,7 +100,9 @@
         }
 
         .record-title {
+            line-height: 1.2;
             margin-top: 25px;
+            word-break: break-all;
         }
 
         .thumbnail + .record-title {
