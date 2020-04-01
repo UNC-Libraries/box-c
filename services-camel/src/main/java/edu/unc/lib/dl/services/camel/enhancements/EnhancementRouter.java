@@ -54,7 +54,6 @@ public class EnhancementRouter extends RouteBuilder {
         from("{{cdr.enhancement.stream.camel}}")
             .routeId("ProcessEnhancementQueue")
             .process(enProcessor)
-            .log(INFO, "Got ${headers[CamelFcrepoUri]}")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .choice()
                 // Process binary enhancement requests

@@ -24,6 +24,8 @@ import org.jdom2.Element;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Helper methods for run enhancement messages
+ *
  * @author bbpennel
  */
 public class RunEnhancementsMessageHelpers {
