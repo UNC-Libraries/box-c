@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
@@ -83,6 +84,8 @@ public class EditFilenameServiceTest {
     @Mock
     private FileObject repoObj;
     @Mock
+    private BinaryObject binaryObj;
+    @Mock
     private WorkObject workObj;
     @Mock
     private Model model;
@@ -123,9 +126,9 @@ public class EditFilenameServiceTest {
         service.setOperationsMessageSender(messageSender);
 
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
-        when(repoObj.getModel()).thenReturn(model);
+        when(repoObj.getOriginalFile()).thenReturn(binaryObj);
+        when(binaryObj.getModel()).thenReturn(model);
         when(model.getResource(anyString())).thenReturn(resc);
-        when(repoObj.getUri()).thenReturn(uri);
         when(agent.getPrincipals()).thenReturn(groups);
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
@@ -146,13 +149,29 @@ public class EditFilenameServiceTest {
 
     @Test
     public void editFilenameTest() {
+        when(binaryObj.getFilename()).thenReturn("Old file name");
         String label = "a brand-new title!";
         service.editLabel(agent, pid, label);
 
-        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(Ebucore.filename), any(Resource.class));
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
-        assertEquals(labelCaptor.getValue(), "Object renamed from " + "no ebucore:filename" +" to " + label);
+        assertEquals(labelCaptor.getValue(), "Object renamed from Old file name to " + label);
+        verify(eventBuilder).writeAndClose();
+
+        verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
+        assertEquals(pid, pidCaptor.getValue().get(0));
+    }
+
+    @Test
+    public void editNoFilenameTest() {
+        String label = "a brand-new title too!";
+        service.editLabel(agent, pid, label);
+
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
+        verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
+        verify(eventBuilder).addEventDetail(labelCaptor.capture());
+        assertEquals(labelCaptor.getValue(), "Object renamed from no ebucore:filename to " + label);
         verify(eventBuilder).writeAndClose();
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
@@ -162,8 +181,6 @@ public class EditFilenameServiceTest {
     @Test
     public void editFilenamelNonFileObjTest() {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(workObj);
-        doThrow(new IllegalArgumentException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));
 
         try {
             service.editLabel(agent, pid, "label");

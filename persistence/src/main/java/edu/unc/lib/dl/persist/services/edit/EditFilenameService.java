@@ -17,6 +17,7 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -77,9 +78,10 @@ public class EditFilenameService {
                 throw new IllegalArgumentException("Failed to edit filename for " + obj.getPid());
             }
 
-            String oldLabel = getOldLabel(obj);
+            BinaryObject binaryObj = ((FileObject) obj).getOriginalFile();
+            String oldLabel = getOldLabel(binaryObj.getFilename());
 
-            repoObjFactory.createExclusiveRelationship(obj, Ebucore.filename, label);
+            repoObjFactory.createExclusiveRelationship(binaryObj, Ebucore.filename, label);
 
             obj.getPremisLog()
                 .buildEvent(Premis.FilenameChange)
@@ -132,14 +134,13 @@ public class EditFilenameService {
         this.operationsMessageSender = operationsMessageSender;
     }
 
-    private String getOldLabel(RepositoryObject obj) {
+    private String getOldLabel(String filename) {
         String oldLabel = "no ebucore:filename";
-        Model objModel = obj.getModel();
-        Resource resc = obj.getResource();
-        if (objModel.contains(resc, Ebucore.filename)) {
-            Statement s = objModel.getRequiredProperty(resc, Ebucore.filename);
-            oldLabel = s.getLiteral().getString();
+
+        if (filename != null) {
+            oldLabel = filename;
         }
-        return oldLabel;
-     }
+
+        return  oldLabel;
+    }
 }

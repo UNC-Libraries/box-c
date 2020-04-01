@@ -9,10 +9,6 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 		AbstractForm.prototype.open = function(resultObject) {
 			var dialogBox = new ModalCreate(this.options);
 
-			if (this.options.showCurrentFilename) {
-				resultObject.metadata.currentFilename = this.getCurrentFilename(resultObject.metadata.datastream);
-			}
-
 			var formContents = dialogBox.formContents(resultObject);
 			var self = this;
 			this.closed = false;
@@ -35,19 +31,6 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			this.$form.submit($.proxy(this.submit, self));
 		};
 
-		AbstractForm.prototype.getCurrentFilename = function(datastream) {
-			var filename = '';
-
-			for (var i=0; i<datastream.length; i++) {
-				if (/^original_file/.test(datastream[i])) {
-					filename = datastream[i].split("|")[2];
-					break;
-				}
-			}
-
-			return filename;
-		};
-
 		AbstractForm.prototype.submit = function(e) {
 			e.preventDefault();
 			this.preprocessForm(this.resultObject);
@@ -63,7 +46,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			this.submitAjax();
 
 			return false;
-		}
+		};
 
 		AbstractForm.prototype.close = function() {
 			if (this.closed) return;

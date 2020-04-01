@@ -5,16 +5,20 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 	var defaultOptions = {
 			title : 'Edit Filename',
 			createFormTemplate : editFilenameForm,
-			submitMethod: 'PUT',
-			showCurrentFilename: true
+			submitMethod: 'PUT'
 	};
 	
 	function EditFilenameForm(options) {
 		this.options = $.extend({}, defaultOptions, options);
-	};
+	}
 	
 	EditFilenameForm.prototype.constructor = EditFilenameForm;
 	EditFilenameForm.prototype = Object.create( AbstractForm.prototype );
+
+	EditFilenameForm.prototype.open = function(resultObject) {
+		resultObject.metadata.currentFilename = this.getCurrentFilename(resultObject.metadata.datastream);
+		AbstractForm.prototype.open.call(this, resultObject);
+	};
 	
 	EditFilenameForm.prototype.preprocessForm = function(resultObject) {
 		var newLabel = $("input[name='label']", this.$form).val();
@@ -31,8 +35,20 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 			errors.push("You must specify a filename.");
 		return errors;
 	};
-	
-		
+
+	EditFilenameForm.prototype.getCurrentFilename = function(datastream) {
+		var filename = '';
+
+		for (var i=0; i<datastream.length; i++) {
+			if (/^original_file/.test(datastream[i])) {
+				filename = datastream[i].split("|")[2];
+				break;
+			}
+		}
+
+		return filename;
+	};
+
 	EditFilenameForm.prototype.getSuccessMessage = function(data) {
 		return "Filename has been successfully edited.";
 	};
