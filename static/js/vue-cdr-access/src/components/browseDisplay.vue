@@ -101,7 +101,7 @@
 
         .record-title {
             margin-top: 25px;
-            word-wrap: break-word;
+            word-break: break-all;
         }
 
         .thumbnail + .record-title {
