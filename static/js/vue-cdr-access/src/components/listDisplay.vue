@@ -5,14 +5,31 @@
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
-                            <a :href="recordUrl(record.id, linkBrowseType)">
-                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url" :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
+                            <a :href="recordUrl(record.id, linkBrowseType)" :class="{deleted: markedForDeletion(record)}">
+                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
+                                     :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                                 <i v-else class="fa" :class="recordType(record.type)"></i>
+                                <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
+                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     'thumbnail-badge-trash-search ': !isRecordBrowse}">
+                                    <div class="fa-stack">
+                                        <i class="fa fa-circle fa-stack-2x background"></i>
+                                        <i class="fa fa-trash fa-stack-1x foreground"></i>
+                                    </div>
+                                </div>
+                                <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
+                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
+                                     'thumbnail-badge-lock-search ': !isRecordBrowse}">
+                                    <div class="fa-stack">
+                                        <i class="fa fa-circle fa-stack-2x background"></i>
+                                        <i class="fa fa-lock fa-stack-1x foreground"></i>
+                                    </div>
+                                </div>
                             </a>
                         </div>
                         <div class="column is-10">
                             <div class="result-title">
-                                <a :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
+                                <a :class="{deleted: markedForDeletion(record)}" :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
                                 <span v-if="record.type !== 'File'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
@@ -127,6 +144,7 @@
         }
 
         .is-2 {
+            position: relative;
             text-align: center;
         }
 
@@ -148,7 +166,6 @@
         }
 
         i {
-            color: #007FAE;
             font-size: 7rem;
         }
 
@@ -167,6 +184,39 @@
 
         .stripe {
             background-color: #f7f7f7;
+        }
+
+        .thumbnail-badge-trash,
+        .thumbnail-badge-lock {
+            margin-top: -55px;
+            padding-bottom: 15px;
+            padding-left: 75px;
+
+            .fa-circle {
+                font-size: 4rem;
+            }
+
+            .fa-trash,
+            .fa-lock {
+                font-size: 2rem;
+                margin: 8px 0;
+            }
+        }
+
+
+        .has-image-icon {
+            top: 100px;
+        }
+
+        @media screen and (max-width: 1024px) {
+            .is-2 {
+                margin-right: 25px;
+            }
+
+            .thumbnail-badge-trash,
+            .thumbnail-badge-lock {
+                padding-left: 55px;
+            }
         }
 
         @media screen and (max-width: 768px) {

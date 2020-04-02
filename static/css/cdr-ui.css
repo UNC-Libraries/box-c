@@ -391,6 +391,81 @@ footer a:hover, footer a:active {
     display: block;
   }
 }
+/* Items marked for deletion */
+.thumbnail.deleted.placeholder .thumbnail-placeholder {
+  opacity: 0.3;
+}
+.thumbnail.deleted.placeholder .thumbnail-preview {
+  opacity: 0;
+}
+
+.thumbnail.deleted .thumbnail-preview {
+  opacity: 0.3;
+}
+.thumbnail.deleted .thumbnail-badge .background {
+  color: #777;
+}
+.thumbnail.deleted .thumbnail-badge .foreground {
+  color: #fff;
+}
+
+.searchitem.deleted,
+.browseitem.deleted {
+  color: #888;
+}
+
+.deleted .full_record_top h2 > span,
+.searchitem.deleted h2 > span,
+.browseitem.deleted h2 > span {
+  color: #bbb;
+}
+
+.deleted {
+  color: #8CB4C6;
+  display: inline-grid;
+}
+.deleted .collinfo {
+  color: #888;
+}
+.deleted .full_record_top h2 {
+  color: #bbb;
+}
+.deleted:hover, .deleted a {
+  color: #8CB4C6;
+}
+.deleted img {
+  opacity: .5;
+}
+.deleted .fa-folder,
+.deleted .fa-file,
+.deleted .fa-archive,
+.deleted .fa-university {
+  color: #8CB4C6;
+}
+
+.thumbnail-badge-trash,
+.thumbnail-badge-trash-search,
+.thumbnail-badge-lock,
+.thumbnail-badge-lock-search {
+  opacity: 1;
+}
+.thumbnail-badge-trash .fa-circle,
+.thumbnail-badge-trash-search .fa-circle,
+.thumbnail-badge-lock .fa-circle,
+.thumbnail-badge-lock-search .fa-circle {
+  color: black;
+}
+.thumbnail-badge-trash .fa-trash,
+.thumbnail-badge-trash .fa-lock,
+.thumbnail-badge-trash-search .fa-trash,
+.thumbnail-badge-trash-search .fa-lock,
+.thumbnail-badge-lock .fa-trash,
+.thumbnail-badge-lock .fa-lock,
+.thumbnail-badge-lock-search .fa-trash,
+.thumbnail-badge-lock-search .fa-lock {
+  color: white;
+}
+
 /**
 *
 * Search pages
@@ -682,10 +757,9 @@ p.no-search-results {
 }
 
 /* DataTables  */
-#child-files_wrapper div {
-  margin: 15px 0 !important;
+#child-files_filter {
+  margin-bottom: 25px;
 }
-
 #child-files_filter label {
   float: right;
   width: 250px;
@@ -711,6 +785,9 @@ p.no-search-results {
   font-size: 32px;
   color: #1A698C;
 }
+.child-records .deleted .fa.default-img-icon {
+  color: #8CB4C6;
+}
 .child-records .is-icon {
   background-color: #1A698C;
   border: 1px solid #1A698C;
@@ -719,17 +796,40 @@ p.no-search-results {
   padding: 7px;
 }
 
+.full_record.deleted a {
+  color: #007FAE;
+}
+.full_record.deleted a:hover {
+  color: #007FAE;
+}
+.full_record.deleted a.button {
+  color: white;
+}
+.full_record.deleted a.button:hover {
+  color: white;
+}
+
 .onecol, .content-wrap.full_record {
   width: 100%;
 }
 .onecol h2, .content-wrap.full_record h2 {
   font-size: 2.5rem;
   line-height: 1;
-  margin: 0 20px 20px 0;
+  margin: 0 20px 20px 25px;
   padding-left: 0;
 }
-.onecol h2, .content-wrap.full_record h2 {
-  margin-left: 25px;
+.onecol h2 .thumbnail-badge, .content-wrap.full_record h2 .thumbnail-badge {
+  font-size: 15px;
+  margin-left: 10px;
+  margin-top: -25px;
+}
+.onecol h2.deleted, .content-wrap.full_record h2.deleted {
+  display: block;
+}
+.onecol h2.deleted .thumbnail-badge, .content-wrap.full_record h2.deleted .thumbnail-badge {
+  font-size: 15px;
+  margin-left: 10px;
+  margin-top: -25px;
 }
 .onecol h2.link-list, .content-wrap.full_record h2.link-list {
   font-size: 20px;
@@ -745,6 +845,9 @@ p.no-search-results {
   font-size: 16px;
   line-height: 1.2;
   word-break: break-all;
+}
+.onecol .relateditem .deleted, .content-wrap.full_record .relateditem .deleted {
+  display: block;
 }
 .onecol .aggregate-info .is-narrow-tablet, .content-wrap.full_record .aggregate-info .is-narrow-tablet {
   margin-left: 25px;
@@ -859,15 +962,25 @@ table.dataTable tbody tr.odd {
 #child-files th {
   border: 1px solid #E1E1E1;
 }
+#child-files tr.deleted {
+  display: table-row;
+}
 #child-files td {
   border-left: 1px solid #E1E1E1;
   border-right: 1px solid #E1E1E1;
 }
 #child-files th, #child-files td {
-  border-collapse: collapse;
-  padding: 10px;
   text-align: center;
   vertical-align: middle;
+}
+#child-files .thumbnail-badge {
+  font-size: 10px;
+  margin-left: 15px !important;
+  margin-top: -15px !important;
+}
+#child-files .thumbnail-badge .fa-trash, #child-files .thumbnail-badge .fa-lock {
+  left: 0;
+  top: 0;
 }
 
 #is-folder .is-12 {

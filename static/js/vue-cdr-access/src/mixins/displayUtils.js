@@ -22,6 +22,22 @@ export default {
 
         altText(title) {
             return `Thumbnail for ${title}`;
+        },
+
+        markedForDeletion(record) {
+            return /marked.*?deletion/.test(this.restrictions(record));
+        },
+
+        isRestricted(record) {
+            return /embargoed|staff-only/.test(this.restrictions(record));
+        },
+
+        restrictions(record) {
+            if (record.status === undefined) {
+                return '';
+            }
+
+            return record.status.join(',').toLowerCase();
         }
     }
 }

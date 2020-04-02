@@ -34,6 +34,17 @@
 	</c:if>
 </c:set>
 
+<c:set var="badgeIcon" scope="request">
+	<c:choose>
+		<c:when test="${markedForDeletion}">
+			trash
+		</c:when>
+		<c:when test="${not empty thumbnailObject && (not permsHelper.allowsPublicAccess(thumbnailObject) || not empty thumbnailObject.activeEmbargo)}">
+			lock
+		</c:when>
+	</c:choose>
+</c:set>
+
 <c:set var="href">
 	<c:choose>
 		<c:when test="${param.target == 'file' && permsHelper.hasOriginalAccess(requestScope.accessGroupSet, thumbnailObject)}">
@@ -72,19 +83,6 @@
 		</c:when>
 		<c:when test="${param.size == 'small' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
 			<c:out value="${cdr:getThumbnailUrl(thumbnailObject, 'small')}" />
-		</c:when>
-	</c:choose>
-</c:set>
-
-<c:set var="deleted" value="${cdr:contains(thumbnailObject.status, 'Deleted') || cdr:contains(thumbnailObject.status, 'Parent Deleted')}" />
-
-<c:set var="badgeIcon">
-	<c:choose>
-		<c:when test="${deleted}">
-			trash
-		</c:when>
-		<c:when test="${not empty thumbnailObject && (not permsHelper.allowsPublicAccess(thumbnailObject) || not empty thumbnailObject.activeEmbargo)}">
-			lock
 		</c:when>
 	</c:choose>
 </c:set>
