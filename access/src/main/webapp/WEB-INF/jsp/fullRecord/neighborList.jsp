@@ -32,15 +32,15 @@
 			<c:set var="markedForDeletion"  value="${cdr:contains(neighbor.status, 'Marked For Deletion')}" scope="request"/>
 			<c:choose>
 				<c:when test="${markedForDeletion}">
-					<c:set var="isDeleted" value="deleted" scope="request"/>
+					<c:set var="neighborIsDeleted" value="deleted" scope="request"/>
 				</c:when>
 				<c:otherwise>
-					<c:set var="isDeleted" value="" scope="request"/>
+					<c:set var="neighborIsDeleted" value="" scope="request"/>
 				</c:otherwise>
 			</c:choose>
 
 			<div class="relateditem ${currentItemClass}">
-				<div class="relatedthumb ${isDeleted}">
+				<div class="relatedthumb ${neighborIsDeleted}">
 					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />
 					<c:import url="common/thumbnail.jsp">
 						<c:param name="target" value="record" />
