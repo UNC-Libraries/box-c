@@ -150,8 +150,7 @@ public class EditFilenameServiceTest {
         String label = "a brand-new title!";
         service.editLabel(agent, pid, label);
 
-        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
-        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), labelCaptor.capture());
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from Old file name to " + label);
@@ -166,8 +165,7 @@ public class EditFilenameServiceTest {
         String label = "a brand-new title too!";
         service.editLabel(agent, pid, label);
 
-        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
-        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), labelCaptor.capture());
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from no ebucore:filename to " + label);
