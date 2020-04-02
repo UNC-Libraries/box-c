@@ -23,6 +23,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ import org.springframework.web.context.request.WebRequest;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -60,6 +64,8 @@ public class FedoraContentController {
     private FedoraContentService fedoraContentService;
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
@@ -86,6 +92,14 @@ public class FedoraContentController {
             HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        if (repoObj instanceof WorkObject) {
+            FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
+            if (primaryObj != null) {
+                pid = primaryObj.getPid();
+            }
+        }
 
         try {
             fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);
