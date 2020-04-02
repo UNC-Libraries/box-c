@@ -412,6 +412,8 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         PID modsPid = DatastreamPids.getMdDescriptivePid(newPid);
 
+        log.debug("Number of MODS versions {} for {}", modsVersions.size(), originalPid);
+
         // If more than one version, then put all versions but the last one in history
         if (modsVersions.size() > 1) {
             DatastreamHistoryLog modsHistory = new DatastreamHistoryLog(modsPid);
@@ -429,7 +431,8 @@ public class ContentObjectTransformer extends RecursiveAction {
             }
 
             try (InputStream historyStream = modsHistory.toInputStream()) {
-                directoryManager.writeModsHistory(newPid, modsHistory.toInputStream());
+                Path historyPath = directoryManager.writeModsHistory(newPid, modsHistory.toInputStream());
+                log.debug("Wrote mods history to {} for {}", historyPath, newPid);
             } catch (IOException e) {
                 throw new RepositoryException("Failed to write MODS history for " + originalPid, e);
             }

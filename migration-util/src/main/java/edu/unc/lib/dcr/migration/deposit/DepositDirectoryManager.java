@@ -92,7 +92,7 @@ public class DepositDirectoryManager {
         }
     }
 
-    public void writeModsHistory(PID pid, InputStream historyStream) {
+    public Path writeModsHistory(PID pid, InputStream historyStream) {
         Path modsHistoryPath = makeMetadataFilePath(descriptionHistoryDir, pid, ".xml");
 
         try {
@@ -100,6 +100,8 @@ public class DepositDirectoryManager {
         } catch (IOException e) {
             throw new RepositoryException("Unable to write MODS history for " + pid.getId(), e);
         }
+
+        return modsHistoryPath;
     }
 
     /**
