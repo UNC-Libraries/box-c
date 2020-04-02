@@ -74,7 +74,7 @@
 }
 .xml_dialog .ui-icon {
 	display: block;
-	padding: .4em .3em;
+	padding: inherit;
 }
 .xml_dialog .ui-resizable-se {
 	width: 12px;
@@ -95,11 +95,13 @@
 	position: absolute;
 	top: 0;
 	left: 0;
+	z-index: 1011;
 }
 
 .ui-widget-content {
 	border: 1px solid #aaaaaa;
 	background: #ffffff;
+	z-index: 1012;
 }
 
 .xml_export_filename {
@@ -210,7 +212,7 @@
 
 /* Element */
 .top_level_element_group {
-	margin: 8px 0 20px 0px;
+	margin: 8px 0 20px 0;
 }
 
 .xml_element {
@@ -238,20 +240,20 @@
 }
 
 .xml_children > .xml_element:last-child {
-	margin-bottom: 0px;	
+	margin-bottom: 0;	
 }
 
 .top_level_element_group.xml_element {
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 .element_header {
 	padding: 4px 1px 1px 7px;
 	line-height: 22px;
 	height: 22px;
-	-webkit-border-radius: 6px 6px 0px 0px;
-	-moz-border-radius: 6px 6px 0px 0px;
-	border-radius: 6px 6px 0px 0px;
+	-webkit-border-radius: 6px 6px 0 0;
+	-moz-border-radius: 6px 6px 0 0;
+	border-radius: 6px 6px 0 0;
 	border-bottom: 1px solid #bbbbbb;
 	margin-bottom: 12px;
 }
@@ -300,7 +302,7 @@
 
 .xml_element.selected {
 	border: 1px solid #EB8F00;
-	box-shadow: 0px 0px 6px 1px #FBD850;
+	box-shadow: 0 0 6px 1px #FBD850;
 }
 
 .xml_root_element.selected {
@@ -348,7 +350,7 @@
 	border: 1px solid #aaaabb;
 	border-radius: 2px;
 	font-size: 11px;
-	margin: 0px 2px;
+	margin: 0 2px;
 	background-color: #eee;
 	color: #4C4C4C;
 	font-weight: 400;
@@ -365,7 +367,7 @@
 	font-style: italic;
 	color: #bbb;
 	font-size: 13px;
-	padding: 0px 10px 10px 10px;
+	padding: 0 10px 10px 10px;
 }
 
 .xml_content > .placeholder, .xml_element > .xml_children > .placeholder {
@@ -493,12 +495,12 @@
 }
 
 .xml_element .content_block {
-	padding: 0px 10px 12px 10px;
+	padding: 0 10px 12px 10px;
 	/*border-top: 1px solid #bbb;*/
 }
 
 .content_block + .content_block {
-	padding-top: 0px;
+	padding-top: 0;
 }
 
 .xml_text_node + .xml_element {
@@ -519,11 +521,11 @@
 
 .xml_submit_status {
 	display: block;
-	margin: 5px 0px;
+	margin: 5px 0;
 }
 
 .send_xml {
-	margin: 5px 0px 10px 0px;
+	margin: 5px 0 10px 0;
 }
 
 .menu_content {
@@ -562,7 +564,7 @@
 	font-size: 14px;
 	padding: 5px;
 	background-repeat: repeat-x;
-	background-position: left 0px;
+	background-position: left 0;
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FFFFFF', endColorstr='#dddddd');
 	background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#dddddd));
 	background: -moz-linear-gradient(top,  #FFFFFF,  #dddddd);
@@ -584,7 +586,7 @@
 }
 
 /*.xml_content {
-	padding: 5px 0px 5px 5px;
+	padding: 5px 0 5px 5px;
 }*/
 
 /* Head tabs */
@@ -620,7 +622,7 @@
 	background-color: #ffeeee;
 	padding: 5px;
 	white-space: pre-wrap;
-	margin: 5px 0px;
+	margin: 5px 0;
 }
 
 /* Menu bar */
@@ -648,7 +650,6 @@
 	background-color: #ffffff;
 	z-index: 999;
 	width: 100%;
-	background-color: #ffffff;
 }
 
 .xml_menu_bar {
@@ -667,7 +668,7 @@
 	*display: inline;
 	font-size: 14px;
 	margin: 0;
-	text-indent: 0px;
+	text-indent: 0;
 }
 
 .xml_menu_bar > ul > li > a > span {
@@ -694,7 +695,7 @@
 .xml_menu_bar.active > ul > li:hover > a > span {
 	padding: 5px 7px;
 	border: 1px solid #bbbbcc;
-	border-bottom: 0px;
+	border-bottom: 0;
 	z-index: 1002; 
 	background-color: #fff;
 	position: relative;
@@ -726,6 +727,10 @@
 	cursor: pointer;
 }
 
+.xml_menu_bar.active > ul > li > ul > li > span {
+	text-indent: 0;
+}
+
 .xml_menu_bar.active > ul > li > ul > .disabled {
 	color: #B4B7BA;
 	cursor: default;
@@ -748,7 +753,7 @@
 	border: 1px solid #BBBBBB;
 	float: right;
 	margin-left: 10px;
-	margin-right: 0px;
+	margin-right: 0;
 	transition: border-color 0.2s linear 0s, box-shadow 0.2s linear 0s, color 0.2s linear 0s;
 }
 
@@ -778,7 +783,7 @@
 .template-form .ui-dialog-titlebar {
 	background : transparent linear-gradient(to bottom, #FFF, #DDD) repeat scroll 0% 0%;
 	padding: 8px 10px;
-	border-radius: 6px 6px 0px 0px;
+	border-radius: 6px 6px 0 0;
 	border-bottom: 1px solid #BBB;
 	margin-bottom: 6px;
 	font-weight: bold;
