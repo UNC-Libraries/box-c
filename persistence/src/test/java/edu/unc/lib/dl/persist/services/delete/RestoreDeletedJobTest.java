@@ -92,7 +92,7 @@ public class RestoreDeletedJobTest {
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(contentObj.getPremisLog()).thenReturn(premisLogger);
-        when(premisLogger.buildEvent(eq(Premis.Deletion))).thenReturn(eventBuilder);
+        when(premisLogger.buildEvent(eq(Premis.Accession))).thenReturn(eventBuilder);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -131,7 +131,7 @@ public class RestoreDeletedJobTest {
 
         verify(sparqlUpdateService).executeUpdate(anyString(), anyString());
 
-        verify(premisLogger).buildEvent(eq(Premis.Deletion));
+        verify(premisLogger).buildEvent(eq(Premis.Accession));
         verify(eventBuilder).writeAndClose();
     }
 }

@@ -85,7 +85,7 @@ public class MarkForDeletionJob implements Runnable {
 
             sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
-            repoObj.getPremisLog().buildEvent(Premis.Deletion)
+            repoObj.getPremisLog().buildEvent(Premis.Deaccession)
                     .addImplementorAgent(agent.getUsernameUri())
                     .addEventDetail("Item marked for deletion and not available without permissions")
                     .addEventDetail(message)

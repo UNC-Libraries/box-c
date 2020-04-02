@@ -199,6 +199,8 @@ public class Premis {
     /**
      * Premis event types
      */
+    public static final Resource Accession = createResource("http://id.loc.gov/vocabulary/preservation/eventType/acc");
+
     public static final Resource Capture = createResource("http://id.loc.gov/vocabulary/preservation/eventType/cap");
 
     public static final Resource Compression = createResource(

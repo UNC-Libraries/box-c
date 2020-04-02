@@ -181,7 +181,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertTrue(resc.getProperty(CdrAcl.markedForDeletion).getBoolean());
 
         Model logModel = repoObj.getPremisLog().getEventsModel();
-        assertTrue(logModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Deaccession));
     }
 
     private void assertNotMarkedForDeletion(PID pid) {
