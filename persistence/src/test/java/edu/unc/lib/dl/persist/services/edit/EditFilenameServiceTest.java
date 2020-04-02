@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,7 +105,6 @@ public class EditFilenameServiceTest {
     private PremisEventBuilder eventBuilder;
 
     private PID pid;
-    private URI uri;
 
     private EditFilenameService service;
 
@@ -115,7 +113,6 @@ public class EditFilenameServiceTest {
         initMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
-        uri = new URI("path/to/obj");
 
         service = new EditFilenameService();
 
@@ -154,6 +151,7 @@ public class EditFilenameServiceTest {
         service.editLabel(agent, pid, label);
 
         verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), labelCaptor.capture());
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from Old file name to " + label);
@@ -169,6 +167,7 @@ public class EditFilenameServiceTest {
         service.editLabel(agent, pid, label);
 
         verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), any(Resource.class));
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), labelCaptor.capture());
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from no ebucore:filename to " + label);

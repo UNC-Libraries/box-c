@@ -62,7 +62,7 @@ public class EditFilenameIT extends AbstractAPIIT {
         PID pid = makePid();
 
         Path file = createTempFile("test", "txt");
-        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, ModelFactory.createDefaultModel());
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
         fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
         String label = "work_filename";
@@ -77,20 +77,16 @@ public class EditFilenameIT extends AbstractAPIIT {
         assertEquals("editLabel", respMap.get("action"));
 
         assertEquals("work_filename",
-                fileObj.getOriginalFile().getModel().getRequiredProperty(
-                        fileObj.getOriginalFile().getResource(), Ebucore.filename).getLiteral().toString());
+                fileObj.getOriginalFile().getResource().getProperty(Ebucore.filename)
+                        .getLiteral().toString());
     }
 
     @Test
     public void testReplaceLabel() throws UnsupportedOperationException, Exception {
         PID pid = makePid();
-        String oldLabel = "old_work_label";
-        Model fileModel = ModelFactory.createDefaultModel();
-        fileModel.add(fileModel.createResource(pid.getRepositoryPath()), Ebucore.filename,
-                oldLabel);
         Path file = createTempFile("test", "txt");
 
-        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, fileModel);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
         fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
         String newLabel = "new_work_filename";
@@ -105,8 +101,8 @@ public class EditFilenameIT extends AbstractAPIIT {
         assertEquals("editLabel", respMap.get("action"));
 
         assertEquals(newLabel,
-                fileObj.getOriginalFile().getModel().getRequiredProperty(
-                        fileObj.getOriginalFile().getResource(), Ebucore.filename).getLiteral().toString());
+                fileObj.getOriginalFile().getResource().getProperty(Ebucore.filename)
+                        .getLiteral().toString());
     }
 
     @Test
