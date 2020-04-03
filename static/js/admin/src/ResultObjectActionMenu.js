@@ -154,8 +154,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		*/
 
-		if (metadata.type === 'Collection') {
-			items["editThumbnail"] = {name : 'Edit Thumbnail'};
+		if (metadata.type === 'Collection' && $.inArray('createCollection', metadata.permissions) != -1) {
+			items["editThumbnail"] = {name : 'Edit Collection Thumbnail'};
 		}
 
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {

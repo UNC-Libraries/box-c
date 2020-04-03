@@ -24,11 +24,11 @@ define('EditThumbnailForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
         };
 
         EditThumbnailForm.prototype.getSuccessMessage = function(data) {
-            return this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
+            return this.ingestFile.name + " has been successfully uploaded for collection thumbnail creation.";
         };
 
         EditThumbnailForm.prototype.getErrorMessage = function(data) {
-            var message = "Failed to ingest file " + this.ingestFile.name + ".";
+            var message = "Failed to process file " + this.ingestFile.name + ".";
             if (data && data.errorStack && !this.closed) {
                 message += "  See errors below.";
                 this.setError(data.errorStack);

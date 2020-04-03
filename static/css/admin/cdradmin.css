@@ -520,3 +520,7 @@ div.in-admin-iframe,
 	margin: 0;
 	text-indent: 0;
 }
+
+.update_button {
+	color: white;
+}
