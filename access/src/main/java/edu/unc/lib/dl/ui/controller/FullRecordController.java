@@ -201,8 +201,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
                     principals, facetsToRetrieve);
 
-            briefObject.getCountMap().put("child", resultResponse.getResultCount());
-
             boolean hasFacets = false;
             for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
                 if (facetField.getValues().size() > 0) {
