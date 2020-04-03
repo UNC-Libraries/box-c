@@ -162,7 +162,9 @@
         }
 
         .result-title {
+            line-height: 1.2;
             margin-bottom: 15px;
+            word-break: break-all;
         }
 
         i {

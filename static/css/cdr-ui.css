@@ -1005,6 +1005,11 @@ table.dataTable tbody tr.odd {
   margin-bottom: 10px;
 }
 
+.button.is-focused,
+.button:focus {
+  color: white;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
