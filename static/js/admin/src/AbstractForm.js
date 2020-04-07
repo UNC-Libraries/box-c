@@ -8,6 +8,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 
 		AbstractForm.prototype.open = function(resultObject) {
 			var dialogBox = new ModalCreate(this.options);
+
 			var formContents = dialogBox.formContents(resultObject);
 			var self = this;
 			this.closed = false;
@@ -45,7 +46,7 @@ define('AbstractForm', [ 'jquery', 'jquery-ui', 'underscore', 'ModalCreate',
 			this.submitAjax();
 
 			return false;
-		}
+		};
 
 		AbstractForm.prototype.close = function() {
 			if (this.closed) return;

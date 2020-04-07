@@ -222,7 +222,7 @@
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="editLabelService" class="edu.unc.lib.dl.persist.services.edit.EditLabelService">
+    <bean id="editFilenameService" class="edu.unc.lib.dl.persist.services.edit.EditFilenameService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />

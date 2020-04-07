@@ -77,7 +77,7 @@ public class RestoreDeletedJob implements Runnable {
 
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
-        repoObj.getPremisLog().buildEvent(Premis.Deletion)
+        repoObj.getPremisLog().buildEvent(Premis.Accession)
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Item restored from deletion")
                 .writeAndClose();

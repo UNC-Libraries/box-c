@@ -30,9 +30,9 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/EditLabelController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    <context:component-scan resource-pattern="**/EditFilenameController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="editContainerService" class="edu.unc.lib.dl.persist.services.edit.EditLabelService">
+    <bean id="editContainerService" class="edu.unc.lib.dl.persist.services.edit.EditFilenameService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

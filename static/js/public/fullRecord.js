@@ -86,10 +86,31 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				var img;
 
 				if ('thumbnail_url' in row) {
-					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">'
+					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">';
 				} else {
 					img = '<i class="fa fa-file default-img-icon" title="Default thumbnail image"></i>';
 				}
+
+				var trashBadge = showBadge(row).markDeleted;
+				var lockBadge = showBadge(row).restricted;
+
+				if (trashBadge || lockBadge) {
+					var whichBadge = '';
+
+					if (trashBadge) {
+						whichBadge = 'trash';
+					} else if (lockBadge) {
+						whichBadge = 'lock';
+					}
+
+					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '">' +
+							'<div class="fa-stack">' +
+								'<i class="fas fa-circle fa-stack-2x background"></i>' +
+								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i>' +
+							'</div>' +
+						'</div>';
+				}
+
 				return img
 				}, targets: 0
 			},
@@ -135,7 +156,12 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search for keywords' },
-			order: [[1, 'asc']]
+			order: [[1, 'asc']],
+			rowCallback: function(row, data) {
+				if (showBadge(data).markDeleted) {
+					$(row).addClass('deleted');
+				}
+			}
 		});
 
 		$('#child-files_filter input').addClass('input');
@@ -154,6 +180,19 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				}
 			}
 			return "";
+		}
+
+		function showBadge(data) {
+			var markedForDeletion = false;
+			var restrictedAccess = false;
+
+			if (data.status !== undefined) {
+				var restrictions = data.status.join(',').toLowerCase();
+				markedForDeletion = /marked.*?deletion/.test(restrictions);
+				restrictedAccess = /embargoed|staff-only/.test(restrictions);
+			}
+
+			return { markDeleted: markedForDeletion, restricted: restrictedAccess };
 		}
 
 		function bytesToSize(bytes) {

@@ -26,10 +26,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
@@ -48,14 +48,15 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
@@ -65,7 +66,7 @@ import edu.unc.lib.dl.test.SelfReturningAnswer;
  * @author harring
  *
  */
-public class EditLabelServiceTest {
+public class EditFilenameServiceTest {
 
     @Mock
     private AccessControlService aclService;
@@ -80,7 +81,11 @@ public class EditLabelServiceTest {
     @Mock
     private FedoraTransaction tx;
     @Mock
-    private RepositoryObject repoObj;
+    private FileObject repoObj;
+    @Mock
+    private BinaryObject binaryObj;
+    @Mock
+    private WorkObject workObj;
     @Mock
     private Model model;
     @Mock
@@ -100,18 +105,16 @@ public class EditLabelServiceTest {
     private PremisEventBuilder eventBuilder;
 
     private PID pid;
-    private URI uri;
 
-    private EditLabelService service;
+    private EditFilenameService service;
 
     @Before
     public void init() throws Exception {
         initMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
-        uri = new URI("path/to/obj");
 
-        service = new EditLabelService();
+        service = new EditFilenameService();
 
         service.setAclService(aclService);
         service.setRepositoryObjectFactory(repoObjFactory);
@@ -120,14 +123,14 @@ public class EditLabelServiceTest {
         service.setOperationsMessageSender(messageSender);
 
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
-        when(repoObj.getModel()).thenReturn(model);
+        when(repoObj.getOriginalFile()).thenReturn(binaryObj);
+        when(binaryObj.getModel()).thenReturn(model);
         when(model.getResource(anyString())).thenReturn(resc);
-        when(repoObj.getUri()).thenReturn(uri);
         when(agent.getPrincipals()).thenReturn(groups);
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(repoObj.getPremisLog()).thenReturn(premisLogger);
-        when(premisLogger.buildEvent(eq(Premis.Migration))).thenReturn(eventBuilder);
+        when(premisLogger.buildEvent(eq(Premis.FilenameChange))).thenReturn(eventBuilder);
         when(agent.getUsernameUri()).thenReturn("agentname");
         when(eventBuilder.write()).thenReturn(resc);
 
@@ -142,18 +145,45 @@ public class EditLabelServiceTest {
     }
 
     @Test
-    public void editLabelTest() {
+    public void editFilenameTest() {
+        when(binaryObj.getFilename()).thenReturn("Old file name");
         String label = "a brand-new title!";
         service.editLabel(agent, pid, label);
 
-        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(DcElements.title), any(Resource.class));
-        verify(premisLogger).buildEvent(eq(Premis.Migration));
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
+        verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
-        assertEquals(labelCaptor.getValue(), "Object renamed from " + "no dc:title" +" to " + label);
+        assertEquals(labelCaptor.getValue(), "Object renamed from Old file name to " + label);
         verify(eventBuilder).writeAndClose();
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
         assertEquals(pid, pidCaptor.getValue().get(0));
+    }
+
+    @Test
+    public void editNoFilenameTest() {
+        String label = "a brand-new title too!";
+        service.editLabel(agent, pid, label);
+
+        verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
+        verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
+        verify(eventBuilder).addEventDetail(labelCaptor.capture());
+        assertEquals(labelCaptor.getValue(), "Object renamed from no ebucore:filename to " + label);
+        verify(eventBuilder).writeAndClose();
+
+        verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidCaptor.capture());
+        assertEquals(pid, pidCaptor.getValue().get(0));
+    }
+
+    @Test
+    public void editFilenamelNonFileObjTest() {
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(workObj);
+
+        try {
+            service.editLabel(agent, pid, "label");
+        } catch (Exception e) {
+           assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
+        }
     }
 
     @Test(expected = TransactionCancelledException.class)

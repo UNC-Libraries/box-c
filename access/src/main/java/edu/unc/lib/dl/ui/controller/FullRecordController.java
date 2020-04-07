@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.IOException;
@@ -200,8 +201,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
                     principals, facetsToRetrieve);
 
-            briefObject.getCountMap().put("child", resultResponse.getResultCount());
-
             boolean hasFacets = false;
             for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
                 if (facetField.getValues().size() > 0) {
@@ -233,6 +232,14 @@ public class FullRecordController extends AbstractSolrSearchController {
                     searchSettings.maxNeighborResults, principals);
             model.addAttribute("neighborList", neighbors);
         }
+
+        List<String> objectStatus = briefObject.getStatus();
+        boolean isMarkedForDeletion = false;
+
+        if (objectStatus != null) {
+            isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
+        }
+        model.addAttribute("markedForDeletion", isMarkedForDeletion);
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";

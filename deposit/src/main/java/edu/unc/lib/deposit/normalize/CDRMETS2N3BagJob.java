@@ -86,7 +86,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 
         PID depositPID = getDepositPID();
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        premisDepositLogger.buildEvent(Premis.Normalization)
+        premisDepositLogger.buildEvent(Premis.Accession)
                 .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
                         PackagingType.BAG_WITH_N3.getUri())
                 .addSoftwareAgent(SoftwareAgent.depositService.getFullname())

@@ -39,7 +39,7 @@
 				<c:import url="fullRecord/navigationBar.jsp" />
 				<div class="columns">
 					<div class="column is-8">
-						<h2 class="item-title"><c:out value="${briefObject.title}" /></h2>
+						<h2 class="item-title ${isDeleted}"><c:out value="${briefObject.title}" /></h2>
 					</div>
 					<div class="column is-narrow-desktop action-btn item-actions">
 						<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
@@ -63,7 +63,7 @@
 					</div>
 				</div>
 				<div class="columns columns-resize aggregate-info">
-					<div class="column is-narrow-tablet">
+					<div class="column is-narrow-tablet ${isDeleted}">
 						<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
 						<c:import url="common/thumbnail.jsp">
 							<c:param name="target" value="file" />

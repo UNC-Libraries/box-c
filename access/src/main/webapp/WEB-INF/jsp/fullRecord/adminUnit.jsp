@@ -45,7 +45,18 @@
     <div id="is-admin-unit" class="columns browse-header">
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
-            <h2><i class="fa fa-university" aria-hidden="true"></i> <c:out value="${briefObject.title}" /></h2>
+            <h2 class="${isDeleted}">
+                <i class="fa fa-university" aria-hidden="true">
+                    <c:if test="${not empty badgeIcon}">
+                        <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
+                            <div class="fa-stack">
+                                <i class="fas fa-circle fa-stack-2x background"></i>
+                                <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
+                            </div>
+                        </div>
+                    </c:if>
+                </i> <c:out value="${briefObject.title}" />
+            </h2>
             <p><strong>Subjects:</strong>
                 <c:choose>
                     <c:when test="${not empty briefObject.subject}">

@@ -29,8 +29,18 @@
 			<c:set var="currentItemClass" scope="page">
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
 			</c:set>
+			<c:set var="markedForDeletion"  value="${cdr:contains(neighbor.status, 'Marked For Deletion')}" scope="request"/>
+			<c:choose>
+				<c:when test="${markedForDeletion}">
+					<c:set var="neighborIsDeleted" value="deleted" scope="request"/>
+				</c:when>
+				<c:otherwise>
+					<c:set var="neighborIsDeleted" value="" scope="request"/>
+				</c:otherwise>
+			</c:choose>
+
 			<div class="relateditem ${currentItemClass}">
-				<div class="relatedthumb">
+				<div class="relatedthumb ${neighborIsDeleted}">
 					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />
 					<c:import url="common/thumbnail.jsp">
 						<c:param name="target" value="record" />

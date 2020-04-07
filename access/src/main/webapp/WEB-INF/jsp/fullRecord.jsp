@@ -20,13 +20,25 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
-<c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted') || cdr:contains(briefObject.status, 'Parent Deleted')}">
-	<c:set var="isDeleted" value="deleted" scope="page"/>
+<c:if test="${markedForDeletion}">
+	<c:set var="isDeleted" value="deleted" scope="request"/>
 </c:if>
+
 <c:set var="allowsPublicAccess" value="${permsHelper.allowsPublicAccess(briefObject)}" />
 <c:if test="${not empty briefObject && (not allowsPublicAccess || not empty briefObject.activeEmbargo)}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
+
+<c:set var="badgeIcon" scope="request">
+	<c:choose>
+		<c:when test="${markedForDeletion}">
+			trash
+		</c:when>
+		<c:when test="${not empty briefObject && (not permsHelper.allowsPublicAccess(briefObject) || not empty briefObject.activeEmbargo)}">
+			lock
+		</c:when>
+	</c:choose>
+</c:set>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 

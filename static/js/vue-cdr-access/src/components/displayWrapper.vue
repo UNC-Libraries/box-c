@@ -153,6 +153,7 @@
     }
 
     p.spacing {
+        color: #222;
         font-size: 20px;
         margin-top: 50px;
         margin-bottom: 20px;

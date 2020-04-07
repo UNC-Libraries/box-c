@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static java.nio.file.Files.createTempFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
@@ -36,9 +38,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Ebucore;
 
 /**
  *
@@ -48,18 +51,22 @@ import edu.unc.lib.dl.rdf.DcElements;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/edit-label-it-servlet.xml")
+    @ContextConfiguration("/edit-filename-it-servlet.xml")
 })
-public class EditLabelIT extends AbstractAPIIT {
+public class EditFilenameIT extends AbstractAPIIT {
+    private String filename = "file.txt";
+    private String mimetype = "text/plain";
 
     @Test
     public void testCreateLabelWhereNoneExists() throws UnsupportedOperationException, Exception {
         PID pid = makePid();
 
-        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+        Path file = createTempFile("test", "txt");
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
+        fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
-        String label = "work_label";
-        MvcResult result = mvc.perform(put("/edit/label/" + pid.getUUID())
+        String label = "work_filename";
+        MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
                 .param("label", label))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
@@ -69,21 +76,21 @@ public class EditLabelIT extends AbstractAPIIT {
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
 
-        assertEquals("work_label",
-                work.getModel().getRequiredProperty(work.getResource(), DcElements.title).getLiteral().toString());
+        assertEquals("work_filename",
+                fileObj.getOriginalFile().getResource().getProperty(Ebucore.filename)
+                        .getLiteral().toString());
     }
 
     @Test
     public void testReplaceLabel() throws UnsupportedOperationException, Exception {
         PID pid = makePid();
-        String oldLabel = "old_work_label";
-        Model workModel = ModelFactory.createDefaultModel();
-        workModel.add(workModel.createResource(pid.getRepositoryPath()), DcElements.title,
-                oldLabel);
-        WorkObject work = repositoryObjectFactory.createWorkObject(pid, workModel);
+        Path file = createTempFile("test", "txt");
 
-        String newLabel = "new_work_label";
-        MvcResult result = mvc.perform(put("/edit/label/" + pid.getUUID())
+        FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
+        fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
+
+        String newLabel = "new_work_filename";
+        MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
                 .param("label", newLabel))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
@@ -93,8 +100,22 @@ public class EditLabelIT extends AbstractAPIIT {
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
 
-        assertEquals("new_work_label",
-                work.getModel().getRequiredProperty(work.getResource(), DcElements.title).getLiteral().toString());
+        assertEquals(newLabel,
+                fileObj.getOriginalFile().getResource().getProperty(Ebucore.filename)
+                        .getLiteral().toString());
+    }
+
+    @Test
+    public void testWrongObjectType() throws UnsupportedOperationException, Exception {
+        PID pid = makePid();
+
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+
+        String label = "work_filename";
+        mvc.perform(put("/edit/filename/" + pid.getUUID())
+                .param("label", label))
+                .andExpect(status().is5xxServerError())
+                .andReturn();
     }
 
     @Test
@@ -105,8 +126,8 @@ public class EditLabelIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));
 
-        String label = "folder_label";
-        MvcResult result = mvc.perform(put("/edit/label/" + pid.getUUID())
+        String label = "folder_filename";
+        MvcResult result = mvc.perform(put("/edit/filename/" + pid.getUUID())
                 .param("label", label))
                 .andExpect(status().isForbidden())
             .andReturn();
