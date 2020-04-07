@@ -62,7 +62,7 @@ public class ImportThumbnailService extends MessageSender {
         Files.createDirectories(storagePath);
     }
 
-    public void run(InputStream importStream, AgentPrincipals agent, String uuid) {
+    public void run(InputStream importStream, AgentPrincipals agent, String uuid) throws Exception {
         PID pid = PIDs.get(uuid);
 
         aclService.assertHasAccess("User does not have permission to add/update collection thumbnails",
@@ -73,7 +73,7 @@ public class ImportThumbnailService extends MessageSender {
             String mimeType = tika.detect(importStream);
 
             if (!containsIgnoreCase(mimeType, "image")) {
-                throw new Exception("Uploaded file is not an image");
+                throw new IllegalArgumentException("Uploaded file is not an image");
             }
 
             String thumbnailBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
@@ -86,8 +86,9 @@ public class ImportThumbnailService extends MessageSender {
 
             log.info("Job to to add thumbnail to collection {} has been queued by {}",
                     uuid, agent.getUsername());
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             log.error("Uploaded file for collection {} is not an image file", uuid);
+            throw e;
         }
     }
 

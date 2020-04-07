@@ -21,6 +21,9 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -54,6 +57,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -124,6 +128,8 @@ public class EnhancementRouterIT {
         initMocks(this);
 
         reset(solrIngestProcessor);
+        reset(addSmallThumbnailProcessor);
+        reset(addLargeThumbnailProcessor);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -140,7 +146,7 @@ public class EnhancementRouterIT {
     public void testFolderEnhancements() throws Exception {
         FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
-        final Map<String, Object> headers = createEvent(folderObject.getPid(),
+        final Map<String, Object> headers = createEvent(false, folderObject.getPid(),
                 Cdr.Folder.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -169,7 +175,7 @@ public class EnhancementRouterIT {
         BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
-        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        final Map<String, Object> headers = createEvent(false, binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         // Separate exchanges when multicasting
@@ -195,6 +201,26 @@ public class EnhancementRouterIT {
     }
 
     @Test
+    public void testCollectionThumbFile() throws Exception {
+        CollectionObject collObj = repoObjectFactory.createCollectionObject(null);
+        final Map<String, Object> headers = createEvent(true, collObj.getPid());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(2)
+                .create();
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Enhancement route not satisfied", result1);
+
+        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        // Indexing triggered for binary parent
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
     public void testBinaryMetadataFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
@@ -205,7 +231,7 @@ public class EnhancementRouterIT {
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);
 
-        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
+        final Map<String, Object> headers = createEvent(false, mdPid, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -231,7 +257,7 @@ public class EnhancementRouterIT {
         BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
-        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        final Map<String, Object> headers = createEvent(false, binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -253,7 +279,7 @@ public class EnhancementRouterIT {
         BinaryObject descObj = updateDescriptionService.updateDescription(mock(AgentPrincipals.class),
                 fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes()));
 
-        Map<String, Object> headers = createEvent(descObj.getPid(),
+        Map<String, Object> headers = createEvent(false, descObj.getPid(),
                 Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -268,13 +294,19 @@ public class EnhancementRouterIT {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
-    private static Map<String, Object> createEvent(PID pid, String... type) {
+    private static Map<String, Object> createEvent(boolean collectionThumb, PID pid, String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
         headers.put(IDENTIFIER, pid.getRepositoryPath());
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
+
+        if (collectionThumb) {
+            headers.put(CdrIsCollectionThumbnail, "true");
+            headers.put(CdrBinaryPath, pid.getRepositoryPath());
+            headers.put(CdrBinaryMimeType, "image/png");
+        }
 
         return headers;
     }
