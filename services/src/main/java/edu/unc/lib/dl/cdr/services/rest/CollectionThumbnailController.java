@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.rest.modify;
+package edu.unc.lib.dl.cdr.services.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +63,7 @@ public class CollectionThumbnailController {
         result.put("user email", userEmail);
 
         try (InputStream importStream = thumbnailFile.getInputStream()) {
-            service.run(importStream, agent, pid, thumbnailFile.getOriginalFilename());
+            service.run(importStream, agent, pid);
         } catch (IOException e) {
             log.error("Failed to get submitted file", e);
             result.put("error", e.getMessage());

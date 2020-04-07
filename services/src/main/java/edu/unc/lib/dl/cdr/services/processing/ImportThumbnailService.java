@@ -50,19 +50,19 @@ import edu.unc.lib.dl.services.MessageSender;
 public class ImportThumbnailService extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(ImportThumbnailService.class);
 
-    private String derivativeDir;
+    private String dataDir;
     private Path storagePath;
     private AccessControlService aclService;
     private MessageSender messageSender;
 
     public void init() throws IOException {
-        storagePath = Paths.get(derivativeDir, "sourceImages");
+        storagePath = Paths.get(dataDir);
 
         // Create the directory if it doesn't already exist
         Files.createDirectories(storagePath);
     }
 
-    public void run(InputStream importStream, AgentPrincipals agent, String uuid, String filename) {
+    public void run(InputStream importStream, AgentPrincipals agent, String uuid) {
         PID pid = PIDs.get(uuid);
 
         aclService.assertHasAccess("User does not have permission to add/update collection thumbnails",
@@ -70,9 +70,9 @@ public class ImportThumbnailService extends MessageSender {
 
         try {
             Tika tika = new Tika();
-            String fileType = tika.detect(importStream);
+            String mimeType = tika.detect(importStream);
 
-            if (!containsIgnoreCase(fileType, "image")) {
+            if (!containsIgnoreCase(mimeType, "image")) {
                 throw new Exception("Uploaded file is not an image");
             }
 
@@ -81,7 +81,7 @@ public class ImportThumbnailService extends MessageSender {
             File finalLocation = new File(filePath);
             copyInputStreamToFile(importStream, finalLocation);
 
-            Document msg = createEnhancementMsg(agent.getUsername(), finalLocation.getAbsolutePath());
+            Document msg = createEnhancementMsg(agent.getUsername(), finalLocation.getAbsolutePath(), mimeType);
             messageSender.sendMessage(msg);
 
             log.info("Job to to add thumbnail to collection {} has been queued by {}",
@@ -91,12 +91,14 @@ public class ImportThumbnailService extends MessageSender {
         }
     }
 
-    private Document createEnhancementMsg(String userid, String filePath) {
+    private Document createEnhancementMsg(String userid, String filePath, String mimeType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
         entry.addContent(new Element("pid", ATOM_NS).setText(filePath));
+        entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
+        entry.addContent(new Element("collectionThumbnail", ATOM_NS).setText("true"));
 
         msg.addContent(entry);
 
@@ -111,11 +113,11 @@ public class ImportThumbnailService extends MessageSender {
         this.messageSender = messageSender;
     }
 
-    public void setDerivativeDir(String derivativeDir) {
-        this.derivativeDir = derivativeDir;
+    public void setDataDir(String dataDir) {
+        this.dataDir = dataDir;
     }
 
-    public String getDerivativeDir() {
-        return derivativeDir;
+    public String getDataDir() {
+        return dataDir;
     }
 }

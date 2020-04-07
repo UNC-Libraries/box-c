@@ -37,5 +37,7 @@ public abstract class CdrFcrepoHeaders {
 
     public static final String CdrEnhancementSet = "CdrEnhancementSet";
 
+    public static final String CdrIsCollectionThumbnail = "CdrIsCollectionThumbnail";
+
     public static final String FCREPO_RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
 }

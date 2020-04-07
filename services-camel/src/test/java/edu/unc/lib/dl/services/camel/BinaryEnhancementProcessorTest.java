@@ -16,6 +16,9 @@
 package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -72,7 +75,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain");
+        setMessageBody("text/plain", false);
 
         processor.process(exchange);
 
@@ -81,19 +84,23 @@ public class BinaryEnhancementProcessorTest {
     }
 
     @Test
-    public void testUpdateHeadersImage() throws Exception {
-        setMessageBody("image/png");
+    public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
+        setMessageBody("image/png", false);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+
+        verify(message, never()).setHeader(CdrIsCollectionThumbnail, "true");
+        verify(message, never()).setHeader(CdrBinaryMimeType, "image/png");
+        verify(message, never()).setHeader(CdrBinaryPath, RESC_URI);
     }
 
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png");
+        setMessageBody("image/png", false);
 
         processor.process(exchange);
 
@@ -101,11 +108,26 @@ public class BinaryEnhancementProcessorTest {
         verify(message, never()).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
     }
 
-    private void setMessageBody(String mimeType) {
+    @Test
+    public void testCollectionThumbnail() throws Exception {
+        setMessageBody("image/png", true);
+
+        processor.process(exchange);
+
+        verify(message).setHeader(CdrIsCollectionThumbnail, "true");
+        verify(message).setHeader(CdrBinaryMimeType, "image/png");
+        verify(message).setHeader(CdrBinaryPath, RESC_URI);
+    }
+
+    private void setMessageBody(String mimeType, boolean collectionThumb) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
+
+        if (collectionThumb) {
+            entry.addContent(new Element("collectionThumbnail", ATOM_NS).setText("true"));
+        }
 
         msg.addContent(entry);
 

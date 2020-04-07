@@ -326,7 +326,7 @@
           init-method="init">
         <property name="aclService" ref="aclService" />
         <property name="messageSender" ref="editCollectionThumbnailMessageSender" />
-        <property name="derivativeDir" value="${derivative.dir}" />
+        <property name="dataDir" value="${data.collectionThumb.dir}" />
     </bean>
   
   <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">

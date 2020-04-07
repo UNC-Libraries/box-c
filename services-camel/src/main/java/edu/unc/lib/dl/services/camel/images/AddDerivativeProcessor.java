@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel.images;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -52,6 +53,7 @@ public class AddDerivativeProcessor implements Processor {
     private final String fileExtension;
     private final String derivativeBasePath;
 
+
     public AddDerivativeProcessor(String fileExtension, String derivativeBasePath) {
         this.fileExtension = fileExtension;
         this.derivativeBasePath = derivativeBasePath;
@@ -59,12 +61,19 @@ public class AddDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-
+        String binaryId;
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        String binaryId = PIDs.get(binaryUri).getId();
-        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        boolean collectionThumbnail = Boolean.parseBoolean((String) in.getHeader(CdrIsCollectionThumbnail));
 
+        if (collectionThumbnail) {
+            String[] collThumbPath = binaryUri.split("/");
+            binaryId = collThumbPath[collThumbPath.length - 1];
+        } else {
+            binaryId = PIDs.get(binaryUri).getId();
+        }
+
+        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         final ExecResult result = (ExecResult) in.getBody();
 
         try {

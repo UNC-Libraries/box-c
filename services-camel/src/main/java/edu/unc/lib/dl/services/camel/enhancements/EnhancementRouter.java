@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel.enhancements;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 
@@ -39,6 +40,7 @@ import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 public class EnhancementRouter extends RouteBuilder {
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
+    private static final String COLLECTION_THUMB_ENHANCEMENTS = "thumbnails";
 
     @BeanInject(value = "binaryEnhancementProcessor")
     private BinaryEnhancementProcessor enProcessor;
@@ -54,7 +56,13 @@ public class EnhancementRouter extends RouteBuilder {
         from("{{cdr.enhancement.stream.camel}}")
             .routeId("ProcessEnhancementQueue")
             .process(enProcessor)
-            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+            .choice()
+                .when(simple("${headers[" + CdrIsCollectionThumbnail + "]} != null"))
+                    .setHeader(CdrEnhancementSet, constant(COLLECTION_THUMB_ENHANCEMENTS))
+                    .to("direct:process.enhancements")
+            .otherwise()
+                .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+            .end()
             .choice()
                 // Process binary enhancement requests
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
