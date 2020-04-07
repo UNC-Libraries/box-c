@@ -52,7 +52,8 @@ public class CollectionThumbnailController {
     @PostMapping(value = "edit/collectionThumbnail/{pid}")
     public @ResponseBody
     ResponseEntity<Object> ImportCollectionThumbnail(@PathVariable("pid") String pid,
-                                                     @RequestParam("file") MultipartFile thumbnailFile) throws Exception {
+                                                     @RequestParam("file") MultipartFile thumbnailFile)
+            throws Exception {
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
         String userEmail = GroupsThreadStore.getEmail();
