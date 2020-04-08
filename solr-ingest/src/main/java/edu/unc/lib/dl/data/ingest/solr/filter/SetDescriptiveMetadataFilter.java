@@ -97,23 +97,18 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private String getAlternativeTitle(DocumentIndexingPackage dip) throws FedoraException, IndexingException {
-        String title = null;
         Resource resc = dip.getContentObject().getResource();
 
         // Use dc:title as a default
         if (resc.hasProperty(DcElements.title)) {
             Statement dcTitle = resc.getProperty(DcElements.title);
             return dcTitle.getString();
-        }
-
-        // fall back to filename if one is present
-        if (title == null && resc.hasProperty(Ebucore.filename)) {
+        } else if (resc.hasProperty(Ebucore.filename)) { // fall back to filename if one is present
             Statement filename = resc.getProperty(Ebucore.filename);
             return filename.getString();
+        } else { // Use the object's id as the title as a final option
+            return dip.getPid().getId();
         }
-
-        // Use the object's id as the title as a final option
-        return dip.getPid().getId();
     }
 
     private void extractTitles(Element mods, IndexDocumentBean idb) {
@@ -131,7 +126,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
             }
         }
-        idb.setTitle(mainTitle);
+
+        if (mainTitle != null && !mainTitle.equals("")) {
+            idb.setTitle(mainTitle);
+        }
+
         if (otherTitles.size() > 0) {
             idb.setOtherTitle(otherTitles);
         } else {
