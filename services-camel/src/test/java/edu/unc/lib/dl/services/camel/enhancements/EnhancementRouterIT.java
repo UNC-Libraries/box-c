@@ -23,7 +23,7 @@ import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -294,7 +294,7 @@ public class EnhancementRouterIT {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
-    private static Map<String, Object> createEvent(boolean collectionThumb, PID pid, String... type) {
+    private static Map<String, Object> createEvent(boolean editThumb, PID pid, String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
         headers.put(IDENTIFIER, pid.getRepositoryPath());
@@ -302,8 +302,8 @@ public class EnhancementRouterIT {
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
 
-        if (collectionThumb) {
-            headers.put(CdrIsCollectionThumbnail, "true");
+        if (editThumb) {
+            headers.put(CdrEditThumbnail, "true");
             headers.put(CdrBinaryPath, pid.getRepositoryPath());
             headers.put(CdrBinaryMimeType, "image/png");
         }

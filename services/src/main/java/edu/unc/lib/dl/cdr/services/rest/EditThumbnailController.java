@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
 
 /**
@@ -43,28 +42,27 @@ import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
  *
  */
 @Controller
-public class CollectionThumbnailController {
-    private static final Logger log = LoggerFactory.getLogger(CollectionThumbnailController.class);
+public class EditThumbnailController {
+    private static final Logger log = LoggerFactory.getLogger(EditThumbnailController.class);
 
     @Autowired
     private ImportThumbnailService service;
 
-    @PostMapping(value = "edit/collectionThumbnail/{pid}")
+    @PostMapping(value = "edit/displayThumbnail/{pid}")
     public @ResponseBody
-    ResponseEntity<Object> ImportCollectionThumbnail(@PathVariable("pid") String pid,
+    ResponseEntity<Object> ImportThumbnail(@PathVariable("pid") String pid,
                                                      @RequestParam("file") MultipartFile thumbnailFile)
             throws Exception {
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
-        String userEmail = GroupsThreadStore.getEmail();
+        String mimeType = thumbnailFile.getContentType();
 
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "edit collection thumbnail");
+        result.put("action", "editThumbnail");
         result.put("username", agent.getUsername());
-        result.put("user email", userEmail);
 
         try (InputStream importStream = thumbnailFile.getInputStream()) {
-            service.run(importStream, agent, pid);
+            service.run(importStream, agent, pid, mimeType);
         } catch (IOException e) {
             log.error("Failed to get submitted file", e);
             result.put("error", e.getMessage());
@@ -75,7 +73,6 @@ public class CollectionThumbnailController {
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        result.put("action", "collectionThumbnail");
         result.put("destination", pid);
 
         return new ResponseEntity<>(result, HttpStatus.OK);

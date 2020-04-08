@@ -18,7 +18,7 @@ package edu.unc.lib.dl.services.camel.enhancements;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 
@@ -57,7 +57,7 @@ public class EnhancementRouter extends RouteBuilder {
             .routeId("ProcessEnhancementQueue")
             .process(enProcessor)
             .choice()
-                .when(simple("${headers[" + CdrIsCollectionThumbnail + "]} != null"))
+                .when(simple("${headers[" + CdrEditThumbnail + "]} != null"))
                     .setHeader(CdrEnhancementSet, constant(COLLECTION_THUMB_ENHANCEMENTS))
                     .to("direct:process.enhancements")
             .otherwise()

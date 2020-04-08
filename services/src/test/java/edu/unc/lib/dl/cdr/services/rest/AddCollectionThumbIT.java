@@ -114,11 +114,11 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
     }
 
     @Test
-    public void addCollectionThumbnail() throws Exception {
+    public void addEditThumbnail() throws Exception {
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/collectionThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -132,7 +132,7 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
     public void addCollectionThumbWrongFileType() throws Exception {
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/collectionThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
@@ -147,7 +147,7 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclServices)
                 .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSet.class), eq(createCollection));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/collectionThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().isForbidden())
                 .andReturn();
@@ -164,7 +164,7 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
         String pidString = entry.getChildText("pid", ATOM_NS);;
         String author = entry.getChild("author", ATOM_NS)
                 .getChildText("name", ATOM_NS);
-        String collectionThumb = entry.getChild("collectionThumbnail", ATOM_NS)
+        String editThumb = entry.getChild("editThumbnail", ATOM_NS)
                 .getValue();
         String mimeType = entry.getChild("mimeType", ATOM_NS)
                 .getValue();
@@ -175,6 +175,6 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
         assertEquals(tempDir.getAbsolutePath() + thumbnailBasePath + expectedPid.getUUID(), pidString);
         assertEquals(USER_NAME, author);
         assertEquals("image/png", mimeType);
-        assertEquals("true", collectionThumb);
+        assertEquals("true", editThumb);
     }
 }

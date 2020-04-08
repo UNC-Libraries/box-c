@@ -18,7 +18,7 @@ package edu.unc.lib.dl.services.camel.images;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -64,9 +64,9 @@ public class AddDerivativeProcessor implements Processor {
         String binaryId;
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        boolean collectionThumbnail = Boolean.parseBoolean((String) in.getHeader(CdrIsCollectionThumbnail));
+        boolean editThumbnail = Boolean.parseBoolean((String) in.getHeader(CdrEditThumbnail));
 
-        if (collectionThumbnail) {
+        if (editThumbnail) {
             String[] collThumbPath = binaryUri.split("/");
             binaryId = collThumbPath[collThumbPath.length - 1];
         } else {

@@ -18,7 +18,7 @@ package edu.unc.lib.dl.services.camel;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -92,7 +92,7 @@ public class BinaryEnhancementProcessorTest {
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
 
-        verify(message, never()).setHeader(CdrIsCollectionThumbnail, "true");
+        verify(message, never()).setHeader(CdrEditThumbnail, "true");
         verify(message, never()).setHeader(CdrBinaryMimeType, "image/png");
         verify(message, never()).setHeader(CdrBinaryPath, RESC_URI);
     }
@@ -109,24 +109,24 @@ public class BinaryEnhancementProcessorTest {
     }
 
     @Test
-    public void testCollectionThumbnail() throws Exception {
+    public void testEditThumbnail() throws Exception {
         setMessageBody("image/png", true);
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrIsCollectionThumbnail, "true");
+        verify(message).setHeader(CdrEditThumbnail, "true");
         verify(message).setHeader(CdrBinaryMimeType, "image/png");
         verify(message).setHeader(CdrBinaryPath, RESC_URI);
     }
 
-    private void setMessageBody(String mimeType, boolean collectionThumb) {
+    private void setMessageBody(String mimeType, boolean editThumb) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
 
-        if (collectionThumb) {
-            entry.addContent(new Element("collectionThumbnail", ATOM_NS).setText("true"));
+        if (editThumb) {
+            entry.addContent(new Element("editThumbnail", ATOM_NS).setText("true"));
         }
 
         msg.addContent(entry);

@@ -24,7 +24,7 @@ define('EditThumbnailForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
         };
 
         EditThumbnailForm.prototype.getSuccessMessage = function(data) {
-            return this.ingestFile.name + " has been successfully uploaded for collection thumbnail creation.";
+            return this.ingestFile.name + " has been successfully uploaded for thumbnail creation.";
         };
 
         EditThumbnailForm.prototype.getErrorMessage = function(data) {

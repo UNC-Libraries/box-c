@@ -29,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.tika.Tika;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -62,22 +61,19 @@ public class ImportThumbnailService extends MessageSender {
         Files.createDirectories(storagePath);
     }
 
-    public void run(InputStream importStream, AgentPrincipals agent, String uuid) throws Exception {
+    public void run(InputStream importStream, AgentPrincipals agent, String uuid, String mimeType) throws Exception {
         PID pid = PIDs.get(uuid);
 
         aclService.assertHasAccess("User does not have permission to add/update collection thumbnails",
-                pid, agent.getPrincipals(), Permission.createCollection);
+                pid, agent.getPrincipals(), Permission.editDescription);
 
         try {
-            Tika tika = new Tika();
-            String mimeType = tika.detect(importStream);
-
             if (!containsIgnoreCase(mimeType, "image")) {
                 throw new IllegalArgumentException("Uploaded file is not an image");
             }
 
             String thumbnailBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            String filePath = Paths.get(storagePath.toString(), thumbnailBasePath, uuid).toString();
+            String filePath = storagePath.resolve(thumbnailBasePath).resolve(uuid).toString();
             File finalLocation = new File(filePath);
             copyInputStreamToFile(importStream, finalLocation);
 
@@ -99,7 +95,7 @@ public class ImportThumbnailService extends MessageSender {
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
         entry.addContent(new Element("pid", ATOM_NS).setText(filePath));
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
-        entry.addContent(new Element("collectionThumbnail", ATOM_NS).setText("true"));
+        entry.addContent(new Element("editThumbnail", ATOM_NS).setText("true"));
 
         msg.addContent(entry);
 

@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrIsCollectionThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -50,12 +50,12 @@ public class BinaryEnhancementProcessor implements Processor {
             Element body = msgBody.getRootElement();
 
             String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
-            Element isCollectionThumbnail = body.getChild("collectionThumbnail", ATOM_NS);
+            Element isEditThumbnail = body.getChild("editThumbnail", ATOM_NS);
 
-            if (isCollectionThumbnail != null) {
+            if (isEditThumbnail != null) {
                 String mimeType = body.getChild("mimeType", ATOM_NS).getTextTrim();
 
-                in.setHeader(CdrIsCollectionThumbnail, isCollectionThumbnail.getTextTrim());
+                in.setHeader(CdrEditThumbnail, isEditThumbnail.getTextTrim());
                 in.setHeader(CdrFcrepoHeaders.CdrBinaryPath, pidValue);
                 in.setHeader(CdrFcrepoHeaders.CdrBinaryMimeType, mimeType);
             }

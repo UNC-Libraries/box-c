@@ -197,11 +197,5 @@
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.19.1</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>

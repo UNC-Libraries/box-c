@@ -30,7 +30,7 @@
 
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/CollectionThumbnailController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
+    <context:component-scan resource-pattern="**/EditThumbnailController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
 
     <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.MessageSender"/>

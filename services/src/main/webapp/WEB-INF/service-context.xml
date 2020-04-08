@@ -312,21 +312,21 @@
       <property name="versionedDatastreamService" ref="versionedDatastreamService" />
   </bean>
 
-    <bean id="editCollectionThumbnailMessageSender" class="edu.unc.lib.dl.services.MessageSender">
-        <property name="jmsTemplate" ref="editCollectionThumbnailJmsTemplate"/>
+    <bean id="editThumbnailMessageSender" class="edu.unc.lib.dl.services.MessageSender">
+        <property name="jmsTemplate" ref="editThumbnailJmsTemplate"/>
     </bean>
 
-    <bean id="editCollectionThumbnailJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    <bean id="editThumbnailJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.enhancement.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="editCollectionThumbnailService" class="edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService"
+    <bean id="editThumbnailService" class="edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService"
           init-method="init">
         <property name="aclService" ref="aclService" />
-        <property name="messageSender" ref="editCollectionThumbnailMessageSender" />
-        <property name="dataDir" value="${data.collectionThumb.dir}" />
+        <property name="messageSender" ref="editThumbnailMessageSender" />
+        <property name="dataDir" value="${data.editThumb.dir}" />
     </bean>
   
   <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">
