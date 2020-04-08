@@ -951,7 +951,6 @@ p.no-search-results {
 
   }
 
-
   h2.link-list {
     font-size: 20px;
     padding-left: 15px;
@@ -1171,6 +1170,11 @@ table.dataTable {
 
 .pipe_list {
   margin-bottom: 10px;
+}
+
+.button.is-focused,
+.button:focus {
+  color: white;
 }
 
 /* Bulma overrides */
