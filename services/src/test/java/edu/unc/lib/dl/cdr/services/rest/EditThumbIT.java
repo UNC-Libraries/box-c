@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.Permission.createCollection;
+import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
@@ -57,7 +57,6 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.MessageSender;
@@ -68,9 +67,9 @@ import edu.unc.lib.dl.services.MessageSender;
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/add-collection-thumb-it-servlet.xml")
+        @ContextConfiguration("/add-thumb-it-servlet.xml")
 })
-public class AddCollectionThumbIT extends AbstractAPIIT {
+public class EditThumbIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
     private CollectionObject collection;
@@ -118,7 +117,7 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -132,7 +131,7 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
     public void addCollectionThumbWrongFileType() throws Exception {
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().is5xxServerError())
                 .andReturn();
@@ -145,9 +144,9 @@ public class AddCollectionThumbIT extends AbstractAPIIT {
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
 
         doThrow(new AccessRestrictionException()).when(aclServices)
-                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSet.class), eq(createCollection));
+                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSet.class), eq(editDescription));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/editThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
                 .andExpect(status().isForbidden())
                 .andReturn();
