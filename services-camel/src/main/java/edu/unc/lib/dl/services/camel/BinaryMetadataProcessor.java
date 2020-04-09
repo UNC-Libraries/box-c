@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.InputStream;
@@ -55,32 +56,35 @@ public class BinaryMetadataProcessor implements Processor {
         final Message in = exchange.getIn();
 
         String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
+        String isEditThumbnail = (String) in.getHeader(CdrEditThumbnail);
         PID binPid = PIDs.get(fcrepoBinaryUri);
 
-        BinaryObject binObj;
-        try {
-            binObj = repoObjLoader.getBinaryObject(binPid);
-        } catch (ObjectTypeMismatchException e) {
-            log.warn("Cannot extract binary metadata from {}, it is not a binary", binPid.getId());
-            return;
-        }
-
-        if (binObj.getContentUri() != null) {
-            Model model = ModelFactory.createDefaultModel();
-            model.read(in.getBody(InputStream.class), null, "Turtle");
-            Resource resc = model.getResource(binPid.getRepositoryPath());
-            String binaryMimeType = resc.getProperty(hasMimeType).getObject().toString();
-
-            URI contentUri = binObj.getContentUri();
-            if (!contentUri.getScheme().equals("file")) {
-                log.warn("Only file content URIs are supported at this time");
+        if (!Boolean.parseBoolean(isEditThumbnail)) {
+            BinaryObject binObj;
+            try {
+                binObj = repoObjLoader.getBinaryObject(binPid);
+            } catch (ObjectTypeMismatchException e) {
+                log.warn("Cannot extract binary metadata from {}, it is not a binary", binPid.getId());
                 return;
             }
 
-            in.setHeader(CdrBinaryPath, Paths.get(binObj.getContentUri()).toString());
-            in.setHeader(CdrBinaryMimeType, binaryMimeType);
-        } else {
-            log.warn("Cannot process {}, internal binaries are not currently supported", binPid.getId());
+            if (binObj.getContentUri() != null) {
+                Model model = ModelFactory.createDefaultModel();
+                model.read(in.getBody(InputStream.class), null, "Turtle");
+                Resource resc = model.getResource(binPid.getRepositoryPath());
+                String binaryMimeType = resc.getProperty(hasMimeType).getObject().toString();
+
+                URI contentUri = binObj.getContentUri();
+                if (!contentUri.getScheme().equals("file")) {
+                    log.warn("Only file content URIs are supported at this time");
+                    return;
+                }
+
+                in.setHeader(CdrBinaryPath, Paths.get(binObj.getContentUri()).toString());
+                in.setHeader(CdrBinaryMimeType, binaryMimeType);
+            } else {
+                log.warn("Cannot process {}, internal binaries are not currently supported", binPid.getId());
+            }
         }
     }
 
