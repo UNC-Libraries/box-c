@@ -18,11 +18,11 @@ package edu.unc.lib.dl.services.camel.enhancements;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
@@ -47,6 +47,8 @@ public class EnhancementRouter extends RouteBuilder {
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
+    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
+    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
         from("{{cdr.enhancement.stream.camel}}")
@@ -73,22 +75,23 @@ public class EnhancementRouter extends RouteBuilder {
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file' || " +
                     "${headers[" + CdrEditThumbnail + "]} == 'true'"))
+            .choice()
+                .when(simple("${headers[" + CdrEditThumbnail + "]} == 'true'"))
+                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                .otherwise()
+                    .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
+            .end()
             .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
-                .choice()
-                    .when(simple("${headers[" + CdrEditThumbnail + "]} == 'true'"))
-                        .to("direct:process.enhancements")
-                    .otherwise()
-                        .multicast()
-                        .to("direct:process.enhancements", "direct-vm:solrIndexing")
-                .end();
+                .multicast()
+                .to("direct:process.enhancements", "direct-vm:solrIndexing");
 
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
             .split(simple("${headers[CdrEnhancementSet]}"))
-                .log(LoggingLevel.INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
+                .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
                 .toD("direct-vm:process.enhancement.${body}");
     }
 }

@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -42,14 +41,11 @@ import edu.unc.lib.dl.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
-    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
-    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
 
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
-        String enhancementSet = DEFAULT_ENHANCEMENTS;
 
         if (fcrepoBinaryUri == null) {
             Document msgBody = MessageUtil.getDocumentBody(in);
@@ -68,13 +64,11 @@ public class BinaryEnhancementProcessor implements Processor {
                 String[] collThumbPath = pidValue.split("/");
                 String uuid = collThumbPath[collThumbPath.length - 1];
                 pidValue = PIDs.get(uuid).getURI();
-                enhancementSet = THUMBNAIL_ENHANCEMENTS;
             }
 
             log.info("Adding enhancement headers for " + pidValue);
             in.setHeader(FCREPO_URI, pidValue);
             in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
-            in.setHeader(CdrEnhancementSet, enhancementSet);
         }
     }
 }

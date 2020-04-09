@@ -16,6 +16,7 @@
 
 package edu.unc.lib.dl.services.camel.solr;
 
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -69,13 +70,15 @@ public class SolrIngestProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         String fcrepoUri = (String) in.getHeader(FCREPO_URI);
+        String editThumbnail = (String) in.getHeader(CdrEditThumbnail);
 
         List<PID> targetPids = new ArrayList<>();
         PID targetPid = PIDs.get(fcrepoUri);
         String resourceTypes = (String) in.getHeader(FCREPO_RESOURCE_TYPE);
 
         // for binaries, need to index the file and work objects which contain it
-        if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
+        if (!Boolean.parseBoolean(editThumbnail) && resourceTypes != null &&
+                resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
             targetPid = PIDs.get(targetPid.getId());
             FileObject parentFile = repoObjLoader.getFileObject(targetPid);
             RepositoryObject grandParent = parentFile.getParent();
