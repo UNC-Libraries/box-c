@@ -16,13 +16,18 @@
 package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -52,6 +58,9 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(TransferBinariesToStorageJob.class);
+
+    private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
+            Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
 
     /**
      *
@@ -84,6 +93,10 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         Set<Resource> rescTypes = resc.listProperties(RDF.type).toList().stream()
                 .map(Statement::getResource).collect(toSet());
 
+        if (TYPES_ALLOWING_DESC.stream().anyMatch(rescTypes::contains)) {
+            transferModsHistoryFile(objPid, resc, transferSession);
+        }
+
         if (rescTypes.contains(Cdr.FileObject)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
@@ -114,6 +127,21 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
             URI storageUri = transferSession.transfer(originalPid, stagingUri);
             resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+        }
+    }
+
+    private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
+            PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
+            PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
+
+            Path stagingPath = getModsHistoryPath(objPid);
+
+            if (Files.exists(stagingPath)) {
+                URI stagingUri = stagingPath.toUri();
+                URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
+                resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
+            }
         }
     }
 
