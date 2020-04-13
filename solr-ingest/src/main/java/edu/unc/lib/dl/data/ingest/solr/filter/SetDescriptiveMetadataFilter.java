@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
