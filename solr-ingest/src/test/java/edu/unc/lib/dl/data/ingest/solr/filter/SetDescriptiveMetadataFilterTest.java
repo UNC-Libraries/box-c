@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.rdf.Ebucore;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
@@ -289,4 +290,45 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getKeyword().contains(PID_STRING));
     }
 
+    @Test
+    public void dcTitle() throws Exception {
+        idb.setTitle(null);
+
+        when(objResc.hasProperty(DcElements.title)).thenReturn(true);
+        Statement titleStmt = mock(Statement.class);
+        when(titleStmt.getString()).thenReturn("test DC label");
+        when(objResc.getProperty(DcElements.title)).thenReturn(titleStmt);
+
+        filter.filter(dip);
+
+        assertEquals("test DC label", idb.getTitle());
+    }
+
+    @Test
+    public void ebucoreTitle() throws Exception {
+        idb.setTitle(null);
+
+        when(objResc.hasProperty(DcElements.title)).thenReturn(false);
+        when(objResc.hasProperty(Ebucore.filename)).thenReturn(true);
+        Statement titleStmt = mock(Statement.class);
+        when(titleStmt.getString()).thenReturn("test Ebucore label");
+        when(objResc.getProperty(Ebucore.filename)).thenReturn(titleStmt);
+
+        filter.filter(dip);
+
+        assertEquals("test Ebucore label", idb.getTitle());
+    }
+
+    @Test
+    public void fileTitle() throws Exception {
+        idb.setTitle(null);
+
+        when(objResc.hasProperty(DcElements.title)).thenReturn(false);
+        when(objResc.hasProperty(Ebucore.filename)).thenReturn(false);
+        when(pid.getId()).thenReturn("uuid: 1234");
+
+        filter.filter(dip);
+
+        assertEquals("uuid: 1234", idb.getTitle());
+    }
 }

@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -115,7 +116,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private String titleText(Resource resc, Property field) {
         if (resc.hasProperty(field)) {
-            return resc.getProperty(field).getString();
+            Statement title = resc.getProperty(field);
+            return title.getString();
         }
 
         return "";
