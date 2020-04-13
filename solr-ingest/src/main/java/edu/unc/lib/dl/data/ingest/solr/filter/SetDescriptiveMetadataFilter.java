@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Attribute;
@@ -98,17 +101,25 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private String getAlternativeTitle(DocumentIndexingPackage dip) throws FedoraException, IndexingException {
         Resource resc = dip.getContentObject().getResource();
+        String dcTitle = titleText(resc, DcElements.title);
+        String ebucoreTitle = titleText(resc, Ebucore.filename);
 
         // Use dc:title as a default
-        if (resc.hasProperty(DcElements.title)) {
-            Statement dcTitle = resc.getProperty(DcElements.title);
-            return dcTitle.getString();
-        } else if (resc.hasProperty(Ebucore.filename)) { // fall back to filename if one is present
-            Statement filename = resc.getProperty(Ebucore.filename);
-            return filename.getString();
+        if (!isBlank(dcTitle)) {
+            return dcTitle;
+        } else if (!isBlank(ebucoreTitle)) { // fall back to filename if one is present
+            return ebucoreTitle;
         } else { // Use the object's id as the title as a final option
             return dip.getPid().getId();
         }
+    }
+
+    private String titleText(Resource resc, Property field) {
+        if (resc.hasProperty(field)) {
+            return resc.getProperty(field).getString();
+        }
+
+        return "";
     }
 
     private void extractTitles(Element mods, IndexDocumentBean idb) {
@@ -127,7 +138,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
 
-        if (mainTitle != null && !mainTitle.equals("")) {
+        if (!isBlank(mainTitle)) {
             idb.setTitle(mainTitle);
         }
 

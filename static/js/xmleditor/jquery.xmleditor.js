@@ -905,18 +905,6 @@ $.widget( "xml.xmlEditor", {
 		}
 		// convert XML DOM to string
 		var xmlString = this.xml2Str(this.xmlState.xml);
-
-		if (/mods:title.*?\/>/.test(xmlString)) {
-			if (window.confirm("The current MODS document has no title. " +
-				"This will result in no title displaying for the record. Would you like to save anyway?")) {
-				this.saveSubmittedXML(xmlString, config);
-			}
-		} else {
-			this.saveSubmittedXML(xmlString, config);
-		}
-	},
-
-	saveSubmittedXML: function(xmlString, config) {
 		$("." + submissionStatusClass).html("Submitting...");
 		var self = this;
 		$.ajax({
