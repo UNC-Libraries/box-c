@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -60,22 +62,27 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         ContentObject contentObj = dip.getContentObject();
 
         FileObject fileObj = getFileObject(contentObj);
-        if (fileObj == null) {
-            return;
+        if (fileObj != null) {
+            boolean ownedByOtherObject = contentObj instanceof WorkObject;
+            // Retrieve list of datastreams associated with this object
+            List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
+            // Retrieve list of derivatives associated with the object
+            List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
+            datastreams.addAll(derivatives);
+
+            IndexDocumentBean doc = dip.getDocument();
+
+            doc.setDatastream(getDatastreamStrings(datastreams));
+            doc.setFilesizeTotal(getFilesizeTotal(datastreams));
+            doc.setFilesizeSort(getFilesize(datastreams));
+        } else if (contentObj instanceof CollectionObject) {
+            List<Datastream> derivatives = getDerivatives(contentObj.getPid(), false);
+            List<Datastream> datastreams = new ArrayList<>(derivatives);
+
+            IndexDocumentBean doc = dip.getDocument();
+
+            doc.setDatastream(getDatastreamStrings(datastreams));
         }
-
-        boolean ownedByOtherObject = contentObj instanceof WorkObject;
-        // Retrieve list of datastreams associated with this object
-        List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
-        // Retrieve list of derivatives associated with the object
-        List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
-        datastreams.addAll(derivatives);
-
-        IndexDocumentBean doc = dip.getDocument();
-
-        doc.setDatastream(getDatastreamStrings(datastreams));
-        doc.setFilesizeTotal(getFilesizeTotal(datastreams));
-        doc.setFilesizeSort(getFilesize(datastreams));
     }
 
     private FileObject getFileObject(ContentObject contentObj) {
