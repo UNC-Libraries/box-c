@@ -818,18 +818,29 @@ p.no-search-results {
   margin: 0 20px 20px 25px;
   padding-left: 0;
 }
+.onecol h2 .thumbnail, .content-wrap.full_record h2 .thumbnail {
+  margin-right: 15px;
+}
+.onecol h2 .thumbnail.thumbnail-size-large .thumbnail-badge,
+.onecol h2 .thumbnail.thumbnail-size-small .thumbnail-badge, .content-wrap.full_record h2 .thumbnail.thumbnail-size-large .thumbnail-badge,
+.content-wrap.full_record h2 .thumbnail.thumbnail-size-small .thumbnail-badge {
+  bottom: 5px;
+}
 .onecol h2 .thumbnail-badge, .content-wrap.full_record h2 .thumbnail-badge {
-  font-size: 15px;
+  font-size: 24px;
   margin-left: 10px;
-  margin-top: -25px;
 }
 .onecol h2.deleted, .content-wrap.full_record h2.deleted {
   display: block;
 }
-.onecol h2.deleted .thumbnail-badge, .content-wrap.full_record h2.deleted .thumbnail-badge {
-  font-size: 15px;
-  margin-left: 10px;
-  margin-top: -25px;
+.onecol h2.deleted .thumbnail, .content-wrap.full_record h2.deleted .thumbnail {
+  margin-right: 15px;
+}
+.onecol h2.deleted .thumbnail-placeholder, .content-wrap.full_record h2.deleted .thumbnail-placeholder {
+  opacity: .3;
+}
+.onecol h2.deleted .thumbnail-placeholder .thumbnail-badge, .content-wrap.full_record h2.deleted .thumbnail-placeholder .thumbnail-badge {
+  opacity: 1;
 }
 .onecol h2.link-list, .content-wrap.full_record h2.link-list {
   font-size: 20px;

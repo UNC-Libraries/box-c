@@ -46,16 +46,12 @@
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
             <h2 class="${isDeleted}">
-                <i class="fa fa-university" aria-hidden="true">
-                    <c:if test="${not empty badgeIcon}">
-                        <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
-                            <div class="fa-stack">
-                                <i class="fas fa-circle fa-stack-2x background"></i>
-                                <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
-                            </div>
-                        </div>
-                    </c:if>
-                </i> <c:out value="${briefObject.title}" />
+                <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+                <c:import url="common/thumbnail.jsp">
+                    <c:param name="target" value="file" />
+                    <c:param name="size" value="large" />
+                </c:import>
+                <c:out value="${briefObject.title}" />
             </h2>
             <p><strong>Subjects:</strong>
                 <c:choose>
@@ -69,13 +65,6 @@
                     </c:otherwise>
                 </c:choose>
             </p>
-            <div class="column is-narrow-tablet">
-                <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
-                <c:import url="common/thumbnail.jsp">
-                    <c:param name="target" value="file" />
-                    <c:param name="size" value="large" />
-                </c:import>
-            </div>
             <div class="column">
                 <c:choose>
                     <c:when test="${not empty briefObject.abstractText}">

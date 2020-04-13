@@ -489,20 +489,36 @@ p.no-search-results {
     margin: 0 20px 20px 25px;
     padding-left: 0;
 
+    .thumbnail {
+      margin-right: 15px;
+    }
+
+    .thumbnail.thumbnail-size-large,
+    .thumbnail.thumbnail-size-small {
+      .thumbnail-badge {
+        bottom: 5px;
+      }
+    }
+
     .thumbnail-badge {
-      font-size: 15px;
+      font-size: 24px;
       margin-left: 10px;
-      margin-top: -25px;
     }
   }
 
   h2.deleted {
     display: block;
 
-    .thumbnail-badge {
-      font-size: 15px;
-      margin-left: 10px;
-      margin-top: -25px;
+    .thumbnail {
+      margin-right: 15px;
+    }
+
+    .thumbnail-placeholder {
+      opacity: .3;
+
+      .thumbnail-badge {
+        opacity: 1;
+      }
     }
 
   }
