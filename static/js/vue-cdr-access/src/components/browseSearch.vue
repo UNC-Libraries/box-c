@@ -1,11 +1,14 @@
 <template>
-    <div class="browse-search field has-addons">
-        <div class="control">
-            <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
+    <div>
+        <div class="browse-search field has-addons">
+            <div class="control">
+                <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
+            </div>
+            <div class="control">
+                <button @click="getResults" class="button">Search</button>
+            </div>
         </div>
-        <div class="control">
-            <button @click="getResults" class="button">Search</button>
-        </div>
+        <a class="clear-results" href="#" @click.prevent="clearSearch">Clear search results</a>
     </div>
 </template>
 
@@ -39,6 +42,11 @@
             getResults() {
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) });
+            },
+
+            clearSearch() {
+                this.search_query = '';
+                this.getResults();
             }
         },
 
@@ -57,6 +65,10 @@
         input, div:first-child  {
             width: 100%;
         }
+    }
+
+    .clear-results {
+        font-size: 16px;
     }
 
     .button {
