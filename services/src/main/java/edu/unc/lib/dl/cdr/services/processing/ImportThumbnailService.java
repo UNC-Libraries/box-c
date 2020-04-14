@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.services.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
@@ -30,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +76,7 @@ public class ImportThumbnailService extends MessageSender {
             File finalLocation = new File(filePath);
             copyInputStreamToFile(importStream, finalLocation);
 
-            Document msg = createEnhancementMsg(agent.getUsername(), finalLocation.getAbsolutePath(), mimeType);
+            Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, false);
             messageSender.sendMessage(msg);
 
             log.info("Job to to add thumbnail to collection {} has been queued by {}",
@@ -86,20 +85,6 @@ public class ImportThumbnailService extends MessageSender {
             log.error("Uploaded file for collection {} is not an image file", uuid);
             throw e;
         }
-    }
-
-    private Document createEnhancementMsg(String userid, String filePath, String mimeType) {
-        Document msg = new Document();
-        Element entry = new Element("entry", ATOM_NS);
-        entry.addContent(new Element("author", ATOM_NS)
-                .addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(filePath));
-        entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
-        entry.addContent(new Element("editThumbnail", ATOM_NS).setText("true"));
-
-        msg.addContent(entry);
-
-        return msg;
     }
 
     public void setAclService(AccessControlService aclService) {

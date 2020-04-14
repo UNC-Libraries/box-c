@@ -186,6 +186,8 @@
     </bean>
 
     <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="dataDir" value="${data.editThumb.dir}" />
     </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">

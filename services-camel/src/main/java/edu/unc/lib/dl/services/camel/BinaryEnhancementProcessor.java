@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
@@ -32,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
@@ -41,6 +46,9 @@ import edu.unc.lib.dl.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
+
+    private RepositoryObjectLoader repoObjLoader;
+    private String dataDir;
 
     @Override
     public void process(final Exchange exchange) throws Exception {
@@ -52,23 +60,35 @@ public class BinaryEnhancementProcessor implements Processor {
             Element body = msgBody.getRootElement();
 
             String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
-            Element isEditThumbnail = body.getChild("editThumbnail", ATOM_NS);
 
-            if (isEditThumbnail != null) {
-                String mimeType = body.getChild("mimeType", ATOM_NS).getTextTrim();
+            String[] collThumbPath = pidValue.split("/");
+            String uuid = collThumbPath[collThumbPath.length - 1];
+            PID objPid = PIDs.get(uuid);
 
-                in.setHeader(CdrEditThumbnail, isEditThumbnail.getTextTrim());
-                in.setHeader(CdrBinaryPath, pidValue);
-                in.setHeader(CdrBinaryMimeType, mimeType);
+            if (repoObjLoader.getCollectionObject(objPid) != null) {
+                String thumbnailBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
-                String[] collThumbPath = pidValue.split("/");
-                String uuid = collThumbPath[collThumbPath.length - 1];
-                pidValue = PIDs.get(uuid).getURI();
+                in.setHeader(CdrEditThumbnail, "true");
+                in.setHeader(CdrBinaryPath, dataDir + "/" + thumbnailBasePath + uuid);
+                in.setHeader(CdrBinaryMimeType, "image/*");
+
+                pidValue = objPid.getURI();
             }
 
             log.info("Adding enhancement headers for " + pidValue);
             in.setHeader(FCREPO_URI, pidValue);
             in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
         }
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setDataDir(String dataDir) {
+        this.dataDir = dataDir;
     }
 }
