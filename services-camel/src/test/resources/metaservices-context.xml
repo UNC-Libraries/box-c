@@ -25,6 +25,14 @@
         <constructor-arg value="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor" />
     </bean>
 
+    <bean id="binaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor" />
+    </bean>
+
+    <bean id="nonBinaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor" />
+    </bean>
+
     <camel:camelContext id="CdrMetaServicesRouter">
         <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>
     </camel:camelContext>

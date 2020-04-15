@@ -15,18 +15,18 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.Collections;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -38,6 +38,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -55,13 +59,17 @@ public class BinaryEnhancementProcessorTest {
 
     private static final String RESC_ID = "de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private static final String RESC_URI = FEDORA_BASE + "content/de/75/d8/11/" + RESC_ID + "/original_file";
-    private static final String THUMBNAIL_URI = FEDORA_BASE + "content/de/75/d8/11/" + RESC_ID;
 
     @Mock
     private Exchange exchange;
-
     @Mock
     private Message message;
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
+    private RepositoryObject repoObj;
+    @Mock
+    private CollectionObject collObj;
 
     @Before
     public void init() throws Exception {
@@ -70,14 +78,16 @@ public class BinaryEnhancementProcessorTest {
         TestHelper.setContentBase(FEDORA_BASE);
 
         processor = new BinaryEnhancementProcessor();
+        processor.setRepositoryObjectLoader(repoObjLoader);
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
     }
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain", false);
+        setMessageBody("text/plain");
 
         processor.process(exchange);
 
@@ -87,22 +97,18 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
-        setMessageBody("image/png", false);
+        setMessageBody("image/png");
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
         verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
-
-        verify(message, never()).setHeader(CdrEditThumbnail, "true");
-        verify(message, never()).setHeader(CdrBinaryMimeType, "image/png");
-        verify(message, never()).setHeader(CdrBinaryPath, RESC_URI);
     }
 
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png", false);
+        setMessageBody("image/png");
 
         processor.process(exchange);
 
@@ -112,25 +118,21 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testEditThumbnail() throws Exception {
-        setMessageBody("image/png", true);
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
+        when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
+        setMessageBody("image/*");
+
         processor.process(exchange);
 
-        verify(message).setHeader(CdrEditThumbnail, "true");
-        verify(message).setHeader(CdrBinaryMimeType, "image/png");
-        verify(message).setHeader(CdrBinaryPath, THUMBNAIL_URI);
+        verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collections.singletonList(Collection.getURI()));
     }
 
-    private void setMessageBody(String mimeType, boolean editThumb) {
+    private void setMessageBody(String mimeType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
-
-        if (editThumb) {
-            entry.addContent(new Element("editThumbnail", ATOM_NS).setText("true"));
-            entry.addContent(new Element("pid", ATOM_NS).setText(THUMBNAIL_URI));
-        } else {
-            entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
-        }
+        entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
 
         msg.addContent(entry);
 

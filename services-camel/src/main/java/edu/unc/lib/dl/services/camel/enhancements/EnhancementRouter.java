@@ -29,6 +29,7 @@ import org.apache.camel.builder.RouteBuilder;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 
 /**
  * Router which queues and triggers enhancement services.
@@ -43,6 +44,9 @@ public class EnhancementRouter extends RouteBuilder {
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
+
+    @BeanInject(value = "nonBinaryEnhancementProcessor")
+    private NonBinaryEnhancementProcessor nbProcessor;
 
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
@@ -68,7 +72,19 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
                     .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
-                    .to("direct-vm:solrIndexing")
+                    .process(nbProcessor)
+                    .choice()
+                        .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
+                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
+                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
+                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
+                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
+                            ))
+                            .to("direct-vm:solrIndexing")
+                        .otherwise()
+                            .multicast()
+                            .to("direct:process.binary", "direct-vm:solrIndexing")
+                        .end()
             .end();
 
         from("direct:process.binary")

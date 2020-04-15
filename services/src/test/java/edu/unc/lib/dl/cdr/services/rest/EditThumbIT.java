@@ -163,17 +163,8 @@ public class EditThumbIT extends AbstractAPIIT {
         String pidString = entry.getChildText("pid", ATOM_NS);;
         String author = entry.getChild("author", ATOM_NS)
                 .getChildText("name", ATOM_NS);
-        String editThumb = entry.getChild("editThumbnail", ATOM_NS)
-                .getValue();
-        String mimeType = entry.getChild("mimeType", ATOM_NS)
-                .getValue();
 
-        String uuid = expectedPid.getUUID();
-        String thumbnailBasePath = "/" + idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-
-        assertEquals(tempDir.getAbsolutePath() + thumbnailBasePath + expectedPid.getUUID(), pidString);
+        assertEquals(collection.getPid().getURI(), pidString);
         assertEquals(USER_NAME, author);
-        assertEquals("image/png", mimeType);
-        assertEquals("true", editThumb);
     }
 }

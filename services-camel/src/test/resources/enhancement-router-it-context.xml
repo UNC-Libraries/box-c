@@ -44,8 +44,14 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor"/>
-    
+    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+
+    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
+        <property name="dataDir" value="dataDir" />
+    </bean>
+
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
     </bean>
