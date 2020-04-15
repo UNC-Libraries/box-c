@@ -62,14 +62,35 @@ public class PathIndexingService {
      * @param listPath path to the file listing object file paths
      */
     public void indexObjects(Path listPath) {
-        try (Connection conn = pathIndex.getConnection()) {
-            try (Stream<String> stream = Files.lines(listPath)) {
-                stream.forEach(filePath -> insertEntry(conn, filePath, OBJECT_TYPE));
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Database connection error", e);
+        try (Stream<String> stream = Files.lines(listPath)) {
+            indexObjects(stream);
         } catch (IOException e) {
             throw new RepositoryException("Failed to open list file " + listPath, e);
+        }
+    }
+
+    /**
+     * Index object files found within the given path, recursively.
+     *
+     * @param objsPath Path to directory containing object files
+     */
+    public void indexObjectsFromPath(Path objsPath) {
+        try (Stream<Path> walk = Files.walk(objsPath)) {
+            Stream<String> dsStream = walk
+                    .filter(Files::isRegularFile)
+                    .map(Path::toString);
+
+            indexObjects(dsStream);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to list object files from " + objsPath, e);
+        }
+    }
+
+    private void indexObjects(Stream<String> objsStream) {
+        try (Connection conn = pathIndex.getConnection()) {
+            objsStream.forEach(filePath -> insertEntry(conn, filePath, OBJECT_TYPE));
+        } catch (SQLException e) {
+            throw new RepositoryException("Database connection error", e);
         }
     }
 
@@ -79,21 +100,42 @@ public class PathIndexingService {
      * @param listPath path to the file listing datastream file paths
      */
     public void indexDatastreams(Path listPath) {
-        try (Connection conn = pathIndex.getConnection()) {
-            try (Stream<String> stream = Files.lines(listPath)) {
-                stream.forEach(filePath -> {
-                    int objectType = getFileType(filePath);
-                    if (objectType > 0) {
-                        insertEntry(conn, filePath, objectType);
-                    } else {
-                        log.debug("Skipping datastream {}", filePath);
-                    }
-                });
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Database connection error", e);
+        try (Stream<String> stream = Files.lines(listPath)) {
+            indexDatastreams(stream);
         } catch (IOException e) {
             throw new RepositoryException("Failed to open list file " + listPath, e);
+        }
+    }
+
+    /**
+     * Index datastream files found within the given path, recursively.
+     *
+     * @param datastreamsPath Path to directory containing ds files
+     */
+    public void indexDatastreamsFromPath(Path datastreamsPath) {
+        try (Stream<Path> walk = Files.walk(datastreamsPath)) {
+            Stream<String> dsStream = walk
+                    .filter(Files::isRegularFile)
+                    .map(Path::toString);
+
+            indexDatastreams(dsStream);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to list datastreams files from " + datastreamsPath, e);
+        }
+    }
+
+    private void indexDatastreams(Stream<String> dsStream) {
+        try (Connection conn = pathIndex.getConnection()) {
+            dsStream.forEach(filePath -> {
+                int objectType = getFileType(filePath);
+                if (objectType > 0) {
+                    insertEntry(conn, filePath, objectType);
+                } else {
+                    log.debug("Skipping datastream {}", filePath);
+                }
+            });
+        } catch (SQLException e) {
+            throw new RepositoryException("Database connection error", e);
         }
     }
 
