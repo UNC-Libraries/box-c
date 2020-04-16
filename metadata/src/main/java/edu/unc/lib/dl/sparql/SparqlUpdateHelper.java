@@ -196,8 +196,9 @@ public class SparqlUpdateHelper {
         } else if (object instanceof String) {
             return '"' + object.toString() + '"';
         } else if (object instanceof Literal) {
-            RDFDatatype type = ((Literal) object).getDatatype();
-            return '"' + object.toString() + "\"^^<" + type.getURI() + ">";
+            Literal literal = (Literal) object;
+            RDFDatatype type = literal.getDatatype();
+            return '"' + literal.getLexicalForm() + "\"^^<" + type.getURI() + ">";
         } else {
             RDFDatatype type = TypeMapper.getInstance().getTypeByClass(object.getClass());
             if (type == null) {

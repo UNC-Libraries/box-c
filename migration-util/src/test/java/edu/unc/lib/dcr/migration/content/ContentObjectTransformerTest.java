@@ -907,7 +907,7 @@ public class ContentObjectTransformerTest {
         String detail = "virus scan";
         Element eventEl = addEvent(premisDoc, VALIDATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "Name", INITIATOR_ROLE, "virusscanner");
-        Path originalPremisPath = serializeXMLFile(tmpFolder.getRoot().toPath(), startingPid, premisDoc);
+        Path originalPremisPath = serializeXMLFile(tmpFolder.getRoot().toPath(), originalPid, premisDoc);
 
         when(pathIndex.getPath(originalPid, PathIndex.PREMIS_TYPE)).thenReturn(originalPremisPath);
     }
