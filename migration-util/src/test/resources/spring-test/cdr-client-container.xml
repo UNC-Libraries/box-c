@@ -55,6 +55,12 @@
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper"
+            factory-method="createIngestSourceManagerWithBasicConfig">
+        <constructor-arg value="${dcr.it.tdr.ingestSource}" />
+        <constructor-arg><null /></constructor-arg>
+    </bean>
+    
     <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
             factory-method="createLocationManagerWithBasicConfig">
         <constructor-arg ref="repositoryObjectLoader" />
@@ -62,6 +68,7 @@
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
     </bean>
     
     <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">

@@ -232,26 +232,28 @@ public class DepositRecordTransformer extends RecursiveAction {
 
             // Seek the path to the staged file for this manifest
             Path manifestPath = paths.stream()
-                    .filter(p -> p.endsWith(dsName + ".0"))
+                    .filter(p -> p.toString().endsWith(dsName + ".0"))
                     .findFirst()
-                    .orElseGet(null);
+                    .orElse(null);
 
             if (manifestPath == null) {
+                manifestNum++;
                 log.error("Failed to find path for recorded manifest {} on object {}", dsName, bxc3Pid);
                 continue;
             }
 
+            PID manifestPid = getDepositManifestPid(bxc5Pid, dsName);
             // Transfer the manifest to its permanent storage location
-            URI manifestStoredUri = transferSession.transfer(bxc5Pid, manifestPath.toUri());
+            URI manifestStoredUri = transferSession.transfer(manifestPid, manifestPath.toUri());
 
             // Populate manifest timestamps
             Model manifestModel = ModelFactory.createDefaultModel();
             Resource selfResc = manifestModel.getResource("");
-            selfResc.addLiteral(Fcrepo4Repository.lastModified, created);
-            selfResc.addLiteral(Fcrepo4Repository.created, created);
+            selfResc.addLiteral(DC.title, StringUtils.isBlank(label) ? dsName : label);
+            selfResc.addProperty(Fcrepo4Repository.lastModified, created, XSDDatatype.XSDdateTime);
+            selfResc.addProperty(Fcrepo4Repository.created, created, XSDDatatype.XSDdateTime);
 
             // Create the manifest in fedora
-            PID manifestPid = getDepositManifestPid(bxc5Pid, label);
             repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, label,
                     mimetype, null, md5, manifestModel);
 
@@ -274,5 +276,9 @@ public class DepositRecordTransformer extends RecursiveAction {
 
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
+    }
+
+    public PID getPid() {
+        return bxc3Pid;
     }
 }
