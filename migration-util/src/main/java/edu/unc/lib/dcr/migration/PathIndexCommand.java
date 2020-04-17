@@ -104,22 +104,30 @@ public class PathIndexCommand implements Callable<Integer> {
     }
 
     @Command(name = "list_paths",
-            description = "List file paths objects and datastreams all objects in the provided list")
+            description = "List file paths for objects and datastreams")
     public int listPaths(
-            @Parameters(index = "0", description = "File containing the list of object ids")
+            @Option(names = { "-p", "--pids-file" }, description = "File containing the list of object ids to list")
             Path listPath) {
 
-        output.info("Listing paths objects listed in {}:", listPath);
-        try {
-            Files.lines(listPath).forEach(id -> {
-                id = id.replace("uuid:", "");
-                String paths = getPathIndex().getPaths(id).values().stream()
-                        .map(Path::toString)
-                        .collect(joining("\n"));
-                output.info(paths);
-            });
-        } catch (IOException e) {
-            output.error("Failed to read list file: {}", e.getMessage());
+        if (listPath == null) {
+            output.info("Listing all paths:");
+            String paths = getPathIndex().listPaths().values().stream()
+                    .map(Path::toString)
+                    .collect(joining("\n"));
+            output.info(paths);
+        } else {
+            output.info("Listing paths objects listed in {}:", listPath);
+            try {
+                Files.lines(listPath).forEach(id -> {
+                    id = id.replace("uuid:", "");
+                    String paths = getPathIndex().getPaths(id).values().stream()
+                            .map(Path::toString)
+                            .collect(joining("\n"));
+                    output.info(paths);
+                });
+            } catch (IOException e) {
+                output.error("Failed to read list file: {}", e.getMessage());
+            }
         }
 
         getPathIndex().close();

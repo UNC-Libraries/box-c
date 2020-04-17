@@ -59,6 +59,8 @@ public class PathIndex {
 
     private static final String SELECT_UUID_QUERY =
             "select path from PathIndex where uuid = ? and file_type = ?";
+    private static final String SELECT_ALL_PATHS =
+            "select path, file_type from PathIndex";
     private static final String SELECT_ALL_PATHS_UUID_QUERY =
             "select path, file_type from PathIndex where uuid = ?";
     private static final String COUNT_FILES_QUERY =
@@ -193,6 +195,27 @@ public class PathIndex {
             }
         } catch (SQLException e) {
             throw new RepositoryException("Failed to look up path for " + pid, e);
+        }
+        return result;
+    }
+
+    /**
+     * List all the paths
+     *
+     * @param pid
+     * @return map of file type to
+     */
+    public Map<Integer, Path> listPaths() {
+        Map<Integer, Path> result = new HashMap<>();
+
+        try (PreparedStatement select = getConnection().prepareStatement(SELECT_ALL_PATHS)) {
+            try (ResultSet results = select.executeQuery()) {
+                while (results.next()) {
+                    result.put(Integer.valueOf(results.getInt(2)), Paths.get(results.getString(1)));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Failed to list paths", e);
         }
         return result;
     }
