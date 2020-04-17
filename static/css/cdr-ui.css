@@ -1021,6 +1021,32 @@ table.dataTable tbody tr.odd {
   color: white;
 }
 
+/* MODs display for work and file pages, plus modalMetadata.vue component */
+#mods_data_display {
+  margin: auto;
+  width: auto;
+}
+#mods_data_display table {
+  border: 1px solid lightgray;
+  font-size: 16px;
+  margin: 25px auto;
+  width: 97%;
+}
+#mods_data_display table p {
+  margin-bottom: 0;
+}
+#mods_data_display table th, #mods_data_display table td {
+  padding: 10px;
+  vertical-align: middle;
+}
+#mods_data_display table th {
+  background-color: #F0F0F0;
+  width: 25%;
+}
+#mods_data_display table td {
+  width: 75%;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;

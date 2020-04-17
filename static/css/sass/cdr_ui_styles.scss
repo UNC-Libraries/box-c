@@ -749,6 +749,37 @@ table.dataTable {
   color: white;
 }
 
+/* MODs display for work and file pages, plus modalMetadata.vue component */
+#mods_data_display {
+  margin: auto;
+  width: auto;
+
+  table {
+    border: 1px solid lightgray;
+    font-size: 16px;
+    margin: 25px auto;
+    width: 97%;
+
+    p {
+      margin-bottom: 0;
+    }
+
+    th, td {
+      padding: 10px;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #F0F0F0;
+      width: 25%;
+    }
+
+    td {
+      width: 75%;
+    }
+  }
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;

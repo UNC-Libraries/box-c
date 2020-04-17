@@ -15,7 +15,7 @@
                                 </slot>
                             </div>
 
-                            <div class="modal-body">
+                            <div class="modal-body" id="mods_data_display">
                                 <slot name="body">
                                     <div id="response-text" v-html="metadata"></div>
                                 </slot>
