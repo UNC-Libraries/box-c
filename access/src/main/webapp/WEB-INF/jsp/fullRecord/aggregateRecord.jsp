@@ -174,5 +174,5 @@
 		</table>
 	</div>
 </c:if>
-
+<div id="mods_data_display" data-pid="${briefObject.id}"></div>
 <c:import url="fullRecord/neighborList.jsp" />
