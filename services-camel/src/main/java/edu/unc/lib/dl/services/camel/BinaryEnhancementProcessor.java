@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -28,7 +27,6 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -63,13 +61,7 @@ public class BinaryEnhancementProcessor implements Processor {
 
                 log.info("Adding enhancement headers for " + pidValue);
                 in.setHeader(FCREPO_URI, pidValue);
-
-                if (repoObj instanceof CollectionObject) {
-                    in.setHeader(FCREPO_RESOURCE_TYPE, repoObj.getTypes());
-                } else {
-                    in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
-                }
-
+                in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
             } catch (ObjectTypeMismatchException e) {
                 log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
             }

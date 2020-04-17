@@ -26,7 +26,6 @@ import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -62,7 +61,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -155,7 +153,7 @@ public class EnhancementRouterIT {
     }
 
     @Test
-    public void testFolderEnhancements() throws Exception {
+    public void nonBinaryWithSourceImages() throws Exception {
         FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
         final Map<String, Object> headers = createEvent(false, folderObject.getPid(),
@@ -314,7 +312,6 @@ public class EnhancementRouterIT {
         headers.put(RESOURCE_TYPE, String.join(",", type));
 
         if (editThumb) {
-            headers.put(CdrEditThumbnail, "true");
             headers.put(CdrBinaryMimeType, "image/png");
             String uuid = pid.getUUID();
             String basePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);

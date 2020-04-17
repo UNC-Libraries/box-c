@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +68,7 @@ public class NonBinaryEnhancementProcessorTest {
 
         TestHelper.setContentBase(FEDORA_BASE);
         processor = new NonBinaryEnhancementProcessor();
-        processor.setDataDir(dataDir);
+        processor.setSourceImagesDir(dataDir);
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FCREPO_URI)).thenReturn(RESC_URI);
@@ -89,7 +88,6 @@ public class NonBinaryEnhancementProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrEditThumbnail, "true");
         verify(message).setHeader(CdrBinaryMimeType, "image/*");
         verify(message).setHeader(CdrBinaryPath, imgFile.getAbsolutePath());
         imgFile.delete();
@@ -101,9 +99,8 @@ public class NonBinaryEnhancementProcessorTest {
 
         processor.process(exchange);
 
-        verify(message, never()).setHeader(CdrEditThumbnail, "true");
         verify(message, never()).setHeader(CdrBinaryMimeType, "image/*");
-        verify(message, never()).setHeader(CdrBinaryPath, imgFile);
+        verify(message, never()).setHeader(CdrBinaryPath, imgFile.getAbsolutePath());
 
         imgFile.delete();
     }

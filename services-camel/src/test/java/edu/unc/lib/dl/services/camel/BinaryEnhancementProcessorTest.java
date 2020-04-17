@@ -83,6 +83,7 @@ public class BinaryEnhancementProcessorTest {
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
+        when(repoObj.getTypes()).thenReturn(Collections.singletonList(Binary.getURI()));
     }
 
     @Test
@@ -117,7 +118,7 @@ public class BinaryEnhancementProcessorTest {
     }
 
     @Test
-    public void testEditThumbnail() throws Exception {
+    public void testNonBinary() throws Exception {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
         setMessageBody("image/*");
@@ -125,7 +126,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collections.singletonList(Collection.getURI()));
+        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collection.getURI());
     }
 
     private void setMessageBody(String mimeType) {

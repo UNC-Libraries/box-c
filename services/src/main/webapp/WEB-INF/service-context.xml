@@ -316,7 +316,7 @@
           init-method="init">
         <property name="aclService" ref="aclService" />
         <property name="messageSender" ref="runEnhancementMessageSender" />
-        <property name="dataDir" value="${data.editThumb.dir}" />
+        <property name="sourceImagesDir" value="${sourceImages.dir}" />
     </bean>
   
   <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">

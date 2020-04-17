@@ -190,7 +190,7 @@
     </bean>
 
     <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
-        <property name="dataDir" value="${data.editThumb.dir}" />
+        <property name="sourceImagesDir" value="${sourceImages.dir}" />
     </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">

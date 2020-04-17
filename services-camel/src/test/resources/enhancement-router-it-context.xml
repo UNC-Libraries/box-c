@@ -49,7 +49,7 @@
     </bean>
 
     <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
-        <property name="dataDir" value="dataDir" />
+        <property name="sourceImagesDir" value="target" />
     </bean>
 
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">

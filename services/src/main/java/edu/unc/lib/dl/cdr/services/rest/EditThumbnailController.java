@@ -70,7 +70,7 @@ public class EditThumbnailController {
         } catch (IllegalArgumentException e) {
             log.error("Error queueing the job", e);
             result.put("error", e.getMessage());
-            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(result, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
         }
 
         result.put("destination", pid);

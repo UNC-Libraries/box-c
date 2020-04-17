@@ -47,7 +47,6 @@
             <h2 class="${isDeleted}">
                 <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                 <c:import url="common/thumbnail.jsp">
-                    <c:param name="target" value="file" />
                     <c:param name="size" value="large" />
                 </c:import>
                 </i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>

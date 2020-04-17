@@ -16,9 +16,6 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -94,7 +91,7 @@ public class EditThumbIT extends AbstractAPIIT {
     @Before
     public void init_() throws Exception {
         tempDir = tmpFolder.newFolder();
-        service.setDataDir(tempDir.getAbsolutePath());
+        service.setSourceImagesDir(tempDir.getAbsolutePath());
         service.init();
     }
 
@@ -133,7 +130,7 @@ public class EditThumbIT extends AbstractAPIIT {
 
         mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))
-                .andExpect(status().is5xxServerError())
+                .andExpect(status().is4xxClientError())
                 .andReturn();
 
         verify(messageSender, never()).sendMessage(any(Document.class));

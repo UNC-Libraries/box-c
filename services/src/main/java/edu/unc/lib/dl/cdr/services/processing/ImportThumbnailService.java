@@ -48,13 +48,13 @@ import edu.unc.lib.dl.services.MessageSender;
 public class ImportThumbnailService extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(ImportThumbnailService.class);
 
-    private String dataDir;
+    private String sourceImagesDir;
     private Path storagePath;
     private AccessControlService aclService;
     private MessageSender messageSender;
 
     public void init() throws IOException {
-        storagePath = Paths.get(dataDir);
+        storagePath = Paths.get(sourceImagesDir);
 
         // Create the directory if it doesn't already exist
         Files.createDirectories(storagePath);
@@ -95,11 +95,11 @@ public class ImportThumbnailService extends MessageSender {
         this.messageSender = messageSender;
     }
 
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
+    public void setSourceImagesDir(String sourceImagesDir) {
+        this.sourceImagesDir = sourceImagesDir;
     }
 
-    public String getDataDir() {
-        return dataDir;
+    public String getSourceImagesDir() {
+        return sourceImagesDir;
     }
 }

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel.enhancements;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
@@ -71,32 +70,24 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
-                    .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
-                    .process(nbProcessor)
-                    .choice()
-                        .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
-                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
-                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
-                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
-                            + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
-                            ))
-                            .to("direct-vm:solrIndexing")
-                        .otherwise()
-                            .multicast()
-                            .to("direct:process.binary", "direct-vm:solrIndexing")
-                        .end()
+                .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
+                .process(nbProcessor)
+                .choice()
+                    .when(simple("${headers[" + CdrBinaryPath + "]} == ''"))
+                        .to("direct-vm:solrIndexing")
+                    .otherwise()
+                        .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                        .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
+                        .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+                        .multicast()
+                        .to("direct:process.enhancements", "direct-vm:solrIndexing")
+                .end()
             .end();
 
         from("direct:process.binary")
             .routeId("ProcessOriginalBinary")
-            .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file' || " +
-                    "${headers[" + CdrEditThumbnail + "]} == 'true'"))
-            .choice()
-                .when(simple("${headers[" + CdrEditThumbnail + "]} == 'true'"))
-                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                .otherwise()
-                    .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
-            .end()
+            .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
+                .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
@@ -129,15 +128,6 @@ public class BinaryMetadataProcessorTest {
 
         verify(message).setHeader(CdrBinaryMimeType, MIMETYPE);
         verify(message).setHeader(CdrBinaryPath, file.toPath().toString());
-    }
-
-    @Test
-    public void editThumbnail() throws Exception {
-        when(exchange.getIn().getHeader(CdrEditThumbnail)).thenReturn("true");
-        processor.process(exchange);
-
-        verify(message, never()).setHeader(eq(CdrBinaryMimeType), any());
-        verify(message, never()).setHeader(eq(CdrBinaryPath), any());
     }
 
     @Test

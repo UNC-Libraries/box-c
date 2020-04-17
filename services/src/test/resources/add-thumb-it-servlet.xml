@@ -39,7 +39,7 @@
     <bean id="importThumbnailService" class="edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService">
         <property name="aclService" ref="aclServices" />
         <property name="messageSender" ref="messageSender" />
-        <property name="dataDir" value="dataDir" />
+        <property name="sourceImagesDir" value="dataDir" />
     </bean>
 
     <bean id="aclServices" class="org.mockito.Mockito" factory-method="mock">
@@ -47,6 +47,6 @@
     </bean>
 
     <bean id="dataDir" class="java.lang.String">
-        <constructor-arg value="src/test/resources/temp"/>
+        <constructor-arg value="target"/>
     </bean>
 </beans>

@@ -20,10 +20,10 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEditThumbnail;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.camel.Exchange;
@@ -42,7 +42,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 public class NonBinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(NonBinaryEnhancementProcessor.class);
 
-    private String dataDir;
+    private String sourceImagesDir;
 
     @Override
     public void process(final Exchange exchange) throws Exception {
@@ -52,16 +52,15 @@ public class NonBinaryEnhancementProcessor implements Processor {
         String uuid = PIDs.get(uri).getUUID();
         String objBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
-        File imgFile = new File(Paths.get(dataDir,objBasePath, uuid).toString());
+        Path imgFile = Paths.get(sourceImagesDir, objBasePath, uuid);
 
-        if (imgFile.isFile()) {
-            in.setHeader(CdrEditThumbnail, "true");
-            in.setHeader(CdrBinaryPath, imgFile.getAbsolutePath());
+        if (Files.isRegularFile(imgFile)) {
+            in.setHeader(CdrBinaryPath, imgFile.toAbsolutePath().toString());
             in.setHeader(CdrBinaryMimeType, "image/*");
         }
     }
 
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
+    public void setSourceImagesDir(String sourceImagesDir) {
+        this.sourceImagesDir = sourceImagesDir;
     }
 }
