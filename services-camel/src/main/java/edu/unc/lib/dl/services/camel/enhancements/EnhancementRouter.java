@@ -77,7 +77,8 @@ public class EnhancementRouter extends RouteBuilder {
                         .to("direct-vm:solrIndexing")
                     .otherwise()
                         .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                        .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
+                        .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                                "for ${headers[CamelFcrepoUri]}")
                         .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                         .multicast()
                         .to("direct:process.enhancements", "direct-vm:solrIndexing")
@@ -88,7 +89,8 @@ public class EnhancementRouter extends RouteBuilder {
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
                 .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
-            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
+            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                    "for ${headers[CamelFcrepoUri]}")
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
