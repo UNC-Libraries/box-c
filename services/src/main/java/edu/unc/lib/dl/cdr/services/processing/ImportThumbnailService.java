@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.MessageSender;
 
 /**
- * Service to process requests to add/update display thumbnail for collection pages
+ * Service to process requests to add/update display thumbnail objects
  *
  * @author lfarrell
  */
@@ -66,25 +66,21 @@ public class ImportThumbnailService extends MessageSender {
         aclService.assertHasAccess("User does not have permission to add/update collection thumbnails",
                 pid, agent.getPrincipals(), Permission.editDescription);
 
-        try {
-            if (!containsIgnoreCase(mimeType, "image")) {
-                throw new IllegalArgumentException("Uploaded file is not an image");
-            }
 
-            String thumbnailBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            String filePath = storagePath.resolve(thumbnailBasePath).resolve(uuid).toString();
-            File finalLocation = new File(filePath);
-            copyInputStreamToFile(importStream, finalLocation);
-
-            Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, false);
-            messageSender.sendMessage(msg);
-
-            log.info("Job to to add thumbnail to collection {} has been queued by {}",
-                    uuid, agent.getUsername());
-        } catch (IllegalArgumentException e) {
+        if (!containsIgnoreCase(mimeType, "image")) {
             log.error("Uploaded file for collection {} is not an image file", uuid);
-            throw e;
+            throw new IllegalArgumentException("Uploaded file is not an image");
         }
+
+        String thumbnailBasePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File finalLocation = storagePath.resolve(thumbnailBasePath).resolve(uuid).toFile();
+        copyInputStreamToFile(importStream, finalLocation);
+
+        Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, false);
+        messageSender.sendMessage(msg);
+
+        log.info("Job to to add thumbnail to object {} has been queued by {}",
+                uuid, agent.getUsername());
     }
 
     public void setAclService(AccessControlService aclService) {

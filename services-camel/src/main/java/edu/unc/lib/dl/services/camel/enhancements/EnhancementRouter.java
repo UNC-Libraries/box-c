@@ -70,19 +70,19 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
-                .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
-                .process(nbProcessor)
-                .choice()
-                    .when(simple("${headers[" + CdrBinaryPath + "]} == ''"))
-                        .to("direct-vm:solrIndexing")
-                    .otherwise()
-                        .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                        .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
-                                "for ${headers[CamelFcrepoUri]}")
-                        .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
-                        .multicast()
-                        .to("direct:process.enhancements", "direct-vm:solrIndexing")
-                .end()
+                    .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
+                    .process(nbProcessor)
+                    .choice()
+                        .when(simple("${headers[" + CdrBinaryPath + "]} == ''"))
+                            .to("direct-vm:solrIndexing")
+                        .otherwise()
+                            .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                                    "for ${headers[CamelFcrepoUri]}")
+                            .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+                            .multicast()
+                            .to("direct:process.enhancements", "direct-vm:solrIndexing")
+                    .end()
             .end();
 
         from("direct:process.binary")

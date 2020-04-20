@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -156,8 +157,8 @@ public class EnhancementRouterIT {
     public void nonBinaryWithSourceImages() throws Exception {
         FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
-        final Map<String, Object> headers = createEvent(false, folderObject.getPid(),
-                Cdr.Folder.getURI(), Container.getURI());
+        final Map<String, Object> headers = createEvent(true, folderObject.getPid(),
+                Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
@@ -178,7 +179,25 @@ public class EnhancementRouterIT {
     }
 
     @Test
-    public void testImageFile() throws Exception {
+    public void nonBinaryNoSourceImages() throws Exception {
+        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
+        final Map<String, Object> headers = createEvent(false, collObject.getPid(),
+                Cdr.Collection.getURI(), Container.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
+                .create();
+
+        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Enhancement route not satisfied", result1);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testBinaryImageFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
@@ -209,26 +228,6 @@ public class EnhancementRouterIT {
         // Indexing triggered for binary parent
         verify(solrIngestProcessor).process(any(Exchange.class));
     }
-
-   /* @Test
-    public void testEditThumbFile() throws Exception {
-        CollectionObject collObj = repoObjectFactory.createCollectionObject(null);
-        final Map<String, Object> headers = createEvent(true, collObj.getPid());
-        template.sendBodyAndHeaders("", headers);
-
-        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
-                .create();
-
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
-
-        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        // Indexing triggered for binary parent
-        verify(solrIngestProcessor, never()).process(any(Exchange.class));
-    } */
 
     @Test
     public void testBinaryMetadataFile() throws Exception {

@@ -25,15 +25,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,16 +81,12 @@ public class NonBinaryEnhancementProcessorTest {
         Files.createDirectories(uploadedFilePath.getParent());
 
         imgFile = new File(uploadedFilePath.toString());
-        FileWriter fileWriter = new FileWriter(imgFile.getAbsoluteFile());
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        bufferedWriter.write("image file");
-        bufferedWriter.close();
+        FileUtils.writeStringToFile(imgFile, "image file", StandardCharsets.UTF_8);
 
         processor.process(exchange);
 
         verify(message).setHeader(CdrBinaryMimeType, "image/*");
         verify(message).setHeader(CdrBinaryPath, imgFile.getAbsolutePath());
-        imgFile.delete();
     }
 
     @Test
@@ -101,7 +97,5 @@ public class NonBinaryEnhancementProcessorTest {
 
         verify(message, never()).setHeader(CdrBinaryMimeType, "image/*");
         verify(message, never()).setHeader(CdrBinaryPath, imgFile.getAbsolutePath());
-
-        imgFile.delete();
     }
 }

@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel;
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
@@ -88,7 +89,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain");
+        setMessageBody("text/plain", true);
 
         processor.process(exchange);
 
@@ -98,7 +99,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Test
     public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
-        setMessageBody("image/png");
+        setMessageBody("image/png", true);
 
         processor.process(exchange);
 
@@ -109,7 +110,7 @@ public class BinaryEnhancementProcessorTest {
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png");
+        setMessageBody("image/png", false);
 
         processor.process(exchange);
 
@@ -121,7 +122,7 @@ public class BinaryEnhancementProcessorTest {
     public void testNonBinary() throws Exception {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
-        setMessageBody("image/*");
+        setMessageBody("image/*", true);
 
         processor.process(exchange);
 
@@ -129,11 +130,15 @@ public class BinaryEnhancementProcessorTest {
         verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collection.getURI());
     }
 
-    private void setMessageBody(String mimeType) {
+    private void setMessageBody(String mimeType, boolean addEnhancementHeader) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
         entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
+
+        if (addEnhancementHeader) {
+            entry.addContent(new Element(ENHANCEMENTS.getName(), ATOM_NS));
+        }
 
         msg.addContent(entry);
 

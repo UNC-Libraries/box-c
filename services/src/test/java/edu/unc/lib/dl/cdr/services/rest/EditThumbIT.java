@@ -151,13 +151,13 @@ public class EditThumbIT extends AbstractAPIIT {
         verify(messageSender, never()).sendMessage(any(Document.class));
     }
 
-    byte[] textStream() {
+    private byte[] textStream() {
         return "I am not an image".getBytes();
     }
 
     private void assertMessageValues(Document msgDoc, PID expectedPid) {
         Element entry = msgDoc.getRootElement();
-        String pidString = entry.getChildText("pid", ATOM_NS);;
+        String pidString = entry.getChildText("pid", ATOM_NS);
         String author = entry.getChild("author", ATOM_NS)
                 .getChildText("name", ATOM_NS);
 

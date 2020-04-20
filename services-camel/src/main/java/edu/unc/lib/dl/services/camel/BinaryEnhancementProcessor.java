@@ -53,17 +53,19 @@ public class BinaryEnhancementProcessor implements Processor {
             Document msgBody = MessageUtil.getDocumentBody(in);
             Element body = msgBody.getRootElement();
 
-            String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
-            PID objPid = PIDs.get(pidValue);
+            if (body.getChild("enhancements", ATOM_NS) != null) {
+                String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+                PID objPid = PIDs.get(pidValue);
 
-            try {
-                RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
+                try {
+                    RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
 
-                log.info("Adding enhancement headers for " + pidValue);
-                in.setHeader(FCREPO_URI, pidValue);
-                in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
-            } catch (ObjectTypeMismatchException e) {
-                log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
+                    log.info("Adding enhancement headers for " + pidValue);
+                    in.setHeader(FCREPO_URI, pidValue);
+                    in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
+                } catch (ObjectTypeMismatchException e) {
+                    log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
+                }
             }
         }
     }
