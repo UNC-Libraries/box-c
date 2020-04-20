@@ -45,16 +45,22 @@ public class RunEnhancementsMessageHelpers {
     public static Document makeEnhancementOperationBody(String userid, PID pid, Boolean force) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
-        entry.addContent(new Element(ENHANCEMENTS.getName(), ATOM_NS));
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(pid.getRepositoryPath()));
-        entry.addContent(new Element("enhancements", ATOM_NS).setText("true"));
+
+        Element paramForce = new Element("force", CDR_MESSAGE_NS);
 
         if (force) {
-            Element paramForce = new Element("force", CDR_MESSAGE_NS);
             paramForce.setText("true");
+        } else {
+            paramForce.setText("false");
         }
+
+        Element enhancements = new Element(ENHANCEMENTS.getName(), ATOM_NS);
+        enhancements.addContent(new Element("pid", ATOM_NS).setText(pid.getRepositoryPath()));
+        enhancements.addContent(paramForce);
+        entry.addContent(enhancements);
+
         msg.addContent(entry);
 
         return msg;

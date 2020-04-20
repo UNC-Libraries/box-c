@@ -134,10 +134,11 @@ public class BinaryEnhancementProcessorTest {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
-        entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
 
         if (addEnhancementHeader) {
-            entry.addContent(new Element(ENHANCEMENTS.getName(), ATOM_NS));
+            Element enhancements = new Element(ENHANCEMENTS.getName(), ATOM_NS);
+            enhancements.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
+            entry.addContent(enhancements);
         }
 
         msg.addContent(entry);

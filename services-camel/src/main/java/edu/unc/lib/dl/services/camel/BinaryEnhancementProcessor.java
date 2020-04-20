@@ -53,8 +53,9 @@ public class BinaryEnhancementProcessor implements Processor {
             Document msgBody = MessageUtil.getDocumentBody(in);
             Element body = msgBody.getRootElement();
 
-            if (body.getChild("enhancements", ATOM_NS) != null) {
-                String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+            Element hasEnhancementPid = body.getChild("enhancements", ATOM_NS);
+            if (hasEnhancementPid != null) {
+                String pidValue = hasEnhancementPid.getChild("pid", ATOM_NS).getTextTrim();
                 PID objPid = PIDs.get(pidValue);
 
                 try {

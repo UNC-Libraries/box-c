@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -157,7 +158,8 @@ public class EditThumbIT extends AbstractAPIIT {
 
     private void assertMessageValues(Document msgDoc, PID expectedPid) {
         Element entry = msgDoc.getRootElement();
-        String pidString = entry.getChildText("pid", ATOM_NS);
+        String pidString = entry.getChild(ENHANCEMENTS.getName(), ATOM_NS)
+                .getChildText("pid", ATOM_NS);
         String author = entry.getChild("author", ATOM_NS)
                 .getChildText("name", ATOM_NS);
 
