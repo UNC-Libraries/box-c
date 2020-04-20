@@ -6,6 +6,9 @@
       <pattern>%relative %-5level [%thread] %logger{20} - %msg%n</pattern>
     </encoder>
   </appender>
+  <logger name="output" level="INFO" additivity="false">
+      <appender-ref ref="CONSOLE"/>
+  </logger>
   <root level="WARN">
     <appender-ref ref="CONSOLE"/>
   </root>

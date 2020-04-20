@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-    <context:property-placeholder />
+    <context:annotation-config />
+
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="config.properties.uri" />
+    </bean>
     
-    <bean id="baseAddress" class="java.lang.String">
-        <constructor-arg
-            value="http://localhost:48085/rest/" />
+    <bean id="serverProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <ref bean="propertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
-        <constructor-arg ref="baseAddress" />
+        <constructor-arg value="${fcrepo.baseUrl}" />
+        <constructor-arg value="${fcrepo.auth.host}" />
+        <constructor-arg value="${fcrepo.auth.user}" />
+        <constructor-arg value="${fcrepo.auth.password}" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -34,11 +50,11 @@
     </bean>
     
     <bean id="cacheTimeToLive" class="java.lang.Long">
-        <constructor-arg value="100" />
+        <constructor-arg value="500" />
     </bean>
     
     <bean id="cacheMaxSize" class="java.lang.Long">
-        <constructor-arg value="5" />
+        <constructor-arg value="100" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
@@ -55,20 +71,16 @@
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper"
-            factory-method="createIngestSourceManagerWithBasicConfig">
-        <constructor-arg value="${dcr.it.tdr.ingestSource:}" />
-        <constructor-arg><null /></constructor-arg>
-    </bean>
-    
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
-            factory-method="createLocationManagerWithBasicConfig">
-        <constructor-arg ref="repositoryObjectLoader" />
+    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+            init-method="init">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${storageLocations.path}" />
+        <property name="mappingPath" value="${storageLocationMappings.path}" />
     </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
-        <property name="ingestSourceManager" ref="ingestSourceManager" />
     </bean>
     
     <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
@@ -85,13 +97,8 @@
     <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl">
-        <constructor-arg ref="queryModel" />
-    </bean>
-    
-    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
-        <constructor-arg ref="queryModel" />
-        <constructor-arg ref="fcrepoClient" />
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
     </bean>
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
@@ -112,11 +119,19 @@
     </bean>
     
     <bean id="pathIndex" class="edu.unc.lib.dcr.migration.paths.PathIndex">
-        <property name="databaseUrl" value="mem:test;DB_CLOSE_DELAY=-1" />
     </bean>
     
-    <bean id="pathIndexingService" class="edu.unc.lib.dcr.migration.paths.PathIndexingService"
-            init-method="createIndexTable">
+    <bean id="depositRecordTransformerManager" class="edu.unc.lib.dcr.migration.deposit.DepositRecordTransformerManager">
         <property name="pathIndex" ref="pathIndex" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="transactionManager" ref="txManager" />
+    </bean>
+    
+    <bean id="depositRecordTransformationService" class="edu.unc.lib.dcr.migration.deposit.DepositRecordTransformationService">
+        <property name="transformerManager" ref="depositRecordTransformerManager" />
+        <property name="transferService" ref="binaryTransferService" />
+        <property name="locationManager" ref="storageLocationManager" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
 </beans>

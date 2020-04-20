@@ -154,6 +154,9 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
             log.error("Unknown deposit normalization event for {}, with detail: {}", pid, eventDetail);
             return;
         }
+        if (eventDetail.equals("Deposit recorded")) {
+            return;
+        }
 
         String format = matcher.group(1);
         createEventBuilder(Premis.Ingestion, eventEl)

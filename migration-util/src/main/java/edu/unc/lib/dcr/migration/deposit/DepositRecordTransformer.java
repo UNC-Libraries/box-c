@@ -39,6 +39,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
@@ -128,6 +129,7 @@ public class DepositRecordTransformer extends RecursiveAction {
 
         FedoraTransaction tx = txManager.startTransaction();
         try {
+            log.info("Ingesting deposit record {} as {}", bxc3Pid.getId(), bxc5Pid.getRepositoryPath());
             DepositRecord depRecord = repoObjFactory.createDepositRecord(bxc5Pid, bxc5Model);
 
             transformAndPopulatePremis(depRecord);
@@ -140,6 +142,8 @@ public class DepositRecordTransformer extends RecursiveAction {
         } finally {
             tx.close();
         }
+
+        log.debug("Finished ingest of deposit record {}", bxc3Pid.getId());
     }
 
     private boolean isDepositRecord(Resource bxc3Resc) {
@@ -177,7 +181,13 @@ public class DepositRecordTransformer extends RecursiveAction {
     private void addLiteralIfPresent(Resource bxc3Resc, Property bxc3Property,
             Resource bxc5Resc, Property bxc5Property) {
         if (bxc3Resc.hasProperty(bxc3Property)) {
-            String val = bxc3Resc.getProperty(bxc3Property).getString();
+            Statement prop = bxc3Resc.getProperty(bxc3Property);
+            String val;
+            if (prop.getObject().isResource()) {
+                val = prop.getResource().getURI();
+            } else {
+                val = prop.getString();
+            }
             bxc5Resc.addLiteral(bxc5Property, val);
         }
     }
