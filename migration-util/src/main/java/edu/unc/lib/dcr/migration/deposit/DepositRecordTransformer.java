@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
 
@@ -132,11 +133,14 @@ public class DepositRecordTransformer extends RecursiveAction {
             log.info("Ingesting deposit record {} as {}", bxc3Pid.getId(), bxc5Pid.getRepositoryPath());
             DepositRecord depRecord = repoObjFactory.createDepositRecord(bxc5Pid, bxc5Model);
 
-            transformAndPopulatePremis(depRecord);
+            log.info("Adding manifests for {}", bxc3Pid.getId());
             addManifests();
+            log.info("Transforming premis for {}", bxc3Pid.getId());
+            transformAndPopulatePremis(depRecord);
             // Need this to be last
+            log.info("Overriding modification time for {}", bxc3Pid.getId());
             overrideLastModified(bxc3Resc, depRecord);
-        } catch(Exception e) {
+        } catch (Exception e) {
             tx.cancelAndIgnore();
             throw e;
         } finally {
@@ -203,7 +207,8 @@ public class DepositRecordTransformer extends RecursiveAction {
             Path transformedPremisPath = Files.createTempFile("premis", ".xml");
             try {
                 PID bxc5Pid = depRecord.getPid();
-                PremisLogger filePremisLogger = premisLoggerFactory.createPremisLogger(bxc5Pid, transformedPremisPath.toFile());
+                PremisLogger filePremisLogger = premisLoggerFactory.createPremisLogger(
+                        bxc5Pid, transformedPremisPath.toFile());
                 DepositRecordPremisToRdfTransformer premisTransformer =
                         new DepositRecordPremisToRdfTransformer(bxc5Pid, filePremisLogger, originalPremisPath);
 
@@ -252,9 +257,17 @@ public class DepositRecordTransformer extends RecursiveAction {
                 continue;
             }
 
+            if (Files.notExists(manifestPath)) {
+                manifestNum++;
+                log.error("Manifest file {} does not exist for {}", manifestPath, bxc3Pid);
+                continue;
+            }
+
             PID manifestPid = getDepositManifestPid(bxc5Pid, dsName);
             // Transfer the manifest to its permanent storage location
             URI manifestStoredUri = transferSession.transfer(manifestPid, manifestPath.toUri());
+            log.error("Transferred manifest {}, exists? {}", manifestStoredUri,
+                    Files.exists(Paths.get(manifestStoredUri)));
 
             // Populate manifest timestamps
             Model manifestModel = ModelFactory.createDefaultModel();
@@ -264,8 +277,15 @@ public class DepositRecordTransformer extends RecursiveAction {
             selfResc.addProperty(Fcrepo4Repository.created, created, XSDDatatype.XSDdateTime);
 
             // Create the manifest in fedora
-            repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, label,
-                    mimetype, null, md5, manifestModel);
+            try {
+                repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, dsName,
+                        mimetype, null, md5, manifestModel);
+            } catch (Exception e) {
+                log.error("Failed stuff for {}", manifestStoredUri, e);
+            } finally {
+                log.error("After binary create of manifest {}, exists? {}", manifestStoredUri,
+                        Files.exists(Paths.get(manifestStoredUri)));
+            }
 
             manifestNum++;
             // Repeat until no more manifests found

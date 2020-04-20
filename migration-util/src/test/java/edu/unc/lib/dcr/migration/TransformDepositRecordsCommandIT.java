@@ -96,6 +96,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         out.reset();
         System.setOut(new PrintStream(out));
+
         datastreamsPath = tmpFolder.newFolder("datastreams").toPath();
         objectsPath = tmpFolder.newFolder("objects").toPath();
 
@@ -107,7 +108,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
     }
 
     @After
-    public void restoreStreams() {
+    public void cleanup() {
         System.setOut(originalOut);
         System.clearProperty("dcr.migration.index.url");
         System.clearProperty("dcr.it.tdr.ingestSource");
@@ -122,13 +123,15 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-s", "loc1" };
-        migrationCommand.execute(args);
+        int result = migrationCommand.execute(args);
 
+        assertEquals("Incorrect exit status", 0, result);
         String output = out.toString();
         assertTrue("Expected one transformation successful",
                 output.contains(" 1/1 "));
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
+
 
         DepositRecord depRec = repoObjLoader.getDepositRecord(bxc3Pid);
         assertTrue(depRec.getResource().hasProperty(DC.title, "Deposit Record with Manifest"));
@@ -195,7 +198,8 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-g",
                 "-s", "loc1" };
-        migrationCommand.execute(args);
+        int result = migrationCommand.execute(args);
+        assertEquals("Incorrect exit status", 0, result);
 
         String output = out.toString();
         assertTrue("Expected one transformation successful",

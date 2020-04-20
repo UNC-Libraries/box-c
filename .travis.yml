@@ -7,7 +7,7 @@ matrix:
         - gem install sass
       services:
         - redis-server
-      script: mvn verify -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server,migration-util
+      script: mvn verify -pl migration-util
       sudo: false
       cache:
         directories:

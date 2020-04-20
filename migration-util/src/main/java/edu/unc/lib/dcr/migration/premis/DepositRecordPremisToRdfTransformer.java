@@ -139,6 +139,10 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
             return;
         }
 
+        if (eventDetail.contains("Deposit recorded")) {
+            return;
+        }
+
         // PID assignment normalization jobs become info package creation
         if (eventDetail.contains("Assigned PID")) {
             createEventBuilder(Premis.InformationPackageCreation, eventEl)
@@ -152,9 +156,6 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         Matcher matcher = NORMALIZE_FORMAT_PATTERN.matcher(eventDetail);
         if (!matcher.matches()) {
             log.error("Unknown deposit normalization event for {}, with detail: {}", pid, eventDetail);
-            return;
-        }
-        if (eventDetail.equals("Deposit recorded")) {
             return;
         }
 

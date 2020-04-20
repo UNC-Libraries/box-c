@@ -112,7 +112,7 @@ public abstract class AbstractDepositRecordTransformationIT {
 
     protected BinaryObject getManifestByName(List<BinaryObject> binList, String dsName) {
         return binList.stream()
-                .filter(b -> b.getPid().getComponentPath().endsWith(dsName))
+                .filter(b -> b.getPid().getComponentPath().endsWith(dsName.toLowerCase()))
                 .findFirst()
                 .get();
     }

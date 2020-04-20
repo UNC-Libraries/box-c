@@ -61,7 +61,7 @@ public class DatastreamPids {
     }
 
     public static PID getDepositManifestPid(PID pid, String name) {
-        String path = URIUtil.join(pid.getRepositoryPath(), DEPOSIT_MANIFEST_CONTAINER, name);
+        String path = URIUtil.join(pid.getRepositoryPath(), DEPOSIT_MANIFEST_CONTAINER, name.toLowerCase());
         return PIDs.get(path);
     }
 
