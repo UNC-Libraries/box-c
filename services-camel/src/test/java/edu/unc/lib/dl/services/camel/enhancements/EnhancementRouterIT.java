@@ -145,7 +145,6 @@ public class EnhancementRouterIT {
 
         TestHelper.setContentBase(baseAddress);
         tempDir = tmpFolder.newFolder("target");
-        nbh = new NonBinaryEnhancementProcessor();
         nbh.setSourceImagesDir(tempDir.getAbsolutePath());
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
@@ -158,7 +157,6 @@ public class EnhancementRouterIT {
     }
 
     @Test
-
     public void nonBinaryWithSourceImages() throws Exception {
         CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
 
