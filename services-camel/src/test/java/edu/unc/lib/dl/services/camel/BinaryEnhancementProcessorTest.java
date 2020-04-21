@@ -15,14 +15,20 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.Collections;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -34,6 +40,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -54,9 +64,14 @@ public class BinaryEnhancementProcessorTest {
 
     @Mock
     private Exchange exchange;
-
     @Mock
     private Message message;
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
+    private RepositoryObject repoObj;
+    @Mock
+    private CollectionObject collObj;
 
     @Before
     public void init() throws Exception {
@@ -65,14 +80,17 @@ public class BinaryEnhancementProcessorTest {
         TestHelper.setContentBase(FEDORA_BASE);
 
         processor = new BinaryEnhancementProcessor();
+        processor.setRepositoryObjectLoader(repoObjLoader);
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
+        when(repoObj.getTypes()).thenReturn(Collections.singletonList(Binary.getURI()));
     }
 
     @Test
     public void testUpdateHeadersText() throws Exception {
-        setMessageBody("text/plain");
+        setMessageBody("text/plain", true);
 
         processor.process(exchange);
 
@@ -81,8 +99,8 @@ public class BinaryEnhancementProcessorTest {
     }
 
     @Test
-    public void testUpdateHeadersImage() throws Exception {
-        setMessageBody("image/png");
+    public void testUpdateHeadersImageNonCollectionThumb() throws Exception {
+        setMessageBody("image/png", true);
 
         processor.process(exchange);
 
@@ -93,7 +111,7 @@ public class BinaryEnhancementProcessorTest {
     @Test
     public void testExistingUriHeader() throws Exception {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_URI);
-        setMessageBody("image/png");
+        setMessageBody("image/png", false);
 
         processor.process(exchange);
 
@@ -101,11 +119,28 @@ public class BinaryEnhancementProcessorTest {
         verify(message, never()).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
     }
 
-    private void setMessageBody(String mimeType) {
+    @Test
+    public void testNonBinary() throws Exception {
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
+        when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
+        setMessageBody("image/*", true);
+
+        processor.process(exchange);
+
+        verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collection.getURI());
+    }
+
+    private void setMessageBody(String mimeType, boolean addEnhancementHeader) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
-        entry.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
+
+        if (addEnhancementHeader) {
+            Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+            enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
+            entry.addContent(enhancements);
+        }
 
         msg.addContent(entry);
 

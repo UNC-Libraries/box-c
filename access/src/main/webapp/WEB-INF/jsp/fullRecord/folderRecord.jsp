@@ -45,15 +45,10 @@
         <div class="column is-12">
             <c:import url="fullRecord/navigationBar.jsp" />
             <h2 class="${isDeleted}">
-                <i class="fa fa-folder" aria-hidden="true">
-                    <c:if test="${not empty badgeIcon}">
-                        <div class="thumbnail-badge thumbnail-badge-${badgeIcon}">
-                            <div class="fa-stack">
-                                <i class="fas fa-circle fa-stack-2x background"></i>
-                                <i class="fas fa-${badgeIcon} fa-stack-1x foreground"></i>
-                            </div>
-                        </div>
-                    </c:if>
+                <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+                <c:import url="common/thumbnail.jsp">
+                    <c:param name="size" value="large" />
+                </c:import>
                 </i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>
             </h2>
             <c:if test="${not empty briefObject.dateAdded}">

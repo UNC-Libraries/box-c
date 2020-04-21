@@ -311,6 +311,13 @@
       <property name="modsValidator" ref="modsValidator" />
       <property name="versionedDatastreamService" ref="versionedDatastreamService" />
   </bean>
+
+    <bean id="editThumbnailService" class="edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService"
+          init-method="init">
+        <property name="aclService" ref="aclService" />
+        <property name="messageSender" ref="runEnhancementMessageSender" />
+        <property name="sourceImagesDir" value="${sourceImages.dir}" />
+    </bean>
   
   <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">
     <property name="fromAddress" value="${repository.from.email}" />
@@ -352,7 +359,7 @@
         <property name="port" value="${smtp.port:25}" />
         <property name="defaultEncoding" value="UTF-8" />
     </bean>
-   
+
     <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
         <property name="derivativeDir" value="${derivative.dir}" />
     </bean>

@@ -22,33 +22,36 @@ import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 
 /**
  * Router which queues and triggers enhancement services.
  *
  * @author bbpennel
+ * @author lfarrell
  *
  */
 public class EnhancementRouter extends RouteBuilder {
-
-    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
-
     @BeanInject(value = "binaryEnhancementProcessor")
     private BinaryEnhancementProcessor enProcessor;
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
+    @BeanInject(value = "nonBinaryEnhancementProcessor")
+    private NonBinaryEnhancementProcessor nbProcessor;
+
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
+    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
+    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
         from("{{cdr.enhancement.stream.camel}}")
@@ -58,8 +61,7 @@ public class EnhancementRouter extends RouteBuilder {
             .choice()
                 // Process binary enhancement requests
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-                    .log(DEBUG, "Processing binary ${headers[CamelFcrepoUri]}")
-                    .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
+                    .log(INFO, "Processing binary ${headers[CamelFcrepoUri]}")
                     .to("direct:process.binary")
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
@@ -69,23 +71,36 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
                     .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
-                    .to("direct-vm:solrIndexing")
+                    .process(nbProcessor)
+                    .choice()
+                        .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
+                            .to("direct-vm:solrIndexing")
+                        .otherwise()
+                            .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                                    "for ${headers[CamelFcrepoUri]}")
+                            .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+                            .multicast()
+                            .to("direct:process.enhancements", "direct-vm:solrIndexing")
+                    .end()
             .end();
 
         from("direct:process.binary")
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
-            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]} for ${headers[CamelFcrepoUri]}")
+                .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
+            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                    "for ${headers[CamelFcrepoUri]}")
             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
-            .multicast()
-            .to("direct:process.enhancements", "direct-vm:solrIndexing");
+                .multicast()
+                .to("direct:process.enhancements", "direct-vm:solrIndexing");
 
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
             .split(simple("${headers[CdrEnhancementSet]}"))
-                .log(LoggingLevel.INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
+                .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
                 .toD("direct-vm:process.enhancement.${body}");
     }
 }

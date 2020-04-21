@@ -60,22 +60,24 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         ContentObject contentObj = dip.getContentObject();
 
         FileObject fileObj = getFileObject(contentObj);
-        if (fileObj == null) {
-            return;
+        if (fileObj != null) {
+            boolean ownedByOtherObject = contentObj instanceof WorkObject;
+            // Retrieve list of datastreams associated with this object
+            List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
+            // Retrieve list of derivatives associated with the object
+            List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
+            datastreams.addAll(derivatives);
+
+            IndexDocumentBean doc = dip.getDocument();
+
+            doc.setDatastream(getDatastreamStrings(datastreams));
+            doc.setFilesizeTotal(getFilesizeTotal(datastreams));
+            doc.setFilesizeSort(getFilesize(datastreams));
+        } else {
+            List<Datastream> derivatives = getDerivatives(contentObj.getPid(), false);
+            IndexDocumentBean doc = dip.getDocument();
+            doc.setDatastream(getDatastreamStrings(derivatives));
         }
-
-        boolean ownedByOtherObject = contentObj instanceof WorkObject;
-        // Retrieve list of datastreams associated with this object
-        List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
-        // Retrieve list of derivatives associated with the object
-        List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
-        datastreams.addAll(derivatives);
-
-        IndexDocumentBean doc = dip.getDocument();
-
-        doc.setDatastream(getDatastreamStrings(datastreams));
-        doc.setFilesizeTotal(getFilesizeTotal(datastreams));
-        doc.setFilesizeSort(getFilesize(datastreams));
     }
 
     private FileObject getFileObject(ContentObject contentObj) {

@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
@@ -28,6 +28,11 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
@@ -38,6 +43,8 @@ import edu.unc.lib.dl.services.camel.util.MessageUtil;
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
 
+    private RepositoryObjectLoader repoObjLoader;
+
     @Override
     public void process(final Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
@@ -47,11 +54,28 @@ public class BinaryEnhancementProcessor implements Processor {
             Document msgBody = MessageUtil.getDocumentBody(in);
             Element body = msgBody.getRootElement();
 
-            String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+            Element enhancementsEl = body.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+            if (enhancementsEl != null) {
+                String pidValue = enhancementsEl.getChild("pid", CDR_MESSAGE_NS).getTextTrim();
+                PID objPid = PIDs.get(pidValue);
 
-            log.info("Adding enhancement headers for " + pidValue);
-            in.setHeader(FCREPO_URI, pidValue);
-            in.setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+                try {
+                    RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
+
+                    log.info("Adding enhancement headers for " + pidValue);
+                    in.setHeader(FCREPO_URI, pidValue);
+                    in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
+                } catch (ObjectTypeMismatchException e) {
+                    log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
+                }
+            }
         }
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }

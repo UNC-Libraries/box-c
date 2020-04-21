@@ -52,6 +52,7 @@ public class AddDerivativeProcessor implements Processor {
     private final String fileExtension;
     private final String derivativeBasePath;
 
+
     public AddDerivativeProcessor(String fileExtension, String derivativeBasePath) {
         this.fileExtension = fileExtension;
         this.derivativeBasePath = derivativeBasePath;
@@ -59,12 +60,12 @@ public class AddDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-
+        String binaryId;
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        String binaryId = PIDs.get(binaryUri).getId();
-        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        binaryId = PIDs.get(binaryUri).getId();
 
+        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         final ExecResult result = (ExecResult) in.getBody();
 
         try {

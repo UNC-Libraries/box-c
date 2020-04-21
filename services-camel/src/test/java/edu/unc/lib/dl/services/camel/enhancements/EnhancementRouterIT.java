@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel.enhancements;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
@@ -31,12 +34,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -45,7 +51,9 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -54,8 +62,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -119,13 +127,25 @@ public class EnhancementRouterIT {
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    private File tempDir;
+
+    @Autowired
+    private NonBinaryEnhancementProcessor nbh;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
 
         reset(solrIngestProcessor);
+        reset(addSmallThumbnailProcessor);
+        reset(addLargeThumbnailProcessor);
 
         TestHelper.setContentBase(baseAddress);
+        tempDir = tmpFolder.newFolder("target");
+        nbh.setSourceImagesDir(tempDir.getAbsolutePath());
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
         FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
@@ -137,11 +157,18 @@ public class EnhancementRouterIT {
     }
 
     @Test
-    public void testFolderEnhancements() throws Exception {
-        FolderObject folderObject = repoObjectFactory.createFolderObject(null);
+    public void nonBinaryWithSourceImages() throws Exception {
+        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
 
-        final Map<String, Object> headers = createEvent(folderObject.getPid(),
-                Cdr.Folder.getURI(), Container.getURI());
+        String uuid = collObject.getPid().getUUID();
+        String basePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File uploadedFile = new File(String.valueOf(Paths.get(tempDir.getAbsolutePath(), basePath, uuid)));
+
+        FileInputStream input = new FileInputStream("src/test/resources/uploaded-files/burndown.png");
+        FileUtils.copyInputStreamToFile(input, uploadedFile);
+
+        final Map<String, Object> headers = createEvent(collObject.getPid(),
+                Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
@@ -158,11 +185,33 @@ public class EnhancementRouterIT {
         boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
         assertTrue("Indexing route not satisfied", result2);
 
+        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor).process(any(Exchange.class));
     }
 
     @Test
-    public void testImageFile() throws Exception {
+    public void nonBinaryNoSourceImages() throws Exception {
+        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
+        final Map<String, Object> headers = createEvent(collObject.getPid(),
+                Cdr.Collection.getURI(), Container.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
+                .create();
+
+        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Enhancement route not satisfied", result1);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testBinaryImageFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
@@ -268,8 +317,7 @@ public class EnhancementRouterIT {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
-    private static Map<String, Object> createEvent(PID pid, String... type) {
-
+    private Map<String, Object> createEvent(PID pid, String... type) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(IDENTIFIER, pid.getRepositoryPath());
         headers.put(EVENT_TYPE, "ResourceCreation");

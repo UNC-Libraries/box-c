@@ -116,6 +116,7 @@ public class JMSMessageUtil {
         REMOVE("remove"),
         REORDER("reorder"),
         RESTORE_FROM_DELETION("restoreFromDeletion"),
+        RUN_ENHANCEMENTS("runEnhancements"),
         SET_AS_PRIMARY_OBJECT("setAsPrimaryObject"),
         UPDATE_DESCRIPTION("updateDescription");
 
