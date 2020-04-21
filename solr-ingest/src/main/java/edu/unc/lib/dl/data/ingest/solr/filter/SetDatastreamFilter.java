@@ -18,7 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
