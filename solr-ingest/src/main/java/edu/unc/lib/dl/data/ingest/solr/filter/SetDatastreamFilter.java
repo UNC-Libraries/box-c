@@ -76,11 +76,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             doc.setFilesizeSort(getFilesize(datastreams));
         } else {
             List<Datastream> derivatives = getDerivatives(contentObj.getPid(), false);
-            List<Datastream> datastreams = new ArrayList<>(derivatives);
-
             IndexDocumentBean doc = dip.getDocument();
-
-            doc.setDatastream(getDatastreamStrings(datastreams));
+            doc.setDatastream(getDatastreamStrings(derivatives));
         }
     }
 

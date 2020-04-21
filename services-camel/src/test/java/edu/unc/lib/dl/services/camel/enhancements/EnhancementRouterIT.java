@@ -194,7 +194,7 @@ public class EnhancementRouterIT {
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor).process(any(Exchange.class));
     }
 
     @Test

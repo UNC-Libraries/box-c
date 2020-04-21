@@ -73,7 +73,7 @@ public class EnhancementRouter extends RouteBuilder {
                     .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .process(nbProcessor)
                     .choice()
-                        .when(simple("${headers[" + CdrBinaryPath + "]} == ''"))
+                        .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
                             .to("direct-vm:solrIndexing")
                         .otherwise()
                             .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
