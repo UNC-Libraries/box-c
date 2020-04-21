@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services;
 
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ENHANCEMENTS;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
@@ -56,8 +56,8 @@ public class RunEnhancementsMessageHelpers {
             paramForce.setText("false");
         }
 
-        Element enhancements = new Element(ENHANCEMENTS.getName(), ATOM_NS);
-        enhancements.addContent(new Element("pid", ATOM_NS).setText(pid.getRepositoryPath()));
+        Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+        enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
         enhancements.addContent(paramForce);
         entry.addContent(enhancements);
 

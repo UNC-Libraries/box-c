@@ -194,6 +194,7 @@ public class EnhancementRouterIT {
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -309,6 +310,7 @@ public class EnhancementRouterIT {
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
+        headers.put(CdrBinaryMimeType, "text/plain");
 
         if (editThumb) {
             headers.put(CdrBinaryMimeType, "image/png");

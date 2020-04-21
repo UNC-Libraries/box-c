@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
@@ -53,9 +53,9 @@ public class BinaryEnhancementProcessor implements Processor {
             Document msgBody = MessageUtil.getDocumentBody(in);
             Element body = msgBody.getRootElement();
 
-            Element hasEnhancementPid = body.getChild("enhancements", ATOM_NS);
-            if (hasEnhancementPid != null) {
-                String pidValue = hasEnhancementPid.getChild("pid", ATOM_NS).getTextTrim();
+            Element enhancementsEl = body.getChild("runEnhancements", CDR_MESSAGE_NS);
+            if (enhancementsEl != null) {
+                String pidValue = enhancementsEl.getChild("pid", CDR_MESSAGE_NS).getTextTrim();
                 PID objPid = PIDs.get(pidValue);
 
                 try {

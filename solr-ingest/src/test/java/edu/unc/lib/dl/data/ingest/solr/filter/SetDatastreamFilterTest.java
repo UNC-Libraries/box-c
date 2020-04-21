@@ -214,7 +214,7 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
-        verify(idb, never()).setDatastream(anyListOf(String.class));
+        verify(idb).setDatastream(anyListOf(String.class));
         verify(idb, never()).setFilesizeSort(anyLong());
         verify(idb, never()).setFilesizeTotal(anyLong());
     }
@@ -227,7 +227,7 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
-        verify(idb, never()).setDatastream(anyListOf(String.class));
+        verify(idb).setDatastream(anyListOf(String.class));
         verify(idb, never()).setFilesizeSort(anyLong());
         verify(idb, never()).setFilesizeTotal(anyLong());
     }

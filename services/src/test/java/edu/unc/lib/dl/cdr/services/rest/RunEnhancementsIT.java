@@ -16,8 +16,9 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.runEnhancements;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ENHANCEMENTS;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -206,8 +207,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     private void assertMessageValues(Document msgDoc, PID expectedPid, String expectedAuthor) {
         Element entry = msgDoc.getRootElement();
-        String pidString = entry.getChild(ENHANCEMENTS.getName(), ATOM_NS)
-                .getChildText("pid", ATOM_NS);
+        String pidString = entry.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS)
+                .getChildText("pid", CDR_MESSAGE_NS);
         String author = entry.getChild("author", ATOM_NS)
                              .getChildText("name", ATOM_NS);
 

@@ -18,8 +18,9 @@ package edu.unc.lib.dl.services.camel;
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ENHANCEMENTS;
+import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -136,8 +137,8 @@ public class BinaryEnhancementProcessorTest {
         entry.addContent(new Element("mimeType", ATOM_NS).setText(mimeType));
 
         if (addEnhancementHeader) {
-            Element enhancements = new Element(ENHANCEMENTS.getName(), ATOM_NS);
-            enhancements.addContent(new Element("pid", ATOM_NS).setText(RESC_URI));
+            Element enhancements = new Element(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS);
+            enhancements.addContent(new Element("pid", CDR_MESSAGE_NS).setText(RESC_URI));
             entry.addContent(enhancements);
         }
 

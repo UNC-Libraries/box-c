@@ -110,13 +110,13 @@ public class JMSMessageUtil {
         ADD("add"),
         EDIT_ACCESS_CONTROL("editAccess"),
         EDIT_TYPE("editType"),
-        ENHANCEMENTS("enhancements"),
         MARK_FOR_DELETION("markForDeletion"),
         MOVE("move"),
         PUBLISH("publish"),
         REMOVE("remove"),
         REORDER("reorder"),
         RESTORE_FROM_DELETION("restoreFromDeletion"),
+        RUN_ENHANCEMENTS("runEnhancements"),
         SET_AS_PRIMARY_OBJECT("setAsPrimaryObject"),
         UPDATE_DESCRIPTION("updateDescription");
 
