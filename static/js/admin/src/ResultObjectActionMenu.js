@@ -98,6 +98,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
 		var isContentRoot = metadata.type === 'ContentRoot';
+		var isAdminUnit = metadata.type === 'AdminUnit';
 
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
@@ -152,12 +153,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		*/
 
-		if (metadata.type === 'Collection' && $.inArray('editDescription', metadata.permissions) != -1) {
-			items["editThumbnail"] = {name : 'Edit Display Thumbnail'};
-		}
-
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
+		}
+
+		if ((metadata.type === 'Collection' || isAdminUnit) && $.inArray('editDescription', metadata.permissions) != -1) {
+			items["editThumbnail"] = {name : 'Edit Display Thumbnail'};
 		}
 
 		// Add files to work objects
@@ -198,7 +199,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Set/Update permission actions
 		var canChangePatronAccess = $.inArray('changePatronAccess', metadata.permissions) !== -1;
 		var canAssignStaffRoles = $.inArray('assignStaffRoles', metadata.permissions) !== -1;
-		var isAdminUnit = metadata.type === 'AdminUnit';
 
 		if (!isContentRoot && (canAssignStaffRoles || (!isAdminUnit && canChangePatronAccess))) {
 			items["seppermission"] = "";
