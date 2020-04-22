@@ -191,7 +191,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
     public void transformDepositRecordsGeneratedIds() throws Exception {
         CommandLine migrationCommand = new CommandLine(new MigrationCLI());
 
-        String title = "Deposit Recorded Generated ID " + System.currentTimeMillis();
+        String title = "Deposit Record Generated ID " + System.currentTimeMillis();
         File pidListFile = setupDepositRecord(migrationCommand,
                 title);
 
@@ -228,8 +228,8 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         // Find the correct deposit record by title
         DepositRecord depRec = depRecs.stream()
                 .filter(d -> d.getResource().hasLiteral(DC.title, title))
-               .findFirst()
-               .get();
+                .findFirst()
+                .get();
 
         assertTrue(depRec.getResource().hasLiteral(Cdr.depositedOnBehalfOf, DEPOSITOR));
 

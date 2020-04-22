@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
 
@@ -133,12 +132,12 @@ public class DepositRecordTransformer extends RecursiveAction {
             log.info("Ingesting deposit record {} as {}", bxc3Pid.getId(), bxc5Pid.getRepositoryPath());
             DepositRecord depRecord = repoObjFactory.createDepositRecord(bxc5Pid, bxc5Model);
 
-            log.info("Adding manifests for {}", bxc3Pid.getId());
+            log.debug("Adding manifests for {}", bxc3Pid.getId());
             addManifests();
-            log.info("Transforming premis for {}", bxc3Pid.getId());
+            log.debug("Transforming premis for {}", bxc3Pid.getId());
             transformAndPopulatePremis(depRecord);
             // Need this to be last
-            log.info("Overriding modification time for {}", bxc3Pid.getId());
+            log.debug("Overriding modification time for {}", bxc3Pid.getId());
             overrideLastModified(bxc3Resc, depRecord);
         } catch (Exception e) {
             tx.cancelAndIgnore();
@@ -266,8 +265,6 @@ public class DepositRecordTransformer extends RecursiveAction {
             PID manifestPid = getDepositManifestPid(bxc5Pid, dsName);
             // Transfer the manifest to its permanent storage location
             URI manifestStoredUri = transferSession.transfer(manifestPid, manifestPath.toUri());
-            log.error("Transferred manifest {}, exists? {}", manifestStoredUri,
-                    Files.exists(Paths.get(manifestStoredUri)));
 
             // Populate manifest timestamps
             Model manifestModel = ModelFactory.createDefaultModel();
@@ -277,15 +274,8 @@ public class DepositRecordTransformer extends RecursiveAction {
             selfResc.addProperty(Fcrepo4Repository.created, created, XSDDatatype.XSDdateTime);
 
             // Create the manifest in fedora
-            try {
-                repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, dsName,
-                        mimetype, null, md5, manifestModel);
-            } catch (Exception e) {
-                log.error("Failed stuff for {}", manifestStoredUri, e);
-            } finally {
-                log.error("After binary create of manifest {}, exists? {}", manifestStoredUri,
-                        Files.exists(Paths.get(manifestStoredUri)));
-            }
+            repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, dsName,
+                    mimetype, null, md5, manifestModel);
 
             manifestNum++;
             // Repeat until no more manifests found

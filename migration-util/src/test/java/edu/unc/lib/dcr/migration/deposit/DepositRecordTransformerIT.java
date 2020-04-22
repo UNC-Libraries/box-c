@@ -19,7 +19,6 @@ import static edu.unc.lib.dcr.migration.MigrationConstants.toBxc3Uri;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,10 +32,10 @@ import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -74,8 +73,6 @@ import edu.unc.lib.dl.test.TestHelper;
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class DepositRecordTransformerIT extends AbstractDepositRecordTransformationIT {
-    private static final Logger log = getLogger(DepositRecordTransformerIT.class);
-
     private static Path ingestSourcePath;
 
     static {
@@ -118,6 +115,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
     public void init() throws Exception {
         TestHelper.setContentBase("http://localhost:48085/rest");
 
+        Files.createDirectories(ingestSourcePath);
         datastreamsPath = ingestSourcePath.resolve("datastreams");
         objectsPath = ingestSourcePath.resolve("objects");
         Files.createDirectories(datastreamsPath);
@@ -133,14 +131,17 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
         transformer.setPremisLoggerFactory(premisLoggerFactory);
         transformer.setRepositoryObjectFactory(repoObjFactory);
         transformer.setTransactionManager(txManager);
-
-        System.setProperty("dcr.it.tdr.ingestSource", tmpFolder.getRoot().getAbsolutePath());
     }
 
     @After
     public void tearDown() throws Exception {
         FileUtils.deleteDirectory(ingestSourcePath.toFile());
         transferSession.close();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        FileUtils.deleteDirectory(ingestSourcePath.toFile());
     }
 
     @Test(expected = RepositoryException.class)
@@ -231,7 +232,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
         String manifest0Name = "DATA_MANIFEST0";
         String manifest0Content = "content for m0";
-        Path mPath = writeManifestFile(bxc3Pid, manifest0Name, manifest0Content);
+        writeManifestFile(bxc3Pid, manifest0Name, manifest0Content);
         DatastreamVersion manifest0 = new DatastreamVersion(null,
                 manifest0Name, "0",
                 FoxmlDocumentBuilder.DEFAULT_CREATED_DATE,
@@ -241,15 +242,13 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
         String manifest1Name = "DATA_MANIFEST1";
         String manifest1Content = "additional content";
-        Path mPath2 = writeManifestFile(bxc3Pid, manifest1Name, manifest1Content);
+        writeManifestFile(bxc3Pid, manifest1Name, manifest1Content);
         DatastreamVersion manifest1 = new DatastreamVersion(null,
                 manifest1Name, "0",
                 FoxmlDocumentBuilder.DEFAULT_LAST_MODIFIED,
                 Integer.toString(manifest1Content.length()),
                 "text/plain",
                 null);
-        log.error("Mpath1 = {} {}", mPath, Files.exists(mPath));
-        log.error("Mpath2 = {} {}", mPath2, Files.exists(mPath2));
 
         Document foxml = new FoxmlDocumentBuilder(bxc3Pid, "Deposit Record with Manifests")
                 .relsExtModel(bxc3Model)

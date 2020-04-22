@@ -33,6 +33,8 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 /**
+ * Command for transforming deposit records
+ *
  * @author bbpennel
  */
 @Command(name = "transform_deposit_records", aliases = {"tdr"},
