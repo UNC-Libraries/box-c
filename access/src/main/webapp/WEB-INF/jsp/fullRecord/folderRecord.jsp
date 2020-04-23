@@ -49,7 +49,7 @@
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="size" value="large" />
                 </c:import>
-                </i> <c:out value="${briefObject.title}"/> <span class="item-count">(<c:out value="${childCount}" /> items)</span>
+                </i> <c:out value="${briefObject.title}"/> <span class="item_container_count"><c:out value="${childCount}" /> items</span>
             </h2>
             <c:if test="${not empty briefObject.dateAdded}">
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>

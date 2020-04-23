@@ -28,7 +28,7 @@
 			<% } else { %>
 				<a href="list/<%= metadata.id %>" class="title has_tooltip"
 							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
-					<span class="searchitem_container_count">
+					<span class="item_container_count">
 						(<%= metadata.counts && metadata.counts.child? metadata.counts.child: 0 %> item<%= metadata.counts && metadata.counts.child == 1? '' : 's' %>)
 					</span>
 			<% } %>

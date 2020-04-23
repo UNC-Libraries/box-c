@@ -573,7 +573,7 @@ p.spacing {
   padding: 25px;
 }
 
-#list-records-display .searchitem_container_count {
+.item_container_count {
   background-color: #4B9CD3;
   border: 1px solid #4B9CD3;
   border-radius: 5px;
@@ -641,10 +641,13 @@ p.no-search-results {
   margin: 15px;
 }
 .browse-header h2 span {
-  color: #707070;
   font-size: 20px;
   font-weight: normal;
   margin-left: 10px;
+}
+.browse-header h2 span.item_container_count {
+  color: white;
+  vertical-align: middle;
 }
 .browse-header p {
   color: black;
@@ -666,7 +669,7 @@ p.no-search-results {
   margin: 10px 15px;
   width: 98%;
 }
-.collection-browse .searchitem_container_count {
+.collection-browse .item_container_count {
   background-color: inherit;
   border: none;
   color: gray;
