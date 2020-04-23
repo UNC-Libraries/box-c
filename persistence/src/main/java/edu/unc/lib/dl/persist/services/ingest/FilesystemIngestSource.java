@@ -149,11 +149,21 @@ public class FilesystemIngestSource implements IngestSource {
         for (String pattern : patterns) {
             PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + baseString + "/" + pattern + "*");
             if (matcher.matches(path)) {
-                return path.toFile().exists();
+                return true;
             }
         }
 
         return false;
+    }
+
+    @Override
+    public boolean exists(URI uri) {
+        Path path = Paths.get(uri).normalize();
+        if (!path.startsWith(basePath)) {
+            return false;
+        }
+
+        return Files.exists(path);
     }
 
     @Override
@@ -249,7 +259,7 @@ public class FilesystemIngestSource implements IngestSource {
     public URI resolveRelativePath(String relative) {
         Path candidatePath = basePath.resolve(relative).normalize();
 
-        if (!isValidPath(candidatePath)) {
+        if (!isValidPath(candidatePath) || Files.notExists(candidatePath)) {
             throw new InvalidIngestSourceCandidateException("Invalid ingest source path " + relative);
         }
 

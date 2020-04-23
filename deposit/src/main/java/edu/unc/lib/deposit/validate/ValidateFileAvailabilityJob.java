@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -73,9 +74,13 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
             try {
                 URI manifestURI = URI.create(entry.getValue());
                 // If no ingest source can be found for the file, then file not available
-                sourceManager.getIngestSourceForUri(manifestURI);
+                IngestSource source = sourceManager.getIngestSourceForUri(manifestURI);
+                if (!source.exists(manifestURI)) {
+                    log.debug("Failed find staged file {} in deposit {}", href, getDepositUUID());
+                    badlyStagedFiles.add(href);
+                }
             } catch (UnknownIngestSourceException e) {
-                log.debug("Failed find staged file {} in deposit {}", href, getDepositUUID(), e);
+                log.debug("Could not determine staging location for {} in deposit {}", href, getDepositUUID(), e);
                 badlyStagedFiles.add(href);
             }
 

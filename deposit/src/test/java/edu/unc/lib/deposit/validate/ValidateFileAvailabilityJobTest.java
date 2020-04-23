@@ -91,6 +91,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         when(depositStatusFactory.getState(anyString()))
                 .thenReturn(DepositState.running);
         when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
+        when(ingestSource.exists(any(URI.class))).thenReturn(true);
 
         depositPid = job.getDepositPID();
 
@@ -143,12 +144,26 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     }
 
     @Test(expected = JobFailedException.class)
-    public void missingFileTest() {
+    public void invalidSourceTest() {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         when(sourceManager.getIngestSourceForUri(any(URI.class)))
-                .thenThrow(new UnknownIngestSourceException("missing"));
+                .thenThrow(new UnknownIngestSourceException("Not source"));
+
+        addFileObject(depBag, "missing.pdf");
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test(expected = JobFailedException.class)
+    public void missingFileTest() {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        when(ingestSource.exists(any(URI.class))).thenReturn(false);
 
         addFileObject(depBag, "missing.pdf");
 

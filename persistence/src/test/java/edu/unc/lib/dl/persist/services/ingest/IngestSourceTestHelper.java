@@ -48,14 +48,16 @@ public class IngestSourceTestHelper {
     private IngestSourceTestHelper() {
     }
 
-    public static void addBagToSource(Path ingestSourcePath) throws Exception {
+    public static Path addBagToSource(Path ingestSourcePath) throws Exception {
         String bagName = "bag_with_files";
-        addBagToSource(ingestSourcePath, bagName, bagName);
+        return addBagToSource(ingestSourcePath, bagName, bagName);
     }
 
-    public static void addBagToSource(Path ingestSourcePath, String bagName, String destName) throws Exception {
+    public static Path addBagToSource(Path ingestSourcePath, String bagName, String destName) throws Exception {
         File original = new File("src/test/resources/ingestSources/" + bagName);
-        FileUtils.copyDirectory(original, ingestSourcePath.resolve(destName).toFile());
+        Path bagPath = ingestSourcePath.resolve(destName);
+        FileUtils.copyDirectory(original, bagPath.toFile());
+        return bagPath;
     }
 
     public static IngestSourceCandidate findCandidateByPath(String patternMatched,

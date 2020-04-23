@@ -31,6 +31,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -199,6 +201,21 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         job.run();
 
         // Mainly ensuring that no error occurs when there is nothing to delete
+        assertDepositCleanedUp();
+    }
+
+    @Test
+    public void cleanupFileAlreadyRemovedTest() throws Exception {
+        addIngestedFilesToModel();
+        Files.delete(Paths.get(stagingPath, "project/folderA/ingested"));
+
+        when(ingestSource.isReadOnly()).thenReturn(false);
+        when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
+
+        job.run();
+
+        assertIngestedFilesEmptyFoldersDeleted(stagingFolder);
+
         assertDepositCleanedUp();
     }
 

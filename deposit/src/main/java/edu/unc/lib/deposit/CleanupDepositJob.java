@@ -74,7 +74,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
             Files.delete(cFile.toPath());
             LOG.info("Deleted file: {}", cFile.getAbsoluteFile());
         } catch (NoSuchFileException e) {
-            LOG.warn("Cannot cleanup file {}, it does not exist", uri);
+            LOG.debug("Cannot cleanup file {}, it does not exist", uri);
         } catch (IOException e) {
             LOG.error("Cannot delete a staged file: " + uri.toString(), e);
         }
