@@ -147,5 +147,6 @@
 		</div>
 	</div>
 </div>
+<h2 class="full-metadata">Detailed Metadata</h2>
 <div id="mods_data_display" data-pid="${briefObject.id}"></div>
 <c:import url="fullRecord/neighborList.jsp" />

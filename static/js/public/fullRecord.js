@@ -79,6 +79,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			url: "/record/" + $modsDisplay.attr("data-pid") + "/metadataView",
 			dataType: "html",
 			success: function(data) {
+				if (/^no.metadata/i.test($.trim(data))) {
+					data = '<p class="no-mods">' + data + '</p>';
+				}
 				$modsDisplay.html(data);
 			},
 			error: function(e) {

@@ -435,7 +435,7 @@ p.no-search-results {
 
 .child-records {
   font-size: 16px;
-  margin: 50px 50px 75px 50px;
+  margin: 50px 50px 25px 50px;
 
   h3 {
     font-size: 16px;
@@ -529,12 +529,23 @@ p.no-search-results {
     padding-top: 10px;
   }
 
+  h2.full-metadata {
+    font-size: 1.8rem;
+    margin-top: 25px;
+    padding-left: 25px;
+  }
+
   .browse-header {
     h2.item-title {
       line-height: 1.2;
       padding-left: 15px;
       word-break: break-all;
     }
+  }
+
+  p.no-mods {
+    font-size: 18px;
+    margin: 25px;
   }
 
   .relateditem {
@@ -752,6 +763,7 @@ table.dataTable {
 /* MODs display for work and file pages, plus modalMetadata.vue component */
 #mods_data_display {
   margin: auto;
+  padding: 0 25px;
   width: auto;
 
   table {

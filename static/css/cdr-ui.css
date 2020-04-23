@@ -775,7 +775,7 @@ p.no-search-results {
 
 .child-records {
   font-size: 16px;
-  margin: 50px 50px 75px 50px;
+  margin: 50px 50px 25px 50px;
 }
 .child-records h3 {
   font-size: 16px;
@@ -847,10 +847,19 @@ p.no-search-results {
   padding-left: 15px;
   padding-top: 10px;
 }
+.onecol h2.full-metadata, .content-wrap.full_record h2.full-metadata {
+  font-size: 1.8rem;
+  margin-top: 25px;
+  padding-left: 25px;
+}
 .onecol .browse-header h2.item-title, .content-wrap.full_record .browse-header h2.item-title {
   line-height: 1.2;
   padding-left: 15px;
   word-break: break-all;
+}
+.onecol p.no-mods, .content-wrap.full_record p.no-mods {
+  font-size: 18px;
+  margin: 25px;
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
@@ -1024,6 +1033,7 @@ table.dataTable tbody tr.odd {
 /* MODs display for work and file pages, plus modalMetadata.vue component */
 #mods_data_display {
   margin: auto;
+  padding: 0 25px;
   width: auto;
 }
 #mods_data_display table {
