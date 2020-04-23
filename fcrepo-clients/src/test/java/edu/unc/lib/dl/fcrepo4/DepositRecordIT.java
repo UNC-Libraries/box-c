@@ -93,18 +93,17 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String mimetype1 = "text/plain";
         Path manifestPath = createTempFile("manifest", ".txt");
         writeStringToFile(manifestPath.toFile(), bodyString1, UTF_8);
-        BinaryObject manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1);
+        BinaryObject manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1, null, null);
 
         assertNotNull(manifest1);
         assertEquals(filename1, manifest1.getFilename());
         assertEquals(mimetype1, manifest1.getMimetype());
 
         String bodyString2 = "Second manifest";
-        String filename2 = "manifest2.txt";
         String mimetype2 = "text/plain";
         Path manifestPath2 = createTempFile("manifest", ".txt");
         writeStringToFile(manifestPath2.toFile(), bodyString2, UTF_8);
-        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2);
+        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), mimetype2);
 
         assertNotNull(manifest2);
 
@@ -122,7 +121,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
         // Verify that retrieving the manifest returns the correct object
         BinaryObject gotManifest2 = record.getManifest(manifest2.getPid());
         assertNotNull("Get manifest did not return", gotManifest2);
-        assertEquals(filename2, gotManifest2.getFilename());
         assertEquals(mimetype2, gotManifest2.getMimetype());
 
         String respString2 = new BufferedReader(new InputStreamReader(manifest2.getBinaryStream()))

@@ -55,7 +55,11 @@ public class PathIndexCommand implements Callable<Integer> {
             @Parameters(index = "0", description = "Path to file listing FOXML documents.")
             Path objectListPath,
             @Parameters(index = "1", description = "Path to file listing datastream files.")
-            Path dsListPath) {
+            Path dsListPath,
+            @Option(names = {"-l", "--list-dirs"}, description =
+                    "If set, the object and datastream paths will be treated as"
+                    + " directories, recursively indexing the files within them")
+            boolean listDirectories) {
 
         long start = System.currentTimeMillis();
         PathIndexingService service = getPathIndexingService();
@@ -65,9 +69,17 @@ public class PathIndexCommand implements Callable<Integer> {
         output.info("Creating index at path {}", parentCommand.databaseUrl);
         service.createIndexTable();
         output.info("Populating object files from {}", objectListPath);
-        service.indexObjects(objectListPath);
+        if (listDirectories) {
+            service.indexObjectsFromPath(objectListPath);
+        } else {
+            service.indexObjects(objectListPath);
+        }
         output.info("Populating datastream files from {}", dsListPath);
-        service.indexDatastreams(dsListPath);
+        if (listDirectories) {
+            service.indexDatastreamsFromPath(dsListPath);
+        } else {
+            service.indexDatastreams(dsListPath);
+        }
         output.info("Finished populating index in {}ms", System.currentTimeMillis() - start);
         output.info("{} files were indexed", getPathIndex().countFiles());
 
@@ -92,22 +104,30 @@ public class PathIndexCommand implements Callable<Integer> {
     }
 
     @Command(name = "list_paths",
-            description = "List file paths objects and datastreams all objects in the provided list")
+            description = "List file paths for objects and datastreams")
     public int listPaths(
-            @Parameters(index = "0", description = "File containing the list of object ids")
+            @Option(names = { "-p", "--pids-file" }, description = "File containing the list of object ids to list")
             Path listPath) {
 
-        output.info("Listing paths objects listed in {}:", listPath);
-        try {
-            Files.lines(listPath).forEach(id -> {
-                id = id.replace("uuid:", "");
-                String paths = getPathIndex().getPaths(id).values().stream()
-                        .map(Path::toString)
-                        .collect(joining("\n"));
-                output.info(paths);
-            });
-        } catch (IOException e) {
-            output.error("Failed to read list file: {}", e.getMessage());
+        if (listPath == null) {
+            output.info("Listing all paths:");
+            String paths = getPathIndex().listPaths().values().stream()
+                    .map(Path::toString)
+                    .collect(joining("\n"));
+            output.info(paths);
+        } else {
+            output.info("Listing paths objects listed in {}:", listPath);
+            try {
+                Files.lines(listPath).forEach(id -> {
+                    id = id.replace("uuid:", "");
+                    String paths = getPathIndex().getPaths(id).values().stream()
+                            .map(Path::toString)
+                            .collect(joining("\n"));
+                    output.info(paths);
+                });
+            } catch (IOException e) {
+                output.error("Failed to read list file: {}", e.getMessage());
+            }
         }
 
         getPathIndex().close();

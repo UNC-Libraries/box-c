@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.fcrepo.client.LinkHeaderConstants.DESCRIBEDBY_REL;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -61,6 +63,7 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryObjectFactory {
+    private static final Logger log = getLogger(RepositoryObjectFactory.class);
 
     private LdpContainerFactory ldpFactory;
 
@@ -88,17 +91,24 @@ public class RepositoryObjectFactory {
     public DepositRecord createDepositRecord(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
+        log.debug("Creating deposit record {}", pid.getId());
         // Add the deposit record type to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.DepositRecord));
 
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
-            URI createdUri = response.getLocation();
+        log.debug("Streaming model and requesting creation of {}", pid.getId());
+        try {
+            URI createdUri;
+            try (FcrepoResponse response = getClient().put(path)
+                    .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                    .perform()) {
+                createdUri = response.getLocation();
+            }
             // Add the manifests container
+            log.debug("Created with location {}, adding manifest container", createdUri);
             ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
                 RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
 
+            log.debug("Adding metadata container to {}", createdUri);
             // Add container for metadata objects
             addMetadataContainer(createdUri);
 
@@ -108,6 +118,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
+        log.debug("Retrieving created deposit record object {}", pid.getId());
         DepositRecord depositRecord = new DepositRecord(pid, repoObjDriver, this);
         return depositRecord;
     }
@@ -284,10 +295,13 @@ public class RepositoryObjectFactory {
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Cdr.FileObject, PcdmModels.Object));
 
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
-            URI createdUri = response.getLocation();
+        try {
+            URI createdUri;
+            try (FcrepoResponse response = getClient().put(path)
+                    .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                    .perform()) {
+                createdUri = response.getLocation();
+            }
 
             // Add container for metadata objects
             addMetadataContainer(createdUri);
@@ -673,11 +687,13 @@ public class RepositoryObjectFactory {
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
-
-            URI createdUri = response.getLocation();
+        try {
+            URI createdUri;
+            try (FcrepoResponse response = getClient().put(path)
+                    .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                    .perform()) {
+                createdUri = response.getLocation();
+            }
 
             // Add container for metadata objects
             addMetadataContainer(createdUri);

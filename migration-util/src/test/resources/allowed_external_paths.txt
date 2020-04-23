@@ -1,0 +1,4 @@
+http://
+file:/
+file:///
+https://

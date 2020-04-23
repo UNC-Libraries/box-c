@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 
@@ -183,5 +184,6 @@ public class RepositoryPaths {
         contentBase = URIUtil.join(baseUri, CONTENT_BASE);
         contentBasePid = new FedoraPID(CONTENT_BASE, REPOSITORY_ROOT_ID, null, URI.create(contentBase));
         contentRootPid = PIDs.get(URIUtil.join(contentBase, CONTENT_ROOT_ID));
+        depositRecordBase = URIUtil.join(baseUri, DEPOSIT_RECORD_BASE);
     }
 }

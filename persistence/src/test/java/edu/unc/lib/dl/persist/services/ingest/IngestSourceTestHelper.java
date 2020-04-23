@@ -15,22 +15,27 @@
  */
 package edu.unc.lib.dl.persist.services.ingest;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
+import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.dl.util.PackagingType;
 
@@ -115,5 +120,32 @@ public class IngestSourceTestHelper {
         Path jsonPath = Files.createTempFile("sourceMapping", ".json");
         objectMapper.writeValue(jsonPath.toFile(), mappings);
         return jsonPath;
+    }
+
+    public static IngestSourceManager createIngestSourceManagerWithBasicConfig(
+            String baseDir, ContentPathFactory contentPathFactory)
+            throws Exception {
+        if (StringUtils.isBlank(baseDir)) {
+            return null;
+        }
+        Path basePath = Paths.get(baseDir);
+        Map<String, Object> conf = createFilesystemConfig("ingest1", "ingest source", basePath, asList("*"));
+        Path configPath = createConfigFile(conf);
+
+        List<IngestSourceMapping> mappingList = new ArrayList<>();
+        IngestSourceMapping mapping = new IngestSourceMapping();
+        mapping.setId("collections");
+        mapping.setSources(asList("ingest1"));
+        mappingList.add(mapping);
+
+        Path mappingPath = serializeLocationMappings(mappingList);
+
+        IngestSourceManagerImpl manager = new IngestSourceManagerImpl();
+        manager.setConfigPath(configPath.toString());
+        manager.setMappingPath(mappingPath.toString());
+        manager.setContentPathFactory(contentPathFactory);
+        manager.init();
+
+        return manager;
     }
 }

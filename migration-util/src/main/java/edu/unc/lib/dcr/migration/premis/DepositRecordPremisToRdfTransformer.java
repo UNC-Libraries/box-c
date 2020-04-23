@@ -139,6 +139,10 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
             return;
         }
 
+        if (eventDetail.contains("Deposit recorded")) {
+            return;
+        }
+
         // PID assignment normalization jobs become info package creation
         if (eventDetail.contains("Assigned PID")) {
             createEventBuilder(Premis.InformationPackageCreation, eventEl)

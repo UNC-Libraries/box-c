@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.FedoraTypes;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 
@@ -37,6 +40,8 @@ import edu.unc.lib.dl.fedora.FedoraException;
  *
  */
 public class LdpContainerFactory {
+
+    private static final Logger log = getLogger(LdpContainerFactory.class);
 
     private FcrepoClient client;
 
@@ -127,9 +132,10 @@ public class LdpContainerFactory {
 
     private URI createLdpContainer(URI membershipResource, String interactionModel, String relationTtl, String name)
             throws FedoraException, IOException {
+        log.debug("Creating {} container in {} with name {}", interactionModel, membershipResource, name);
         try (FcrepoResponse response = client.post(membershipResource)
                 .addInteractionModel(interactionModel)
-                .body(new ByteArrayInputStream(relationTtl.getBytes(StandardCharsets.UTF_8)), TURTLE_MIMETYPE)
+                .body(new ByteArrayInputStream(relationTtl.getBytes(UTF_8)), TURTLE_MIMETYPE)
                 .slug(name)
                 .perform()) {
 

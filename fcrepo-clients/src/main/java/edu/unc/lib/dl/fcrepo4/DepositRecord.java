@@ -57,7 +57,7 @@ public class DepositRecord extends RepositoryObject {
             throws FedoraException {
 
         String filename = StringUtils.substringAfterLast(manifestUri.toString(), "/");
-        return addManifest(manifestUri, filename, mimetype);
+        return addManifest(manifestUri, filename, mimetype, null, null);
     }
 
     /**
@@ -66,13 +66,18 @@ public class DepositRecord extends RepositoryObject {
      * @param manifestUri URI of the binary content for this manifest
      * @param filename filename for the manifest
      * @param mimetype mimetype for the content of the manifest
+     * @param sha1
+     * @param md5
      * @return representing the newly created manifest object
      * @throws FedoraException
      */
-    public BinaryObject addManifest(URI manifestUri, String filename, String mimetype)
+    public BinaryObject addManifest(URI manifestUri, String filename, String mimetype, String sha1, String md5)
             throws FedoraException {
         PID manifestPid = getDepositManifestPid(getPid(), filename);
-        return repoObjFactory.createOrUpdateBinary(manifestPid, manifestUri, filename, mimetype, null, null, null);
+        if (mimetype == null) {
+            mimetype = "text/plain";
+        }
+        return repoObjFactory.createOrUpdateBinary(manifestPid, manifestUri, filename, mimetype, sha1, md5, null);
     }
 
     /**

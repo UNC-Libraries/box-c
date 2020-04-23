@@ -37,6 +37,7 @@ import picocli.CommandLine.Option;
         TransformPremis.class,
         PathIndexCommand.class,
         TransformContentCommand.class,
+        TransformDepositRecordsCommand.class,
         ViewDepositModelCommand.class,
         SubmitDepositCommand.class
     })
@@ -78,7 +79,7 @@ public class MigrationCLI implements Callable<Integer> {
             description = "Port for redis. Default 6379.")
     protected int redisPort;
 
-    private MigrationCLI() {
+    protected MigrationCLI() {
     }
 
     @Override
