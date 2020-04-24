@@ -26,6 +26,9 @@ import java.util.List;
  * @author lfarrell
  */
 public class ModsUtil {
+    private ModsUtil() {
+    };
+
     public static Document removeEmptyNodes(Document doc) {
         Element docRoot = doc.getRootElement();
         List<Element> modsRoot = docRoot.getChildren();
@@ -39,7 +42,7 @@ public class ModsUtil {
         return doc;
     }
 
-    private static void recursiveRemoveEmptyContent(List <Element> content) {
+    private static void recursiveRemoveEmptyContent(List<Element> content) {
         for (int i = 0; i < content.size(); i++) {
             Element node = content.get(i);
 
