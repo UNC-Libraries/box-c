@@ -18,7 +18,6 @@ package edu.unc.lib.dl.ui.util;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,49 +27,40 @@ import java.util.List;
  */
 public class ModsUtil {
     public static Document removeEmptyNodes(Document doc) {
-        List<Element> updatedMods = new ArrayList<Element>();
-
         Element docRoot = doc.getRootElement();
         List<Element> modsRoot = docRoot.getChildren();
-        List<Element> emptyNodes = recursiveRemoveEmptyContent(modsRoot, updatedMods);
 
-        for (int i = 0; i < emptyNodes.size(); i++) {
-            docRoot.removeContent(emptyNodes.get(i));
+        int i = modsRoot.size();
+        while (i > 0) {
+            recursiveRemoveEmptyContent(modsRoot);
+            i--;
         }
 
         return doc;
     }
 
-    private static List<Element> recursiveRemoveEmptyContent(List<Element> content, List<Element> updatedMods) {
+    private static void recursiveRemoveEmptyContent(List <Element> content) {
         for (int i = 0; i < content.size(); i++) {
             Element node = content.get(i);
-            Element parent = node.getParentElement();
 
             if (node.getChildren().size() > 0) {
-                recursiveRemoveEmptyContent(node.getChildren(), updatedMods);
+                recursiveRemoveEmptyContent(node.getChildren());
             } else if (node.getTextTrim().equals("")) {
-                updatedMods.add(node);
-                List<Element> parentElements = new ArrayList<Element>();
-                updatedMods.addAll(emptyParent(parent, parentElements));
-            } else if (updatedMods.contains(parent)) {
-              updatedMods.remove(parent);
+                Element parent = node.getParentElement();
+                parent.removeContent(node);
+                emptyParent(parent);
             }
         }
-
-        return updatedMods;
     }
 
-    private static List<Element> emptyParent(Element parent, List<Element> parentElements) {
-        if (parent == null) {
-            return parentElements;
-        }
-
-        if (parent.getTextTrim().equals("")) {
+    private static void emptyParent(Element parent) {
+        if (parent.getTextNormalize().equals("") && parent.getChildren().size() == 0) {
             Element grandparent = parent.getParentElement();
-            parentElements.add(parent);
-            emptyParent(grandparent, parentElements);
-        }
 
-        return parentElements;
+            if (grandparent != null) {
+                grandparent.removeContent(parent);
+                emptyParent(grandparent);
+            }
+        }
     }
 }

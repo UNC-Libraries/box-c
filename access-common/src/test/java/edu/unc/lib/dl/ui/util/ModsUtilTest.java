@@ -66,7 +66,19 @@ public class ModsUtilTest {
 
     @Test
     public void emptyNestedWithAttributes() throws JDOMException, IOException {
-        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">\n" +
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
+                "  <titleInfo displayLabel=\"test item\">" +
+                "    <title></title>" +
+                "  </titleInfo>" +
+                "</mods>";
+
+        Document modsDoc = buildMods(modsString);
+        assertEquals(0, modsDoc.getRootElement().getChildren().size());
+    }
+
+    @Test
+    public void sameLevelAllEmpty() throws JDOMException, IOException {
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
                 "  <titleInfo>" +
                 "    <title></title>" +
                 "  </titleInfo>" +
