@@ -115,7 +115,7 @@ public class FilesystemIngestSourceTest {
 
         URI testUri = Paths.get(sourceFolderPath.toString(), "someSubPath").toUri();
 
-        assertFalse(ingestSource.isValidUri(testUri));
+        assertTrue(ingestSource.isValidUri(testUri));
     }
 
     @Test
@@ -182,6 +182,31 @@ public class FilesystemIngestSourceTest {
         URI uri = URI.create("http://example.com" + sourceFolderPath);
 
         assertFalse(ingestSource.isValidUri(uri));
+    }
+
+    @Test
+    public void existsNotInBase() throws Exception {
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+
+        URI uri = URI.create("file:///some/weird/path");
+        assertFalse(ingestSource.exists(uri));
+    }
+
+    @Test
+    public void existsInBaseNotFound() throws Exception {
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+
+        URI uri = sourceFolderPath.resolve("unknown/path.txt").toUri();
+        assertFalse(ingestSource.exists(uri));
+    }
+
+    @Test
+    public void existsSubpathExists() throws Exception {
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+
+        Path path = sourceFolderPath.resolve("someSubPath/child");
+        Files.createDirectories(path);
+        assertTrue(ingestSource.exists(path.toUri()));
     }
 
     @Test
@@ -305,6 +330,29 @@ public class FilesystemIngestSourceTest {
 
         URI candUri = ingestSource.resolveRelativePath("bag_with_files");
         assertEquals(sourceFolderPath.resolve("bag_with_files").toUri(), candUri);
+    }
+
+    @Test
+    public void resolveRelativePathBagNested() throws Exception {
+        ingestSource.setId("testsource");
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+        ingestSource.setPatterns(asList("*"));
+
+        addBagToSource(sourceFolderPath);
+
+        URI candUri = ingestSource.resolveRelativePath("bag_with_files/data/test1.txt");
+        assertEquals(sourceFolderPath.resolve("bag_with_files/data/test1.txt").toUri(), candUri);
+    }
+
+    @Test(expected = InvalidIngestSourceCandidateException.class)
+    public void resolveRelativePathBagNestedNotExist() throws Exception {
+        ingestSource.setId("testsource");
+        ingestSource.setBase(sourceFolderPath.toUri().toString());
+        ingestSource.setPatterns(asList("*"));
+
+        addBagToSource(sourceFolderPath);
+
+        ingestSource.resolveRelativePath("bag_with_files/data/ohno.txt");
     }
 
     @Test(expected = InvalidIngestSourceCandidateException.class)

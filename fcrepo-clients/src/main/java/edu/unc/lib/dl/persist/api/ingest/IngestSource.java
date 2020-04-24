@@ -87,6 +87,14 @@ public interface IngestSource {
     boolean isValidUri(URI uri);
 
     /**
+     * Returns true if the provided URI exists within this ingest source
+     *
+     * @param uri
+     * @return
+     */
+    boolean exists(URI uri);
+
+    /**
      * List the potential candidates for ingest from this source location.
      *
      * @return

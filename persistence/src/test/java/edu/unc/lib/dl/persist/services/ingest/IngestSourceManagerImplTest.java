@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -313,6 +314,65 @@ public class IngestSourceManagerImplTest {
         List<IngestSourceCandidate> candidates = sourceMan.listCandidates(destPid);
 
         assertTrue("No candidates expected", candidates.isEmpty());
+    }
+
+    @Test
+    public void testGetIngestSourceForUri_NestedUri() throws Exception {
+        configPath = createConfigFile(createBasicConfig("testsource", destPid));
+        Path source2FolderPath = tmpFolder.newFolder().toPath();
+
+        Map<String, Object> source2 = createConfig(
+                "testsource2",
+                "Source 2",
+                source2FolderPath,
+                asList("*"),
+                destPid);
+        configPath = createConfigFile(source2, createBasicConfig("testsource", destPid));
+
+        Path targetPath = addBagToSource(sourceFolderPath);
+
+        initializeManager();
+
+        IngestSource source = sourceMan.getIngestSourceForUri(targetPath.toUri());
+        assertEquals("testsource", source.getId());
+    }
+
+    @Test
+    public void testGetIngestSourceForUri_ValidPathTargetNotExist() throws Exception {
+        configPath = createConfigFile(createBasicConfig("testsource", destPid));
+
+        initializeManager();
+
+        URI targetUri = sourceFolderPath.resolve("my_target").toUri();
+
+        IngestSource source = sourceMan.getIngestSourceForUri(targetUri);
+        assertEquals("testsource", source.getId());
+    }
+
+    @Test
+    public void testGetIngestSourceForUri_NestedPath() throws Exception {
+        configPath = createConfigFile(createBasicConfig("testsource", destPid));
+
+        Path bagPath = addBagToSource(sourceFolderPath);
+        Path nestedPath = bagPath.resolve("data/test1.txt");
+
+        initializeManager();
+
+        IngestSource source = sourceMan.getIngestSourceForUri(nestedPath.toUri());
+        assertEquals("testsource", source.getId());
+    }
+
+    @Test
+    public void testGetIngestSourceForUri_NestedNotExist() throws Exception {
+        configPath = createConfigFile(createBasicConfig("testsource", destPid));
+
+        Path bagPath = addBagToSource(sourceFolderPath);
+        Path nestedPath = bagPath.resolve("data/somewhere.txt");
+
+        initializeManager();
+
+        IngestSource source = sourceMan.getIngestSourceForUri(nestedPath.toUri());
+        assertEquals("testsource", source.getId());
     }
 
     private PID makePid() {
