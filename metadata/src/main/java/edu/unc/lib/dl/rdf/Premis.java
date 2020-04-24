@@ -268,4 +268,7 @@ public class Premis {
     public static final Resource Fail = createResource("http://id.loc.gov/vocabulary/preservation/eventOutcome/fai");
 
     public static final Resource Success = createResource("http://id.loc.gov/vocabulary/preservation/eventOutcome/suc");
+
+    public static final Resource ExpireEmbargo = createResource(
+            "http://id.loc.gov/vocabulary/preservation/eventType/dis");
 }
