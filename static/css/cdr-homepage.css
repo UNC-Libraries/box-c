@@ -371,7 +371,7 @@ label.checkbox {
   padding: 25px;
 }
 
-.searchitem_container_count {
+.item_container_count {
   background-color: #4B9CD3;
   border: 1px solid #4B9CD3;
   border-radius: 5px;
@@ -431,7 +431,7 @@ p.no-search-results {
   margin: 10px 15px;
   width: 98%;
 }
-.collection-browse .searchitem_container_count {
+.collection-browse .item_container_count {
   background-color: inherit;
   border: none;
   color: gray;

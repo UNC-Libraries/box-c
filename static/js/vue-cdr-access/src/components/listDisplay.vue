@@ -30,7 +30,7 @@
                         <div class="column is-10">
                             <div class="result-title">
                                 <a :class="{deleted: markedForDeletion(record)}" :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
-                                <span v-if="record.type !== 'File'" class="searchitem_container_count">{{ countDisplay(record.counts.child) }}</span>
+                                <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
                             <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">

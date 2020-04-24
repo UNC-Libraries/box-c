@@ -203,18 +203,16 @@ p.spacing {
   padding: 25px;
 }
 
-#list-records-display {
-  .searchitem_container_count {
-    background-color: $unc-blue;
-    border: 1px solid $unc-blue;
-    border-radius: 5px;
-    color: white;
-    line-height: 18px;
-    margin-bottom: 4px;
-    padding: 3px 8px;
-    white-space: nowrap;
-    width: 100%;
-  }
+.item_container_count {
+  background-color: $unc-blue;
+  border: 1px solid $unc-blue;
+  border-radius: 5px;
+  color: white;
+  line-height: 18px;
+  margin-bottom: 4px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .iteminfo {
@@ -277,10 +275,14 @@ p.no-search-results {
     margin: 15px;
 
     span {
-      color: #707070;
       font-size: 20px;
       font-weight: normal;
       margin-left: 10px;
+    }
+
+    span.item_container_count {
+      color: white;
+      vertical-align: middle;
     }
   }
 
@@ -307,7 +309,7 @@ p.no-search-results {
     width: 98%;
   }
 
-  .searchitem_container_count {
+  .item_container_count {
     background-color: inherit;
     border: none;
     color: gray;

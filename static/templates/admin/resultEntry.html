@@ -17,7 +17,7 @@
 				<a href="list/<%= metadata.id %>" class="title res_link has_tooltip"
 							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 					<% if (metadata.counts && 'child' in metadata.counts) { %>
-					<span class="searchitem_container_count">
+					<span class="item_container_count">
 						<%= metadata.counts.child %>
 					</span>
 					<% }

@@ -319,7 +319,7 @@
 	color: #8CB4C6;
 }
 
-.res_entry.deleted .searchitem_container_count, .res_entry.moving .searchitem_container_count {
+.res_entry.deleted .item_container_count, .res_entry.moving .item_container_count {
 	color: #8CB4C6;
 }
 
@@ -442,7 +442,7 @@
 	}
 }*/
 
-.searchitem_container_count {
+.item_container_count {
 	color: #444;
 }
 
