@@ -65,18 +65,6 @@ public class ModsUtilTest {
     }
 
     @Test
-    public void emptyNestedWithAttributes() throws JDOMException, IOException {
-        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
-                "  <titleInfo displayLabel=\"test item\">" +
-                "    <title></title>" +
-                "  </titleInfo>" +
-                "</mods>";
-
-        Document modsDoc = buildMods(modsString);
-        assertEquals(0, modsDoc.getRootElement().getChildren().size());
-    }
-
-    @Test
     public void sameLevelAllEmpty() throws JDOMException, IOException {
         String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
                 "  <titleInfo>" +
@@ -200,6 +188,35 @@ public class ModsUtilTest {
     }
 
     @Test
+    public void allElementsPopulated() throws JDOMException, IOException {
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
+                "  <titleInfo>" +
+                "    <title>Test Image</title>" +
+                "  </titleInfo>" +
+                "  <typeOfResource>still image</typeOfResource>" +
+                "  <genre authority=\"gmgpc\">digital images</genre>" +
+                "  <originInfo>" +
+                "    <place>" +
+                "      <placeTerm type=\"text\">Test place</placeTerm>" +
+                "    </place>" +
+                "  </originInfo>" +
+                "</mods>";
+
+        Document modsDoc = buildMods(modsString);
+        Element docRoot = modsDoc.getRootElement();
+
+        assertEquals(4, docRoot.getChildren().size());
+        assertEquals("Test Image",
+                docRoot.getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS));
+        assertEquals("still image",
+                docRoot.getChild("typeOfResource", MODS_V3_NS).getTextTrim());
+        assertEquals("digital images",
+                docRoot.getChild("genre", MODS_V3_NS).getTextTrim());
+        assertEquals("Test place", docRoot.getChild("originInfo", MODS_V3_NS)
+                .getChild("place", MODS_V3_NS).getChildText("placeTerm", MODS_V3_NS));
+    }
+
+    @Test
     public void whiteSpaceOnly() throws JDOMException, IOException {
         String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
                 "  <titleInfo>" +
@@ -212,7 +229,7 @@ public class ModsUtilTest {
     }
 
     @Test
-    public void emptyDeepNested() throws JDOMException, IOException {
+    public void emptyNestedWithAttributes() throws JDOMException, IOException {
         String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
                 "  <originInfo>" +
                 "    <place>" +
