@@ -59,6 +59,8 @@ public class EnhancementRouter extends RouteBuilder {
             .process(enProcessor)
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .choice()
+                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Tombstone.getURI() + "'"))
+                    .log(DEBUG, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
                 // Process binary enhancement requests
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
                     .log(INFO, "Processing binary ${headers[CamelFcrepoUri]}")

@@ -25,10 +25,12 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.Tombstone;
 
 /**
  * Loads data to populate fields in a DocumentIndexingPackage
@@ -60,6 +62,9 @@ public class DocumentIndexingPackageDataLoader {
 
     public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
         RepositoryObject repoObj = repoObjLoader.getRepositoryObject(dip.getPid());
+        if (repoObj instanceof Tombstone) {
+            throw new ObjectTombstonedException("Object " + dip.getPid() + " is a tombstone");
+        }
         if (!(repoObj instanceof ContentObject)) {
             throw new IndexingException("Object " + dip.getPid() + " is not a ContentObject");
         }
