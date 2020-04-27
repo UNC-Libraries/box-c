@@ -65,8 +65,8 @@ describe('facets.vue', () => {
             }
         });
 
-        selected_facet = wrapper.findAll('.facet-display input[type="checkbox"]').at(2);
-        collection = wrapper.find('.facet-display input[type="checkbox"]');
+        selected_facet = wrapper.findAll('.facet-display a').at(2);
+        collection = wrapper.find('.facet-display a');
     });
 
     it("displays returned facets with counts", () => {
@@ -74,19 +74,18 @@ describe('facets.vue', () => {
         let facets = wrapper.findAll('.facet-display li');
 
         expect(facet_headers.at(0).text()).toBe('Collection');
-        expect(facets.at(0).find('label').text()).toBe('testCollection (19)');
-        expect(facets.at(1).find('label').text()).toBe('test2Collection (1)');
+        expect(facets.at(0).find('a').text()).toBe('testCollection (19)');
+        expect(facets.at(1).find('a').text()).toBe('test2Collection (1)');
 
         expect(facet_headers.at(1).text()).toBe('Format');
-        expect(facets.at(2).find('label').text()).toBe('Image (8)');
-        expect(facets.at(3).find('label').text()).toBe('Text (2)');
+        expect(facets.at(2).find('a').text()).toBe('Image (8)');
+        expect(facets.at(3).find('a').text()).toBe('Text (2)');
     });
 
     it("displays a listing of selected facets", () => {
         expect(wrapper.find('.selected_facets').exists()).toBe(false);
 
         selected_facet.trigger('click');
-        selected_facet.setChecked();
 
         expect(wrapper.find('.selected_facets').exists()).toBe(true);
         expect(wrapper.find('.selected_facets div').text()).toBe('Image');
@@ -102,7 +101,6 @@ describe('facets.vue', () => {
     it("clears a selected facet if it is unchecked", () => {
         // Add facet
         selected_facet.trigger('click');
-        selected_facet.setChecked();
 
         expect(wrapper.find('.selected_facets div').text()).toBe('Image');
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
@@ -127,15 +125,12 @@ describe('facets.vue', () => {
 
         // Add facet
         selected_facet.trigger('click');
-        selected_facet.setChecked();
-
         expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
     });
 
     it("updates the query parameters if a facet is removed", () => {
         // Add facet
         selected_facet.trigger('click');
-        selected_facet.setChecked();
         expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
 
         // Remove facet
@@ -146,13 +141,11 @@ describe('facets.vue', () => {
 
     it("updates the url if a 'collection' is selected", () => {
         collection.trigger('click');
-        collection.setChecked();
         expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
     });
 
     it("updates the url if a 'collection' is removed", () => {
         collection.trigger('click');
-        collection.setChecked();
         expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
 
         let selected = wrapper.find('.selected_facets div');
@@ -176,9 +169,7 @@ describe('facets.vue', () => {
 
     it("accepts multiple facets", () => {
         collection.trigger('click');
-        collection.setChecked();
         selected_facet.trigger('click');
-        selected_facet.setChecked();
         expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
         expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
             displayValue: "testCollection",
@@ -245,8 +236,6 @@ describe('facets.vue', () => {
     });
 
     afterEach(() => {
-        selected_facet.setChecked(false);
-        collection.setChecked(false);
         wrapper.vm.facet_info = [];
         wrapper.vm.selected_facets = [];
     });
