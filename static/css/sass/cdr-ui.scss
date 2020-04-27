@@ -505,6 +505,12 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
     color: #8CB4C6;
   }
 
+  #mods_data_display {
+    color: black;
+    display: block;
+    width: 100%;
+  }
+
   img {
     opacity: .5;
   }
@@ -975,6 +981,7 @@ p.no-search-results {
 
   h2.full-metadata {
     font-size: 1.8rem;
+    margin-bottom: 0;
     margin-top: 25px;
     padding-left: 25px;
   }
@@ -1211,10 +1218,10 @@ table.dataTable {
   width: auto;
 
   table {
-    border: 1px solid lightgray;
+    border: 1px solid #F0F0F0;
     font-size: 16px;
     margin: 25px auto;
-    width: 97%;
+    width: 96%;
 
     p {
       margin-bottom: 0;

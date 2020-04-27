@@ -433,6 +433,11 @@ footer a:hover, footer a:active {
 .deleted:hover, .deleted a {
   color: #8CB4C6;
 }
+.deleted #mods_data_display {
+  color: black;
+  display: block;
+  width: 100%;
+}
 .deleted img {
   opacity: .5;
 }
@@ -849,6 +854,7 @@ p.no-search-results {
 }
 .onecol h2.full-metadata, .content-wrap.full_record h2.full-metadata {
   font-size: 1.8rem;
+  margin-bottom: 0;
   margin-top: 25px;
   padding-left: 25px;
 }
@@ -1037,10 +1043,10 @@ table.dataTable tbody tr.odd {
   width: auto;
 }
 #mods_data_display table {
-  border: 1px solid lightgray;
+  border: 1px solid #F0F0F0;
   font-size: 16px;
   margin: 25px auto;
-  width: 97%;
+  width: 96%;
 }
 #mods_data_display table p {
   margin-bottom: 0;
