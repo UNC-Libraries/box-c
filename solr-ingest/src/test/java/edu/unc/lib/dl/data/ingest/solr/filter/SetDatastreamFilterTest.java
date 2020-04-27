@@ -290,6 +290,22 @@ public class SetDatastreamFilterTest {
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + derivSize));
     }
 
+    @Test
+    public void fileObjectNoDetailsTest() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+
+        Model model = ModelFactory.createDefaultModel();
+        when(binObj.getResource()).thenReturn(model.getResource(BASE_URI + ORIGINAL_FILE.getId()));
+
+        filter.filter(dip);
+
+        verify(idb).setDatastream(listCaptor.capture());
+
+        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "||||||"));
+        verify(idb).setFilesizeSort(eq(0l));
+        verify(idb).setFilesizeTotal(eq(0l));
+    }
+
     private Resource fileResource(String name, long filesize, String mimetype, String filename, String digest) {
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(BASE_URI + name);

@@ -114,13 +114,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 String name = binaryResc.getURI();
                 name = name.substring(name.lastIndexOf('/') + 1);
 
-                String mimetype = binaryResc.getProperty(Ebucore.hasMimeType).getString();
-                long filesize = binaryResc.getProperty(Premis.hasSize).getLong();
+                String mimetype = binaryResc.hasProperty(Ebucore.hasMimeType) ?
+                        binaryResc.getProperty(Ebucore.hasMimeType).getString() : null;
+                Long filesize = binaryResc.hasProperty(Premis.hasSize) ?
+                        binaryResc.getProperty(Premis.hasSize).getLong() : null;
                 // Making assumption that there is only one checksum
                 String checksum = getFirstChecksum(binaryResc);
 
-                String filename = binaryResc.getProperty(Ebucore.filename).getString();
-                int extensionIndex = filename.lastIndexOf('.');
+                String filename = binaryResc.hasProperty(Ebucore.filename) ?
+                        binaryResc.getProperty(Ebucore.filename).getString() : null;
+                int extensionIndex = filename != null ? filename.lastIndexOf('.') : -1;
                 String extension = extensionIndex == -1 ? "" : filename.substring(extensionIndex + 1);
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
@@ -166,7 +169,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
 
-        return original.get().getFilesize();
+        Long size = original.get().getFilesize();
+        return size != null ? size : 0l;
     }
 
     private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {

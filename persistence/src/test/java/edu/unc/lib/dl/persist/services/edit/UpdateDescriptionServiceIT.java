@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -34,9 +33,7 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +46,6 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.model.DatastreamType;
@@ -66,8 +62,6 @@ import edu.unc.lib.dl.test.TestHelper;
 })
 public class UpdateDescriptionServiceIT {
     @Autowired
-    private RepositoryObjectLoader repoObjLoader;
-    @Autowired
     private RepositoryObjectFactory repoObjFactory;
 
     @Autowired
@@ -76,15 +70,9 @@ public class UpdateDescriptionServiceIT {
     @Mock
     private AgentPrincipals agent;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    private File tempDir;
-
     @Before
     public void init_() throws Exception {
         initMocks(this);
-
-        tempDir = tmpFolder.newFolder();
 
         TestHelper.setContentBase("http://localhost:48085/rest/");
     }
