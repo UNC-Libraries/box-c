@@ -32,8 +32,8 @@ public class ModsUtil {
     public static Document removeEmptyNodes(Document doc) {
         Element docRoot = doc.getRootElement();
         List<Element> modsRoot = docRoot.getChildren();
-
         int i = modsRoot.size();
+
         while (i > 0) {
             recursiveRemoveEmptyContent(modsRoot);
             i--;
@@ -43,8 +43,10 @@ public class ModsUtil {
     }
 
     private static void recursiveRemoveEmptyContent(List<Element> content) {
-        for (int i = 0; i < content.size(); i++) {
-            Element node = content.get(i);
+        int i = content.size();
+
+        while (i > 0) {
+            Element node = content.get(i - 1);
 
             if (node.getChildren().size() > 0) {
                 recursiveRemoveEmptyContent(node.getChildren());
@@ -53,6 +55,8 @@ public class ModsUtil {
                 parent.removeContent(node);
                 emptyParent(parent);
             }
+
+            i--;
         }
     }
 

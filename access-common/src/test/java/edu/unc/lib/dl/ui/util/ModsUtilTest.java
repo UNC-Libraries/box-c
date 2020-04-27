@@ -90,6 +90,88 @@ public class ModsUtilTest {
     }
 
     @Test
+    public void deeplyNestedWithText() throws JDOMException, IOException {
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
+                "  <titleInfo>" +
+                "     <title></title>" +
+                "   </titleInfo>" +
+                "  <relatedItem>" +
+                "    <relatedItem>" +
+                "      <relatedItem>" +
+                "        <relatedItem>" +
+                "          <abstract />" +
+                "        </relatedItem>" +
+                "        <abstract>Test Pic</abstract>" +
+                "      </relatedItem>" +
+                "    </relatedItem>" +
+                "  </relatedItem>" +
+                "</mods>";
+
+        Document modsDoc = buildMods(modsString);
+        Element docRoot = modsDoc.getRootElement();
+        assertEquals(1, docRoot.getChildren().size());
+
+        Element relatedItems = docRoot.getChild("relatedItem", MODS_V3_NS)
+                .getChild("relatedItem", MODS_V3_NS)
+                .getChild("relatedItem", MODS_V3_NS);
+
+        assertEquals(1, relatedItems.getChildren().size());
+        assertEquals("Test Pic",
+                relatedItems.getChildText("abstract", MODS_V3_NS));
+    }
+
+    @Test
+    public void deeplyNestedWithOutText() throws JDOMException, IOException {
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
+                "  <titleInfo>" +
+                "     <title></title>" +
+                "   </titleInfo>" +
+                "  <relatedItem>" +
+                "    <relatedItem>" +
+                "      <relatedItem>" +
+                "        <relatedItem>" +
+                "          <abstract />" +
+                "        </relatedItem>" +
+                "        <abstract></abstract>" +
+                "      </relatedItem>" +
+                "    </relatedItem>" +
+                "  </relatedItem>" +
+                "</mods>";
+
+        Document modsDoc = buildMods(modsString);
+        Element docRoot = modsDoc.getRootElement();
+        assertEquals(0, docRoot.getChildren().size());
+    }
+
+    @Test
+    public void deeplyNestedWithTextVariation() throws JDOMException, IOException {
+        String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
+                "  <relatedItem>" +
+                "    <relatedItem>" +
+                "      <relatedItem>" +
+                "        <relatedItem>" +
+                "          <abstract />" +
+                "        </relatedItem>" +
+                "        <abstract>Test Pic</abstract>" +
+                "      </relatedItem>" +
+                "    </relatedItem>" +
+                "  </relatedItem>" +
+                "</mods>";
+
+        Document modsDoc = buildMods(modsString);
+        Element docRoot = modsDoc.getRootElement();
+        assertEquals(1, docRoot.getChildren().size());
+
+        Element relatedItems = docRoot.getChild("relatedItem", MODS_V3_NS)
+                .getChild("relatedItem", MODS_V3_NS)
+                .getChild("relatedItem", MODS_V3_NS);
+
+        assertEquals(1, relatedItems.getChildren().size());
+        assertEquals("Test Pic",
+                relatedItems.getChildText("abstract", MODS_V3_NS));
+    }
+
+    @Test
     public void nestedPartiallyPopulated() throws JDOMException, IOException {
         String modsString = "<mods xmlns=\"http://www.loc.gov/mods/v3\">" +
                 "  <titleInfo>" +
