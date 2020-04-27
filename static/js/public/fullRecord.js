@@ -48,7 +48,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 	}
 	
 	if ($audioPlayer.length > 0) {
-		loadViewer($audioPlayer, 'audioPlayer', $(".audio_player_link"));
+		loadViewer($audioPlayer, 'audioPlayer');
 	}
 	
 	if ($structureView.length > 0) {

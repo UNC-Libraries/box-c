@@ -939,6 +939,10 @@ p.no-search-results {
   margin: auto;
 }
 
+.audiojs {
+  margin: auto;
+}
+
 table.dataTable tbody tr.odd {
   background-color: #E1E8FF;
 }

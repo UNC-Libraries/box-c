@@ -135,9 +135,6 @@
 					<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 						<c:choose>
 							<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-								<div class="actionlink left">
-									<a href="" class="inline_viewer_link audio_player_link">Listen</a>
-								</div>
 								<div class="clear_space"></div>
 								<audio class="audio_player inline_viewer" src="${dataFileUrl}">
 								</audio>
