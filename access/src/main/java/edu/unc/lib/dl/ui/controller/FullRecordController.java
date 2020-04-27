@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
@@ -65,6 +64,7 @@ import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
+import edu.unc.lib.dl.ui.util.ModsUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
 /**
@@ -131,7 +131,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 try (InputStream modsStream = modsObj.getBinaryStream()) {
                     Document modsDoc = builder.build(modsStream);
                     fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url",
-                            removeEmptyNodes(modsDoc));
+                            ModsUtil.removeEmptyNodes(modsDoc));
                 }
             }
         } catch (NotFoundException e) {
@@ -259,39 +259,6 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         return "";
-    }
-
-    private Document removeEmptyNodes(Document doc) {
-        List<Element> updatedMods = new ArrayList<Element>();
-
-        Element docRoot = doc.getRootElement();
-        List<Element> modsRoot = docRoot.getChildren();
-        List<Element> emptyNodes = recursiveRemoveEmptyContent(modsRoot, updatedMods);
-
-        for (int i = 0; i < emptyNodes.size(); i++) {
-            docRoot.removeContent(emptyNodes.get(i));
-        }
-
-        return doc;
-    }
-
-    private List<Element> recursiveRemoveEmptyContent(List<Element> content, List<Element> updatedMods) {
-        for (int i = 0; i < content.size(); i++) {
-            Element node = content.get(i);
-
-            if (node.getChildren().size() > 0) {
-                recursiveRemoveEmptyContent(node.getChildren(), updatedMods);
-            } else if (node.getTextTrim().equals("")) {
-                updatedMods.add(node);
-
-                Element parent = node.getParentElement();
-                if (parent.getTextNormalize().equals("")) {
-                    updatedMods.add(parent);
-                }
-            }
-        }
-
-        return updatedMods;
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)

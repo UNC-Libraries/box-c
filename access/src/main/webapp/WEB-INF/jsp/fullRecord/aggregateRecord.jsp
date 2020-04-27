@@ -174,6 +174,8 @@
 		</table>
 	</div>
 </c:if>
-<h2 class="full-metadata">Detailed Metadata</h2>
-<div id="mods_data_display" data-pid="${briefObject.id}"></div>
+<c:if test="${permsHelper.hasDescriptionAccess(accessGroupSet, briefObject)}">
+	<h2 class="full-metadata">Detailed Metadata</h2>
+	<div id="mods_data_display" data-pid="${briefObject.id}"></div>
+</c:if>
 <c:import url="fullRecord/neighborList.jsp" />

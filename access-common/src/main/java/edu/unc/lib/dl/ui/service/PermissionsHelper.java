@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static org.springframework.util.Assert.notNull;
@@ -80,6 +81,17 @@ public class PermissionsHelper {
      */
     public boolean hasImagePreviewAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
         return hasDatastreamAccess(principals, JP2_ACCESS_COPY, metadata);
+    }
+
+    /**
+     * Returns true if the principals can access the MODS description belonging to
+     * the requested object, if present.
+     * 
+     * @param metadata
+     * @return
+     */
+    public boolean hasDescriptionAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+        return hasDatastreamAccess(principals, MD_DESCRIPTIVE, metadata);
     }
 
     /**
