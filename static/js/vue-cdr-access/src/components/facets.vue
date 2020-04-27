@@ -358,6 +358,7 @@
         input {
             height: 25px;
             min-width: 25px;
+            opacity: 0; /** Remove this line if multiple facet selections are ever enabled **/
             position: relative;
             top: 5px;
             width: 25px;
