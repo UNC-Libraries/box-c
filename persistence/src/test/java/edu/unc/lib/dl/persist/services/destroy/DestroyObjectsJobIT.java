@@ -75,6 +75,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -195,14 +196,19 @@ public class DestroyObjectsJobIT {
         PID folderObjPid = objsToDestroy.get(0);
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Resource fileResc = stoneFile.getResource();
         Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
+        Resource workResc = stoneWork.getResource();
         Tombstone stoneFolder = repoObjLoader.getTombstone(folderObjPid);
-        assertTrue(stoneFile.getResource().hasProperty(RDF.type, Cdr.Tombstone));
-        assertTrue(stoneFile.getResource().hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(stoneWork.getResource().hasProperty(RDF.type, Cdr.Tombstone));
-        assertTrue(stoneWork.getResource().hasProperty(RDF.type, Cdr.Work));
-        assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Tombstone));
-        assertTrue(stoneFolder.getResource().hasProperty(RDF.type, Cdr.Folder));
+        Resource folderResc = stoneFolder.getResource();
+        assertTrue(fileResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(fileResc.hasProperty(PcdmModels.memberOf, workResc));
+        assertTrue(workResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(workResc.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(workResc.hasProperty(PcdmModels.memberOf, folderResc));
+        assertTrue(folderResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(folderResc.hasProperty(RDF.type, Cdr.Folder));
 
         Model logModel = stoneFolder.getPremisLog().getEventsModel();
         assertTrue(logModel.contains(null, RDF.type, Premis.Deletion));
@@ -256,9 +262,14 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
-        assertTrue(fileObj.getModel().contains(fileObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(workObj.getModel().contains(workObj.getResource(), RDF.type, Cdr.Tombstone));
-        assertTrue(folderObj.getModel().contains(folderObj.getResource(), RDF.type, Cdr.Tombstone));
+        Resource fileResc = fileObj.getResource();
+        Resource workResc = workObj.getResource();
+        Resource folderResc = folderObj.getResource();
+        assertTrue(fileResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(fileResc.hasProperty(PcdmModels.memberOf, workResc));
+        assertTrue(workResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(workResc.hasProperty(PcdmModels.memberOf, folderResc));
+        assertTrue(folderResc.hasProperty(RDF.type, Cdr.Tombstone));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
     }
