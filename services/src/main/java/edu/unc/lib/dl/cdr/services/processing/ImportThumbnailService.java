@@ -23,9 +23,7 @@ import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -53,11 +51,8 @@ public class ImportThumbnailService extends MessageSender {
     private AccessControlService aclService;
     private MessageSender messageSender;
 
-    public void init() throws IOException {
+    public void init() {
         storagePath = Paths.get(sourceImagesDir);
-
-        // Create the directory if it doesn't already exist
-        Files.createDirectories(storagePath);
     }
 
     public void run(InputStream importStream, AgentPrincipals agent, String uuid, String mimeType) throws Exception {
