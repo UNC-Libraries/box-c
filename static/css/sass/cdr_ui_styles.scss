@@ -785,19 +785,20 @@ table.dataTable {
 
     th, td {
       padding: 10px;
-      vertical-align: middle;
     }
 
     th {
       background-color: #F0F0F0;
+      vertical-align: top;
       width: 25%;
     }
 
     td {
+      vertical-align: middle;
       width: 75%;
 
       table {
-        margin-left: 0;
+        margin: 0;
       }
     }
   }

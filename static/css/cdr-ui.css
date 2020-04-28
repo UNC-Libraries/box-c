@@ -1053,17 +1053,18 @@ table.dataTable tbody tr.odd {
 }
 #mods_data_display table th, #mods_data_display table td {
   padding: 10px;
-  vertical-align: middle;
 }
 #mods_data_display table th {
   background-color: #F0F0F0;
+  vertical-align: top;
   width: 25%;
 }
 #mods_data_display table td {
+  vertical-align: middle;
   width: 75%;
 }
 #mods_data_display table td table {
-  margin-left: 0;
+  margin: 0;
 }
 
 /* Bulma overrides */
