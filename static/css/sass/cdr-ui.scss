@@ -1090,7 +1090,7 @@ p.no-search-results {
 }
 
 .audiojs {
-  margin: auto;
+  margin-left: 50px;
 }
 
 table.dataTable {
@@ -1223,6 +1223,10 @@ table.dataTable {
     p {
       width: 100%;
     }
+  }
+
+  .audiojs {
+    margin-top: 25px;
   }
 
   .actionlink {
@@ -1358,6 +1362,10 @@ table.dataTable {
         }
       }
     }
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {

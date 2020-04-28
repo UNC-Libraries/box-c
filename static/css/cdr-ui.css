@@ -940,7 +940,7 @@ p.no-search-results {
 }
 
 .audiojs {
-  margin: auto;
+  margin-left: 50px;
 }
 
 table.dataTable tbody tr.odd {
@@ -1047,6 +1047,10 @@ table.dataTable tbody tr.odd {
   }
   .bottomline p {
     width: 100%;
+  }
+
+  .audiojs {
+    margin-top: 25px;
   }
 
   .actionlink {
@@ -1157,6 +1161,10 @@ table.dataTable tbody tr.odd {
 
   .file_record .columns-resize .is-10 ul {
     margin-top: 0;
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {
