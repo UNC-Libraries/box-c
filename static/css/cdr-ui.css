@@ -1045,8 +1045,8 @@ table.dataTable tbody tr.odd {
 #mods_data_display table {
   border: 1px solid #F0F0F0;
   font-size: 16px;
-  margin: 25px auto;
-  width: 96%;
+  margin: 25px auto 25px 25px;
+  width: 97%;
 }
 #mods_data_display table p {
   margin-bottom: 0;
@@ -1061,6 +1061,9 @@ table.dataTable tbody tr.odd {
 }
 #mods_data_display table td {
   width: 75%;
+}
+#mods_data_display table td table {
+  margin-left: 0;
 }
 
 /* Bulma overrides */

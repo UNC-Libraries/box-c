@@ -1220,8 +1220,8 @@ table.dataTable {
   table {
     border: 1px solid #F0F0F0;
     font-size: 16px;
-    margin: 25px auto;
-    width: 96%;
+    margin: 25px auto 25px 25px;
+    width: 97%;
 
     p {
       margin-bottom: 0;
@@ -1239,6 +1239,10 @@ table.dataTable {
 
     td {
       width: 75%;
+
+      table {
+        margin-left: 0;
+      }
     }
   }
 }

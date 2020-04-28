@@ -795,6 +795,10 @@ table.dataTable {
 
     td {
       width: 75%;
+
+      table {
+        margin-left: 0;
+      }
     }
   }
 }
