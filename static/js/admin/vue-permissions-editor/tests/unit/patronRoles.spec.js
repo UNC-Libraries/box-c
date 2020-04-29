@@ -132,14 +132,17 @@ describe('patronRoles.vue', () => {
 
         stubDataLoad();
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             wrapper.setData({
                 submit_roles: {
                     embargo: embargo_date
                 },
                 unsaved_changes: true
             });
+
+            await wrapper.vm.$nextTick();
             wrapper.find('#is-submitting').trigger('click');
+
             expect(setRoles).toHaveBeenCalled();
             done();
         });
@@ -349,11 +352,12 @@ describe('patronRoles.vue', () => {
     it("disables select boxes if 'Staff only access' wrapper text is clicked", (done) => {
         stubDataLoad();
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             expect(selects.at(0).attributes('disabled')).not.toBe('disabled');
             expect(selects.at(1).attributes('disabled')).not.toBe('disabled');
 
             wrapper.find('#staff').trigger('click');
+            await wrapper.vm.$nextTick();
 
             expect(wrapper.vm.user_type).toEqual('staff');
             expect(selects.at(0).attributes('disabled')).toBe('disabled');
@@ -365,11 +369,12 @@ describe('patronRoles.vue', () => {
     it("disables select boxes if 'Staff only access' radio button is checked", (done) => {
         stubDataLoad();
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             expect(selects.at(0).attributes('disabled')).not.toBe('disabled');
             expect(selects.at(1).attributes('disabled')).not.toBe('disabled');
 
             wrapper.find('#staff input').trigger('click');
+            await wrapper.vm.$nextTick();
 
             expect(wrapper.vm.user_type).toEqual('staff');
             expect(selects.at(0).attributes('disabled')).toBe('disabled');
@@ -928,10 +933,11 @@ describe('patronRoles.vue', () => {
     it("enables 'submit' button if user/role has been added or changed", (done) => {
         stubDataLoad();
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             let btn = wrapper.find('#is-submitting');
             let is_disabled = expect.stringContaining('disabled');
             wrapper.findAll('option').at(0).setSelected();
+            await wrapper.vm.$nextTick();
             expect(btn.html()).not.toEqual(is_disabled);
             done();
         });

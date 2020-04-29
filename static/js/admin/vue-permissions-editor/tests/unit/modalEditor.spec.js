@@ -38,11 +38,12 @@ describe('modalEditor.vue', () => {
         expect(wrapper.find('.meta-modal').contains('.modal-body')).toBe(false);
     });
 
-    it("displays a record title when triggered from admin interface", () => {
+    it("displays a record title when triggered from admin interface", async () => {
         wrapper.setData({
             showModal: true
         });
 
+        await wrapper.vm.$nextTick();
         const record = wrapper.find('h3');
         expect(record.text()).toContain(metadata.title);
     });
