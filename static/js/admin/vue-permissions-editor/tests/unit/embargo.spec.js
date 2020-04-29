@@ -1,5 +1,4 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import Vue from 'Vue'
 import embargo from '@/components/embargo.vue';
 import { addYears, format } from 'date-fns';
 
