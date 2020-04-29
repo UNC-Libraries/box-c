@@ -206,7 +206,7 @@ public class ObjectAclFactory implements AclFactory {
                 Statement stmt = it.next();
                 Property property = stmt.getPredicate();
                 if (CdrAcl.NS.equals(property.getNameSpace())
-                        || RDF.type.equals(property) && Cdr.Tombstone.equals(stmt.getResource())) {
+                        || (RDF.type.equals(property) && Cdr.Tombstone.equals(stmt.getResource()))) {
                     RDFNode valueNode = stmt.getObject();
                     String valueString;
                     if (valueNode.isLiteral()) {
