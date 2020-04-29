@@ -24,6 +24,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -61,7 +62,9 @@ public class RecursiveTreeIndexer {
         }
         log.debug("Queuing {} children of {} for indexing", children.size(), parent.getPid());
         for (ContentObject child : children) {
-            this.index(child, actionType, userid);
+            if (!(child instanceof Tombstone)) {
+                this.index(child, actionType, userid);
+            }
         }
     }
 

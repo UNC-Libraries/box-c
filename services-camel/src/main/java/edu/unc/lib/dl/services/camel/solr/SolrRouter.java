@@ -20,6 +20,7 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
+import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 
 /**
@@ -38,6 +39,9 @@ public class SolrRouter extends RouteBuilder {
         .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
         .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
         .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
+        .retryAttemptedLogLevel(LoggingLevel.DEBUG);
+
+        onException(ObjectTombstonedException.class)
         .retryAttemptedLogLevel(LoggingLevel.DEBUG);
 
         onException(Exception.class)
