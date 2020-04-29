@@ -36,6 +36,7 @@ import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addAgent;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addEvent;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.deserializeLogFile;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.getEventByType;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventResources;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.serializeXMLFile;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
@@ -47,6 +48,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -93,6 +95,8 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Rdf;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * @author bbpennel
@@ -148,6 +152,7 @@ public class ContentObjectTransformerTest {
         directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
         premisLoggerFactory = new PremisLoggerFactory();
+        premisLoggerFactory.setPidMinter(pidMinter);
 
         manager = new ContentObjectTransformerManager();
         manager.setPathIndex(pathIndex);
@@ -918,11 +923,17 @@ public class ContentObjectTransformerTest {
 
         Model eventsModel = deserializeLogFile(expectedTransformedPath.toFile());
         List<Resource> eventRescs = listEventResources(originalPid, eventsModel);
-        assertEquals(1, eventRescs.size());
+        assertEquals(2, eventRescs.size());
 
-        Resource eventResc = eventRescs.get(0);
-        assertEquals("Event type did not match expected value",
-                Premis.VirusCheck, eventResc.getPropertyResourceValue(RDF.type));
+        Resource virusEventResc = getEventByType(eventRescs, Premis.VirusCheck);
+        assertNotNull("Virus event was not present in premis log",
+                virusEventResc);
+        Resource migrationEventResc = getEventByType(eventRescs, Premis.Ingestion);
+        assertTrue("Missing migration event note",
+                migrationEventResc.hasProperty(Premis.note, "Object migrated from Boxc 3 to Boxc 5"));
+        Resource agentResc = migrationEventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
+        assertNotNull("Migration agent not set", agentResc);
+        assertEquals(SoftwareAgent.migrationUtil.getFullname(), agentResc.getProperty(Rdf.label).getString());
     }
 
     private void addPatronAccess(Model bxc3Model, PID startingPid) {

@@ -88,7 +88,9 @@ import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Action to transform a content object from bxc3 into a depositable structure
@@ -310,6 +312,12 @@ public class ContentObjectTransformer extends RecursiveAction {
                 new ContentPremisToRdfTransformer(bxc5Pid, premisLogger, originalPremisPath);
 
         premisTransformer.compute();
+
+        // Add migration event
+        premisLogger.buildEvent(Premis.Ingestion)
+                .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
+                .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())
+                .writeAndClose();
     }
 
     /**

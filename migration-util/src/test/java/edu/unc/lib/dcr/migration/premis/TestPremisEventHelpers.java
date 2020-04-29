@@ -40,6 +40,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
@@ -146,6 +147,13 @@ public class TestPremisEventHelpers {
         return Stream.concat(used.stream(), generated.stream())
                 .map(Statement::getSubject)
                 .collect(toList());
+    }
+
+    public static Resource getEventByType(List<Resource> events, Resource type) {
+        return events.stream()
+                .filter(eResc -> eResc.hasProperty(RDF.type, type))
+                .findFirst()
+                .orElse(null);
     }
 
     public static void buildPremisListFile(Path originalLogsPath, Path premisListPath) throws IOException {

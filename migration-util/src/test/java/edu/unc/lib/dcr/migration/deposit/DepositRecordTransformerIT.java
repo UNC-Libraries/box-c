@@ -210,7 +210,6 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
         transformer.compute();
 
         DepositRecord depRec = repoObjLoader.getDepositRecord(bxc5Pid);
-        System.out.println(depRec.getModel());
         Resource recResc = depRec.getResource();
 
         assertTrue("Did not have deposit record type", recResc.hasProperty(RDF.type, Cdr.DepositRecord));

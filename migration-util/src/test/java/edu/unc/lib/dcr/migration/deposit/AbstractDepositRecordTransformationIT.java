@@ -24,11 +24,14 @@ import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.EVENT_DATE
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addAgent;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addEvent;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.createPremisDoc;
+import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.getEventByType;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventResources;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newOutputStream;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,7 +43,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
@@ -54,7 +56,9 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * @author bbpennel
@@ -129,10 +133,16 @@ public abstract class AbstractDepositRecordTransformationIT {
         PremisLogger premisLog = depRec.getPremisLog();
         Model eventsModel = premisLog.getEventsModel();
         List<Resource> eventRescs = listEventResources(depRec.getPid(), eventsModel);
-        assertEquals(1, eventRescs.size());
+        assertEquals(2, eventRescs.size());
 
-        Resource eventResc = eventRescs.get(0);
-        assertEquals("Event type did not match expected value",
-                Premis.VirusCheck, eventResc.getPropertyResourceValue(RDF.type));
+        Resource virusEventResc = getEventByType(eventRescs, Premis.VirusCheck);
+        assertNotNull("Virus event was not present in premis log",
+                virusEventResc);
+        Resource migrationEventResc = getEventByType(eventRescs, Premis.Ingestion);
+        assertTrue("Missing migration event note",
+                migrationEventResc.hasProperty(Premis.note, "Object migrated from Boxc 3 to Boxc 5"));
+        Resource agentResc = migrationEventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
+        assertNotNull("Migration agent not set", agentResc);
+        assertEquals(SoftwareAgent.migrationUtil.getFullname(), agentResc.getProperty(Rdf.label).getString());
     }
 }
