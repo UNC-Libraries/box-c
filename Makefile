@@ -71,7 +71,8 @@ else
 	npm --prefix static/js/vue-cdr-access run build-dev
 endif
 
-	# Make sure file is empty
+	# Make sure files are empty
+	cat /dev/null > static/js/vue-access.js
 	cat /dev/null > static/css/sass/cdr-ui.scss
 
 	cat static/css/sass/cdr_homepage.scss \
@@ -91,7 +92,6 @@ endif
 
 	cat \
 		static/js/public/src/*.js \
-		static/js/vue-access.js \
 		>> static/js/cdr-access.js
 
 	cat static/css/reset.css \
