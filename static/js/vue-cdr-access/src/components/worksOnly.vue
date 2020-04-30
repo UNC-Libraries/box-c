@@ -1,10 +1,14 @@
 <template>
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
         <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only" aria-label="Show works only">
-        <p>Show only works</p>
-        <div class="display-note-btn">?
-            <div class="arrow"></div>
-            <span class="browse-tip">Show all files without organizational folders.</span>
+        <div class="columns note-wrapper">
+            <p class="column is-narrow-mobile is-narrow-desktop">Show only works</p>
+            <div class="column note">
+                <div class="display-note-btn">?
+                    <div class="arrow"></div>
+                    <span class="browse-tip">Show all files without organizational folders.</span>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -67,6 +71,10 @@
             zoom: .7; /* Needed for Chrome */
         }
 
+        .note {
+            padding-left: 0;
+        }
+
         .display-note-btn {
             margin-left: 5px;
             margin-right: 8px;
@@ -74,10 +82,9 @@
         }
 
         p {
-            color: #222;
             font-size: 18px;
-            padding-left: 0;
-            padding-right: 0;
+            padding-right: 2px;
+            padding-top: 15px;
         }
     }
 
@@ -85,6 +92,10 @@
         #browse-display-type {
             justify-content: flex-start;
             margin: auto;
+        }
+
+        .note-wrapper {
+            display: inherit;
         }
     }
 </style>
