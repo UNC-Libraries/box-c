@@ -246,6 +246,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         Resource fileResc;
         PID filePid;
         Bag workBag = null;
+        boolean isNewWork = false;
         if (Cdr.Work.equals(parentType)) {
             fileResc = depositModel.getResource(newPid.getRepositoryPath());
             filePid = newPid;
@@ -261,6 +262,8 @@ public class ContentObjectTransformer extends RecursiveAction {
             // Add the new file resource as the primary object of the work
             workBag.add(fileResc);
             workBag.addProperty(Cdr.primaryObject, fileResc);
+
+            isNewWork = true;
         }
 
         fileResc.addProperty(RDF.type, Cdr.FileObject);
@@ -297,6 +300,9 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // transform existing PREMIS as the events for the file object, rather than work
         transformPremis(originalPid, filePid);
+        if (isNewWork) {
+            addMigrationEvent(getPremisLogger(newPid));
+        }
     }
 
     private void transformPremis(PID bxc3Pid, PID bxc5Pid) {
@@ -306,14 +312,22 @@ public class ContentObjectTransformer extends RecursiveAction {
             return;
         }
 
-        Path transformedPremisPath = directoryManager.getPremisPath(bxc5Pid);
-        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(bxc5Pid, transformedPremisPath.toFile());
+        PremisLogger premisLogger = getPremisLogger(bxc5Pid);
         ContentPremisToRdfTransformer premisTransformer =
                 new ContentPremisToRdfTransformer(bxc5Pid, premisLogger, originalPremisPath);
 
         premisTransformer.compute();
 
         // Add migration event
+        addMigrationEvent(premisLogger);
+    }
+
+    private PremisLogger getPremisLogger(PID bxc5Pid) {
+        Path transformedPremisPath = directoryManager.getPremisPath(bxc5Pid);
+        return premisLoggerFactory.createPremisLogger(bxc5Pid, transformedPremisPath.toFile());
+    }
+
+    private void addMigrationEvent(PremisLogger premisLogger) {
         premisLogger.buildEvent(Premis.Ingestion)
                 .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
                 .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())

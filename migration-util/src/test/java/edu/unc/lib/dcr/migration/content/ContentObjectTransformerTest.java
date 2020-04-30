@@ -632,6 +632,15 @@ public class ContentObjectTransformerTest {
         assertPremisTransformed(PIDs.get(fileResc.getURI()));
         // ACLs should now be on the work
         assertNoPatronAccess(fileResc);
+
+        // Check that the generated work gets the migrated event
+        Path expectedTransformedPath = directoryManager.getPremisPath(startingPid);
+        assertTrue(Files.exists(expectedTransformedPath));
+
+        Model eventsModel = deserializeLogFile(expectedTransformedPath.toFile());
+        List<Resource> eventRescs = listEventResources(startingPid, eventsModel);
+        assertEquals(1, eventRescs.size());
+        assertMigrationEventPresent(eventRescs);
     }
 
     @Test
@@ -928,6 +937,10 @@ public class ContentObjectTransformerTest {
         Resource virusEventResc = getEventByType(eventRescs, Premis.VirusCheck);
         assertNotNull("Virus event was not present in premis log",
                 virusEventResc);
+        assertMigrationEventPresent(eventRescs);
+    }
+
+    private void assertMigrationEventPresent(List<Resource> eventRescs) {
         Resource migrationEventResc = getEventByType(eventRescs, Premis.Ingestion);
         assertTrue("Missing migration event note",
                 migrationEventResc.hasProperty(Premis.note, "Object migrated from Boxc 3 to Boxc 5"));
