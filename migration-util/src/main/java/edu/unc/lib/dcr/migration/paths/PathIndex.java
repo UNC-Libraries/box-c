@@ -205,13 +205,13 @@ public class PathIndex {
      * @param pid
      * @return map of file type to
      */
-    public Map<Integer, Path> listPaths() {
-        Map<Integer, Path> result = new HashMap<>();
+    public List<Path> listPaths() {
+        List<Path> result = new ArrayList<>();
 
         try (PreparedStatement select = getConnection().prepareStatement(SELECT_ALL_PATHS)) {
             try (ResultSet results = select.executeQuery()) {
                 while (results.next()) {
-                    result.put(Integer.valueOf(results.getInt(2)), Paths.get(results.getString(1)));
+                    result.add(Paths.get(results.getString(1)));
                 }
             }
         } catch (SQLException e) {

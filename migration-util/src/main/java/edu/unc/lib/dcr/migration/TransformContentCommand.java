@@ -91,6 +91,7 @@ public class TransformContentCommand implements Callable<Integer> {
         pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
         PremisLoggerFactory premisLoggerFactory = new PremisLoggerFactory();
+        premisLoggerFactory.setPidMinter(pidMinter);
 
         ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
         transformerManager.setModelManager(depositModelManager);

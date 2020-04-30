@@ -64,6 +64,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Action to transform a deposit record from bxc3 into a bxc5 repository object.
@@ -212,6 +214,12 @@ public class DepositRecordTransformer extends RecursiveAction {
                         new DepositRecordPremisToRdfTransformer(bxc5Pid, filePremisLogger, originalPremisPath);
 
                 premisTransformer.compute();
+
+                // Add migration event
+                filePremisLogger.buildEvent(Premis.Ingestion)
+                        .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
+                        .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())
+                        .writeAndClose();
 
                 PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(depRecord, transferSession);
                 repoPremisLogger.createLog(Files.newInputStream(transformedPremisPath));
