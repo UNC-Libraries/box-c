@@ -55,14 +55,15 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("shows help text", () => {
+    it("shows help text", async () => {
         expect(wrapper.find('#role-list').exists()).toBe(false);
 
         wrapper.find('.info').trigger('click');
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#role-list').isVisible()).toBe(true);
     });
 
-    it("triggers a submission", () => {
+    it("triggers a submission", async () => {
         // Mount separately to mock methods to test that they're called
         wrapper = shallowMount(staffRoles, {
             localVue,
@@ -83,17 +84,21 @@ describe('staffRoles.vue', () => {
         wrapper.findAll('option').at(2).setSelected();
         wrapper.find('.btn-add').trigger('click');
 
+        await wrapper.vm.$nextTick();
         wrapper.find('#is-submitting').trigger('click');
+
+        await wrapper.vm.$nextTick();
         expect(updateUserList).toHaveBeenCalled();
         expect(setRoles).toHaveBeenCalled();
     });
 
-    it("sends current staff roles to the server", (done) => {
+    it("sends current staff roles to the server", async (done) => {
         // Add a new user to enable submit button
         wrapper.find('input').setValue('test_user_7');
         wrapper.findAll('option').at(2).setSelected();
         wrapper.find('.btn-add').trigger('click');
 
+        await wrapper.vm.$nextTick();
         wrapper.find('#is-submitting').trigger('click');
 
         moxios.wait(() => {
@@ -104,13 +109,15 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("it adds un-added users and then sends current staff roles to the server", (done) => {
+    it("it adds un-added users and then sends current staff roles to the server", async (done) => {
         let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
         let all_users = { roles: [...response.assigned.roles, ...[added_user]] };
 
         wrapper.setData({
             user_name: 'dean'
         });
+
+        await wrapper.vm.$nextTick();
         wrapper.find('#is-submitting').trigger('click');
 
         moxios.wait(() => {
@@ -188,10 +195,12 @@ describe('staffRoles.vue', () => {
     });
 
     it("does not display an inherited roles table if there are no inherited roles", (done) => {
-        moxios.wait(() => {
+        moxios.wait(async () => {
             wrapper.setData({
                 current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } }
             });
+
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('p').text()).toEqual('There are no inherited staff permissions.');
             done()
         });
@@ -206,14 +215,13 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("disables 'submit' by default", (done) => {
+    it("disables 'submit' by default", () => {
         let btn = wrapper.find('#is-submitting');
         let is_disabled = expect.stringContaining('disabled');
         expect(btn.html()).toEqual(is_disabled);
-        done();
     });
 
-    it("enables 'submit' button if user/role has been added or changed", (done) => {
+    it("enables 'submit' button if user/role has been added or changed", async () => {
         let btn = wrapper.find('#is-submitting');
         let is_disabled = expect.stringContaining('disabled');
 
@@ -222,8 +230,8 @@ describe('staffRoles.vue', () => {
         wrapper.findAll('option').at(1).setSelected();
         wrapper.find('.btn-add').trigger('click');
 
+        await wrapper.vm.$nextTick();
         expect(btn.html()).not.toEqual(is_disabled);
-        done();
     });
 
     it("adds new assigned roles", (done) => {
@@ -234,6 +242,7 @@ describe('staffRoles.vue', () => {
             });
 
             wrapper.find('.btn-add').trigger('click');
+
             expect(wrapper.vm.updated_staff_roles).toEqual(response.assigned.roles.concat([user_role]));
             done();
         });
@@ -288,16 +297,18 @@ describe('staffRoles.vue', () => {
     });
 
     it("it updates button text based on context", (done) => {
-        moxios.wait(() => {
+        moxios.wait(async () => {
             let button = wrapper.find('.btn button');
             expect(button.text()).toEqual('Remove');
 
             // Mark a previously assigned role for deletion
             button.trigger('click');
+            await wrapper.vm.$nextTick();
             expect(button.text()).toEqual('Undo Remove');
 
             // Undo marking previously assigned role for deletion
             button.trigger('click');
+            await wrapper.vm.$nextTick();
             expect(button.text()).toEqual('Remove');
 
             done();
@@ -305,42 +316,54 @@ describe('staffRoles.vue', () => {
     });
 
     it("displays roles form if the container is of the proper type", (done) => {
-        moxios.wait(() => {
+        moxios.wait(async () => {
             wrapper.setProps({containerType: 'AdminUnit'});
+
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('.assigned').exists()).toBe(true);
 
             wrapper.setProps({containerType: 'Collection'});
+
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('.assigned').exists()).toBe(true);
             done();
         });
     });
 
     it("doesn't display roles form if the container isn't of the proper type", (done) => {
-        moxios.wait(() => {
+        moxios.wait(async () => {
             wrapper.setProps({containerType: 'Folder'});
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('.assigned').exists()).toBe(false);
 
             wrapper.setProps({containerType: 'Work'});
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('.assigned').exists()).toBe(false);
 
             wrapper.setProps({containerType: 'File'});
+            await wrapper.vm.$nextTick();
             expect(wrapper.find('.assigned').exists()).toBe(false);
             done();
         });
     });
 
-    it("displays a submit button for admin units and collections", () => {
+    it("displays a submit button for admin units and collections", async () => {
         wrapper.setProps({containerType: 'AdminUnit'});
         let btn = wrapper.find('#is-submitting');
         expect(btn.isVisible()).toEqual(true);
 
         wrapper.setProps({containerType: 'Collection'});
+
+        await wrapper.vm.$nextTick();
         expect(btn.isVisible()).toEqual(true)
     });
 
-    it("emits an event to reset 'changesCheck' in parent component", () => {
-        wrapper.setProps({ changesCheck: true });
-        expect(wrapper.emitted()['reset-changes-check'][0]).toEqual([false]);
+    it("emits an event to reset 'changesCheck' in parent component", async () => {
+        wrapper.setProps({changesCheck: true});
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.user_name).toEqual('');
+        expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
 
     it("emits an event to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {

@@ -14,18 +14,13 @@ endif
 
 	cat /dev/null > static/js/vue-permissions.js
 
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*.js > static/js/vue-permissions.js
-endif
+	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*js > static/js/vue-permissions.js
+
 
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-permissions.js
 
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/admin/vue-permissions-editor/dist/js/app*.js >> static/js/vue-permissions.js
-else
-	cat static/js/admin/vue-permissions-editor/dist/app.js >> static/js/vue-permissions.js
-endif
+	cat static/js/admin/vue-permissions-editor/dist/js/app*js >> static/js/vue-permissions.js
 
 	cat static/js/lib/jquery.min.js > static/js/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-admin.js
@@ -56,7 +51,7 @@ endif
 		> static/css/cdr_admin.css
 
 ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/admin/vue-permissions-editor/dist/css/app*.css >> static/css/cdr_admin.css
+	cat static/js/admin/vue-permissions-editor/dist/css/app*css >> static/css/cdr_admin.css
 endif
 
 ifneq ($(VERSION), "")
@@ -67,7 +62,7 @@ ifneq ($(VERSION), "")
 endif
 
 build-access:
-	# Build vue application(s) files
+# Build vue application(s) files
 	npm --prefix static/js/vue-cdr-access install
 
 ifeq ($(DEPLOY_TYPE), prod)
@@ -76,7 +71,8 @@ else
 	npm --prefix static/js/vue-cdr-access run build-dev
 endif
 
-	# Make sure file is empty
+	# Make sure files are empty
+	cat /dev/null > static/js/vue-access.js
 	cat /dev/null > static/css/sass/cdr-ui.scss
 
 	cat static/css/sass/cdr_homepage.scss \
@@ -88,24 +84,14 @@ endif
 	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
 	echo "});" >> static/js/cdr-access.js
 
-	cat /dev/null > static/js/vue-access.js
-
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/vue-cdr-access/dist/js/chunk-vendors*.js >> static/js/vue-access.js
-endif
+	cat static/js/vue-cdr-access/dist/js/chunk-vendors*js >> static/js/vue-access.js
 
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-access.js
-
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/vue-cdr-access/dist/js/app*.js >> static/js/vue-access.js
-else
-	cat static/js/vue-cdr-access/dist/app.js >> static/js/vue-access.js
-endif
+	cat static/js/vue-cdr-access/dist/js/app*js >> static/js/vue-access.js
 
 	cat \
 		static/js/public/src/*.js \
-		static/js/vue-access.js \
 		>> static/js/cdr-access.js
 
 	cat static/css/reset.css \
@@ -118,7 +104,7 @@ endif
 		> static/css/cdr_access.css
 
 ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/vue-cdr-access/dist/css/app*.css >> static/css/cdr_access.css
+	cat static/js/vue-cdr-access/dist/css/app*css >> static/css/cdr_access.css
 endif
 SUSPEND = "n"
 

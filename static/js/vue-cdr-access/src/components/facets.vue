@@ -124,7 +124,11 @@
                 // Add/Update with new facets
                 base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
 
-                this.$router.push(base_search);
+                this.$router.push(base_search).catch((e) => {
+                    if (e.name !== 'NavigationDuplicated') {
+                        throw e;
+                    }
+                });
             },
 
             /**

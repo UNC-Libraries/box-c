@@ -108,7 +108,11 @@
 
             updateUrl() {
                 let params = this.setTypes();
-                this.$router.push({ name: 'displayRecords', query: params });
+                this.$router.push({ name: 'displayRecords', query: params }).catch((e) => {
+                    if (e.name !== 'NavigationDuplicated') {
+                        throw e;
+                    }
+                });
             },
 
             updateParams() {

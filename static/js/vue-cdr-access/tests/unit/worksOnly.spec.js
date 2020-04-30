@@ -31,10 +31,11 @@ describe('worksOnly.vue', () => {
         record_input = wrapper.find('input');
     });
 
-    it("does not display for admin unit records", () => {
+    it("does not display for admin unit records", async () => {
         wrapper.setProps({
             adminUnit: true
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#browse-display-type').exists()).toBe(false);
     });
 

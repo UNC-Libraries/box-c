@@ -41,7 +41,11 @@
                 params.types = this.updateWorkType(this.adminUnit, this.works_only).types;
                 params.works_only = this.works_only;
 
-                this.$router.push({ name: 'displayRecords', query: params });
+                this.$router.push({ name: 'displayRecords', query: params }).catch((e) => {
+                    if (e.name !== 'NavigationDuplicated') {
+                        throw e;
+                    }
+                });
             }
         },
 

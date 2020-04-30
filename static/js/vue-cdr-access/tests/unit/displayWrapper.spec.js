@@ -115,9 +115,9 @@ describe('displayWrapper.vue', () => {
             is_folder: false
         });
         wrapper.vm.$router.currentRoute.query.works_only = 'false';
-
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+
         expect(wrapper.vm.search_method).toEqual('listJson');
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
     });
@@ -133,18 +133,22 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
-    it("displays a 'works only' option if the 'works only' box is checked and no records are works", () => {
+    it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
         wrapper.vm.$router.currentRoute.query.works_only = 'true';
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+
+        await wrapper.vm.$nextTick();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(true);
     });
 
-    it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", () => {
+    it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
         wrapper.vm.$router.currentRoute.query.works_only = 'false';
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+
+        await wrapper.vm.$nextTick();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
     });
