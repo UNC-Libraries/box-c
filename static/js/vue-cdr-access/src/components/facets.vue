@@ -13,10 +13,7 @@
                 <h3>{{ facetName(facet.name) }}</h3>
                 <ul>
                     <li v-for="value in facet.values">
-                        <label :aria-label="value.displayValue">
-                            <input type="checkbox" v-model="selected_facets" @click="updateAll(value)" :value="facetValue(value)">
-                            <p>{{ value.displayValue }} ({{ value.count }})</p>
-                        </label>
+                        <a @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
             </div>
@@ -74,23 +71,11 @@
 
                 if (remove) {
                     this.facetInfoRemove(facet);
-                } else if (UUID_REGEX.test(facet_string)) {
+                } else {
+                    let facet_value = this.facetValue(facet);
                     this.facet_info.push(facet_string);
+                    this.selected_facets.push(facet_value)
                 }
-            },
-
-            removeFacetInfo(facet_record) {
-                this.facet_info = [
-                    ...this.facet_info.slice(0, facet_record),
-                    ...this.facet_info.slice(0, facet_record + 1)
-                ];
-            },
-
-            removeSelectedFacets(facet_record) {
-                this.selected_facets = [
-                    ...this.selected_facets.slice(0, facet_record),
-                    ...this.selected_facets.slice(0, facet_record + 1)
-                ];
             },
 
             /**
@@ -356,34 +341,15 @@
         }
 
         li {
-            margin-left: 5px;
-        }
-
-        input {
-            height: 25px;
-            min-width: 25px;
-            position: relative;
-            top: 5px;
-            width: 25px;
+            margin-left: 15px;
+            padding-top: 5px;
         }
 
         .facet-display {
             margin-bottom: 25px;
 
-            p {
-                padding-left: 5px;
-                padding-top: 10px;
-                text-indent: 1px;
-            }
-        }
-
-        label {
-            display: inline-flex;
-            float: none;
-            width: 100%;
-
-            &:hover {
-                cursor: pointer;
+            a {
+                padding-left: 15px;
             }
         }
 
