@@ -29,7 +29,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.List;
 import java.util.UUID;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
@@ -47,6 +46,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -56,6 +56,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -151,6 +152,7 @@ public class EditFilenameServiceTest {
         service.editLabel(agent, pid, label);
 
         verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
+        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(DcElements.title), eq(label));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from Old file name to " + label);
@@ -166,6 +168,7 @@ public class EditFilenameServiceTest {
         service.editLabel(agent, pid, label);
 
         verify(repoObjFactory).createExclusiveRelationship(eq(binaryObj), eq(Ebucore.filename), eq(label));
+        verify(repoObjFactory).createExclusiveRelationship(eq(repoObj), eq(DcElements.title), eq(label));
         verify(premisLogger).buildEvent(eq(Premis.FilenameChange));
         verify(eventBuilder).addEventDetail(labelCaptor.capture());
         assertEquals(labelCaptor.getValue(), "Object renamed from no ebucore:filename to " + label);
@@ -193,5 +196,4 @@ public class EditFilenameServiceTest {
 
         service.editLabel(agent, pid, "label");
     }
-
 }
