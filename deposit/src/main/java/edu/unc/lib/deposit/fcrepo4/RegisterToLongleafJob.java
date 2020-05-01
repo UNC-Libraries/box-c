@@ -167,7 +167,8 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
             if (exitVal == 0) {
                 log.info("Successfully registered: {}", fileLocation);
             } else {
-                log.error("Failed to register {} to Longleaf: {}", fileLocation, exitVal);
+                failJob("Failed to register " + fileLocation + "to Longleaf",
+                        "Check longleaf logs, command returned: " + exitVal);
             }
         } catch (IOException e) {
             log.error("IOException while trying to register {} to longleaf: {}", fileLocation, e);
