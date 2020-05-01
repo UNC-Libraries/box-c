@@ -83,16 +83,19 @@
 .thumbnail {
 	display: block;
 	position:relative;
-	width: 64px;
-	height: 64px;
+	max-width: 64px;
+	max-height: 64px;
 	float: left;
 	margin: 0 0 20px 0;
+	object-fit: contain;
 	text-align: center;
+	flex: 0 0 auto; /* IE 11 sizing */
+	object-fit: contain; /* Sizing for all other browsers */
 }
 
 .thumbnail.thumbnail-size-large {
-	width: 128px;
-	height: 128px;
+	max-width: 128px;
+	max-height: 128px;
 }
 
 .thumbnail .thumbnail-placeholder {
@@ -107,8 +110,8 @@
 }
 
 .thumbnail.thumbnail-size-large .thumbnail-placeholder {
-	width: 128px;
-	height: 128px;
+	max-width: 128px;
+	max-height: 128px;
 }
 
 .thumbnail.placeholder .thumbnail-placeholder {
