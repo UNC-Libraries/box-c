@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -58,26 +60,31 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         log.debug("Performing Datastream filter for object {}", dip.getPid());
 
         ContentObject contentObj = dip.getContentObject();
+        IndexDocumentBean doc = dip.getDocument();
+
+        List<Datastream> datastreams = new ArrayList<>();
 
         FileObject fileObj = getFileObject(contentObj);
         if (fileObj != null) {
             boolean ownedByOtherObject = contentObj instanceof WorkObject;
-            // Retrieve list of datastreams associated with this object
-            List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
-            // Retrieve list of derivatives associated with the object
-            List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
-            datastreams.addAll(derivatives);
 
-            IndexDocumentBean doc = dip.getDocument();
-
-            doc.setDatastream(getDatastreamStrings(datastreams));
-            doc.setFilesizeTotal(getFilesizeTotal(datastreams));
+            // Add list of file datastreams associated with this object
+            addDatastreams(datastreams, fileObj.getBinaryObjects(), ownedByOtherObject);
+            // Set the sort file size to the size of the original file
             doc.setFilesizeSort(getFilesize(datastreams));
+
+            // Add list of derivatives associated from the representative file
+            addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject);
         } else {
-            List<Datastream> derivatives = getDerivatives(contentObj.getPid(), false);
-            IndexDocumentBean doc = dip.getDocument();
-            doc.setDatastream(getDatastreamStrings(derivatives));
+            // Add list of derivatives associated with the object
+            addDerivatives(datastreams, contentObj.getPid(), false);
         }
+
+        // Add in metadata datastreams
+        addDatastreams(datastreams, contentObj.listMetadata(), false);
+
+        doc.setFilesizeTotal(getFilesizeTotal(datastreams));
+        doc.setDatastream(getDatastreamStrings(datastreams));
     }
 
     private FileObject getFileObject(ContentObject contentObj) {
@@ -93,36 +100,36 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     /**
-     * Generates a list of Datastream objects from each binary belonging to the
-     * provided FileObject. If the datastreams are being recorded on an object
-     * other than their owning file object, the pid of the owning file object is
-     * recorded
+     * Adds a list of Datastream objects from the provided list of binaries.
+     * If the datastreams are being recorded on an object  other than their owning
+     * file object, the pid of the owning file object is recorded
      *
-     * @param fileObj
+     * @param binList list of binaries
      * @param ownedByOtherObject
-     * @return
      */
-    private List<Datastream> getDatastreams(FileObject fileObj, boolean ownedByOtherObject) {
-        return fileObj.getBinaryObjects().stream()
-            .map(binary -> {
+    private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
+        binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
                 String name = binaryResc.getURI();
                 name = name.substring(name.lastIndexOf('/') + 1);
 
-                String mimetype = binaryResc.getProperty(Ebucore.hasMimeType).getString();
-                long filesize = binaryResc.getProperty(Premis.hasSize).getLong();
+                String mimetype = binaryResc.hasProperty(Ebucore.hasMimeType) ?
+                        binaryResc.getProperty(Ebucore.hasMimeType).getString() : null;
+                Long filesize = binaryResc.hasProperty(Premis.hasSize) ?
+                        binaryResc.getProperty(Premis.hasSize).getLong() : null;
                 // Making assumption that there is only one checksum
                 String checksum = getFirstChecksum(binaryResc);
 
-                String filename = binaryResc.getProperty(Ebucore.filename).getString();
-                int extensionIndex = filename.lastIndexOf('.');
+                String filename = binaryResc.hasProperty(Ebucore.filename) ?
+                        binaryResc.getProperty(Ebucore.filename).getString() : null;
+                int extensionIndex = filename != null ? filename.lastIndexOf('.') : -1;
                 String extension = extensionIndex == -1 ? "" : filename.substring(extensionIndex + 1);
 
-                String owner = ownedByOtherObject ? fileObj.getPid().getId() : null;
+                String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                return new Datastream(owner, name, filesize, mimetype, filename, extension, checksum);
-            }).collect(Collectors.toList());
+                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum));
+            });
     }
 
     private String getFirstChecksum(Resource resc) {
@@ -162,26 +169,26 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
 
-        return original.get().getFilesize();
+        Long size = original.get().getFilesize();
+        return size != null ? size : 0l;
     }
 
-    private List<Datastream> getDerivatives(PID pid, boolean ownedByOtherObject) {
-        return derivativeService.getDerivatives(pid).stream()
-                .map(deriv -> {
-                    String owner = (ownedByOtherObject ? pid.getId() : null);
+    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
+        derivativeService.getDerivatives(pid).stream()
+            .forEach(deriv -> {
+                String owner = (ownedByOtherObject ? pid.getId() : null);
 
-                    DatastreamType type = deriv.getType();
-                    String name = type.getId();
-                    String mimetype = type.getMimetype();
-                    String extension = type.getExtension();
+                DatastreamType type = deriv.getType();
+                String name = type.getId();
+                String mimetype = type.getMimetype();
+                String extension = type.getExtension();
 
-                    File derivFile = deriv.getFile();
-                    Long filesize = derivFile.length();
-                    String filename = derivFile.getName();
+                File derivFile = deriv.getFile();
+                Long filesize = derivFile.length();
+                String filename = derivFile.getName();
 
-                    return new Datastream(owner, name, filesize, mimetype, filename, extension, null);
-                })
-                .collect(Collectors.toList());
+                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, null));
+            });
     }
 
     /**

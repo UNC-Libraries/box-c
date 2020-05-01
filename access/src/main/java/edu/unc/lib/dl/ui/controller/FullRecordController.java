@@ -64,6 +64,7 @@ import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
+import edu.unc.lib.dl.ui.util.ModsUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
 /**
@@ -129,8 +130,8 @@ public class FullRecordController extends AbstractSolrSearchController {
                 SAXBuilder builder = createSAXBuilder();
                 try (InputStream modsStream = modsObj.getBinaryStream()) {
                     Document modsDoc = builder.build(modsStream);
-
-                    fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
+                    fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url",
+                            ModsUtil.removeEmptyNodes(modsDoc));
                 }
             }
         } catch (NotFoundException e) {

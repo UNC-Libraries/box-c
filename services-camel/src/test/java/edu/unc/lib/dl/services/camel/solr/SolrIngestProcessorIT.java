@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static org.junit.Assert.assertEquals;
@@ -119,8 +120,9 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertNotNull(workMd.getContentStatus());
 
-        assertEquals(1, workMd.getDatastream().size());
+        assertEquals(2, workMd.getDatastream().size());
         assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
+        assertNotNull(workMd.getDatastreamObject(MD_DESCRIPTIVE.getId()));
 
         assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
 

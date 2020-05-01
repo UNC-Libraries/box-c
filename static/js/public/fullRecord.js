@@ -34,7 +34,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		$audioPlayer = $(".audio_player"),
 		$videoPlayer = $(".video_player"),
 		$structureView = $(".structure.aggregate"),
-		$childFilesTable = $("#child-files");
+		$childFilesTable = $("#child-files"),
+		$modsDisplay = $("#mods_data_display");
 	
 	function loadViewer($viewer, widgetName) {
 		$viewer[widgetName].call($viewer, {
@@ -69,6 +70,24 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			},
 			error: function(e){
 				console.log("Failed to load", e);
+			}
+		});
+	}
+
+	if ($modsDisplay.length > 0) {
+		$.ajax({
+			url: "/record/" + $modsDisplay.attr("data-pid") + "/metadataView",
+			dataType: "html",
+			success: function(data) {
+				if (/^no.metadata/i.test($.trim(data))) {
+					data = '<p class="no-mods">' + data + '</p>';
+				}
+				$modsDisplay.html(data);
+			},
+			error: function(e) {
+				var msg = "Unable to retrieve MODS for this record";
+				$modsDisplay.html("<p>" + msg + "</p>");
+				console.log(msg, e);
 			}
 		});
 	}
