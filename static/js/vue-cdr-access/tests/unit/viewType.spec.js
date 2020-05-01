@@ -43,12 +43,14 @@ describe('viewType.vue', () => {
         expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
     });
 
-    it("highlights the correct selected browse type", () => {
+    it("highlights the correct selected browse type", async () => {
         btns.at(1).trigger('click');
+        await wrapper.vm.$nextTick();
         expect(btns.at(0).classes()).not.toContain('is-selected');
         expect(btns.at(1).classes()).toContain('is-selected');
 
         btns.at(0).trigger('click');
+        await wrapper.vm.$nextTick();
         expect(btns.at(0).classes()).toContain('is-selected');
         expect(btns.at(1).classes()).not.toContain('is-selected');
     });

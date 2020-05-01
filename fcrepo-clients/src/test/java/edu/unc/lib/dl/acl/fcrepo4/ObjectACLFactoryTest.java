@@ -43,6 +43,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -51,6 +52,7 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
@@ -168,6 +170,15 @@ public class ObjectACLFactoryTest {
     @Test
     public void isMarkedForDeletionTest() throws Exception {
         objResc.addLiteral(CdrAcl.markedForDeletion, true);
+
+        boolean result = aclFactory.isMarkedForDeletion(pid);
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void isTombstoneTest() throws Exception {
+        objResc.addProperty(RDF.type, Cdr.Tombstone);
 
         boolean result = aclFactory.isMarkedForDeletion(pid);
 

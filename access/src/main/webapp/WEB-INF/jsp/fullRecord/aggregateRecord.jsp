@@ -135,9 +135,6 @@
 					<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 						<c:choose>
 							<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-								<div class="actionlink left">
-									<a href="" class="inline_viewer_link audio_player_link">Listen</a>
-								</div>
 								<div class="clear_space"></div>
 								<audio class="audio_player inline_viewer" src="${dataFileUrl}">
 								</audio>
@@ -174,5 +171,8 @@
 		</table>
 	</div>
 </c:if>
-
+<c:if test="${permsHelper.hasDescriptionAccess(accessGroupSet, briefObject)}">
+	<h2 class="full-metadata">Detailed Metadata</h2>
+	<div id="mods_data_display" data-pid="${briefObject.id}"></div>
+</c:if>
 <c:import url="fullRecord/neighborList.jsp" />

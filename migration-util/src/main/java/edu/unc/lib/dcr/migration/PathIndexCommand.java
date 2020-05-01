@@ -82,6 +82,7 @@ public class PathIndexCommand implements Callable<Integer> {
         }
         output.info("Finished populating index in {}ms", System.currentTimeMillis() - start);
         output.info("{} files were indexed", getPathIndex().countFiles());
+        pathIndex.close();
 
         return 0;
     }
@@ -111,7 +112,7 @@ public class PathIndexCommand implements Callable<Integer> {
 
         if (listPath == null) {
             output.info("Listing all paths:");
-            String paths = getPathIndex().listPaths().values().stream()
+            String paths = getPathIndex().listPaths().stream()
                     .map(Path::toString)
                     .collect(joining("\n"));
             output.info(paths);

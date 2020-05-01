@@ -26,7 +26,7 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  * @author harring
  *
  */
-public class Tombstone extends RepositoryObject {
+public class Tombstone extends ContentObject {
 
     public Tombstone(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);

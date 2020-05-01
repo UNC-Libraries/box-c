@@ -42,6 +42,7 @@ public class SoftwareAgentConstants {
         servicesAPI("services"),
         fixityCheckingService("fixity"),
         embargoUpdateService("embargo-update"),
+        migrationUtil("bxc-migration-util"),
         clamav("clamav", "0.99"),
         FITS("fits", "1.0.6"),
         curatorsWorkbench("curators-workbench");

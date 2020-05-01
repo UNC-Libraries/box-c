@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
@@ -50,10 +51,13 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -86,12 +90,21 @@ public class SetDatastreamFilterTest {
     private static final String FILE3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1740";
     private static final long FILE3_SIZE = 17136l;
 
+    private static final String MODS_MIMETYPE = "text/xml";
+    private static final String MODS_NAME = "mods.xml";
+    private static final String MODS_DIGEST = "urn:sha1:aa0c62faf8a82d00969e0d4d965d62a45bb8c69b";
+    private static final long MODS_SIZE = 540l;
+
+    private static final String PREMIS_MIMETYPE = "text/xml";
+    private static final String PREMIS_NAME = "premis.xml";
+    private static final String PREMIS_DIGEST = "urn:sha1:da39a3ee5e6b4b0d3255bfef95601890afd80709";
+    private static final long PREMIS_SIZE = 893l;
+
     @Rule
     public TemporaryFolder derivDir = new TemporaryFolder();
 
     @Mock
     private DocumentIndexingPackage dip;
-    @Mock
     private PID pid;
 
     @Mock
@@ -113,7 +126,7 @@ public class SetDatastreamFilterTest {
     public void setup() throws Exception {
         initMocks(this);
 
-        when(pid.getId()).thenReturn(PID_STRING);
+        pid = PIDs.get(PID_STRING);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
@@ -182,28 +195,46 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void fileObjectWithMetadataTest() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        addMetadataDatastreams(fileObj);
+
+        filter.filter(dip);
+
+        verify(idb).setDatastream(listCaptor.capture());
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+        assertContainsMetadataDatastreams(listCaptor.getValue());
+
+        verify(idb).setFilesizeSort(eq(FILE_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + MODS_SIZE + PREMIS_SIZE));
+    }
+
+    @Test
     public void workObjectTest() throws Exception {
         WorkObject workObj = mock(WorkObject.class);
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(workObj.getPid()).thenReturn(pid);
+        addMetadataDatastreams(workObj);
 
         when(dip.getContentObject()).thenReturn(workObj);
 
         String fileId = "055ed112-f548-479e-ab4b-bf1aad40d470";
-        PID filePid = mock(PID.class);
-        when(filePid.getId()).thenReturn(fileId);
+        PID filePid = PIDs.get(fileId);
         when(fileObj.getPid()).thenReturn(filePid);
+        when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
 
         filter.filter(dip);
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId);
+        assertContainsMetadataDatastreams(listCaptor.getValue());
 
         // Sort size is based off primary object's size
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         // Work has no datastreams of its own
-        verify(idb).setFilesizeTotal(eq(0l));
+        verify(idb).setFilesizeTotal(eq(MODS_SIZE + PREMIS_SIZE));
     }
 
     @Test
@@ -216,20 +247,22 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(anyListOf(String.class));
         verify(idb, never()).setFilesizeSort(anyLong());
-        verify(idb, never()).setFilesizeTotal(anyLong());
+        verify(idb).setFilesizeTotal(anyLong());
     }
 
     @Test
-    public void unsupportedObjectTest() throws Exception {
-        FolderObject workObj = mock(FolderObject.class);
+    public void folderObjectWithMetadataTest() throws Exception {
+        FolderObject folderObj = mock(FolderObject.class);
+        addMetadataDatastreams(folderObj);
 
-        when(dip.getContentObject()).thenReturn(workObj);
+        when(dip.getContentObject()).thenReturn(folderObj);
 
         filter.filter(dip);
 
-        verify(idb).setDatastream(anyListOf(String.class));
+        verify(idb).setDatastream(listCaptor.capture());
+        assertContainsMetadataDatastreams(listCaptor.getValue());
         verify(idb, never()).setFilesizeSort(anyLong());
-        verify(idb, never()).setFilesizeTotal(anyLong());
+        verify(idb).setFilesizeTotal(MODS_SIZE + PREMIS_SIZE);
     }
 
     @Test
@@ -257,6 +290,22 @@ public class SetDatastreamFilterTest {
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + derivSize));
     }
 
+    @Test
+    public void fileObjectNoDetailsTest() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+
+        Model model = ModelFactory.createDefaultModel();
+        when(binObj.getResource()).thenReturn(model.getResource(BASE_URI + ORIGINAL_FILE.getId()));
+
+        filter.filter(dip);
+
+        verify(idb).setDatastream(listCaptor.capture());
+
+        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "||||||"));
+        verify(idb).setFilesizeSort(eq(0l));
+        verify(idb).setFilesizeTotal(eq(0l));
+    }
+
     private Resource fileResource(String name, long filesize, String mimetype, String filename, String digest) {
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(BASE_URI + name);
@@ -276,5 +325,26 @@ public class SetDatastreamFilterTest {
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
         assertTrue("Did not contain datastream " + name, values.contains(joined));
+    }
+
+    private void addMetadataDatastreams(ContentObject obj) throws Exception {
+        BinaryObject modsBin = mock(BinaryObject.class);
+        when(modsBin.getResource()).thenReturn(
+                fileResource(DatastreamType.MD_DESCRIPTIVE.getId(),
+                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST));
+        BinaryObject premisBin = mock(BinaryObject.class);
+        when(premisBin.getResource()).thenReturn(
+                fileResource(DatastreamType.MD_EVENTS.getId(),
+                        PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST));
+        List<BinaryObject> mdBins = Arrays.asList(premisBin, modsBin);
+
+        when(obj.listMetadata()).thenReturn(mdBins);
+    }
+
+    private void assertContainsMetadataDatastreams(List<String> values) {
+        assertContainsDatastream(values, DatastreamType.MD_DESCRIPTIVE.getId(),
+                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null);
+        assertContainsDatastream(values, DatastreamType.MD_EVENTS.getId(),
+                PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null);
     }
 }

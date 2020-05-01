@@ -113,6 +113,10 @@
                             'a.setStartRow': start_record,
                             rows: this.rows_per_page + ''
                         }, true)
+                    }).catch((e) => {
+                        if (e.name !== 'NavigationDuplicated') {
+                            throw e;
+                        }
                     });
                 }
             }

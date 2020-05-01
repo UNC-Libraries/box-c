@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
@@ -57,6 +59,9 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 public class ObjectAclFactory implements AclFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ObjectAclFactory.class);
+
+    private static String DELETED_PROPERTY_URI = CdrAcl.markedForDeletion.getURI();
+    private static String TOMBSTONE_URI = Cdr.Tombstone.getURI();
 
     private LoadingCache<PID, List<Entry<String, String>>> objAclCache;
     private long cacheTimeToLive;
@@ -150,9 +155,9 @@ public class ObjectAclFactory implements AclFactory {
     @Override
     public boolean isMarkedForDeletion(PID pid) {
 
-        String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
         return getObjectAcls(pid).stream()
-                .anyMatch(p -> deletedPropertyUri.equals(p.getKey()));
+                .anyMatch(p -> DELETED_PROPERTY_URI.equals(p.getKey())
+                        || TOMBSTONE_URI.equals(p.getValue()));
     }
 
     private List<Entry<String, String>> getObjectAcls(PID pid) {
@@ -200,7 +205,8 @@ public class ObjectAclFactory implements AclFactory {
             while (it.hasNext()) {
                 Statement stmt = it.next();
                 Property property = stmt.getPredicate();
-                if (CdrAcl.NS.equals(property.getNameSpace())) {
+                if (CdrAcl.NS.equals(property.getNameSpace())
+                        || (RDF.type.equals(property) && Cdr.Tombstone.equals(stmt.getResource()))) {
                     RDFNode valueNode = stmt.getObject();
                     String valueString;
                     if (valueNode.isLiteral()) {

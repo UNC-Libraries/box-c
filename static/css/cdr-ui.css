@@ -433,6 +433,11 @@ footer a:hover, footer a:active {
 .deleted:hover, .deleted a {
   color: #8CB4C6;
 }
+.deleted #mods_data_display {
+  color: black;
+  display: block;
+  width: 100%;
+}
 .deleted img {
   opacity: .5;
 }
@@ -778,7 +783,7 @@ p.no-search-results {
 
 .child-records {
   font-size: 16px;
-  margin: 50px 50px 75px 50px;
+  margin: 50px 50px 25px 50px;
 }
 .child-records h3 {
   font-size: 16px;
@@ -850,10 +855,20 @@ p.no-search-results {
   padding-left: 15px;
   padding-top: 10px;
 }
+.onecol h2.full-metadata, .content-wrap.full_record h2.full-metadata {
+  font-size: 1.8rem;
+  margin-bottom: 0;
+  margin-top: 25px;
+  padding-left: 25px;
+}
 .onecol .browse-header h2.item-title, .content-wrap.full_record .browse-header h2.item-title {
   line-height: 1.2;
   padding-left: 15px;
   word-break: break-all;
+}
+.onecol p.no-mods, .content-wrap.full_record p.no-mods {
+  font-size: 18px;
+  margin: 25px;
 }
 .onecol .relateditem p, .content-wrap.full_record .relateditem p {
   font-size: 16px;
@@ -937,6 +952,10 @@ p.no-search-results {
 }
 .actionlink.view a {
   margin: auto;
+}
+
+.audiojs {
+  margin-left: 50px;
 }
 
 table.dataTable tbody tr.odd {
@@ -1024,6 +1043,37 @@ table.dataTable tbody tr.odd {
   color: white;
 }
 
+/* MODs display for work and file pages, plus modalMetadata.vue component */
+#mods_data_display {
+  margin: auto;
+  padding: 0 25px;
+  width: auto;
+}
+#mods_data_display table {
+  border: 1px solid #F0F0F0;
+  font-size: 16px;
+  margin: 25px auto 25px 25px;
+  width: 97%;
+}
+#mods_data_display table p {
+  margin-bottom: 0;
+}
+#mods_data_display table th, #mods_data_display table td {
+  padding: 10px;
+}
+#mods_data_display table th {
+  background-color: #F0F0F0;
+  vertical-align: top;
+  width: 25%;
+}
+#mods_data_display table td {
+  vertical-align: middle;
+  width: 75%;
+}
+#mods_data_display table td table {
+  margin: 0;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
@@ -1043,6 +1093,10 @@ table.dataTable tbody tr.odd {
   }
   .bottomline p {
     width: 100%;
+  }
+
+  .audiojs {
+    margin-top: 25px;
   }
 
   .actionlink {
@@ -1153,6 +1207,10 @@ table.dataTable tbody tr.odd {
 
   .file_record .columns-resize .is-10 ul {
     margin-top: 0;
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {

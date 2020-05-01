@@ -505,6 +505,12 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
     color: #8CB4C6;
   }
 
+  #mods_data_display {
+    color: black;
+    display: block;
+    width: 100%;
+  }
+
   img {
     opacity: .5;
   }
@@ -881,7 +887,7 @@ p.no-search-results {
 
 .child-records {
   font-size: 16px;
-  margin: 50px 50px 75px 50px;
+  margin: 50px 50px 25px 50px;
 
   h3 {
     font-size: 16px;
@@ -975,12 +981,24 @@ p.no-search-results {
     padding-top: 10px;
   }
 
+  h2.full-metadata {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    margin-top: 25px;
+    padding-left: 25px;
+  }
+
   .browse-header {
     h2.item-title {
       line-height: 1.2;
       padding-left: 15px;
       word-break: break-all;
     }
+  }
+
+  p.no-mods {
+    font-size: 18px;
+    margin: 25px;
   }
 
   .relateditem {
@@ -1089,6 +1107,10 @@ p.no-search-results {
   }
 }
 
+.audiojs {
+  margin-left: 50px;
+}
+
 table.dataTable {
   tbody {
     tr.odd {
@@ -1195,6 +1217,43 @@ table.dataTable {
   color: white;
 }
 
+/* MODs display for work and file pages, plus modalMetadata.vue component */
+#mods_data_display {
+  margin: auto;
+  padding: 0 25px;
+  width: auto;
+
+  table {
+    border: 1px solid #F0F0F0;
+    font-size: 16px;
+    margin: 25px auto 25px 25px;
+    width: 97%;
+
+    p {
+      margin-bottom: 0;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+
+    th {
+      background-color: #F0F0F0;
+      vertical-align: top;
+      width: 25%;
+    }
+
+    td {
+      vertical-align: middle;
+      width: 75%;
+
+      table {
+        margin: 0;
+      }
+    }
+  }
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
@@ -1219,6 +1278,10 @@ table.dataTable {
     p {
       width: 100%;
     }
+  }
+
+  .audiojs {
+    margin-top: 25px;
   }
 
   .actionlink {
@@ -1354,6 +1417,10 @@ table.dataTable {
         }
       }
     }
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {
