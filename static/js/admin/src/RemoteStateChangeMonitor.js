@@ -52,6 +52,9 @@ define('RemoteStateChangeMonitor', ['jquery'], function($) {
 				clearInterval(this.pingId);
 				this.pingId = null;
 			}
+
+			// Consider any work done if an error is returned
+			this.options.statusChanged.call(this.options.statusChangedTarget, null);
 		}
 	});
 	
