@@ -663,6 +663,10 @@ p.no-search-results {
   }
 }
 
+.audiojs {
+  margin-left: 50px;
+}
+
 table.dataTable {
   tbody {
     tr.odd {
@@ -832,6 +836,10 @@ table.dataTable {
     }
   }
 
+  .audiojs {
+    margin-top: 25px;
+  }
+
   .actionlink {
     margin-bottom: 1px;
   }
@@ -965,6 +973,10 @@ table.dataTable {
         }
       }
     }
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {

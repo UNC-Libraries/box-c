@@ -954,6 +954,10 @@ p.no-search-results {
   margin: auto;
 }
 
+.audiojs {
+  margin-left: 50px;
+}
+
 table.dataTable tbody tr.odd {
   background-color: #E1E8FF;
 }
@@ -1091,6 +1095,10 @@ table.dataTable tbody tr.odd {
     width: 100%;
   }
 
+  .audiojs {
+    margin-top: 25px;
+  }
+
   .actionlink {
     margin-bottom: 1px;
   }
@@ -1199,6 +1207,10 @@ table.dataTable tbody tr.odd {
 
   .file_record .columns-resize .is-10 ul {
     margin-top: 0;
+  }
+
+  .audiojs {
+    margin: 25px auto 0 auto;
   }
 
   .relateditem {
