@@ -32,7 +32,7 @@
 final String SPOOF_COOKIE_PREFIX = "AUTHENTICATION_SPOOFING-";
 
 String[] params = { "REMOTE_USER", "isMemberOf" };
-String[] groups = { "unc:app:lib:cdr:admin", "unc:app:lib:cdr:adminltd", "unc:app:lib:cdr:viewAccessCopies", "unc:app:lib:cdr:curator", "unc:app:lib:cdr:ingester", "unc:app:lib:cdr:canViewMetadata", "unc:app:lib:cdr:observer", "unc:app:lib:cdr:patron", "unc:app:lib:cdr:processor", "unc:app:lib:cdr:SILS" };
+String[] groups = { "unc:app:lib:cdr:admin", "unc:app:lib:cdr:adminltd", "unc:app:lib:cdr:curator", "unc:app:lib:cdr:ingester", "unc:app:lib:cdr:canViewMetadata", "unc:app:lib:cdr:observer", "unc:app:lib:cdr:processor" };
 
 
 // Read spoofed values from cookies
