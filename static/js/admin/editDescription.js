@@ -58,6 +58,11 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			enabled : true, 
 			itemClass : "header_menu_link",
 			action : recordUrl
+		}, {
+			label: "View History",
+			enabled: true,
+			itemClass: "header_menu_link",
+			action: "/services/api/file/" + pid + "/md_descriptive_history"
 		}];
 		if ((data.type === 'File' || data.type === 'Work') && originalUrl && originalUrl.length > 1) {
 			menuEntries.push({
