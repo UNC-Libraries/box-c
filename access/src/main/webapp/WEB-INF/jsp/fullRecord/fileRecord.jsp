@@ -42,23 +42,10 @@
                             <a class="button" href="${cdr:getOriginalFileUrl(briefObject)}?dl=true">
                                 <i class="fa fa-download" aria-hidden="true"></i> Download</a>
                         </div>
-                        <c:choose>
-                            <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4' ||
-                        briefObject.contentTypeFacet[0].searchKey == 'pdf' ||
-                        briefObject.contentTypeFacet[0].displayValue == 'png' ||
-                        briefObject.contentTypeFacet[0].displayValue == 'jpg'}">
-                                <div class="actionlink right">
-                                    <a class="button" href="${cdr:getOriginalFileUrl(briefObject)}">
-                                        <i class="fa fa-search" aria-hidden="true"></i> View</a>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="actionlink right">
-                                    <a class="button" href="${cdr:getOriginalFileUrl(briefObject)}?dl=true">
-                                        <i class="fa fa-search" aria-hidden="true"></i> View</a>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
+                        <div class="actionlink right">
+                            <a class="button" href="${cdr:getOriginalFileUrl(briefObject)}">
+                                <i class="fa fa-search" aria-hidden="true"></i> View</a>
+                        </div>
                     </c:when>
                     <c:when test="${not empty embargoDate}">
                         <div class="noaction right">
