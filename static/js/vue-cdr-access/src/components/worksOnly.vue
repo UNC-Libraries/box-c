@@ -1,10 +1,14 @@
 <template>
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
-        <input @click="showWorks" type="checkbox" class="checkbox" v-model="works_only" aria-label="Show works only">
-        <p>Show only works</p>
-        <div class="display-note-btn">?
-            <div class="arrow"></div>
-            <span class="browse-tip">Show all files without organizational folders.</span>
+        <div class="field">
+            <input @click="showWorks" type="checkbox" id="works-only" class="is-checkradio is-large" v-model="works_only">
+            <label for="works-only"><p>Show only works</p></label>
+        </div>
+        <div class="note">
+            <div class="display-note-btn">?
+                <div class="arrow"></div>
+                <span class="browse-tip">Show all files without organizational folders.</span>
+            </div>
         </div>
     </div>
 </template>
@@ -57,38 +61,63 @@
 
 <style scoped lang="scss">
     #browse-display-type {
-        font-size: 1.2rem;
-        padding-top: 25px;
+        font-size: 1rem;
         margin: inherit;
 
-        .checkbox {
-            height: 40px;
-            margin-top: -10px;
-            padding-left: 0;
+        label {
+            display: inherit;
+            font-size: 1rem;
+            margin-right: 0;
             padding-right: 0;
-            width: 50px;
-            vertical-align: middle;
-            zoom: .7; /* Needed for Chrome */
+            width: auto;
+        }
+
+        .note {
+            padding-left: 0;
+            padding-top: 10px;
         }
 
         .display-note-btn {
             margin-left: 5px;
             margin-right: 8px;
-            margin-top: -3px;
+            margin-top: 5px;
         }
 
         p {
-            color: #222;
             font-size: 18px;
-            padding-left: 0;
-            padding-right: 0;
+            padding-top: 10px;
+        }
+    }
+
+    @media screen and (max-width: 1408px) {
+        #browse-display-type {
+            p {
+                max-width: 90px;
+            }
         }
     }
 
     @media screen and (max-width: 768px) {
         #browse-display-type {
             justify-content: flex-start;
-            margin: auto;
+            margin: 15px auto;
+
+            input[type="checkbox"] {
+                margin-left: 5px;
+            }
+
+            label {
+                margin-right: 5px;
+                min-width: 180px;
+            }
+
+            p {
+                max-width: inherit;
+            }
+        }
+
+        .note-wrapper {
+            display: inherit;
         }
     }
 </style>
