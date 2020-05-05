@@ -29,7 +29,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
-        <property name="queryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
     <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"

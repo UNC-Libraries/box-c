@@ -371,6 +371,7 @@
         <entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
         <entry key="UPDATE_ACCESS_TREE" value-ref="updateAccessTreeAction" />
         <entry key="MOVE" value-ref="moveObjectsAction" />
+        <entry key="UPDATE_PATH" value-ref="updatePathAction" />
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />

@@ -70,8 +70,6 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void testGetAncestorPids() throws Exception {
-        treeIndexer.indexAll(baseAddress);
-
         List<PID> ancestors = pathFactory.getAncestorPids(collObj.getPid());
 
         assertEquals("Incorrect number of ancestors", 2, ancestors.size());
@@ -82,8 +80,6 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     @Test(expected = NotFoundException.class)
     public void testObjectNotFound() throws Exception {
         PID pid = pidMinter.mintContentPid();
-
-        treeIndexer.indexAll(baseAddress);
 
         pathFactory.getAncestorPids(pid);
     }
@@ -96,8 +92,6 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         Path contentPath = Files.createTempFile("test", ".txt");
         FileObject fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
         BinaryObject binObj = fileObj.getOriginalFile();
-
-        treeIndexer.indexAll(baseAddress);
 
         List<PID> ancestors = pathFactory.getAncestorPids(binObj.getPid());
 
@@ -124,8 +118,6 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         contentRoot.addMember(adminUnit2);
 
         adminUnit2.addMember(collObj);
-
-        treeIndexer.indexAll(baseAddress);
 
         // Wait for cache to expire and then check that the new path is retrieved
         TimeUnit.MILLISECONDS.sleep(200);

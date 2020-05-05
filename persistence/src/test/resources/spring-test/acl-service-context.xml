@@ -33,7 +33,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="0" />
         <property name="cacheTimeToLive" value="0" />
-        <property name="queryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">

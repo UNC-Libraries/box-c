@@ -87,7 +87,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
-        <property name="queryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

@@ -15,24 +15,32 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Statement;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import edu.unc.lib.dl.exceptions.ObjectHierarchyException;
+import edu.unc.lib.dl.exceptions.OrphanedObjectException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  * Factory for retrieving path information for content objects
@@ -42,28 +50,19 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  */
 public class ContentPathFactory {
 
-    private LoadingCache<String, List<PID>> ancestorCache;
+    private static int MAX_NESTING = 256;
+
+    private LoadingCache<PID, PID> childToParentCache;
     private long cacheTimeToLive;
     private long cacheMaxSize;
 
-    private SparqlQueryService queryService;
-
-    private static final String ANCESTORS_QUERY =
-            "SELECT ?start " +
-            "WHERE {" +
-            "  <%2$s> <%1$s>* ?mid . " +
-            "   ?mid <%1$s>+ ?start " +
-            "}" +
-            "GROUP BY ?start " +
-            "ORDER BY DESC(COUNT(?mid))";
-
-    private static final String EXISTS_QUERY = "ASK { <%1$s> <%2$s> ?type }";
+    private FcrepoClient fcrepoClient;
 
     public void init() {
-        ancestorCache = CacheBuilder.newBuilder()
+        childToParentCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheMaxSize)
                 .expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
-                .build(new AncestorCacheLoader());
+                .build(new ChildToParentCacheLoader());
     }
 
     /**
@@ -76,17 +75,36 @@ public class ContentPathFactory {
     public List<PID> getAncestorPids(PID pid) {
         try {
             if (pid.getComponentPath() == null) {
-                return new ArrayList<>(ancestorCache.getUnchecked(pid.getRepositoryPath()));
+                return buildPath(pid);
             } else {
                 // Get the PID of the parent by removing the component path
                 PID parentPid = PIDs.get(pid.getId());
-                List<PID> ancestors = new ArrayList<>(ancestorCache.getUnchecked(parentPid.getRepositoryPath()));
+                List<PID> ancestors = buildPath(parentPid);
                 ancestors.add(parentPid);
                 return ancestors;
             }
         } catch (UncheckedExecutionException e) {
             throw (RuntimeException) e.getCause();
         }
+    }
+
+    private List<PID> buildPath(PID pid) {
+        PID currentPid = pid;
+        List<PID> result = new ArrayList<>();
+
+        int depth = 0;
+        while (!RepositoryPaths.getContentRootPid().equals(currentPid) && ++depth < MAX_NESTING) {
+            currentPid = childToParentCache.getUnchecked(currentPid);
+            result.add(currentPid);
+        }
+
+        if (depth >= MAX_NESTING) {
+            throw new ObjectHierarchyException("Encountered at least " + depth + " ancestors for " + pid
+                    + ", it is either nested too deeply or in a circular hierarchy.");
+        }
+
+        Collections.reverse(result);
+        return result;
     }
 
     public void setCacheTimeToLive(long cacheTimeToLive) {
@@ -97,42 +115,28 @@ public class ContentPathFactory {
         this.cacheMaxSize = cacheMaxSize;
     }
 
-    public void setQueryService(SparqlQueryService queryService) {
-        this.queryService = queryService;
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
     }
 
-    private class AncestorCacheLoader extends CacheLoader<String, List<PID>> {
-
-        private boolean objectExists(String key) {
-            String queryString = String.format(EXISTS_QUERY, key, RDF.type.getURI());
-
-            try (QueryExecution qExecution = queryService.executeQuery(queryString)) {
-                return qExecution.execAsk();
-            }
-        }
-
+    private class ChildToParentCacheLoader extends CacheLoader<PID, PID> {
         @Override
-        public List<PID> load(String key) {
-            if (!objectExists(key)) {
-                throw new NotFoundException("Unable to find object " + key);
-            }
-
-            List<PID> results = new ArrayList<>();
-            String queryString = String.format(ANCESTORS_QUERY, PcdmModels.memberOf.getURI(), key);
-
-            try (QueryExecution qExecution = queryService.executeQuery(queryString)) {
-                ResultSet resultSet = qExecution.execSelect();
-
-                for (; resultSet.hasNext();) {
-                    QuerySolution soln = resultSet.nextSolution();
-                    Resource res = soln.getResource("start");
-
-                    if (res != null) {
-                        results.add(PIDs.get(res.getURI()));
-                    }
+        public PID load(PID pid) {
+            try (FcrepoResponse resp = fcrepoClient.get(pid.getRepositoryUri())
+                    .preferMinimal()
+                    .perform()) {
+                Model model = RDFModelUtil.createModel(resp.getBody());
+                Resource resc = model.getResource(pid.getRepositoryPath());
+                Statement memberStmt = resc.getProperty(PcdmModels.memberOf);
+                if (memberStmt == null) {
+                    throw new OrphanedObjectException("Object " + pid + " is not the member of any object");
                 }
+                return PIDs.get(memberStmt.getResource().getURI());
+            } catch (FcrepoOperationFailedException e) {
+                throw ClientFaultResolver.resolve(e);
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to deserialize response for " + pid, e);
             }
-            return results;
         }
     }
 }
