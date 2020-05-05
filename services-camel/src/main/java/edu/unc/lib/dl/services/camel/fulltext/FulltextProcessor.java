@@ -64,37 +64,33 @@ public class FulltextProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
 
-        String force = (String) in.getHeader("force");
         String fedoraUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
         String binaryId = PIDs.get(fedoraUri).getId();
         String binarySubPath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         String text;
 
+        try {
+            text = extractText(binaryPath);
+        } catch (TikaException e) {
+            // Parsing issues aren't going to succeed on retry, so fail gently
+            log.error("Failed to extract text for {} due to parsing error", fedoraUri, e);
+            return;
+        }
+
         Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
+        File derivative = derivativePath.toFile();
+        File parentDir = derivative.getParentFile();
 
-        if (Files.notExists(derivativePath) || Boolean.parseBoolean(force)) {
+        // Create missing parent directories if necessary
+        if (parentDir != null) {
             try {
-                text = extractText(binaryPath);
-            } catch (TikaException e) {
-                // Parsing issues aren't going to succeed on retry, so fail gently
-                log.error("Failed to extract text for {} due to parsing error", fedoraUri, e);
-                return;
+                Files.createDirectories(parentDir.toPath());
+            } catch (IOException e) {
+                throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
             }
 
-            File derivative = derivativePath.toFile();
-            File parentDir = derivative.getParentFile();
-
-            // Create missing parent directories if necessary
-            if (parentDir != null) {
-                try {
-                    Files.createDirectories(parentDir.toPath());
-                } catch (IOException e) {
-                    throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
-                }
-
-                FileUtils.write(derivative, text, UTF_8);
-            }
+            FileUtils.write(derivative, text, UTF_8);
         }
     }
 

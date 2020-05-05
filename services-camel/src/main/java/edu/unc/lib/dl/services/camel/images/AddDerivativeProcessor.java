@@ -60,42 +60,58 @@ public class AddDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        String binaryId;
         Message in = exchange.getIn();
+
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        String force = (String) in.getHeader("force");
-        binaryId = PIDs.get(binaryUri).getId();
+        String binaryId = PIDs.get(binaryUri).getId();
+        Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
 
-        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
+        final ExecResult result = (ExecResult) in.getBody();
 
-        if (Files.notExists(derivativeFinalPath) || Boolean.parseBoolean(force)) {
-            final ExecResult result = (ExecResult) in.getBody();
-
-            try {
-                // Prevent further processing if the execution failed
-                if (result.getExitValue() != 0) {
-                    String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
-                    String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
-                    log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
-                    return;
-                }
-
-                // Read command result as path to derived file, and trim off trailing whitespace
-                String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
-                derivativeTmpPath += "." + fileExtension;
-
-                moveFile(derivativeTmpPath, derivativeFinalPath);
-                log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
-            } catch (IOException e) {
-                String stderr = "";
-                if (result != null && result.getStderr() != null) {
-                    stderr = IOUtils.toString(result.getStderr(), UTF_8).trim();
-                }
-                log.error("Failed to generated derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
-                throw e;
+        try {
+            // Prevent further processing if the execution failed
+            if (result.getExitValue() != 0) {
+                String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
+                String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
+                log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
+                return;
             }
+
+            // Read command result as path to derived file, and trim off trailing whitespace
+            String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
+            derivativeTmpPath += "." + fileExtension;
+
+            moveFile(derivativeTmpPath, derivativeFinalPath);
+            log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
+        } catch (IOException e) {
+            String stderr = "";
+            if (result != null && result.getStderr() != null) {
+                stderr = IOUtils.toString(result.getStderr(), UTF_8).trim();
+            }
+            log.error("Failed to generated derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
+            throw e;
         }
+    }
+
+    /**
+     * Used to filter whether enhancements should be run
+     * @param exchange Camel message exchange
+     * @return
+     */
+    public boolean needsRun(Exchange exchange) {
+        Message in = exchange.getIn();
+
+        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryId = PIDs.get(binaryUri).getId();
+        Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
+        String force = (String) in.getHeader("force");
+
+        return (Files.notExists(derivativeFinalPath) || Boolean.parseBoolean(force));
+    }
+
+    private Path setDerivativeFinalPath(String binaryId) {
+        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        return Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
     }
 
     private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)
