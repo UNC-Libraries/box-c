@@ -117,7 +117,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         processor.process(exchange);
 
-        assertTrue(notify.matches(3l, TimeUnit.SECONDS));
+        assertTrue(notify.matches(6l, TimeUnit.SECONDS));
 
         server.commit();
 
@@ -242,12 +242,19 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         makeIndexingMessage(rootObj, null, RECURSIVE_ADD);
         processor.process(exchange);
 
-        notify.matches(3l, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         server.commit();
 
+        NotifyBuilder notifyDel = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(1)
+                .create();
+
         makeIndexingMessage(unitObj, null, DELETE_SOLR_TREE);
         processor.process(exchange);
+
+        notifyDel.matches(5l, TimeUnit.SECONDS);
+
         server.commit();
 
         assertNotNull("Root must still be present", getSolrMetadata(rootObj));

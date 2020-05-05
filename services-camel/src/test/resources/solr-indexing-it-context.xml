@@ -28,7 +28,7 @@
     <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
-        <property name="cacheTimeToLive" value="100" />
+        <property name="cacheTimeToLive" value="1000" />
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     

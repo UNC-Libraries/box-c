@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +29,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -49,6 +52,7 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  *
  */
 public class ContentPathFactory {
+    private static final Logger log = getLogger(ContentPathFactory.class);
 
     private static int MAX_NESTING = 256;
 
@@ -131,7 +135,9 @@ public class ContentPathFactory {
                 if (memberStmt == null) {
                     throw new OrphanedObjectException("Object " + pid + " is not the member of any object");
                 }
-                return PIDs.get(memberStmt.getResource().getURI());
+                PID parentPid = PIDs.get(memberStmt.getResource().getURI());
+                log.debug("Loaded child to parent relation to cache for {} => {}", pid.getId(), parentPid.getId());
+                return parentPid;
             } catch (FcrepoOperationFailedException e) {
                 throw ClientFaultResolver.resolve(e);
             } catch (IOException e) {
