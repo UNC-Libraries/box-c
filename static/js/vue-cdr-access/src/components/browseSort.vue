@@ -28,11 +28,15 @@
             }
         },
 
+        watch: {
+            '$route.query'(route) {
+                this.sort_order = this.$route.query.sort || this.setDefaultSort();
+            }
+        },
+
         methods: {
             sortRecords() {
-                if (this.sort_order === '') {
-                    this.sort_order = 'title,normal';
-                }
+                this.setDefaultSort();
 
                 let is_search_sort = this.browseType === 'search';
 
@@ -44,8 +48,17 @@
                         throw e;
                     }
                 });
-                this.sort_order = '';
+            },
+
+            setDefaultSort() {
+                if (this.sort_order === '') {
+                    this.sort_order = 'title,normal';
+                }
             }
+        },
+
+        mounted() {
+            this.sort_order = this.$route.query.sort || this.setDefaultSort();
         }
     };
 </script>
