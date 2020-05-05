@@ -2,7 +2,9 @@ define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($
 	function RefreshResultAction(context) {
 		// target - ResultObject or array of ResultObjects to refresh
 		// waitForUpdate - If true, updating will be delayed until the _version_ field stored by the server no longer matches the one in the page state.
+		// afterUpdate - function to perform after the expected update completes
 		// clearOverlay - if true, result entry overlay will be removed when the task is complete
+		// statusText - message to display while refreshing. Default is "Refreshing..."
 		this.context = context;
 	};
 	
@@ -18,7 +20,11 @@ define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($
 	
 	RefreshResultAction.prototype.refreshObject = function(resultObject) {
 		resultObject.updateOverlay('open');
-		resultObject.setStatusText('Refreshing...');
+		if (this.context.statusText === undefined) {
+			resultObject.setStatusText('Refreshing...');
+		} else {
+			resultObject.setStatusText(this.context.statusText);
+		}
 		
 		if (this.context.waitForUpdate) {
 			this.refreshAfterUpdate(resultObject);
@@ -35,7 +41,11 @@ define('RefreshResultAction', ['jquery', 'RemoteStateChangeMonitor'], function($
 			},
 			'checkStatusTarget' : this,
 			'statusChanged' : function(data) {
-				self.refreshData(resultObject);
+				if (self.context.afterUpdate !== undefined) {
+					self.context.afterUpdate.call(self, resultObject);
+				} else {
+					self.refreshData(resultObject);
+				}
 			},
 			'statusChangedTarget' : this, 
 			'checkStatusAjax' : {

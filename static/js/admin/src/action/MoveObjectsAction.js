@@ -17,6 +17,8 @@ define('MoveObjectsAction', ['jquery'], function($) {
 		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
 			moveData.moved.push(this.pid);
+			this.updateOverlay('open');
+			this.setStatusText('Moving');
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
 		$.ajax({
@@ -26,14 +28,25 @@ define('MoveObjectsAction', ['jquery'], function($) {
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 		}).done(function(data) {
-			action.context.view.moveMonitor.addMove(data.id, moveData.moved, destTitle);
-			
 			action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
 					+ " object" + (action.context.targets.length > 1? "s" : "") 
 					+ " to " + destTitle);
+			
+			action.context.targets.forEach(moved => {
+				action.context.actionHandler.addEvent({
+					action : 'RefreshResult',
+					target : moved,
+					waitForUpdate: true,
+					statusText : 'Moving...',
+					afterUpdate: function(resultObject) {
+						resultObject.updateOverlay("close");
+						resultObject.deleteElement();
+					}
+				});
+			});
 		}).fail(function() {
 			$.each(action.context.targets, function() {
-				this.element.show();
+				this.updateOverlay("close");
 			});
 			action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
 					+ " object" + (action.context.targets.length > 1? "s" : "") 
