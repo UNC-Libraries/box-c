@@ -94,7 +94,7 @@ public class TripleStoreMonitorRestController implements ServletContextAware {
 		}
 	}
 	
-	@ExceptionHandler()
+	@ExceptionHandler(MulgaraDown.class)
 	@ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR,reason="Mulgara is down")
 	public void mulgaraDown() { }
 	
