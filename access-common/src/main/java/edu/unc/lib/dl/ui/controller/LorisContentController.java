@@ -63,7 +63,7 @@ public class LorisContentController extends AbstractSolrSearchController {
      */
     private boolean hasAccess(PID pid, String datastream) {
         // Defaults to jp2 surrogate
-        if (datastream.equals("IMAGE_JP2000") || datastream == null) {
+        if (datastream == null) {
             datastream = JP2_ACCESS_COPY.getId();
         }
 

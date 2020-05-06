@@ -48,7 +48,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
                     zoom: 0
                 });
 
-                var iiifLayers = {'img': L.tileLayer.iiif('jp2Proxy/' + this.options.url + '/IMAGE_JP2000/')};
+                var iiifLayers = {'img': L.tileLayer.iiif('jp2Proxy/' + this.options.url + '/jp2/')};
                 iiifLayers['img'].addTo(viewer);
 
                 _.defer(function() {
