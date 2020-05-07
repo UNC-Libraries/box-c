@@ -32,10 +32,10 @@ define('MoveObjectsAction', ['jquery'], function($) {
 					+ " object" + (action.context.targets.length > 1? "s" : "") 
 					+ " to " + destTitle);
 			
-			action.context.targets.forEach(moved => {
+			$.each(action.context.targets, function() {
 				action.context.actionHandler.addEvent({
 					action : 'RefreshResult',
-					target : moved,
+					target : this,
 					waitForUpdate: true,
 					statusText : 'Moving...',
 					afterUpdate: function(resultObject) {
