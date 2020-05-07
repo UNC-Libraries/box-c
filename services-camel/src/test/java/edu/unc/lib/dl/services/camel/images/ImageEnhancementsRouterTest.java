@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel.images;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
@@ -23,14 +26,19 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -39,7 +47,11 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -51,7 +63,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final long timestamp = 1428360320168L;
     private static final String userID = "bypassAdmin";
     private static final String userAgent = "curl/7.37.1";
-    private static final String fileID = "/file1";
+    private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
     private final String eventTypes = EVENT_NS + "ResourceCreation";
     private final String thumbnailRoute = "ProcessThumbnails";
     private final String accessCopyRoute = "AccessCopy";
@@ -76,9 +88,24 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
+    @Autowired
+    private CamelContext cdrEnhancements;
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
+    }
+
+    @Before
+    public void setup() throws Exception {
+        doNothing().when(addSmallThumbnailProcessor).process(any(Exchange.class));
+        doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
+        doNothing().when(addAccessCopyProcessor).process(any(Exchange.class));
+    }
+
+    @After
+    public void cleanup() throws IOException {
+        FileUtils.deleteDirectory(new File("target/34"));
     }
 
     @Test
@@ -87,7 +114,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
-        template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
+        template.sendBodyAndHeaders("", createEvent(fileID, eventTypes, "false"));
 
         assertMockEndpointsSatisfied();
     }
@@ -99,7 +126,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "plain/text");
 
         template.sendBodyAndHeaders("", headers);
@@ -114,7 +141,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "image/vnd.fpx");
 
         template.sendBodyAndHeaders("", headers);
@@ -123,13 +150,12 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testThumbSmallRoute() throws Exception {
+    public void testThumbSmallRouteNoForceNoFileExists() throws Exception {
         createContext(smallThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
-
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         template.sendBodyAndHeaders("", headers);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
@@ -137,26 +163,133 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testThumbLargeRoute() throws Exception {
+    public void testThumbSmallRouteForceNoFileExists() throws Exception {
+        createContext(smallThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbSmallRouteNoForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+
+        createContext(smallThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+        existingFile.delete();
+    }
+
+    @Test
+    public void testThumbSmallRouteForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+
+        createContext(smallThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+        existingFile.delete();
+    }
+
+    @Test
+    public void testThumbLargeRouteNoForceNoFileExists() throws Exception {
         createContext(largeThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
+
+        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
     @Test
-    public void testAccessCopyRoute() throws Exception {
+    public void testThumbLargeRouteForceNoFileExists() throws Exception {
+        createContext(largeThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+
+        template.sendBodyAndHeaders("", headers);
+
+        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+
+        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbLargeRouteNoForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        createContext(largeThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+
+        template.sendBodyAndHeaders("", headers);
+
+        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+        existingFile.delete();
+    }
+
+    @Test
+    public void testThumbLargeRouteForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        createContext(largeThumbRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+
+        template.sendBodyAndHeaders("", headers);
+
+        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+
+        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+        existingFile.delete();
+    }
+
+    @Test
+    public void testAccessCopyRouteNoForceNoFileExists() throws Exception {
         createContext(accessCopyRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
 
         template.sendBodyAndHeaders("", headers);
 
@@ -165,12 +298,65 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testAccessCopyRejection() throws Exception {
+    public void testAccessCopyRouteForceNoFileExists() throws Exception {
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyRouteNoForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".jp2");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+
         createContext(accessCopyRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+
+        existingFile.delete();
+    }
+
+    @Test
+    public void testAccessCopyRouteForceFileExists() throws Exception {
+        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".jp2");
+        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "true");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+        existingFile.delete();
+    }
+
+    @Test
+    public void testAccessCopyRejection() throws Exception {
+        createContext(accessCopyRoute);
+
+        getMockEndpoint("mock:process.enhancement.imageAccessCopy").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "plain/text");
 
         template.sendBodyAndHeaders("", headers);
@@ -185,7 +371,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
 
-        Map<String, Object> headers = createEvent(fileID, eventTypes);
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
         headers.put(CdrBinaryMimeType, "image/vnd.fpx");
 
         template.sendBodyAndHeaders("", headers);
@@ -206,7 +392,8 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String eventTypes) {
+    private static Map<String, Object> createEvent(final String identifier, final String eventTypes,
+                                                   final String force) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(FCREPO_URI, identifier);
         headers.put(FCREPO_DATE_TIME, timestamp);
@@ -217,6 +404,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Binary.getURI());
         headers.put(CdrBinaryMimeType, "image/png");
+        headers.put("force", force);
 
         return headers;
     }

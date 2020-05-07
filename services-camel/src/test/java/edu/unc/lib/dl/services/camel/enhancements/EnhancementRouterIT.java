@@ -24,7 +24,6 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -37,7 +36,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -58,7 +56,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -125,6 +122,9 @@ public class EnhancementRouterIT {
     @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor fulltextProcessor;
 
+    @BeanInject(value = "addFullTextDerivativeProcessor")
+    private AddDerivativeProcessor adProcessor;
+
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
@@ -136,8 +136,6 @@ public class EnhancementRouterIT {
 
     private File tempDir;
 
-    private AddDerivativeProcessor addDerivProcessor;
-
     @Autowired
     private NonBinaryEnhancementProcessor nbh;
 
@@ -148,8 +146,11 @@ public class EnhancementRouterIT {
         reset(solrIngestProcessor);
         reset(addSmallThumbnailProcessor);
         reset(addLargeThumbnailProcessor);
-        reset(fulltextProcessor);
         reset(addAccessCopyProcessor);
+
+        when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = tmpFolder.newFolder("target");
@@ -162,7 +163,6 @@ public class EnhancementRouterIT {
         File jp2ScriptFile = new File("target/convertJp2.sh");
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
         jp2ScriptFile.deleteOnExit();
-        new AddDerivativeProcessor("png", tempDir.getAbsolutePath());
     }
 
     @Test
@@ -176,7 +176,7 @@ public class EnhancementRouterIT {
         FileInputStream input = new FileInputStream("src/test/resources/uploaded-files/burndown.png");
         FileUtils.copyInputStreamToFile(input, uploadedFile);
 
-        final Map<String, Object> headers = createEvent("false", collObject.getPid(),
+        final Map<String, Object> headers = createEvent(collObject.getPid(),
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -203,7 +203,7 @@ public class EnhancementRouterIT {
     @Test
     public void nonBinaryNoSourceImages() throws Exception {
         CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
-        final Map<String, Object> headers = createEvent("false", collObject.getPid(),
+        final Map<String, Object> headers = createEvent(collObject.getPid(),
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -221,9 +221,13 @@ public class EnhancementRouterIT {
 
     @Test
     public void testBinaryImageFile() throws Exception {
-        BinaryObject binObj = createFileObj();
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
+                null, "image/png", null, null);
 
-        final Map<String, Object> headers = createEvent("false", binObj.getPid(), Binary.getURI());
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         // Separate exchanges when multicasting
@@ -249,47 +253,17 @@ public class EnhancementRouterIT {
     }
 
     @Test
-    public void testExistingBinaryImageFileNoForce() throws Exception {
-        BinaryObject binObj = createFileObj();
-
-        String uuid = binObj.getPid().getUUID();
-        String basePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File uploadedFile = new File(String.valueOf(Paths.get(tempDir.getAbsolutePath(), basePath, uuid)));
-
-        FileInputStream input = new FileInputStream("src/test/resources/uploaded-files/burndown.png");
-        FileUtils.copyInputStreamToFile(input, uploadedFile);
-
-        final Map<String, Object> headers = createEvent("false", binObj.getPid(), Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
-        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
-                .create();
-
-        NotifyBuilder notify2 = new NotifyBuilder(cdrServiceSolr)
-                .whenCompleted(1)
-                .create();
-
-        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
-
-        boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result2);
-
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(solrIngestProcessor).process(any(Exchange.class));
-    }
-
-    @Test
     public void testBinaryMetadataFile() throws Exception {
-        BinaryObject binObj = createFileObj();
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
+                null, "image/png", null, null);
 
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);
 
-        final Map<String, Object> headers = createEvent("false", mdPid, Binary.getURI());
+        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -315,7 +289,7 @@ public class EnhancementRouterIT {
         BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
-        final Map<String, Object> headers = createEvent("false", binObj.getPid(), Binary.getURI());
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -337,7 +311,7 @@ public class EnhancementRouterIT {
         BinaryObject descObj = updateDescriptionService.updateDescription(mock(AgentPrincipals.class),
                 fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes()));
 
-        Map<String, Object> headers = createEvent("false", descObj.getPid(),
+        Map<String, Object> headers = createEvent(descObj.getPid(),
                 Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -352,22 +326,13 @@ public class EnhancementRouterIT {
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
 
-    private Map<String, Object> createEvent(String force, PID pid, String... type) {
+    private Map<String, Object> createEvent(PID pid, String... type) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(IDENTIFIER, pid.getRepositoryPath());
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put("CamelFcrepoUri", pid.getRepositoryPath());
         headers.put(RESOURCE_TYPE, String.join(",", type));
-        headers.put("force", force);
 
         return headers;
-    }
-
-    private BinaryObject createFileObj() throws IOException {
-        FileObject fileObj = repoObjectFactory.createFileObject(null);
-        Path originalPath = Files.createTempFile("file", ".png");
-        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
-        return fileObj.addOriginalFile(originalPath.toUri(),
-                null, "image/png", null, null);
     }
 }

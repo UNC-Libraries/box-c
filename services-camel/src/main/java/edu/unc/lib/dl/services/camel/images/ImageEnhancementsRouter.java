@@ -71,22 +71,25 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct:small.thumbnail")
             .routeId("SmallThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
-            .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrImagePath]} png 64 64 "
-                    + "${properties:services.tempDirectory}/${body}-small"))
-            .bean(addSmallThumbnailProcessor);
+            .filter().method(addSmallThumbnailProcessor, "needsRun")
+                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
+                        + "${headers[CdrImagePath]} png 64 64 "
+                        + "${properties:services.tempDirectory}/${body}-small"))
+                .bean(addSmallThumbnailProcessor);
 
         from("direct:large.thumbnail")
             .routeId("LargeThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
-            .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrImagePath]} png 128 128 "
-                    + "${properties:services.tempDirectory}/${body}-large"))
-            .bean(addLargeThumbProcessor);
+            .filter().method(addLargeThumbProcessor, "needsRun")
+                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
+                        + "${headers[CdrImagePath]} png 128 128 "
+                        + "${properties:services.tempDirectory}/${body}-large"))
+                .bean(addLargeThumbProcessor);
 
         from("direct-vm:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
             .log(LoggingLevel.DEBUG, "Access copy triggered")
+            .filter().method(addAccessCopyProcessor, "needsRun")
             .filter().method(imageDerivProcessor, "allowedImageType")
                 .bean(imageDerivProcessor)
                 .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")

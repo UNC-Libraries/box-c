@@ -17,6 +17,11 @@
         <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
     </bean>
 
+    <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="target" />
+    </bean>
+
     <camel:camelContext id="CdrServiceFulltextExtraction">
         <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
     </camel:camelContext>

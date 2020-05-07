@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
-import static org.apache.camel.LoggingLevel.WARN;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.PropertyInject;
@@ -30,7 +29,6 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
-import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 
 /**
  * Router which queues and triggers enhancement services.
@@ -56,8 +54,6 @@ public class EnhancementRouter extends RouteBuilder {
     private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
-        AddDerivativeProcessor addDerivProcessor = new AddDerivativeProcessor(null, null);
-
         from("{{cdr.enhancement.stream.camel}}")
             .routeId("ProcessEnhancementQueue")
             .process(enProcessor)
@@ -104,8 +100,6 @@ public class EnhancementRouter extends RouteBuilder {
                 .to("direct:process.enhancements", "direct-vm:solrIndexing");
 
         from("direct:process.enhancements")
-            .filter().method(addDerivProcessor, "needsRun")
-                .log(WARN, "DEEEn")
             .routeId("AddBinaryEnhancements")
             .split(simple("${headers[CdrEnhancementSet]}"))
                 .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
