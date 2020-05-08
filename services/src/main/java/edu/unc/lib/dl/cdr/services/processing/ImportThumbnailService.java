@@ -71,7 +71,7 @@ public class ImportThumbnailService extends MessageSender {
         File finalLocation = storagePath.resolve(thumbnailBasePath).resolve(uuid).toFile();
         copyInputStreamToFile(importStream, finalLocation);
 
-        Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, false);
+        Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
         messageSender.sendMessage(msg);
 
         log.info("Job to to add thumbnail to object {} has been queued by {}",
