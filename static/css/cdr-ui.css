@@ -1074,6 +1074,17 @@ table.dataTable tbody tr.odd {
   margin: 0;
 }
 
+/* Service unavailable/maintenance pages */
+.darkest .unavailable-header {
+  width: 30%;
+}
+.darkest a {
+  color: white;
+}
+.darkest a:hover {
+  color: #E8E8E8;
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
