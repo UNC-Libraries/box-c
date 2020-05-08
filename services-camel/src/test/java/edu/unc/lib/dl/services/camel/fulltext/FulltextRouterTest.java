@@ -111,7 +111,6 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         Map<String, Object> headers = createEvent();
         template.sendBodyAndHeaders("", createEvent());
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
@@ -127,7 +126,6 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         headers.put("force", "true");
         template.sendBodyAndHeaders("", headers);
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test

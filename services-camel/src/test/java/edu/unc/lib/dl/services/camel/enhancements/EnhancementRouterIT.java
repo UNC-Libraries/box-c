@@ -122,9 +122,6 @@ public class EnhancementRouterIT {
     @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor fulltextProcessor;
 
-    @BeanInject(value = "addFullTextDerivativeProcessor")
-    private AddDerivativeProcessor adProcessor;
-
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 

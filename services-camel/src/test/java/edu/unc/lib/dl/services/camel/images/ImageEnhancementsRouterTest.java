@@ -190,7 +190,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
@@ -208,7 +207,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
@@ -221,7 +219,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+        doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
@@ -237,7 +235,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+        doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
@@ -256,11 +254,10 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
+        doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
@@ -280,7 +277,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
@@ -327,8 +323,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-
-        existingFile.delete();
     }
 
     @Test
@@ -347,7 +341,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
-        existingFile.delete();
     }
 
     @Test
