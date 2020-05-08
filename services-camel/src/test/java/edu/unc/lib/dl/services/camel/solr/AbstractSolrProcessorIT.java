@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.eq;
@@ -101,9 +102,11 @@ public abstract class AbstractSolrProcessorIT {
     protected Message message;
 
     protected void generateBaseStructure() throws Exception {
-        PID rootPid = pidMinter.mintContentPid();
-        repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
+        URI contentRootUri = getContentRootPid().getRepositoryUri();
+        if (!repositoryObjectFactory.objectExists(contentRootUri)) {
+            repositoryObjectFactory.createContentRootObject(contentRootUri, null);
+        }
+        rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
         PID unitPid = pidMinter.mintContentPid();
         Model unitModel = ModelFactory.createDefaultModel();
