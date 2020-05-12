@@ -99,6 +99,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var metadata = resultObject.metadata;
 		var isContentRoot = metadata.type === 'ContentRoot';
 		var isAdminUnit = metadata.type === 'AdminUnit';
+		var isFile = metadata.type === 'File';
 
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
@@ -110,17 +111,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["openContainer"] = {name : "Open"};
 		}
 		items["viewInDCR"] = {name : "View in DCR"};
-		if (metadata.type == 'File') {
+		if (isFile) {
 			var originalFile = resultObject.getDatastream("original_file");
 			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
+
+			items["viewFits"] = {name: "View FITS"}
 		}
     items["viewEventLog"] = {name : "View Event Log"};
 		
 		// Modification options
 		items["sepedit"] = "";
 		if (!isContentRoot && $.inArray('editResourceType', metadata.permissions) != -1) {
-			if (metadata.type == 'File') {
+			if (isFile) {
 				if ($.inArray('Is Primary Object', metadata.contentStatus) != -1) {
 					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
 				} else {
@@ -237,6 +240,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 								application : "access"
 							});
 						}
+						break;
+					case "viewFits":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/techmd_fits",
+							newWindow: true,
+							application: "services"
+						});
 						break;
 					case "viewEventLog" :
 						self.actionHandler.addEvent({
