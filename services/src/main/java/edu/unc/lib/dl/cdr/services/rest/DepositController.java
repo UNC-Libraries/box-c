@@ -250,8 +250,9 @@ public class DepositController {
         result.put("jobsURI", "/api/status/deposit/" + depositUUID + "/jobs");
         result.put("eventsURI", "/api/status/deposit/" + depositUUID + "/eventsXML");
 
-        AccessGroupSet groups = getAgentPrincipals().getPrincipals();
-        result.put("isAdmin", groups.contains("unc:app:lib:cdr:admin"));
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        result.put("isAdmin", globalPermissionEvaluator.hasGlobalPermission(principals,
+                Permission.createAdminUnit));
 
         return result;
     }
