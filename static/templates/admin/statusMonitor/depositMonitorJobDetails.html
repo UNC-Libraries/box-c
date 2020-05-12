@@ -1,7 +1,7 @@
 <div>
 	<h3>Details for ingest</h3> (<span class="<%= data.state.toLowerCase() %>"><%= data.state %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
 
-	<% if (data.depositorName == username) { %>
+	<% if (data.depositorName == username || data.isAdmin) { %>
 	<% if (data.state == "failed" || data.state == "paused") { %>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>

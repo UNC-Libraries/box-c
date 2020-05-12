@@ -250,6 +250,10 @@ public class DepositController {
         result.put("jobsURI", "/api/status/deposit/" + depositUUID + "/jobs");
         result.put("eventsURI", "/api/status/deposit/" + depositUUID + "/eventsXML");
 
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        result.put("isAdmin", globalPermissionEvaluator.hasGlobalPermission(principals,
+                Permission.createAdminUnit));
+
         return result;
     }
 
@@ -274,7 +278,7 @@ public class DepositController {
     /**
      * Aborts the deposit, reversing any ingests and scheduling a cleanup job.
      *
-     * @param depositUUID
+     * @param uuid
      */
     @RequestMapping(value = { "{uuid}", "/{uuid}" }, method = RequestMethod.DELETE)
     public void destroy(@PathVariable String uuid) {
@@ -288,7 +292,7 @@ public class DepositController {
      * deposit such that it can be resumed later. The deposit destroy action cleans up the submitted deposit package,
      * leaving staged files alone.
      *
-     * @param depositUUID
+     * @param uuid
      *           the unique identifier of the deposit
      * @param action
      *           the action to take on the deposit (pause, resume, cancel, destroy)
@@ -305,8 +309,10 @@ public class DepositController {
         String username = GroupsThreadStore.getUsername();
         Map<String, String> status = depositStatusFactory.get(uuid);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
-            if (username == null ||  !username.equals(status.get(DepositField.depositorName.name()))) {
+            if (username == null || (!username.equals(status.get(DepositField.depositorName.name())) &&
+                    !globalPermissionEvaluator.hasGlobalPermission(principals, Permission.createAdminUnit))) {
                 response.setStatus(403);
                 return;
             }
