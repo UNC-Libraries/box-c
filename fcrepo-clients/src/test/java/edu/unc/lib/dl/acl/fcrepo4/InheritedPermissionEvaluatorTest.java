@@ -51,6 +51,7 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -73,8 +74,6 @@ public class InheritedPermissionEvaluatorTest {
     private ObjectAclFactory objectAclFactory;
 
     private InheritedPermissionEvaluator evaluator;
-
-
 
     private List<PID> ancestorPids;
 
@@ -426,6 +425,22 @@ public class InheritedPermissionEvaluatorTest {
         when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(Collections.emptyList());
 
         evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest);
+    }
+
+    @Test
+    public void rootHasPatronPermission() {
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>());
+
+        assertFalse(evaluator.hasPermission(RepositoryPaths.getContentRootPid(),
+                PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void rootHasStaffPermission() {
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>());
+
+        assertFalse(evaluator.hasPermission(RepositoryPaths.getContentRootPid(),
+                STAFF_PRINCIPLES, Permission.editDescription));
     }
 
     private PID addPidToAncestors() {

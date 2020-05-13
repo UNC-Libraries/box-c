@@ -120,6 +120,11 @@ public class InheritedPermissionEvaluator {
     private boolean hasPatronPermission(List<PID> path, Set<String> agentPatronPrincipals,
             Permission permission) {
 
+        // Requesting permissions on repository root
+        if (path.size() == 1) {
+            return false;
+        }
+
         // Patron permissions don't apply to units, so grant permission unless deleted
         if (path.size() <= UNIT_PATH_DEPTH + 1) {
             return !objectAclFactory.isMarkedForDeletion(path.get(UNIT_PATH_DEPTH));
@@ -221,7 +226,8 @@ public class InheritedPermissionEvaluator {
 
     private List<PID> getObjectPath(PID pid) {
         List<PID> path = pathFactory.getAncestorPids(pid);
-        if (path.indexOf(RepositoryPaths.getContentRootPid()) != 0) {
+        PID rootPid = RepositoryPaths.getContentRootPid();
+        if (!rootPid.equals(pid) && path.indexOf(rootPid) != 0) {
             throw new OrphanedObjectException("Cannot evaluate permissions for orphaned object " + pid.getId());
         }
         // Add the target to the end of the path so it will be evaluated too
