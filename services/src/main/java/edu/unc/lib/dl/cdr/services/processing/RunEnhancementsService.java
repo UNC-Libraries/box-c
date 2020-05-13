@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.services.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 
 import java.util.List;
@@ -94,6 +95,10 @@ public class RunEnhancementsService {
                     for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
                         createMessage(metadata, agent.getUsername(), force);
                     }
+
+                    // Add the root container itself
+                    BriefObjectMetadata rootContainer = resultResponse.getSelectedContainer();
+                    createMessage(rootContainer, agent.getUsername(), force);
                 } else {
                     SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
                     BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
@@ -110,11 +115,12 @@ public class RunEnhancementsService {
     private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
-        if (originalDs == null) {
+        Datastream hasThumbnail = metadata.getDatastreamObject(THUMBNAIL_SMALL.getId());
+        if (originalDs == null && hasThumbnail == null) {
             return;
         }
 
-        PID originalPid = DatastreamPids.getOriginalFilePid(pid);
+        PID originalPid = (originalDs != null) ? DatastreamPids.getOriginalFilePid(pid) : pid;
         Document msg = makeEnhancementOperationBody(username, originalPid, force);
         messageSender.sendMessage(msg);
     }
