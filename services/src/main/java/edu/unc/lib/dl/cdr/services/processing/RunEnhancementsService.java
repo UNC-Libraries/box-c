@@ -94,6 +94,10 @@ public class RunEnhancementsService {
                     for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
                         createMessage(metadata, agent.getUsername(), force);
                     }
+
+                    // Add the root container itself
+                    BriefObjectMetadata rootContainer = resultResponse.getSelectedContainer();
+                    createMessage(rootContainer, agent.getUsername(), force);
                 } else {
                     SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
                     BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
@@ -110,11 +114,7 @@ public class RunEnhancementsService {
     private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
-        if (originalDs == null) {
-            return;
-        }
-
-        PID originalPid = DatastreamPids.getOriginalFilePid(pid);
+        PID originalPid = (originalDs != null) ? DatastreamPids.getOriginalFilePid(pid) : pid;
         Document msg = makeEnhancementOperationBody(username, originalPid, force);
         messageSender.sendMessage(msg);
     }

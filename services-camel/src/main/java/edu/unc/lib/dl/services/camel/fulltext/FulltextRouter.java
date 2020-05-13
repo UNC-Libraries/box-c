@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.fulltext;
 
+import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -35,6 +36,9 @@ public class FulltextRouter extends RouteBuilder {
     @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor ftProcessor;
 
+    @BeanInject(value = "addFullTextDerivativeProcessor")
+    private AddDerivativeProcessor adProcessor;
+
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
@@ -46,10 +50,11 @@ public class FulltextRouter extends RouteBuilder {
         from("direct-vm:process.enhancement.extractFulltext")
             .routeId("CdrServiceFulltextExtraction")
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
+            .filter().method(adProcessor, "needsRun")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
-                .log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
-                        + " of type ${headers[CdrMimeType]}")
-                .to("direct:fulltext.extraction");
+            .log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
+                    + " of type ${headers[CdrMimeType]}")
+            .to("direct:fulltext.extraction");
 
         from("direct:fulltext.extraction")
             .routeId("ExtractingText")

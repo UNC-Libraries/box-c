@@ -60,12 +60,12 @@ public class AddDerivativeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        String binaryId;
         Message in = exchange.getIn();
-        String binaryUri = (String) in.getHeader(FCREPO_URI);
-        binaryId = PIDs.get(binaryUri).getId();
 
-        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryId = PIDs.get(binaryUri).getId();
+        Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
+
         final ExecResult result = (ExecResult) in.getBody();
 
         try {
@@ -81,8 +81,6 @@ public class AddDerivativeProcessor implements Processor {
             String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
             derivativeTmpPath += "." + fileExtension;
 
-            Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
-
             moveFile(derivativeTmpPath, derivativeFinalPath);
             log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
         } catch (IOException e) {
@@ -93,6 +91,27 @@ public class AddDerivativeProcessor implements Processor {
             log.error("Failed to generated derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
             throw e;
         }
+    }
+
+    /**
+     * Used to filter whether enhancements should be run
+     * @param exchange Camel message exchange
+     * @return
+     */
+    public boolean needsRun(Exchange exchange) {
+        Message in = exchange.getIn();
+
+        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryId = PIDs.get(binaryUri).getId();
+        Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
+        String force = (String) in.getHeader("force");
+
+        return (Files.notExists(derivativeFinalPath) || Boolean.parseBoolean(force));
+    }
+
+    private Path setDerivativeFinalPath(String binaryId) {
+        String derivativePath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        return Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
     }
 
     private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)

@@ -65,6 +65,13 @@ public class BinaryEnhancementProcessor implements Processor {
                     log.info("Adding enhancement headers for " + pidValue);
                     in.setHeader(FCREPO_URI, pidValue);
                     in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
+
+                    Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
+                    if (forceText != null) {
+                        in.setHeader("force", forceText.getTextTrim());
+                    } else {
+                        in.setHeader("force", "false");
+                    }
                 } catch (ObjectTypeMismatchException e) {
                     log.warn("{} is not a repository object. No enhancement headers added", objPid.getURI());
                 }

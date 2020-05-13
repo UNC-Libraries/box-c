@@ -211,6 +211,11 @@
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
+
+    <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.fulltext}" />
+    </bean>
     
     <bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />

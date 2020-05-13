@@ -3,7 +3,7 @@ define('EditThumbnailForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
     function($, ui, _, RemoteStateChangeMonitor, addWorkTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 
         var defaultOptions = {
-            title : 'Add File',
+            title : 'Add Thumbnail',
             createFormTemplate : addWorkTemplate
         };
 

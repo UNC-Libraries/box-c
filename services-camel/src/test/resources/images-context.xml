@@ -12,17 +12,32 @@
         http://www.springframework.org/schema/context/spring-context-4.3.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-    
-    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+
+    <bean id="addSmallThumbnailProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="target" />
     </bean>
-    
-    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+
+    <bean id="addLargeThumbnailProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="target" />
     </bean>
-    
-    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+
+    <bean id="addAccessCopyProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="target" />
+    </bean>
+
+    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addSmallThumbnailProcessorReal" />
+    </bean>
+
+    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addLargeThumbnailProcessorReal" />
+    </bean>
+
+    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addAccessCopyProcessorReal" />
     </bean>
 
     <camel:camelContext id="CdrServiceEnhancements">

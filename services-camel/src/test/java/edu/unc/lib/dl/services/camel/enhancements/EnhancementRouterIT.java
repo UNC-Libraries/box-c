@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
@@ -142,6 +143,11 @@ public class EnhancementRouterIT {
         reset(solrIngestProcessor);
         reset(addSmallThumbnailProcessor);
         reset(addLargeThumbnailProcessor);
+        reset(addAccessCopyProcessor);
+
+        when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
+        when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = tmpFolder.newFolder("target");
