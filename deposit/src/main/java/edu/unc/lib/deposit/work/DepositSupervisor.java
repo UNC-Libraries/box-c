@@ -59,6 +59,7 @@ import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.deposit.validate.ValidateDescriptionJob;
+import edu.unc.lib.deposit.validate.ValidateDestinationJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -605,6 +606,11 @@ public class DepositSupervisor implements WorkerListener {
         if (!successfulJobs.contains(NormalizeFileObjectsJob.class.getName())
                 && !packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
             return makeJob(NormalizeFileObjectsJob.class, depositUUID);
+        }
+
+        // Verify that the destination can receive the deposit
+        if (!successfulJobs.contains(ValidateDestinationJob.class.getName())) {
+            return makeJob(ValidateDestinationJob.class, depositUUID);
         }
 
         // Validate object structure and properties
