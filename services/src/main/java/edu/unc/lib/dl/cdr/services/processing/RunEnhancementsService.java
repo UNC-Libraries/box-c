@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.services.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 
 import java.util.List;
@@ -115,11 +114,6 @@ public class RunEnhancementsService {
     private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
-        Datastream hasThumbnail = metadata.getDatastreamObject(THUMBNAIL_SMALL.getId());
-        if (originalDs == null && hasThumbnail == null) {
-            return;
-        }
-
         PID originalPid = (originalDs != null) ? DatastreamPids.getOriginalFilePid(pid) : pid;
         Document msg = makeEnhancementOperationBody(username, originalPid, force);
         messageSender.sendMessage(msg);
