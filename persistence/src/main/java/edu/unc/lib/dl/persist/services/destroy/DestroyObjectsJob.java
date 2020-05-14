@@ -142,12 +142,19 @@ public class DestroyObjectsJob implements Runnable {
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
+        int deletedObjCount = 1;
+        List<String> deletedObjIds = new ArrayList<String>();
+        deletedObjIds.add(rootOfTree.getPid().getUUID());
+
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
             for (ContentObject member : members) {
+                deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
             }
+
+            deletedObjCount += members.size();
         }
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
@@ -167,6 +174,16 @@ public class DestroyObjectsJob implements Runnable {
             .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();
+
+        // Add premis event to parent
+        RepositoryObject parentObj = rootOfTree.getParent();
+        parentObj.getPremisLog().buildEvent(Premis.Deletion)
+                .addAuthorizingAgent(agent.getUsername())
+                .addOutcome(true)
+                .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
+                .addEventDetail("Objects destroyed: {0}",
+                        String.join(System.getProperty("line.separator"), deletedObjIds))
+                .writeAndClose();
     }
 
     private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)
