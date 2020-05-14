@@ -1,0 +1,161 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.deposit.validate;
+
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+
+/**
+ * Validates that the destination of this deposit is valid for the incoming contents.
+ *
+ * @author bbpennel
+ */
+public class ValidateDestinationJob extends AbstractDepositJob {
+    private final static Set<Resource> ROOT_CHILD_TYPES = new HashSet<>(asList(Cdr.AdminUnit));
+    private final static Set<Resource> ADMINUNIT_CHILD_TYPES = new HashSet<>(asList(Cdr.Collection));
+    private final static Set<Resource> COLL_FOLDER_CHILD_TYPES = new HashSet<>(
+            asList(Cdr.Folder, Cdr.Work));
+    private final static Set<Resource> WORK_CHILD_TYPES = new HashSet<>(asList(Cdr.FileObject));
+
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private AccessControlService aclService;
+
+    /**
+     * Constructs a new validation job with generated ids
+     */
+    public ValidateDestinationJob() {
+        this(null, null);
+    }
+
+    /**
+     * Constructs a new validation job
+     *
+     * @param uuid job uuid
+     * @param depositUUID deposit uuid
+     */
+    public ValidateDestinationJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
+
+    @Override
+    public void runJob() {
+        PID destPid = getDestinationPID();
+
+        RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
+
+        if (!(destObj instanceof ContentContainerObject)) {
+            failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
+                    + ", types does not support children");
+        }
+
+        if (destObj instanceof ContentRootObject) {
+            assertHasPermission(destPid, Permission.createAdminUnit);
+            topLevelObjectsMatchAllowedTypes(destPid, ROOT_CHILD_TYPES, false);
+        } else if (destObj instanceof AdminUnit) {
+            assertHasPermission(destPid, Permission.createCollection);
+            topLevelObjectsMatchAllowedTypes(destPid, ADMINUNIT_CHILD_TYPES, false);
+        } else if (destObj instanceof CollectionObject || destObj instanceof FolderObject) {
+            assertHasPermission(destPid, Permission.ingest);
+            topLevelObjectsMatchAllowedTypes(destPid, COLL_FOLDER_CHILD_TYPES, false);
+        } else if (destObj instanceof WorkObject) {
+            assertHasPermission(destPid, Permission.ingest);
+            topLevelObjectsMatchAllowedTypes(destPid, WORK_CHILD_TYPES, true);
+        }
+    }
+
+    private void assertHasPermission(PID destPid, Permission perm) {
+        Map<String, String> depositStatus = getDepositStatus();
+        AccessGroupSet groups = new AccessGroupSet(depositStatus.get(DepositField.permissionGroups.name()));
+        String depositor = depositStatus.get(DepositField.depositorName.name());
+        AgentPrincipals agent = new AgentPrincipals(depositor, groups);
+        aclService.assertHasAccess(
+                "Depositor does not have permissions to ingest to destination " + destPid.getId(),
+                destPid, agent.getPrincipals(), perm);
+    }
+
+    private void topLevelObjectsMatchAllowedTypes(PID destPid, Set<Resource> allowedTypes, boolean allowNoTypes) {
+        Model model = getReadOnlyModel();
+        Bag depositBag = model.getBag(depositPID.getRepositoryPath());
+
+        NodeIterator iterator = getChildIterator(depositBag);
+        // No more children, nothing further to do in this tree
+        if (iterator == null) {
+            return;
+        }
+
+        List<String> errors = new ArrayList<>();
+        try {
+            while (iterator.hasNext()) {
+                Resource childResc = (Resource) iterator.next();
+
+                List<Statement> typeStmts = childResc.listProperties(RDF.type).toList();
+                if (allowNoTypes && typeStmts.size() == 0) {
+                    continue;
+                }
+                boolean contains = typeStmts.stream()
+                        .anyMatch(stmt -> allowedTypes.contains(stmt.getResource()));
+
+                if (!contains) {
+                    errors.add(PIDs.get(childResc.getURI()).getId());
+                }
+            }
+        } finally {
+            iterator.close();
+        }
+
+        if (errors.size() > 0) {
+            failJob("Deposit contains invalid object types for deposit into " + destPid.getId(),
+                    "Destination " + destPid.getId() + " may only receive children of types ["
+                    + allowedTypes.stream().map(Resource::getURI).collect(Collectors.joining(","))
+                    + "], but " + errors.size() + " object(s) for deposit do not meet this requirement:\n"
+                    + "    " + String.join("\n    ", errors));
+        }
+    }
+}

@@ -192,6 +192,10 @@
         scope="prototype">
         <property name="clamScan" ref="clamScan" />
     </bean>
+    
+    <bean id="ValidateDestinationJob" class="edu.unc.lib.deposit.validate.ValidateDestinationJob"
+        scope="prototype">
+    </bean>
 
     <bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob"
         scope="prototype">
