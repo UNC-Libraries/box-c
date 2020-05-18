@@ -22,25 +22,21 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.isDeleted = $.inArray("Marked For Deletion", this.metadata.status) != -1;
 
 		var validationProblem = "";
-		if (this.metadata.tags) {
-			var tagIndex = -1;
-			for (var index in this.metadata.tags) {
-				var tag = this.metadata.tags[index];
-				if (tag.label == "invalid term") {
-					var details =tag.details;
-					for (var detailsIndex in details) {
-						var detailParts = details[detailsIndex].split("|");
-						validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + detailParts[0] + ": " + detailParts[1];
-					}
-					
-					tagIndex = index;
-					break;
+		var tags = this.metadata.contentStatus;
+
+		if (this.metadata.status !== undefined) {
+			tags = tags.concat(this.metadata.status);
+		}
+
+		if (tags) {
+			this.metadata.tags = tags.filter(function(d) {
+				return !/^(parent|has|not)/i.test(d);
+			}).map(function(d) {
+				if (d === 'Marked For Deletion') {
+					return 'deleted';
 				}
-			}
-			
-			if (tagIndex != -1) {
-				delete this.metadata.tags[tagIndex];
-			}
+				return d.toLowerCase();
+			});
 		}
 		
 		var newElement = $(this.options.template({metadata : metadata,
