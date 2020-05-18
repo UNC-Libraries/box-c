@@ -16,10 +16,12 @@
 package edu.unc.lib.dl.services.camel.routing;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
+import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     private static final String META_ROUTE = "CdrMetaServicesRouter";
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
+    private static final String PROCESS_CREATION_ROUTE = "ProcessCreation";
 
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
@@ -77,8 +80,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.solr").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
 
@@ -92,9 +94,45 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilterValid() throws Exception {
-        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testUpdateBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        headers.put(EVENT_TYPE, EVENT_UPDATE);
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testUpdateNonBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(0);
+
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        Map<String, Object> headers = createEvent("/not/binary", Container.getURI());
+        headers.put(EVENT_TYPE, EVENT_UPDATE);
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testCreationRoute() throws Exception {
+        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(1);
+
+        createContext(PROCESS_CREATION_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 

@@ -40,4 +40,12 @@
         <property name="defaultDestinationName" value="repository.updates" />
         <property name="pubSubDomain" value="true" />
     </bean>
+    
+    <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+    </bean>
+    
+    <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+    </bean>
 </beans>

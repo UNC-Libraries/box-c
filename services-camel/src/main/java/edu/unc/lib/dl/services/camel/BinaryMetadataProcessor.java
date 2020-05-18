@@ -67,7 +67,10 @@ public class BinaryMetadataProcessor implements Processor {
 
         if (binObj.getContentUri() != null) {
             Model model = ModelFactory.createDefaultModel();
-            model.read(in.getBody(InputStream.class), null, "Turtle");
+            InputStream bodyStream = in.getBody(InputStream.class);
+            // Reset the body inputstream in case it was already read elsewhere due to multicasting
+            bodyStream.reset();
+            model.read(bodyStream, null, "Turtle");
             Resource resc = model.getResource(binPid.getRepositoryPath());
             String binaryMimeType = resc.getProperty(hasMimeType).getObject().toString();
 

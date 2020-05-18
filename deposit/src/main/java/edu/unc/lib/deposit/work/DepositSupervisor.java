@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
-import edu.unc.lib.deposit.fcrepo4.RegisterToLongleafJob;
 import edu.unc.lib.deposit.fcrepo4.StaffOnlyPermissionJob;
 import edu.unc.lib.deposit.normalize.AssignStorageLocationsJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
@@ -676,9 +675,9 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         // Register files to longleaf
-        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
-            return makeJob(RegisterToLongleafJob.class, depositUUID);
-        }
+//        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
+//            return makeJob(RegisterToLongleafJob.class, depositUUID);
+//        }
 
         return null;
     }
