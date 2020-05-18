@@ -630,7 +630,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             aResc.addProperty(DC.title, label);
         }
         if (!skipDepositLink) {
-            aResc.addProperty(Cdr.originalDeposit, depositResc);
+            if (dResc.hasProperty(CdrDeposit.originalDeposit)) {
+                // Assign deposit record from provided original deposit resource
+                aResc.addProperty(Cdr.originalDeposit,
+                        dResc.getProperty(CdrDeposit.originalDeposit).getResource());
+            } else {
+                // default to linking to the current deposit since no override provided
+                aResc.addProperty(Cdr.originalDeposit, depositResc);
+            }
         }
     }
 

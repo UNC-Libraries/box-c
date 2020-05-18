@@ -728,6 +728,60 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
     }
 
+    @Test
+    public void fromMultipleDepositsTest() throws Exception {
+
+        PID folderObj1Pid = pidMinter.mintContentPid();
+        PID folderObj2Pid = pidMinter.mintContentPid();
+        PID folderObj3Pid = pidMinter.mintContentPid();
+
+        PID deposit2Pid = pidMinter.mintDepositRecordPid();
+        PID deposit3Pid = pidMinter.mintDepositRecordPid();
+
+        // Create the deposit records since the references must resolve
+        repoObjFactory.createDepositRecord(deposit2Pid, null);
+        repoObjFactory.createDepositRecord(deposit3Pid, null);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // First folder from deposit 2
+        Bag folder1Bag = model.createBag(folderObj1Pid.getRepositoryPath());
+        folder1Bag.addProperty(RDF.type, Cdr.Folder);
+        folder1Bag.addProperty(CdrDeposit.originalDeposit, createResource(deposit2Pid.getRepositoryPath()));
+        depBag.add(folder1Bag);
+
+        // Second folder from default deposit
+        Bag folder2Bag = model.createBag(folderObj2Pid.getRepositoryPath());
+        folder2Bag.addProperty(RDF.type, Cdr.Folder);
+        depBag.add(folder2Bag);
+
+        // Third folder from deposit 3
+        Bag folder3Bag = model.createBag(folderObj3Pid.getRepositoryPath());
+        folder3Bag.addProperty(RDF.type, Cdr.Folder);
+        folder3Bag.addProperty(CdrDeposit.originalDeposit, createResource(deposit3Pid.getRepositoryPath()));
+        depBag.add(folder3Bag);
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        // Verify that the correct original deposit ids are assigned to each folder
+        FolderObject folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
+        Resource f1DepositResc = folder1.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(deposit2Pid.getRepositoryPath(), f1DepositResc.getURI());
+
+        FolderObject folder2 = repoObjLoader.getFolderObject(folderObj2Pid);
+        Resource f2DepositResc = folder2.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(depositPid.getRepositoryPath(), f2DepositResc.getURI());
+
+        FolderObject folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
+        Resource f3DepositResc = folder3.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(deposit3Pid.getRepositoryPath(), f3DepositResc.getURI());
+    }
+
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
             String sha1, String md5, long size) {
         BinaryObject binary = fileObj.getOriginalFile();
