@@ -34,8 +34,11 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			}).map(function(d) {
 				if (d === 'Marked For Deletion') {
 					return 'deleted';
+				} else if (d === 'Staff-only access') {
+					return 'staff only';
+				} else {
+					return d.toLowerCase();
 				}
-				return d.toLowerCase();
 			});
 		}
 		
