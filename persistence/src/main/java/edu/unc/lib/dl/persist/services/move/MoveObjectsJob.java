@@ -42,8 +42,11 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
+import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DateTimeUtil;
@@ -141,8 +144,50 @@ public class MoveObjectsJob implements Runnable {
         PID sourcePid = moveContent.getParent().getPid();
         addPidToSource(objPid, sourcePid);
 
+        // Write a premis event if object moves between admin units
+        adminUnitMove(objPid);
+
         // Add the object to its destination, which clears the previous parent as well
         destContainer.addMember(moveContent);
+    }
+
+    private void adminUnitMove(PID sourcePid) {
+        ObjectPath destPath = objectPathFactory.getPath(destinationPid);
+        String destAdminUnit = null;
+        if (destPath != null) {
+            List<ObjectPathEntry> destObjPath = destPath.getEntries();
+            if (destObjPath.size() > 1) {
+                destAdminUnit = destObjPath.get(1).getPid();
+            }
+        }
+
+        ObjectPath sourcePath = objectPathFactory.getPath(sourcePid);
+        String currentAdminUnit = null;
+        if (sourcePath != null) {
+            List<ObjectPathEntry> objPath = sourcePath.getEntries();
+            if (objPath.size() > 1) {
+                currentAdminUnit = sourcePath.getEntries().get(1).getPid();
+            }
+        }
+
+        if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
+            RepositoryObject currentObj = repositoryObjectLoader.getRepositoryObject(sourcePid);
+            RepositoryObject parent = currentObj.getParent();
+            String prevContainerTitle = parent.getResource()
+                    .getProperty(DcElements.title).getObject().toString();
+
+            String newContainerUUID = destinationPid.getUUID();
+            String newContainerTitle = destContainer.getResource()
+                    .getProperty(DcElements.title).getObject().toString();
+
+            currentObj.getPremisLog().buildEvent(Premis.MetadataModification)
+                    .addAuthorizingAgent(agent.getUsername())
+                    .addEventDetail("Object moved from parent object {0}, " +
+                                    "{1} in Admin Unit {2} to {3}, {4} in Admin Unit {5}",
+                            parent.getPid().getUUID(), prevContainerTitle, currentAdminUnit,
+                            newContainerUUID, newContainerTitle, destAdminUnit)
+                    .writeAndClose();
+        }
     }
 
     private void addPidToSource(PID pid, PID sourcePid) {
