@@ -87,6 +87,8 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    private int deletedObjCount = 0;
+    private List<String> deletedObjIds = new ArrayList<String>();
     private AgentPrincipals agent;
 
     private MultiDestinationTransferSession transferSession;
@@ -125,8 +127,19 @@ public class DestroyObjectsJob implements Runnable {
                 }
 
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
+                    RepositoryObject parentObj = repoObj.getParent();
+
                     // purge tree with repoObj as root from repository
                     destroyTree(repoObj);
+
+                    // Add premis event to parent
+                    parentObj.getPremisLog().buildEvent(Premis.Deletion)
+                            .addAuthorizingAgent(agent.getUsername())
+                            .addOutcome(true)
+                            .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
+                            .addEventDetail("Objects destroyed: {0}",
+                                    String.join(System.getProperty("line.separator"), deletedObjIds))
+                            .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
            }
@@ -142,8 +155,8 @@ public class DestroyObjectsJob implements Runnable {
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
-        int deletedObjCount = 1;
-        List<String> deletedObjIds = new ArrayList<String>();
+        // Add the root of the tree to delete
+        deletedObjCount += 1;
         deletedObjIds.add(rootOfTree.getPid().getUUID());
 
         if (rootOfTree instanceof ContentContainerObject) {
@@ -156,6 +169,7 @@ public class DestroyObjectsJob implements Runnable {
 
             deletedObjCount += members.size();
         }
+
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
@@ -174,16 +188,6 @@ public class DestroyObjectsJob implements Runnable {
             .addAuthorizingAgent(agent.getUsername())
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();
-
-        // Add premis event to parent
-        RepositoryObject parentObj = rootOfTree.getParent();
-        parentObj.getPremisLog().buildEvent(Premis.Deletion)
-                .addAuthorizingAgent(agent.getUsername())
-                .addOutcome(true)
-                .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
-                .addEventDetail("Objects destroyed: {0}",
-                        String.join(System.getProperty("line.separator"), deletedObjIds))
-                .writeAndClose();
     }
 
     private Model convertModelToTombstone(RepositoryObject destroyedObj, Resource destroyedResc)
