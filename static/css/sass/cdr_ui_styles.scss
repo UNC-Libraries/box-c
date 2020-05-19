@@ -810,6 +810,21 @@ table.dataTable {
   }
 }
 
+/* Service unavailable/maintenance pages */
+.darkest {
+  .unavailable-header {
+    width: 30%;
+  }
+
+  a {
+    color: white;
+
+    &:hover {
+      color: #E8E8E8;
+    }
+  }
+}
+
 /* Bulma overrides */
 .select {
   margin-bottom: 15px;
