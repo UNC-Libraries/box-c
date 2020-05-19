@@ -36,7 +36,7 @@ public class RedisWorkerConstants {
         createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
         depositorEmail, packagingType, packageProfile, metsType, permissionGroups, depositMd5, depositSlug,
         errorMessage, stackTrace, excludeDepositRecord, publishObjects, fileMimetype, priority, sourceUri,
-        extras, ingestInprogress, accessionNumber, mediaId, storageLocation, staffOnly;
+        extras, ingestInprogress, accessionNumber, mediaId, storageLocation, staffOnly, overrideTimestamps;
     }
 
     public static enum JobField {

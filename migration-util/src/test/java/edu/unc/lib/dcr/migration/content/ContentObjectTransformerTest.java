@@ -82,6 +82,7 @@ import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
+import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
@@ -117,6 +118,8 @@ public class ContentObjectTransformerTest {
 
     private PID depositPid;
 
+    private PID originalDepositPid;
+
     private PID startingPid;
 
     private ContentObjectTransformerManager manager;
@@ -151,6 +154,8 @@ public class ContentObjectTransformerTest {
         modelManager = new DepositModelManager(depositPid, tdbDir.toString());
         directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
+        originalDepositPid = pidMinter.mintDepositRecordPid();
+
         premisLoggerFactory = new PremisLoggerFactory();
         premisLoggerFactory.setPidMinter(pidMinter);
 
@@ -172,6 +177,7 @@ public class ContentObjectTransformerTest {
         Model model = createContainerModel(startingPid);
         addPatronAccess(model, startingPid);
         addStaffRoles(model, startingPid);
+        addOriginalDeposit(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
                 .relsExtModel(model)
@@ -191,6 +197,8 @@ public class ContentObjectTransformerTest {
         assertHasPatronAccess(resc);
         // Cannot assign staff roles to folders
         assertNoStaffRoles(resc);
+
+        assertOriginalDepositLink(resc);
     }
 
     @Test
@@ -352,6 +360,7 @@ public class ContentObjectTransformerTest {
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
         addPatronAccess(model, startingPid);
         addStaffRoles(model, startingPid);
+        addOriginalDeposit(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
                 .relsExtModel(model)
@@ -370,6 +379,8 @@ public class ContentObjectTransformerTest {
 
         assertHasPatronAccess(resc);
         assertNoStaffRoles(resc);
+
+        assertOriginalDepositLink(resc);
     }
 
     @Test
@@ -987,5 +998,16 @@ public class ContentObjectTransformerTest {
         assertFalse(bxc5Resc.hasProperty(CdrAcl.canManage));
         assertFalse(bxc5Resc.hasProperty(CdrAcl.canProcess));
         assertFalse(bxc5Resc.hasProperty(CdrAcl.unitOwner));
+    }
+
+    private void addOriginalDeposit(Model bxc3Model, PID bxc3Pid) {
+        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
+        Resource originalDepResc = bxc3Model.getResource(toBxc3Uri(originalDepositPid));
+        bxc3Resc.addProperty(Relationship.originalDeposit.getProperty(), originalDepResc);
+    }
+
+    private void assertOriginalDepositLink(Resource resc) {
+        assertTrue(resc.hasProperty(CdrDeposit.originalDeposit,
+                createResource(originalDepositPid.getRepositoryPath())));
     }
 }

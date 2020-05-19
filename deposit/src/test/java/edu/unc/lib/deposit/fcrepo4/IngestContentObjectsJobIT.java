@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
@@ -89,6 +91,10 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
+
+    static {
+        System.setProperty("fcrepo.properties.management", "relaxed");
+    }
 
     private static final String INGESTOR_PRINC = "ingestor";
     private static final String DEPOSITOR_NAME = "boxy_depositor";
@@ -726,6 +732,135 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         Model logModel = folder.getPremisLog().getEventsModel();
         assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
+    }
+
+    @Test
+    public void fromMultipleDepositsTest() throws Exception {
+
+        PID folderObj1Pid = pidMinter.mintContentPid();
+        PID folderObj2Pid = pidMinter.mintContentPid();
+        PID folderObj3Pid = pidMinter.mintContentPid();
+
+        PID deposit2Pid = pidMinter.mintDepositRecordPid();
+        PID deposit3Pid = pidMinter.mintDepositRecordPid();
+
+        // Create the deposit records since the references must resolve
+        repoObjFactory.createDepositRecord(deposit2Pid, null);
+        repoObjFactory.createDepositRecord(deposit3Pid, null);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // First folder from deposit 2
+        Bag folder1Bag = model.createBag(folderObj1Pid.getRepositoryPath());
+        folder1Bag.addProperty(RDF.type, Cdr.Folder);
+        folder1Bag.addProperty(CdrDeposit.originalDeposit, createResource(deposit2Pid.getRepositoryPath()));
+        depBag.add(folder1Bag);
+
+        // Second folder from default deposit
+        Bag folder2Bag = model.createBag(folderObj2Pid.getRepositoryPath());
+        folder2Bag.addProperty(RDF.type, Cdr.Folder);
+        depBag.add(folder2Bag);
+
+        // Third folder from deposit 3
+        Bag folder3Bag = model.createBag(folderObj3Pid.getRepositoryPath());
+        folder3Bag.addProperty(RDF.type, Cdr.Folder);
+        folder3Bag.addProperty(CdrDeposit.originalDeposit, createResource(deposit3Pid.getRepositoryPath()));
+        depBag.add(folder3Bag);
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        // Verify that the correct original deposit ids are assigned to each folder
+        FolderObject folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
+        Resource f1DepositResc = folder1.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(deposit2Pid.getRepositoryPath(), f1DepositResc.getURI());
+
+        FolderObject folder2 = repoObjLoader.getFolderObject(folderObj2Pid);
+        Resource f2DepositResc = folder2.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(depositPid.getRepositoryPath(), f2DepositResc.getURI());
+
+        FolderObject folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
+        Resource f3DepositResc = folder3.getResource().getProperty(Cdr.originalDeposit).getResource();
+        assertEquals(deposit3Pid.getRepositoryPath(), f3DepositResc.getURI());
+    }
+
+    private final static String CREATED_STRING = "2011-10-04T20:36:44.902Z";
+    private final static String LAST_MODIFIED_STRING = "2013-10-06T10:16:44.111Z";
+    private final static Date CREATED_DATE = DateTimeUtil.parseUTCToDate(CREATED_STRING);
+    private final static Date LAST_MODIFIED_DATE = DateTimeUtil.parseUTCToDate(LAST_MODIFIED_STRING);
+
+    @Test
+    public void overrideTimestampsTest() throws Exception {
+        Map<String, String> status = new HashMap<>();
+        status.put(DepositField.containerId.name(), RepositoryPaths.getContentRootPid().getRepositoryPath());
+        status.put(DepositField.permissionGroups.name(), "adminGroup");
+        status.put(DepositField.overrideTimestamps.name(), "true");
+        depositStatusFactory.save(depositUUID, status);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID unitPid = pidMinter.mintContentPid();
+        Bag unitBag = model.createBag(unitPid.getRepositoryPath());
+        unitBag.addProperty(RDF.type, Cdr.AdminUnit);
+        unitBag.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
+        unitBag.addLiteral(CdrDeposit.createTime, CREATED_STRING);
+        depBag.add(unitBag);
+
+        PID collPid = pidMinter.mintContentPid();
+        Bag collBag = model.createBag(collPid.getRepositoryPath());
+        collBag.addProperty(RDF.type, Cdr.Collection);
+        collBag.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
+        collBag.addLiteral(CdrDeposit.createTime, CREATED_STRING);
+        unitBag.add(collBag);
+
+        PID folderPid = pidMinter.mintContentPid();
+        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+        folderBag.addProperty(RDF.type, Cdr.Folder);
+        folderBag.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
+        folderBag.addLiteral(CdrDeposit.createTime, CREATED_STRING);
+        collBag.add(folderBag);
+
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
+        workBag.addLiteral(CdrDeposit.createTime, CREATED_STRING);
+        folderBag.add(workBag);
+
+        PID filePid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        Resource fileResc = model.getResource(filePid.getRepositoryPath());
+        fileResc.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
+        fileResc.addLiteral(CdrDeposit.createTime, CREATED_STRING);
+        workBag.add(fileResc);
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        AdminUnit unitObj = repoObjLoader.getAdminUnit(unitPid);
+        assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, unitObj);
+        CollectionObject collObj = repoObjLoader.getCollectionObject(collPid);
+        assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, collObj);
+        FolderObject folderObj = repoObjLoader.getFolderObject(folderPid);
+        assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, folderObj);
+        WorkObject workObj = repoObjLoader.getWorkObject(workPid);
+        assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, workObj);
+        FileObject fileObj = repoObjLoader.getFileObject(filePid);
+        assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, fileObj);
+    }
+
+    private void assertTimestamps(Date expectedCreated, Date expectedModified, ContentObject obj) {
+        assertEquals("Date created for " + obj.getPid().getId() + " did not match expected value",
+                expectedCreated, obj.getCreatedDate());
+        assertEquals("Last modifed for " + obj.getPid().getId() + " did not match expected value",
+                expectedModified, obj.getLastModified());
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

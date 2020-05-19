@@ -132,6 +132,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.accessionNumber.name(), deposit.getAccessionNumber());
         status.put(DepositField.mediaId.name(), deposit.getMediaId());
         status.put(DepositField.staffOnly.name(), String.valueOf(deposit.getStaffOnly()));
+        status.put(DepositField.overrideTimestamps.name(), String.valueOf(deposit.getOverrideTimestamps()));
 
         if (deposit.getFilename() != null) {
             // Resolve filename to just the name portion of the value, in case of modifiers

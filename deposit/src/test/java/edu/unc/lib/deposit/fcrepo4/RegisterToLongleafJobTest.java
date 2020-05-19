@@ -15,21 +15,12 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
+import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URI;
@@ -38,13 +29,29 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
+
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
     @Rule
@@ -83,6 +90,7 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         job.setDepositDirectory(depositDir);
         setField(job, "repoObjLoader", repoObjLoader);
         setField(job, "dataset", dataset);
+        setField(job, "depositStatusFactory", depositStatusFactory);
 
         outputPath = tmpFolder.newFile().getPath();
         longleafScript = getLongleafScript(outputPath);
@@ -103,6 +111,10 @@ public class RegisterToLongleafJobTest extends AbstractDepositJobTest {
         when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(destinationObj);
         desitnationUri = URI.create(FILE_SCHEME + LOC1_ID + "/event_log");
         when(destinationObj.getContentUri()).thenReturn(desitnationUri);
+
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
+        when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
     }
 
     @Test
