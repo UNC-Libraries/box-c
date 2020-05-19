@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Job which registers ingested files to longleaf
@@ -54,6 +55,8 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
+    private boolean excludeDepositRecord;
+
     public RegisterToLongleafJob() {
         super();
     }
@@ -65,6 +68,8 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         log.info("Registering files from deposit {} to longleaf", getDepositPID());
+
+        excludeDepositRecord = Boolean.parseBoolean(getDepositStatus().get(DepositField.excludeDepositRecord.name()));
 
         Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
@@ -79,12 +84,15 @@ public class RegisterToLongleafJob extends AbstractDepositJob {
      * @param resc
      */
     public void registerFilesToLongleaf(Resource resc) {
-        PID objPid = PIDs.get(resc.toString());
-        BinaryObject premisBin = repoObjLoader.getBinaryObject(DatastreamPids.getMdEventsPid(objPid));
-        URI premisStorageUri = premisBin.getContentUri();
+        // register premis for deposit record, if one was generated
+        if (!excludeDepositRecord) {
+            PID objPid = PIDs.get(resc.toString());
+            BinaryObject premisBin = repoObjLoader.getBinaryObject(DatastreamPids.getMdEventsPid(objPid));
+            URI premisStorageUri = premisBin.getContentUri();
 
-        if (premisStorageUri != null) {
-            registerFile(premisStorageUri, null);
+            if (premisStorageUri != null) {
+                registerFile(premisStorageUri, null);
+            }
         }
 
         StmtIterator statementIterator = resc.listProperties();

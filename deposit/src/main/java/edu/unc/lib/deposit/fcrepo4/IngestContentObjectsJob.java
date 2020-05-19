@@ -39,7 +39,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -88,6 +90,7 @@ import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
@@ -144,6 +147,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     private Resource depositResc;
 
     private String depositor;
+
+    private boolean overrideTimestamps;
 
     public IngestContentObjectsJob() {
         super();
@@ -227,6 +232,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         skipDepositLink = Boolean.parseBoolean(depositStatus.get(excludeDepositRecord.name()));
+        overrideTimestamps = Boolean.parseBoolean(depositStatus.get(DepositField.overrideTimestamps.name()));
+
         depositResc = createResource(getDepositPID().getRepositoryPath());
 
         // Ingest objects included in this deposit into the destination object
@@ -321,6 +328,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addPremisEvents(obj);
         // add MODS
         addDescription(obj, childResc);
+
+        overrideModifiedTimestamp(obj, childResc);
 
         // Increment the count of objects deposited
         addClicks(1);
@@ -447,6 +456,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
+
+        overrideModifiedTimestamp(obj, childResc);
     }
 
     private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc)
@@ -497,6 +508,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
+
+        overrideModifiedTimestamp(obj, childResc);
     }
 
     private void ingestCollection(ContentContainerObject parent, Resource parentResc, Resource childResc)
@@ -547,6 +560,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addIngestionEventForContainer(obj, childResc);
 
         addPremisEvents(obj);
+
+        overrideModifiedTimestamp(obj, childResc);
     }
 
     /**
@@ -606,6 +621,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addIngestionEventForContainer(obj, childResc);
                 // write premis events for the work to fedora
                 addPremisEvents(obj);
+
+                overrideModifiedTimestamp(obj, childResc);
             } catch (Exception e) {
                 tx.cancel(e);
             } finally {
@@ -629,15 +646,26 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         if (label != null) {
             aResc.addProperty(DC.title, label);
         }
-        if (!skipDepositLink) {
-            if (dResc.hasProperty(CdrDeposit.originalDeposit)) {
-                // Assign deposit record from provided original deposit resource
-                aResc.addProperty(Cdr.originalDeposit,
-                        dResc.getProperty(CdrDeposit.originalDeposit).getResource());
-            } else {
-                // default to linking to the current deposit since no override provided
-                aResc.addProperty(Cdr.originalDeposit, depositResc);
-            }
+        if (dResc.hasProperty(CdrDeposit.originalDeposit)) {
+            // Assign deposit record from provided original deposit resource
+            aResc.addProperty(Cdr.originalDeposit,
+                    dResc.getProperty(CdrDeposit.originalDeposit).getResource());
+        } else if (!skipDepositLink) {
+            // default to linking to the current deposit since no override provided
+            aResc.addProperty(Cdr.originalDeposit, depositResc);
+        }
+        if (overrideTimestamps && dResc.hasProperty(CdrDeposit.createTime)) {
+            String val = dResc.getProperty(CdrDeposit.createTime).getString();
+            Literal createdLiteral = aResc.getModel().createTypedLiteral(val, XSDDatatype.XSDdateTime);
+            aResc.addLiteral(Fcrepo4Repository.created, createdLiteral);
+        }
+    }
+
+    private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {
+        if (overrideTimestamps && dResc.hasProperty(CdrDeposit.lastModifiedTime)) {
+            String val = dResc.getProperty(CdrDeposit.lastModifiedTime).getString();
+            Literal modifiedLiteral = dResc.getModel().createTypedLiteral(val, XSDDatatype.XSDdateTime);
+            repoObjFactory.createExclusiveRelationship(contentObj, Fcrepo4Repository.lastModified, modifiedLiteral);
         }
     }
 
