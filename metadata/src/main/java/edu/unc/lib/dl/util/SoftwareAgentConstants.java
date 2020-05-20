@@ -44,7 +44,8 @@ public class SoftwareAgentConstants {
         embargoUpdateService("embargo-update"),
         clamav("clamav", "0.99"),
         FITS("fits", "1.0.6"),
-        curatorsWorkbench("curators-workbench");
+        curatorsWorkbench("curators-workbench"),
+        embargoExpirationService("embargo-update-service");
 
         private String value;
         private String version;
