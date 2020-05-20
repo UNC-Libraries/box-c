@@ -36,6 +36,8 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -54,6 +56,7 @@ import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
  * @author smithjp
  *
  */
+@EnableScheduling
 public class ExpireEmbargoService {
 
     private RepositoryObjectFactory repoObjFactory;
@@ -67,6 +70,8 @@ public class ExpireEmbargoService {
     public ExpireEmbargoService() {
     }
 
+    // run service every day 1 minute after midnight
+    @Scheduled(cron = "0 1 0 * * *")
     public void expireEmbargoes() {
         FedoraTransaction tx = txManager.startTransaction();
 
