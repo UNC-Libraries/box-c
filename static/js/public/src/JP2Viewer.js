@@ -1,4 +1,4 @@
-define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
+define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet'], function($, ui, L) {
 	$.widget("cdr.jp2Viewer", {
 		options : {
 			context : "",
@@ -16,7 +16,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
 		show : function() {
 			if (!this.initialized) {
 				var self = this;
-				require(['leaflet-IIIF', 'leafletFullscreen'], function(){
+				require(['promise', 'fetch', 'leaflet-IIIF', 'leafletFullscreen'], function(){
 					self.element.show();
 					self._initLeaflet();
 				});
