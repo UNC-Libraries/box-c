@@ -71,11 +71,12 @@ public class ExpireEmbargoService {
     }
 
     // run service every day 1 minute after midnight
-    @Scheduled(cron = "0 15 16 * * *")
+    @Scheduled(cron = "0 1 0 * * *")
     public void expireEmbargoes() {
         // get list of expired embargoes
         List<String> resourceList = getEmbargoInfo();
         Collection<PID> pids = new ArrayList<>();
+        PID currentPid = null;
 
         // remove all expired embargoes
         for (String rescUri: resourceList) {
@@ -83,6 +84,7 @@ public class ExpireEmbargoService {
 
             try (Timer.Context context = timer.time()) {
                 PID pid = PIDs.get(rescUri);
+                currentPid = pid;
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
                 Resource resc = repoObj.getResource();
 
@@ -99,7 +101,7 @@ public class ExpireEmbargoService {
                         .writeAndClose();
             } catch (Exception e) {
                 tx.cancelAndIgnore();
-                log.error("Failed to expire embargo: {}", e);
+                log.error("Failed to expire embargo for {} with error:", currentPid, e);
             } finally {
                 tx.close();
             }
