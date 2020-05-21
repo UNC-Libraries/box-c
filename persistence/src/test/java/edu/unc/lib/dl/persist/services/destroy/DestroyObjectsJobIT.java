@@ -274,7 +274,7 @@ public class DestroyObjectsJobIT {
         RepositoryObject folderObjParent = folderObj.getParent();
         Model logParentModel = folderObjParent.getPremisLog().getEventsModel();
         assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
-        assertTrue(logParentModel.contains(null, Premis.note,"3 object(s) were destroyed"));
+        assertTrue(logParentModel.contains(null, Premis.note, "3 object(s) were destroyed"));
 
         Resource fileResc = fileObj.getResource();
         Resource workResc = workObj.getResource();
@@ -300,7 +300,7 @@ public class DestroyObjectsJobIT {
 
         Model logParentModel = fileObj.getParent().getPremisLog().getEventsModel();
         assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
-        assertTrue(logParentModel.contains(null, Premis.note,"1 object(s) were destroyed"));
+        assertTrue(logParentModel.contains(null, Premis.note, "1 object(s) were destroyed"));
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));

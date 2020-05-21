@@ -87,8 +87,8 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
-    private int deletedObjCount = 0;
-    private List<String> deletedObjIds = new ArrayList<String>();
+    private List<String> deletedObjIds = new ArrayList<>();
+    private int deletedObjCount = deletedObjIds.size();
     private AgentPrincipals agent;
 
     private MultiDestinationTransferSession transferSession;
@@ -137,12 +137,13 @@ public class DestroyObjectsJob implements Runnable {
                     destroyTree(repoObj);
 
                     // Add premis event to parent
+                    String lineSeparator = System.getProperty("line.separator");
                     parentObj.getPremisLog().buildEvent(Premis.Deletion)
                             .addAuthorizingAgent(agent.getUsername())
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
-                            .addEventDetail("Objects destroyed:\n {0}",
-                                    String.join(System.getProperty("line.separator"), deletedObjIds))
+                            .addEventDetail("Objects destroyed:" + lineSeparator
+                                            + " {0}", String.join(lineSeparator, deletedObjIds))
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
