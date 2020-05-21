@@ -34,6 +34,8 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -63,11 +65,13 @@ public class ExpireEmbargoService {
 
     private static final Timer timer = TimerFactory.createTimerForClass(ExpireEmbargoService.class);
 
+    private static final Logger log = LoggerFactory.getLogger(ExpireEmbargoService.class);
+
     public ExpireEmbargoService() {
     }
 
     // run service every day 1 minute after midnight
-    @Scheduled(cron = "0 1 0 * * *")
+    @Scheduled(cron = "0 15 16 * * *")
     public void expireEmbargoes() {
         // get list of expired embargoes
         List<String> resourceList = getEmbargoInfo();
@@ -82,27 +86,20 @@ public class ExpireEmbargoService {
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
                 Resource resc = repoObj.getResource();
 
-                String eventText = null;
-                boolean expiredEmbargo = false;
-
                 // remove embargo
                 String embargoDate = resc.getProperty(embargoUntil).getString();
                 repoObjFactory.deleteProperty(repoObj, embargoUntil);
                 pids.add(pid);
-                expiredEmbargo = true;
-
-                if (expiredEmbargo) {
-                    eventText = "Expired an embargo which ended " +
-                            formatDateToUTC(parseUTCToDate(embargoDate));
-                    // Produce the premis event for this embargo
-                    repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                            .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
-                            .addEventDetail(eventText)
-                            .writeAndClose();
-                }
+                String eventText = "Expired an embargo which ended " +
+                        formatDateToUTC(parseUTCToDate(embargoDate));
+                // Produce the premis event for this embargo
+                repoObj.getPremisLog().buildEvent(Premis.Dissemination)
+                        .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
+                        .addEventDetail(eventText)
+                        .writeAndClose();
             } catch (Exception e) {
                 tx.cancelAndIgnore();
-                throw e;
+                log.error("Failed to expire embargo: {}", e);
             } finally {
                 tx.close();
             }
