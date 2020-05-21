@@ -17,7 +17,9 @@ require.config({
 		'leaflet': '/static/plugins/leaflet/leaflet',
 		'leafletFullscreen': '/static/plugins/Leaflet-fullscreen/dist/Leaflet.fullscreen',
 		'leaflet-IIIF' : '/static/plugins/Leaflet-IIIF/leaflet-iiif',
-		'audiojs' : '/static/plugins/audiojs/audio'
+		'audiojs' : '/static/plugins/audiojs/audio',
+		'promise': 'lib/promise-polyfill.min',
+		'fetch' : 'lib/fetch-polyfill.min'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
