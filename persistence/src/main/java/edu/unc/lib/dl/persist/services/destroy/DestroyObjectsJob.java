@@ -130,6 +130,10 @@ public class DestroyObjectsJob implements Runnable {
                     RepositoryObject parentObj = repoObj.getParent();
 
                     // purge tree with repoObj as root from repository
+                    // Add the root of the tree to delete
+                    deletedObjCount += 1;
+                    deletedObjIds.add(repoObj.getPid().getUUID());
+
                     destroyTree(repoObj);
 
                     // Add premis event to parent
@@ -137,7 +141,7 @@ public class DestroyObjectsJob implements Runnable {
                             .addAuthorizingAgent(agent.getUsername())
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
-                            .addEventDetail("Objects destroyed: {0}",
+                            .addEventDetail("Objects destroyed:\n {0}",
                                     String.join(System.getProperty("line.separator"), deletedObjIds))
                             .writeAndClose();
                 }
@@ -155,10 +159,6 @@ public class DestroyObjectsJob implements Runnable {
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
-        // Add the root of the tree to delete
-        deletedObjCount += 1;
-        deletedObjIds.add(rootOfTree.getPid().getUUID());
-
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
