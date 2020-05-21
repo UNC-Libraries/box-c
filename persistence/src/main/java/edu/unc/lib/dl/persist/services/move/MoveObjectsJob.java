@@ -42,7 +42,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
@@ -145,49 +144,60 @@ public class MoveObjectsJob implements Runnable {
         addPidToSource(objPid, sourcePid);
 
         // Write a premis event if object moves between admin units
-        adminUnitMove(objPid);
+        adminUnitMove(objPid, moveContent);
 
         // Add the object to its destination, which clears the previous parent as well
         destContainer.addMember(moveContent);
     }
 
-    private void adminUnitMove(PID sourcePid) {
-        ObjectPath destPath = objectPathFactory.getPath(destinationPid);
-        String destAdminUnit = null;
-        if (destPath != null) {
-            List<ObjectPathEntry> destObjPath = destPath.getEntries();
-            if (destObjPath.size() > 1) {
-                destAdminUnit = destObjPath.get(1).getPid();
-            }
-        }
+    private void adminUnitMove(PID sourcePid, ContentObject moveObj) {
+        HashMap<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
+        String destAdminUnit = destContainerInfo.get("adminUnit");
 
-        ObjectPath sourcePath = objectPathFactory.getPath(sourcePid);
-        String currentAdminUnit = null;
-        if (sourcePath != null) {
-            List<ObjectPathEntry> objPath = sourcePath.getEntries();
-            if (objPath.size() > 1) {
-                currentAdminUnit = sourcePath.getEntries().get(1).getPid();
-            }
-        }
+        HashMap<String, String> currentContainerInfo = getContainerInfo(sourcePid, 2);
+        String currentAdminUnit = currentContainerInfo.get("adminUnit");
 
         if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
-            RepositoryObject currentObj = repositoryObjectLoader.getRepositoryObject(sourcePid);
-            RepositoryObject parent = currentObj.getParent();
-            String prevContainerTitle = parent.getResource()
-                    .getProperty(DcElements.title).getObject().toString();
-
-            String newContainerUUID = destinationPid.getUUID();
-            String newContainerTitle = destContainer.getResource()
-                    .getProperty(DcElements.title).getObject().toString();
-
-            currentObj.getPremisLog().buildEvent(Premis.MetadataModification)
+            moveObj.getPremisLog().buildEvent(Premis.MetadataModification)
                     .addAuthorizingAgent(agent.getUsername())
-                    .addEventDetail("Object moved from parent object {0}, " +
-                                    "{1} in Admin Unit {2} to {3}, {4} in Admin Unit {5}",
-                            parent.getPid().getUUID(), prevContainerTitle, currentAdminUnit,
-                            newContainerUUID, newContainerTitle, destAdminUnit)
+                    .addEventDetail("Object moved from source {0} ({1}) in Admin Unit {2} ({3}) " +
+                                    "to destination {4} ({5}) in Admin Unit {6} ({7})",
+                            currentContainerInfo.get("container"), currentContainerInfo.get("containerTitle"),
+                            currentAdminUnit, currentContainerInfo.get("adminUnitTitle"),
+                            destContainerInfo.get("container"), destContainerInfo.get("containerTitle"),
+                            destAdminUnit, destContainerInfo.get("adminUnitTitle"))
                     .writeAndClose();
         }
+    }
+
+    private HashMap<String, String> getContainerInfo(PID pid, int entry) {
+        ObjectPath objPath = objectPathFactory.getPath(pid);
+
+        String objAdminUnit = null;
+        String objAdminUnitTitle = "";
+        String objContainer = "";
+        String objContainerTitle = "";
+
+        if (objPath != null) {
+            List<ObjectPathEntry> objPathList = objPath.getEntries();
+            if (objPathList.size() > 1) {
+                ObjectPathEntry destEntry = objPathList.get(1);
+                objAdminUnit = destEntry.getPid();
+                objAdminUnitTitle = destEntry.getName();
+
+                ObjectPathEntry objContainerEntry = objPathList.get(objPathList.size() - entry);
+                objContainer = objContainerEntry.getPid();
+                objContainerTitle = objContainerEntry.getName();
+            }
+        }
+
+        HashMap<String, String> entryValues = new HashMap<String, String>();
+        entryValues.put("adminUnit", objAdminUnit);
+        entryValues.put("adminUnitTitle", objAdminUnitTitle);
+        entryValues.put("container", objContainer);
+        entryValues.put("containerTitle", objContainerTitle);
+
+        return entryValues;
     }
 
     private void addPidToSource(PID pid, PID sourcePid) {
