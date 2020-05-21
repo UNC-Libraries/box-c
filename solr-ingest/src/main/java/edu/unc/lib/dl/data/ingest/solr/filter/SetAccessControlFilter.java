@@ -46,7 +46,6 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
         IndexDocumentBean idb = dip.getDocument();
 
-        List<String> status = new ArrayList<>();
         Set<String> readPrincipals = new HashSet<>();
         Set<String> staffPrincipals = new HashSet<>();
         List<String> roleGroups = new ArrayList<>();
@@ -67,7 +66,6 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         idb.setRoleGroup(roleGroups);
         idb.setAdminGroup(new ArrayList<>(staffPrincipals));
         idb.setReadGroup(new ArrayList<>(readPrincipals));
-        idb.setStatus(status);
     }
 
     private void addRoleGroup(List<String> roleGroups, RoleAssignment assignment) {
