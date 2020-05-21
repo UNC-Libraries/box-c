@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -163,10 +165,17 @@ public class DestroyObjectsJobIT {
         PID fileObjPid = objsToDestroy.get(2);
         initializeJob(asList(fileObjPid));
 
-        URI contentUri = repoObjLoader.getFileObject(fileObjPid).getOriginalFile().getContentUri();
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+
+        URI contentUri = fileObj.getOriginalFile().getContentUri();
         assertTrue(Files.exists(Paths.get(contentUri)));
 
         job.run();
+
+        Model logParentModel = fileObj.getParent().getPremisLog().getEventsModel();
+        assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logParentModel.contains(null, Premis.note,
+                "1 object(s) were destroyed"));
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource stoneResc = stoneFile.getResource();
@@ -262,6 +271,11 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
+        RepositoryObject folderObjParent = folderObj.getParent();
+        Model logParentModel = folderObjParent.getPremisLog().getEventsModel();
+        assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logParentModel.contains(null, Premis.note, "3 object(s) were destroyed"));
+
         Resource fileResc = fileObj.getResource();
         Resource workResc = workObj.getResource();
         Resource folderResc = folderObj.getResource();
@@ -283,6 +297,10 @@ public class DestroyObjectsJobIT {
         initializeJob(Arrays.asList(fileObjPid));
 
         job.run();
+
+        Model logParentModel = fileObj.getParent().getPremisLog().getEventsModel();
+        assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logParentModel.contains(null, Premis.note, "1 object(s) were destroyed"));
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));

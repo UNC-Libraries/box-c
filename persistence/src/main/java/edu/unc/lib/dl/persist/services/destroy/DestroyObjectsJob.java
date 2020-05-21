@@ -87,6 +87,7 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    private List<String> deletedObjIds = new ArrayList<>();
     private AgentPrincipals agent;
 
     private MultiDestinationTransferSession transferSession;
@@ -125,8 +126,23 @@ public class DestroyObjectsJob implements Runnable {
                 }
 
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
+                    RepositoryObject parentObj = repoObj.getParent();
+
                     // purge tree with repoObj as root from repository
+                    // Add the root of the tree to delete
+                    deletedObjIds.add(repoObj.getPid().getUUID());
+
                     destroyTree(repoObj);
+
+                    // Add premis event to parent
+                    String lineSeparator = System.getProperty("line.separator");
+                    parentObj.getPremisLog().buildEvent(Premis.Deletion)
+                            .addAuthorizingAgent(agent.getUsername())
+                            .addOutcome(true)
+                            .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
+                            .addEventDetail("Objects destroyed:" + lineSeparator
+                                            + "{0}", String.join(lineSeparator, deletedObjIds))
+                            .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
            }
@@ -146,9 +162,11 @@ public class DestroyObjectsJob implements Runnable {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
             for (ContentObject member : members) {
+                deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
             }
         }
+
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
