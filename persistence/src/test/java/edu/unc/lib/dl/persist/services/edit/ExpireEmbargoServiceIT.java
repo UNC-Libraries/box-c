@@ -42,7 +42,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +61,11 @@ import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -75,10 +78,6 @@ public class ExpireEmbargoServiceIT {
 
     @Autowired
     private String baseAddress;
-    @Autowired
-    private Model queryModel;
-    @Autowired
-    private FcrepoClient fcrepoClient;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
@@ -97,11 +96,6 @@ public class ExpireEmbargoServiceIT {
     private ExpireEmbargoService service;
 
     private ContentRootObject contentRoot;
-
-    private AdminUnit adminUnit;
-
-    private CollectionObject collObj1;
-    private CollectionObject collObj2;
 
     @Before
     public void init() throws Exception {
@@ -127,13 +121,12 @@ public class ExpireEmbargoServiceIT {
 
     @Test
     public void expireSingleEmbargoTest() throws Exception {
-        Calendar embargoUntil = yesterday();
+        Calendar embargoUntil = getDayFromNow(-1);
 
-        createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
-        PID pid = collObj1.getPid();
-        TestHelper.setContentBase(baseAddress);
+        PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
         service.expireEmbargoes();
@@ -143,30 +136,26 @@ public class ExpireEmbargoServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, "Expired an embargo for " + pid.toString() + " which ended " + formatDateToUTC(embargoUntil.getTime()));
-        verify(operationsMessageSender).sendOperationMessage(
-                eq(SoftwareAgent.embargoExpirationService.getFullname()),
-                eq(JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL),
-                pidListCaptor.capture());
-        assertTrue(pidListCaptor.getValue().contains(pid));
+        assertEventWithDetail(eventDetails, "Expired an embargo which ended " +
+                formatDateToUTC(embargoUntil.getTime()));
+
+        assertMessageSent(pid);
     }
 
 
     @Test
     public void expireMultipleEmbargoesTest() throws Exception {
-        Calendar embargoUntil = yesterday();
+        Calendar embargoUntil = getDayFromNow(-1);
         // create first embargoed collection
-        createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObject collObj1 = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid1 = collObj1.getPid();
         // create second embargoed collection
-        createSecondCollectionInUnit(new AclModelBuilder("Another collection with embargo")
+        CollectionObject collObj2 = createCollectionInUnit(new AclModelBuilder("Another collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid2 = collObj2.getPid();
-
-        TestHelper.setContentBase(baseAddress);
         treeIndexer.indexAll(baseAddress);
 
         service.expireEmbargoes();
@@ -181,23 +170,19 @@ public class ExpireEmbargoServiceIT {
         assertEquals(1, eventDetails1.size());
         assertEquals(1, eventDetails2.size());
 
-        assertEventWithDetail(eventDetails1, "Expired an embargo for " + pid1.toString() + " which ended " + formatDateToUTC(embargoUntil.getTime()));
-        assertEventWithDetail(eventDetails2, "Expired an embargo for " + pid2.toString() + " which ended " + formatDateToUTC(embargoUntil.getTime()));
+        assertEventWithDetail(eventDetails1, "Expired an embargo which ended " +
+                formatDateToUTC(embargoUntil.getTime()));
+        assertEventWithDetail(eventDetails2, "Expired an embargo which ended " +
+                formatDateToUTC(embargoUntil.getTime()));
 
-        verify(operationsMessageSender).sendOperationMessage(
-                eq(SoftwareAgent.embargoExpirationService.getFullname()),
-                eq(JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL),
-                pidListCaptor.capture());
-        List<PID> pids = pidListCaptor.getValue();
-        assertTrue(pids.contains(pid1));
-        assertTrue(pids.contains(pid2));
+        assertMessageSent(pid1);
+        assertMessageSent(pid2);
     }
 
     @Test
     public void expireNoEmbargoesTest() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj1.getPid();
-        TestHelper.setContentBase(baseAddress);
+        CollectionObject collObj = createCollectionInUnit(null);
+        PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
         service.expireEmbargoes();
@@ -209,31 +194,56 @@ public class ExpireEmbargoServiceIT {
         // no event should have been created since no embargoes were expired
         List<String> eventDetails = getEventDetails(target);
         assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
     }
-    
-    private Calendar yesterday() {
+
+    @Test
+    public void doNotExpireFutureEmbargoesTest() throws Exception {
+        Calendar embargoUntil = getDayFromNow(1);
+
+        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+                .addEmbargoUntil(embargoUntil)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        service.expireEmbargoes();
+
+        // collection was not created with an embargo and should not have one
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertEmbargo(target);
+
+        // no event should have been created since no embargoes were expired
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    private Calendar getDayFromNow(int daysFromNow) {
         final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -1);
+        cal.add(Calendar.DATE, daysFromNow);
         return cal;
     }
 
-    private void createCollectionInUnit(Model collModel) {
-        adminUnit = repoObjFactory.createAdminUnit(null);
+    private CollectionObject createCollectionInUnit(Model collModel) {
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        collObj1 = repoObjFactory.createCollectionObject(collModel);
-        adminUnit.addMember(collObj1);
-    }
-
-    private void createSecondCollectionInUnit(Model collModel) {
-        adminUnit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(adminUnit);
-        collObj2 = repoObjFactory.createCollectionObject(collModel);
-        adminUnit.addMember(collObj2);
+        CollectionObject collObj = repoObjFactory.createCollectionObject(collModel);
+        adminUnit.addMember(collObj);
+        return collObj;
     }
 
     private void assertNoEmbargo(RepositoryObject obj) {
         Resource resc = obj.getResource();
         assertFalse("Unexpected embargo assigned to " + obj.getPid().getId(),
+                resc.hasProperty(CdrAcl.embargoUntil));
+    }
+
+    private void assertEmbargo(RepositoryObject obj) {
+        Resource resc = obj.getResource();
+        assertTrue("No embargo assigned to " + obj.getPid().getId(),
                 resc.hasProperty(CdrAcl.embargoUntil));
     }
 
@@ -271,5 +281,10 @@ public class ExpireEmbargoServiceIT {
                 eq(JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL),
                 pidListCaptor.capture());
         assertTrue(pidListCaptor.getValue().contains(pid));
+    }
+
+    private void assertMessageNotSent(PID pid) {
+        verify(operationsMessageSender, never()).sendOperationMessage(
+                anyString(), any(JMSMessageUtil.CDRActions.class), anyCollectionOf(PID.class));
     }
 }

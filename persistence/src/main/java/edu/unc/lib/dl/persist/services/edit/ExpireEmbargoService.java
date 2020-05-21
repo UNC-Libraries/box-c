@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -27,20 +26,17 @@ import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import io.dropwizard.metrics5.Timer;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -65,7 +61,7 @@ public class ExpireEmbargoService {
     private TransactionManager txManager;
     private SparqlQueryService sparqlQueryService;
 
-    private static final Timer timer = TimerFactory.createTimerForClass(EditTitleService.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(ExpireEmbargoService.class);
 
     public ExpireEmbargoService() {
     }
@@ -73,68 +69,63 @@ public class ExpireEmbargoService {
     // run service every day 1 minute after midnight
     @Scheduled(cron = "0 1 0 * * *")
     public void expireEmbargoes() {
-        FedoraTransaction tx = txManager.startTransaction();
+        // get list of expired embargoes
+        List<String> resourceList = getEmbargoInfo();
+        Collection<PID> pids = new ArrayList<>();
 
-        try (Timer.Context context = timer.time()) {
-            // get list of expired embargoes
-            List<String> resourceList = getEmbargoInfo();
-            Collection<PID> pids = new ArrayList<>();
+        // remove all expired embargoes
+        for (String rescUri: resourceList) {
+            FedoraTransaction tx = txManager.startTransaction();
 
-            // remove all expired embargoes
-            for (int i = 0; i < resourceList.size(); i++) {
-                String rescUri = resourceList.get(i);
+            try (Timer.Context context = timer.time()) {
                 PID pid = PIDs.get(rescUri);
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-                Model model = ModelFactory.createDefaultModel().add(repoObj.getModel());
-                Resource resc = model.getResource(rescUri);
+                Resource resc = repoObj.getResource();
 
                 String eventText = null;
                 boolean expiredEmbargo = false;
-                String embargoDate = resc.getProperty(embargoUntil).getString();
 
-                if (resc.hasProperty(embargoUntil)) {
-                    repoObjFactory.deleteProperty(repoObj, embargoUntil);
-                    pids.add(pid);
-                    expiredEmbargo = true;
-                }
+                // remove embargo
+                String embargoDate = resc.getProperty(embargoUntil).getString();
+                repoObjFactory.deleteProperty(repoObj, embargoUntil);
+                pids.add(pid);
+                expiredEmbargo = true;
 
                 if (expiredEmbargo) {
-                    eventText = "Expired an embargo for " + pid.toString() + " which ended " +
+                    eventText = "Expired an embargo which ended " +
                             formatDateToUTC(parseUTCToDate(embargoDate));
-                } else {
-                    eventText = "Failed to expire embargo.";
+                    // Produce the premis event for this embargo
+                    repoObj.getPremisLog().buildEvent(Premis.Dissemination)
+                            .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
+                            .addEventDetail(eventText)
+                            .writeAndClose();
                 }
-
-                // Produce the premis event for this embargo
-                repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                        .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
-                        .addEventDetail(eventText)
-                        .writeAndClose();
+            } catch (Exception e) {
+                tx.cancelAndIgnore();
+                throw e;
+            } finally {
+                tx.close();
             }
+        }
 
+        if (!pids.isEmpty()) {
             // send a message for expired embargoes
             operationsMessageSender.sendOperationMessage(SoftwareAgent.embargoExpirationService.getFullname(),
                     JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL,
                     pids);
-        } catch (Exception e) {
-            tx.cancelAndIgnore();
-            throw e;
-        } finally {
-            tx.close();
         }
     }
 
     private final static String EMBARGO_QUERY =
             "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
-                    "select ?resource ?date\n" +
+                    "select ?resource\n" +
                     "where {\n" +
                     "  ?resource <http://cdr.unc.edu/definitions/acl#embargoUntil> ?date .\n" +
                     "  FILTER (?date < \"%s\"^^xsd:dateTime)\n" +
                     "}";
 
     private List<String> getEmbargoInfo() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        String today = dateFormat.format(new Date());
+        String today = DateTimeUtil.formatDateToUTC(new Date());
         String query = String.format(EMBARGO_QUERY, today);
 
         try (QueryExecution exec = sparqlQueryService.executeQuery(query)) {
@@ -150,20 +141,11 @@ public class ExpireEmbargoService {
         }
     }
 
-
     /**
      * @param sparqlQueryService the sparqlQueryService to set
      */
     public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
         this.sparqlQueryService = sparqlQueryService;
-    }
-
-    private void writePremisEvents(RepositoryObject repoObj, Resource embargoEvent) {
-        try (PremisLogger logger = repoObj.getPremisLog()) {
-            if (embargoEvent != null) {
-                logger.writeEvents(embargoEvent);
-            }
-        }
     }
 
     /**
