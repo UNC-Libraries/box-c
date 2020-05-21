@@ -67,6 +67,7 @@ public class DepositSubmissionService {
         DepositData depositData = new DepositData(null, null, BAG_WITH_N3,
                 BXC3_TO_5_MIGRATION_UTIL.getLabel(), principals);
         depositData.setDepositorEmail(depositorName + EMAIL_SUFFIX);
+        depositData.setOverrideTimestamps(true);
 
         PreconstructedDepositHandler depositHandler = new PreconstructedDepositHandler(depositPid);
         depositHandler.setDepositStatusFactory(depositStatusFactory);

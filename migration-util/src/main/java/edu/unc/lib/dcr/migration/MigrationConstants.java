@@ -89,8 +89,12 @@ public class MigrationConstants {
     }
 
     public static PID convertBxc3RefToPid(String bxc3Uri) {
+        return convertBxc3RefToPid("content", bxc3Uri);
+    }
+
+    public static PID convertBxc3RefToPid(String qualifier, String bxc3Uri) {
         String uuid = substringAfter(bxc3Uri, "/");
-        return PIDs.get(uuid);
+        return PIDs.get(qualifier, uuid);
     }
 
     public static final String PREMIS_DS = "MD_EVENTS";

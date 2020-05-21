@@ -44,6 +44,7 @@ public class DepositData {
     private PackagingType packagingType;
     private String depositMethod;
     private boolean staffOnly;
+    private boolean overrideTimestamps;
 
     public DepositData(InputStream inputStream, String filename, String mimeType, PackagingType packagingType,
             String depositMethod, AgentPrincipals depositingAgent) {
@@ -262,5 +263,16 @@ public class DepositData {
      */
     public void setStaffOnly(boolean staffOnly) {
         this.staffOnly = staffOnly;
+    }
+
+    /**
+     * @return true if the deposit should attempt to override timestamps when specified
+     */
+    public boolean getOverrideTimestamps() {
+        return overrideTimestamps;
+    }
+
+    public void setOverrideTimestamps(boolean overrideTimestamps) {
+        this.overrideTimestamps = overrideTimestamps;
     }
 }

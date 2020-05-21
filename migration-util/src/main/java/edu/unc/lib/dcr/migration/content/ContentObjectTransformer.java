@@ -34,6 +34,7 @@ import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.listDatastreamVersions;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.ORIGINAL_TYPE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DC_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
@@ -198,7 +199,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         if (originalDepStmt == null) {
             return;
         }
-        PID originalDepPid = convertBxc3RefToPid(originalDepStmt.getResource());
+        PID originalDepPid = convertBxc3RefToPid(DEPOSIT_RECORD_BASE, originalDepStmt.getResource().getURI());
         depResc.addProperty(CdrDeposit.originalDeposit, createResource(originalDepPid.getRepositoryPath()));
     }
 

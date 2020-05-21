@@ -25,11 +25,11 @@ export default {
         },
 
         markedForDeletion(record) {
-            return /marked.*?deletion/.test(this.restrictions(record));
+            return /marked.*?deletion/i.test(this.restrictions(record));
         },
 
         isRestricted(record) {
-            return /embargoed|staff-only/.test(this.restrictions(record));
+            return /embargoed|staff-only/i.test(this.restrictions(record));
         },
 
         restrictions(record) {
