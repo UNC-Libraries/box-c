@@ -88,7 +88,6 @@ public class DestroyObjectsJob implements Runnable {
 
     private List<PID> objsToDestroy;
     private List<String> deletedObjIds = new ArrayList<>();
-    private int deletedObjCount = deletedObjIds.size();
     private AgentPrincipals agent;
 
     private MultiDestinationTransferSession transferSession;
@@ -131,7 +130,6 @@ public class DestroyObjectsJob implements Runnable {
 
                     // purge tree with repoObj as root from repository
                     // Add the root of the tree to delete
-                    deletedObjCount += 1;
                     deletedObjIds.add(repoObj.getPid().getUUID());
 
                     destroyTree(repoObj);
@@ -141,9 +139,9 @@ public class DestroyObjectsJob implements Runnable {
                     parentObj.getPremisLog().buildEvent(Premis.Deletion)
                             .addAuthorizingAgent(agent.getUsername())
                             .addOutcome(true)
-                            .addEventDetail("{0} object(s) were destroyed", deletedObjCount)
+                            .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
                             .addEventDetail("Objects destroyed:" + lineSeparator
-                                            + " {0}", String.join(lineSeparator, deletedObjIds))
+                                            + "{0}", String.join(lineSeparator, deletedObjIds))
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
@@ -167,8 +165,6 @@ public class DestroyObjectsJob implements Runnable {
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
             }
-
-            deletedObjCount += members.size();
         }
 
         Resource rootResc = rootOfTree.getResource();
