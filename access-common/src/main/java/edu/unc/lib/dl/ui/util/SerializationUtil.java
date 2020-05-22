@@ -215,6 +215,10 @@ public class SerializationUtil {
             result.put("created", metadata.getDateCreated());
         }
 
+        if (metadata.getReadGroup() != null) {
+            result.put("readGroup", metadata.getReadGroup());
+        }
+
         if (metadata.getTimestamp() != null) {
             result.put("timestamp", metadata.getTimestamp());
         }

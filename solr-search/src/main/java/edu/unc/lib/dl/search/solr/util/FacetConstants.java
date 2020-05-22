@@ -32,6 +32,7 @@ public abstract class FacetConstants {
     public static final String HAS_PRIMARY_OBJECT = "Has Primary Object";
     public static final String NO_PRIMARY_OBJECT = "No Primary Object";
     public static final String PARENT_HAS_STAFF_ONLY_ACCESS = "Parent Has Staff-Only Access";
+    public static final String PATRON_SETTINGS = "Patron Settings";
     public static final String PUBLIC_ACCESS = "Public Access";
     public static final String STAFF_ONLY_ACCESS = "Staff-Only Access";
     public static final String UNPUBLISHED = "Unpublished";

@@ -22,22 +22,29 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.isDeleted = $.inArray("Marked For Deletion", this.metadata.status) != -1;
 
 		var validationProblem = "";
-		var tags = this.metadata.contentStatus;
+		var tags = this.metadata.contentStatus || [];
 
 		if (this.metadata.status !== undefined) {
 			tags = tags.concat(this.metadata.status);
 		}
 
-		if (tags) {
+		if (this.metadata.readGroup !== undefined && this.metadata.readGroup[0] !== '') {
+			tags = tags.concat(this.metadata.readGroup);
+		}
+
+		if (tags.length > 0) {
 			this.metadata.tags = tags.filter(function(d) {
-				return !/^(parent|has|not)/i.test(d);
+				return !/^(has|not)/i.test(d);
 			}).map(function(d) {
-				if (d === 'Marked For Deletion') {
+				if (/deletion/i.test(d)) {
 					return 'deleted';
-				} else if (d === 'Staff-only access') {
-					return 'staff only';
+				} else if (/staff-only/i.test(d)) {
+					return 'staff-only';
+				} else if (/patron/i.test(d)) {
+					return 'patron-settings';
 				} else {
-					return d.toLowerCase();
+					return d.toLowerCase()
+						.replace(/parent.is\s*?/, '');
 				}
 			});
 		}

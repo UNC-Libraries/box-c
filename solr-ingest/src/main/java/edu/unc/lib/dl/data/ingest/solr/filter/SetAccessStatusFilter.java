@@ -101,6 +101,10 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
         } else if (!hasPatronAssignments(inheritedAssignments)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
+
+            if (objPrincRoles.size() > 0 && !allPatronsRevoked(objPrincRoles)) {
+                status.add(FacetConstants.PATRON_SETTINGS);
+            }
         } else if (!restrictionsApplied && containsAssignment(PUBLIC_PRINC, canViewOriginals, inheritedAssignments)) {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
