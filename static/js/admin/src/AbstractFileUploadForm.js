@@ -24,6 +24,8 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 	AbstractFileUploadForm.prototype.open = function(resultObject) {
 		var dialogBox = new ModalCreate(this.options);
 		var formContents = dialogBox.formContents(resultObject);
+		var errors = [];
+		var maxFileSize = 1610612736; // 1.5gb
 		var self = this;
 		this.closed = false;
 		
@@ -31,13 +33,20 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 		
-		$("input[type='file']", this.$form).change(function(){
+		$("input[type='file']", this.$form).change(function() {
+			errors = []; // reset errors on change
 			self.ingestFile = this.files[0];
 			if (self.ingestFile) {
+				var fileSize = self.ingestFile.size
+
+				if (fileSize > maxFileSize) {
+					errors.push("The uploaded file is too large. The maximum allowed file size is: 1.5gb");
+				}
+
 				var fileInfo = "";
 				if (self.ingestFile.type)
 					fileInfo += self.ingestFile.type + ", ";
-				fileInfo += StringUtilities.readableFileSize(self.ingestFile.size);
+				fileInfo += StringUtilities.readableFileSize(fileSize);
 				$(".file_info", self.$form).html(fileInfo);
 			} else
 				$(".file_info", self.$form).html("");
@@ -57,7 +66,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 			if (self.submitted)
 				return false;
 			self.preprocessForm(resultObject);
-			errors = self.validationErrors();
+			errors = errors.concat(self.validationErrors());
 			if (errors && errors.length > 0) {
 				self.options.alertHandler.alertHandler("error", errors);
 				return false;
