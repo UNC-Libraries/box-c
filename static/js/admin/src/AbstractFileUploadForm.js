@@ -25,7 +25,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 		var dialogBox = new ModalCreate(this.options);
 		var formContents = dialogBox.formContents(resultObject);
 		var errors = [];
-		var maxFileSize = 524288000; // 500mb
+		var maxFileSize = 1610612736; // 1.5gb
 		var self = this;
 		this.closed = false;
 		
