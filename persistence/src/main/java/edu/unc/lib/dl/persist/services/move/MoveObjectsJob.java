@@ -42,8 +42,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
+import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DateTimeUtil;
@@ -141,8 +143,69 @@ public class MoveObjectsJob implements Runnable {
         PID sourcePid = moveContent.getParent().getPid();
         addPidToSource(objPid, sourcePid);
 
+        // Write a premis event if object moves between admin units
+        adminUnitMove(objPid, moveContent);
+
         // Add the object to its destination, which clears the previous parent as well
         destContainer.addMember(moveContent);
+    }
+
+    private void adminUnitMove(PID sourcePid, ContentObject moveObj) {
+        Map<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
+        String destAdminUnit = destContainerInfo.get("adminUnit");
+
+        Map<String, String> currentContainerInfo = getContainerInfo(sourcePid, 2);
+        String currentAdminUnit = currentContainerInfo.get("adminUnit");
+
+        if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
+            moveObj.getPremisLog().buildEvent(Premis.MetadataModification)
+                    .addAuthorizingAgent(agent.getUsername())
+                    .addEventDetail("Object moved from source {0} ({1}) in Admin Unit {2} ({3}) " +
+                                    "to destination {4} ({5}) in Admin Unit {6} ({7})",
+                            currentContainerInfo.get("container"), currentContainerInfo.get("containerTitle"),
+                            currentAdminUnit, currentContainerInfo.get("adminUnitTitle"),
+                            destContainerInfo.get("container"), destContainerInfo.get("containerTitle"),
+                            destAdminUnit, destContainerInfo.get("adminUnitTitle"))
+                    .writeAndClose();
+        }
+    }
+
+    /**
+     * Retrieves Map of admin unit and parent container UUIDs and titles
+     * for the requested PID
+     *
+     * @param pid pid to get path for
+     * @param entry offset from the end of the list for which entry in the list to retrieve
+     * @return Map of admin unit and container UUIDs and titles
+     */
+    private Map<String, String> getContainerInfo(PID pid, int entry) {
+        ObjectPath objPath = objectPathFactory.getPath(pid);
+
+        String objAdminUnit = null;
+        String objAdminUnitTitle = "";
+        String objContainer = "";
+        String objContainerTitle = "";
+
+        if (objPath != null) {
+            List<ObjectPathEntry> objPathList = objPath.getEntries();
+            if (objPathList.size() > 1) {
+                ObjectPathEntry destEntry = objPathList.get(1);
+                objAdminUnit = destEntry.getPid();
+                objAdminUnitTitle = destEntry.getName();
+
+                ObjectPathEntry objContainerEntry = objPathList.get(objPathList.size() - entry);
+                objContainer = objContainerEntry.getPid();
+                objContainerTitle = objContainerEntry.getName();
+            }
+        }
+
+        Map<String, String> entryValues = new HashMap<>();
+        entryValues.put("adminUnit", objAdminUnit);
+        entryValues.put("adminUnitTitle", objAdminUnitTitle);
+        entryValues.put("container", objContainer);
+        entryValues.put("containerTitle", objContainerTitle);
+
+        return entryValues;
     }
 
     private void addPidToSource(PID pid, PID sourcePid) {
