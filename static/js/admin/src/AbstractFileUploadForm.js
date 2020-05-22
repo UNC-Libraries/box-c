@@ -40,7 +40,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 				var fileSize = self.ingestFile.size
 
 				if (fileSize > maxFileSize) {
-					errors.push("The uploaded file is too large. The maximum allowed file size is: 500mb");
+					errors.push("The uploaded file is too large. The maximum allowed file size is: 1.5gb");
 				}
 
 				var fileInfo = "";
