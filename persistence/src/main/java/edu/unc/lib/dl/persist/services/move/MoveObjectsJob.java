@@ -151,10 +151,10 @@ public class MoveObjectsJob implements Runnable {
     }
 
     private void adminUnitMove(PID sourcePid, ContentObject moveObj) {
-        HashMap<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
+        Map<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
         String destAdminUnit = destContainerInfo.get("adminUnit");
 
-        HashMap<String, String> currentContainerInfo = getContainerInfo(sourcePid, 2);
+        Map<String, String> currentContainerInfo = getContainerInfo(sourcePid, 2);
         String currentAdminUnit = currentContainerInfo.get("adminUnit");
 
         if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
@@ -170,7 +170,15 @@ public class MoveObjectsJob implements Runnable {
         }
     }
 
-    private HashMap<String, String> getContainerInfo(PID pid, int entry) {
+    /**
+     * Retrieves Map of admin unit and parent container UUIDs and titles
+     * for the requested PID
+     *
+     * @param pid pid to get path for
+     * @param entry offset from the end of the list for which entry in the list to retrieve
+     * @return Map of admin unit and container UUIDs and titles
+     */
+    private Map<String, String> getContainerInfo(PID pid, int entry) {
         ObjectPath objPath = objectPathFactory.getPath(pid);
 
         String objAdminUnit = null;
@@ -191,7 +199,7 @@ public class MoveObjectsJob implements Runnable {
             }
         }
 
-        HashMap<String, String> entryValues = new HashMap<String, String>();
+        Map<String, String> entryValues = new HashMap<>();
         entryValues.put("adminUnit", objAdminUnit);
         entryValues.put("adminUnitTitle", objAdminUnitTitle);
         entryValues.put("container", objContainer);
