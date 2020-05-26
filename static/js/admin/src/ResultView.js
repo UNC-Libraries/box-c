@@ -31,13 +31,9 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						},*/
 						{
 							actions : [
-								{action : 'PublishBatch', label : 'Publish'},
-								{action : 'UnpublishBatch', label : 'Unpublish'}
-							]
-						}, {
-							actions : [
 								{action : 'RestoreBatch', label : 'Restore'},
-								{action : 'OpenDeleteBatch', label : 'Delete'}
+								{action : 'OpenDeleteBatch', label : 'Delete'},
+								{action : 'DestroyBatch', label : 'Destroy'}
 							]
 						},
 						{

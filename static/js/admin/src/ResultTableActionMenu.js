@@ -13,12 +13,6 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 			}, destroyBatch : {
 				label : "Destroy",
 				action : "DestroyBatch"
-			}, publish : {
-				label : "Publish",
-				action : "PublishBatch"
-			}, unpublish : {
-				label : "Unpublish",
-				action : "UnpublishBatch"
 			}
 		},
 		groups : undefined
@@ -43,7 +37,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 				actionClasses.push(group.actions[aIndex].action + "Action");
 			}
 		}
-		
+
 		this.actionButtons = [];
 		this.actionGroups = [];
 		
