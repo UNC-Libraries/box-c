@@ -2,7 +2,7 @@
     <tr :class="{onyen: this.user.principal === 'everyone'}">
         <td>{{ fromText }}</td>
         <td class="access-display">
-            {{ formattedPrincipal }}
+            {{ formattedPrincipal(user.principal_display) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal_display)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal_display)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal_display)}"></div>
@@ -50,16 +50,6 @@
                 return this.displayRoles[this.type];
             },
 
-            formattedPrincipal() {
-                let user = this.user.principal_display;
-
-                if (user === 'everyone') {
-                    user = 'Public Users';
-                }
-
-                return user;
-            },
-
             authenticatedUser() {
                 return this.user.principal_display === 'authenticated'
             },
@@ -76,6 +66,14 @@
         },
 
         methods: {
+            formattedPrincipal(user) {
+                if (user === 'everyone') {
+                    user = 'Public Users';
+                }
+
+                return user;
+            },
+
             nonPublicRole(text) {
                 return text !== 'everyone' && text !== 'patron';
             },
