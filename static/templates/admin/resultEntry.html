@@ -28,7 +28,7 @@
 			<% for (var i in metadata.tags) { 
 				var tag = metadata.tags[i];
 				%>
-				<a class="status" title="<%= tag.text %>" ><%= _.escape(tag) %></a>
+				<a class="status" title="<%= tag.label %>" ><%= _.escape(tag.value) %></a>
 			<% } %>
 		</div>
 	</td>

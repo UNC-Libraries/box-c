@@ -23,6 +23,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 
 		var validationProblem = "";
 		var tags = this.metadata.contentStatus || [];
+		var self = this;
 
 		if (this.metadata.status !== undefined) {
 			tags = tags.concat(this.metadata.status);
@@ -32,15 +33,19 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			this.metadata.tags = tags.filter(function(d) {
 				return !/^(has|not|no.primary)/i.test(d);
 			}).map(function(d) {
+				var tagValue;
+
 				if (/deletion/i.test(d)) {
-					return 'deleted';
+					tagValue = 'deleted';
 				} else if (/staff-only/i.test(d)) {
-					return 'staff-only';
+					tagValue = 'staff-only';
 				} else {
-					return d.toLowerCase()
+					tagValue = d.toLowerCase()
 						.replace(/parent.is\s*?/, '')
 						.replace(/\s+/, '-');
 				}
+
+				return self._tagText(tagValue);
 			});
 		}
 		
@@ -61,6 +66,38 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		if (this.options.selected || this.selected)
 			this.select();
 	};
+
+	ResultObject.prototype._tagText = function(tag) {
+		var helpText;
+
+		switch (tag) {
+			case 'deleted':
+				helpText = 'Object has been marked for deletion'
+				break;
+			case 'described':
+				helpText = 'Object has a MODS description';
+				break;
+			case 'embargoed':
+				helpText = 'Object has an active embargo set';
+				break;
+			case 'patron-settings':
+				helpText = 'The patron access settings for this object have been modified';
+				break;
+			case 'primary-object':
+				helpText = 'This file is the representative object for the work which contains it';
+				break;
+			case 'public-access':
+				helpText = 'Public has access to this object';
+				break;
+			case 'staff-only':
+				helpText = 'Only users with staff roles can view this object';
+				break;
+			default:
+				helpText = '';
+		}
+
+		return { label: helpText, value: tag };
+	}
 	
 	ResultObject.prototype._destroy = function () {
 		if (this.overlay) {
