@@ -145,6 +145,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
     }
 
@@ -174,6 +175,24 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testHasInheritedPublicAccessAndObjectPublicAccess() throws Exception {
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
     }
 
@@ -213,6 +232,21 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testPatronPermissions() throws Exception {
+        addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
     }
 

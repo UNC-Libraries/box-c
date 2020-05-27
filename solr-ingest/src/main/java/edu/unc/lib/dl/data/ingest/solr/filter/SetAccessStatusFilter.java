@@ -58,7 +58,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
     /**
      * Sets inherited acl factory
      *
-     * @param aclFactory an inherited acl factory
+     * @param iaf an inherited acl factory
      */
     public void setInheritedAclFactory(InheritedAclFactory iaf) {
         this.inheritedAclFactory = iaf;
@@ -67,7 +67,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
     /**
      * Sets non-inherited acl factory
      *
-     * @param aclFactory an inherited acl factory
+     * @param oaf an inherited acl factory
      */
     public void setObjectAclFactory(ObjectAclFactory oaf) {
         this.objAclFactory = oaf;
@@ -103,6 +103,10 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
         } else if (!restrictionsApplied && containsAssignment(PUBLIC_PRINC, canViewOriginals, inheritedAssignments)) {
             status.add(FacetConstants.PUBLIC_ACCESS);
+        }
+
+        if (objPrincRoles.size() > 0) {
+            status.add(FacetConstants.PATRON_SETTINGS);
         }
 
         return status;
