@@ -568,11 +568,11 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.everyone_role).toBe('canViewMetadata');
             expect(wrapper.vm.authenticated_role).toBe('canViewOriginals');
-            expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                { principal: 'everyone', role: 'canViewMetadata',  principal_display: 'everyone' },
-                { principal: 'authenticated', role: 'canViewOriginals',  principal_display: 'authenticated' },
-            ]);
-            expect(wrapper.vm.patron_roles.assigned.roles).toEqual(same_inherited_roles.assigned.roles);
+
+            expect(wrapper.vm.display_roles.inherited.roles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', principal_display: 'everyone' },
+                {principal: 'authenticated', role: 'canViewMetadata',  principal_display: 'authenticated' }]);
+            expect(wrapper.vm.patron_roles.inherited.roles).toEqual(same_inherited_roles.inherited.roles);
             done();
         });
     });
