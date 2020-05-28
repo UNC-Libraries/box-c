@@ -51,6 +51,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Confirm the move operation before performing it
 				var representative = ui.draggable.data("resultObject");
 				var promptText = '';
+				var moveSingleObj = self.manager.dragTargets.length === 1;
 
 				var destTitle = self._formatTitle(metadata.title);
 				var targetAdminUnit = self._getAdminUnit(metadata.objectPath);
@@ -59,10 +60,10 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				var currentAdminUnit = self._getAdminUnit(representative.metadata.objectPath);
 
 				if (currentAdminUnit.pid !== targetAdminUnit.pid) {
-					if (self.manager.dragTargets.length > 1) {
-						promptText += self.manager.dragTargets.length + " items are ";
-					} else {
+					if (moveSingleObj) {
 						promptText += " &quot;" + repTitle + "&quot; is ";
+					} else {
+						promptText += self.manager.dragTargets.length + " items are ";
 					}
 					promptText += "being moved from adminUnit &quot;" +
 						self._formatTitle(currentAdminUnit.name) + "&quot; to &quot;" + destTitle + "&quot;" +
@@ -72,7 +73,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				if (promptText === '') {
 					promptText += "Move ";
 
-					if (self.manager.dragTargets.length == 1) {
+					if (moveSingleObj) {
 						promptText += "&quot;" + repTitle + "&quot;";
 					} else {
 						promptText += self.manager.dragTargets.length + " items";
