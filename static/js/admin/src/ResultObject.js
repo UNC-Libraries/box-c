@@ -81,7 +81,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				helpText = 'Object has an active embargo set';
 				break;
 			case 'patron-settings':
-				helpText = 'The patron access settings for this object have been modified';
+				helpText = 'Patron access settings for this object have been added';
 				break;
 			case 'primary-object':
 				helpText = 'This file is the representative object for the work which contains it';
@@ -90,7 +90,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				helpText = 'Public has access to this object';
 				break;
 			case 'staff-only':
-				helpText = 'Only users with staff roles can view this object';
+				helpText = 'Only users with staff roles can access this object';
 				break;
 			default:
 				helpText = '';
