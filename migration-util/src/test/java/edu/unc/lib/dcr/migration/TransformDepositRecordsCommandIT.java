@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Model;
@@ -58,6 +59,7 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -119,7 +121,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         CommandLine migrationCommand = new CommandLine(new MigrationCLI());
 
         File pidListFile = setupDepositRecord(migrationCommand,
-                "Deposit Record with Manifest", false);
+                "Deposit Record with Manifest");
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-s", "loc1" };
@@ -144,10 +146,12 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
     @Test
     public void transformDepositRecordsUpperCasePID() throws Exception {
+        String bxc3PidUpperCase = UUID.randomUUID().toString().toUpperCase();
+        bxc3Pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, bxc3PidUpperCase);
         CommandLine migrationCommand = new CommandLine(new MigrationCLI());
 
         File pidListFile = setupDepositRecord(migrationCommand,
-                "Deposit Record with Manifest", true);
+                "Deposit Record with Manifest");
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-s", "loc1" };
@@ -170,7 +174,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         assertManifestPopulated(depRec);
     }
 
-    private File setupDepositRecord(CommandLine migrationCommand, String title, boolean upperCasePID) throws Exception {
+    private File setupDepositRecord(CommandLine migrationCommand, String title) throws Exception {
         // Set the application context path for the test environment
         Map<String, CommandLine> subs = migrationCommand.getSubcommands();
         CommandLine transformCommand = subs.get("tdr");
@@ -210,12 +214,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         // Setup list file
         File pidListFile = tmpFolder.newFile("deposit_rec_pids.txt");
-
-        String UUID = bxc3Pid.getId();
-        if (upperCasePID) {
-            UUID = UUID.toUpperCase();
-        }
-        writeStringToFile(pidListFile, UUID, UTF_8);
+        writeStringToFile(pidListFile, bxc3Pid.getId(), UTF_8);
 
         return pidListFile;
     }
@@ -226,7 +225,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         String title = "Deposit Record Generated ID " + System.currentTimeMillis();
         File pidListFile = setupDepositRecord(migrationCommand,
-                title, false);
+                title);
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-g",

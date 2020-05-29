@@ -88,8 +88,8 @@ public class FoxmlDocumentHelpers {
         }
 
         // Swap out the fedora3 uri for the current form
-        String foxmlPid = getFoxmlPid(foxml);
-        String relsRescUri = "info:fedora/" + foxmlPid;
+        String foxmlPid = getFoxmlPid(foxml).toLowerCase();
+        String relsRescUri = "info:fedora/" + foxmlPid.toLowerCase();
         Resource resc = model.getResource(relsRescUri);
 
         // Add the object properties to the model
