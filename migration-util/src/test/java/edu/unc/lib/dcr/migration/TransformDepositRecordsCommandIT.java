@@ -115,11 +115,11 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
     }
 
     @Test
-    public void transformDepositRecords() throws Exception {
+    public void transformDepositRecordsLowerCasePID() throws Exception {
         CommandLine migrationCommand = new CommandLine(new MigrationCLI());
 
         File pidListFile = setupDepositRecord(migrationCommand,
-                "Deposit Record with Manifest");
+                "Deposit Record with Manifest", false);
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-s", "loc1" };
@@ -142,7 +142,35 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         assertManifestPopulated(depRec);
     }
 
-    private File setupDepositRecord(CommandLine migrationCommand, String title) throws Exception {
+    @Test
+    public void transformDepositRecordsUpperCasePID() throws Exception {
+        CommandLine migrationCommand = new CommandLine(new MigrationCLI());
+
+        File pidListFile = setupDepositRecord(migrationCommand,
+                "Deposit Record with Manifest", true);
+
+        String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
+                "-s", "loc1" };
+        int result = migrationCommand.execute(args);
+
+        assertEquals("Incorrect exit status", 0, result);
+        String output = out.toString();
+        assertTrue("Expected one transformation successful",
+                output.contains(" 1/1 "));
+        assertTrue("Expected transformation completed message",
+                output.contains("Finished transformation"));
+
+
+        DepositRecord depRec = repoObjLoader.getDepositRecord(bxc3Pid);
+        assertTrue(depRec.getResource().hasProperty(DC.title, "Deposit Record with Manifest"));
+        assertTrue(depRec.getResource().hasLiteral(Cdr.depositedOnBehalfOf, DEPOSITOR));
+
+        assertPremisTransformed(depRec);
+
+        assertManifestPopulated(depRec);
+    }
+
+    private File setupDepositRecord(CommandLine migrationCommand, String title, boolean upperCasePID) throws Exception {
         // Set the application context path for the test environment
         Map<String, CommandLine> subs = migrationCommand.getSubcommands();
         CommandLine transformCommand = subs.get("tdr");
@@ -182,7 +210,12 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         // Setup list file
         File pidListFile = tmpFolder.newFile("deposit_rec_pids.txt");
-        writeStringToFile(pidListFile, bxc3Pid.getId(), UTF_8);
+
+        String UUID = bxc3Pid.getId();
+        if (upperCasePID) {
+            UUID = UUID.toUpperCase();
+        }
+        writeStringToFile(pidListFile, UUID, UTF_8);
 
         return pidListFile;
     }
@@ -193,7 +226,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
         String title = "Deposit Record Generated ID " + System.currentTimeMillis();
         File pidListFile = setupDepositRecord(migrationCommand,
-                title);
+                title, false);
 
         String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
                 "-g",
