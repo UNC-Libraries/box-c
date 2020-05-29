@@ -136,11 +136,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			}
 		}
 		
-		/* Publish action being replaced
-		if ($.inArray('publish', metadata.permissions) != -1)
-			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
-		*/
-		
 		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			if (metadata.type === 'File') {
 				items["editFilename"] = {name : 'Edit Filename'};
@@ -267,13 +262,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "review/" + metadata.id
-						});
-						break;
-					case "publish" :
-						self.actionHandler.addEvent({
-							action : $.inArray("Unpublished", metadata.status) == -1? 
-									'Unpublish' : 'Publish',
-							target : resultObject
 						});
 						break;
 					case "addFile" :

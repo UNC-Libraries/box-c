@@ -121,18 +121,11 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 					actionHandler : self.actionHandler,
 					alertHandler : self.options.alertHandler
 				}),
-				new ResultObjectActionMenu({
-					trigger : 'right',
-					selector : ".action_gear",
-					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler,
-					alertHandler : self.options.alertHandler
-				}),
 				// Bind just right click for opening menu on rest of the entry
 				new ResultObjectActionMenu({
 					trigger : 'right',
 					positionAtTrigger : false,
-					selector : ".res_entry td:not(:last-child)",
+					selector : ".action_gear, .res_entry td:not(:last-child)",
 					containerSelector : ".res_entry,.container_entry",
 					actionHandler : self.actionHandler,
 					alertHandler : self.options.alertHandler,
