@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -88,7 +90,7 @@ public class FoxmlDocumentHelpers {
         }
 
         // Swap out the fedora3 uri for the current form
-        String foxmlPid = getFoxmlPid(foxml).toLowerCase();
+        String foxmlPid = getFoxmlPid(foxml);
         String relsRescUri = "info:fedora/" + foxmlPid.toLowerCase();
         Resource resc = model.getResource(relsRescUri);
 
@@ -96,7 +98,6 @@ public class FoxmlDocumentHelpers {
         for (Element propEl : foxml.getRootElement().getChild("objectProperties", FOXML_NS).getChildren()) {
             String name = propEl.getAttributeValue("NAME");
             String value = propEl.getAttributeValue("VALUE");
-
             resc.addLiteral(createProperty(name), value);
         }
 
@@ -130,7 +131,25 @@ public class FoxmlDocumentHelpers {
     public static InputStream convertElementToStream(Element el) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         new XMLOutputter().output(el, outStream);
-        return new ByteArrayInputStream(outStream.toByteArray());
+        String foxmlText = outStream.toString();
+
+        // Make sure UUID is lowercase
+        int lastIndex = 0;
+        StringBuilder output = new StringBuilder();
+        Matcher matcher = Pattern.compile("(uuid.*?\")").matcher(foxmlText);
+
+        while (matcher.find()) {
+            output.append(foxmlText, lastIndex, matcher.start())
+                    .append(matcher.group(1).toLowerCase());
+
+            lastIndex = matcher.end();
+        }
+
+        if (lastIndex < foxmlText.length()) {
+            output.append(foxmlText, lastIndex, foxmlText.length());
+        }
+
+        return new ByteArrayInputStream(output.toString().getBytes());
     }
 
     /**

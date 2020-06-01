@@ -165,7 +165,8 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
                 output.contains("Finished transformation"));
 
 
-        DepositRecord depRec = repoObjLoader.getDepositRecord(bxc3Pid);
+        PID bxc5Pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, bxc3PidUpperCase.toLowerCase());
+        DepositRecord depRec = repoObjLoader.getDepositRecord(bxc5Pid);
         assertTrue(depRec.getResource().hasProperty(DC.title, "Deposit Record with Manifest"));
         assertTrue(depRec.getResource().hasLiteral(Cdr.depositedOnBehalfOf, DEPOSITOR));
 

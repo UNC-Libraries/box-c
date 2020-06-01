@@ -62,7 +62,7 @@ public class DepositRecordTransformationService {
 
             pidStringStream.forEach(originalString -> {
                 PID originalPid = PIDs.get(DEPOSIT_RECORD_BASE, originalString);
-                PID newPid = getTransformedPid(PIDs.get(DEPOSIT_RECORD_BASE, originalString.toLowerCase()));
+                PID newPid = getTransformedPid(originalPid);
                 transformerManager.createTransformer(originalPid, newPid, transferSession)
                     .fork();
             });
@@ -75,7 +75,8 @@ public class DepositRecordTransformationService {
     }
 
     public PID getTransformedPid(PID originalPid) {
-        return generateIds ? pidMinter.mintDepositRecordPid() : originalPid;
+        return generateIds ? pidMinter.mintDepositRecordPid() : PIDs.get(DEPOSIT_RECORD_BASE,
+                originalPid.getUUID().toLowerCase());
     }
 
     public void setGenerateIds(boolean generateIds) {
