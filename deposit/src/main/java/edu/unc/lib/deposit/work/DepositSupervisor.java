@@ -674,11 +674,6 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(IngestContentObjectsJob.class, depositUUID);
         }
 
-        // Register files to longleaf
-//        if (!successfulJobs.contains(RegisterToLongleafJob.class.getName())) {
-//            return makeJob(RegisterToLongleafJob.class, depositUUID);
-//        }
-
         return null;
     }
 
