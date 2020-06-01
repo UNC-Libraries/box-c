@@ -430,6 +430,9 @@ footer a:hover, footer a:active {
 .deleted .full_record_top h2 {
   color: #bbb;
 }
+.deleted label {
+  color: black;
+}
 .deleted:hover, .deleted a {
   color: #8CB4C6;
 }
@@ -816,6 +819,12 @@ p.no-search-results {
 .full_record.deleted a.button:hover {
   color: white;
 }
+.full_record.deleted .leaflet-control a {
+  color: black;
+}
+.full_record.deleted .leaflet-control a.leaflet-disabled {
+  color: #bbb;
+}
 
 .onecol, .content-wrap.full_record {
   width: 100%;
@@ -997,6 +1006,9 @@ table.dataTable tbody tr.odd {
 }
 #child-files tr.deleted {
   display: table-row;
+}
+#child-files tr.deleted a {
+  color: #8CB4C6;
 }
 #child-files td {
   border-left: 1px solid #E1E1E1;
