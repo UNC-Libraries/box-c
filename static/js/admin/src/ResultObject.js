@@ -169,13 +169,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			this.element.addClass("working moving");
 		}
 	};
-	
-	ResultObject.prototype.isPublished = function() {
-		if (!$.isArray(this.metadata.status)){
-			return true;
-		}
-		return $.inArray("Unpublished", this.metadata.status) == -1;
-	};
 
 	ResultObject.prototype.deleteElement = function() {
 		var obj = this;
