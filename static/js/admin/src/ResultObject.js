@@ -31,7 +31,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 
 		if (tags.length > 0) {
 			this.metadata.tags = tags.filter(function(d) {
-				return !/^(has|not|no.primary)/i.test(d);
+				return !/^(has|not|no.primary|public.access)/i.test(d);
 			}).map(function(d) {
 				var tagValue;
 
@@ -85,9 +85,6 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				break;
 			case 'primary-object':
 				helpText = 'This file is the representative object for the work which contains it';
-				break;
-			case 'public-access':
-				helpText = 'Public has access to this object';
 				break;
 			case 'staff-only':
 				helpText = 'Only users with staff roles can access this object';
