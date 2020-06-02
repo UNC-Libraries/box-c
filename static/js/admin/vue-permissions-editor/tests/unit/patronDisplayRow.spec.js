@@ -116,12 +116,52 @@ describe('patronRoles.vue', () => {
 
     it("displays 'Patron' for everyone user if permission is the same as authenticated user", async () => {
         wrapper.setProps({
-            user: { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'patron' }
+            user: { principal: 'everyone', role: 'canViewAccessCopies', principal_display: 'patron' },
+            displayRoles: {
+                inherited: {
+                    roles: [
+                        { principal: 'everyone', principal_display: 'everyone', role: 'canViewOriginals' },
+                        { principal: 'authenticated', principal_display: 'authenticated', role: 'canViewMetadata' }
+                    ]
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', principal_display: 'patron', role: 'canViewMetadata' },
+                        { principal: 'authenticated', principal_display: 'patron', role: 'canViewMetadata' }
+                    ]
+                }
+            }
         });
 
         await wrapper.vm.$nextTick();
         let user_text = wrapper.find('.access-display');
         expect(user_text.text()).toMatch(/^patron/);
+    });
+
+
+    it("does not display 'Patron' for everyone user if permission is the same as authenticated user but assigned permission aren't", async () => {
+        wrapper.setProps({
+            type: 'inherited',
+            user: { principal: 'everyone', principal_display: 'everyone', role: 'canViewOriginals' },
+            displayRoles: {
+                inherited: {
+                   roles: [
+                       { principal: 'everyone', principal_display: 'everyone', role: 'canViewOriginals' },
+                       { principal: 'authenticated', principal_display: 'authenticated', role: 'canViewOriginals' }
+                   ]
+                },
+                assigned: {
+                    roles: [
+                        { principal: 'everyone', principal_display: 'everyone', role: 'none' },
+                        { principal: 'authenticated', principal_display: 'authenticated', role: 'canViewMetadata' }
+                    ]
+                }
+            }
+        });
+
+        await wrapper.vm.$nextTick();
+        let user_text = wrapper.find('.access-display');
+        expect(user_text.text()).toMatch(/^Public/);
     });
 
     it("displays staff only inherited patron roles", async () => {

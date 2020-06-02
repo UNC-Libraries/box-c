@@ -225,6 +225,12 @@
                 return inherited.length > 1 && inherited[0].role === inherited[1].role;
             },
 
+            hasSameOrEmptyInheritedRoles() {
+                let inherited = this.display_roles.inherited.roles;
+                let roleSize = inherited.length;
+                return roleSize === 0 || (roleSize > 1 && inherited[0].role === inherited[1].role);
+            },
+
             hasSameAssignedRoles() {
                 let assigned = this.display_roles.assigned.roles;
                 return assigned.length > 1 && assigned[0].role === assigned[1].role;
@@ -316,7 +322,7 @@
                         this.display_roles.assigned.roles = [
                             { principal: 'everyone', role: 'none', principal_display: 'staff' },
                             { principal: 'authenticated', role: 'none', principal_display: 'staff' }
-                        ]
+                        ];
                     }
                 }).catch((error) => {
                     let response_msg = `Unable to load current patron roles for: ${this.title}`;
@@ -378,7 +384,8 @@
 
                 if (users.length === 0) {
                     return users;
-                } else if (this.hasSameAssignedRoles && users[0].role === 'none' && users[1].role === 'none') {
+                } else if (users[0].role === 'none' && users[1].role === 'none'
+                    && (this.hasSameOrEmptyInheritedRoles)) {
                     type = 'staff';
                 } else if (this.sameRolesAll || this.sameRolesNoInherited) {
                     type = 'patron';
