@@ -49,8 +49,8 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 						if (currentAdminUnit !== undefined && targetAdminUnit !== undefined &&
 							currentAdminUnit.pid !== targetAdminUnit.pid) {
-							if (adminUnitList.indexOf(currentAdminUnit.pid) === -1) {
-								adminUnitList.push(currentAdminUnit.pid);
+							if (adminUnitList.findIndex((d) => d.pid === currentAdminUnit.pid) === -1) {
+								adminUnitList.push(currentAdminUnit);
 							}
 						}
 					});
@@ -70,13 +70,17 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 				// Multiple admin units
 				var numAdminUnits = adminUnitList.length;
-				if (numAdminUnits> 0) {
+
+				if (numAdminUnits > 0) {
 					promptText += self._msgText(moveSingleObj, repTitle);
 
-					if (moveSingleObj || numAdminUnits === 1) {
-						promptText += (numAdminUnits > 0) ? " are" : " is";
-						promptText += " being moved from adminUnit &quot;" +
-						repTitle + "&quot; to &quot;" + destTitle + "&quot;";
+					if (moveSingleObj) {
+						promptText += " is being moved from adminUnit &quot;" +
+							repTitle + "&quot; to &quot;" + destTitle + "&quot;";
+					} else if (numAdminUnits === 1) {
+						var unitTitle = self._formatTitle(adminUnitList[0].name);
+						promptText += " are being moved from adminUnit &quot;" +
+							unitTitle + "&quot; to &quot;" + destTitle + "&quot;";
 					} else {
 						promptText += " are being moved from multiple adminUnits" +
 							" to &quot;" + destTitle + "&quot;";
