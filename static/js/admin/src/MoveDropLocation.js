@@ -35,7 +35,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 				var destTitle = self._formatTitle(metadata.title);
 				var targetAdminUnit = self._getAdminUnit(metadata.objectPath);
-				var adminUnitsSize = 1;
+				var adminUnitList = [];
 
 				// Check that we are not moving an object to itself
 				try {
@@ -49,7 +49,9 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 						if (currentAdminUnit !== undefined && targetAdminUnit !== undefined &&
 							currentAdminUnit.pid !== targetAdminUnit.pid) {
-							adminUnitsSize += 1;
+							if (adminUnitList.indexOf(currentAdminUnit.pid) === -1) {
+								adminUnitList.push(currentAdminUnit.pid);
+							}
 						}
 					});
 				} catch (e) {
@@ -67,11 +69,13 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				var repTitle = self._formatTitle(representative.metadata.title);
 
 				// Multiple admin units
-				if (adminUnitsSize > 1) {
+				var numAdminUnits = adminUnitList.length;
+				if (numAdminUnits> 0) {
 					promptText += self._msgText(moveSingleObj, repTitle);
 
-					if (moveSingleObj) {
-						promptText += " is being moved from adminUnit &quot;" +
+					if (moveSingleObj || numAdminUnits === 1) {
+						promptText += (numAdminUnits > 0) ? " are" : " is";
+						promptText += " being moved from adminUnit &quot;" +
 						repTitle + "&quot; to &quot;" + destTitle + "&quot;";
 					} else {
 						promptText += " are being moved from multiple adminUnits" +
