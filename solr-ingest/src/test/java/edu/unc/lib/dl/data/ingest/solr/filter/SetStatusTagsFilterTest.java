@@ -95,16 +95,6 @@ public class SetStatusTagsFilterTest {
     }
 
     @Test
-    public void testUnpublished() throws Exception {
-        contentStatus.add(FacetConstants.UNPUBLISHED);
-
-        filter.filter(dip);
-
-        verify(idb).setStatusTags(setCaptor.capture());
-        assertTrue(setCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
-    }
-
-    @Test
     public void testEmbargoed() throws Exception {
         accessStatus.add(FacetConstants.EMBARGOED);
 
@@ -121,7 +111,6 @@ public class SetStatusTagsFilterTest {
 
         verify(idb).setStatusTags(setCaptor.capture());
         assertFalse(setCaptor.getValue().contains(FacetConstants.EMBARGOED));
-        assertFalse(setCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
         assertFalse(setCaptor.getValue().contains(FacetConstants.IS_PRIMARY_OBJECT));
         assertFalse(setCaptor.getValue().contains(FacetConstants.CONTENT_DESCRIBED));
         assertTrue(setCaptor.getValue().contains(FacetConstants.CONTENT_NOT_DESCRIBED));

@@ -78,10 +78,6 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             }
         }
 
-        if (resc.hasProperty(Cdr.unpublished)) {
-            status.add(FacetConstants.UNPUBLISHED);
-        }
-
         return status;
     }
 }

@@ -22,25 +22,31 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.isDeleted = $.inArray("Marked For Deletion", this.metadata.status) != -1;
 
 		var validationProblem = "";
-		if (this.metadata.tags) {
-			var tagIndex = -1;
-			for (var index in this.metadata.tags) {
-				var tag = this.metadata.tags[index];
-				if (tag.label == "invalid term") {
-					var details =tag.details;
-					for (var detailsIndex in details) {
-						var detailParts = details[detailsIndex].split("|");
-						validationProblem +=  "<br/>&nbsp;&middot;&nbsp;" + detailParts[0] + ": " + detailParts[1];
-					}
-					
-					tagIndex = index;
-					break;
+		var tags = this.metadata.contentStatus || [];
+		var self = this;
+
+		if (this.metadata.status !== undefined) {
+			tags = tags.concat(this.metadata.status);
+		}
+
+		if (tags.length > 0) {
+			this.metadata.tags = tags.filter(function(d) {
+				return !/^(has|not|no.primary|public.access)/i.test(d);
+			}).map(function(d) {
+				var tagValue;
+
+				if (/deletion/i.test(d)) {
+					tagValue = 'deleted';
+				} else if (/staff-only/i.test(d)) {
+					tagValue = 'staff-only';
+				} else {
+					tagValue = d.toLowerCase()
+						.replace(/parent.is\s*?/, '')
+						.replace(/\s+/, '-');
 				}
-			}
-			
-			if (tagIndex != -1) {
-				delete this.metadata.tags[tagIndex];
-			}
+
+				return self._tagText(tagValue);
+			});
 		}
 		
 		var newElement = $(this.options.template({metadata : metadata,
@@ -60,6 +66,35 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		if (this.options.selected || this.selected)
 			this.select();
 	};
+
+	ResultObject.prototype._tagText = function(tag) {
+		var helpText;
+
+		switch (tag) {
+			case 'deleted':
+				helpText = 'Object has been marked for deletion'
+				break;
+			case 'described':
+				helpText = 'Object has a MODS description';
+				break;
+			case 'embargoed':
+				helpText = 'Object has an active embargo set';
+				break;
+			case 'patron-settings':
+				helpText = 'Patron access settings for this object have been added';
+				break;
+			case 'primary-object':
+				helpText = 'This file is the representative object for the work which contains it';
+				break;
+			case 'staff-only':
+				helpText = 'Only users with staff roles can access this object';
+				break;
+			default:
+				helpText = '';
+		}
+
+		return { label: helpText, value: tag };
+	}
 	
 	ResultObject.prototype._destroy = function () {
 		if (this.overlay) {

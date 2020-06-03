@@ -175,6 +175,5 @@ public class SetContentStatusFilterTest {
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
     }
 }

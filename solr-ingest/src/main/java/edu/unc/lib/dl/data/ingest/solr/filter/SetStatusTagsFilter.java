@@ -45,10 +45,6 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
         List<String> contentStatus = idb.getContentStatus();
         List<String> accessStatus = idb.getStatus();
 
-        if (contentStatus.contains(FacetConstants.UNPUBLISHED)) {
-            statusTags.add(FacetConstants.UNPUBLISHED);
-        }
-
         if (contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             statusTags.add(FacetConstants.CONTENT_DESCRIBED);
         } else {
