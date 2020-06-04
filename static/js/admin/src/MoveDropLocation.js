@@ -73,13 +73,14 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 				if (numAdminUnits > 0) {
 					promptText += self._msgText(moveSingleObj, repTitle);
+					promptText += moveSingleObj ? " is" : " are";
 
 					if (numAdminUnits === 1) {
 						var unitTitle = self._formatTitle(adminUnitList[0].name);
-						promptText += " are being moved from adminUnit &quot;" +
+						promptText += " being moved from adminUnit &quot;" +
 							unitTitle + "&quot; to &quot;" + destTitle + "&quot;";
 					} else {
-						promptText += " are being moved from multiple adminUnits" +
+						promptText += " being moved from multiple adminUnits" +
 							" to &quot;" + destTitle + "&quot;";
 					}
 
