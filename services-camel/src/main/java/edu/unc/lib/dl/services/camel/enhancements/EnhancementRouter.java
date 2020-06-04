@@ -88,6 +88,11 @@ public class EnhancementRouter extends RouteBuilder {
             .end();
 
         from("direct:process.binary")
+            .routeId("ProcessBinary")
+            .multicast()
+            .to("direct-vm:filter.longleaf", "direct:process.original");
+
+        from("direct:process.original")
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
                 .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))

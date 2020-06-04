@@ -60,6 +60,11 @@
         <groupId>org.apache.activemq</groupId>
         <artifactId>activemq-client</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-sjms</artifactId>
+        <version>${camel.version}</version>
+    </dependency>
 
     <dependency>
         <groupId>commons-io</groupId>

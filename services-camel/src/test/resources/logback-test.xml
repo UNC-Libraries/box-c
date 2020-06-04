@@ -6,6 +6,8 @@
       <pattern>%relative %-5level [%thread] %logger{20} - %msg%n</pattern>
     </encoder>
   </appender>
+  <logger name="org.apache.camel" level="ERROR"/>
+  <logger name="org.apache.activemq" level="ERROR"/>
   <root level="WARN">
     <appender-ref ref="CONSOLE"/>
   </root>

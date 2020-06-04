@@ -353,6 +353,15 @@
         <property name="transferService" ref="binaryTransferService" />
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
+    
+    <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
+    </bean>
+    
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+    </bean>
 
     <!-- Camel contexts -->
 
@@ -374,6 +383,10 @@
     
     <camel:camelContext id="CdrServiceCdrEvents">
         <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="cdrLongleaf">
+        <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrEnhancements">

@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -64,6 +63,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -71,8 +71,10 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
+import edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor;
 import edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -125,6 +127,9 @@ public class EnhancementRouterIT {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
+    @BeanInject(value = "registerLongleafProcessor")
+    private RegisterToLongleafProcessor registerLongleafProcessor;
+
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
@@ -144,6 +149,7 @@ public class EnhancementRouterIT {
         reset(addSmallThumbnailProcessor);
         reset(addLargeThumbnailProcessor);
         reset(addAccessCopyProcessor);
+        reset(registerLongleafProcessor);
 
         when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
@@ -247,6 +253,7 @@ public class EnhancementRouterIT {
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         // Indexing triggered for binary parent
         verify(solrIngestProcessor).process(any(Exchange.class));
+        verify(registerLongleafProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -275,6 +282,7 @@ public class EnhancementRouterIT {
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(registerLongleafProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -321,6 +329,33 @@ public class EnhancementRouterIT {
         assertTrue("Processing message did not match expectations", result);
 
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void testDepositManifestFileMetadata() throws Exception {
+        DepositRecord recObj = repoObjectFactory.createDepositRecord(null);
+        Path manifestPath = Files.createTempFile("manifest", ".txt");
+        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "text/plain");
+
+        String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
+        PID mdPid = PIDs.get(mdId);
+
+        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
+                .whenCompleted(1)
+                .create();
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+
+        assertTrue("Processing message did not match expectations", result);
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(registerLongleafProcessor, never()).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {

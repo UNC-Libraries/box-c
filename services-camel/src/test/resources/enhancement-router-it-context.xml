@@ -58,6 +58,10 @@
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
     </bean>
+    
+    <bean id="registerLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor" />
+    </bean>
 
     <camel:camelContext id="cdrServiceImageEnhancements">
         <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
@@ -69,6 +73,21 @@
     
     <camel:camelContext id="cdrServiceSolr">
         <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
+    </camel:camelContext>
+    
+    <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
+    </bean>
+    
+    <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
+    
+    <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
+    
+    <camel:camelContext id="cdrLongleaf">
+        <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="cdrEnhancements">
