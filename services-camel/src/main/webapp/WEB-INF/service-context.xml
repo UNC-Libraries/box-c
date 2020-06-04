@@ -344,6 +344,9 @@
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
 
+    <bean id="expireEmbargoService" class="edu.unc.lib.dl.persist.services.edit.ExpireEmbargoService">
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
