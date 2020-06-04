@@ -32,12 +32,26 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Verify that it is the correct type of element and retrieve metadata
 				var metadata = self.options.dropTargetGetDataFunction($dropTarget);
 				if (!metadata) return false;
-				
+
+				var destTitle = self._formatTitle(metadata.title);
+				var targetAdminUnit = self._getAdminUnit(metadata.objectPath);
+				var adminUnitList = [];
+
 				// Check that we are not moving an object to itself
 				try {
 					$.each(self.manager.dragTargets, function() {
 						if (this.pid == metadata.id) {
 							throw "Invalid destination.  Object " + this.pid + " cannot be move into itself.";
+						}
+
+						// Check if the object is being moved to another admin unit
+						var currentAdminUnit = self._getAdminUnit(this.metadata.objectPath);
+
+						if (currentAdminUnit !== undefined && targetAdminUnit !== undefined &&
+							currentAdminUnit.pid !== targetAdminUnit.pid) {
+							if (adminUnitList.findIndex((d) => d.pid === currentAdminUnit.pid) === -1) {
+								adminUnitList.push(currentAdminUnit);
+							}
 						}
 					});
 				} catch (e) {
@@ -49,28 +63,38 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				self.manager.dropActive = true;
 				
 				// Confirm the move operation before performing it
+				var promptText = '';
+				var moveSingleObj = self.manager.dragTargets.length === 1;
 				var representative = ui.draggable.data("resultObject");
-				
-				var repTitle = representative.metadata.title;
-				if (repTitle.length > 50) {
-					repTitle = repTitle.substring(0, 50) + "...";
+				var repTitle = self._formatTitle(representative.metadata.title);
+
+				// Multiple admin units
+				var numAdminUnits = adminUnitList.length;
+
+				if (numAdminUnits > 0) {
+					promptText += self._msgText(moveSingleObj, repTitle);
+					promptText += moveSingleObj ? " is" : " are";
+
+					if (numAdminUnits === 1) {
+						var unitTitle = self._formatTitle(adminUnitList[0].name);
+						promptText += " being moved from adminUnit &quot;" +
+							unitTitle + "&quot; to &quot;" + destTitle + "&quot;";
+					} else {
+						promptText += " being moved from multiple adminUnits" +
+							" to &quot;" + destTitle + "&quot;";
+					}
+
+					promptText += " in adminUnit &quot;" + self._formatTitle(targetAdminUnit.name) + "&quot;.";
 				}
-				
-				var destTitle = metadata.title;
-				if (destTitle.length > 50) {
-					destTitle = destTitle.substring(0, 50) + "...";
-				}
-				
-				var promptText = "Move ";
-				
-				if (self.manager.dragTargets.length == 1) {
-					promptText += "&quot;" + repTitle + "&quot;";
+
+				// Single admin unit
+				if (promptText === '') {
+					promptText += "Move " + self._msgText(moveSingleObj, repTitle);
+					promptText += " into &quot;" + destTitle + "&quot;?";
 				} else {
-					promptText += self.manager.dragTargets.length + " items";
+					promptText += " Continue with move?";
 				}
-				
-				promptText += " into &quot;" + destTitle + "&quot;?";
-				
+
 				var confirm = new ConfirmationDialog({
 					promptText : promptText,
 					modal : true,
@@ -130,6 +154,30 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
 		}
 	};
+
+	MoveDropLocation.prototype._getAdminUnit = function(objPath) {
+		if (objPath !== undefined && objPath.length > 1) {
+			return objPath[1];
+		}
+
+		return undefined;
+	};
+
+	MoveDropLocation.prototype_adminUnitExists = function(adminUnit) {
+		return adminUnit !== undefined && adminUnit.id
+	}
+
+	MoveDropLocation.prototype._msgText = function(singleObj, title) {
+		return singleObj ? "&quot;" + title + "&quot;" : this.manager.dragTargets.length + " items";
+	}
+
+	MoveDropLocation.prototype._formatTitle = function (title) {
+		if (title.length > 50) {
+			title = title.substring(0, 50) + "...";
+		}
+
+		return title;
+	}
 	
 	return MoveDropLocation;
 });
