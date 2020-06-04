@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +55,7 @@ import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
  * @author smithjp
  *
  */
+@Component
 @EnableScheduling
 public class ExpireEmbargoService {
 
@@ -73,38 +75,43 @@ public class ExpireEmbargoService {
     // run service every day 1 minute after midnight
     @Scheduled(cron = "0 1 0 * * *")
     public void expireEmbargoes() {
+        log.info("running ExpireEmbargoService");
         // get list of expired embargoes
         List<String> resourceList = getEmbargoInfo();
         Collection<PID> pids = new ArrayList<>();
         PID currentPid = null;
 
-        // remove all expired embargoes
-        for (String rescUri: resourceList) {
-            FedoraTransaction tx = txManager.startTransaction();
+        if (resourceList.size() > 0) {
+            // remove all expired embargoes
+            for (String rescUri: resourceList) {
+                FedoraTransaction tx = txManager.startTransaction();
 
-            try (Timer.Context context = timer.time()) {
-                PID pid = PIDs.get(rescUri);
-                currentPid = pid;
-                RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-                Resource resc = repoObj.getResource();
+                try (Timer.Context context = timer.time()) {
+                    PID pid = PIDs.get(rescUri);
+                    currentPid = pid;
+                    RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+                    Resource resc = repoObj.getResource();
 
-                // remove embargo
-                String embargoDate = resc.getProperty(embargoUntil).getString();
-                repoObjFactory.deleteProperty(repoObj, embargoUntil);
-                pids.add(pid);
-                String eventText = "Expired an embargo which ended " +
-                        formatDateToUTC(parseUTCToDate(embargoDate));
-                // Produce the premis event for this embargo
-                repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                        .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
-                        .addEventDetail(eventText)
-                        .writeAndClose();
-            } catch (Exception e) {
-                tx.cancelAndIgnore();
-                log.error("Failed to expire embargo for {} with error:", currentPid, e);
-            } finally {
-                tx.close();
+                    // remove embargo
+                    String embargoDate = resc.getProperty(embargoUntil).getString();
+                    repoObjFactory.deleteProperty(repoObj, embargoUntil);
+                    pids.add(pid);
+                    String eventText = "Expired an embargo which ended " +
+                            formatDateToUTC(parseUTCToDate(embargoDate));
+                    // Produce the premis event for this embargo
+                    repoObj.getPremisLog().buildEvent(Premis.Dissemination)
+                            .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
+                            .addEventDetail(eventText)
+                            .writeAndClose();
+                } catch (Exception e) {
+                    tx.cancelAndIgnore();
+                    log.error("Failed to expire embargo for {} with error:", currentPid, e);
+                } finally {
+                    tx.close();
+                }
             }
+        } else {
+            log.error("No embargoes to expire");
         }
 
         if (!pids.isEmpty()) {
@@ -137,6 +144,9 @@ public class ExpireEmbargoService {
                 embargoedRescList.add(resc.getURI());
             }
             return embargoedRescList;
+        } catch(NullPointerException e) {
+            log.error("NullPointerException while trying to find embargoes to expire");
+            return new ArrayList<>();
         }
     }
 
