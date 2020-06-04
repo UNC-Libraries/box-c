@@ -14,7 +14,10 @@
 				<a href="/record/<%= metadata.id %>" target="_blank" class="title has_tooltip"
 							title="View details for <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 			<% } else { %>
-				<a href="list/<%= metadata.id %>" class="title res_link has_tooltip"
+				<% var parent = metadata.ancestorPath[metadata.ancestorPath.length - 1].id; %>
+
+				<a href="list/<%= metadata.id %>" class="title res_link has_tooltip" data-type="<%= metadata.type %>"
+				   data-id="<%= metadata.id %>" data-parent="<%= parent %>"
 							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 					<% if (metadata.counts && 'child' in metadata.counts) { %>
 					<span class="item_container_count">

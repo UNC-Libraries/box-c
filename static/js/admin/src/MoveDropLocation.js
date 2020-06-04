@@ -40,8 +40,15 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Check that we are not moving an object to itself
 				try {
 					$.each(self.manager.dragTargets, function() {
-						if (this.pid == metadata.id) {
+						if (this.pid === metadata.id) {
 							throw "Invalid destination.  Object " + this.pid + " cannot be move into itself.";
+						}
+
+						// Return error message if dropTarget is invalid for the object being moved
+						if (self._invalidTarget(this.metadata, metadata)) {
+							throw "Invalid move location for " + self._formatTitle(this.metadata.title)
+							+ " object" + (self.manager.dragTargets.length > 1 ? "s" : "")
+							+ " to " + destTitle;
 						}
 
 						// Check if the object is being moved to another admin unit
@@ -140,8 +147,29 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	};
 	
 	MoveDropLocation.prototype.setMoveActive = function(active) {
+		var targets = $('.structure_content a.res_link, .result_table a.res_link');
+
 		if (active) {
-			this.element.addClass("moving");
+			var self = this;
+
+			targets.each(function() {
+				var selector = $(this);
+
+				$.each(self.manager.dragTargets, function() {
+					var destInfo = {
+						id: selector.data("id"),
+						parentId: selector.data("parent"),
+						type: selector.data("type")
+					};
+
+					if (!self._invalidTarget(this.metadata, destInfo)) {
+						selector.addClass("moving");
+					} else {
+						selector.removeClass("moving");
+					}
+				});
+			});
+
 			this.element.on("click.dropClickBlocking", "a", function(e) {
 				e.preventDefault();
 			}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
@@ -150,7 +178,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				$(this).removeClass("drop_hover");
 			});
 		} else {
-			this.element.removeClass("moving");
+			targets.removeClass("moving");
 			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
 		}
 	};
@@ -178,6 +206,36 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 		return title;
 	}
+
+	/**
+	 * Check if destination object is a valid target
+	 * @param target
+	 * @param destination
+	 * @returns {boolean|boolean}
+	 * @private
+	 */
+	MoveDropLocation.prototype._invalidTarget = function(target, destination) {
+		var types = ['File', 'Work', 'Folder', 'Collection', 'AdminUnit', 'ContentRoot'];
+		var targetLevel = types.indexOf(target.type);
+		var destLevel = types.indexOf(destination.type);
+		var ancestorPath = target.ancestorPath;
+
+		if (destLevel === 5) { // Check if trying to move to repository root
+			return true;
+		} else if (target.id === destination.id) { // Check if moving an object to itself
+			return true;
+		} else if (targetLevel === destLevel && destLevel !== 2) { // Check if objects are at the same level and aren't folders
+			return true;
+		} else if (targetLevel !== 3 && destLevel === 4) { // Check if trying to move a non-collection into an admin unit
+			return true;
+		} else if (targetLevel === 0 && destLevel !== 1) { // Check if trying to move file to a non-work
+			return true;
+		} else if (ancestorPath[ancestorPath.length - 1].id === destination.id) { // Check if dropping an object on its parent
+			return true
+		} else {
+			return targetLevel > destLevel;
+		}
+	};
 	
 	return MoveDropLocation;
 });
