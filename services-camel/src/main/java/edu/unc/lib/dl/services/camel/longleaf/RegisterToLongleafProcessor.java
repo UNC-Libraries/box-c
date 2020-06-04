@@ -34,6 +34,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -75,7 +76,8 @@ public class RegisterToLongleafProcessor implements Processor {
     private FcrepoClient fcrepoClient;
 
     /**
-     * The exchange here is expected to be a batch message with one or more
+     * The exchange here is expected to be a batch message containing a List
+     * of binary PIDs for registration, in string form.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -143,7 +145,7 @@ public class RegisterToLongleafProcessor implements Processor {
         long start = System.currentTimeMillis();
 
         StringBuilder sb = new StringBuilder();
-        final int[] cntArray = { 0 };
+        MutableInt cnt = new MutableInt(0);
         digestsMap.entrySet().forEach(digestGroup -> {
             Map<URI, String> digestToPath = digestGroup.getValue();
             if (digestToPath.size() == 0) {
@@ -156,11 +158,11 @@ public class RegisterToLongleafProcessor implements Processor {
                     .append(' ')
                     .append(Paths.get(manifestEntry.getKey()).toString())
                     .append('\n');
-                cntArray[0]++;
+                cnt.increment();
             });
         });
 
-        int entryCount = cntArray[0];
+        int entryCount = cnt.getValue();
         // Nothing to register
         if (sb.length() == entryCount) {
             return;
