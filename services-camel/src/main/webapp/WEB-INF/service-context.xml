@@ -345,6 +345,11 @@
     </bean>
 
     <bean id="expireEmbargoService" class="edu.unc.lib.dl.persist.services.edit.ExpireEmbargoService">
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
 
     <!-- Camel contexts -->
