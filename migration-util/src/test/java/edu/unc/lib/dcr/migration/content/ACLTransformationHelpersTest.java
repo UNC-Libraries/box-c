@@ -16,12 +16,15 @@
 package edu.unc.lib.dcr.migration.content;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -359,7 +362,9 @@ public class ACLTransformationHelpersTest {
             embargoEndDate += ".000Z";
         }
 
-        bxc3Resc.addLiteral(CDRProperty.embargoUntil.getProperty(), embargoEndDate);
+        Model model = createDefaultModel();
+        Literal embargoLiteral = model.createTypedLiteral(embargoEndDate, XSDDatatype.XSDdateTime);
+        bxc3Resc.addLiteral(CDRProperty.embargoUntil.getProperty(), embargoLiteral);
     }
 
     private void setPublicationStatus(Resource bxc3Resc, boolean isPublished) {
@@ -402,7 +407,7 @@ public class ACLTransformationHelpersTest {
 
     private void assertHasEmbargo(String embargoEndDate, Resource bxc5Resc) {
         assertTrue("Resource " + bxc5Resc.getURI() + " did not have expected embargo with end date " + embargoEndDate,
-                bxc5Resc.hasLiteral(CdrAcl.embargoUntil, embargoEndDate));
+                bxc5Resc.hasProperty(CdrAcl.embargoUntil));
     }
 
     @Test
