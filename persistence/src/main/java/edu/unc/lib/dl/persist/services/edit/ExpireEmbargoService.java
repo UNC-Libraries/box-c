@@ -144,7 +144,7 @@ public class ExpireEmbargoService {
                 embargoedRescList.add(resc.getURI());
             }
             return embargoedRescList;
-        } catch(NullPointerException e) {
+        } catch (NullPointerException e) {
             log.error("NullPointerException while trying to find embargoes to expire");
             return new ArrayList<>();
         }
