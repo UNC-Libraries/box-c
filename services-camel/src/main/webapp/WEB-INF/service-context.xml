@@ -344,7 +344,7 @@
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
 
-    <bean id="expireEmbargoService" class="edu.unc.lib.dl.persist.services.edit.ExpireEmbargoService">
+    <bean id="expireEmbargoService" class="edu.unc.lib.dl.persist.services.acl.ExpireEmbargoService">
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />

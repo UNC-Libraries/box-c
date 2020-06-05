@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services.edit;
+package edu.unc.lib.dl.persist.services.acl;
 
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -96,6 +96,7 @@ public class ExpireEmbargoService {
                     String embargoDate = resc.getProperty(embargoUntil).getString();
                     repoObjFactory.deleteProperty(repoObj, embargoUntil);
                     pids.add(pid);
+                    log.info("Expired embargo for {}", pid);
                     String eventText = "Expired an embargo which ended " +
                             formatDateToUTC(parseUTCToDate(embargoDate));
                     // Produce the premis event for this embargo
@@ -111,7 +112,7 @@ public class ExpireEmbargoService {
                 }
             }
         } else {
-            log.error("No embargoes to expire");
+            log.info("No embargoes to expire");
         }
 
         if (!pids.isEmpty()) {
@@ -144,9 +145,6 @@ public class ExpireEmbargoService {
                 embargoedRescList.add(resc.getURI());
             }
             return embargoedRescList;
-        } catch (NullPointerException e) {
-            log.error("NullPointerException while trying to find embargoes to expire");
-            return new ArrayList<>();
         }
     }
 
