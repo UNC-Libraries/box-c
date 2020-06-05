@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -84,8 +85,15 @@ public class ACLTransformationHelpers {
 
         // Migrate existing embargoes
         if (bxc3Resc.hasProperty(CDRProperty.embargoUntil.getProperty())) {
-            destResc.addLiteral(CdrAcl.embargoUntil,
-                    bxc3Resc.getProperty(CDRProperty.embargoUntil.getProperty()).getString());
+            String embargoDate = bxc3Resc.getProperty(CDRProperty.embargoUntil.getProperty()).getString();
+            String regex = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"; // ISO date without milliseconds
+            Pattern pattern = Pattern.compile(regex);
+
+            if (pattern.matcher(embargoDate).matches()) {
+                embargoDate += ".000Z";
+            }
+
+            destResc.addLiteral(CdrAcl.embargoUntil, embargoDate);
         }
 
         // Calculate the most restrictive roles assigned to each patron group

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -46,7 +47,8 @@ import edu.unc.lib.dl.rdf.CdrAcl;
  */
 public class ACLTransformationHelpersTest {
 
-    private final static String EMBARGO_END_DATE = "2040-01-01T00:00:00";
+    private final static String EMBARGO_END_DATE = "2040-01-01T00:00:00.000Z";
+    private final static String BAD_EMBARGO_END_DATE = "2040-01-01T00:00:00";
 
     private PID pid;
     private PID parentPid;
@@ -150,6 +152,21 @@ public class ACLTransformationHelpersTest {
 
         addRoleForPublic(bxc3Resc, Bxc3UserRole.accessCopiesPatron);
         addEmbargo(bxc3Resc, EMBARGO_END_DATE);
+
+        Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
+
+        ACLTransformationHelpers.transformPatronAccess(bxc3Resc, bxc5Resc, parentPid);
+
+        assertEveryoneHasRole(CdrAcl.canViewAccessCopies, bxc5Resc);
+        assertHasEmbargo(EMBARGO_END_DATE, bxc5Resc);
+    }
+
+    @Test
+    public void transformPatronAccess_EveryoneRole_WithEmbargoInvalidBxc5Date() throws Exception {
+        Resource bxc3Resc = buildBoxc3Resource(pid, ContentModel.CONTAINER);
+
+        addRoleForPublic(bxc3Resc, Bxc3UserRole.accessCopiesPatron);
+        addEmbargo(bxc3Resc, BAD_EMBARGO_END_DATE);
 
         Resource bxc5Resc = buildBoxc5Resource(pid, Cdr.Folder);
 
@@ -272,7 +289,7 @@ public class ACLTransformationHelpersTest {
         // Collection ACLs, when present, should win
         assertEveryoneHasRole(CdrAcl.canViewAccessCopies, bxc5Resc);
         assertAuthenticatedHasRole(CdrAcl.canViewAccessCopies, bxc5Resc);
-        assertHasEmbargo("2045-01-01T00:00:00", bxc5Resc);
+        assertHasEmbargo("2045-01-01T00:00:00.000Z", bxc5Resc);
     }
 
     @Test
@@ -335,6 +352,13 @@ public class ACLTransformationHelpersTest {
     }
 
     private void addEmbargo(Resource bxc3Resc, String embargoEndDate) {
+        String regex = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"; // ISO date without milliseconds
+        Pattern pattern = Pattern.compile(regex);
+
+        if (pattern.matcher(embargoEndDate).matches()) {
+            embargoEndDate += ".000Z";
+        }
+
         bxc3Resc.addLiteral(CDRProperty.embargoUntil.getProperty(), embargoEndDate);
     }
 
