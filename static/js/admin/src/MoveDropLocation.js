@@ -179,7 +179,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				$(this).removeClass("drop_hover");
 			});
 		} else {
-			targets.removeClass("moving, invalid_target");
+			targets.removeClass("moving invalid_target"); // 3.3+ syntax for this changes to ["moving", "invalid_target"]
 			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
 		}
 	};
