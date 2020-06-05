@@ -6,15 +6,9 @@
 				<div class="cont_toggle <%= toggleClass %>"></div>
 			<% } %>
 			<i class="<%= icon %>" title="<%= metadata.type %>"></i>
-			<% var pathSize = metadata.objectPath.length,
-			       parent;
-				if (pathSize > 2) {
-					parent = metadata.objectPath[pathSize - 2].pid;
-				} else {
-					parent = metadata.objectPath[0].pid;
-				} %>
+			<% var path_ids = metadata.objectPath.map(function(d) { return d.pid; }).join(','); %>
 			<a href="<%- primaryAction %>" class="primary_action res_link"  data-type="<%= metadata.type %>"
-			   data-id="<%= metadata.id %>" data-parent="<%= parent %>"><%= metadata.title %></a>
+			   data-id="<%= metadata.id %>" data-path="<%= path_ids %>"><%= metadata.title %></a>
 			
 			<% if (downloadUrl && secondaryActions) { %>
 				<p class="secondary_actions"><a href="<%= downloadUrl %>">Download</a></p>

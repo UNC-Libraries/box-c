@@ -14,10 +14,9 @@
 				<a href="/record/<%= metadata.id %>" target="_blank" class="title has_tooltip"
 							title="View details for <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 			<% } else { %>
-				<% var parent = metadata.ancestorPath[metadata.ancestorPath.length - 1].id; %>
-
+				<% var path_ids = metadata.objectPath.map(function(d) { return d.pid; }).join(','); %>
 				<a href="list/<%= metadata.id %>" class="title res_link has_tooltip" data-type="<%= metadata.type %>"
-				   data-id="<%= metadata.id %>" data-parent="<%= parent %>"
+				   data-id="<%= metadata.id %>" data-path="<%= path_ids %>"
 							title="View contents of <%= _.escape(metadata.title) %>."><%= _.escape(metadata.title) %></a>
 					<% if (metadata.counts && 'child' in metadata.counts) { %>
 					<span class="item_container_count">

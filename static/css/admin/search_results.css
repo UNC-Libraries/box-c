@@ -691,6 +691,10 @@
 	max-width: 400px;
 }
 
+.invalid_target {
+	opacity: .5;
+}
+
 /** Trash folder */
 
 .trash_header .result_header_bottom {

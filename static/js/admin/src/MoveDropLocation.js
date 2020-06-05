@@ -152,20 +152,21 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 		if (active) {
 			var self = this;
 
+			// Highlight valid drop locations
 			targets.each(function() {
 				var selector = $(this);
 
 				$.each(self.manager.dragTargets, function() {
 					var destInfo = {
 						id: selector.data("id"),
-						parentId: selector.data("parent"),
+						path: selector.data("path"),
 						type: selector.data("type")
 					};
 
 					if (!self._invalidTarget(this.metadata, destInfo)) {
 						selector.addClass("moving");
 					} else {
-						selector.removeClass("moving");
+						selector.addClass("invalid_target");
 					}
 				});
 			});
@@ -178,7 +179,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				$(this).removeClass("drop_hover");
 			});
 		} else {
-			targets.removeClass("moving");
+			targets.removeClass("moving, invalid_target");
 			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
 		}
 	};
@@ -215,26 +216,25 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	 * @private
 	 */
 	MoveDropLocation.prototype._invalidTarget = function(target, destination) {
-		var types = ['File', 'Work', 'Folder', 'Collection', 'AdminUnit', 'ContentRoot'];
-		var targetLevel = types.indexOf(target.type);
-		var destLevel = types.indexOf(destination.type);
+		const TYPES = ['File', 'Work', 'Folder', 'Collection', 'AdminUnit', 'ContentRoot'];
+		var targetLevel = TYPES.indexOf(target.type);
+		var destLevel = TYPES.indexOf(destination.type);
 		var ancestorPath = target.ancestorPath;
 
-		if (destLevel === 5) { // Check if trying to move to repository root
+		var isRepoRoot = destLevel === 5;
+		var isItself = target.id === destination.id;
+		var isSameLevelNotFolder = targetLevel === destLevel && destLevel !== 2; // Check if objects are at the same level and aren't folders
+		var isNonCollAdminUnit = targetLevel !== 3 && destLevel === 4;  // Check if trying to move a non-collection into an admin unit
+		var isFileNonWork = targetLevel === 0 && destLevel !== 1; // Check if trying to move file to a non-work
+		var isParent = ancestorPath[ancestorPath.length - 1].id === destination.id; // Check if dropping an object on its immediate parent
+		var isChild = new RegExp(target.id).test(destination.path); // Check if dropping an object on one of its children
+
+		if (isRepoRoot || isItself || isSameLevelNotFolder || isNonCollAdminUnit ||
+			isFileNonWork || isParent || isChild) {
 			return true;
-		} else if (target.id === destination.id) { // Check if moving an object to itself
-			return true;
-		} else if (targetLevel === destLevel && destLevel !== 2) { // Check if objects are at the same level and aren't folders
-			return true;
-		} else if (targetLevel !== 3 && destLevel === 4) { // Check if trying to move a non-collection into an admin unit
-			return true;
-		} else if (targetLevel === 0 && destLevel !== 1) { // Check if trying to move file to a non-work
-			return true;
-		} else if (ancestorPath[ancestorPath.length - 1].id === destination.id) { // Check if dropping an object on its parent
-			return true
-		} else {
-			return targetLevel > destLevel;
 		}
+
+		return targetLevel > destLevel;
 	};
 	
 	return MoveDropLocation;
