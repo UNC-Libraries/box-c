@@ -16,12 +16,10 @@
 package edu.unc.lib.dcr.migration.content;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
@@ -29,6 +27,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.jgroups.util.UUID;
@@ -355,15 +354,7 @@ public class ACLTransformationHelpersTest {
     }
 
     private void addEmbargo(Resource bxc3Resc, String embargoEndDate) {
-        String regex = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"; // ISO date without milliseconds
-        Pattern pattern = Pattern.compile(regex);
-
-        if (pattern.matcher(embargoEndDate).matches()) {
-            embargoEndDate += ".000Z";
-        }
-
-        Model model = createDefaultModel();
-        Literal embargoLiteral = model.createTypedLiteral(embargoEndDate, XSDDatatype.XSDdateTime);
+        Literal embargoLiteral = ResourceFactory.createTypedLiteral(embargoEndDate, XSDDatatype.XSDdateTime);
         bxc3Resc.addLiteral(CDRProperty.embargoUntil.getProperty(), embargoLiteral);
     }
 
@@ -407,7 +398,8 @@ public class ACLTransformationHelpersTest {
 
     private void assertHasEmbargo(String embargoEndDate, Resource bxc5Resc) {
         assertTrue("Resource " + bxc5Resc.getURI() + " did not have expected embargo with end date " + embargoEndDate,
-                bxc5Resc.hasProperty(CdrAcl.embargoUntil));
+                bxc5Resc.hasLiteral(CdrAcl.embargoUntil,
+                        ResourceFactory.createTypedLiteral(embargoEndDate, XSDDatatype.XSDdateTime).getValue()));
     }
 
     @Test

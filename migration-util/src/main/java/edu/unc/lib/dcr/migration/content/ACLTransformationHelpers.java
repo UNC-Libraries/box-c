@@ -31,6 +31,7 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -75,9 +76,10 @@ public class ACLTransformationHelpers {
      */
     public static void transformPatronAccess(Resource bxc3Resc, Resource bxc5Resc, PID parentPid) {
         // For admin units, cache patron access settings so they can be used for children instead
-        Model unitModel = createDefaultModel();
+
         Resource destResc;
         if (bxc5Resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
+            Model unitModel = createDefaultModel();
             PID unitPid = PIDs.get(bxc5Resc.getURI());
             destResc = unitModel.getResource(unitPid.getRepositoryPath());
             unitPatronAccessCache.put(unitPid, unitModel);
@@ -89,7 +91,7 @@ public class ACLTransformationHelpers {
         if (bxc3Resc.hasProperty(CDRProperty.embargoUntil.getProperty())) {
             String embargoDate = formatEmbargoDate(bxc3Resc.getProperty(
                     CDRProperty.embargoUntil.getProperty()).getString());
-            Literal embargoLiteral = unitModel.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
+            Literal embargoLiteral = ResourceFactory.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
             destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
         }
 
@@ -200,8 +202,8 @@ public class ACLTransformationHelpers {
         if (parentUnitModel != null) {
             Resource parentUnitResc = parentUnitModel.getResource(parentPid.getRepositoryPath());
             if (!destResc.hasProperty(CdrAcl.embargoUntil) && parentUnitResc.hasProperty(CdrAcl.embargoUntil)) {
-                String embargoDate = formatEmbargoDate(parentUnitResc.getProperty(
-                        CdrAcl.embargoUntil).getLiteral().getString());
+                String embargoDate = parentUnitResc.getProperty(
+                        CdrAcl.embargoUntil).getLiteral().getString();
                 Literal embargoLiteral = parentUnitModel.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
                 destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
             }
