@@ -40,9 +40,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				} else if (/staff-only/i.test(d)) {
 					tagValue = 'staff-only';
 				} else {
-					tagValue = d.toLowerCase()
-						.replace(/parent.is\s*?/, '')
-						.replace(/\s+/, '-');
+					tagValue = d.trim().toLowerCase()
+						.replace(/parent\s+is\s+/, '')
+						.replace(/\s+/g, '-');
 				}
 
 				return self._tagText(tagValue);
