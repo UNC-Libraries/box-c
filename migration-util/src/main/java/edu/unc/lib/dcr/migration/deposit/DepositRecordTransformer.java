@@ -58,7 +58,6 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
@@ -153,7 +152,6 @@ public class DepositRecordTransformer extends RecursiveAction {
     }
 
     private boolean isDepositRecord(Resource bxc3Resc) {
-        PIDs.get(bxc3Resc.toString().toLowerCase());
         return bxc3Resc.hasProperty(FedoraProperty.hasModel.getProperty(),
                 ContentModel.DEPOSIT_RECORD.getResource());
     }

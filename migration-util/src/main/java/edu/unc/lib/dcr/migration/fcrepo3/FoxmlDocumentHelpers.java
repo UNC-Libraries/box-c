@@ -84,7 +84,7 @@ public class FoxmlDocumentHelpers {
 
         Model model;
         try {
-            model = createModel(convertElementToStream(relsContentEl), "RDF/XML");
+            model = createModel(convertRelsExtToStream(relsContentEl), "RDF/XML");
         } catch (IOException e) {
             throw new RepositoryException("Failed to serialize RELS-EXT", e);
         }
@@ -128,7 +128,7 @@ public class FoxmlDocumentHelpers {
         return foxml.getRootElement().getAttributeValue("PID");
     }
 
-    public static InputStream convertElementToStream(Element el) throws IOException {
+    public static InputStream convertRelsExtToStream(Element el) throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         new XMLOutputter().output(el, outStream);
         String foxmlText = outStream.toString();
