@@ -75,7 +75,8 @@ public class DepositRecordTransformationService {
     }
 
     public PID getTransformedPid(PID originalPid) {
-        return generateIds ? pidMinter.mintDepositRecordPid() : originalPid;
+        return generateIds ? pidMinter.mintDepositRecordPid() : PIDs.get(DEPOSIT_RECORD_BASE,
+                originalPid.getId().toLowerCase());
     }
 
     public void setGenerateIds(boolean generateIds) {

@@ -74,7 +74,7 @@ public class MigrationConstants {
      * @return string representation of pid as a boxc3 uri
      */
     public static String toBxc3Uri(PID pid) {
-        return "info:fedora/uuid:" + pid.getId();
+        return "info:fedora/uuid:" + pid.getId().toLowerCase();
     }
 
     /**

@@ -79,5 +79,5 @@ public class RepositoryPathConstants {
 
     // Regex pattern for decomposing an identifier for an object or component
     public static final Pattern identifierPattern = Pattern
-            .compile("(([a-zA-Z]+)/)?(uuid:)?(([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+            .compile("(([a-zA-Z]+)/)?(uuid:)?(([a-fA-F0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 }

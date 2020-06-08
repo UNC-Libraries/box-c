@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Model;
@@ -58,6 +59,7 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -115,7 +117,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
     }
 
     @Test
-    public void transformDepositRecords() throws Exception {
+    public void transformDepositRecordsLowerCasePID() throws Exception {
         CommandLine migrationCommand = new CommandLine(new MigrationCLI());
 
         File pidListFile = setupDepositRecord(migrationCommand,
@@ -134,6 +136,37 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
 
 
         DepositRecord depRec = repoObjLoader.getDepositRecord(bxc3Pid);
+        assertTrue(depRec.getResource().hasProperty(DC.title, "Deposit Record with Manifest"));
+        assertTrue(depRec.getResource().hasLiteral(Cdr.depositedOnBehalfOf, DEPOSITOR));
+
+        assertPremisTransformed(depRec);
+
+        assertManifestPopulated(depRec);
+    }
+
+    @Test
+    public void transformDepositRecordsUpperCasePID() throws Exception {
+        String bxc3PidUpperCase = UUID.randomUUID().toString().toUpperCase();
+        bxc3Pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, bxc3PidUpperCase);
+        CommandLine migrationCommand = new CommandLine(new MigrationCLI());
+
+        File pidListFile = setupDepositRecord(migrationCommand,
+                "Deposit Record with Manifest");
+
+        String[] args = new String[] { "tdr", pidListFile.getAbsolutePath(),
+                "-s", "loc1" };
+        int result = migrationCommand.execute(args);
+
+        assertEquals("Incorrect exit status", 0, result);
+        String output = out.toString();
+        assertTrue("Expected one transformation successful",
+                output.contains(" 1/1 "));
+        assertTrue("Expected transformation completed message",
+                output.contains("Finished transformation"));
+
+
+        PID bxc5Pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, bxc3PidUpperCase.toLowerCase());
+        DepositRecord depRec = repoObjLoader.getDepositRecord(bxc5Pid);
         assertTrue(depRec.getResource().hasProperty(DC.title, "Deposit Record with Manifest"));
         assertTrue(depRec.getResource().hasLiteral(Cdr.depositedOnBehalfOf, DEPOSITOR));
 
