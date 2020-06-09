@@ -24,10 +24,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -72,6 +76,7 @@ public class ACLTransformationHelpers {
      */
     public static void transformPatronAccess(Resource bxc3Resc, Resource bxc5Resc, PID parentPid) {
         // For admin units, cache patron access settings so they can be used for children instead
+
         Resource destResc;
         if (bxc5Resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
             Model unitModel = createDefaultModel();
@@ -84,8 +89,10 @@ public class ACLTransformationHelpers {
 
         // Migrate existing embargoes
         if (bxc3Resc.hasProperty(CDRProperty.embargoUntil.getProperty())) {
-            destResc.addLiteral(CdrAcl.embargoUntil,
-                    bxc3Resc.getProperty(CDRProperty.embargoUntil.getProperty()).getString());
+            String embargoDate = formatEmbargoDate(bxc3Resc.getProperty(
+                    CDRProperty.embargoUntil.getProperty()).getString());
+            Literal embargoLiteral = ResourceFactory.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
+            destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
         }
 
         // Calculate the most restrictive roles assigned to each patron group
@@ -195,8 +202,10 @@ public class ACLTransformationHelpers {
         if (parentUnitModel != null) {
             Resource parentUnitResc = parentUnitModel.getResource(parentPid.getRepositoryPath());
             if (!destResc.hasProperty(CdrAcl.embargoUntil) && parentUnitResc.hasProperty(CdrAcl.embargoUntil)) {
-                destResc.addLiteral(CdrAcl.embargoUntil,
-                        parentUnitResc.getProperty(CdrAcl.embargoUntil).getLiteral().getString());
+                String embargoDate = parentUnitResc.getProperty(
+                        CdrAcl.embargoUntil).getLiteral().getString();
+                Literal embargoLiteral = parentUnitModel.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
+                destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
             }
             if (everyoneRole == null) {
                 StmtIterator it = parentUnitModel.listStatements(parentUnitResc, null, PUBLIC_PRINC);
@@ -273,6 +282,17 @@ public class ACLTransformationHelpers {
                 bxc5Resc.addLiteral(bxc5Role, principal);
             }
         }
+    }
+
+    private static String formatEmbargoDate(String embargoDate) {
+        String regex = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"; // ISO date without milliseconds
+        Pattern pattern = Pattern.compile(regex);
+
+        if (pattern.matcher(embargoDate.trim()).matches()) {
+            embargoDate += ".000Z";
+        }
+
+        return embargoDate;
     }
 
     private static boolean isPatronPrincipal(String principal) {
