@@ -646,7 +646,7 @@
 	text-decoration: none;
 }
 
-.result_table .arrange_placeholder .moving {
+.result_table.moving-rows .arrange_placeholder {
 	display: none;
 }
 

@@ -102,7 +102,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					promptText += " Continue with move?";
 				}
 
-				var confirm = new ConfirmationDialog({
+				new ConfirmationDialog({
 					promptText : promptText,
 					modal : true,
 					autoOpen : true,
@@ -149,38 +149,69 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	MoveDropLocation.prototype.setMoveActive = function(active) {
 		var targets = $('.structure_content a.res_link, .result_table a.res_link');
 
-		if (active) {
-			var self = this;
+		try {
+			if (active) {
+				var self = this;
 
-			// Highlight valid drop locations
-			targets.each(function() {
-				var selector = $(this);
+				var adminUnits = [];
 
-				$.each(self.manager.dragTargets, function() {
-					var destInfo = {
-						id: selector.data("id"),
-						path: selector.data("path"),
-						type: selector.data("type")
-					};
+				// Highlight valid drop locations
+				targets.each(function () {
+					let selector = $(this);
 
-					if (!self._invalidTarget(this.metadata, destInfo)) {
-						selector.addClass("moving");
-					} else {
-						selector.addClass("invalid_target");
-					}
+					$.each(self.manager.dragTargets, function() {
+						// Check if trying to move an admin unit
+						let valueFound = adminUnits.findIndex((d) => d.id === this.metadata.id);
+						if (this.metadata.type === 'AdminUnit' && valueFound === -1) {
+							adminUnits.push({
+								id: this.metadata.id,
+								title: self._formatTitle(this.metadata.title)
+							});
+						}
+
+						// Check if valid target
+						var destInfo = {
+							id: selector.data("id"),
+							path: selector.data("path"),
+							type: selector.data("type")
+						};
+
+						if (!self._invalidTarget(this.metadata, destInfo)) {
+							selector.addClass("moving");
+						} else {
+							selector.addClass("invalid_target");
+						}
+					});
 				});
-			});
 
-			this.element.on("click.dropClickBlocking", "a", function(e) {
-				e.preventDefault();
-			}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
-				$(this).addClass("drop_hover");
-			}).on("mouseleave.dropTargetLeave", this.options.dropTargetSelector, function() {
-				$(this).removeClass("drop_hover");
-			});
-		} else {
-			targets.removeClass("moving invalid_target"); // 3.3+ syntax for this changes to ["moving", "invalid_target"]
-			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
+				var adminUnitsMoving = adminUnits.length;
+				if (adminUnitsMoving > 0) {
+					var msg = "";
+
+					if (adminUnitsMoving === 1) {
+						msg += adminUnits[0].title + " is an admin unit and cannot be moved.";
+					} else {
+						msg += adminUnits.map((d) => d.title).join(", ") + " are admin units and cannot be moved."
+						msg += " Please remove them from the selected objects to move and try again.";
+					}
+
+					throw(msg);
+				}
+
+				this.element.on("click.dropClickBlocking", "a", function(e) {
+					e.preventDefault();
+				}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
+					$(this).addClass("drop_hover");
+				}).on("mouseleave.dropTargetLeave", this.options.dropTargetSelector, function() {
+					$(this).removeClass("drop_hover");
+				});
+			} else {
+				targets.removeClass("moving invalid_target"); // 3.3+ syntax for this changes to ["moving", "invalid_target"]
+				this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
+			}
+		} catch (e) {
+			self.manager.options.alertHandler.alertHandler("error", e);
+			self.manager.deactivateMove();
 		}
 	};
 
