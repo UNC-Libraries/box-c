@@ -67,11 +67,6 @@ public class FedoraTransaction {
         txUri = null;
     }
 
-    public void keepAlive() {
-        //TODO implement clock to extend tx for ~ 1 hour?
-        txManager.keepTransactionAlive(txUri);
-    }
-
     public void cancelAndIgnore() {
         cancelTx();
     }
@@ -99,5 +94,9 @@ public class FedoraTransaction {
             rootTxThread.remove();
             txManager.cancelTransaction(txUri);
         }
+    }
+
+    public TransactionManager getTransactionManager() {
+        return txManager;
     }
 }
