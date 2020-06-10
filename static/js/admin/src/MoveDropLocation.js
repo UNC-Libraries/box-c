@@ -18,6 +18,14 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	
 	MoveDropLocation.prototype.create = function() {
 		this.initDroppable();
+		this.allowedMoveMappings = {
+			ContentRoot: [],
+			AdminUnit: ['Collection'],
+			Collection: ['Folder', 'Work'],
+			Folder: ['Folder', 'Work'],
+			Work: ['File'],
+			File: []
+		};
 	};
 	
 	MoveDropLocation.prototype.initDroppable = function() {
@@ -47,8 +55,8 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 						// Return error message if dropTarget is invalid for the object being moved
 						if (!self._validTarget(this.metadata, metadata)) {
 							throw "Invalid move location for " + self._formatTitle(this.metadata.title)
-							+ " object" + (self.manager.dragTargets.length > 1 ? "s" : "")
-							+ " to " + destTitle;
+								+ " object" + (self.manager.dragTargets.length > 1 ? "s" : "")
+								+ " to " + destTitle;
 						}
 
 						// Check if the object is being moved to another admin unit
@@ -156,12 +164,8 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Check if trying to move an admin unit
 				var adminUnits = [];
 				$.each(self.manager.dragTargets, function() {
-					let valueFound = adminUnits.findIndex((d) => d.id === this.metadata.id);
-					if (this.metadata.type === 'AdminUnit' && valueFound === -1) {
-						adminUnits.push({
-							id: this.metadata.id,
-							title: self._formatTitle(this.metadata.title)
-						});
+					if (this.metadata.type === 'AdminUnit') {
+						adminUnits.push(self._formatTitle(this.metadata.title));
 					}
 				});
 
@@ -170,9 +174,9 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					var msg = "";
 
 					if (adminUnitsMoving === 1) {
-						msg += adminUnits[0].title + " is an admin unit and cannot be moved.";
+						msg += adminUnits[0] + " is an admin unit and cannot be moved.";
 					} else {
-						msg += adminUnits.map((d) => d.title).join(", ") + " are admin units and cannot be moved."
+						msg += adminUnits.join(", ") + " are admin units and cannot be moved."
 						msg += " Please remove them from the selected objects to move and try again.";
 					}
 
@@ -247,25 +251,13 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	 * @private
 	 */
 	MoveDropLocation.prototype._validTarget = function(target, destination) {
-		const allowedMoveMappings = [
-			{ type: 'ContentRoot', allowedTypes: [] },
-			{ type: 'AdminUnit', allowedTypes: ['Collection'] },
-			{ type: 'AdminUnit', allowedTypes: ['Collection'] },
-			{ type: 'Collection', allowedTypes: ['Folder', 'Work'] },
-			{ type: 'Folder', allowedTypes: ['Folder', 'Work'] },
-			{ type: 'Work', allowedTypes: ['File'] },
-			{ type: 'File', allowedTypes: [] }
-		];
-
-		var destLevel = allowedMoveMappings.find((d) => d.type === destination.type);
 		var ancestorPath = target.ancestorPath;
 
-		var invalidDestination = destLevel.allowedTypes.indexOf(target.type) === -1;
-		var isItself = target.id === destination.id;
+		var invalidDestination = this.allowedMoveMappings[destination.type].includes(target.type);
 		var isParent = ancestorPath[ancestorPath.length - 1].id === destination.id; // Check if dropping an object on its immediate parent
 		var isChild = new RegExp(target.id).test(destination.path); // Check if dropping an object on one of its children
 
-		return !(invalidDestination || isItself || isParent || isChild);
+		return !(invalidDestination || isParent || isChild);
 	};
 	
 	return MoveDropLocation;
