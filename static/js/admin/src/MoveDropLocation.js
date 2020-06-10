@@ -45,7 +45,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 						}
 
 						// Return error message if dropTarget is invalid for the object being moved
-						if (self._invalidTarget(this.metadata, metadata)) {
+						if (!self._validTarget(this.metadata, metadata)) {
 							throw "Invalid move location for " + self._formatTitle(this.metadata.title)
 							+ " object" + (self.manager.dragTargets.length > 1 ? "s" : "")
 							+ " to " + destTitle;
@@ -147,41 +147,22 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	};
 	
 	MoveDropLocation.prototype.setMoveActive = function(active) {
-		var targets = $('.structure_content a.res_link, .result_table a.res_link');
+		var destinations = $('.structure_content a.res_link, .result_table a.res_link');
 
 		try {
 			if (active) {
 				var self = this;
 
+				// Check if trying to move an admin unit
 				var adminUnits = [];
-
-				// Highlight valid drop locations
-				targets.each(function () {
-					let selector = $(this);
-
-					$.each(self.manager.dragTargets, function() {
-						// Check if trying to move an admin unit
-						let valueFound = adminUnits.findIndex((d) => d.id === this.metadata.id);
-						if (this.metadata.type === 'AdminUnit' && valueFound === -1) {
-							adminUnits.push({
-								id: this.metadata.id,
-								title: self._formatTitle(this.metadata.title)
-							});
-						}
-
-						// Check if valid target
-						var destInfo = {
-							id: selector.data("id"),
-							path: selector.data("path"),
-							type: selector.data("type")
-						};
-
-						if (!self._invalidTarget(this.metadata, destInfo)) {
-							selector.addClass("moving");
-						} else {
-							selector.addClass("invalid_target");
-						}
-					});
+				$.each(self.manager.dragTargets, function() {
+					let valueFound = adminUnits.findIndex((d) => d.id === this.metadata.id);
+					if (this.metadata.type === 'AdminUnit' && valueFound === -1) {
+						adminUnits.push({
+							id: this.metadata.id,
+							title: self._formatTitle(this.metadata.title)
+						});
+					}
 				});
 
 				var adminUnitsMoving = adminUnits.length;
@@ -198,6 +179,25 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					throw(msg);
 				}
 
+				// Highlight valid drop locations
+				destinations.each(function () {
+					let selector = $(this);
+					let destInfo = {
+						id: selector.data("id"),
+						path: selector.data("path"),
+						type: selector.data("type")
+					};
+
+					$.each(self.manager.dragTargets, function() {
+						if (self._validTarget(this.metadata, destInfo)) {
+							selector.addClass("moving");
+						} else {
+							selector.addClass("invalid_target");
+							return false;
+						}
+					});
+				});
+
 				this.element.on("click.dropClickBlocking", "a", function(e) {
 					e.preventDefault();
 				}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
@@ -206,7 +206,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					$(this).removeClass("drop_hover");
 				});
 			} else {
-				targets.removeClass("moving invalid_target"); // 3.3+ syntax for this changes to ["moving", "invalid_target"]
+				destinations.removeClass("moving invalid_target"); // Jquery 3.3+ syntax for this changes to ["moving", "invalid_target"]
 				this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
 			}
 		} catch (e) {
@@ -246,26 +246,26 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	 * @returns {boolean|boolean}
 	 * @private
 	 */
-	MoveDropLocation.prototype._invalidTarget = function(target, destination) {
-		const TYPES = ['File', 'Work', 'Folder', 'Collection', 'AdminUnit', 'ContentRoot'];
-		var targetLevel = TYPES.indexOf(target.type);
-		var destLevel = TYPES.indexOf(destination.type);
+	MoveDropLocation.prototype._validTarget = function(target, destination) {
+		const allowedMoveMappings = [
+			{ type: 'ContentRoot', allowedTypes: [] },
+			{ type: 'AdminUnit', allowedTypes: ['Collection'] },
+			{ type: 'AdminUnit', allowedTypes: ['Collection'] },
+			{ type: 'Collection', allowedTypes: ['Folder', 'Work'] },
+			{ type: 'Folder', allowedTypes: ['Folder', 'Work'] },
+			{ type: 'Work', allowedTypes: ['File'] },
+			{ type: 'File', allowedTypes: [] }
+		];
+
+		var destLevel = allowedMoveMappings.find((d) => d.type === destination.type);
 		var ancestorPath = target.ancestorPath;
 
-		var isRepoRoot = destLevel === 5;
+		var invalidDestination = destLevel.allowedTypes.indexOf(target.type) === -1;
 		var isItself = target.id === destination.id;
-		var isSameLevelNotFolder = targetLevel === destLevel && destLevel !== 2; // Check if objects are at the same level and aren't folders
-		var isNonCollAdminUnit = targetLevel !== 3 && destLevel === 4;  // Check if trying to move a non-collection into an admin unit
-		var isFileNonWork = targetLevel === 0 && destLevel !== 1; // Check if trying to move file to a non-work
 		var isParent = ancestorPath[ancestorPath.length - 1].id === destination.id; // Check if dropping an object on its immediate parent
 		var isChild = new RegExp(target.id).test(destination.path); // Check if dropping an object on one of its children
 
-		if (isRepoRoot || isItself || isSameLevelNotFolder || isNonCollAdminUnit ||
-			isFileNonWork || isParent || isChild) {
-			return true;
-		}
-
-		return targetLevel > destLevel;
+		return !(invalidDestination || isItself || isParent || isChild);
 	};
 	
 	return MoveDropLocation;
