@@ -30,7 +30,15 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	
 	MoveDropLocation.prototype.initDroppable = function() {
 		var self = this;
+		var resultTable = $('.result_table');
+
 		this.element.droppable({
+			activate: function(event, ui) {
+				resultTable.addClass('moving-rows');
+			},
+			deactivate: function(event, ui) {
+				resultTable.removeClass('moving-rows');
+			},
 			drop : function(event, ui) {
 				// Locate which element is being dropped on
 				var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
@@ -252,12 +260,11 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	 */
 	MoveDropLocation.prototype._validTarget = function(target, destination) {
 		var ancestorPath = target.ancestorPath;
-
-		var invalidDestination = this.allowedMoveMappings[destination.type].includes(target.type);
+		var validDestination = this.allowedMoveMappings[destination.type].includes(target.type);
 		var isParent = ancestorPath[ancestorPath.length - 1].id === destination.id; // Check if dropping an object on its immediate parent
 		var isChild = new RegExp(target.id).test(destination.path); // Check if dropping an object on one of its children
 
-		return !(invalidDestination || isParent || isChild);
+		return validDestination && !(isParent || isChild);
 	};
 	
 	return MoveDropLocation;

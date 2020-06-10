@@ -446,17 +446,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		for (var index in this.dropLocations) {
 			this.dropLocations[index].setMoveActive(false);
 		}
-
-		// Add slight delay so screen doesn't jump around when trying to move an admin unit
-		// as moving an admin unit immediately cause deactivation
-		setTimeout(function() {
-			$('.result_table').removeClass('moving-rows');
-		}, 1500);
 	};
 	
 	ResultTableView.prototype.activateMove = function() {
 		this.move = true;
-		$('.result_table').addClass('moving-rows');
 		for (var index in this.dropLocations) {
 			this.dropLocations[index].setMoveActive(true);
 		}
@@ -540,8 +533,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						this.element.show();
 					});
 					self.dragTargets = null;
-				} else {
-					$('.result_table').removeClass('moving-rows');
 				}
 				self.deactivateMove();
 				return false;
