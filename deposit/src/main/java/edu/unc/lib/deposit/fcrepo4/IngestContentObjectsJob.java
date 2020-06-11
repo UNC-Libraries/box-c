@@ -74,6 +74,7 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.FedoraTransactionRefresher;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -601,7 +602,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
             // send txid along with uris for the following actions
             FedoraTransaction tx = txManager.startTransaction();
+            FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
             try {
+                txRefresher.start();
+
                 obj = repoObjFactory.createWorkObject(childPid, model);
                 // Add ingestion event for the work itself
                 addIngestionEventForChild(obj);
@@ -623,7 +627,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addPremisEvents(obj);
 
                 overrideModifiedTimestamp(obj, childResc);
+
+                // Cease refreshing the transaction
+                txRefresher.stop();
             } catch (Exception e) {
+                txRefresher.interrupt();
                 tx.cancel(e);
             } finally {
                 tx.close();
