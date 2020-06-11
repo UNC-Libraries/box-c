@@ -18,11 +18,27 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	
 	MoveDropLocation.prototype.create = function() {
 		this.initDroppable();
+		this.allowedMoveMappings = {
+			ContentRoot: [],
+			AdminUnit: ['Collection'],
+			Collection: ['Folder', 'Work'],
+			Folder: ['Folder', 'Work'],
+			Work: ['File'],
+			File: []
+		};
 	};
 	
 	MoveDropLocation.prototype.initDroppable = function() {
 		var self = this;
+		var resultTable = $('.result_table');
+
 		this.element.droppable({
+			activate: function(event, ui) {
+				resultTable.addClass('moving-rows');
+			},
+			deactivate: function(event, ui) {
+				resultTable.removeClass('moving-rows');
+			},
 			drop : function(event, ui) {
 				// Locate which element is being dropped on
 				var $dropTarget = $(document.elementFromPoint(event.pageX - $(window).scrollLeft(), event.pageY - $(window).scrollTop()));
@@ -40,8 +56,15 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 				// Check that we are not moving an object to itself
 				try {
 					$.each(self.manager.dragTargets, function() {
-						if (this.pid == metadata.id) {
+						if (this.pid === metadata.id) {
 							throw "Invalid destination.  Object " + this.pid + " cannot be move into itself.";
+						}
+
+						// Return error message if dropTarget is invalid for the object being moved
+						if (!self._validTarget(this.metadata, metadata)) {
+							throw "Invalid move location for " + self._formatTitle(this.metadata.title)
+								+ " object" + (self.manager.dragTargets.length > 1 ? "s" : "")
+								+ " to " + destTitle;
 						}
 
 						// Check if the object is being moved to another admin unit
@@ -95,7 +118,7 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					promptText += " Continue with move?";
 				}
 
-				var confirm = new ConfirmationDialog({
+				new ConfirmationDialog({
 					promptText : promptText,
 					modal : true,
 					autoOpen : true,
@@ -140,18 +163,67 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 	};
 	
 	MoveDropLocation.prototype.setMoveActive = function(active) {
-		if (active) {
-			this.element.addClass("moving");
-			this.element.on("click.dropClickBlocking", "a", function(e) {
-				e.preventDefault();
-			}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
-				$(this).addClass("drop_hover");
-			}).on("mouseleave.dropTargetLeave", this.options.dropTargetSelector, function() {
-				$(this).removeClass("drop_hover");
-			});
-		} else {
-			this.element.removeClass("moving");
-			this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
+		var destinations = $('.structure_content a.res_link, .result_table a.res_link');
+
+		try {
+			if (active) {
+				var self = this;
+
+				// Check if trying to move an admin unit
+				var adminUnits = [];
+				$.each(self.manager.dragTargets, function() {
+					if (this.metadata.type === 'AdminUnit') {
+						adminUnits.push(self._formatTitle(this.metadata.title));
+					}
+				});
+
+				var adminUnitsMoving = adminUnits.length;
+				if (adminUnitsMoving > 0) {
+					var msg = "";
+
+					if (adminUnitsMoving === 1) {
+						msg += adminUnits[0] + " is an admin unit and cannot be moved.";
+					} else {
+						msg += adminUnits.join(", ") + " are admin units and cannot be moved."
+						msg += " Please remove them from the selected objects to move and try again.";
+					}
+
+					throw(msg);
+				}
+
+				// Highlight valid drop locations
+				destinations.each(function () {
+					let selector = $(this);
+					let destInfo = {
+						id: selector.data("id"),
+						path: selector.data("path"),
+						type: selector.data("type")
+					};
+
+					$.each(self.manager.dragTargets, function() {
+						if (self._validTarget(this.metadata, destInfo)) {
+							selector.addClass("moving");
+						} else {
+							selector.addClass("invalid_target");
+							return false;
+						}
+					});
+				});
+
+				this.element.on("click.dropClickBlocking", "a", function(e) {
+					e.preventDefault();
+				}).on("mouseenter.dropTargetHover", this.options.dropTargetSelector, function() {
+					$(this).addClass("drop_hover");
+				}).on("mouseleave.dropTargetLeave", this.options.dropTargetSelector, function() {
+					$(this).removeClass("drop_hover");
+				});
+			} else {
+				destinations.removeClass("moving invalid_target"); // Jquery 3.3+ syntax for this changes to ["moving", "invalid_target"]
+				this.element.off("click.dropClickBlocking").off("mouseenter.dropTargetHover").off("mouseleave.dropTargetLeave");
+			}
+		} catch (e) {
+			self.manager.options.alertHandler.alertHandler("error", e);
+			self.manager.deactivateMove();
 		}
 	};
 
@@ -178,6 +250,22 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 
 		return title;
 	}
+
+	/**
+	 * Check if destination object is a valid target
+	 * @param target
+	 * @param destination
+	 * @returns {boolean|boolean}
+	 * @private
+	 */
+	MoveDropLocation.prototype._validTarget = function(target, destination) {
+		var ancestorPath = target.ancestorPath;
+		var validDestination = this.allowedMoveMappings[destination.type].includes(target.type);
+		var isParent = ancestorPath[ancestorPath.length - 1].id === destination.id; // Check if dropping an object on its immediate parent
+		var isChild = new RegExp(target.id).test(destination.path); // Check if dropping an object on one of its children
+
+		return validDestination && !(isParent || isChild);
+	};
 	
 	return MoveDropLocation;
 });

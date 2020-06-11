@@ -319,24 +319,19 @@
 	color: #8CB4C6;
 }
 
-.res_entry.deleted .item_container_count, .res_entry.moving .item_container_count {
+.res_entry.deleted .item_container_count, .res_entry .moving .item_container_count {
 	color: #8CB4C6;
 }
 
-.res_entry.deleted .status, .res_entry.moving .status {
+.res_entry.deleted .status, .res_entry .moving .status {
 	color: #B6BAB8;
-}
-
-.res_entry.moving {
-	color: #8CC6B4;
-	background-color: #F5FEF5;
 }
 
 .res_entry.moving .title {
 	color: #8CC6B4;
 }
 
-.res_entry.moving .title::after {
+.res_entry .moving .title::after {
 	content : "moving...";
 	padding-left: .5em;
 	font-size: 70%;
@@ -363,7 +358,7 @@
 
 .result_table .column_headers > th {
 	text-align: left;
-	font-color: #889;
+	color: #889;
 	font-size: 85%;
 	white-space: nowrap;
 	vertical-align: middle;
@@ -639,19 +634,19 @@
 	color: #1D759F;
 }
 
-.result_table.moving .res_entry.container .title {
+.result_table .res_entry.container .moving.title {
 	border: 1px dashed #59AACE;
 	background-color: #FBFBFE;
 }
 
-.result_table.moving .res_entry.container .title:hover, .result_table.moving .res_entry.container .title.drop_hover {
+.result_table .res_entry.container .moving.title:hover, .result_table .res_entry.container .moving.title.drop_hover {
 	background-color: #DDF0FA;
 	border: 1px solid #59AACE;
 	color: #555555;
 	text-decoration: none;
 }
 
-.result_table.moving .arrange_placeholder {
+.result_table.moving-rows .arrange_placeholder {
 	display: none;
 }
 
@@ -666,16 +661,21 @@
 	color : #0C7889;
 }
 
+.structure .selected > .entry > .moving.primary_action::before {
+	content : none;
+}
+
 .structure .selected > .entry > .primary_action {
 	font-weight: bold;
 }
 
-.structure .moving .entry > .primary_action {
+.structure .entry > .moving.primary_action {
 	border: 1px dashed #59AACE;
 	background-color: #FBFBFE;
 }
 
-.structure .moving .entry > .primary_action:hover, .structure .moving .entry > .primary_action.drop_hover {
+.structure .entry > .moving.primary_action:hover,
+.structure .moving .entry > .moving .primary_action.drop_hover {
 	background-color: #DDF0FA;
 	border: 1px solid #59AACE;
 	color: #555555;
@@ -684,11 +684,15 @@
 
 .structure .moving .selected > .entry > .primary_action {
 	border: 1px dashed transparent;
-	background-color: none;
+	background-color: initial;
 }
 
 .confirm_dialog .move {
 	max-width: 400px;
+}
+
+.invalid_target {
+	opacity: .5;
 }
 
 /** Trash folder */
