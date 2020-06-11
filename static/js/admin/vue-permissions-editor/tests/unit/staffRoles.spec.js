@@ -10,8 +10,6 @@ const response = {
 };
 
 const user_role = { principal: 'test_user_2', role: 'canManage', type: 'new' };
-const updateUserList = jest.fn();
-const setRoles = jest.fn();
 
 let wrapper;
 
@@ -66,19 +64,8 @@ describe('staffRoles.vue', () => {
 
     it("triggers a submission", async () => {
         // Mount separately to mock methods to test that they're called
-        wrapper = shallowMount(staffRoles, {
-            localVue,
-            propsData: {
-                alertHandler: {
-                    alertHandler: jest.fn() // This method lives outside of the Vue app
-                },
-                containerName: 'Test Unit',
-                containerType: 'AdminUnit',
-                title: 'Test Stuff',
-                uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
-            },
-            methods: {updateUserList, setRoles}
-        });
+        let updateUsers = jest.spyOn(wrapper.vm, 'updateUserList');
+        let setRoles = jest.spyOn(wrapper.vm, 'setRoles');
 
         // Add a new user
         wrapper.find('input').setValue('test_user_71');
@@ -89,8 +76,11 @@ describe('staffRoles.vue', () => {
         wrapper.find('#is-submitting').trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(updateUserList).toHaveBeenCalled();
+        expect(updateUsers).toHaveBeenCalled();
         expect(setRoles).toHaveBeenCalled();
+
+        updateUsers.mockRestore();
+        setRoles.mockRestore();
     });
 
     it("sends current staff roles to the server", async (done) => {
