@@ -49,7 +49,11 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.metrics.HistogramFactory;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.DatastreamType;
+import io.dropwizard.metrics5.Histogram;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Processor which registers binaries in longleaf
@@ -60,6 +64,10 @@ import edu.unc.lib.dl.model.DatastreamType;
 public class RegisterToLongleafProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(RegisterToLongleafProcessor.class);
     private static final Logger longleafLog = LoggerFactory.getLogger("longleaf");
+
+    private static final Histogram batchSizeHistogram = HistogramFactory
+            .createHistogram("longleafRegisterBatchSize");
+    private static final Timer timer = TimerFactory.createTimerForClass(RegisterToLongleafProcessor.class);
 
     public static final List<String> REGISTERABLE_IDS = asList(
             DatastreamType.MD_DESCRIPTIVE.getId(),
@@ -115,7 +123,9 @@ public class RegisterToLongleafProcessor implements Processor {
             }
         }
 
-        registerFiles(digestsMap);
+        try (Timer.Context context = timer.time()) {
+            registerFiles(digestsMap);
+        }
     }
 
     private String calculateSha1(PID pid) {
@@ -164,9 +174,12 @@ public class RegisterToLongleafProcessor implements Processor {
 
         int entryCount = cnt.getValue();
         // Nothing to register
-        if (sb.length() == entryCount) {
+        if (entryCount == 0) {
             return;
         }
+
+        // Record statistics about the number of objects registered
+        batchSizeHistogram.update(entryCount);
 
         try {
             // only register binaries with md5sum
