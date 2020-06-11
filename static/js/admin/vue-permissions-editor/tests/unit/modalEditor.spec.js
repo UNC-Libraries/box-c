@@ -35,7 +35,7 @@ describe('modalEditor.vue', () => {
     });
 
     it("is hidden by default", () => {
-        expect(wrapper.find('.meta-modal').contains('.modal-body')).toBe(false);
+        expect(wrapper.find('.meta-modal .modal-body').exists()).toBe(false);
     });
 
     it("displays a record title when triggered from admin interface", async () => {

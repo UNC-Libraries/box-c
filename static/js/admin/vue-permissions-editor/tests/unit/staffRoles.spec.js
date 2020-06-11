@@ -1,4 +1,5 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils'
+import '@testing-library/jest-dom'
 import staffRoles from '@/components/staffRoles.vue'
 import moxios from "moxios";
 
@@ -60,7 +61,7 @@ describe('staffRoles.vue', () => {
 
         wrapper.find('.info').trigger('click');
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('#role-list').isVisible()).toBe(true);
+        expect(wrapper.find('#role-list').element).toBeVisible();
     });
 
     it("triggers a submission", async () => {
@@ -350,12 +351,12 @@ describe('staffRoles.vue', () => {
     it("displays a submit button for admin units and collections", async () => {
         wrapper.setProps({containerType: 'AdminUnit'});
         let btn = wrapper.find('#is-submitting');
-        expect(btn.isVisible()).toEqual(true);
+        expect(btn.element).toBeVisible();
 
         wrapper.setProps({containerType: 'Collection'});
 
         await wrapper.vm.$nextTick();
-        expect(btn.isVisible()).toEqual(true)
+        expect(btn.element).toBeVisible();
     });
 
     it("emits an event to reset 'changesCheck' in parent component", async () => {

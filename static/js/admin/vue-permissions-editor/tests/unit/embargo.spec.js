@@ -62,7 +62,7 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: testDate });
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.contains('.form')).toBe(true);
+        expect(wrapper.find('.form').exists()).toBe(true);
     });
 
     it("hides the embargo form if no embargo is set and displays an 'Add Embargo' button", async () => {
@@ -70,8 +70,8 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: null });
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.contains('.form')).toBe(false);
-        expect(wrapper.contains('#show-form')).toBe(true);
+        expect(wrapper.find('.form').exists()).toBe(false);
+        expect(wrapper.find('#show-form').exists()).toBe(true);
     });
 
     it("shows the embargo form if the 'set embargo' button is clicked", async () => {
@@ -81,7 +81,7 @@ describe('embargo.vue', () => {
         await wrapper.vm.$nextTick();
         wrapper.find('#show-form').trigger('click');
         await wrapper.vm.$nextTick();
-        expect(wrapper.contains('.form')).toBe(true);
+        expect(wrapper.find('.form').exists()).toBe(true);
     });
 
     it("shows a 'Remove Embargo' button if an embargo is set", async () => {
@@ -111,8 +111,8 @@ describe('embargo.vue', () => {
         wrapper.find('#remove-embargo').trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.contains('.form')).toBe(false);
-        expect(wrapper.contains('#show-form')).toBe(true);
+        expect(wrapper.find('.form').exists()).toBe(false);
+        expect(wrapper.find('#show-form').exists()).toBe(true);
     });
 
     it("emits an event when a new embargo is added", async () => {

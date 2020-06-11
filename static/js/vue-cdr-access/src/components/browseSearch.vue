@@ -43,7 +43,7 @@
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
                 this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) })
                     .catch((e) => {
-                        if (e.name !== 'NavigationDuplicated') {
+                        if (this.nonDuplicateNavigationError(e)) {
                             throw e;
                         }
                     });

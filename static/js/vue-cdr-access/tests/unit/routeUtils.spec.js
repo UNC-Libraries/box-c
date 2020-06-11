@@ -121,4 +121,13 @@ describe('routeUtils', () => {
         expect(wrapper.vm.coerceWorksOnly(false)).toEqual(false);
         expect(wrapper.vm.coerceWorksOnly('false')).toEqual(false);
     });
+
+    it("determines if a duplicate route error has been throw", () => {
+        expect(wrapper.vm.nonDuplicateNavigationError(
+            { name: 'NavigationDuplicated', message:'something awful' })).toBe(false);
+        expect(wrapper.vm.nonDuplicateNavigationError(
+            { name: 'terrible error', message:'Avoided redundant navigation' })).toBe(false);
+        expect(wrapper.vm.nonDuplicateNavigationError(
+            { name: 'terrible error', message:'something awful' })).toBe(true);
+    });
 });
