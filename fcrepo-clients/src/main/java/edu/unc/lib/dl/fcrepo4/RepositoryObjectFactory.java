@@ -339,7 +339,7 @@ public class RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().put(pid.getRepositoryUri())
-                .externalContent(storageUri, mimetype.replaceAll(";?\\s*charset=[^;]+;?", ""), PROXY)
+                .externalContent(storageUri, formatMimetype(mimetype), PROXY)
                 .addInteractionModel(LDP_NON_RDF_SOURCE)
                 .filename(filename)
                 .digestSha1(sha1Checksum)
@@ -418,7 +418,7 @@ public class RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().post(path).slug(slug)
-                .body(content, mimetype.replaceAll(";?\\s*charset=[^;]+;?", ""))
+                .body(content, formatMimetype(mimetype))
                 .addInteractionModel(LDP_NON_RDF_SOURCE)
                 .filename(filename)
                 .digestSha1(sha1Checksum)
@@ -491,7 +491,7 @@ public class RepositoryObjectFactory {
          URI updatePath = URI.create(URIUtil.join(path, slug));
 
          try (FcrepoResponse response = getClient().put(updatePath)
-                 .body(content, mimetype.replaceAll(";?\\s*charset=[^;]+;?", ""))
+                 .body(content, formatMimetype(mimetype))
                  .addInteractionModel(LDP_NON_RDF_SOURCE)
                  .filename(filename)
                  .digestSha1(sha1Checksum)
@@ -686,6 +686,10 @@ public class RepositoryObjectFactory {
 
     private void persistTripleToFedora(URI subject, String sparqlUpdate) {
         sparqlUpdateService.executeUpdate(subject.toString(), sparqlUpdate);
+    }
+
+    private String formatMimetype(String mimetype) {
+        return (mimetype != null) ? mimetype.replaceAll(";?\\s*charset=[^;]+;?", "") : null;
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
