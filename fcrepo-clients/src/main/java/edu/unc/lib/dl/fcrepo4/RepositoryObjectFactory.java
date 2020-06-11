@@ -352,8 +352,10 @@ public class RepositoryObjectFactory {
         } catch (FcrepoOperationFailedException e) {
             // if one or more checksums don't match
             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
-                throw new ChecksumMismatchException("Failed to create binary for " + pid.getRepositoryPath()
-                    + ", since checksum(s) did not match the submitted content according to the repository.", e);
+                throw new ChecksumMismatchException(String.format("Failed to create binary for %s"
+                    + " from URI '%s', checksum(s) did not match the submitted"
+                    + " content according to the repository: md5=%s sha1=%s",
+                    pid.getRepositoryPath(), storageUri, md5Checksum, sha1Checksum));
             }
             throw ClientFaultResolver.resolve(e);
         }
