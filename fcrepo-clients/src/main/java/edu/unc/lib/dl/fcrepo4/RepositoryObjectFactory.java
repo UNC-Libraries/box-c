@@ -339,7 +339,7 @@ public class RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().put(pid.getRepositoryUri())
-                .externalContent(storageUri, mimetype, PROXY)
+                .externalContent(storageUri, formatMimetype(mimetype), PROXY)
                 .addInteractionModel(LDP_NON_RDF_SOURCE)
                 .filename(filename)
                 .digestSha1(sha1Checksum)
@@ -420,7 +420,7 @@ public class RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().post(path).slug(slug)
-                .body(content, mimetype)
+                .body(content, formatMimetype(mimetype))
                 .addInteractionModel(LDP_NON_RDF_SOURCE)
                 .filename(filename)
                 .digestSha1(sha1Checksum)
@@ -471,7 +471,9 @@ public class RepositoryObjectFactory {
      *        Filename of the binary content. Optional.
      * @param mimetype
      *        Mimetype of the content. Optional.
-     * @param checksum
+     * @param sha1Checksum
+     *        SHA-1 digest of the content. Optional.
+     * @param md5Checksum
      *        SHA-1 digest of the content. Optional.
      * @param model
      *        Model containing additional triples to add to the binary's metadata. Optional
@@ -491,7 +493,7 @@ public class RepositoryObjectFactory {
          URI updatePath = URI.create(URIUtil.join(path, slug));
 
          try (FcrepoResponse response = getClient().put(updatePath)
-                 .body(content, mimetype)
+                 .body(content, formatMimetype(mimetype))
                  .addInteractionModel(LDP_NON_RDF_SOURCE)
                  .filename(filename)
                  .digestSha1(sha1Checksum)
@@ -686,6 +688,10 @@ public class RepositoryObjectFactory {
 
     private void persistTripleToFedora(URI subject, String sparqlUpdate) {
         sparqlUpdateService.executeUpdate(subject.toString(), sparqlUpdate);
+    }
+
+    private String formatMimetype(String mimetype) {
+        return (mimetype != null) ? mimetype.replaceAll(";?\\s*charset=[^;]+;?", "") : null;
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
