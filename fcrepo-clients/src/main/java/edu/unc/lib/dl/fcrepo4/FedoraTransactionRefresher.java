@@ -23,8 +23,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
-
 /**
  * Utility which keeps a transaction alive for as long as it is needed.
  *
@@ -103,7 +101,8 @@ public class FedoraTransactionRefresher implements Runnable {
      */
     public void interrupt() {
         if (!running.get()) {
-            throw new RepositoryException("Cannot interrupt refresher, it is not running");
+            log.warn("Cannot interrupt refresher for {}, it is not running", txUri);
+            return;
         }
         stop();
         worker.interrupt();

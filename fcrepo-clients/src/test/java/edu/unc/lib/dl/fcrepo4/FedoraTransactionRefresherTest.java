@@ -31,8 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
-
 /**
  * @author bbpennel
  */
@@ -123,10 +121,13 @@ public class FedoraTransactionRefresherTest {
         assertFalse(refresher.isRunning());
     }
 
-    @Test(expected = RepositoryException.class)
+    @Test
     public void interruptNotRunning() throws Exception {
         FedoraTransactionRefresher refresher = new FedoraTransactionRefresher(tx);
 
         refresher.interrupt();
+
+        assertFalse(refresher.isStopped());
+        assertFalse(refresher.isRunning());
     }
 }
