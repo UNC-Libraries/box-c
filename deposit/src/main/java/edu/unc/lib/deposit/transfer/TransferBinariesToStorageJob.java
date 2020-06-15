@@ -47,6 +47,7 @@ import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.JobStatusFactory;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination
@@ -97,7 +98,10 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             transferModsHistoryFile(objPid, resc, transferSession);
         }
 
-        if (rescTypes.contains(Cdr.FileObject)) {
+        JobStatusFactory jobStatusFactory = getJobStatusFactory();
+        String objId = objPid.getId();
+
+        if (rescTypes.contains(Cdr.FileObject) && !jobStatusFactory.objectIsIngested(jobUUID, objId)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
         } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
@@ -114,6 +118,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             while (iterator.hasNext()) {
                 Resource childResc = (Resource) iterator.next();
                 transferBinaries(childResc, transferSession);
+                jobStatusFactory.addObjectIngested(jobUUID, objId);
             }
         } finally {
             iterator.close();

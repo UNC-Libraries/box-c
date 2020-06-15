@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.JOB_COMPLETED_OBJECTS;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.JOB_STATUS_PREFIX;
 
 import java.util.ArrayList;
@@ -103,6 +104,7 @@ public class JobStatusFactory {
             for (String uuid : uuids) {
                 jedis.del(JOB_STATUS_PREFIX + uuid);
                 jedis.lrem(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, uuid);
+                jedis.del(JOB_COMPLETED_OBJECTS + uuid);
             }
         }
     }
@@ -161,6 +163,18 @@ public class JobStatusFactory {
         }
     }
 
+    public boolean objectIsIngested(String jobUUID, String objectId) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            return jedis.sismember(JOB_COMPLETED_OBJECTS + jobUUID, objectId);
+        }
+    }
+
+    public void addObjectIngested(String jobUUID, String objectUUID) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            jedis.sadd(JOB_COMPLETED_OBJECTS + jobUUID, objectUUID);
+        }
+    }
+
     /**
      * Retrieves the names of the jobs that have already succeeded for the
      * deposit.
@@ -198,6 +212,7 @@ public class JobStatusFactory {
             for (String jobUUID : jobUUIDs) {
                 jedis.del(JOB_STATUS_PREFIX + jobUUID);
             }
+            jedis.del(JOB_COMPLETED_OBJECTS + depositUUID);
             jedis.del(DEPOSIT_TO_JOBS_PREFIX + depositUUID);
         }
     }
@@ -243,7 +258,7 @@ public class JobStatusFactory {
      * Expire all the job keys associated with this deposit in X seconds.
      * 
      * @param depositUUID
-     * @param statusKeysExpireSeconds
+     * @param seconds
      *            time until expire
      */
     public void expireKeys(String depositUUID, int seconds) {
@@ -251,9 +266,11 @@ public class JobStatusFactory {
             List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
             for (String jobUUID : jobUUIDs) {
-                jedis.expire(RedisWorkerConstants.JOB_STATUS_PREFIX + jobUUID, seconds);
+                jedis.expire(JOB_STATUS_PREFIX + jobUUID, seconds);
             }
-            jedis.expire(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
+            jedis.expire(JOB_COMPLETED_OBJECTS
+                    + depositUUID, seconds);
+            jedis.expire(DEPOSIT_TO_JOBS_PREFIX
                     + depositUUID, seconds);
         }
     }
