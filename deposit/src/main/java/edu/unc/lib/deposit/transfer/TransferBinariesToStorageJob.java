@@ -63,8 +63,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
 
-    private final JobStatusFactory jobStatusFactory = getJobStatusFactory();
-
     /**
      *
      */
@@ -124,6 +122,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferOriginalFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        JobStatusFactory jobStatusFactory = getJobStatusFactory();
         // add storageUri if doesn't already exist. It will exist in a resume scenario.
         if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri) &&
                 !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
@@ -136,6 +135,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        JobStatusFactory jobStatusFactory = getJobStatusFactory();
         if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri) &&
                 !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
@@ -153,6 +153,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        JobStatusFactory jobStatusFactory = getJobStatusFactory();
         if (!resc.hasProperty(CdrDeposit.fitsStorageUri) &&
                 !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
@@ -174,6 +175,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 continue;
             }
 
+            JobStatusFactory jobStatusFactory = getJobStatusFactory();
             if (!jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
                 PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
                 URI storageUri = transferSession.transfer(manifestPid, manifestUri);
