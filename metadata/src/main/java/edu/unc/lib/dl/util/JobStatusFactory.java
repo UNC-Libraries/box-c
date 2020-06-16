@@ -169,9 +169,9 @@ public class JobStatusFactory {
         }
     }
 
-    public void addObjectIngested(String jobUUID, String objectUUID) {
+    public void addObjectIngested(String jobUUID, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
-            jedis.sadd(JOB_COMPLETED_OBJECTS + jobUUID, objectUUID);
+            jedis.sadd(JOB_COMPLETED_OBJECTS + jobUUID, objectId);
         }
     }
 
