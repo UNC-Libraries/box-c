@@ -193,6 +193,10 @@
         <property name="clamScan" ref="clamScan" />
     </bean>
     
+    <bean id="FixityCheckJob" class="edu.unc.lib.deposit.validate.FixityCheckJob"
+        scope="prototype">
+    </bean>
+    
     <bean id="ValidateDestinationJob" class="edu.unc.lib.deposit.validate.ValidateDestinationJob"
         scope="prototype">
     </bean>

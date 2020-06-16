@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import static edu.unc.lib.dl.rdf.CdrDeposit.md5sum;
 import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
@@ -65,11 +64,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -376,37 +372,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         if (filesize != null) {
             premisObjCharsEl.addContent(new Element("size", PREMIS_V3_NS).setText(filesize));
         }
-
-        // Add md5 checksum
-        String md5Value = fileinfoEl.getChildTextTrim("md5checksum", FITS_NS);
-
-        // Register the checksum with the deposit if not already set
-        Statement md5Stmt = objResc.getProperty(md5sum);
-        if (md5Stmt != null) {
-            if (!md5Stmt.getString().equals(md5Value)) {
-                // Checksum mismatch, fail now and save the work of checking again later
-                String filePath = fileinfoEl.getChildText("filepath");
-                failJob(String.format("FITS MD5 checksum did not match the provided checksum for {0} belonging to {1}",
-                                filePath, objResc.getURI()),
-                        String.format("Provided: {0} Calculated: {1}", md5Stmt.getString(), md5Value));
-            }
-        } else {
-            objResc.addProperty(md5sum, md5Value);
-        }
-
-        // Store event for calculation of checksum
-        PID pid = PIDs.get(objResc.getURI());
-        PremisLogger premisDepositLogger = getPremisLogger(pid);
-        premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-                .addEventDetail("Checksum for file is {0}", md5Value)
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .write();
-
-        // Add checksum to FITS report
-        premisObjCharsEl.addContent(
-                new Element("fixity", PREMIS_V3_NS).addContent(
-                        new Element("messageDigestAlgorithm", PREMIS_V3_NS).setText("MD5"))
-                        .addContent(new Element("messageDigest", PREMIS_V3_NS).setText(md5Value)));
     }
 
     /**
