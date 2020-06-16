@@ -124,43 +124,51 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferOriginalFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         JobStatusFactory jobStatusFactory = getJobStatusFactory();
         // add storageUri if doesn't already exist. It will exist in a resume scenario.
-        if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri) &&
-                !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
+        if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri)) {
             PID originalPid = getOriginalFilePid(objPid);
-            URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
-            URI storageUri = transferSession.transfer(originalPid, stagingUri);
-            resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-            jobStatusFactory.addObjectIngested(jobUUID, objPid.getId());
+            String originalId = originalPid.getQualifiedId();
+
+            if (!jobStatusFactory.objectIsIngested(jobUUID, originalId)) {
+                URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
+                URI storageUri = transferSession.transfer(originalPid, stagingUri);
+                resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+                jobStatusFactory.addObjectIngested(jobUUID, originalId);
+            }
         }
     }
 
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         JobStatusFactory jobStatusFactory = getJobStatusFactory();
-        if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri) &&
-                !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
+        if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
-            PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
+            String modsId = modsPid.getQualifiedId();
 
-            Path stagingPath = getModsHistoryPath(objPid);
+            if (!jobStatusFactory.objectIsIngested(jobUUID, modsId)) {
+                Path stagingPath = getModsHistoryPath(objPid);
 
-            if (Files.exists(stagingPath)) {
-                URI stagingUri = stagingPath.toUri();
-                URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
-                resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
-                jobStatusFactory.addObjectIngested(jobUUID, objPid.getId());
+                if (Files.exists(stagingPath)) {
+                    PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
+                    URI stagingUri = stagingPath.toUri();
+                    URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
+                    resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
+                    jobStatusFactory.addObjectIngested(jobUUID, modsId);
+                }
             }
         }
     }
 
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         JobStatusFactory jobStatusFactory = getJobStatusFactory();
-        if (!resc.hasProperty(CdrDeposit.fitsStorageUri) &&
-                !jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
+        if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
-            URI stagingUri = getTechMdPath(objPid, false).toUri();
-            URI storageUri = transferSession.transfer(fitsPid, stagingUri);
-            resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
-            jobStatusFactory.addObjectIngested(jobUUID, objPid.getId());
+            String fitsId = fitsPid.getQualifiedId();
+
+            if (!jobStatusFactory.objectIsIngested(jobUUID, fitsId)) {
+                URI stagingUri = getTechMdPath(objPid, false).toUri();
+                URI storageUri = transferSession.transfer(fitsPid, stagingUri);
+                resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
+                jobStatusFactory.addObjectIngested(jobUUID, fitsId);
+            }
         }
     }
 
