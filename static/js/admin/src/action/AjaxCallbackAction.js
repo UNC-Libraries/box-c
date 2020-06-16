@@ -125,14 +125,12 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 					op.context.target.setState("idle");
 				op.complete(data);
 			}
-
+			
 			// Trigger unchecking all checked objects when action completes
 			$(".select_all").trigger('click', function(){
-				var checkbox = $(this).children("input").prop("checked", false);
-				var toggleFn = checkbox.prop("checked") ? "select" : "unselect";
 				var resultObjects = op.resultObjectList.resultObjects;
 				for (var index in resultObjects) {
-					resultObjects[index][toggleFn]();
+					resultObjects[index]["unselect"]();
 				}
 				op.selectionUpdated();
 			}).children("input").prop("checked", false);
