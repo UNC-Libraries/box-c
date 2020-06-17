@@ -163,15 +163,15 @@ public class JobStatusFactory {
         }
     }
 
-    public boolean objectIsIngested(String jobUUID, String objectId) {
+    public boolean objectIsIngested(String depositId, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
-            return jedis.sismember(JOB_COMPLETED_OBJECTS + jobUUID, objectId);
+            return jedis.sismember(JOB_COMPLETED_OBJECTS + depositId, objectId);
         }
     }
 
-    public void addObjectIngested(String jobUUID, String objectId) {
+    public void addObjectIngested(String depositId, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
-            jedis.sadd(JOB_COMPLETED_OBJECTS + jobUUID, objectId);
+            jedis.sadd(JOB_COMPLETED_OBJECTS + depositId, objectId);
         }
     }
 

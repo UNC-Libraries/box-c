@@ -63,6 +63,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
 
+    private String depositId;
+
     /**
      *
      */
@@ -75,6 +77,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
      */
     public TransferBinariesToStorageJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
+        this.depositId = depositUUID + ":" + TransferBinariesToStorageJob.class.getName();
     }
 
     @Override
@@ -128,11 +131,13 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             PID originalPid = getOriginalFilePid(objPid);
             String originalId = originalPid.getQualifiedId();
 
-            if (!jobStatusFactory.objectIsIngested(jobUUID, originalId)) {
+            if (!jobStatusFactory.objectIsIngested(depositId, originalId)) {
+                log.warn("Adding original file to processed list: {}", originalId);
                 URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
                 URI storageUri = transferSession.transfer(originalPid, stagingUri);
                 resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-                jobStatusFactory.addObjectIngested(jobUUID, originalId);
+                jobStatusFactory.addObjectIngested(depositId, originalId);
+                log.warn("Added original file to processed list: {}", originalId);
             }
         }
     }
@@ -143,15 +148,17 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
             String modsId = modsPid.getQualifiedId();
 
-            if (!jobStatusFactory.objectIsIngested(jobUUID, modsId)) {
+            if (!jobStatusFactory.objectIsIngested(depositId, modsId)) {
                 Path stagingPath = getModsHistoryPath(objPid);
 
                 if (Files.exists(stagingPath)) {
+                    log.warn("Adding mods history to processed list: {}", modsId);
                     PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
                     URI stagingUri = stagingPath.toUri();
                     URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
                     resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
-                    jobStatusFactory.addObjectIngested(jobUUID, modsId);
+                    jobStatusFactory.addObjectIngested(depositId, modsId);
+                    log.warn("Added mods history to processed list: {}", modsId);
                 }
             }
         }
@@ -163,11 +170,13 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             PID fitsPid = getTechnicalMetadataPid(objPid);
             String fitsId = fitsPid.getQualifiedId();
 
-            if (!jobStatusFactory.objectIsIngested(jobUUID, fitsId)) {
+            if (!jobStatusFactory.objectIsIngested(depositId, fitsId)) {
+                log.warn("Adding fits to processed list: {}", fitsId);
                 URI stagingUri = getTechMdPath(objPid, false).toUri();
                 URI storageUri = transferSession.transfer(fitsPid, stagingUri);
                 resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
-                jobStatusFactory.addObjectIngested(jobUUID, fitsId);
+                jobStatusFactory.addObjectIngested(depositId, fitsId);
+                log.warn("Added fits to processed list: {}", fitsId);
             }
         }
     }
@@ -186,10 +195,10 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             JobStatusFactory jobStatusFactory = getJobStatusFactory();
             PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
 
-            if (!jobStatusFactory.objectIsIngested(jobUUID, manifestPid.getQualifiedId())) {
+            if (!jobStatusFactory.objectIsIngested(depositId, manifestPid.getQualifiedId())) {
                 URI storageUri = transferSession.transfer(manifestPid, manifestUri);
                 resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-                jobStatusFactory.addObjectIngested(jobUUID, manifestPid.getQualifiedId());
+                jobStatusFactory.addObjectIngested(depositId, manifestPid.getQualifiedId());
             }
         }
     }
