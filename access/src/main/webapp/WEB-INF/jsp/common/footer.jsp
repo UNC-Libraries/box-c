@@ -26,6 +26,6 @@
 		<a href="${contactUrl}">Contact Us</a> |
 		<a href="https://library.unc.edu">Library Home</a> |
 		<a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
-		<a href="http://digitalaccess.unc.edu/report">Accessibility</a>
+		<a href="https://digitalaccess.unc.edu/report">Accessibility</a>
 	</p>
 </footer>
