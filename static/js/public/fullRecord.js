@@ -205,12 +205,12 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		function showBadge(data) {
 			var markedForDeletion = false;
-			var restrictedAccess = false;
+			var restrictedAccess = true;
 
 			if (data.status !== undefined) {
 				var restrictions = data.status.join(',').toLowerCase();
 				markedForDeletion = /marked.*?deletion/.test(restrictions);
-				restrictedAccess = /embargoed|staff-only/.test(restrictions);
+				restrictedAccess = data.status.indexOf("Public Access") === -1;
 			}
 
 			return { markDeleted: markedForDeletion, restricted: restrictedAccess };

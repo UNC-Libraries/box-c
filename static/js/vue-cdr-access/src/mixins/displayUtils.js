@@ -25,18 +25,16 @@ export default {
         },
 
         markedForDeletion(record) {
+            if (record.status === undefined) return false;
             return /marked.*?deletion/i.test(this.restrictions(record));
         },
 
         isRestricted(record) {
-            return /embargoed|staff-only/i.test(this.restrictions(record));
+            if (record.status === undefined) return true;
+            return !record.status.includes('Public Access');
         },
 
         restrictions(record) {
-            if (record.status === undefined) {
-                return '';
-            }
-
             return record.status.join(',').toLowerCase();
         }
     }
