@@ -184,11 +184,12 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             }
 
             JobStatusFactory jobStatusFactory = getJobStatusFactory();
-            if (!jobStatusFactory.objectIsIngested(jobUUID, objPid.getId())) {
-                PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
+            PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
+
+            if (!jobStatusFactory.objectIsIngested(jobUUID, manifestPid.getQualifiedId())) {
                 URI storageUri = transferSession.transfer(manifestPid, manifestUri);
                 resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-                jobStatusFactory.addObjectIngested(jobUUID, objPid.getId());
+                jobStatusFactory.addObjectIngested(jobUUID, manifestPid.getQualifiedId());
             }
         }
     }
