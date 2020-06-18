@@ -26,6 +26,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
@@ -37,6 +40,8 @@ import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
  * @author bbpennel
  */
 public class MultiDigestInputStreamWrapper {
+    private static final Logger log = LoggerFactory.getLogger(MultiDigestInputStreamWrapper.class);
+
     private final InputStream sourceStream;
 
     private final Map<DigestAlgorithm, String> algToDigest;
@@ -101,8 +106,10 @@ public class MultiDigestInputStreamWrapper {
      * @throws InvalidChecksumException thrown if any of the digests did not match
      */
     public void checkFixity() throws InvalidChecksumException {
+        log.debug("Preparing to verify fixity of wrapped stream");
         calculateDigests();
 
+        log.debug("Comparing computed digest values to expected digests");
         algToDigest.forEach((algorithm, originalDigest) -> {
             // Skip any algorithms which were calculated but no digest was provided for verification
             if (originalDigest == null) {
@@ -134,23 +141,31 @@ public class MultiDigestInputStreamWrapper {
 
     private void calculateDigests() {
         if (computedDigests != null) {
+            log.debug("Digests already calculated");
             return;
         }
 
         if (!streamRetrieved) {
+            log.debug("Reading inputstream to compute digests");
             // Stream not previously consumed, consume it now in order to calculate digests
             try (final InputStream is = getInputStream()) {
-                while (is.read() != -1) {
+                log.debug("Inputstream open, beginning read");
+                byte[] buffer = new byte[4096];
+                while (is.read(buffer) > -1) {
                 }
             } catch (final IOException e) {
                 throw new RepositoryException("Failed to read content stream while calculating digests", e);
             }
+            log.debug("Finished consuming inputstream for digest generation");
         }
 
+        log.debug("Processing computed digests");
         computedDigests = new HashMap<>();
         algToDigestStream.forEach((algorithm, digestStream) -> {
             final String computed = encodeHexString(digestStream.getMessageDigest().digest());
             computedDigests.put(algorithm, computed);
         });
+
+        log.debug("Finished populating digests: {}", computedDigests);
     }
 }

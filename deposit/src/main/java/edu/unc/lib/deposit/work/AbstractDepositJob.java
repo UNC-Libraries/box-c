@@ -167,8 +167,10 @@ public abstract class AbstractDepositJob implements Runnable {
         } catch (Exception e) {
             if (dataset.isInTransaction()) {
                 if (rollbackDatasetOnFailure) {
+                    log.debug("Aborting deposit model changes for {} after failure", depositUUID);
                     dataset.abort();
                 } else {
+                    log.debug("Committing deposit model changes for {} after failure", depositUUID);
                     dataset.commit();
                 }
             }

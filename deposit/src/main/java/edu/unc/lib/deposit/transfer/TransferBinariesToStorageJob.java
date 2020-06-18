@@ -91,6 +91,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private void transferBinaries(Resource resc, BinaryTransferSession transferSession) {
         PID objPid = PIDs.get(resc.toString());
+        log.debug("Preparing to transfer binaries for {}", objPid);
 
         Set<Resource> rescTypes = resc.listProperties(RDF.type).toList().stream()
                 .map(Statement::getResource).collect(toSet());
@@ -129,7 +130,9 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
             if (!isObjectCompleted(originalPid)) {
                 URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
+                log.debug("Transferring original file from {} for {}", stagingUri, originalPid);
                 URI storageUri = transferSession.transfer(originalPid, stagingUri);
+                log.debug("Finished transferring original file from {} to {}", stagingUri, storageUri);
                 resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
                 markObjectCompleted(originalPid);
             }
@@ -147,6 +150,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                     PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
                     URI stagingUri = stagingPath.toUri();
                     URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
+                    log.debug("Finished transferring MODS history file from {} to {}", stagingUri, storageUri);
                     resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
                     markObjectCompleted(modsPid);
                 }
@@ -161,6 +165,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             if (!isObjectCompleted(fitsPid)) {
                 URI stagingUri = getTechMdPath(objPid, false).toUri();
                 URI storageUri = transferSession.transfer(fitsPid, stagingUri);
+                log.debug("Finished transferring techmd file from {} to {}", stagingUri, storageUri);
                 resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
                 markObjectCompleted(fitsPid);
             }
@@ -182,6 +187,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
             if (!isObjectCompleted(manifestPid)) {
                 URI storageUri = transferSession.transfer(manifestPid, manifestUri);
+                log.debug("Finished transferring manifest file from {} to {}", manifestUri, storageUri);
                 resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
                 markObjectCompleted(manifestPid);
             }

@@ -85,8 +85,10 @@ public class FixityCheckJob extends AbstractDepositJob {
                 MultiDigestInputStreamWrapper digestWrapper = new MultiDigestInputStreamWrapper(
                         fStream, getDigestsForResource(objResc), REQUIRED_ALGS);
                 digestWrapper.checkFixity();
+                log.debug("Verified fixity of {}", stagedUri);
                 recordDigestsForResource(rescPid, objResc, digestWrapper.getDigests());
                 markObjectCompleted(rescPid);
+                log.debug("Completed fixity recording for {}", stagedUri);
             } catch (InvalidChecksumException e) {
                 failJob(String.format("Fixity check failed for %s belonging to %s",
                         stagedUri, objResc.getURI()),
