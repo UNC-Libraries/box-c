@@ -163,13 +163,26 @@ public class JobStatusFactory {
         }
     }
 
-    public boolean objectIsIngested(String depositId, String objectId) {
+    /**
+     * Checks if a binary is already in the list of deposited objects for the current deposit
+     *
+     * @param depositId Id of the current deposit
+     * @param objectId Id of the currently ingesting object
+     * @return boolean
+     */
+    public boolean objectIsCompleted(String depositId, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
             return jedis.sismember(JOB_COMPLETED_OBJECTS + depositId, objectId);
         }
     }
 
-    public void addObjectIngested(String depositId, String objectId) {
+    /**
+     * A list of the values of the current deposit's objects that have been ingested
+     *
+     * @param depositId Id of the current deposit
+     * @param objectId Id of the ingested object
+     */
+    public void addObjectCompleted(String depositId, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.sadd(JOB_COMPLETED_OBJECTS + depositId, objectId);
         }
