@@ -124,23 +124,30 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         // add storageUri if doesn't already exist. It will exist in a resume scenario.
         if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri)) {
             PID originalPid = getOriginalFilePid(objPid);
-            URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
-            URI storageUri = transferSession.transfer(originalPid, stagingUri);
-            resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+
+            if (!isObjectCompleted(originalPid)) {
+                URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
+                URI storageUri = transferSession.transfer(originalPid, stagingUri);
+                resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+                markObjectCompleted(originalPid);
+            }
         }
     }
 
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
-            PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
 
-            Path stagingPath = getModsHistoryPath(objPid);
+            if (!isObjectCompleted(modsPid)) {
+                Path stagingPath = getModsHistoryPath(objPid);
 
-            if (Files.exists(stagingPath)) {
-                URI stagingUri = stagingPath.toUri();
-                URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
-                resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
+                if (Files.exists(stagingPath)) {
+                    PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
+                    URI stagingUri = stagingPath.toUri();
+                    URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
+                    resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
+                    markObjectCompleted(modsPid);
+                }
             }
         }
     }
@@ -148,9 +155,13 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
-            URI stagingUri = getTechMdPath(objPid, false).toUri();
-            URI storageUri = transferSession.transfer(fitsPid, stagingUri);
-            resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
+
+            if (!isObjectCompleted(fitsPid)) {
+                URI stagingUri = getTechMdPath(objPid, false).toUri();
+                URI storageUri = transferSession.transfer(fitsPid, stagingUri);
+                resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
+                markObjectCompleted(fitsPid);
+            }
         }
     }
 
@@ -164,9 +175,14 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                         manifestPath, getDepositUUID());
                 continue;
             }
+
             PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
-            URI storageUri = transferSession.transfer(manifestPid, manifestUri);
-            resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+
+            if (!isObjectCompleted(manifestPid)) {
+                URI storageUri = transferSession.transfer(manifestPid, manifestUri);
+                resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
+                markObjectCompleted(manifestPid);
+            }
         }
     }
 }

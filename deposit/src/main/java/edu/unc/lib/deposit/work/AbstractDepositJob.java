@@ -129,6 +129,8 @@ public abstract class AbstractDepositJob implements Runnable {
 
     private File techmdDir;
 
+    private String depositJobId;
+
     @Autowired
     private Dataset dataset;
 
@@ -139,6 +141,7 @@ public abstract class AbstractDepositJob implements Runnable {
         log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
         this.jobUUID = uuid;
         this.setDepositUUID(depositUUID);
+        this.depositJobId = depositUUID + ":" + this.getClass().getName();
     }
 
     @PostConstruct
@@ -324,6 +327,14 @@ public abstract class AbstractDepositJob implements Runnable {
             throw new JobInterruptedException("State for job " + getDepositUUID()
                     + " is no longer running, interrupting");
         }
+    }
+
+    protected boolean isObjectCompleted(PID objectPid) {
+        return jobStatusFactory.objectIsCompleted(depositJobId, objectPid.getQualifiedId());
+    }
+
+    protected void markObjectCompleted(PID objectPid) {
+        jobStatusFactory.addObjectCompleted(depositJobId, objectPid.getQualifiedId());
     }
 
     public File getPremisFile(PID pid) {
