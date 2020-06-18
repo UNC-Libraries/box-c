@@ -1,4 +1,5 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
+import '@testing-library/jest-dom'
 import VueRouter from 'vue-router';
 import pagination from '@/components/pagination.vue';
 
@@ -82,12 +83,12 @@ describe('pagination.vue', () => {
         await wrapper.vm.$nextTick();
         wrapper.findAll('.page-number').at(1).trigger('click');
 
-        expect(wrapper.find('#first-page-link').isVisible()).toBe(true);
+        expect(wrapper.find('#first-page-link').element).toBeVisible();
     });
 
     it("displays a link to jump to the last page if the user in on a page that is before the pageLimit and" +
         "there are more pages than the pageLimit", () => {
-        expect(wrapper.find('#last-page-link').isVisible()).toBe(true);
+        expect(wrapper.find('#last-page-link').element).toBeVisible();
     });
 
     it("does not display a link to jump to the first page if the user in on a page before the pageLimit and" +

@@ -115,8 +115,6 @@ const DEFAULT_PERMS =  [
     {principal: 'authenticated', principal_display: 'patron', role: 'canViewOriginals'}
 ];
 
-const setRoles = jest.fn();
-
 let wrapper, selects;
 
 describe('patronRoles.vue', () => {
@@ -149,10 +147,10 @@ describe('patronRoles.vue', () => {
                 changesCheck: false,
                 containerType: 'Folder',
                 uuid: '73bc003c-9603-4cd9-8a65-93a22520ef6a'
-            },
-            methods: {setRoles}
+            }
         });
 
+        let setRoles = jest.spyOn(wrapper.vm, 'setRoles');
         stubDataLoad();
 
         moxios.wait(async () => {
@@ -167,6 +165,7 @@ describe('patronRoles.vue', () => {
             wrapper.find('#is-submitting').trigger('click');
 
             expect(setRoles).toHaveBeenCalled();
+            setRoles.mockRestore();
             done();
         });
     });

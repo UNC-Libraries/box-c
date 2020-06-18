@@ -44,7 +44,7 @@
                     path: this.$route.path,
                     query: this.urlParams({ sort: this.sort_order }, is_search_sort)
                 }).catch((e) => {
-                    if (e.name !== 'NavigationDuplicated') {
+                    if (this.nonDuplicateNavigationError(e)) {
                         throw e;
                     }
                 });

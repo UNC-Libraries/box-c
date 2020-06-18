@@ -102,6 +102,16 @@ export default {
          */
         paramExists(param, params) {
             return `${param}` in params;
+        },
+
+        /**
+         * Vue router doesn't seem to like dynamically adding params to current route
+         * So catch any duplicate navigation errors and ignore
+         * @param error
+         * @returns {boolean|boolean}
+         */
+        nonDuplicateNavigationError(error) {
+            return (error.name !== 'NavigationDuplicated' && !/^avoided\s+redundant\s+navigation/i.test(error.message));
         }
     }
 }

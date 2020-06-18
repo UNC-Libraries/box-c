@@ -48,7 +48,7 @@ describe('modalMetadata.vue', () => {
     });
 
     it("is hidden by default", () => {
-        expect(wrapper.find('.meta-modal').contains('.modal-container')).toBe(false);
+        expect(wrapper.find('.meta-modal').element).not.toContain('.modal-container');
     });
 
     it("displays a record title when triggered", async () => {
