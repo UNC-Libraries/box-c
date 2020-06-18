@@ -164,7 +164,7 @@ public class JobStatusFactory {
     }
 
     /**
-     * Checks if a binary is already in the list of deposited objects for the current deposit
+     * Checks if an object is already in the list of deposited objects for the current deposit
      *
      * @param depositId Id of the current deposit
      * @param objectId Id of the currently ingesting object
@@ -177,7 +177,7 @@ public class JobStatusFactory {
     }
 
     /**
-     * A list of the values of the current deposit's objects that have been ingested
+     * A list of the values of the current deposit's objects that have been completed
      *
      * @param depositId Id of the current deposit
      * @param objectId Id of the ingested object
