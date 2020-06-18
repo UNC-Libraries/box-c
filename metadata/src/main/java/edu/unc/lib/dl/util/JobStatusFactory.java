@@ -167,7 +167,7 @@ public class JobStatusFactory {
      * Checks if an object is already in the list of deposited objects for the current deposit
      *
      * @param depositId Id of the current deposit
-     * @param objectId Id of the currently ingesting object
+     * @param objectId Id of the object to check
      * @return boolean
      */
     public boolean objectIsCompleted(String depositId, String objectId) {
@@ -180,7 +180,7 @@ public class JobStatusFactory {
      * A list of the values of the current deposit's objects that have been completed
      *
      * @param depositId Id of the current deposit
-     * @param objectId Id of the ingested object
+     * @param objectId Id of the completed object
      */
     public void addObjectCompleted(String depositId, String objectId) {
         try (Jedis jedis = getJedisPool().getResource()) {
