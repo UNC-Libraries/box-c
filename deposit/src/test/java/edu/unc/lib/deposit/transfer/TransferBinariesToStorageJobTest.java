@@ -25,6 +25,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -50,6 +51,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
@@ -245,6 +247,46 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertManifestTranferred(manifestStorageUris, manifest1Name);
         assertManifestTranferred(manifestStorageUris, manifest2Name);
+    }
+
+    @Test
+    public void depositResumeFailed() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        Bag workBag2 = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc2 = addFileObject(workBag2, FILE_CONTENT2, true);
+        workBag2.addProperty(Cdr.primaryObject, fileResc2);
+
+        String filePath2 = fileResc2.getProperty(CdrDeposit.stagingLocation).getString();
+        Path flappingPath = Paths.get(URI.create(filePath2));
+        Files.delete(flappingPath);
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Job expected to fail");
+        } catch (BinaryTransferException e) {
+            // expected
+        }
+
+        // Restore the contents
+        FileUtils.writeStringToFile(flappingPath.toFile(), FILE_CONTENT2, "UTF-8");
+        // Resume the job
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+        assertFitsFileTransferred(postFileResc);
+
+        Resource postFileResc2 = model.getResource(fileResc2.getURI());
+
+        assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
+        assertFitsFileTransferred(postFileResc2);
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {

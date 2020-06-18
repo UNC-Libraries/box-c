@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.jena.query.Dataset;
@@ -100,6 +102,8 @@ public class AbstractDepositJobTest {
     @Mock
     protected FedoraTransaction tx;
 
+    private Set<String> completedIds;
+
     @Before
     public void initBase() throws Exception {
         initMocks(this);
@@ -135,6 +139,18 @@ public class AbstractDepositJobTest {
                         invocation.getArgumentAt(0, Exception.class));
             }
         }).when(tx).cancel(any(Exception.class));
+
+        completedIds = new HashSet<>();
+
+        doAnswer(invocation -> {
+            String objId = invocation.getArgumentAt(1, String.class);
+            completedIds.add(objId);
+            return null;
+        }).when(jobStatusFactory).addObjectCompleted(anyString(), anyString());
+        when(jobStatusFactory.objectIsCompleted(anyString(), anyString())).thenAnswer(invocation -> {
+            String objId = invocation.getArgumentAt(1, String.class);
+            return completedIds.contains(objId);
+        });
     }
 
     protected PID makePid() {

@@ -59,6 +59,7 @@ public class FixityCheckJob extends AbstractDepositJob {
 
     public FixityCheckJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
+        this.rollbackDatasetOnFailure = false;
     }
 
     @Override
@@ -69,6 +70,11 @@ public class FixityCheckJob extends AbstractDepositJob {
         List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
         for (Entry<PID, String> stagingEntry : stagingList) {
             PID rescPid = stagingEntry.getKey();
+            // Skip already checked files
+            if (isObjectCompleted(rescPid)) {
+                continue;
+            }
+
             String stagedPath = stagingEntry.getValue();
             URI stagedUri = URI.create(stagedPath);
 
@@ -80,6 +86,7 @@ public class FixityCheckJob extends AbstractDepositJob {
                         fStream, getDigestsForResource(objResc), REQUIRED_ALGS);
                 digestWrapper.checkFixity();
                 recordDigestsForResource(rescPid, objResc, digestWrapper.getDigests());
+                markObjectCompleted(rescPid);
             } catch (InvalidChecksumException e) {
                 failJob(String.format("Fixity check failed for %s belonging to %s",
                         stagedUri, objResc.getURI()),

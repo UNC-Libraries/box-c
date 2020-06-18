@@ -66,6 +66,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
      *
      */
     public TransferBinariesToStorageJob() {
+        this.rollbackDatasetOnFailure = false;
     }
 
     /**
@@ -74,6 +75,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
      */
     public TransferBinariesToStorageJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
+        this.rollbackDatasetOnFailure = false;
     }
 
     @Override

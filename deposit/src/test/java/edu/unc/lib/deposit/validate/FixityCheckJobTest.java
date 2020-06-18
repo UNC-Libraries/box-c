@@ -24,6 +24,10 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -63,6 +67,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
     private File stagingDir;
 
+
+
     @Before
     public void setup() throws Exception {
         pidMinter = new RepositoryPIDMinter();
@@ -74,6 +80,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         setField(job, "dataset", dataset);
         setField(job, "premisLoggerFactory", premisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
         job.init();
 
         stagingDir = tmpFolder.newFolder("staged");
@@ -216,6 +223,48 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
         assertChecksumEvent(filePid1, DigestAlgorithm.MD5, CONTENT1_MD5);
+
+        Resource fileResc2 = resultModel.getResource(filePid2.getRepositoryPath());
+        assertTrue(fileResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
+        assertTrue(fileResc2.hasProperty(CdrDeposit.md5sum, CONTENT2_MD5));
+
+        assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
+        assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
+    }
+
+    @Test
+    public void depositResumeAfterFailure() throws Exception {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        String stagingPath1 = stageFile(CONTENT1);
+        PID filePid1 = addFileObject(depBag, stagingPath1);
+        String stagingPath2 = stageFile(CONTENT2);
+        PID filePid2 = addFileObject(depBag, stagingPath2);
+        addDigest(model, filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
+        job.closeModel();
+
+        Path flappingPath = Paths.get(URI.create(stagingPath2));
+        // Delete one of the staged files
+        Files.delete(flappingPath);
+
+        try {
+            job.run();
+            fail("Job expected to fail");
+        } catch (JobFailedException e) {
+            // expected
+        }
+
+        // Write the file back into place
+        FileUtils.write(flappingPath.toFile(), CONTENT2, UTF_8);
+
+        job.run();
+
+        Model resultModel = job.getReadOnlyModel();
+        Resource fileResc1 = resultModel.getResource(filePid1.getRepositoryPath());
+        assertTrue(fileResc1.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
+
+        assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
 
         Resource fileResc2 = resultModel.getResource(filePid2.getRepositoryPath());
         assertTrue(fileResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
