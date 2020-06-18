@@ -125,9 +125,19 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 					op.context.target.setState("idle");
 				op.complete(data);
 			}
-		}).fail(function(data) {
-			op.alertHandler.alertHandler('error', textStatus + ", " + error);
-			console.error(textStatus, error);
+			
+			// Trigger unchecking all checked objects when action completes
+			$(".select_all").trigger('click', function(){
+				var resultObjects = op.resultObjectList.resultObjects;
+				for (var index in resultObjects) {
+					resultObjects[index]["unselect"]();
+				}
+				op.selectionUpdated();
+			}).children("input").prop("checked", false);
+
+		}).fail(function(data, error) {
+			op.alertHandler.alertHandler('error', data.responseText + ", " + error);
+			console.error(data.responseText, error);
 		});
 	};
 	
