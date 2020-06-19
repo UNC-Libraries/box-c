@@ -131,6 +131,8 @@ public abstract class AbstractDepositJob implements Runnable {
 
     private String depositJobId;
 
+    protected boolean rollbackDatasetOnFailure = true;
+
     @Autowired
     private Dataset dataset;
 
@@ -164,7 +166,13 @@ public abstract class AbstractDepositJob implements Runnable {
             }
         } catch (Exception e) {
             if (dataset.isInTransaction()) {
-                dataset.abort();
+                if (rollbackDatasetOnFailure) {
+                    log.debug("Aborting deposit model changes for {} after failure", depositUUID);
+                    dataset.abort();
+                } else {
+                    log.debug("Committing deposit model changes for {} after failure", depositUUID);
+                    dataset.commit();
+                }
             }
             throw e;
         } finally {

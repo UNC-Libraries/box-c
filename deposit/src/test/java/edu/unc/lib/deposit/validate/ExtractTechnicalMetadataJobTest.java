@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,7 +53,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
@@ -62,7 +60,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.DepositConstants;
 
@@ -166,7 +163,6 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.run();
 
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
-        verify(premisLogger).buildEvent(eq(Premis.MessageDigestCalculation));
     }
 
     @Test
@@ -247,17 +243,6 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
     }
 
-    @Test(expected = JobFailedException.class)
-    public void md5MismatchTest() throws Exception {
-        respondWithFile("/fitsReports/imageReport.xml");
-
-        // Providing incorrect checksum value
-        addFileObject(depositBag, IMAGE_FILEPATH, null, "111111111111");
-        job.closeModel();
-
-        job.run();
-    }
-
     @Test
     public void resumeJobTest() throws Exception {
         respondWithFile("/fitsReports/imageReport.xml");
@@ -322,13 +307,6 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         assertEquals(identifier, filePid.getRepositoryPath());
 
         Element premisObjCharsEl = premisObjEl.getChild("objectCharacteristics", PREMIS_V3_NS);
-
-        String checksum = premisObjCharsEl.getChild("fixity", PREMIS_V3_NS)
-                .getChildText("messageDigest", PREMIS_V3_NS);
-        assertEquals("Checksum not recorded in premis report", expectedChecksum, checksum);
-
-        assertEquals("Checksum not set in deposit model", expectedChecksum,
-                fileResc.getProperty(CdrDeposit.md5sum).getString());
 
         // Test that the size property is set and a numeric value
         Long.parseLong(premisObjCharsEl.getChildText("size", PREMIS_V3_NS));
