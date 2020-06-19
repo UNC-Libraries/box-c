@@ -67,8 +67,6 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
     private File stagingDir;
 
-
-
     @Before
     public void setup() throws Exception {
         pidMinter = new RepositoryPIDMinter();
