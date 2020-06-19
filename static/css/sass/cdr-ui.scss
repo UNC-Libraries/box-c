@@ -353,7 +353,9 @@ footer {
   a {
     color: white;
     font-size: 16px;
+    padding: 5px;
     &:hover, &:active {
+      background-color: #fafafa;
       color: $unc-blue;
     }
   }
@@ -442,6 +444,10 @@ footer {
       display: block;
     }
   }
+
+  p.footer-menu {
+    line-height: 25px;
+  }
 }$unc-blue: #4B9CD3;
 $light-gray: #E1E1E1;
 $border-style: 1px solid $light-gray;
@@ -500,7 +506,7 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
       color: #bbb;
     }
   }
-  
+
   label {
     color: black;
   }

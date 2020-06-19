@@ -323,8 +323,10 @@ footer .footer-menu {
 footer a {
   color: white;
   font-size: 16px;
+  padding: 5px;
 }
 footer a:hover, footer a:active {
+  background-color: #fafafa;
   color: #4B9CD3;
 }
 
@@ -389,6 +391,10 @@ footer a:hover, footer a:active {
   }
   .menu-row-small.navbar .navbar-display {
     display: block;
+  }
+
+  p.footer-menu {
+    line-height: 25px;
   }
 }
 /* Items marked for deletion */
