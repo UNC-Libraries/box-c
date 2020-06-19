@@ -18,16 +18,29 @@ package edu.unc.lib.dcr.migration.deposit;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.tdb.TDBFactory.createDataset;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ReadWrite;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +129,56 @@ public class DepositModelManager {
         } finally {
             dataset.end();
         }
+    }
+
+    /**
+     * Perform a sparql update against the deposit model
+     *
+     * @param query sparql update query
+     */
+    public synchronized void performUpdate(String query) {
+        Model depositModel = getWriteModel();
+        try {
+            UpdateAction.parseExecute(query, depositModel);
+            dataset.commit();
+        } finally {
+            dataset.end();
+        }
+    }
+
+    /**
+     * Perform a sparql query against the deposit model
+     *
+     * @param queryString sparql query
+     * @return results of the query, serialized as csv in an output stream
+     * @throws IOException
+     */
+    public synchronized String performQuery(String queryString) throws IOException {
+        Model depositModel = getReadModel();
+
+        Query query = QueryFactory.create(queryString);
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        try (
+                QueryExecution qexec = QueryExecutionFactory.create(query, depositModel);
+                Writer writer = new PrintWriter(outStream);
+                CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT);
+                ) {
+            ResultSet results = qexec.execSelect();
+            List<String> varNames = results.getResultVars();
+
+            while (results.hasNext()) {
+                QuerySolution soln = results.nextSolution();
+
+                for (String varName : varNames) {
+                    printer.print(soln.get(varName));
+                }
+                printer.println();
+            }
+        }
+
+        return outStream.toString("UTF-8");
     }
 
     /**
