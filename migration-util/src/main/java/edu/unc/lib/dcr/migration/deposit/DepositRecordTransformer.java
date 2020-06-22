@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.RecursiveAction;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
@@ -42,6 +43,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -60,6 +62,7 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -141,6 +144,17 @@ public class DepositRecordTransformer extends RecursiveAction {
             // Need this to be last
             log.debug("Overriding modification time for {}", bxc3Pid.getId());
             overrideLastModified(bxc3Resc, depRecord);
+        } catch (FedoraException e) {
+            if (e.getCause() instanceof FcrepoOperationFailedException) {
+                FcrepoOperationFailedException cause = (FcrepoOperationFailedException) e.getCause();
+                if (cause.getStatusCode() == HttpStatus.SC_CONFLICT) {
+                    log.warn("Skipping deposit record {} created from {}, conflict during creation",
+                            bxc5Pid.getQualifiedId(), bxc3Pid.getId());
+                    return;
+                }
+            }
+            tx.cancelAndIgnore();
+            throw e;
         } catch (Exception e) {
             tx.cancelAndIgnore();
             throw e;
@@ -272,7 +286,7 @@ public class DepositRecordTransformer extends RecursiveAction {
 
             PID manifestPid = getDepositManifestPid(bxc5Pid, dsName);
             // Transfer the manifest to its permanent storage location
-            URI manifestStoredUri = transferSession.transfer(manifestPid, manifestPath.toUri());
+            URI manifestStoredUri = transferSession.transferReplaceExisting(manifestPid, manifestPath.toUri());
 
             // Populate manifest timestamps
             Model manifestModel = ModelFactory.createDefaultModel();

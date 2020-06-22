@@ -80,6 +80,7 @@
     </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
@@ -133,5 +134,12 @@
         <property name="transferService" ref="binaryTransferService" />
         <property name="locationManager" ref="storageLocationManager" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
+    </bean>
+    
+    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl"
+            init-method="init">
+        <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${ingestSources.path}" />
+        <property name="mappingPath" value="${ingestSourceMappings.path}" />
     </bean>
 </beans>
