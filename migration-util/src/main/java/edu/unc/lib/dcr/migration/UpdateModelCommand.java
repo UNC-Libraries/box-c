@@ -17,10 +17,7 @@ package edu.unc.lib.dcr.migration;
 
 import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.dl.util.RDFModelUtil.streamModel;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.jena.riot.RDFFormat.NTRIPLES;
-import static org.apache.jena.riot.RDFFormat.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
@@ -28,25 +25,23 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 /**
- * View deposit model command
+ * Command for performing updates against a deposit model
  *
  * @author bbpennel
  */
-@Command(name = "view_deposit_model", aliases = {"vdm"},
-        description = "Display the stored RDF for a deposit")
-public class ViewDepositModelCommand implements Callable<Integer> {
+@Command(name = "update_model", aliases = {"um"},
+description = "Performs updates against deposit models")
+public class UpdateModelCommand implements Callable<Integer> {
 
     private static final Logger output = getLogger(OUTPUT_LOGGER);
 
@@ -56,41 +51,39 @@ public class ViewDepositModelCommand implements Callable<Integer> {
     private MigrationCLI parentCommand;
 
     @Parameters(index = "0",
-            description = "ID of the deposit to retrieve")
+            description = "Id of the deposit to update")
     private String depositId;
 
-    @Option(names = {"-t", "--turtle"},
-            description = "Serialize the RDF as turtle instead of n-triples")
-    private boolean asTurtle;
-
-    @Option(names = {"-q", "--query"},
-            description = "Sparql query to perform against the model. Results returned as CSV")
+    @Parameters(index = "1",
+            description = "Path to sparql update file, or @- to read from STDIN")
     private String sparqlQuery;
 
     @Override
     public Integer call() throws Exception {
-        PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
+        long start = System.currentTimeMillis();
 
+        PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
         DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
 
-        if (sparqlQuery == null) {
-            RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
-
-            output.info(IOUtils.toString(streamModel(depositModelManager.getReadModel(), format), UTF_8));
+        String queryString;
+        if (sparqlQuery.equals(STDIN_PATH)) {
+            queryString = IOUtils.toString(System.in, UTF_8);
         } else {
-            String queryString;
-            if (sparqlQuery.equals(STDIN_PATH)) {
-                queryString = IOUtils.toString(System.in, UTF_8);
-            } else {
-                queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
-            }
-
-            String results = depositModelManager.performQuery(queryString);
-            output.info(results);
+            queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
         }
 
-        depositModelManager.commit();
+        output.info("Executing sparql update on deposit {}:\n{}", depositPid.getId(), queryString);
+
+        try {
+            depositModelManager.performUpdate(queryString);
+
+            output.info("Completed sparql update on deposit {} in {}ms",
+                    depositPid.getId(), (System.currentTimeMillis() - start));
+        } catch (Exception e) {
+            output.error("Failed to perform update", e);
+        }
 
         return 0;
     }
+
 }

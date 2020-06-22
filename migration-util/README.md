@@ -54,6 +54,24 @@ dcr_migr.sh transform_content <id of top level object to transform>
 ## Retrieve generate deposit model in turtle format
 `dcr_migr.sh view_deposit_model <deposit id> -t`
   
+## Querying the deposit model
+The following will query the deposit model for "dd825c2f-6ea3-4ed7-ba68-3182f02c9fe6" for all file objects which don't have storageUris:
+```
+echo "select ?pid where { ?pid <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://cdr.unc.edu/definitions/model#FileObject> . FILTER NOT EXISTS { ?pid <http://cdr.unc.edu/definitions/deposit#storageUri> ?uri }}" | sudo dcr_migr.sh vdm dd825c2f-6ea3-4ed7-ba68-3182f02c9fe6 -q @-
+```
+The query can also be read from a file by giving a file path for the -q option
+
+## Updating the deposit model
+You can also run sparql update queries against a deposit model. The following adds a property to each FileObject in a model, based off a list of ids from a file:
+
+```
+while read p; do
+  p=${p%$'\n'}
+  p=${p%$'\r'}
+  echo "insert { <http://dcr-test-bes.libint.unc.edu:8181/fcrepo/rest/content/$p> <http://cdr.unc.edu/definitions/deposit#storageUri> \"file:///mnt/external_test/smb_pre_storage/$p/datafs/original_file\" } WHERE {}" | sudo dcr_migr.sh um dd825c2f-6ea3-4ed7-ba68-3182f02c9fe6 @-
+done < /tmp/missing_storage.txt
+```
+  
 ## Transforming Content
 Basic usage, which will transform the content into a deposit in the deposit directory, and return the identifier of the deposit:
 `sudo dcr_migr.sh transform_content <id of top level object to transform>`
