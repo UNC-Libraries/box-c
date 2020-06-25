@@ -30,6 +30,7 @@ import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dcr.migration.utils.DisplayProgressUtil;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -45,9 +46,11 @@ public class ContentObjectTransformerManager {
     private DepositModelManager modelManager;
     private boolean topLevelAsUnit;
     private boolean generateIds;
+    private boolean createMissingDepositRecords;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
     private PremisLoggerFactory premisLoggerFactory;
+    private RepositoryObjectFactory repoObjFactory;
 
     private BlockingQueue<ContentObjectTransformer> createdTransformers;
     private AtomicInteger totalAdded;
@@ -77,6 +80,8 @@ public class ContentObjectTransformerManager {
         transformer.setPidMinter(pidMinter);
         transformer.setDirectoryManager(directoryManager);
         transformer.setPremisLoggerFactory(premisLoggerFactory);
+        transformer.setRepositoryObjectFactory(repoObjFactory);
+        transformer.setCreateMissingDepositRecords(createMissingDepositRecords);
 
         createdTransformers.add(transformer);
         totalAdded.incrementAndGet();
@@ -137,5 +142,13 @@ public class ContentObjectTransformerManager {
 
     public void setGenerateIds(boolean generateIds) {
         this.generateIds = generateIds;
+    }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    public void setCreateMissingDepositRecords(boolean createMissingDepositRecords) {
+        this.createMissingDepositRecords = createMissingDepositRecords;
     }
 }

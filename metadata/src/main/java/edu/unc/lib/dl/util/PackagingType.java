@@ -30,7 +30,8 @@ public enum PackagingType {
     ATOM("http://purl.org/net/sword/terms/Atom"),
     BAG_WITH_N3("http://cdr.unc.edu/BAGIT/profiles/N3"),
     BAGIT("http://purl.org/net/sword/package/BagIt"),
-    DIRECTORY("http://cdr.unc.edu/DirectoryIngest");
+    DIRECTORY("http://cdr.unc.edu/DirectoryIngest"),
+    BXC3_TO_5_MIGRATION("https://library.unc.edu/dcr/packaging/bxc3To5Migration");
 
     private String uri;
 

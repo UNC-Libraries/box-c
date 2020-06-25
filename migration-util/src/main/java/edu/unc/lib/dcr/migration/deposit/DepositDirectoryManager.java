@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -70,6 +71,14 @@ public class DepositDirectoryManager {
             Files.createDirectory(eventsDir);
         } catch (IOException e) {
             throw new RepositoryException("Failed to create deposit directory: " + depositDir, e);
+        }
+    }
+
+    public void cleanupDepositDirectory() {
+        try {
+            FileUtils.deleteDirectory(depositDir.toFile());
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to cleanup deposit directory: " + depositDir, e);
         }
     }
 

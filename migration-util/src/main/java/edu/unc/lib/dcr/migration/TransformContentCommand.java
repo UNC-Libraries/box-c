@@ -21,6 +21,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
@@ -30,6 +32,7 @@ import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
@@ -71,27 +74,39 @@ public class TransformContentCommand implements Callable<Integer> {
             description = "Submits the transformed content for deposit to the provided container UUID")
     private String depositInto;
 
+    @Option(names = {"-m", "--missing-deposit-records"},
+            description = "Create referenced deposit records which do not have their own bxc3 object")
+    private boolean createMissingDepositRecords;
+
+    @Option(names = {"-n", "--dry-run"},
+            description = "Perform the transformation but do not save the results")
+    private boolean dryRun;
+
+    private String applicationContextPath = "spring/service-context.xml";
+
     @Override
     public Integer call() throws Exception {
         long start = System.currentTimeMillis();
 
         output.info("Transforming content tree starting from {}", startingId);
         output.info("===========================================");
-        RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
+
+        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath);
+
+        RepositoryPIDMinter pidMinter = (RepositoryPIDMinter) context.getBean("repositoryPIDMinter");
         PID depositPid = pidMinter.mintDepositRecordPid();
 
-        output.info("Populating deposit:");
-        output.info(depositPid.getId());
+        output.info("Populating deposit: " + depositPid.getId());
 
         DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
         DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
                 depositPid, parentCommand.depositBaseDir, hashNesting);
 
-        PathIndex pathIndex = new PathIndex();
+        PathIndex pathIndex = (PathIndex) context.getBean("pathIndex");
         pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
-        PremisLoggerFactory premisLoggerFactory = new PremisLoggerFactory();
-        premisLoggerFactory.setPidMinter(pidMinter);
+        PremisLoggerFactory premisLoggerFactory = (PremisLoggerFactory) context.getBean("premisLoggerFactory");
+        RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory) context.getBean("repositoryObjectFactory");
 
         ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
         transformerManager.setModelManager(depositModelManager);
@@ -101,6 +116,8 @@ public class TransformContentCommand implements Callable<Integer> {
         transformerManager.setDirectoryManager(depositDirectoryManager);
         transformerManager.setGenerateIds(generateIds);
         transformerManager.setPremisLoggerFactory(premisLoggerFactory);
+        transformerManager.setRepositoryObjectFactory(repoObjFactory);
+        transformerManager.setCreateMissingDepositRecords(createMissingDepositRecords);
 
         ContentTransformationService transformService = new ContentTransformationService(
                 depositPid, startingId, topLevelAsUnit);
@@ -110,6 +127,15 @@ public class TransformContentCommand implements Callable<Integer> {
         int result = transformService.perform();
 
         output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+
+        context.close();
+
+        if (dryRun) {
+            output.info("Dry run, deposit model not saved");
+            depositModelManager.removeModel();
+            depositDirectoryManager.cleanupDepositDirectory();
+            return result;
+        }
 
         if (depositInto != null) {
             if (result != 0) {
@@ -131,5 +157,9 @@ public class TransformContentCommand implements Callable<Integer> {
         }
 
         return result;
+    }
+
+    public void setApplicationContextPath(String applicationContextPath) {
+        this.applicationContextPath = applicationContextPath;
     }
 }
