@@ -15,14 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.CopyOption;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,11 +42,6 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     private IngestSource source;
     protected StorageLocation destination;
 
-    private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
-    private static final CopyOption[] COPY_ALLOW_OVERWRITE = { COPY_ATTRIBUTES, REPLACE_EXISTING };
-    private static final CopyOption[] MOVE_NO_OVERWRITE = { };
-    private static final CopyOption[] MOVE_ALLOW_OVERWRITE = { REPLACE_EXISTING };
-
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
         this.source = source;
         this.destination = destination;
@@ -71,40 +60,39 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     public URI transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         long currentTime = System.nanoTime();
-        URI oldFileUri = createFileURI(destUri, "old", currentTime, null);
+        Path oldFilePath = createFilePath(destUri, "old", currentTime);
+        Path newFilePath = createFilePath(destUri, "new", currentTime);
+        Path destinationPath = Paths.get(destUri);
 
         try {
             // Fill in parent directories if they are not present
             Path parentPath = Paths.get(destUri).getParent();
             Files.createDirectories(parentPath);
-            Path destinationPath = Paths.get(destUri);
-            URI newFileUri = createFileURI(destUri, "new", currentTime, oldFileUri);
 
-            // Rename old file .old extension
-            if (allowOverwrite && Files.exists(destinationPath)) {
-                Files.move(destinationPath, Paths.get(oldFileUri));
+            boolean destFileExists = Files.exists(destinationPath);
+
+            if (!allowOverwrite && destFileExists) {
+                throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
+                        + ", a binary already exists in " + destination.getId() + " at path " + destUri);
             }
 
             // Copy/move new file
             if (source.isReadOnly()) {
-                Files.copy(Paths.get(sourceFileUri), Paths.get(newFileUri),
-                        allowOverwrite ? COPY_ALLOW_OVERWRITE : COPY_NO_OVERWRITE);
+                Files.copy(Paths.get(sourceFileUri), newFilePath);
             } else {
-                Files.move(Paths.get(sourceFileUri), Paths.get(newFileUri),
-                        allowOverwrite ? MOVE_ALLOW_OVERWRITE : MOVE_NO_OVERWRITE);
+                Files.move(Paths.get(sourceFileUri), newFilePath);
             }
 
+            // Rename old file to .old extension
+            if (destFileExists) {
+                Files.move(destinationPath, oldFilePath);
+            }
             // Rename new file from .new extension
-            Files.move(Paths.get(newFileUri), destinationPath);
-
+            Files.move(newFilePath, destinationPath);
             // Delete old file
-            Files.deleteIfExists(Paths.get(oldFileUri));
-        } catch (FileAlreadyExistsException e) {
-            rollBackOldFile(oldFileUri, destUri);
-            throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
-                    + ", a binary already exists in " + destination.getId() + " at path " + destUri);
+            Files.deleteIfExists(oldFilePath);
         } catch (IOException e) {
-            rollBackOldFile(oldFileUri, destUri);
+            rollBackOldFile(oldFilePath, newFilePath, destinationPath);
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
                     + " to destination " + destination.getId(), e);
         }
@@ -112,36 +100,23 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         return destUri;
     }
 
-    private URI createFileURI(URI destUri, String type, long currentTime, URI oldFileURI) {
-        URI fileUri;
-
-        try {
-            fileUri = new URI(destUri + "." + type + "-" + currentTime);
-            return fileUri;
-        } catch (URISyntaxException e) {
-            if (oldFileURI != null) {
-                rollBackOldFile(oldFileURI, destUri);
-            }
-
-            throw new BinaryTransferException("Failed to to create temp uri "
-                    + destUri + "." + type + " for transfer " + destUri
-                    + " to destination " + destination.getId(), e);
-        }
+    private Path createFilePath(URI destUri, String type, long currentTime) {
+            URI fileUri = URI.create(destUri + "." + type + "-" + currentTime);
+            return Paths.get(fileUri);
     }
 
     /**
      * Roll back the file name if an error is thrown
-     * @param oldFileUri
-     * @param destUri
+     * @param oldFilePath
+     * @param destPath
      */
-    private void rollBackOldFile(URI oldFileUri, URI destUri) {
-        Path oldPath = Paths.get(oldFileUri);
-
-        if (Files.exists(oldPath)) {
+    private void rollBackOldFile(Path oldFilePath, Path newFilePath, Path destPath) {
+        if (Files.exists(oldFilePath)) {
             try {
-                Files.move(oldPath, Paths.get(destUri));
+                Files.move(oldFilePath, destPath);
+                Files.deleteIfExists(newFilePath);
             } catch (IOException e) {
-                throw new BinaryTransferException("Failed to roll back " + oldFileUri
+                throw new BinaryTransferException("Failed to roll back " + oldFilePath.toString()
                         + "  in transfer to destination " + destination.getId(), e);
             }
         }

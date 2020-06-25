@@ -163,6 +163,22 @@ public class FSToFSTransferClientTest {
         assertFalse("Source file should not exist after transfer", sourceFile.toFile().exists());
     }
 
+    @Test
+    public void rollbackOnTransferInterruption() throws Exception {
+        String existingContent = "I exist";
+
+        Files.createDirectories(binDestPath.getParent());
+        createFile(binDestPath, existingContent);
+        Path sourceFile = createSourceFile();
+
+        try {
+            client.transfer(binPid, sourceFile.toUri());
+        } catch (BinaryAlreadyExistsException e) {
+            assertTrue("Original file should be present", sourceFile.toFile().exists());
+            assertEquals(1, binDestPath.getParent().toFile().listFiles().length);
+        }
+    }
+
     @Test(expected = NotImplementedException.class)
     public void transferVersion() throws Exception {
         Path sourceFile = createSourceFile();
