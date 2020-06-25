@@ -222,6 +222,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         if (createMissingDepositRecords) {
             Path depRecPath = pathIndex.getPath(originalDepPid, OBJECT_TYPE);
             if (depRecPath == null && !createdDepositRecords.contains(originalDepPid)) {
+                createdDepositRecords.add(originalDepPid);
+                log.info("Generating deposit record for missing referenced deposit {}", originalDepPid.getId());
                 Model depRecModel = createDefaultModel();
                 Resource depRecResc = depRecModel.getResource(originalDepPid.getRepositoryPath());
                 depRecResc.addProperty(RDF.type, Cdr.DepositRecord);
