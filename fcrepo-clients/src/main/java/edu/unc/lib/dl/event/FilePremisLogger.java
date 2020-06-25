@@ -20,7 +20,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.concurrent.locks.Lock;
 
+import edu.unc.lib.dl.util.PidLockManager;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -46,6 +48,8 @@ public class FilePremisLogger implements PremisLogger {
     private File premisFile;
     private PID objectPid;
     private Model model;
+
+    private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
     private RepositoryPIDMinter pidMinter;
 
@@ -81,7 +85,7 @@ public class FilePremisLogger implements PremisLogger {
     /**
      * Adds an event to the log file
      *
-     * @param eventResc
+     * @param eventResources
      * @return
      */
     @Override
@@ -98,11 +102,14 @@ public class FilePremisLogger implements PremisLogger {
             logModel.add(eventResc.getModel());
         }
 
+        Lock logLock = lockManager.awaitWriteLock(objectPid);
         // Persist the log to file
         try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
             RDFDataMgr.write(rdfFile, logModel, RDFFormat.NTRIPLES);
         } catch (IOException e) {
             throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
+        } finally {
+            logLock.unlock();
         }
 
         return this;

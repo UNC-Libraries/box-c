@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -50,6 +51,8 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.PidLockManager;
+
 
 /**
  * Logs PREMIS events for a repository object, which are persisted as PREMIS
@@ -61,6 +64,7 @@ import edu.unc.lib.dl.util.RDFModelUtil;
 public class RepositoryPremisLogger implements PremisLogger {
 
     private static final Logger log = getLogger(RepositoryPremisLogger.class);
+    private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
@@ -133,6 +137,8 @@ public class RepositoryPremisLogger implements PremisLogger {
             log.debug("Adding events to PREMIS log for {}", objPid);
 
             PID logPid = getMdEventsPid(objPid);
+
+            Lock logLock = lockManager.awaitWriteLock(logPid);
             // Event log exists, append new events to it
             BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
 
@@ -148,6 +154,8 @@ public class RepositoryPremisLogger implements PremisLogger {
                 updateOrCreateLog(mergedStream);
             } catch (IOException e) {
                 throw new RepositoryException("Failed to close log existing stream", e);
+            } finally {
+                logLock.unlock();
             }
         }
 
