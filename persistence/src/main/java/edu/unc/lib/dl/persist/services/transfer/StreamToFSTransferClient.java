@@ -27,7 +27,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.dl.util.FileTransferHelpers;
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -44,6 +47,7 @@ import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 public class StreamToFSTransferClient implements StreamTransferClient {
 
     protected StorageLocation destination;
+    private static final Logger log = LoggerFactory.getLogger(StreamToFSTransferClient.class);
 
     /**
      * @param destination destination storage location
@@ -65,11 +69,15 @@ public class StreamToFSTransferClient implements StreamTransferClient {
     protected URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         Path destPath = Paths.get(destUri);
+        boolean destFileExists = destPath.toFile().exists();
 
-        if (!allowOverwrite && destPath.toFile().exists()) {
+        if (!allowOverwrite && destFileExists) {
             throw new BinaryAlreadyExistsException("Failed to write stream, a binary already exists in "
                      + destination.getId() + " at path " + destUri);
         }
+
+        long currentTime = System.nanoTime();
+        Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
 
         try {
             // Fill in parent directories if they are not present
@@ -77,12 +85,27 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             createDirectories(parentPath);
 
             // Write content to temp file in case of interruption
-            Path tmpPath = createTempFile(parentPath, null, ".new");
+            Path tmpPath = createTempFile(parentPath, null, ".new-" + currentTime);
             copyInputStreamToFile(sourceStream, tmpPath.toFile());
+
+            // Rename old file to .old extension
+            if (destFileExists) {
+                Files.move(destPath, oldFilePath);
+            }
 
             // Move temp file into final location
             Files.move(tmpPath, destPath, REPLACE_EXISTING);
+
+            // Delete old file.
+            try {
+                Files.deleteIfExists(oldFilePath);
+            } catch (IOException e) {
+                // Ignore. New file is already in place
+                log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
+            }
         } catch (IOException e) {
+            Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
+            FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destPath);
             throw new BinaryTransferException("Failed to write stream to destination "
                     + destination.getId(), e);
         }

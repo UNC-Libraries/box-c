@@ -184,7 +184,7 @@ public class FSToFSTransferClientTest {
             assertEquals(1, binDestPath.getParent().toFile().listFiles().length);
         } finally {
             parentDir.setWritable(true);
-            destFile.deleteOnExit();
+            destFile.delete();
         }
     }
 

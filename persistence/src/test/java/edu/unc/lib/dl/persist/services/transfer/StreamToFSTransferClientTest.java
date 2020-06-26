@@ -23,8 +23,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
@@ -55,6 +57,7 @@ public class StreamToFSTransferClientTest {
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    protected Path sourcePath;
     protected Path storagePath;
     @Mock
     private StorageLocation storageLoc;
@@ -66,6 +69,7 @@ public class StreamToFSTransferClientTest {
     public void setup() throws Exception {
         initMocks(this);
         tmpFolder.create();
+        sourcePath = tmpFolder.newFolder("source").toPath();
         storagePath = tmpFolder.newFolder("storage").toPath();
 
         client = new StreamToFSTransferClient(storageLoc);
@@ -139,6 +143,30 @@ public class StreamToFSTransferClientTest {
         }
     }
 
+    @Test
+    public void rollbackOnTransferInterruption() throws Exception {
+        String existingContent = "I exist";
+
+        Files.createDirectories(binDestPath.getParent());
+        createFile(binDestPath, existingContent);
+        File destFile = binDestPath.toFile();
+        File parentDir = binDestPath.getParent().toFile();
+        parentDir.setReadOnly();
+
+        InputStream sourceStream = mock(InputStream.class);
+        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+
+        try {
+            client.transferReplaceExisting(binPid, sourceStream);
+        } catch (BinaryTransferException e) {
+            assertTrue("Original file should be present", destFile.exists());
+            assertEquals(1, binDestPath.getParent().toFile().listFiles().length);
+        } finally {
+            binDestPath.getParent().toFile().setWritable(true);
+            destFile.delete();
+        }
+    }
+
     protected void assertContent(Path path, String content) throws Exception {
         assertTrue("Source content was not present at " + path, path.toFile().exists());
         assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
@@ -146,5 +174,10 @@ public class StreamToFSTransferClientTest {
 
     protected InputStream toStream(String content) {
         return new ByteArrayInputStream(content.getBytes());
+    }
+
+    private Path createFile(Path filePath, String content) throws Exception {
+        FileUtils.writeStringToFile(filePath.toFile(), content, "UTF-8");
+        return filePath;
     }
 }
