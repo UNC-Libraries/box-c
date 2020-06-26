@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
@@ -48,6 +50,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
     private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
     private static final CopyOption[] COPY_ALLOW_OVERWRITE = { COPY_ATTRIBUTES, REPLACE_EXISTING };
+
+    private static final Logger log = LoggerFactory.getLogger(FSToFSTransferClient.class);
 
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
         this.source = source;
@@ -97,8 +101,14 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             }
             // Rename new file from .new extension
             Files.move(newFilePath, destinationPath);
-            // Delete old file
-            Files.deleteIfExists(oldFilePath);
+
+            // Delete old file.
+            try {
+                Files.deleteIfExists(oldFilePath);
+            } catch (IOException e) {
+                // Ignore. New file is already in place
+                log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
+            }
         } catch (IOException e) {
             rollBackOldFile(oldFilePath, newFilePath, destinationPath);
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
