@@ -15,8 +15,12 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +45,9 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
     private IngestSource source;
     protected StorageLocation destination;
+
+    private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
+    private static final CopyOption[] COPY_ALLOW_OVERWRITE = { COPY_ATTRIBUTES, REPLACE_EXISTING };
 
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
         this.source = source;
@@ -78,7 +85,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             // Copy/move new file
             if (source.isReadOnly()) {
-                Files.copy(Paths.get(sourceFileUri), newFilePath);
+                Files.copy(Paths.get(sourceFileUri), newFilePath,
+                        allowOverwrite ? COPY_ALLOW_OVERWRITE : COPY_NO_OVERWRITE);
             } else {
                 Files.move(Paths.get(sourceFileUri), newFilePath);
             }
@@ -111,14 +119,15 @@ public class FSToFSTransferClient implements BinaryTransferClient {
      * @param destPath
      */
     private void rollBackOldFile(Path oldFilePath, Path newFilePath, Path destPath) {
-        if (Files.exists(oldFilePath)) {
-            try {
+        try {
+            if (Files.exists(oldFilePath)) {
                 Files.move(oldFilePath, destPath);
-                Files.deleteIfExists(newFilePath);
-            } catch (IOException e) {
-                throw new BinaryTransferException("Failed to roll back " + oldFilePath.toString()
-                        + "  in transfer to destination " + destination.getId(), e);
             }
+
+            Files.deleteIfExists(newFilePath);
+        } catch (IOException e) {
+            throw new BinaryTransferException("Failed to roll back " + oldFilePath.toString()
+                    + "  in transfer to destination " + destination.getId(), e);
         }
     }
 
