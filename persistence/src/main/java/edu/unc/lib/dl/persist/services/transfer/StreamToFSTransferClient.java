@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.createTempFile;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
@@ -78,6 +77,7 @@ public class StreamToFSTransferClient implements StreamTransferClient {
 
         long currentTime = System.nanoTime();
         Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
+        Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
 
         try {
             // Fill in parent directories if they are not present
@@ -85,8 +85,7 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             createDirectories(parentPath);
 
             // Write content to temp file in case of interruption
-            Path tmpPath = createTempFile(parentPath, null, ".new-" + currentTime);
-            copyInputStreamToFile(sourceStream, tmpPath.toFile());
+            copyInputStreamToFile(sourceStream, newFilePath.toFile());
 
             // Rename old file to .old extension
             if (destFileExists) {
@@ -94,7 +93,7 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             }
 
             // Move temp file into final location
-            Files.move(tmpPath, destPath, REPLACE_EXISTING);
+            Files.move(newFilePath, destPath, REPLACE_EXISTING);
 
             // Delete old file.
             try {
@@ -104,7 +103,6 @@ public class StreamToFSTransferClient implements StreamTransferClient {
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
             }
         } catch (IOException e) {
-            Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destPath);
             throw new BinaryTransferException("Failed to write stream to destination "
                     + destination.getId(), e);

@@ -92,7 +92,7 @@ public class StreamToFSTransferClientTest {
     @Test(expected = BinaryAlreadyExistsException.class)
     public void transfer_ExistingFile() throws Exception {
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         // Attempt to transfer new content
         InputStream sourceStream = toStream(STREAM_CONTENT);
@@ -118,7 +118,7 @@ public class StreamToFSTransferClientTest {
     @Test
     public void transferReplaceExisting_ExistingFile() throws Exception {
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         InputStream sourceStream = toStream(STREAM_CONTENT);
 
@@ -133,7 +133,7 @@ public class StreamToFSTransferClientTest {
         when(sourceStream.read(any())).thenThrow(new IOException());
 
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         try {
             client.transferReplaceExisting(binPid, sourceStream);
@@ -145,16 +145,13 @@ public class StreamToFSTransferClientTest {
 
     @Test
     public void rollbackOnTransferInterruption() throws Exception {
-        String existingContent = "I exist";
-
         Files.createDirectories(binDestPath.getParent());
-        createFile(binDestPath, existingContent);
+        createFile();
         File destFile = binDestPath.toFile();
         File parentDir = binDestPath.getParent().toFile();
         parentDir.setReadOnly();
 
-        InputStream sourceStream = mock(InputStream.class);
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        InputStream sourceStream = toStream(ORIGINAL_CONTENT);
 
         try {
             client.transferReplaceExisting(binPid, sourceStream);
@@ -176,8 +173,7 @@ public class StreamToFSTransferClientTest {
         return new ByteArrayInputStream(content.getBytes());
     }
 
-    private Path createFile(Path filePath, String content) throws Exception {
-        FileUtils.writeStringToFile(filePath.toFile(), content, "UTF-8");
-        return filePath;
+    private void createFile() throws Exception {
+        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
     }
 }
