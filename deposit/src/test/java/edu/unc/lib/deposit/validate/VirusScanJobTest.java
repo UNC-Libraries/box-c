@@ -90,6 +90,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
+        depositJobId = depositUUID + ":" + this.getClass().getName();
+        setField(job, "depositJobId", depositJobId);
         job.init();
 
         when(depositStatusFactory.getState(anyString()))
@@ -139,6 +141,32 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
         verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
         verify(premisEventBuilder, times(2)).addOutcome(true);
+    }
+
+    @Test
+    public void alreadyRunScanTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        File pdfFile = new File(depositDir, "pdf.pdf");
+        File textFile = new File(depositDir, "text.txt");
+        PID file1Pid = addFileObject(depBag, pdfFile);
+        PID file2Pid = addFileObject(depBag, textFile);
+
+        job.closeModel();
+
+        when(jobStatusFactory.objectIsCompleted(depositJobId, file1Pid.getQualifiedId())).thenReturn(true);
+        job.run();
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder, times(1)).addOutcome(true);
     }
 
     @Test

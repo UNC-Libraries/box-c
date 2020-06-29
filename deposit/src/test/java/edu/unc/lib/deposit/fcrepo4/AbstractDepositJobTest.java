@@ -97,6 +97,7 @@ public class AbstractDepositJobTest {
 
     protected String depositUUID;
     protected PID depositPid;
+    protected String depositJobId;
 
     protected Dataset dataset;
     @Mock
