@@ -54,6 +54,16 @@ define('ResultObjectList', ['jquery', 'ResultObject' ], function($, ResultObject
 		removeResultObject: function(id) {
 			if (id in this.resultObjects) {
 				delete this.resultObjects[id];
+
+				// Reset "working/moving" overlays
+				let resultObjKeys = Object.keys(this.resultObjects);
+
+				resultObjKeys.forEach((d) => {
+					let obj = this.resultObjects[d];
+					if (obj.overlay !== undefined) {
+						obj.updateOverlay('open');
+					}
+				});
 			}
 		},
 		
