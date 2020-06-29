@@ -231,7 +231,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
         String manifest0Name = "DATA_MANIFEST0";
         String manifest0Content = "content for m0";
-        writeManifestFile(bxc3Pid, manifest0Name, manifest0Content);
+        writeDatastreamFile(bxc3Pid, manifest0Name, manifest0Content);
         DatastreamVersion manifest0 = new DatastreamVersion(null,
                 manifest0Name, "0",
                 FoxmlDocumentBuilder.DEFAULT_CREATED_DATE,
@@ -241,7 +241,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
         String manifest1Name = "DATA_MANIFEST1";
         String manifest1Content = "additional content";
-        writeManifestFile(bxc3Pid, manifest1Name, manifest1Content);
+        writeDatastreamFile(bxc3Pid, manifest1Name, manifest1Content);
         DatastreamVersion manifest1 = new DatastreamVersion(null,
                 manifest1Name, "0",
                 FoxmlDocumentBuilder.DEFAULT_LAST_MODIFIED,

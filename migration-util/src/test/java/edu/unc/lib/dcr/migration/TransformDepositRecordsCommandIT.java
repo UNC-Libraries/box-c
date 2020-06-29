@@ -190,7 +190,7 @@ public class TransformDepositRecordsCommandIT extends AbstractDepositRecordTrans
         Resource resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
         resc.addLiteral(CDRProperty.depositedOnBehalfOf.getProperty(), DEPOSITOR);
 
-        writeManifestFile(bxc3Pid, MANIFEST_NAME, MANIFEST_CONTENT);
+        writeDatastreamFile(bxc3Pid, MANIFEST_NAME, MANIFEST_CONTENT);
         DatastreamVersion manifest0 = new DatastreamVersion(null,
                 MANIFEST_NAME, "0",
                 FoxmlDocumentBuilder.DEFAULT_CREATED_DATE,

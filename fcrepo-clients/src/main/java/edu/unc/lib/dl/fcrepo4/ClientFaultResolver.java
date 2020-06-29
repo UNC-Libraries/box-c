@@ -19,6 +19,7 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoOperationFailedException;
 
 import edu.unc.lib.dl.fedora.AuthorizationException;
+import edu.unc.lib.dl.fedora.ConflictException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 
@@ -46,6 +47,8 @@ public abstract class ClientFaultResolver {
                 return new AuthorizationException(ex);
             case HttpStatus.SC_NOT_FOUND:
                     return new NotFoundException(ex);
+            case HttpStatus.SC_CONFLICT:
+                    return new ConflictException(ex);
             }
         }
         return new FedoraException(ex);

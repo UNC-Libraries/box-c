@@ -90,9 +90,17 @@ public class DepositModelManager {
     }
 
     public synchronized Model getReadModel() {
-        String uri = depositPid.getURI();
         dataset.begin(ReadWrite.READ);
+        String uri = depositPid.getURI();
         return dataset.getNamedModel(uri);
+    }
+
+    public synchronized void removeModel() {
+        String uri = depositPid.getURI();
+        dataset.begin(ReadWrite.WRITE);
+        dataset.removeNamedModel(uri);
+        dataset.commit();
+        dataset.end();
     }
 
     /**

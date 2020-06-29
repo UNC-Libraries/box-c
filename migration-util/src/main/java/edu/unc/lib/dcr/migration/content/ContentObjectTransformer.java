@@ -33,6 +33,7 @@ import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.listDatastreamVersions;
+import static edu.unc.lib.dcr.migration.paths.PathIndex.OBJECT_TYPE;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.ORIGINAL_TYPE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
@@ -60,13 +61,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveAction;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -83,14 +87,20 @@ import edu.unc.lib.dcr.migration.premis.ContentPremisToRdfTransformer;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fedora.ConflictException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.util.DepositMethod;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -105,6 +115,8 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     private static final Logger log = getLogger(ContentObjectTransformer.class);
 
+    private static final Set<PID> createdDepositRecords = ConcurrentHashMap.newKeySet();
+
     private PathIndex pathIndex;
     private DepositModelManager modelManager;
     private boolean topLevelAsUnit;
@@ -112,6 +124,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
     private PremisLoggerFactory premisLoggerFactory;
+    private RepositoryObjectFactory repoObjFactory;
 
     private PID originalPid;
     private PID newPid;
@@ -119,6 +132,8 @@ public class ContentObjectTransformer extends RecursiveAction {
     private Resource parentType;
 
     private Document foxml;
+
+    private boolean createMissingDepositRecords;
 
     /**
      *
@@ -169,12 +184,14 @@ public class ContentObjectTransformer extends RecursiveAction {
         Resource depResc = depositModel.getResource(newPid.getRepositoryPath());
 
         populateTimestamps(bxc3Resc, depResc);
-        populateOriginalDeposit(bxc3Resc, depResc);
+        try {
+            populateOriginalDeposit(bxc3Resc, depResc);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to create deposit record for " + originalPid, e);
+        }
 
         // set patron access
         ACLTransformationHelpers.transformPatronAccess(bxc3Resc, depResc, parentPid);
-
-        // TODO set title, based on dc title and/or label
 
         // copy most recent MODS to deposit directory
         extractMods();
@@ -194,13 +211,51 @@ public class ContentObjectTransformer extends RecursiveAction {
         }
     }
 
-    private void populateOriginalDeposit(Resource bxc3Resc, Resource depResc) {
+    private void populateOriginalDeposit(Resource bxc3Resc, Resource depResc) throws IOException {
         Statement originalDepStmt = bxc3Resc.getProperty(originalDeposit.getProperty());
         if (originalDepStmt == null) {
             return;
         }
         PID originalDepPid = convertBxc3RefToPid(DEPOSIT_RECORD_BASE, originalDepStmt.getResource().getURI());
         depResc.addProperty(CdrDeposit.originalDeposit, createResource(originalDepPid.getRepositoryPath()));
+
+        if (createMissingDepositRecords) {
+            Path depRecPath = pathIndex.getPath(originalDepPid, OBJECT_TYPE);
+            if (depRecPath == null && !createdDepositRecords.contains(originalDepPid)) {
+                createdDepositRecords.add(originalDepPid);
+                log.info("Generating deposit record for missing referenced deposit {}", originalDepPid.getId());
+                Model depRecModel = createDefaultModel();
+                Resource depRecResc = depRecModel.getResource(originalDepPid.getRepositoryPath());
+                depRecResc.addProperty(RDF.type, Cdr.DepositRecord);
+                depRecResc.addLiteral(DC.title, "Deposit Record " + originalDepPid.getId());
+                // Set the date created for the deposit record to that of the object being migrated
+                String val = bxc3Resc.getProperty(FedoraProperty.createdDate.getProperty()).getString();
+                depRecResc.addProperty(Fcrepo4Repository.created, val, XSDDatatype.XSDdateTime);
+                depRecResc.addLiteral(Cdr.depositMethod, DepositMethod.BXC3_TO_5_MIGRATION_UTIL.getLabel());
+                depRecResc.addLiteral(Cdr.depositPackageType, PackagingType.BXC3_TO_5_MIGRATION.getUri());
+
+                Path transformedPremisPath = Files.createTempFile("premis", ".xml");
+                try {
+                    DepositRecord depRecord = repoObjFactory.createDepositRecord(originalDepPid, depRecModel);
+
+                    PremisLogger filePremisLogger = premisLoggerFactory.createPremisLogger(
+                            originalDepPid, transformedPremisPath.toFile());
+
+                    // Add migration event
+                    filePremisLogger.buildEvent(Premis.Ingestion)
+                            .addEventDetail("Deposit record generated by Boxc 3 to 5 migration")
+                            .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())
+                            .writeAndClose();
+
+                    PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(depRecord);
+                    repoPremisLogger.createLog(Files.newInputStream(transformedPremisPath));
+                } catch (ConflictException e) {
+                    log.debug("Deposit record {} has already been created", originalDepPid);
+                } finally {
+                    Files.delete(transformedPremisPath);
+                }
+            }
+        }
     }
 
     private void populateContainerObject(Resource bxc3Resc, Resource resourceType, Model depositModel) {
@@ -496,5 +551,13 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     public PID getPid() {
         return originalPid;
+    }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    public void setCreateMissingDepositRecords(boolean createMissingDepositRecords) {
+        this.createMissingDepositRecords = createMissingDepositRecords;
     }
 }
