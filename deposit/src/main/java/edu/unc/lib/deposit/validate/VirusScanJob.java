@@ -81,36 +81,39 @@ public class VirusScanJob extends AbstractDepositJob {
             verifyRunning();
             PID objPid = href.getKey();
 
-            if (!isObjectCompleted(objPid)) {
-                URI manifestURI = URI.create(href.getValue());
-                File file = new File(manifestURI);
-
-                ScanResult result = clamScan.scan(file);
-
-                switch (result.getStatus()) {
-                    case FAILED:
-                        failures.put(manifestURI.toString(), result.getSignature());
-                        break;
-                    case ERROR:
-                        throw new Error(
-                                "Virus checks are producing errors: "
-                                        + result.getException()
-                                        .getLocalizedMessage());
-                    case PASSED:
-                        PremisLogger premisLogger = getPremisLogger(href.getKey());
-                        PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
-
-                        premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
-                                .addEventDetail("File passed pre-ingest scan for viruses")
-                                .addOutcome(true)
-                                .write();
-
-                        scannedObjects++;
-                        break;
-                }
-                addClicks(1);
-                markObjectCompleted(objPid);
+            if (isObjectCompleted(objPid)) {
+                scannedObjects += 1;
+                continue;
             }
+
+            URI manifestURI = URI.create(href.getValue());
+            File file = new File(manifestURI);
+
+            ScanResult result = clamScan.scan(file);
+
+            switch (result.getStatus()) {
+                case FAILED:
+                    failures.put(manifestURI.toString(), result.getSignature());
+                    break;
+                case ERROR:
+                    throw new Error(
+                            "Virus checks are producing errors: "
+                                    + result.getException()
+                                    .getLocalizedMessage());
+                case PASSED:
+                    PremisLogger premisLogger = getPremisLogger(href.getKey());
+                    PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+
+                    premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                            .addEventDetail("File passed pre-ingest scan for viruses")
+                            .addOutcome(true)
+                            .write();
+
+                    scannedObjects++;
+                    break;
+            }
+            addClicks(1);
+            markObjectCompleted(objPid);
         }
 
         if (failures.size() > 0) {
