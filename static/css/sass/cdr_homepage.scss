@@ -353,7 +353,9 @@ footer {
   a {
     color: white;
     font-size: 16px;
+    padding: 5px;
     &:hover, &:active {
+      background-color: #fafafa;
       color: $unc-blue;
     }
   }
@@ -441,5 +443,9 @@ footer {
     .navbar-display {
       display: block;
     }
+  }
+
+  p.footer-menu {
+    line-height: 25px;
   }
 }
