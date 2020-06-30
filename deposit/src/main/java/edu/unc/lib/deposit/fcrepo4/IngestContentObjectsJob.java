@@ -292,24 +292,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
                     ingestFolder(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    boolean ingested = false;
-                    int retryCount = 0;
-
-                    while (!ingested) {
-                        try {
-                            ingestWork(destObj, parentResc, childResc);
-                            ingested = true;
-                        } catch (ChecksumMismatchException e) {
-                            if (retryCount < 3) {
-                                retryCount++;
-                                log.warn("Retrying ingest for {}. Attempt number {}",
-                                        destObj.getPid().getId(), retryCount);
-                                ingestWork(destObj, parentResc, childResc);
-                            } else {
-                                throw e;
-                            }
-                        }
-                    }
+                    ingestWork(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
                     ingestCollection(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
@@ -647,6 +630,25 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
+            } catch (ChecksumMismatchException e) {
+                boolean ingested = false;
+                int retryCount = 0;
+
+                while (!ingested) {
+                    try {
+                        ingestChildren(obj, childResc);
+                        ingested = true;
+                    } catch (ChecksumMismatchException ce) {
+                        if (retryCount < 3) {
+                            retryCount++;
+                            log.warn("Retrying ingest for {} due to a checksum mismatch. Attempt number: {}",
+                                    childPid.getId(), retryCount);
+                            ingestChildren(obj, childResc);
+                        } else {
+                            throw ce;
+                        }
+                    }
+                }
             } catch (Exception e) {
                 txRefresher.interrupt();
                 tx.cancel(e);

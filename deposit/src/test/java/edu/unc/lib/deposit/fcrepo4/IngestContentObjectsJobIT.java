@@ -108,6 +108,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE1_MIMETYPE = "application/pdf";
     private static final String FILE1_SHA1 = "7185198c0f158a3b3caa3f387efa3df990d2a904";
     private static final String FILE1_MD5 = "b5808604069f9f61d94e0660409616ba";
+    private static final String FILE1_MD5_BAD = "b7908604069f9f61d94e0660409616ba";
     private static final long FILE1_SIZE = 739L;
     private static final String FILE2_LOC = "text.txt";
     private static final String FILE2_MIMETYPE = "text/plain";
@@ -339,36 +340,30 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertLinksToDepositRecord(mWork, primaryObj);
     }
 
-    /**
-     * Test that work objects are created along with relationships to their children.
-     */
     @Test
-    public void ingestWorkObjectChecksumErrorTest() throws Exception {
+    public void ingestWorkObjectChecksumErrorRetryLimitTest() throws Exception {
         String label = "testwork";
-
-        // Construct the deposit model with work object
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
-        // Constructing the work in the deposit model with a label
         PID workPid = pidMinter.mintContentPid();
-        Bag workBag = model.createBag(workPid.getRepositoryPath());
-        workBag.addProperty(RDF.type, Cdr.Work);
-        workBag.addProperty(CdrDeposit.label, label);
-
-        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
-        PID supPid = addFileObject(workBag, FILE2_LOC, FILE2_MIMETYPE, null, null);
-
-        depBag.add(workBag);
-
-        workBag.asResource().addProperty(Cdr.primaryObject,
-                model.getResource(mainPid.getRepositoryPath()));
-
-        job.closeModel();
 
         try {
+            // Construct the deposit model with work object
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+            // Constructing the work in the deposit model with a label
+            Bag workBag = model.createBag(workPid.getRepositoryPath());
+            workBag.addProperty(RDF.type, Cdr.Work);
+            workBag.addProperty(CdrDeposit.label, label);
+
+            PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5_BAD);
+
+            depBag.add(workBag);
+
+            workBag.asResource().addProperty(Cdr.primaryObject,
+                    model.getResource(mainPid.getRepositoryPath()));
+
+            job.closeModel();
             job.run();
-            throw new ChecksumMismatchException("Bad checksum");
         } catch (Exception e) {
             treeIndexer.indexAll(baseAddress);
 
@@ -382,47 +377,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             String title = mWork.getResource().getProperty(DC.title).getString();
             assertEquals("Work title was not correctly set", label, title);
 
-            // Verify that the properties of the primary object were added
-            FileObject primaryObj = mWork.getPrimaryObject();
-            assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
-
             // Check the right number of members are present
             List<ContentObject> workMembers = mWork.getMembers();
-            assertEquals("Incorrect number of members in work", 2, workMembers.size());
-            FileObject supObj = (FileObject) findContentObjectByPid(workMembers, supPid);
-            assertNotNull(supObj);
-
-            // Verify the properties and content of the supplemental file
-            assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
-            // Verify that ingestion event gets added for work
-            Model workLogModel = mWork.getPremisLog().getEventsModel();
-            assertTrue(workLogModel.contains(null, Premis.note,
-                    "ingested as PID: " + mWork.getPid().getQualifiedId()));
-            assertTrue(workLogModel.contains(null, Premis.note,
-                    "added 2 child objects to this container"));
-            List<Resource> eventRescs = workLogModel.listResourcesWithProperty(Prov.generated).toList();
-            for (Resource eventResc: eventRescs) {
-                Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
-                assertTrue("Authorizing agent name missing from ingestion event",
-                        authAgent.hasProperty(FOAF.name, DEPOSITOR_NAME));
-            }
-
-            // Verify that ingestion event gets added for primary object
-            Model primLogModel = primaryObj.getPremisLog().getEventsModel();
-            assertTrue(primLogModel.contains(null, Premis.note,
-                    "ingested as PID: " + mainPid.getQualifiedId()
-                            + "\n ingested as filename: " + FILE1_LOC));
-
-            // Verify that ingestion event gets added for supplementary object
-            Model supLogModel = supObj.getPremisLog().getEventsModel();
-            assertTrue(supLogModel.contains(null, Premis.note,
-                    "ingested as PID: " + supPid.getQualifiedId()
-                            + "\n ingested as filename: " + FILE2_LOC));
-
-            assertClickCount(3);
-            ingestedObjectsCount(3);
-
-            assertLinksToDepositRecord(mWork, primaryObj);
+            assertEquals("Incorrect number of members in work", 0, workMembers.size());
+            assertClickCount(1);
         }
     }
 
