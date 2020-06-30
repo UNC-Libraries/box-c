@@ -32,9 +32,35 @@ public class FileTransferHelpers {
     private FileTransferHelpers() {
     }
 
-    static public Path createFilePath(URI destUri, String type, long currentTime) {
+    public static Path createFilePath(URI destUri, String type, long currentTime) {
         URI fileUri = URI.create(destUri + "." + type + "-" + currentTime);
         return Paths.get(fileUri);
+    }
+
+    /**
+     * Register cleanup of partially transferred files at shutdown time in case
+     * the JVM exits before normal processes complete
+     *
+     * @param oldFilePath
+     * @param newFilePath
+     * @param destPath
+     * @return
+     */
+    public static Thread registerCleanup(Path oldFilePath, Path newFilePath, Path destPath) {
+        Thread cleanupThread = new Thread(() -> rollBackOldFile(oldFilePath, newFilePath, destPath));
+        Runtime.getRuntime().addShutdownHook(cleanupThread);
+        return cleanupThread;
+    }
+
+    /**
+     * Clear a cleanup shutdown hook
+     *
+     * @param cleanupThread
+     */
+    public static void clearCleanupHook(Thread cleanupThread) {
+        if (cleanupThread != null) {
+            Runtime.getRuntime().removeShutdownHook(cleanupThread);
+        }
     }
 
     /**
@@ -43,7 +69,7 @@ public class FileTransferHelpers {
      * @param  newFilePath
      * @param destPath
      */
-    static public void rollBackOldFile(Path oldFilePath, Path newFilePath, Path destPath) {
+    public static void rollBackOldFile(Path oldFilePath, Path newFilePath, Path destPath) {
         try {
             if (Files.exists(oldFilePath)) {
                 Files.move(oldFilePath, destPath);

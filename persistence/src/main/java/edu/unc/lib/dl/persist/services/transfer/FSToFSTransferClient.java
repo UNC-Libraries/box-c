@@ -73,6 +73,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
         Path destinationPath = Paths.get(destUri);
 
+        Thread cleanupThread = null;
+
         try {
             // Fill in parent directories if they are not present
             Path parentPath = Paths.get(destUri).getParent();
@@ -84,6 +86,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
                 throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
                         + ", a binary already exists in " + destination.getId() + " at path " + destUri);
             }
+
+            cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destinationPath);
 
             // Copy/move new file
             if (source.isReadOnly()) {
@@ -110,6 +114,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destinationPath);
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
                     + " to destination " + destination.getId(), e);
+        } finally {
+            FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
         return destUri;

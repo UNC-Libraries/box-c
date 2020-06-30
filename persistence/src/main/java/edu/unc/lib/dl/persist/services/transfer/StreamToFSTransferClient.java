@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import edu.unc.lib.dl.util.FileTransferHelpers;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
+import edu.unc.lib.dl.util.FileTransferHelpers;
 
 /**
  * Client for transferring content to a filesystem storage location from input streams
@@ -79,10 +79,14 @@ public class StreamToFSTransferClient implements StreamTransferClient {
         Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
         Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
 
+        Thread cleanupThread = null;
+
         try {
             // Fill in parent directories if they are not present
             Path parentPath = Paths.get(destUri).getParent();
             createDirectories(parentPath);
+
+            cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destPath);
 
             // Write content to temp file in case of interruption
             copyInputStreamToFile(sourceStream, newFilePath.toFile());
@@ -106,6 +110,8 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destPath);
             throw new BinaryTransferException("Failed to write stream to destination "
                     + destination.getId(), e);
+        } finally {
+            FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
         return destUri;
