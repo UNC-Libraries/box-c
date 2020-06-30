@@ -83,6 +83,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -291,7 +292,24 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
                     ingestFolder(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc);
+                    boolean ingested = false;
+                    int retryCount = 0;
+
+                    while (!ingested) {
+                        try {
+                            ingestWork(destObj, parentResc, childResc);
+                            ingested = true;
+                        } catch (ChecksumMismatchException e) {
+                            if (retryCount < 3) {
+                                retryCount++;
+                                log.warn("Retrying ingest for {}. Attempt number {}",
+                                        destObj.getPid().getId(), retryCount);
+                                ingestWork(destObj, parentResc, childResc);
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
                     ingestCollection(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
@@ -346,7 +364,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      *
      * @param work
      * @param childResc
-     * @param addAipProperties
      *            if true, then acl and other properties from the child resource
      *            will be added to the file object's aip
      * @return
