@@ -482,6 +482,18 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
+/* Class to display content for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
 .searchitem.deleted,
 .browseitem.deleted {
   color: #888;
@@ -767,13 +779,6 @@ p.no-search-results {
     background-color: #f7f7f7;
     margin: 10px 15px;
     width: 98%;
-  }
-
-  .item_container_count {
-    background-color: inherit;
-    border: none;
-    color: gray;
-    font-size: inherit;
   }
 
   &:last-child {

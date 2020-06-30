@@ -135,13 +135,15 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				return img
 				}, targets: 0
 			},
-			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '">' +row.title + '</a>'; }, targets: 1 },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" + aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
-			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '"><i class="fa fa-search-plus is-icon" title="View"></a>'; },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +
+					'<i class="fa fa-search-plus is-icon"' + ' title="View"></a>'; },
 				targets: 4
 			},
-			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true"><i class="fa fa-download is-icon" title="Download"></a>'; },
+			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
+					'<i class="fa fa-download is-icon" title="Download"></a>'; },
 				targets: 5
 			}
 		];
@@ -160,7 +162,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 			column_defs.push(
 				{ render: function (data, type, row) {
-						return '<a href="/admin/describe/' + row.id + '"><i class="fa fa-edit is-icon" title="Edit"></i></a>'
+						return '<a href="/admin/describe/' + row.id + '" aria-label="Edit ' + row.title +'">' +
+							'<i class="fa fa-edit is-icon" title="Edit"></i></a>'
 					},
 					targets: 6
 				});

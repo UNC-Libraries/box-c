@@ -30,35 +30,29 @@
 			<div class="contentarea">
 				<h3>Search for</h3>
 				<p class="clear has-text-weight-bold">
-					<label>Keyword</label> <input name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
+					<label for="keyword">Keyword</label> <input id="keyword" name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
-					<label>Title</label> <input name="${searchSettings.searchFieldParams['TITLE_INDEX']}" class="advsearch_text" type="text" />
+					<label for="title">Title</label> <input id="title" name="${searchSettings.searchFieldParams['TITLE_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
-					<label>Contributor</label> <input name="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}" class="advsearch_text" type="text" />
+					<label for="contributor">Contributor</label> <input id="contributor"name="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
-					<label>Subject</label> <input name="${searchSettings.searchFieldParams['SUBJECT_INDEX']}" class="advsearch_text" type="text" />
+					<label for="subject">Subject</label> <input id="subject" name="${searchSettings.searchFieldParams['SUBJECT_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 			</div>
 		</div>
 		<div class="twocol light shadowtop">
 			<div class="contentarea">
 				<h3>Limit By</h3>
-				<select name="container" class="advsearch_select">
+				<select name="container" class="advsearch_select" aria-label="collection">
 					<option value="">Collection</option>
 					<c:forEach items="${collectionList}" var="collectionRecord">
 						<option value="<c:out value='${collectionRecord.id}' />"><c:out value="${collectionRecord.title}" /></option>
 					</c:forEach>
 				</select>
-				<select name="${searchSettings.searchFieldParams['DEPARTMENT']}" class="advsearch_select">
-					<option value="">Department</option>
-					<c:forEach items="${departmentList.values}" var="departmentFacet">
-						<option value="<c:out value='${departmentFacet.value}' />"><c:out value="${departmentFacet.displayValue}" /></option>
-					</c:forEach>
-				</select>
-				<select name="${searchSettings.searchFieldParams['CONTENT_TYPE']}" class="advsearch_select">
+				<select name="${searchSettings.searchFieldParams['CONTENT_TYPE']}" class="advsearch_select" aria-label="format">
 					<option value="">Format</option>
 					<c:forEach items="${formatMap}" var="formatEntry">
 						<option value="${formatEntry.key}"><c:out value="${formatEntry.value}"/></option>
@@ -67,13 +61,13 @@
 				
 				<p class="clear"><br /></p>
 				<p class="clear has-text-weight-bold">
-					<label>Date Deposited</label> from <input name="${searchSettings.searchFieldParams['DATE_ADDED']}Start" class="advsearch_date" type="text" />
-						 to <input name="${searchSettings.searchFieldParams['DATE_ADDED']}End" class="advsearch_date" type="text" />
+					<label>Date Deposited</label> from <input aria-label="deposited-start-date" name="${searchSettings.searchFieldParams['DATE_ADDED']}Start" class="advsearch_date" type="text" />
+						 to <input aria-label="deposited-end-date" name="${searchSettings.searchFieldParams['DATE_ADDED']}End" class="advsearch_date" type="text" />
 						<a class="date_field_tooltip" title="Enter dates in YYYY-MM-DD format.  Month and day may be omitted.  Leave the right hand date empty to search for items with dates starting at the left hand date, and vice versa.">?</a>
 				</p>
 				<p class="clear has-text-weight-bold">
-					<label>Date Created</label> from <input name="${searchSettings.searchFieldParams['DATE_CREATED']}Start" class="advsearch_date" type="text" />
-						 to <input name="${searchSettings.searchFieldParams['DATE_CREATED']}End" class="advsearch_date" type="text" />
+					<label>Date Created</label> from <input aria-label="created-start-date" name="${searchSettings.searchFieldParams['DATE_CREATED']}Start" class="advsearch_date" type="text" />
+						 to <input aria-label="created-end-date" name="${searchSettings.searchFieldParams['DATE_CREATED']}End" class="advsearch_date" type="text" />
 					<a class="date_field_tooltip" title="Enter dates in YYYY-MM-DD format.  Month and day may be omitted.  Leave the right hand date empty to search for items with dates starting at the left hand date, and vice versa.">?</a>
 				</p>
 			</div>

@@ -24,6 +24,10 @@ export default {
             return `Thumbnail for ${title}`;
         },
 
+        linkLabel(title) {
+            return `Visit ${title}`;
+        },
+
         markedForDeletion(record) {
             if (record.status === undefined) return false;
             return /marked.*?deletion/i.test(this.restrictions(record));

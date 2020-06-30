@@ -87,7 +87,7 @@
 	</c:choose>
 </c:set>
 
-<a href="${href}" title="<c:out value='${tooltip}' />" class="thumbnail ${empty src ? ' placeholder' : ''} ${deleted ? ' deleted' : ''} ${not empty tooltip ? ' has_tooltip' : ''} thumbnail-resource-type-${resourceType} thumbnail-size-${param.size}">
+<a href="${href}" title="<c:out value='${tooltip}' />" aria-label="Visit ${thumbnailObject.title}" class="thumbnail ${empty src ? ' placeholder' : ''} ${deleted ? ' deleted' : ''} ${not empty tooltip ? ' has_tooltip' : ''} thumbnail-resource-type-${resourceType} thumbnail-size-${param.size}">
 	<div class="thumbnail-placeholder">
 		<c:if test="${not empty contentType}">
 			<span class="thumbnail-content-type">${contentType}</span>
@@ -95,7 +95,7 @@
 	</div>
 	<c:if test="${not empty src}">
 		<div class="thumbnail-preview">
-			<img src="${src}" />
+			<img src="${src}" alt="${thumbnailObject.title}"/>
 		</div>
 	</c:if>
 	<c:if test="${not empty badgeIcon}">

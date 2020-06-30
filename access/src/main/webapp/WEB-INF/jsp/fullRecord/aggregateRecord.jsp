@@ -155,14 +155,14 @@
 		<table id="child-files" class="responsive" data-pid="${briefObject.id}">
 			<thead>
 			<tr>
-				<th></th>
+				<th><span class="sr-only">Thumbnail for file</span></th>
 				<th>Title</th>
 				<th>File Type</th>
 				<th>File Size</th>
-				<th></th>
-				<th></th>
+				<th><span class="sr-only">View file</span></th>
+				<th><span class="sr-only">Download file</span></th>
 				<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-					<th></th>
+					<th><span class="sr-only">Edit MODS</span></th>
 				</c:if>
 			</tr>
 			</thead>
