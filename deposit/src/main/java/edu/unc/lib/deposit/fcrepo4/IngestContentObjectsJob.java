@@ -632,7 +632,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 txRefresher.stop();
             } catch (ChecksumMismatchException e) {
                 txRefresher.interrupt();
-                tx.cancel(e);
+                tx.cancelAndIgnore();
 
                 if (retries > 0) {
                     retries--;
