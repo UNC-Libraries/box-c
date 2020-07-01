@@ -16,17 +16,17 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.CopyOption;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
@@ -34,6 +34,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.util.FileTransferHelpers;
 
 /**
  * Client for transferring files from a filesystem ingest source to a filesystem
@@ -48,9 +49,7 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     protected StorageLocation destination;
 
     private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
-    private static final CopyOption[] COPY_ALLOW_OVERWRITE = { COPY_ATTRIBUTES, REPLACE_EXISTING };
-    private static final CopyOption[] MOVE_NO_OVERWRITE = { };
-    private static final CopyOption[] MOVE_ALLOW_OVERWRITE = { REPLACE_EXISTING };
+    private static final Logger log = LoggerFactory.getLogger(FSToFSTransferClient.class);
 
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
         this.source = source;
@@ -69,25 +68,54 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
     public URI transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
+        long currentTime = System.nanoTime();
+        Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
+        Path newFilePath = FileTransferHelpers.createFilePath(destUri, "new", currentTime);
+        Path destinationPath = Paths.get(destUri);
+
+        Thread cleanupThread = null;
 
         try {
             // Fill in parent directories if they are not present
             Path parentPath = Paths.get(destUri).getParent();
             Files.createDirectories(parentPath);
 
-            if (source.isReadOnly()) {
-                Files.copy(Paths.get(sourceFileUri), Paths.get(destUri),
-                        allowOverwrite ? COPY_ALLOW_OVERWRITE : COPY_NO_OVERWRITE);
-            } else {
-                Files.move(Paths.get(sourceFileUri), Paths.get(destUri),
-                        allowOverwrite ? MOVE_ALLOW_OVERWRITE : MOVE_NO_OVERWRITE);
+            boolean destFileExists = Files.exists(destinationPath);
+
+            if (!allowOverwrite && destFileExists) {
+                throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
+                        + ", a binary already exists in " + destination.getId() + " at path " + destUri);
             }
-        } catch (FileAlreadyExistsException e) {
-            throw new BinaryAlreadyExistsException("Failed to transfer " + sourceFileUri
-                    + ", a binary already exists in " + destination.getId() + " at path " + destUri);
+
+            cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destinationPath);
+
+            // Copy/move new file
+            if (source.isReadOnly()) {
+                Files.copy(Paths.get(sourceFileUri), newFilePath, COPY_NO_OVERWRITE);
+            } else {
+                Files.move(Paths.get(sourceFileUri), newFilePath);
+            }
+
+            // Rename old file to .old extension
+            if (destFileExists) {
+                Files.move(destinationPath, oldFilePath);
+            }
+            // Rename new file from .new extension
+            Files.move(newFilePath, destinationPath);
+
+            // Delete old file.
+            try {
+                Files.deleteIfExists(oldFilePath);
+            } catch (IOException e) {
+                // Ignore. New file is already in place
+                log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
+            }
         } catch (IOException e) {
+            FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destinationPath);
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
                     + " to destination " + destination.getId(), e);
+        } finally {
+            FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
         return destUri;
@@ -102,5 +130,4 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     public void shutdown() {
         // No finalization needed for FS to FS transfer
     }
-
 }

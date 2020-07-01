@@ -23,8 +23,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
@@ -55,6 +57,7 @@ public class StreamToFSTransferClientTest {
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    protected Path sourcePath;
     protected Path storagePath;
     @Mock
     private StorageLocation storageLoc;
@@ -66,6 +69,7 @@ public class StreamToFSTransferClientTest {
     public void setup() throws Exception {
         initMocks(this);
         tmpFolder.create();
+        sourcePath = tmpFolder.newFolder("source").toPath();
         storagePath = tmpFolder.newFolder("storage").toPath();
 
         client = new StreamToFSTransferClient(storageLoc);
@@ -88,7 +92,7 @@ public class StreamToFSTransferClientTest {
     @Test(expected = BinaryAlreadyExistsException.class)
     public void transfer_ExistingFile() throws Exception {
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         // Attempt to transfer new content
         InputStream sourceStream = toStream(STREAM_CONTENT);
@@ -114,7 +118,7 @@ public class StreamToFSTransferClientTest {
     @Test
     public void transferReplaceExisting_ExistingFile() throws Exception {
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         InputStream sourceStream = toStream(STREAM_CONTENT);
 
@@ -129,13 +133,34 @@ public class StreamToFSTransferClientTest {
         when(sourceStream.read(any())).thenThrow(new IOException());
 
         // Create existing file content
-        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+        createFile();
 
         try {
             client.transferReplaceExisting(binPid, sourceStream);
         } finally {
             // Verify that the content was not replaced
             assertContent(binDestPath, ORIGINAL_CONTENT);
+        }
+    }
+
+    @Test
+    public void rollbackOnTransferInterruption() throws Exception {
+        Files.createDirectories(binDestPath.getParent());
+        createFile();
+        File destFile = binDestPath.toFile();
+        File parentDir = binDestPath.getParent().toFile();
+        parentDir.setReadOnly();
+
+        InputStream sourceStream = toStream(ORIGINAL_CONTENT);
+
+        try {
+            client.transferReplaceExisting(binPid, sourceStream);
+        } catch (BinaryTransferException e) {
+            assertTrue("Original file should be present", destFile.exists());
+            assertEquals(1, binDestPath.getParent().toFile().listFiles().length);
+        } finally {
+            binDestPath.getParent().toFile().setWritable(true);
+            destFile.delete();
         }
     }
 
@@ -146,5 +171,9 @@ public class StreamToFSTransferClientTest {
 
     protected InputStream toStream(String content) {
         return new ByteArrayInputStream(content.getBytes());
+    }
+
+    private void createFile() throws Exception {
+        FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
     }
 }

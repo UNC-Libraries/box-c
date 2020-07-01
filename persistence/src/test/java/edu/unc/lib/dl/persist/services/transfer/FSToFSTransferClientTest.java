@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -161,6 +162,30 @@ public class FSToFSTransferClientTest {
 
         assertIsSourceFile(binDestPath);
         assertFalse("Source file should not exist after transfer", sourceFile.toFile().exists());
+    }
+
+    @Test
+    public void rollbackOnTransferInterruption() throws Exception {
+        String existingContent = "I exist";
+        Path parentPath = binDestPath.getParent();
+        Files.createDirectories(parentPath);
+
+        createFile(binDestPath, existingContent);
+        Path sourceFile = createSourceFile();
+
+        File destFile = binDestPath.toFile();
+        File parentDir = parentPath.toFile();
+        parentDir.setReadOnly();
+
+        try {
+            client.transferReplaceExisting(binPid, sourceFile.toUri());
+        } catch (BinaryTransferException e) {
+            assertTrue("Original file should be present", destFile.exists());
+            assertEquals(1, binDestPath.getParent().toFile().listFiles().length);
+        } finally {
+            parentDir.setWritable(true);
+            destFile.delete();
+        }
     }
 
     @Test(expected = NotImplementedException.class)
