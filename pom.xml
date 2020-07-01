@@ -68,7 +68,7 @@
         <spring.version>5.2.3.RELEASE</spring.version>
         <spring.security.version>5.1.5.RELEASE</spring.security.version>
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
-        <quartz.version>2.3.0</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
         
         <junit.version>4.12</junit.version>
         <grizzly.version>2.3.28</grizzly.version>
