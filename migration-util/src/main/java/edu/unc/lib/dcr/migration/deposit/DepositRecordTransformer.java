@@ -59,7 +59,6 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -132,7 +131,6 @@ public class DepositRecordTransformer extends RecursiveAction {
 
         populateDepositProperties(bxc3Resc, bxc5Resc);
 
-        FedoraTransaction tx = txManager.startTransaction();
         try {
             log.info("Ingesting deposit record {} as {}", bxc3Pid.getId(), bxc5Pid.getRepositoryPath());
             DepositRecord depRecord = repoObjFactory.createDepositRecord(bxc5Pid, bxc5Model);
@@ -153,13 +151,7 @@ public class DepositRecordTransformer extends RecursiveAction {
                     return;
                 }
             }
-            tx.cancelAndIgnore();
             throw e;
-        } catch (Exception e) {
-            tx.cancelAndIgnore();
-            throw e;
-        } finally {
-            tx.close();
         }
 
         log.debug("Finished ingest of deposit record {}", bxc3Pid.getId());
