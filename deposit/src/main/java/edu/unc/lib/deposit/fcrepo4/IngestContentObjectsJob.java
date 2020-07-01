@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;

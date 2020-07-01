@@ -28,7 +28,7 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * 
+ *
  * @author count0
  *
  */
@@ -36,13 +36,19 @@ public class DepositGraphUtils {
     private DepositGraphUtils() {
     }
 
-    private static void addChildren(Resource c, List<Resource> result) {
-        NodeIterator iterator = null;
-        if (c.hasProperty(RDF.type, RDF.Bag)) {
-            iterator = c.getModel().getBag(c).iterator();
-        } else if (c.hasProperty(RDF.type, RDF.Seq)) {
-            iterator = c.getModel().getSeq(c).iterator();
+    public static NodeIterator getChildIterator(Resource resc) {
+        if (resc.hasProperty(RDF.type, RDF.Bag)) {
+            return resc.getModel().getBag(resc).iterator();
+        } else if (resc.hasProperty(RDF.type, RDF.Seq)) {
+            return resc.getModel().getSeq(resc).iterator();
         } else {
+            return null;
+        }
+    }
+
+    private static void addChildren(Resource c, List<Resource> result) {
+        NodeIterator iterator = getChildIterator(c);
+        if (iterator == null) {
             return;
         }
 

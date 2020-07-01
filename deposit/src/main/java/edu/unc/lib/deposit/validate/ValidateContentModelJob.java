@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 
 import java.util.ArrayList;

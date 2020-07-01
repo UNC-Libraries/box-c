@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;

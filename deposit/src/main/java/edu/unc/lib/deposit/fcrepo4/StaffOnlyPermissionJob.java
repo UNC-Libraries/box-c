@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 
@@ -27,9 +28,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Marks file server ingests "staff only", if the appropriate flag is set on the deposit
