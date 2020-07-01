@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -38,6 +37,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -799,9 +799,11 @@ public class DepositSupervisor implements WorkerListener {
 
             PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
 
-            List<String> added = new ArrayList<>();
-            DepositGraphUtils.walkChildrenDepthFirst(depositBag, added, true);
-            List<PID> addedPids = added.stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
+            List<PID> addedPids = new ArrayList<>();
+            NodeIterator childIt = DepositGraphUtils.getChildIterator(depositBag);
+            while (childIt.hasNext()) {
+                addedPids.add(PIDs.get(childIt.next().asResource().getURI()));
+            }
 
             // Send message indicating the deposit has completed
             opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),

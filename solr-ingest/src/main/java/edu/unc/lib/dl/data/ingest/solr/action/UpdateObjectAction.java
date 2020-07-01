@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
@@ -26,9 +29,11 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
  *
  */
 public class UpdateObjectAction extends AbstractIndexingAction {
+    final Logger log = LoggerFactory.getLogger(UpdateObjectAction.class);
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        log.debug("Indexing object {}", updateRequest.getPid());
         // Retrieve object metadata from Fedora and add to update document list
         DocumentIndexingPackage dip = updateRequest.getDocumentIndexingPackage();
         if (dip == null) {
