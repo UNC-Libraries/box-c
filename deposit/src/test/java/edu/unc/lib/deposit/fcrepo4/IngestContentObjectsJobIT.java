@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
+import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -69,7 +70,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -419,7 +419,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     /**
      * Ensure that deposit fails on a sha1 checksum mismatch for a single file deposit
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestFileObjectChecksumMismatch() throws Exception {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
@@ -441,7 +441,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     /**
      * Ensure that deposit fails on a md5 checksum mismatch for a single file deposit
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestFileObjectMd5ChecksumMismatch() throws Exception {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
