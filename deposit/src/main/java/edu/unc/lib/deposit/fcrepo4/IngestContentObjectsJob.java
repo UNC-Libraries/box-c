@@ -640,6 +640,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                         ingested = true;
                     } catch (ChecksumMismatchException ce) {
                         if (retryCount < 3) {
+                            txRefresher.interrupt();
+                            tx.cancel(e);
+
                             retryCount++;
                             log.warn("Retrying ingest for {} due to a checksum mismatch. Attempt number: {}",
                                     childPid.getId(), retryCount);

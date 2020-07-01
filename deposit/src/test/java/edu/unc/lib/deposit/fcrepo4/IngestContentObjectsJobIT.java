@@ -369,18 +369,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
             ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
             List<ContentObject> destMembers = destObj.getMembers();
-            assertEquals("Incorrect number of children at destination", 1, destMembers.size());
-
-            // Make sure that the work is present and is actually a work
-            WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
-
-            String title = mWork.getResource().getProperty(DC.title).getString();
-            assertEquals("Work title was not correctly set", label, title);
-
-            // Check the right number of members are present
-            List<ContentObject> workMembers = mWork.getMembers();
-            assertEquals("Incorrect number of members in work", 0, workMembers.size());
-            assertClickCount(1);
+            assertEquals("Incorrect number of children at destination", 0, destMembers.size());
         }
     }
 
