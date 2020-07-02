@@ -636,6 +636,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 if (retries > 0) {
                     retries--;
+                    log.warn("Retrying ingest for {} due to a checksum mismatch. Error: {}",
+                            childPid.getQualifiedId(), e.getMessage());
                     ingestWork(parent, parentResc, childResc, retries);
                 } else {
                     failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
