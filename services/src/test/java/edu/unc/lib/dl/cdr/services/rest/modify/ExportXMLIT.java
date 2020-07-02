@@ -21,6 +21,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -32,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +60,12 @@ import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequ
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
+import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import edu.unc.lib.persist.services.EmailHandler;
 
 /**
@@ -80,6 +89,12 @@ public class ExportXMLIT extends AbstractAPIIT {
     @Mock
     private AgentPrincipals agent;
     @Autowired
+    private SolrQueryLayerService queryLayer;
+    @Autowired
+    private SearchStateFactory searchStateFactory;
+    @Mock
+    private SearchState searchState;
+    @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
     @Captor
@@ -98,6 +113,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         initMocks(this);
         when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription)))
                 .thenReturn(true);
+        reset(emailHandler);
     }
 
     @Test
@@ -105,7 +121,10 @@ public class ExportXMLIT extends AbstractAPIIT {
         doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
                 eq(bulkUpdateDescription));
 
-        String json = createObjectsAndMakeJSON(false);
+        XMLExportRequest exports = createObjectsAndMakeJSON(false);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(exports);
+
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -122,8 +141,43 @@ public class ExportXMLIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testExportChildren() throws Exception {
+        XMLExportRequest exports = createObjectsAndMakeJSON(true);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(exports);
+
+        when(searchStateFactory.createSearchState()).thenReturn(searchState);
+        SearchResultResponse results = mock(SearchResultResponse.class);
+        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
+
+        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
+        md.setId(exports.getPids().get(0));
+
+        BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
+        md2.setId(exports.getPids().get(1));
+
+        when(results.getResultList()).thenReturn(Arrays.asList(md, md2));
+
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify response from api
+        verify(emailHandler).sendEmail(toCaptor.capture(), subjectCaptor.capture(), bodyCaptor.capture(),
+                filenameCaptor.capture(), attachmentCaptor.capture());
+        assertEquals("The XML metadata for 6 object(s) requested for export by test_user is attached.\n",
+                bodyCaptor.getValue());
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("export xml", respMap.get("action"));
+    }
+
+    @Test
     public void testNoUsernameProvided() throws Exception {
-        String json = createObjectsAndMakeJSON(false);
+        XMLExportRequest exports = createObjectsAndMakeJSON(true);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(exports);
         // reset username to null to simulate situation where no username exists
         GroupsThreadStore.clearStore();
         GroupsThreadStore.storeUsername(null);
@@ -140,7 +194,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("User must have a username to export xml", respMap.get("error"));
     }
 
-    private String createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
+    private XMLExportRequest createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
         updateDescriptionService.updateDescription(agent, folder.getPid(), Files.newInputStream(MODS_PATH_1));
@@ -152,9 +206,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         pids.add(pid1);
         pids.add(pid2);
 
-        XMLExportRequest exportRequest = new XMLExportRequest(pids, exportChildren, "user@example.com");
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(exportRequest);
+        return new XMLExportRequest(pids, exportChildren, "user@example.com");
     }
 
 }
