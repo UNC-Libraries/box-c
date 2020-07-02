@@ -21,9 +21,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -80,23 +77,6 @@ public class VerifyObjectsAreInFedoraService {
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {
         this.fcrepoClient = fcrepoClient;
-    }
-
-    /**
-     * Return an iterator for the children of the given resource, based on what
-     * type of container it is.
-     *
-     * @param resc
-     * @return
-     */
-    private NodeIterator getChildIterator(Resource resc) {
-        if (resc.hasProperty(RDF.type, RDF.Bag)) {
-            return resc.getModel().getBag(resc).iterator();
-        } else if (resc.hasProperty(RDF.type, RDF.Seq)) {
-            return resc.getModel().getSeq(resc).iterator();
-        } else {
-            return null;
-        }
     }
 
     private boolean objectExists(PID pid) {

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
