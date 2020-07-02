@@ -83,6 +83,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -291,7 +292,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
                     ingestFolder(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc);
+                    ingestWork(destObj, parentResc, childResc, 3);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
                     ingestCollection(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
@@ -346,7 +347,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      *
      * @param work
      * @param childResc
-     * @param addAipProperties
      *            if true, then acl and other properties from the child resource
      *            will be added to the file object's aip
      * @return
@@ -571,13 +571,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * relationship to one of its children if specified.
      *
      * @param parent
-     * @param parentResc
      * @param childResc
+     * @param retries
      * @return
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
+    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc, int retries)
             throws DepositException, IOException {
         PID childPid = PIDs.get(childResc.getURI());
 
@@ -630,6 +630,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
+            } catch (ChecksumMismatchException e) {
+                txRefresher.interrupt();
+                tx.cancelAndIgnore();
+
+                if (retries > 0) {
+                    retries--;
+                    log.warn("Retrying ingest for {} due to a checksum mismatch. Error: {}",
+                            childPid.getQualifiedId(), e.getMessage());
+                    ingestWork(parent, parentResc, childResc, retries);
+                } else {
+                    failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
+                }
             } catch (Exception e) {
                 txRefresher.interrupt();
                 tx.cancel(e);

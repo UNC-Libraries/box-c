@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
+import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -107,6 +108,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE1_MIMETYPE = "application/pdf";
     private static final String FILE1_SHA1 = "7185198c0f158a3b3caa3f387efa3df990d2a904";
     private static final String FILE1_MD5 = "b5808604069f9f61d94e0660409616ba";
+    private static final String FILE1_MD5_BAD = "b7908604069f9f61d94e0660409616ba";
     private static final long FILE1_SIZE = 739L;
     private static final String FILE2_LOC = "text.txt";
     private static final String FILE2_MIMETYPE = "text/plain";
@@ -339,6 +341,39 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
+    public void ingestWorkObjectChecksumErrorRetryLimitTest() throws Exception {
+        String label = "testwork";
+        PID workPid = pidMinter.mintContentPid();
+
+        try {
+            // Construct the deposit model with work object
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+            // Constructing the work in the deposit model with a label
+            Bag workBag = model.createBag(workPid.getRepositoryPath());
+            workBag.addProperty(RDF.type, Cdr.Work);
+            workBag.addProperty(CdrDeposit.label, label);
+
+            PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5_BAD);
+
+            depBag.add(workBag);
+
+            workBag.asResource().addProperty(Cdr.primaryObject,
+                    model.getResource(mainPid.getRepositoryPath()));
+
+            job.closeModel();
+            job.run();
+        } catch (Exception e) {
+            treeIndexer.indexAll(baseAddress);
+
+            ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
+            List<ContentObject> destMembers = destObj.getMembers();
+            assertEquals("Incorrect number of children at destination", 0, destMembers.size());
+        }
+    }
+
+    @Test
     public void ingestWorkObjectWithModsHistoryTest() throws Exception {
         String label = "testwork";
 
@@ -384,7 +419,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     /**
      * Ensure that deposit fails on a sha1 checksum mismatch for a single file deposit
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestFileObjectChecksumMismatch() throws Exception {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
@@ -406,7 +441,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     /**
      * Ensure that deposit fails on a md5 checksum mismatch for a single file deposit
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestFileObjectMd5ChecksumMismatch() throws Exception {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
