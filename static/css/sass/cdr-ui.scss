@@ -80,7 +80,8 @@ body {
 .logo-small {
   a, i {
     color: white;
-    font-size: 16px;
+    font-size: 19px;
+    font-weight: 700;
   }
 
   img {
@@ -844,8 +845,8 @@ p.no-search-results {
   }
 
   .display-note-btn {
-    background-color: $unc-blue;
-    border: 1px solid $unc-blue;
+    background-color: #1A698C;
+    border: 1px solid #1A698C;
     border-radius: 100%;
     color: white;
     font-weight: bold;

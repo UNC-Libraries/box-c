@@ -64,7 +64,8 @@ body {
 
 .logo-small a, .logo-small i {
   color: white;
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 700;
 }
 .logo-small img {
   max-width: 150px;
@@ -747,8 +748,8 @@ p.no-search-results {
   margin-top: -10px;
 }
 .display-wrapper .display-note-btn {
-  background-color: #4B9CD3;
-  border: 1px solid #4B9CD3;
+  background-color: #1A698C;
+  border: 1px solid #1A698C;
   border-radius: 100%;
   color: white;
   font-weight: bold;
