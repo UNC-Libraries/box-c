@@ -614,9 +614,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 addDescription(obj, childResc);
 
-                // Increment the count of objects deposited prior to adding children
-                addClicks(1);
-
                 log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 
                 ingestChildren(obj, childResc);
@@ -628,6 +625,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addPremisEvents(obj);
 
                 overrideModifiedTimestamp(obj, childResc);
+
+                // Increment the count of objects deposited after adding children
+                addClicks(1);
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
