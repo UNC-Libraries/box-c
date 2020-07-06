@@ -41,6 +41,7 @@ import java.util.Map;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -121,10 +122,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
                 eq(bulkUpdateDescription));
 
-        XMLExportRequest exports = createObjectsAndMakeJSON(false);
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(exports);
-
+        String json = makeExportJson(createObjects(),false);
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -142,19 +140,18 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @Test
     public void testExportChildren() throws Exception {
-        XMLExportRequest exports = createObjectsAndMakeJSON(true);
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(exports);
+        List<String> exports = createObjects();
+        String json = makeExportJson(createObjects(),true);
 
         when(searchStateFactory.createSearchState()).thenReturn(searchState);
         SearchResultResponse results = mock(SearchResultResponse.class);
         when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
 
         BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setId(exports.getPids().get(0));
+        md.setId(exports.get(0));
 
         BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
-        md2.setId(exports.getPids().get(1));
+        md2.setId(exports.get(1));
 
         when(results.getResultList()).thenReturn(Arrays.asList(md, md2));
 
@@ -175,9 +172,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @Test
     public void testNoUsernameProvided() throws Exception {
-        XMLExportRequest exports = createObjectsAndMakeJSON(true);
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(exports);
+        String json = makeExportJson(createObjects(),true);
         // reset username to null to simulate situation where no username exists
         GroupsThreadStore.clearStore();
         GroupsThreadStore.storeUsername(null);
@@ -194,7 +189,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("User must have a username to export xml", respMap.get("error"));
     }
 
-    private XMLExportRequest createObjectsAndMakeJSON(boolean exportChildren) throws Exception {
+    private List<String> createObjects() throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
         updateDescriptionService.updateDescription(agent, folder.getPid(), Files.newInputStream(MODS_PATH_1));
@@ -206,7 +201,12 @@ public class ExportXMLIT extends AbstractAPIIT {
         pids.add(pid1);
         pids.add(pid2);
 
-        return new XMLExportRequest(pids, exportChildren, "user@example.com");
+        return pids;
     }
 
+    private String makeExportJson(List<String> pids, boolean exportChildren) throws JsonProcessingException {
+        XMLExportRequest exports = new XMLExportRequest(pids, exportChildren, "user@example.com");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(exports);
+    }
 }
