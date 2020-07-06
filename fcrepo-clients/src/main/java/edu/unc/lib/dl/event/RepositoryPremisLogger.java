@@ -51,7 +51,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
-import edu.unc.lib.dl.util.PidLockManager;
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
 
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services;
+package edu.unc.lib.dl.persist.api.services;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
 
