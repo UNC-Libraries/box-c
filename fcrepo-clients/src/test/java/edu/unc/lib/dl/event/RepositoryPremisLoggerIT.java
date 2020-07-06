@@ -18,6 +18,7 @@ package edu.unc.lib.dl.event;
 import static java.nio.file.Files.createTempFile;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -27,7 +28,9 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -165,5 +168,66 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model eventsModel = parentObject.getPremisLog().getEventsModel();
 
         assertTrue(eventsModel.isEmpty());
+    }
+
+    @Test
+    public void makeMultipleChangesSimultaneously() throws InterruptedException {
+        parentObject = repoObjFactory.createDepositRecord(null);
+        initPremisLogger(parentObject);
+
+        // make sure that there are no events in premis log before the writes
+        PremisLogger retrieveInitialLogger = new RepositoryPremisLogger(parentObject, mockSession,
+                pidMinter, repoObjLoader, repoObjFactory);
+        Model logModel = retrieveInitialLogger.getEventsModel();
+        assertFalse("New premis already contains events", logModel.listObjects().hasNext());
+
+        // add new events
+        Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
+                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .create();
+
+        Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
+        Resource event2Resc = logger.buildEvent(null, Premis.Ingestion, ingestDate)
+                .addEventDetail("Ingested")
+                .create();
+
+        List<Thread> threads = new ArrayList<>();
+
+        Runnable commitThread1 = new Runnable() {
+            @Override
+            public void run() {
+                try (PremisLogger retrieveLogger = logger.writeEvents(event1Resc)) {
+                    Model logModel = retrieveLogger.getEventsModel();
+                    assertTrue(logModel.listObjects().hasNext());
+                    Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());
+                    assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+                }
+            }
+        };
+        Thread thread1 = new Thread(commitThread1);
+        threads.add(thread1);
+
+        Runnable commitThread2 = new Runnable() {
+            @Override
+            public void run() {
+                try (PremisLogger retrieveLogger = logger.writeEvents(event2Resc)) {
+                    Model logModel = retrieveLogger.getEventsModel();
+                    assertTrue(logModel.listObjects().hasNext());
+                    Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
+                    assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
+                    assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
+                }
+            }
+        };
+        Thread thread2 = new Thread(commitThread2);
+        threads.add(thread2);
+
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            thread.join();
+        }
     }
 }
