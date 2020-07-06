@@ -3,10 +3,6 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
-a {
-  color: #007FAE;
-}
-
 .logo-row {
   background-color: #4B9CD3;
 }
@@ -180,7 +176,7 @@ header .search a {
   font-size: 16px;
 }
 header .search a:hover, header .search a:active {
-  color: #4B9CD3;
+  color: #13294B;
 }
 header .search-row-large {
   background-color: #13294B;
@@ -600,8 +596,8 @@ p.spacing {
 }
 
 .item_container_count {
-  background-color: #4B9CD3;
-  border: 1px solid #4B9CD3;
+  background-color: #1A698C;
+  border: 1px solid #1A698C;
   border-radius: 5px;
   color: white;
   line-height: 18px;
