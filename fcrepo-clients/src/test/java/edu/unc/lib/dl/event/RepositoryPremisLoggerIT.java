@@ -176,10 +176,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         // make sure that there are no events in premis log before the writes
-        PremisLogger retrieveInitialLogger = new RepositoryPremisLogger(parentObject, mockSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
-        Model logModel = retrieveInitialLogger.getEventsModel();
-        assertFalse("New premis already contains events", logModel.listObjects().hasNext());
+        Model initialLogModel = retrieveLogger.getEventsModel();
+        assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
 
         // add new events
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
@@ -192,35 +192,20 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .create();
 
         List<Thread> threads = new ArrayList<>();
+        List<Resource> events = new ArrayList<>();
+        events.add(event1Resc);
+        events.add(event2Resc);
 
-        Runnable commitThread1 = new Runnable() {
-            @Override
-            public void run() {
-                try (PremisLogger retrieveLogger = logger.writeEvents(event1Resc)) {
-                    Model logModel = retrieveLogger.getEventsModel();
-                    assertTrue(logModel.listObjects().hasNext());
-                    Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());
-                    assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+        for (final Resource event : events) {
+            Runnable commitThread = new Runnable() {
+                @Override
+                public void run() {
+                    logger.writeEvents(event);
                 }
-            }
-        };
-        Thread thread1 = new Thread(commitThread1);
-        threads.add(thread1);
-
-        Runnable commitThread2 = new Runnable() {
-            @Override
-            public void run() {
-                try (PremisLogger retrieveLogger = logger.writeEvents(event2Resc)) {
-                    Model logModel = retrieveLogger.getEventsModel();
-                    assertTrue(logModel.listObjects().hasNext());
-                    Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
-                    assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
-                    assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
-                }
-            }
-        };
-        Thread thread2 = new Thread(commitThread2);
-        threads.add(thread2);
+            };
+            Thread thread = new Thread(commitThread);
+            threads.add(thread);
+        }
 
         for (Thread thread : threads) {
             thread.start();
@@ -229,5 +214,15 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         for (Thread thread : threads) {
             thread.join();
         }
+
+        // check premis log
+        Model logModel = retrieveLogger.getEventsModel();
+
+        Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());
+        assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+
+        Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
+        assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
+        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
     }
 }
