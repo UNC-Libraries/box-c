@@ -181,6 +181,16 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
 
+        // add original event
+        Resource originalEvent = logger.buildEvent(Premis.note)
+                .addEventDetail("first premis event")
+                .write();
+
+        // check that the first event was added correctly
+        Model updatedLogModel = retrieveLogger.getEventsModel();
+        Resource logOriginalEventResc = updatedLogModel.getResource(originalEvent.getURI());
+        assertEquals("first premis event", logOriginalEventResc.getProperty(Premis.note).getString());
+
         // add new events
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
                 .addSoftwareAgent(SoftwareAgent.clamav.toString())
