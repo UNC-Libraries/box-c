@@ -228,22 +228,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
     @Test(expected = NotFoundException.class)
     public void transform_DepositRecord_ProQuest() throws Exception {
-        Model bxc3Model = createModelWithTypes(bxc3Pid, ContentModel.DEPOSIT_RECORD);
-        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
-        bxc3Resc.addLiteral(CDRProperty.depositedOnBehalfOf.getProperty(), "some depositor");
-        bxc3Resc.addLiteral(CDRProperty.depositMethod.getProperty(), "dep method");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageType.getProperty(), "http://proquest.com");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageSubType.getProperty(), "package subtype");
-
-        Document foxml = new FoxmlDocumentBuilder(bxc3Pid, "Migrated Deposit Record")
-                .relsExtModel(bxc3Model)
-                .build();
-        serializeFoxml(bxc3Pid, foxml);
-
-        addPremisLog(bxc3Pid);
-
-        updatePathIndex();
-
+        createDeposit("http://proquest.com");
         transformer.compute();
 
         // Make sure there's no record created
@@ -252,23 +237,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
     @Test(expected = NotFoundException.class)
     public void transform_DepositRecord_Biomed() throws Exception {
-        Model bxc3Model = createModelWithTypes(bxc3Pid, ContentModel.DEPOSIT_RECORD);
-        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
-        bxc3Resc.addLiteral(CDRProperty.depositedOnBehalfOf.getProperty(), "some depositor");
-        bxc3Resc.addLiteral(CDRProperty.depositMethod.getProperty(), "dep method");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageType.getProperty(),
-                "http://purl.org/net/sword/terms/METSDSpaceSIP");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageSubType.getProperty(), "package subtype");
-
-        Document foxml = new FoxmlDocumentBuilder(bxc3Pid, "Migrated Deposit Record")
-                .relsExtModel(bxc3Model)
-                .build();
-        serializeFoxml(bxc3Pid, foxml);
-
-        addPremisLog(bxc3Pid);
-
-        updatePathIndex();
-
+        createDeposit("http://purl.org/net/sword/terms/METSDSpaceSIP");
         transformer.compute();
 
         // Make sure there's no record created
@@ -277,23 +246,7 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
 
     @Test(expected = NotFoundException.class)
     public void transform_DepositRecord_Biomed_Alternate_URI() throws Exception {
-        Model bxc3Model = createModelWithTypes(bxc3Pid, ContentModel.DEPOSIT_RECORD);
-        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
-        bxc3Resc.addLiteral(CDRProperty.depositedOnBehalfOf.getProperty(), "some depositor");
-        bxc3Resc.addLiteral(CDRProperty.depositMethod.getProperty(), "dep method");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageType.getProperty(),
-                "http://purl.org/net/sword-types/METSDSpaceSIP");
-        bxc3Resc.addLiteral(CDRProperty.depositPackageSubType.getProperty(), "package subtype");
-
-        Document foxml = new FoxmlDocumentBuilder(bxc3Pid, "Migrated Deposit Record")
-                .relsExtModel(bxc3Model)
-                .build();
-        serializeFoxml(bxc3Pid, foxml);
-
-        addPremisLog(bxc3Pid);
-
-        updatePathIndex();
-
+        createDeposit("http://purl.org/net/sword-types/METSDSpaceSIP");
         transformer.compute();
 
         // Make sure there's no record created
@@ -369,5 +322,23 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
     private void updatePathIndex() {
         pathIndexingService.indexObjectsFromPath(objectsPath);
         pathIndexingService.indexDatastreamsFromPath(datastreamsPath);
+    }
+
+    private void createDeposit(String packageType) throws IOException {
+        Model bxc3Model = createModelWithTypes(bxc3Pid, ContentModel.DEPOSIT_RECORD);
+        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(bxc3Pid));
+        bxc3Resc.addLiteral(CDRProperty.depositedOnBehalfOf.getProperty(), "some depositor");
+        bxc3Resc.addLiteral(CDRProperty.depositMethod.getProperty(), "dep method");
+        bxc3Resc.addLiteral(CDRProperty.depositPackageType.getProperty(), packageType);
+        bxc3Resc.addLiteral(CDRProperty.depositPackageSubType.getProperty(), "package subtype");
+
+        Document foxml = new FoxmlDocumentBuilder(bxc3Pid, "Migrated Deposit Record")
+                .relsExtModel(bxc3Model)
+                .build();
+        serializeFoxml(bxc3Pid, foxml);
+
+        addPremisLog(bxc3Pid);
+
+        updatePathIndex();
     }
 }
