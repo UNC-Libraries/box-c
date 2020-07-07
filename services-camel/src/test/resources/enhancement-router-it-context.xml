@@ -62,6 +62,10 @@
     <bean id="registerLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor" />
     </bean>
+    
+    <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor" />
+    </bean>
 
     <camel:camelContext id="cdrServiceImageEnhancements">
         <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
