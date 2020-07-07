@@ -94,7 +94,7 @@ public class XMLExportService {
 
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
             searchRequest.setRootPid(pid);
-            searchRequest.setApplyCutoffs(true);
+            searchRequest.setApplyCutoffs(false);
             SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
             if (resultResponse == null) {
