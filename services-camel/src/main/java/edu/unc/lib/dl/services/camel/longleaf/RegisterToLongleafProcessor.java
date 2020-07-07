@@ -15,15 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -32,7 +28,6 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.fcrepo.client.FcrepoClient;
@@ -61,9 +56,8 @@ import io.dropwizard.metrics5.Timer;
  * @author bbpennel
  * @author smithjp
  */
-public class RegisterToLongleafProcessor implements Processor {
+public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private static final Logger log = LoggerFactory.getLogger(RegisterToLongleafProcessor.class);
-    private static final Logger longleafLog = LoggerFactory.getLogger("longleaf");
 
     private static final Histogram batchSizeHistogram = HistogramFactory
             .createHistogram("longleafRegisterBatchSize");
@@ -76,8 +70,6 @@ public class RegisterToLongleafProcessor implements Processor {
             DatastreamType.ORIGINAL_FILE.getId(),
             DatastreamType.TECHNICAL_METADATA.getId()
         );
-
-    private String longleafBaseCommand;
 
     private RepositoryObjectLoader repoObjLoader;
 
@@ -181,44 +173,13 @@ public class RegisterToLongleafProcessor implements Processor {
         // Record statistics about the number of objects registered
         batchSizeHistogram.update(entryCount);
 
-        try {
-            // only register binaries with md5sum
-            String longleafCommmand = longleafBaseCommand + " register --force -m @-";
-            log.info("Registering with longleaf: {}", longleafCommmand);
+        int exitVal = executeCommand("register --force -m @-", sb.toString());
 
-            Process process = Runtime.getRuntime().exec(longleafCommmand);
-            // Pipe the manifest data into the command
-            try (OutputStream pipeOut = process.getOutputStream()) {
-                pipeOut.write(sb.toString().getBytes(UTF_8));
-            }
-
-            int exitVal = process.waitFor();
-
-            // log longleaf output
-            String line;
-            try (BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                while ((line = in.readLine()) != null) {
-                    longleafLog.info(line);
-                }
-            }
-            try (BufferedReader err = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream()))) {
-                while ((line = err.readLine()) != null) {
-                    longleafLog.error(line);
-                }
-            }
-
-            if (exitVal == 0) {
-                log.info("Successfully registered {} entries to longleaf", entryCount);
-            } else {
-                throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
-                        + "Check longleaf logs, command returned: " + exitVal);
-            }
-        } catch (IOException e) {
-            log.error("IOException while trying to register batch of {} entries to longleaf", entryCount, e);
-        } catch (InterruptedException e) {
-            log.error("InterruptedException while trying to register {} entries to longleaf", entryCount, e);
+        if (exitVal == 0) {
+            log.info("Successfully registered {} entries to longleaf", entryCount);
+        } else {
+            throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
+                    + "Check longleaf logs, command returned: " + exitVal);
         }
 
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
@@ -229,10 +190,6 @@ public class RegisterToLongleafProcessor implements Processor {
             return null;
         }
         return substringAfterLast(fedoraDigest, separator);
-    }
-
-    public void setLongleafBaseCommand(String longleafBaseCommand) {
-        this.longleafBaseCommand = longleafBaseCommand;
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {

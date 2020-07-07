@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -40,7 +39,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -66,6 +64,7 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.Tombstone;
@@ -82,6 +81,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -129,6 +129,8 @@ public class DestroyObjectsJobIT {
     private InheritedAclFactory inheritedAclFactory;
     @Mock
     private IndexingMessageSender indexingMessageSender;
+    @Mock
+    private MessageSender binaryDestroyedMessageSender;
 
     @Autowired
     private StorageLocationManagerImpl locationManager;
@@ -190,6 +192,7 @@ public class DestroyObjectsJobIT {
         assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
+        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
     }
 
     @Test
@@ -198,11 +201,13 @@ public class DestroyObjectsJobIT {
         //remove unrelated folder obj before running job
         objsToDestroy.remove(3);
 
-        job.run();
-
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
         PID folderObjPid = objsToDestroy.get(0);
+
+        URI contentUri = repoObjLoader.getFileObject(fileObjPid).getOriginalFile().getContentUri();
+
+        job.run();
 
         Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource fileResc = stoneFile.getResource();
@@ -225,6 +230,7 @@ public class DestroyObjectsJobIT {
                 "Item deleted from repository and replaced by tombstone"));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
+        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
     }
 
     @Test
@@ -269,6 +275,8 @@ public class DestroyObjectsJobIT {
         WorkObject workObj = (WorkObject) folderObj.getMembers().get(0);
         FileObject fileObj = (FileObject) workObj.getMembers().get(0);
 
+        URI contentUri = fileObj.getOriginalFile().getContentUri();
+
         job.run();
 
         RepositoryObject folderObjParent = folderObj.getParent();
@@ -286,6 +294,7 @@ public class DestroyObjectsJobIT {
         assertTrue(folderResc.hasProperty(RDF.type, Cdr.Tombstone));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
+        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
     }
 
     @Test
@@ -368,6 +377,7 @@ public class DestroyObjectsJobIT {
         job.setBinaryTransferService(transferService);
         job.setStorageLocationManager(locationManager);
         job.setIndexingMessageSender(indexingMessageSender);
+        job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {

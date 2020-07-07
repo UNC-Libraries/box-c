@@ -72,6 +72,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -104,6 +105,7 @@ public class DestroyObjectsJob implements Runnable {
     private StorageLocationManager locManager;
     private BinaryTransferService transferService;
     private IndexingMessageSender indexingMessageSender;
+    private MessageSender binaryDestroyedMessageSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
@@ -158,6 +160,8 @@ public class DestroyObjectsJob implements Runnable {
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
+        log.debug("Performing destroy on object {} of type {}",
+                rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
@@ -221,9 +225,11 @@ public class DestroyObjectsJob implements Runnable {
         }
         cleanupBinaryUris.forEach(contentUri -> {
             try {
+                log.debug("Deleting destroyed binary {}", contentUri);
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
+                binaryDestroyedMessageSender.sendMessage(contentUri.toString());
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
@@ -232,6 +238,7 @@ public class DestroyObjectsJob implements Runnable {
     }
 
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
+        log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource();
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
         Model childModel = childResc.getModel();
@@ -268,6 +275,7 @@ public class DestroyObjectsJob implements Runnable {
             String objUri = obj.asResource().getURI();
             // do not delete Premis events and metadata container
             if (!(objUri.endsWith("/" + MD_EVENTS.getId()) || objUri.endsWith("/" + METADATA_CONTAINER))) {
+                log.debug("Deleting object {} from fedora", objUri);
                 try (FcrepoResponse resp = fcrepoClient.delete(URI.create(objUri)).perform()) {
                 } catch (FcrepoOperationFailedException | IOException e) {
                     throw new ServiceException("Unable to clean up child object " + objUri, e);
@@ -278,6 +286,8 @@ public class DestroyObjectsJob implements Runnable {
                 } catch (FcrepoOperationFailedException | IOException e) {
                     throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
                 }
+            } else {
+                log.debug("Skipping destroy on {}", objUri);
             }
         }
     }
@@ -320,5 +330,9 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
         this.indexingMessageSender = indexingMessageSender;
+    }
+
+    public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
+        this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
     }
 }

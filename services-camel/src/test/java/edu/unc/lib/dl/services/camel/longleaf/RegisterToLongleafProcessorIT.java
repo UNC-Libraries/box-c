@@ -22,23 +22,16 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.After;
@@ -109,7 +102,6 @@ public class RegisterToLongleafProcessorIT {
 
     private String longleafScript;
     private String outputPath;
-    private String outputText;
     private List<String> output;
 
     private RegisterToLongleafProcessor processor;
@@ -124,7 +116,7 @@ public class RegisterToLongleafProcessorIT {
         processor.setRepositoryObjectLoader(repoObjLoader);
         outputPath = tmpFolder.newFile().getPath();
         output = null;
-        longleafScript = getLongleafScript(outputPath);
+        longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
 
         StorageLocation loc = locManager.getStorageLocationById("loc1");
@@ -144,7 +136,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
 
-        readOutput();
+        output = LongleafTestHelpers.readOutput(outputPath);
         assertRegisterCalled(1);
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
     }
@@ -172,7 +164,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(modsBin, modsHistoryBin, premisBin, origBin);
         processor.process(exchange);
 
-        readOutput();
+        output = LongleafTestHelpers.readOutput(outputPath);
         assertRegisterCalled(1);
         assertManifestEntry("md5", TEXT1_MD5, storageUri);
         assertManifestEntry("md5", TEXT2_MD5, modsStorageUri);
@@ -191,7 +183,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin, techBin);
         processor.process(exchange);
 
-        readOutput();
+        output = LongleafTestHelpers.readOutput(outputPath);
         assertRegisterCalled(1);
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
         assertManifestEntry("md5", TEXT1_MD5, origBin.getContentUri());
@@ -207,7 +199,7 @@ public class RegisterToLongleafProcessorIT {
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
 
-        readOutput();
+        output = LongleafTestHelpers.readOutput(outputPath);
         assertRegisterCalled(1);
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
     }
@@ -221,22 +213,6 @@ public class RegisterToLongleafProcessorIT {
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
         URI storageUri = transferSession.transfer(originalPid, streamString(content));
         return fileObj.addOriginalFile(storageUri, "original.txt", "plain/text", sha1, md5);
-    }
-
-    private String getLongleafScript(String outputPath) throws Exception {
-        String scriptContent = "#!/usr/bin/env bash"
-                + "\necho $@ >> " + outputPath
-                + "\necho \"$(</dev/stdin)\" >> " + outputPath;
-        File longleafScript = File.createTempFile("longleaf", ".sh");
-
-        FileUtils.write(longleafScript, scriptContent, "UTF-8");
-
-        longleafScript.deleteOnExit();
-
-        Set<PosixFilePermission> ownerExecutable = PosixFilePermissions.fromString("r-x------");
-        Files.setPosixFilePermissions(longleafScript.toPath(), ownerExecutable);
-
-        return longleafScript.getAbsolutePath();
     }
 
     private void assertRegisterCalled(int expectedCount) {
@@ -265,16 +241,11 @@ public class RegisterToLongleafProcessorIT {
             }
         }
         fail("Did not find entry for " + alg + " "
-                + expectedDigest + " " + expectedPath + " in manifest:\n" + outputText);
+                + expectedDigest + " " + expectedPath + " in manifest:\n" + output);
     }
 
     private InputStream streamString(String text) {
         return new ByteArrayInputStream(text.getBytes(UTF_8));
-    }
-
-    private void readOutput() throws IOException {
-        outputText = FileUtils.readFileToString(new File(outputPath), UTF_8);
-        output = Arrays.asList(outputText.split("\n"));
     }
 
     private Exchange createBatchExchange(RepositoryObject... objects) {

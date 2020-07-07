@@ -22,6 +22,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -54,6 +55,10 @@
     
     <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.fcrepo.client.FcrepoClient" />
+    </bean>
+    
+    <bean id="binaryDestroyedMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.MessageSender" />
     </bean>
 
     <camel:camelContext id="cdrDestroyObjects">
