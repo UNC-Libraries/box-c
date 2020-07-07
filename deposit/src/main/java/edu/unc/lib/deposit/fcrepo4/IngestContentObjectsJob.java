@@ -441,6 +441,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
+                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
 
                 log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
@@ -448,8 +449,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
-
-            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the folder
@@ -493,6 +492,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
+                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
 
                 log.info("Created admin unit {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
@@ -500,8 +500,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
-
-            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the admin unit
@@ -545,6 +543,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Increment the count of objects deposited prior to adding children
                 addClicks(1);
+                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
 
                 log.info("Created collection {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
@@ -552,8 +551,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
-
-            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
         // ingest children of the admin unit
@@ -628,7 +625,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Increment the count of objects deposited after adding children
                 addClicks(1);
-
+                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
                 // Cease refreshing the transaction
                 txRefresher.stop();
             } catch (ChecksumMismatchException e) {
@@ -649,8 +646,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } finally {
                 tx.close();
             }
-
-            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
     }
 
