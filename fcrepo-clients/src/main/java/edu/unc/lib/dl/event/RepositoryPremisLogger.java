@@ -183,11 +183,14 @@ public class RepositoryPremisLogger implements PremisLogger {
     @Override
     public Model getEventsModel() {
         PID logPid = DatastreamPids.getMdEventsPid(repoObject.getPid());
+        Lock logLock = lockManager.awaitReadLock(logPid);
         try {
             BinaryObject eventsObj = repoObjLoader.getBinaryObject(logPid);
             return RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
         } catch (NotFoundException e) {
             return ModelFactory.createDefaultModel();
+        } finally {
+            logLock.unlock();
         }
     }
 
