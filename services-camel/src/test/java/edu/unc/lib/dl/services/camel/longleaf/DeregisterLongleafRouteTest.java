@@ -74,8 +74,9 @@ public class DeregisterLongleafRouteTest {
 
     @Test
     public void deregisterSingleBinary() throws Exception {
+        // Expecting 1 batch message and 1 individual file message, on different routes
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
-                .whenCompleted(2)
+                .whenCompleted(1 + 1)
                 .create();
 
         String contentUri = generateContentUri();
@@ -91,6 +92,7 @@ public class DeregisterLongleafRouteTest {
 
     @Test
     public void deregisterSingleBatch() throws Exception {
+        // Expecting 1 batch message and 3 individual file messages, on different routes
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
                 .whenCompleted(1 + 3)
                 .create();
@@ -108,6 +110,7 @@ public class DeregisterLongleafRouteTest {
 
     @Test
     public void deregisterMultipleBatches() throws Exception {
+        // Expecting 2 batch messages and 10 individual file messages, on different routes
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
                 .whenCompleted(2 + 10)
                 .create();
