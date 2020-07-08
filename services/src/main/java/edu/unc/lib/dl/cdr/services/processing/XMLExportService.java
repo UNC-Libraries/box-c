@@ -82,7 +82,6 @@ public class XMLExportService {
         } else {
             job.run();
         }
-
     }
 
     private void addChildPIDsToRequest(XMLExportRequest request) throws ServiceException {
@@ -94,7 +93,10 @@ public class XMLExportService {
             searchState.setRowsPerPage(Integer.MAX_VALUE);
 
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
-            SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+            searchRequest.setRootPid(pid);
+            searchRequest.setApplyCutoffs(false);
+            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+
             if (resultResponse == null) {
                 throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");
             }

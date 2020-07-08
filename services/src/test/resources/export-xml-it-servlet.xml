@@ -36,10 +36,35 @@
         <property name="aclService" ref="aclService" />
         <property name="emailHandler" ref="emailHandler" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="queryLayer" ref="queryLayer" />
+        <property name="searchStateFactory" ref="searchStateFactory" />
+    </bean>
+
+    <bean id="queryLayer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.ui.service.SolrQueryLayerService" />
+    </bean>
+
+    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SearchSettings" />
+    </bean>
+
+    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SolrSettings" />
+    </bean>
+
+    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.model.FacetFieldFactory" />
+    </bean>
+
+    <bean id="searchStateFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.service.SearchStateFactory" />
+    </bean>
+
+    <bean id="facetFieldUtil" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.util.FacetFieldUtil" />
     </bean>
     
     <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.persist.services.EmailHandler" />
     </bean>
-    
 </beans>

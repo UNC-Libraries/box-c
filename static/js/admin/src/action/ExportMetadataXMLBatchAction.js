@@ -20,7 +20,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 	
 	ExportMetadataXMLBatchAction.prototype.execute = function() {
 		var self = this;
-		
+
 		this.targets = this.getTargets();
 		var title;
 		var defaultType;
@@ -75,7 +75,8 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 				dataType: "json",
 				data : JSON.stringify({
 					email : email,
-					pids : pids
+					pids : pids,
+					exportChildren: includeChildren || false
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);
