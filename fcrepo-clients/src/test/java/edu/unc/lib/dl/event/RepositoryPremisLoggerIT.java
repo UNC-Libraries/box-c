@@ -186,11 +186,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .addEventDetail("first premis event")
                 .write();
 
-        // check that the first event was added correctly
-        Model updatedLogModel = retrieveLogger.getEventsModel();
-        Resource logOriginalEventResc = updatedLogModel.getResource(originalEventResc.getURI());
-        assertEquals("first premis event", logOriginalEventResc.getProperty(Premis.note).getString());
-
         // add new events
         List<Thread> threads = new ArrayList<>();
         List<Resource> events = new ArrayList<>();
@@ -234,9 +229,12 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
             thread.join();
         }
 
-        // check premis log
+        // check that the first event was added correctly
         Model logModel = retrieveLogger.getEventsModel();
+        Resource logOriginalEventResc = logModel.getResource(originalEventResc.getURI());
+        assertEquals("first premis event", logOriginalEventResc.getProperty(Premis.note).getString());
 
+        // check rest of events
         Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());
         assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
 
