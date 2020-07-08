@@ -29,6 +29,9 @@ public class LongleafRouter extends RouteBuilder {
     @BeanInject(value = "registerLongleafProcessor")
     private RegisterToLongleafProcessor registerProcessor;
 
+    @BeanInject(value = "deregisterLongleafProcessor")
+    private DeregisterLongleafProcessor deregisterProcessor;
+
     @Override
     public void configure() throws Exception {
         from("direct-vm:filter.longleaf")
@@ -43,6 +46,18 @@ public class LongleafRouter extends RouteBuilder {
                 + "&connectionFactory=jmsFactory")
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf registrations")
             .bean(registerProcessor);
+
+        from("activemq://activemq:queue:filter.longleaf.deregister")
+            .log(LoggingLevel.DEBUG, "Queuing ${body} for deregistration in longleaf")
+            .to("sjms:deregister.longleaf?transacted=true");
+
+        from("sjms-batch:deregister.longleaf?completionTimeout={{longleaf.register.completionTimeout}}"
+                + "&completionSize={{longleaf.register.completionSize}}"
+                + "&consumerCount={{longleaf.register.consumers}}"
+                + "&aggregationStrategy=#longleafAggregationStrategy"
+                + "&connectionFactory=jmsFactory")
+            .log(LoggingLevel.DEBUG, "Processing batch of longleaf deregistrations")
+            .bean(deregisterProcessor);
     }
 
 }

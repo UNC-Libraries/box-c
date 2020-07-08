@@ -55,6 +55,8 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 
 /**
+ * See edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJobIT for related integration test
+ *
  * @author bbpennel
  *
  */
