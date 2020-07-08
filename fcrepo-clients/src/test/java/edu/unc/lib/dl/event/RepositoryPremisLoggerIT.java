@@ -182,31 +182,40 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
 
         // add original event
-        Resource originalEvent = logger.buildEvent(Premis.note)
+        Resource originalEventResc = logger.buildEvent(Premis.note)
                 .addEventDetail("first premis event")
                 .write();
 
         // check that the first event was added correctly
         Model updatedLogModel = retrieveLogger.getEventsModel();
-        Resource logOriginalEventResc = updatedLogModel.getResource(originalEvent.getURI());
+        Resource logOriginalEventResc = updatedLogModel.getResource(originalEventResc.getURI());
         assertEquals("first premis event", logOriginalEventResc.getProperty(Premis.note).getString());
 
         // add new events
+        List<Thread> threads = new ArrayList<>();
+        List<Resource> events = new ArrayList<>();
+        List<String> eventUris = new ArrayList<>();
+
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
                 .addSoftwareAgent(SoftwareAgent.clamav.toString())
                 .create();
+        events.add(event1Resc);
 
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
         Resource event2Resc = logger.buildEvent(null, Premis.Ingestion, ingestDate)
                 .addEventDetail("Ingested")
                 .create();
-
-        List<Thread> threads = new ArrayList<>();
-        List<Resource> events = new ArrayList<>();
-        events.add(event1Resc);
         events.add(event2Resc);
 
-        for (final Resource event : events) {
+        for (int i = 1; i <= 20; i++) {
+            Resource anotherEvent = logger.buildEvent(Premis.note)
+                    .addEventDetail("another premis event " + i)
+                    .create();
+            eventUris.add(anotherEvent.getURI());
+            events.add(anotherEvent);
+        }
+
+        for (Resource event : events) {
             Runnable commitThread = new Runnable() {
                 @Override
                 public void run() {
@@ -234,5 +243,12 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
         assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
         assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
+
+        int i = 1;
+        for (String uri : eventUris) {
+            Resource logEventResc = logModel.getResource(uri);
+            assertEquals("another premis event " + i, logEventResc.getProperty(Premis.note).getString());
+            i++;
+        }
     }
 }
