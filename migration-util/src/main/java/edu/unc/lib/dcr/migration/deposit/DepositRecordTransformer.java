@@ -174,7 +174,13 @@ public class DepositRecordTransformer extends RecursiveAction {
             return false;
         }
 
-        String packagingType = depositPackagingType.getLiteral().toString();
+        String packagingType;
+        if (depositPackagingType.getObject().isResource()) {
+            packagingType = depositPackagingType.getResource().getURI();
+        } else {
+            packagingType = depositPackagingType.getString();
+        }
+
         return (packagingType.equals("http://proquest.com") ||
                 packagingType.equals("http://purl.org/net/sword-types/METSDSpaceSIP") ||
                 packagingType.equals("http://purl.org/net/sword/terms/METSDSpaceSIP"));
