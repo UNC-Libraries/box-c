@@ -153,6 +153,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     private boolean overrideTimestamps;
 
+    private int filesIngested;
+
     public IngestContentObjectsJob() {
         super();
     }
@@ -335,9 +337,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         overrideModifiedTimestamp(obj, childResc);
 
         // Increment the count of objects deposited
-        addClicks(1);
-        getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
-
+        filesIngested++;
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
     }
 
@@ -620,6 +620,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 overrideModifiedTimestamp(obj, childResc);
 
+                // Add counts for files deposited for the work
+                addClicks(filesIngested);
+                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), filesIngested);
+
                 // Cease refreshing the transaction
                 txRefresher.stop();
             } catch (ChecksumMismatchException e) {
@@ -638,6 +642,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 txRefresher.interrupt();
                 tx.cancel(e);
             } finally {
+                filesIngested = 0;
                 tx.close();
             }
 
