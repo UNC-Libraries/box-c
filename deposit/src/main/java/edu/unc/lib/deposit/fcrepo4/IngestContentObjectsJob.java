@@ -153,7 +153,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     private boolean overrideTimestamps;
 
-    private int filesIngested;
+    private int filesIngested = 0;
 
     public IngestContentObjectsJob() {
         super();
