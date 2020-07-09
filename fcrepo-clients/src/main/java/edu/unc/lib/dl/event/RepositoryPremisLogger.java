@@ -152,6 +152,9 @@ public class RepositoryPremisLogger implements PremisLogger {
                         newContentStream);
 
                 updateOrCreateLog(mergedStream);
+                existingLogStream.close();
+                newContentStream.close();
+                mergedStream.close();
             } catch (IOException e) {
                 throw new RepositoryException("Failed to close log existing stream", e);
             } finally {
