@@ -125,6 +125,11 @@ public class DepositRecordTransformer extends RecursiveAction {
                     + ", it is not a deposit record");
         }
 
+        if (isHycRecordType(bxc3Resc)) {
+            log.info("Record {} has been moved to the CDR. Transformation skipped.", bxc3Pid.getId());
+            return;
+        }
+
         Model bxc5Model = createDefaultModel();
         Resource bxc5Resc = bxc5Model.getResource(bxc5Pid.getRepositoryPath());
         bxc5Resc.addProperty(RDF.type, Cdr.DepositRecord);
@@ -160,6 +165,25 @@ public class DepositRecordTransformer extends RecursiveAction {
     private boolean isDepositRecord(Resource bxc3Resc) {
         return bxc3Resc.hasProperty(FedoraProperty.hasModel.getProperty(),
                 ContentModel.DEPOSIT_RECORD.getResource());
+    }
+
+    private boolean isHycRecordType(Resource bxc3Resc) {
+        Statement depositPackagingType = bxc3Resc.getProperty(CDRProperty.depositPackageType.getProperty());
+
+        if (depositPackagingType == null) {
+            return false;
+        }
+
+        String packagingType;
+        if (depositPackagingType.getObject().isResource()) {
+            packagingType = depositPackagingType.getResource().getURI();
+        } else {
+            packagingType = depositPackagingType.getString();
+        }
+
+        return (packagingType.equals("http://proquest.com") ||
+                packagingType.equals("http://purl.org/net/sword-types/METSDSpaceSIP") ||
+                packagingType.equals("http://purl.org/net/sword/terms/METSDSpaceSIP"));
     }
 
     private void overrideLastModified(Resource bxc3Resc, DepositRecord depRec) {
