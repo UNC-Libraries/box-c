@@ -55,6 +55,9 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         // Store a reference to the manifest file
         addManifestURI();
         validateProfile(METSProfile.CDR_SIMPLE);
+
+        interruptJobIfStopped();
+
         Document mets = loadMETS();
         // assign any missing PIDs
         assignPIDs(mets);

@@ -91,6 +91,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferBinaries(Resource resc, BinaryTransferSession transferSession) {
+        interruptJobIfStopped();
+
         PID objPid = PIDs.get(resc.toString());
         log.debug("Preparing to transfer binaries for {}", objPid);
 

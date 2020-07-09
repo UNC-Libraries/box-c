@@ -158,6 +158,8 @@ public abstract class AbstractDepositJob implements Runnable {
     @Override
     public final void run() {
         try (Timer.Context context = timer.time()) {
+            interruptJobIfStopped();
+
             runJob();
             if (dataset.isInTransaction()) {
                 dataset.commit();
@@ -326,12 +328,25 @@ public abstract class AbstractDepositJob implements Runnable {
         throw new JobFailedException(message, throwable);
     }
 
-    protected void verifyRunning() {
-        DepositState state = getDepositStatusFactory().getState(getDepositUUID());
+    /**
+     * Interrupts the current deposit job if needed, either due to
+     * a thread interruption or by the state of the deposit no longer being
+     * set to "running"
+     *
+     * @throws JobInterruptedException thrown if the job was interrupted
+     */
+    protected void interruptJobIfStopped() throws JobInterruptedException {
+        String depositId = getDepositUUID();
+        String jobName = getClass().getSimpleName() + ":" + jobUUID;
+        if (Thread.currentThread().isInterrupted()) {
+            throw new JobInterruptedException("Deposit job " + depositJobId
+                    + " has been interrupted, interrupting deposit " + depositId);
+        }
 
+        DepositState state = getDepositStatusFactory().getState(depositId);
         if (!DepositState.running.equals(state)) {
-            throw new JobInterruptedException("State for job " + getDepositUUID()
-                    + " is no longer running, interrupting");
+            throw new JobInterruptedException("State for deposit " + depositId + " changed from 'running' to '"
+                    + state.name() + "', interrupting job " + jobName);
         }
     }
 

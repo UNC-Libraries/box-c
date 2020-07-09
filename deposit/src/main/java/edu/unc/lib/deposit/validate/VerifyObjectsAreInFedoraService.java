@@ -44,7 +44,7 @@ public class VerifyObjectsAreInFedoraService {
  *
  * @param depositPid
  * @param objectPIDs
- * @return list of missing oibject PIDs as a String
+ * @return list of missing object PIDs as a String
  */
     public String listObjectPIDs(String depositPid, List<PID> objectPIDs) {
         StringBuilder buildListOfObjectPIDs = new StringBuilder();

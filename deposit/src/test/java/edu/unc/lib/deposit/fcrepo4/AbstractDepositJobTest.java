@@ -54,6 +54,7 @@ import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *
@@ -142,6 +143,8 @@ public class AbstractDepositJobTest {
         }).when(tx).cancel(any(Exception.class));
 
         completedIds = new HashSet<>();
+
+        when(depositStatusFactory.getState(anyString())).thenReturn(DepositState.running);
 
         doAnswer(invocation -> {
             String objId = invocation.getArgumentAt(1, String.class);

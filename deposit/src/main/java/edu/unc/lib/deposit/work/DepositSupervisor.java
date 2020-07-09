@@ -63,7 +63,6 @@ import edu.unc.lib.deposit.validate.ValidateDestinationJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.CounterFactory;
 import edu.unc.lib.dl.metrics.HistogramFactory;
@@ -472,16 +471,8 @@ public class DepositSupervisor implements WorkerListener {
                 }
 
                 if (t instanceof JobInterruptedException) {
-                    LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
+                    LOG.info("Job {} in deposit {} was interrupted: {}", jobUUID, depositUUID, t.getMessage());
                     jobStatusFactory.interrupted(jobUUID);
-                    return;
-                }
-
-                if (t instanceof FedoraTimeoutException) {
-                    LOG.warn("Fedora timed out for job {} in deposit {},"
-                            + " will resume after delay", jobUUID, depositUUID);
-                    jobStatusFactory.failed(jobUUID);
-                    resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
                     return;
                 }
 

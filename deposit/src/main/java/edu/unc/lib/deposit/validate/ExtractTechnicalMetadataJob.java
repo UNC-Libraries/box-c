@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
@@ -112,6 +113,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
 
         for (Entry<PID, String> stagedPair : stagingList) {
+            interruptJobIfStopped();
+
             PID objPid = stagedPair.getKey();
             String stagedPath = stagedPair.getValue();
 
@@ -135,7 +138,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
                 // Store the premis report to file
                 writePremisReport(objPid, premisDoc);
-            } catch (JobFailedException e) {
+            } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
                 failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",

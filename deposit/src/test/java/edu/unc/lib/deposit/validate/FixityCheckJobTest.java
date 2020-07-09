@@ -75,6 +75,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         premisLoggerFactory.setPidMinter(pidMinter);
 
         job = new FixityCheckJob(jobUUID, depositUUID);
+        job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "dataset", dataset);
         setField(job, "premisLoggerFactory", premisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
