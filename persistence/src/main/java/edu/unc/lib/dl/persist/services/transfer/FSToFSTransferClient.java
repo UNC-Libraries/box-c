@@ -15,15 +15,14 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,6 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     private IngestSource source;
     protected StorageLocation destination;
 
-    private static final CopyOption[] COPY_NO_OVERWRITE = { COPY_ATTRIBUTES };
     private static final Logger log = LoggerFactory.getLogger(FSToFSTransferClient.class);
 
     public FSToFSTransferClient(IngestSource source, StorageLocation destination) {
@@ -89,11 +87,14 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destinationPath);
 
+            File sourceFile = Paths.get(sourceFileUri).toFile();
+            File newFile = newFilePath.toFile();
             // Copy/move new file
             if (source.isReadOnly()) {
-                Files.copy(Paths.get(sourceFileUri), newFilePath, COPY_NO_OVERWRITE);
+                // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
+                FileUtils.copyFile(sourceFile, newFile, true);
             } else {
-                Files.move(Paths.get(sourceFileUri), newFilePath);
+                FileUtils.moveFile(sourceFile, newFile);
             }
 
             // Rename old file to .old extension
@@ -111,6 +112,8 @@ public class FSToFSTransferClient implements BinaryTransferClient {
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
             }
         } catch (IOException e) {
+            log.debug("Attempting to roll back failed transfer of {} to {}",
+                    sourceFileUri, destinationPath);
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destinationPath);
             throw new BinaryTransferException("Failed to transfer " + sourceFileUri
                     + " to destination " + destination.getId(), e);

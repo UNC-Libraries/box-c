@@ -19,10 +19,12 @@ import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -192,6 +194,37 @@ public class FSToFSTransferClientTest {
     public void transferVersion() throws Exception {
         Path sourceFile = createSourceFile();
         client.transferVersion(binPid, sourceFile.toUri());
+    }
+
+    @Test
+    public void interruptTransfer() throws Exception {
+        when(ingestSource.isReadOnly()).thenReturn(true);
+
+        // Generate a 10mb file for transferring
+        Path sourceFile = sourcePath.resolve("file.txt");
+        try (RandomAccessFile filler = new RandomAccessFile(sourceFile.toFile(), "rw")) {
+            filler.setLength(100 * 1024 * 1024);
+        }
+
+        Thread copyThread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    client.transfer(binPid, sourceFile.toUri());
+                    fail("Transfer must be interrupted");
+                } catch (BinaryTransferException e) {
+                    // expected
+                }
+            }
+        };
+
+        copyThread.start();
+        // Wait briefly to let transfer start
+        Thread.sleep(10);
+
+        copyThread.interrupt();
+
+        assertFalse(Files.exists(binDestPath));
     }
 
     @Test
