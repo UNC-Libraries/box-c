@@ -85,6 +85,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                     public URI answer(InvocationOnMock invocation) throws Throwable {
                         InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
                         copyInputStreamToFile(contentStream, path.toFile());
+                        contentStream.close();
                         return path.toUri();
                     }
                 });

@@ -132,6 +132,11 @@ public class RepositoryPremisLogger implements PremisLogger {
         // Premis event log not created yet
         if (isNewLog) {
             createLog(modelStream);
+            try {
+                modelStream.close();
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to close log existing stream", e);
+            }
         } else {
             PID objPid = repoObject.getPid();
             log.debug("Adding events to PREMIS log for {}", objPid);
@@ -152,6 +157,7 @@ public class RepositoryPremisLogger implements PremisLogger {
                         newContentStream);
 
                 updateOrCreateLog(mergedStream);
+                modelStream.close();
                 existingLogStream.close();
                 newContentStream.close();
                 mergedStream.close();
