@@ -476,6 +476,49 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         ingestedObjectsCount(3);
     }
 
+    @Test
+    public void ingestWorkObjectObjCountWithRetry() throws Exception {
+        String label = "testwork";
+        PID workPid = pidMinter.mintContentPid();
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // Constructing the work in the deposit model with a label
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+
+        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        PID mainPid2 = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, null, FILE1_MD5_BAD);
+
+        depBag.add(workBag);
+
+        workBag.addProperty(Cdr.primaryObject,
+                model.getResource(mainPid.getRepositoryPath()));
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Test should not reach this line. Job should have thrown exception");
+        } catch (JobFailedException e) {
+            Map<String, String> jobStatus = jobStatusFactory.get(jobUUID);
+            assertNull(jobStatus.get(JobField.num.name()));
+
+            Resource fileResc = job.getWritableModel().getResource(mainPid2.getRepositoryPath());
+            fileResc.removeAll(CdrDeposit.md5sum);
+            fileResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
+            job.closeModel();
+        }
+
+        job.run();
+
+        assertClickCount(3);
+        ingestedObjectsCount(3);
+    }
+
     /**
      * Tests ingest of a folder with two files in it, which fails on the second
      * child and then attempts to resume

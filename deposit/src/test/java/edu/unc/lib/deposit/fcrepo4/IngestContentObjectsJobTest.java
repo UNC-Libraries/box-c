@@ -307,11 +307,15 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 eq(supMime), anyString(), anyString(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
-        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+        // Add file count
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
 
         verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
                 anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
                 any(Resource.class));
+
+        // Add work object itself
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     /**
@@ -434,7 +438,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(work).setPrimaryObject(mainPid);
 
         verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(2));
-        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
     }
 
     @Test

@@ -153,6 +153,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     private boolean overrideTimestamps;
 
+    private int filesIngestedInWork = 0;
+
     public IngestContentObjectsJob() {
         super();
     }
@@ -335,9 +337,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         overrideModifiedTimestamp(obj, childResc);
 
         // Increment the count of objects deposited
-        addClicks(1);
-        getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
-
+        filesIngestedInWork++;
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
     }
 
@@ -438,10 +438,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 parent.addMember(obj);
 
                 addDescription(obj, childResc);
-
-                // Increment the count of objects deposited prior to adding children
-                addClicks(1);
-
                 log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
                 tx.cancel(e);
@@ -449,6 +445,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 tx.close();
             }
 
+            // Increment the count of objects deposited prior to adding children
+            addClicks(1);
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
@@ -490,10 +488,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 parent.addMember(obj);
 
                 addDescription(obj, childResc);
-
-                // Increment the count of objects deposited prior to adding children
-                addClicks(1);
-
                 log.info("Created admin unit {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
                 tx.cancel(e);
@@ -501,6 +495,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 tx.close();
             }
 
+            // Increment the count of objects deposited prior to adding children
+            addClicks(1);
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
@@ -542,10 +538,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 parent.addMember(obj);
 
                 addDescription(obj, childResc);
-
-                // Increment the count of objects deposited prior to adding children
-                addClicks(1);
-
                 log.info("Created collection {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
                 tx.cancel(e);
@@ -553,6 +545,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 tx.close();
             }
 
+            // Increment the count of objects deposited prior to adding children
+            addClicks(1);
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
 
@@ -614,9 +608,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 addDescription(obj, childResc);
 
-                // Increment the count of objects deposited prior to adding children
-                addClicks(1);
-
                 log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 
                 ingestChildren(obj, childResc);
@@ -628,6 +619,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addPremisEvents(obj);
 
                 overrideModifiedTimestamp(obj, childResc);
+
+                // Add counts for files deposited for the work
+                if (filesIngestedInWork > 0) {
+                    addClicks(filesIngestedInWork);
+                    getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), filesIngestedInWork);
+                }
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
@@ -647,9 +644,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 txRefresher.interrupt();
                 tx.cancel(e);
             } finally {
+                filesIngestedInWork = 0;
                 tx.close();
             }
 
+            // Increment the count of objects deposited after adding children
+            addClicks(1);
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
         }
     }
