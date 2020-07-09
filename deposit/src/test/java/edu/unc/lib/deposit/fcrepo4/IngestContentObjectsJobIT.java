@@ -495,11 +495,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         depBag.add(workBag);
 
-        workBag.asResource().addProperty(Cdr.primaryObject,
+        workBag.addProperty(Cdr.primaryObject,
                 model.getResource(mainPid.getRepositoryPath()));
-
-        workBag.asResource().addProperty(Cdr.primaryObject,
-                model.getResource(mainPid2.getRepositoryPath()));
 
         job.closeModel();
 
@@ -509,7 +506,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         } catch (JobFailedException e) {
             Map<String, String> jobStatus = jobStatusFactory.get(jobUUID);
             assertNull(jobStatus.get(JobField.num.name()));
-            Resource fileResc =job.getWritableModel().getResource(mainPid2.getRepositoryPath());
+
+            Resource fileResc = job.getWritableModel().getResource(mainPid2.getRepositoryPath());
+            fileResc.removeAll(CdrDeposit.md5sum);
             fileResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
             job.closeModel();
         }

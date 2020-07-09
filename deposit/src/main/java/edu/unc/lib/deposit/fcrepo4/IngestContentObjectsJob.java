@@ -153,7 +153,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     private boolean overrideTimestamps;
 
-    private int filesIngested = 0;
+    private int filesIngestedInWork = 0;
 
     public IngestContentObjectsJob() {
         super();
@@ -337,7 +337,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         overrideModifiedTimestamp(obj, childResc);
 
         // Increment the count of objects deposited
-        filesIngested++;
+        filesIngestedInWork++;
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
     }
 
@@ -621,8 +621,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 overrideModifiedTimestamp(obj, childResc);
 
                 // Add counts for files deposited for the work
-                addClicks(filesIngested);
-                getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), filesIngested);
+                if (filesIngestedInWork > 0) {
+                    addClicks(filesIngestedInWork);
+                    getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), filesIngestedInWork);
+                }
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
@@ -642,7 +644,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 txRefresher.interrupt();
                 tx.cancel(e);
             } finally {
-                filesIngested = 0;
+                filesIngestedInWork = 0;
                 tx.close();
             }
 
