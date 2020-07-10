@@ -51,6 +51,7 @@ import com.philvarner.clamavj.ScanResult.Status;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -231,6 +232,49 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             // No premis logs should have been created
             verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class));
         }
+    }
+
+    @Test
+    public void pauseScanTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        File pdfFile = new File(depositDir, "pdf.pdf");
+        File textFile = new File(depositDir, "text.txt");
+        PID file1Pid = addFileObject(depBag, pdfFile);
+        PID file2Pid = addFileObject(depBag, textFile);
+
+        // Should be running for the first file, then paused
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running)
+                .thenReturn(DepositState.running)
+                .thenReturn(DepositState.paused);
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Job must be interrupted due to pausing");
+        } catch (JobInterruptedException e) {
+            // expected
+        }
+
+        // Resume the job
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running);
+
+        job.run();
+
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder, times(2)).addOutcome(true);
     }
 
     private PID addFileObject(Bag parent, File stagedFile) {

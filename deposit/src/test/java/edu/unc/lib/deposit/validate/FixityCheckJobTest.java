@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import org.junit.Test;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
@@ -49,6 +52,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DigestAlgorithm;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  * @author bbpennel
@@ -81,6 +85,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.init();
+
+        depositJobId = depositUUID + ":" + job.getClass().getName();
 
         stagingDir = tmpFolder.newFolder("staged");
     }
@@ -271,6 +277,48 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
         assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
+    }
+
+    @Test
+    public void depositPauseAndResume() throws Exception {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        String stagingPath1 = stageFile(CONTENT1);
+        PID filePid1 = addFileObject(depBag, stagingPath1);
+        String stagingPath2 = stageFile(CONTENT2);
+        PID filePid2 = addFileObject(depBag, stagingPath2);
+        job.closeModel();
+
+        // Should be running for the first file, then paused
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running)
+                .thenReturn(DepositState.paused);
+
+        try {
+            job.run();
+            fail("Job expected to fail");
+        } catch (JobInterruptedException e) {
+            // expected
+        }
+
+        // Resume the job
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running);
+
+        job.run();
+
+        Model resultModel = job.getReadOnlyModel();
+        Resource fileResc1 = resultModel.getResource(filePid1.getRepositoryPath());
+        assertTrue(fileResc1.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
+        assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
+
+        Resource fileResc2 = resultModel.getResource(filePid2.getRepositoryPath());
+        assertTrue(fileResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
+        assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
+
+        verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid1.getQualifiedId());
+        verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid2.getQualifiedId());
     }
 
     private String stageFile(String content) throws IOException {
