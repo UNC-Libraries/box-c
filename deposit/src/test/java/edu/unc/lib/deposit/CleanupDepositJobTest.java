@@ -27,7 +27,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
@@ -74,7 +73,6 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
     @Before
     public void setup() throws Exception {
-        initMocks(this);
         depositStatus = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
@@ -95,9 +93,9 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         // Initialize the job
         job = new CleanupDepositJob(jobUUID, depositUUID);
         job.setIngestSourceManager(sourceManager);
+        job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
-        setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "dataset", dataset);
 
         job.init();

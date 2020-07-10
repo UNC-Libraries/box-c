@@ -92,9 +92,13 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             MandatoryVerifier.checkBagitFileExists(bagReader.getRootDir(), bagReader.getVersion());
 
             try (BagVerifier verifier = new BagVerifier()) {
+                interruptJobIfStopped();
                 verifier.isComplete(bagReader, false);
+                interruptJobIfStopped();
                 verifier.isValid(bagReader, false);
             }
+
+            interruptJobIfStopped();
 
             Set<Manifest> payloadManifests = bagReader.getPayLoadManifests();
 

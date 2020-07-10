@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -63,6 +64,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -84,6 +86,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
@@ -94,6 +97,7 @@ import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *
@@ -322,7 +326,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      * Test that the deposit fails if a file object is specified but not given a
      * staging location
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestWorkWithFileWithoutLocation() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         WorkObject work = mock(WorkObject.class);
@@ -343,7 +347,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     /**
      * Test that deposit fails if depositing a file path that doesn't exist
      */
-    @Test(expected = TransactionCancelledException.class)
+    @Test(expected = JobFailedException.class)
     public void ingestWorkWithFileDoesNotExist() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         WorkObject work = mock(WorkObject.class);
@@ -352,6 +356,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         addFileObject(workBag, "doesnotexist.txt", "text/plain");
 
         job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                .thenThrow(new FedoraException("Fail"))
+                .thenReturn(mockFileObj);
 
         job.run();
     }
@@ -439,6 +448,52 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+    }
+
+    @Test
+    public void pauseAndResumeTest() throws Exception {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+
+        String mainLoc = "pdf.pdf";
+        String mainMime = "application/pdf";
+        PID mainPid = addFileObject(workBag, mainLoc, mainMime);
+
+        workBag.addProperty(Cdr.primaryObject, model.getResource(mainPid.getRepositoryPath()));
+
+        job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                .thenReturn(mockFileObj);
+        when(mockFileObj.getPid()).thenReturn(mainPid);
+
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running)
+                .thenReturn(DepositState.running)
+                .thenReturn(DepositState.paused);
+
+        try {
+            job.run();
+            fail("Job must be interrupted due to pausing");
+        } catch (JobInterruptedException e) {
+            // expected
+        }
+
+        when(depositStatusFactory.getState(depositUUID))
+                .thenReturn(DepositState.running);
+
+        job.run();
+
+        verify(repoObjFactory, times(2)).createWorkObject(eq(workPid), any(Model.class));
+        verify(destinationObj, times(2)).addMember(eq(work));
+
+        verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
+                eq(mainMime), anyString(), anyString(), any(Model.class));
+        verify(work).setPrimaryObject(mainPid);
+
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
     }
 
     @Test

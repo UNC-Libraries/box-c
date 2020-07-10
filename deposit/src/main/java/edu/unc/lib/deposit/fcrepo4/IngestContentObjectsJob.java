@@ -254,6 +254,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             logTransferSession.close();
         }
 
+        interruptJobIfStopped();
+
         // Verify objects from deposit are present in fcrepo
         Collection<String> pids = new ArrayList<>();
         DepositGraphUtils.walkChildrenDepthFirst(depositBag, pids, true);
@@ -282,6 +284,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         try {
             while (iterator.hasNext()) {
+                // Check that the deposit is still running before starting the next ingest
+                interruptJobIfStopped();
+
                 Resource childResc = (Resource) iterator.next();
 
                 // Ingest the child according to its object type
@@ -358,12 +363,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
 
-        URI storageUri = URI.create(getPropertyValue(childResc, CdrDeposit.storageUri));
-        if (storageUri == null) {
+        String storageString = getPropertyValue(childResc, CdrDeposit.storageUri);
+        if (storageString == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
         }
+        URI storageUri = URI.create(storageString);
         // Pull out file properties if they are present
         String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
 
@@ -440,7 +446,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addDescription(obj, childResc);
                 log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
-                tx.cancel(e);
+                tx.cancelAndIgnore();
+                throw e;
             } finally {
                 tx.close();
             }
@@ -490,7 +497,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addDescription(obj, childResc);
                 log.info("Created admin unit {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
-                tx.cancel(e);
+                tx.cancelAndIgnore();
+                throw e;
             } finally {
                 tx.close();
             }
@@ -540,7 +548,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addDescription(obj, childResc);
                 log.info("Created collection {} for deposit {}", childPid, getDepositPID());
             } catch (Exception e) {
-                tx.cancel(e);
+                tx.cancelAndIgnore();
+                throw e;
             } finally {
                 tx.close();
             }
@@ -642,7 +651,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 }
             } catch (Exception e) {
                 txRefresher.interrupt();
-                tx.cancel(e);
+                tx.cancelAndIgnore();
+                throw e;
             } finally {
                 filesIngestedInWork = 0;
                 tx.close();

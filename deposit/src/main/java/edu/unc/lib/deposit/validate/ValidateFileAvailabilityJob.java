@@ -66,7 +66,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
         setTotalClicks(hrefs.size());
 
         // Verify that the deposit is still running before proceeding with check
-        verifyRunning();
+        interruptJobIfStopped();
 
         // Iterate through local file hrefs and verify that each one exists
         for (Entry<PID, String> entry : hrefs) {

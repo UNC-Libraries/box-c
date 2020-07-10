@@ -75,6 +75,8 @@ public class FixityCheckJob extends AbstractDepositJob {
                 continue;
             }
 
+            interruptJobIfStopped();
+
             String stagedPath = stagingEntry.getValue();
             URI stagedUri = URI.create(stagedPath);
 

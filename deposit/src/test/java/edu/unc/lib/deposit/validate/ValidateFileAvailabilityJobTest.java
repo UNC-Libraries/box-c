@@ -88,8 +88,6 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.init();
 
-        when(depositStatusFactory.getState(anyString()))
-                .thenReturn(DepositState.running);
         when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
         when(ingestSource.exists(any(URI.class))).thenReturn(true);
 

@@ -67,7 +67,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -549,7 +548,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         try {
             job.run();
             fail("Test should not reach this line. Job should have thrown exception");
-        } catch (TransactionCancelledException e) {
+        } catch (JobFailedException e) {
             // expected, lets continue
         }
 

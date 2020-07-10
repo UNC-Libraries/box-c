@@ -26,7 +26,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
@@ -87,13 +86,12 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
     @Before
     public void init() {
-        initMocks(this);
-
         Dataset dataset = TDBFactory.createDataset();
 
         job = new NormalizeFileObjectsJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
+        job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "dataset", dataset);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);

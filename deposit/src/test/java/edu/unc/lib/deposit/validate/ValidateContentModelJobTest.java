@@ -49,7 +49,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -69,8 +68,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
     @Mock
     private ContentObjectAccessRestrictionValidator aclValidator;
-    @Mock
-    private DepositStatusFactory depositStatusFactory;
     @Mock
     private RepositoryObjectLoader repoObjectLoader;
     @Mock

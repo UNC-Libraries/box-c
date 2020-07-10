@@ -78,7 +78,8 @@ public class VirusScanJob extends AbstractDepositJob {
         int scannedObjects = 0;
 
         for (Entry<PID, String> href : hrefs) {
-            verifyRunning();
+            interruptJobIfStopped();
+
             PID objPid = href.getKey();
 
             if (isObjectCompleted(objPid)) {
@@ -97,9 +98,9 @@ public class VirusScanJob extends AbstractDepositJob {
                     break;
                 case ERROR:
                     throw new Error(
-                            "Virus checks are producing errors: "
-                                    + result.getException()
-                                    .getLocalizedMessage());
+                            "Virus checks are producing errors: " +
+                            ((result.getException() == null) ? result.getResult() :
+                                    result.getException().getLocalizedMessage()));
                 case PASSED:
                     PremisLogger premisLogger = getPremisLogger(href.getKey());
                     PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);

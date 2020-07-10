@@ -47,6 +47,7 @@ import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *
@@ -103,6 +104,8 @@ public class AbstractFedoraDepositJobIT {
         depositUUID = depositPid.getId();
         depositDir = new File(depositsDirectory, depositUUID);
         depositDir.mkdir();
+
+        depositStatusFactory.setState(depositUUID, DepositState.running);
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

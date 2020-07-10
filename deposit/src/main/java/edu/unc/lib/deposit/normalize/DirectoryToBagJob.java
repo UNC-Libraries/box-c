@@ -20,7 +20,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -62,17 +61,11 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         Path sourcePath = Paths.get(sourceUri);
         File sourceFile = sourcePath.toFile();
 
-        // List all files and directories in the deposit, excluding the base directory
+        // List all files and directories in the deposit
         Collection<File> fileListings =
                 FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
-        Iterator<File> filesIt = fileListings.iterator();
-        while (filesIt.hasNext()) {
-            File file = filesIt.next();
-            if (file.equals(sourceFile)) {
-                filesIt.remove();
-                break;
-            }
-        }
+
+        interruptJobIfStopped();
 
         // Turn the base directory itself into the top level folder for this deposit
         Bag sourceBag = getSourceBag(depositBag, sourceFile);
@@ -80,6 +73,11 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         int i = 0;
         // Add all of the payload objects into the bag folder
         for (File file : fileListings) {
+            // skip adding the base directory to the deposit
+            if (file.equals(sourceFile)) {
+                continue;
+            }
+
             log.debug("Adding object {}: {}", i++, file.getName());
 
             Boolean isDir = file.isDirectory();
