@@ -20,6 +20,8 @@ public class RedisWorkerConstants {
     public static final String DEPOSIT_METRICS_PREFIX = "deposit-metrics:";
     public static final String DEPOSIT_MANIFEST_PREFIX = "deposit-manifest:";
     public static final String DEPOSIT_TO_JOBS_PREFIX = "deposit-to-jobs:";
+    public static final String DEPOSIT_PIPELINE_STATE = "deposit-pipeline-state";
+    public static final String DEPOSIT_PIPELINE_ACTION = "deposit-pipeline-action";
     public static final String JOB_STATUS_PREFIX = "job-status:";
     public static final String BULK_UPDATE_PREFIX = "bulk-update:";
     public static final String BULK_RESUME_PREFIX = "bulk-resume:";
@@ -49,7 +51,7 @@ public class RedisWorkerConstants {
     }
 
     public static enum DepositState {
-        unregistered, queued, running, paused, finished, cancelled, failed;
+        unregistered, queued, running, paused, finished, cancelled, failed, quieted;
     }
 
     public static enum Priority {
@@ -63,7 +65,15 @@ public class RedisWorkerConstants {
      *
      */
     public static enum DepositAction {
-        register, pause, resume, cancel, destroy;
+        register, pause, resume, cancel, destroy, quiet;
+    }
+
+    public static enum DepositPipelineState {
+        starting, active, quieted, stopped
+    }
+
+    public static enum DepositPipelineAction {
+        quiet, quietNow
     }
 
     private RedisWorkerConstants() {

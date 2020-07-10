@@ -155,6 +155,10 @@
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
     <bean id="multiThreadedHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
     </bean>
