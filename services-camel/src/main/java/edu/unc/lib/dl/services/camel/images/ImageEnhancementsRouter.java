@@ -51,14 +51,15 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         uuidGenerator = new SimpleUuidGenerator();
 
         onException(RepositoryException.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
+                .redeliveryDelay("{{error.retryDelay}}")
+                .maximumRedeliveries("{{error.maxRedeliveries}}")
+                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct-vm:process.enhancement.thumbnails")
-            .transacted()
+
+        from("direct:process.enhancement.thumbnails")
             .routeId("ProcessThumbnails")
+            .startupOrder(23)
             .log(LoggingLevel.INFO, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
             .filter().method(imageDerivProcessor, "allowedImageType")
                 .log(LoggingLevel.INFO, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
@@ -70,18 +71,19 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
 
         from("direct:small.thumbnail")
-            .transacted()
             .routeId("SmallThumbnail")
+            .startupOrder(22)
             .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addSmallThumbnailProcessor, "needsRun")
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
                         + "${headers[CdrImagePath]} png 64 64 "
                         + "${properties:services.tempDirectory}/${body}-small"))
+
                 .bean(addSmallThumbnailProcessor);
 
         from("direct:large.thumbnail")
-            .transacted()
             .routeId("LargeThumbnail")
+            .startupOrder(21)
             .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addLargeThumbProcessor, "needsRun")
                 .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
@@ -89,9 +91,9 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                         + "${properties:services.tempDirectory}/${body}-large"))
                 .bean(addLargeThumbProcessor);
 
-        from("direct-vm:process.enhancement.imageAccessCopy")
-            .transacted()
+        from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
+            .startupOrder(20)
             .log(LoggingLevel.DEBUG, "Access copy triggered")
             .filter().method(addAccessCopyProcessor, "needsRun")
             .filter().method(imageDerivProcessor, "allowedImageType")

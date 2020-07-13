@@ -66,18 +66,6 @@
     <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor" />
     </bean>
-
-    <camel:camelContext id="cdrServiceImageEnhancements">
-        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="cdrServiceFulltextExtraction">
-        <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="cdrServiceSolr">
-        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
-    </camel:camelContext>
     
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
@@ -93,9 +81,12 @@
     <camel:camelContext id="cdrLongleaf">
         <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
     </camel:camelContext>
-    
+
     <camel:camelContext id="cdrEnhancements">
         <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
+        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
+        <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
+        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
     </camel:camelContext>
-  
+
 </beans>

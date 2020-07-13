@@ -50,9 +50,9 @@ public class SolrRouter extends RouteBuilder {
             .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct-vm:solrIndexing")
-            .transacted()
+        from("direct:solrIndexing")
             .routeId("CdrServiceSolr")
+            .startupOrder(40)
             .log(LoggingLevel.DEBUG, "Calling solr indexing route for ${headers[org.fcrepo.jms.identifier]}")
             .bean(solrIngestProcessor);
     }

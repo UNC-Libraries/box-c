@@ -62,8 +62,8 @@ public class EnhancementRouter extends RouteBuilder {
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.enhancement.stream.camel}}")
-            .transacted()
             .routeId("ProcessEnhancementQueue")
+            .startupOrder(103)
             .process(enProcessor)
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .choice()
@@ -84,26 +84,26 @@ public class EnhancementRouter extends RouteBuilder {
                     .process(nbProcessor)
                     .choice()
                         .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
-                            .to("direct-vm:solrIndexing")
+                            .to("direct:solrIndexing")
                         .otherwise()
                             .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
                             .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
                                     "for ${headers[CamelFcrepoUri]}")
                             .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                             .multicast()
-                            .to("direct:process.enhancements", "direct-vm:solrIndexing")
+                            .to("direct:process.enhancements", "direct:solrIndexing")
                     .end()
             .end();
 
         from("direct:process.binary")
-            .transacted()
             .routeId("ProcessBinary")
+            .startupOrder(102)
             .multicast()
             .to("direct-vm:filter.longleaf", "direct:process.original");
 
         from("direct:process.original")
-            .transacted()
             .routeId("ProcessOriginalBinary")
+            .startupOrder(101)
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
                 .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
@@ -112,13 +112,13 @@ public class EnhancementRouter extends RouteBuilder {
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
                 .multicast()
-                .to("direct:process.enhancements", "direct-vm:solrIndexing");
+                .to("direct:process.enhancements", "direct:solrIndexing");
 
         from("direct:process.enhancements")
-            .transacted()
             .routeId("AddBinaryEnhancements")
+            .startupOrder(100)
             .split(simple("${headers[CdrEnhancementSet]}"))
-                .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
-                .toD("direct-vm:process.enhancement.${body}");
+                .log(INFO, "Calling enhancement direct:process.enhancement.${body}")
+                .toD("direct:process.enhancement.${body}");
     }
 }

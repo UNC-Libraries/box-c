@@ -41,7 +41,6 @@ public class DestroyObjectsRouter extends RouteBuilder {
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.destroy.stream.camel}}")
-            .transacted()
             .routeId("CdrDestroyObjects")
             .log(DEBUG, "Received destroy objects message")
             .bean(destroyObjectsProcessor);

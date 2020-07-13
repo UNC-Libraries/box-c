@@ -7,7 +7,7 @@
     xmlns:amq="http://activemq.apache.org/schema/core"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util 
         http://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context-4.3.xsd
@@ -15,7 +15,7 @@
         http://activemq.apache.org/schema/core/activemq-core.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-
+        
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="concurrentConsumers" value="2" />
@@ -24,18 +24,12 @@
     <bean id="activemq"
         class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig" />
-        <property name="transacted" value="true" />
-        <property name="transactionManager" ref="txManager" />
     </bean>
 
-    <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
-        <property name="connectionFactory" ref="jmsFactory" />
-    </bean>
-
-    <!-- JMS ConnectionFactory to use, configuring the embedded broker using
+    <!-- JMS ConnectionFactory to use, configuring the embedded broker using 
         XML -->
     <amq:connectionFactory id="jmsFactory"
-                           brokerURL="vm://localhost" />
+        brokerURL="vm://localhost" />
 
     <amq:broker useJmx="false" persistent="false" useShutdownHook="false">
         <amq:transportConnectors>

@@ -45,16 +45,16 @@ public class TriplesReindexingRouter extends RouteBuilder {
 
         // Route for receiving reindexing request messages
         from("{{cdr.triplesupdate.stream.camel}}")
-            .transacted()
             .routeId("TripleIndexingRoute")
+            .startupOrder(2)
             .bean(indexingMessageProcessor)
             .log(INFO, "Received triple reindexing update message: ${headers[CamelFcrepoUri]}")
             .inOnly("{{reindexing.stream}}?disableTimeToLive=true");
 
         // Route which recursively steps through fedora objects and submits them for indexing
         from("{{reindexing.stream}}?asyncConsumer=true")
-            .transacted()
             .routeId("FcrepoReindexingTraverse")
+            .startupOrder(1)
             .log(INFO, "Reindexing ${headers[CamelFcrepoUri]}")
             .inOnly("{{triplestore.reindex.stream}}")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=PreferContainment" +

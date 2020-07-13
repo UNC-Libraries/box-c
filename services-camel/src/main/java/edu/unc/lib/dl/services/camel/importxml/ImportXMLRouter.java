@@ -34,7 +34,6 @@ public class ImportXMLRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("{{cdr.importxml.stream.camel}}")
-            .transacted()
             .routeId("CdrImportXML")
             .log(DEBUG, "Received import xml message")
             .bean(importXmlProcessor);

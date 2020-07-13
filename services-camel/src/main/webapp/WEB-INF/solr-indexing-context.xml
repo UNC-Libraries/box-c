@@ -405,8 +405,4 @@
     <camel:camelContext id="CdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
-    
-    <camel:camelContext id="CdrServiceSolr">
-        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
-    </camel:camelContext>
 </beans>

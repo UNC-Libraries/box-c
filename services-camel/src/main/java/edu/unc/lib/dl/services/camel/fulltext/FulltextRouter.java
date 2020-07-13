@@ -48,9 +48,9 @@ public class FulltextRouter extends RouteBuilder {
             .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct-vm:process.enhancement.extractFulltext")
-            .transacted()
+        from("direct:process.enhancement.extractFulltext")
             .routeId("CdrServiceFulltextExtraction")
+            .startupOrder(31)
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
             .filter().method(adProcessor, "needsRun")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
@@ -59,8 +59,8 @@ public class FulltextRouter extends RouteBuilder {
             .to("direct:fulltext.extraction");
 
         from("direct:fulltext.extraction")
-            .transacted()
             .routeId("ExtractingText")
+            .startupOrder(30)
             .log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
             .bean(ftProcessor);
     }
