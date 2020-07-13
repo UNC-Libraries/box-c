@@ -22,6 +22,7 @@ import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
@@ -54,7 +55,14 @@ public class EnhancementRouter extends RouteBuilder {
     private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
+        onException(Exception.class)
+                .redeliveryDelay("{{error.retryDelay}}")
+                .maximumRedeliveries("{{error.maxRedeliveries}}")
+                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .retryAttemptedLogLevel(LoggingLevel.WARN);
+
         from("{{cdr.enhancement.stream.camel}}")
+            .transacted()
             .routeId("ProcessEnhancementQueue")
             .process(enProcessor)
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
@@ -88,11 +96,13 @@ public class EnhancementRouter extends RouteBuilder {
             .end();
 
         from("direct:process.binary")
+            .transacted()
             .routeId("ProcessBinary")
             .multicast()
             .to("direct-vm:filter.longleaf", "direct:process.original");
 
         from("direct:process.original")
+            .transacted()
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
                 .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
@@ -105,6 +115,7 @@ public class EnhancementRouter extends RouteBuilder {
                 .to("direct:process.enhancements", "direct-vm:solrIndexing");
 
         from("direct:process.enhancements")
+            .transacted()
             .routeId("AddBinaryEnhancements")
             .split(simple("${headers[CdrEnhancementSet]}"))
                 .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")

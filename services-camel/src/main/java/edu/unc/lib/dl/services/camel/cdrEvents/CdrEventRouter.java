@@ -57,13 +57,21 @@ public class CdrEventRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+      /*  errorHandler(deadLetterChannel("activemq:queue:dead")
+                .allowRedeliveryWhileStopping(false)
+                .redeliveryDelay(10000)
+                .maximumRedeliveries(3)
+                .backOffMultiplier(1.2)
+                .retryAttemptedLogLevel(LoggingLevel.WARN)); */
+
         onException(Exception.class)
-        .redeliveryDelay("{{error.retryDelay}}")
-        .maximumRedeliveries("{{error.maxRedeliveries}}")
-        .backOffMultiplier("{{error.backOffMultiplier}}")
-        .retryAttemptedLogLevel(LoggingLevel.WARN);
+                .redeliveryDelay("{{error.retryDelay}}")
+                .maximumRedeliveries("{{error.maxRedeliveries}}")
+                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.stream.camel}}")
+            .transacted()
             .routeId("CdrServiceCdrEvents")
             .log(LoggingLevel.DEBUG, "CDR Event Message received ${headers[" + CdrUpdateAction + "]}")
             .bean(cdrEventProcessor)
@@ -71,6 +79,7 @@ public class CdrEventRouter extends RouteBuilder {
             .to("direct:solr-update");
 
         from("direct:solr-update")
+            .transacted()
             .routeId("CdrServiceCdrEventToSolrUpdateProcessor")
             .log(LoggingLevel.DEBUG, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
             .bean(cdrEventToSolrUpdateProcessor);

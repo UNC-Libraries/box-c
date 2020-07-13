@@ -15,10 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.fulltext;
 
-import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+
+import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 
 /**
  * Routes ingests with full text available through a pipeline to extract
@@ -48,6 +49,7 @@ public class FulltextRouter extends RouteBuilder {
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct-vm:process.enhancement.extractFulltext")
+            .transacted()
             .routeId("CdrServiceFulltextExtraction")
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
             .filter().method(adProcessor, "needsRun")
@@ -57,6 +59,7 @@ public class FulltextRouter extends RouteBuilder {
             .to("direct:fulltext.extraction");
 
         from("direct:fulltext.extraction")
+            .transacted()
             .routeId("ExtractingText")
             .log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
             .bean(ftProcessor);

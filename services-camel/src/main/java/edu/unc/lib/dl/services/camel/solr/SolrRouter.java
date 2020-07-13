@@ -51,6 +51,7 @@ public class SolrRouter extends RouteBuilder {
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct-vm:solrIndexing")
+            .transacted()
             .routeId("CdrServiceSolr")
             .log(LoggingLevel.DEBUG, "Calling solr indexing route for ${headers[org.fcrepo.jms.identifier]}")
             .bean(solrIngestProcessor);

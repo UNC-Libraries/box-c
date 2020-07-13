@@ -33,8 +33,14 @@
 
     <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig" />
+        <property name="transacted" value="true" />
+        <property name="transactionManager" ref="txManager" />
     </bean>
-    
+
+    <bean id="txManager" class="org.springframework.jms.connection.JmsTransactionManager">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+    </bean>
+
     <bean class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledConnectionFactory" />
         <property name="defaultDestinationName" value="repository.updates" />

@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel.destroy;
 import static org.apache.camel.LoggingLevel.DEBUG;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
 /**
@@ -33,7 +34,14 @@ public class DestroyObjectsRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        onException(Exception.class)
+                .redeliveryDelay("{{error.retryDelay}}")
+                .maximumRedeliveries("{{error.maxRedeliveries}}")
+                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .retryAttemptedLogLevel(LoggingLevel.WARN);
+
         from("{{cdr.destroy.stream.camel}}")
+            .transacted()
             .routeId("CdrDestroyObjects")
             .log(DEBUG, "Received destroy objects message")
             .bean(destroyObjectsProcessor);

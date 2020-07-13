@@ -41,11 +41,13 @@ public class MetaServicesRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("{{fcrepo.stream}}")
+            .transacted()
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
             .wireTap("direct:process.enhancement");
 
         from("direct:process.enhancement")
+            .transacted()
             .routeId("ProcessEnhancement")
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.eventType]} contains '" + EVENT_CREATE + "'"))
@@ -56,6 +58,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .end();
 
         from("direct-vm:process.creation")
+            .transacted()
             .routeId("ProcessCreation")
             .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
             .removeHeaders("CamelHttp*")

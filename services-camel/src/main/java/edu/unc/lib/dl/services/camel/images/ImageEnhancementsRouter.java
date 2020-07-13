@@ -57,6 +57,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct-vm:process.enhancement.thumbnails")
+            .transacted()
             .routeId("ProcessThumbnails")
             .log(LoggingLevel.INFO, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
             .filter().method(imageDerivProcessor, "allowedImageType")
@@ -69,6 +70,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
 
         from("direct:small.thumbnail")
+            .transacted()
             .routeId("SmallThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addSmallThumbnailProcessor, "needsRun")
@@ -78,6 +80,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .bean(addSmallThumbnailProcessor);
 
         from("direct:large.thumbnail")
+            .transacted()
             .routeId("LargeThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addLargeThumbProcessor, "needsRun")
@@ -87,6 +90,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .bean(addLargeThumbProcessor);
 
         from("direct-vm:process.enhancement.imageAccessCopy")
+            .transacted()
             .routeId("AccessCopy")
             .log(LoggingLevel.DEBUG, "Access copy triggered")
             .filter().method(addAccessCopyProcessor, "needsRun")

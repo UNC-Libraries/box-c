@@ -48,6 +48,7 @@ public class SolrUpdateRouter extends RouteBuilder {
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.solrupdate.stream.camel}}")
+            .transacted()
             .routeId("CdrServiceSolrUpdate")
             .log(DEBUG, "Received solr update message")
             .bean(solrUpdateProcessor);

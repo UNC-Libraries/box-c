@@ -34,7 +34,14 @@ public class LongleafRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        onException(Exception.class)
+            .redeliveryDelay("{{error.retryDelay}}")
+            .maximumRedeliveries("{{error.maxRedeliveries}}")
+            .backOffMultiplier("{{error.backOffMultiplier}}")
+            .retryAttemptedLogLevel(LoggingLevel.WARN);
+
         from("direct-vm:filter.longleaf")
+            .transacted()
             .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")
             .log(LoggingLevel.DEBUG, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to("sjms:register.longleaf?transacted=true");
@@ -44,6 +51,7 @@ public class LongleafRouter extends RouteBuilder {
                 + "&consumerCount={{longleaf.register.consumers}}"
                 + "&aggregationStrategy=#longleafAggregationStrategy"
                 + "&connectionFactory=jmsFactory")
+            .transacted()
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf registrations")
             .bean(registerProcessor);
 
