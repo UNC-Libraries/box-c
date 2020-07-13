@@ -65,15 +65,15 @@ public class RedisWorkerConstants {
      *
      */
     public static enum DepositAction {
-        register, pause, resume, cancel, destroy, quiet;
+        register, pause, resume, cancel, destroy;
     }
 
     public static enum DepositPipelineState {
-        starting, active, quieted, stopped
+        starting, active, quieted, stopped, shutdown
     }
 
     public static enum DepositPipelineAction {
-        quiet, quietNow
+        quiet, unquiet, stop
     }
 
     private RedisWorkerConstants() {

@@ -70,7 +70,7 @@ public class DepositPipelineStatusFactoryIT {
     public void requestGetAndClearAction() {
         factory.clearPipelineActionRequest();
         assertNull(factory.getPipelineAction());
-        factory.requestPipelineAction(DepositPipelineAction.quietNow);
-        assertEquals(DepositPipelineAction.quietNow, factory.getPipelineAction());
+        factory.requestPipelineAction(DepositPipelineAction.stop);
+        assertEquals(DepositPipelineAction.stop, factory.getPipelineAction());
     }
 }
