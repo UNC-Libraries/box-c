@@ -225,12 +225,6 @@
                 return inherited.length > 1 && inherited[0].role === inherited[1].role;
             },
 
-            hasSameOrEmptyInheritedRoles() {
-                let inherited = this.display_roles.inherited.roles;
-                let roleSize = inherited.length;
-                return roleSize === 0 || (roleSize > 1 && inherited[0].role === inherited[1].role);
-            },
-
             hasSameAssignedRoles() {
                 let assigned = this.display_roles.assigned.roles;
                 return assigned.length > 1 && assigned[0].role === assigned[1].role;
@@ -314,7 +308,8 @@
                     * Merge principals for display if role values are the same and update public user name
                     * Reset effective display roles if embargoes present
                     */
-                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
+                    this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles,
+                        'inherited');
 
                     if (!this.isDeleted) {
                         this.display_roles.assigned.roles = this.embargoedRoles('loading');
@@ -375,17 +370,31 @@
             },
 
             /**
+             * Determine number of permissions returned after de-duping roles
+             * @type role type
+             * @return
+             */
+            _getPermissions(type) {
+                let permissions =  this.display_roles[type].roles.map(d => d.role);
+                return [...new Set(permissions)].length;
+            },
+
+            /**
              * Merge display if everyone and authenticated roles are the same
              * @param users
+             * @param permission_type
              * @return {{principal: string, role: *}[] | *}
              */
-            displayRolesMerge(users) {
+            displayRolesMerge(users, permission_type = 'assigned') {
+                let inherited = this._getPermissions('inherited');
+                let assigned = this._getPermissions('assigned');
                 let type;
 
                 if (users.length === 0) {
                     return users;
                 } else if (users[0].role === 'none' && users[1].role === 'none'
-                    && (this.hasSameOrEmptyInheritedRoles)) {
+                    && ((permission_type === 'assigned' && inherited < 2) ||
+                        (permission_type === 'inherited' && assigned < 2))) {
                     type = 'staff';
                 } else if (this.sameRolesAll || this.sameRolesNoInherited) {
                     type = 'patron';
@@ -564,10 +573,10 @@
                 if (this.embargoed) {
                     this.display_roles.assigned.roles = this.displayRolesMerge(this.embargoedRoles());
                 } else {
-                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles);
+                    this.display_roles.assigned.roles = this.displayRolesMerge(this.assignedPatronRoles, 'assigned');
                 }
 
-                this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles);
+                this.display_roles.inherited.roles = this.displayRolesMerge(this.display_roles.inherited.roles, 'inherited');
             },
 
             updateSubmitRoles() {
