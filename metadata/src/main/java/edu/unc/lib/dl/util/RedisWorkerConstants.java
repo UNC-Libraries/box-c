@@ -69,11 +69,27 @@ public class RedisWorkerConstants {
     }
 
     public static enum DepositPipelineState {
-        starting, active, quieted, stopped, shutdown
+        starting, active, quieted, stopped, shutdown;
+
+        public static DepositPipelineState fromName(String name) {
+            try {
+                return valueOf(name);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                return null;
+            }
+        }
     }
 
     public static enum DepositPipelineAction {
-        quiet, unquiet, stop
+        quiet, unquiet, stop;
+
+        public static DepositPipelineAction fromName(String name) {
+            try {
+                return valueOf(name);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                return null;
+            }
+        }
     }
 
     private RedisWorkerConstants() {

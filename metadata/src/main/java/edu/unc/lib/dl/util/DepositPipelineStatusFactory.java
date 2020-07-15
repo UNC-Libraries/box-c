@@ -71,7 +71,11 @@ public class DepositPipelineStatusFactory {
      */
     public void setPipelineState(DepositPipelineState state) {
         try (Jedis jedis = getJedisPool().getResource()) {
-            jedis.set(DEPOSIT_PIPELINE_STATE, state.name());
+            if (state == null) {
+                jedis.del(DEPOSIT_PIPELINE_STATE);
+            } else {
+                jedis.set(DEPOSIT_PIPELINE_STATE, state.name());
+            }
         }
     }
 
@@ -81,10 +85,7 @@ public class DepositPipelineStatusFactory {
     public DepositPipelineState getPipelineState() {
         try (Jedis jedis = getJedisPool().getResource()) {
             String state = jedis.get(DEPOSIT_PIPELINE_STATE);
-            if (state == null) {
-                return null;
-            }
-            return DepositPipelineState.valueOf(state);
+            return DepositPipelineState.fromName(state);
         }
     }
 
