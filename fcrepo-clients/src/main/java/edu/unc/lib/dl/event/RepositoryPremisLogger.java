@@ -108,54 +108,57 @@ public class RepositoryPremisLogger implements PremisLogger {
         PID objPid = repoObject.getPid();
         PID logPid = getMdEventsPid(objPid);
         Lock logLock = lockManager.awaitWriteLock(logPid);
-        Model logModel = ModelFactory.createDefaultModel();
-
-        Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
-        boolean isNewLog = s == null;
-
-        // For new logs, add in representation statement
-        if (isNewLog) {
-            Resource repoObjResc = logModel.getResource(objPid.getRepositoryPath());
-            repoObjResc.addProperty(RDF.type, Premis.Representation);
-        }
-
-        // Add new events to log
-        for (Resource eventResc: eventResources) {
-            logModel.add(eventResc.getModel());
-        }
-
-        // Stream the event RDF as NTriples
-        InputStream modelStream;
         try {
-            modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
-        } catch (IOException e) {
-            throw new ObjectPersistenceException("Failed to serialize event to RDF for " + objPid, e);
-        }
+            Model logModel = ModelFactory.createDefaultModel();
 
-        // Premis event log not created yet
-        if (isNewLog) {
-            createLog(modelStream);
-            logLock.unlock();
-        } else {
-            log.debug("Adding events to PREMIS log for {}", objPid);
-            // Event log exists, append new events to it
-            BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
+            Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+            boolean isNewLog = s == null;
 
-            InputStream newContentStream = new SequenceInputStream(
-                    new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
-                    modelStream);
-
-            try (InputStream existingLogStream = logObj.getBinaryStream()) {
-                InputStream mergedStream = new SequenceInputStream(
-                        existingLogStream,
-                        newContentStream);
-
-                updateOrCreateLog(mergedStream);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to close log existing stream", e);
-            } finally {
-                logLock.unlock();
+            // For new logs, add in representation statement
+            if (isNewLog) {
+                Resource repoObjResc = logModel.getResource(objPid.getRepositoryPath());
+                repoObjResc.addProperty(RDF.type, Premis.Representation);
             }
+
+            // Add new events to log
+            for (Resource eventResc: eventResources) {
+                logModel.add(eventResc.getModel());
+            }
+
+            // Stream the event RDF as NTriples
+            InputStream modelStream;
+            try {
+                modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
+            } catch (IOException e) {
+                throw new ObjectPersistenceException("Failed to serialize event to RDF for " + objPid, e);
+            }
+
+            // Premis event log not created yet
+            if (isNewLog) {
+                createLog(modelStream);
+            } else {
+                log.debug("Adding events to PREMIS log for {}", objPid);
+                // Event log exists, append new events to it
+                BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
+
+                InputStream newContentStream = new SequenceInputStream(
+                        new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
+                        modelStream);
+
+                try (InputStream existingLogStream = logObj.getBinaryStream()) {
+                    InputStream mergedStream = new SequenceInputStream(
+                            existingLogStream,
+                            newContentStream);
+
+                    updateOrCreateLog(mergedStream);
+                } catch (IOException e) {
+                    throw new RepositoryException("Failed to close log existing stream", e);
+                }
+            }
+        } catch (Exception e) {
+            throw new RepositoryException("Failed to write events to premis log", e);
+        } finally {
+            logLock.unlock();
         }
 
         return this;

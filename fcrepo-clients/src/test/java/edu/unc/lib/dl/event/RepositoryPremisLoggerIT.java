@@ -215,10 +215,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         events.add(event2Resc);
 
         for (int i = 1; i <= 200; i++) {
-            Resource anotherEvent = logger.buildEvent(Premis.note)
+            Resource anotherEvent = logger.buildEvent(new PID("event" + System.currentTimeMillis() + i), Premis.note,
+                    ingestDate)
                     .addEventDetail("another premis event " + i)
                     .create();
-            Thread.sleep(1); // prevent duplicate event pids
             eventUris.add(anotherEvent.getURI());
             events.add(anotherEvent);
         }
