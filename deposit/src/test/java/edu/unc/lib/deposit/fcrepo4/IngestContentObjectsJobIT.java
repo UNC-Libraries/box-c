@@ -777,6 +777,78 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
+    public void addPremisEventsResumeTest() throws Exception {
+        PID folderObjPid = pidMinter.mintContentPid();
+
+        File premisEventsFile = job.getPremisFile(folderObjPid);
+        premisEventsFile.createNewFile();
+
+        String label = "testfolder";
+
+        // Construct the deposit model, containing a deposit with one empty folder
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // Constructing the folder in the deposit model with a title
+        Bag folderBag = model.createBag(folderObjPid.getRepositoryPath());
+        folderBag.addProperty(RDF.type, Cdr.Folder);
+        folderBag.addProperty(CdrDeposit.label, label);
+
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5_BAD);
+
+
+        depBag.add(folderBag);
+
+        FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, pidMinter);
+        // build event 1
+        premisLogger.buildEvent(Premis.Normalization)
+                .addEventDetail("Event 1")
+                .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+                .write();
+        // build event 2
+        premisLogger.buildEvent(Premis.VirusCheck)
+                .addEventDetail("Event 2")
+                .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                .write();
+
+        job.closeModel();
+
+        try {
+            job.run();
+        } catch (Exception e) {
+            FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+
+            Model logModel = folder.getPremisLog().getEventsModel();
+            assertFalse(logModel.contains(null, RDF.type, Premis.Ingestion));
+            assertFalse(logModel.contains(null, RDF.type, Premis.Normalization));
+            assertFalse(logModel.contains(null, RDF.type, Premis.VirusCheck));
+
+            Resource fileResc = job.getWritableModel().getResource(file1Pid.getRepositoryPath());
+            fileResc.removeAll(CdrDeposit.md5sum);
+            fileResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
+            job.closeModel();
+        }
+
+        job.run();
+        treeIndexer.indexAll(baseAddress);
+
+        FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+
+        Model logModel = folder.getPremisLog().getEventsModel();
+        assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
+        assertTrue(logModel.contains(null, RDF.type, Premis.Normalization));
+        assertTrue(logModel.contains(null, RDF.type, Premis.VirusCheck));
+
+        assertLinksToDepositRecord(folder);
+
+        premisLogger.close();
+    }
+
+    @Test
     public void onlyIngestionEventAddedTest() throws Exception {
         File premisEventsDir = job.getEventsDirectory();
         premisEventsDir.mkdir();
