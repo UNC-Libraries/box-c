@@ -132,6 +132,9 @@ public class DepositSupervisorTest {
 
         actionMonitor.run();
 
+        // Allow time for redis to sync up
+        Thread.sleep(10);
+
         assertDepositStatus(DepositState.queued, depositPid);
     }
 
