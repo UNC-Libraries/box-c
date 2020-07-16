@@ -54,6 +54,7 @@ public class SearchState implements Serializable, Cloneable {
     private boolean sortNormalOrder = true;
     private List<String> resourceTypes;
     private String searchTermOperator;
+    private boolean allResults;
     private List<String> resultFields;
     private Boolean rollup;
     private String rollupField;
@@ -119,9 +120,11 @@ public class SearchState implements Serializable, Cloneable {
         rowsPerPage = searchState.getRowsPerPage();
         sortType = searchState.getSortType();
         sortNormalOrder = searchState.getSortNormalOrder();
+        allResults = searchState.getAllResults();
         searchTermOperator = searchState.getSearchTermOperator();
         rollup = searchState.getRollup();
         rollupField = searchState.rollupField;
+        allResults = searchState.allResults;
         includeParts = searchState.includeParts;
     }
 
@@ -179,6 +182,14 @@ public class SearchState implements Serializable, Cloneable {
 
     public void setSortNormalOrder(boolean sortNormalOrder) {
         this.sortNormalOrder = sortNormalOrder;
+    }
+
+    public boolean getAllResults() {
+        return allResults;
+    }
+
+    public void setAllResults(boolean allResults) {
+        this.allResults = allResults;
     }
 
     private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"[^\"]*\"|[^\" ,]+)");

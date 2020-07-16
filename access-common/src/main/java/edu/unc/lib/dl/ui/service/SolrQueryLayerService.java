@@ -247,11 +247,12 @@ public class SolrQueryLayerService extends SolrSearchService {
         SearchState originalState = searchRequest.getSearchState();
         searchRequest.setSearchState(searchState);
         searchState.setFacetsToRetrieve(null);
+        searchState.setAllResults(allResults);
 
         // Adjust the number of results to retrieve
         if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() < 0) {
             searchState.setRowsPerPage(searchSettings.defaultPerPage);
-        } else if (!allResults && searchState.getRowsPerPage() > searchSettings.getMaxPerPage()) {
+        } else if (!searchState.getAllResults() && searchState.getRowsPerPage() > searchSettings.getMaxPerPage()) {
             searchState.setRowsPerPage(searchSettings.getMaxPerPage());
         }
 
