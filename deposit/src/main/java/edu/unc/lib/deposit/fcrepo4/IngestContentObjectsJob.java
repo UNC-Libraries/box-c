@@ -463,10 +463,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         ingestChildren(obj, childResc);
 
         if (isObjectCompleted(obj.getPid())) {
-            // add ingestion event for the new folder
-            addIngestionEventForContainer(obj, childResc);
-            addPremisEvents(obj);
-            overrideModifiedTimestamp(obj, childResc);
+            FedoraTransaction txPremis = txManager.startTransaction();
+
+            try {
+                // add ingestion event for the new folder
+                addIngestionEventForContainer(obj, childResc);
+                addPremisEvents(obj);
+                overrideModifiedTimestamp(obj, childResc);
+            } catch (Exception e) {
+                txPremis.cancelAndIgnore();
+                throw e;
+            } finally {
+                txPremis.close();
+            }
         }
     }
 
@@ -515,10 +524,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         ingestChildren(obj, childResc);
 
         if (isObjectCompleted(obj.getPid())) {
-            // add ingestion event for the new folder
-            addIngestionEventForContainer(obj, childResc);
-            addPremisEvents(obj);
-            overrideModifiedTimestamp(obj, childResc);
+            FedoraTransaction txPremis = txManager.startTransaction();
+
+            try {
+                // add ingestion event for the new folder
+                addIngestionEventForContainer(obj, childResc);
+                addPremisEvents(obj);
+                overrideModifiedTimestamp(obj, childResc);
+            } catch (Exception e) {
+                txPremis.cancelAndIgnore();
+                throw e;
+            } finally {
+                txPremis.close();
+            }
         }
     }
 
@@ -567,10 +585,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         ingestChildren(obj, childResc);
 
         if (isObjectCompleted(obj.getPid())) {
-            // add ingestion event for the new folder
-            addIngestionEventForContainer(obj, childResc);
-            addPremisEvents(obj);
-            overrideModifiedTimestamp(obj, childResc);
+            FedoraTransaction txPremis = txManager.startTransaction();
+
+            try {
+                // add ingestion event for the new folder
+                addIngestionEventForContainer(obj, childResc);
+                addPremisEvents(obj);
+                overrideModifiedTimestamp(obj, childResc);
+            } catch (Exception e) {
+                txPremis.cancelAndIgnore();
+                throw e;
+            } finally {
+                txPremis.close();
+            }
         }
     }
 
@@ -630,11 +657,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addPrimaryObject(obj, childResc);
 
                 if (isObjectCompleted(obj.getPid())) {
-                    // Add ingestion event for the work as container
-                    addIngestionEventForContainer(obj, childResc);
-                    // write premis events for the work to fedora
-                    addPremisEvents(obj);
-                    overrideModifiedTimestamp(obj, childResc);
+                    FedoraTransaction txPremis = txManager.startTransaction();
+
+                    try {
+                        // add ingestion event for the new folder
+                        addIngestionEventForContainer(obj, childResc);
+                        addPremisEvents(obj);
+                        overrideModifiedTimestamp(obj, childResc);
+                    } catch (Exception e) {
+                        txPremis.cancelAndIgnore();
+                        throw e;
+                    } finally {
+                        txPremis.close();
+                    }
                 }
 
                 // Add counts for files deposited for the work
