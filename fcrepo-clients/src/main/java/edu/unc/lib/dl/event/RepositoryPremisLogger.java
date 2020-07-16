@@ -105,6 +105,9 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
+        PID objPid = repoObject.getPid();
+        PID logPid = getMdEventsPid(objPid);
+        Lock logLock = lockManager.awaitWriteLock(logPid);
         Model logModel = ModelFactory.createDefaultModel();
 
         Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
@@ -112,7 +115,7 @@ public class RepositoryPremisLogger implements PremisLogger {
 
         // For new logs, add in representation statement
         if (isNewLog) {
-            Resource repoObjResc = logModel.getResource(repoObject.getPid().getRepositoryPath());
+            Resource repoObjResc = logModel.getResource(objPid.getRepositoryPath());
             repoObjResc.addProperty(RDF.type, Premis.Representation);
         }
 
@@ -126,24 +129,15 @@ public class RepositoryPremisLogger implements PremisLogger {
         try {
             modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
         } catch (IOException e) {
-            throw new ObjectPersistenceException("Failed to serialize event to RDF for " + repoObject.getPid(), e);
+            throw new ObjectPersistenceException("Failed to serialize event to RDF for " + objPid, e);
         }
 
         // Premis event log not created yet
         if (isNewLog) {
             createLog(modelStream);
-            try {
-                modelStream.close();
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to close log existing stream", e);
-            }
+            logLock.unlock();
         } else {
-            PID objPid = repoObject.getPid();
             log.debug("Adding events to PREMIS log for {}", objPid);
-
-            PID logPid = getMdEventsPid(objPid);
-
-            Lock logLock = lockManager.awaitWriteLock(logPid);
             // Event log exists, append new events to it
             BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
 
@@ -157,10 +151,6 @@ public class RepositoryPremisLogger implements PremisLogger {
                         newContentStream);
 
                 updateOrCreateLog(mergedStream);
-                modelStream.close();
-                existingLogStream.close();
-                newContentStream.close();
-                mergedStream.close();
             } catch (IOException e) {
                 throw new RepositoryException("Failed to close log existing stream", e);
             } finally {

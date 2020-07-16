@@ -26,7 +26,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -91,8 +93,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                     @Override
                     public URI answer(InvocationOnMock invocation) throws Throwable {
                         InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
-                        copyInputStreamToFile(contentStream, path.toFile());
+                        Path tempFilePath = createTempFile("temp_content", null);
+                        copyInputStreamToFile(contentStream, tempFilePath.toFile());
                         contentStream.close();
+                        Files.move(tempFilePath, path, StandardCopyOption.REPLACE_EXISTING);
                         return path.toUri();
                     }
                 });
@@ -210,10 +214,11 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .create();
         events.add(event2Resc);
 
-        for (int i = 1; i <= 20; i++) {
+        for (int i = 1; i <= 200; i++) {
             Resource anotherEvent = logger.buildEvent(Premis.note)
                     .addEventDetail("another premis event " + i)
                     .create();
+            Thread.sleep(1); // prevent duplicate event pids
             eventUris.add(anotherEvent.getURI());
             events.add(anotherEvent);
         }
@@ -259,7 +264,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
     }
 
     @Test
-    public void allowSimultaneousReadLocks() {
+    public void allowSimultaneousReadLocks() throws InterruptedException {
         parentObject = repoObjFactory.createDepositRecord(null);
         initPremisLogger(parentObject);
 
@@ -278,17 +283,27 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());
         Lock logLock = lockManager.awaitReadLock(logPid);
 
-        // attempt to read log and succeed
-        Model logModel = retrieveLogger.getEventsModel();
-        Resource logEventResc = logModel.getResource(event.getURI());
-        assertEquals("first premis event", logEventResc.getProperty(Premis.note).getString());
+        // start a thread to read the log
+        List<String> premisNotes = new ArrayList<>();
+        Runnable readThreadRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Model logModel = retrieveLogger.getEventsModel();
+                Resource logEventResc = logModel.getResource(event.getURI());
+                premisNotes.add(logEventResc.getProperty(Premis.note).getString());
+            }
+        };
+        Thread readThread = new Thread(readThreadRunnable);
+        readThread.start();
+        readThread.join();
+        assertEquals("first premis event", premisNotes.get(0));
 
         // release read lock
         logLock.unlock();
     }
 
     @Test
-    public void readLockWaitsForWriteLock() {
+    public void readLockWaitsForWriteLock() throws InterruptedException {
         parentObject = repoObjFactory.createDepositRecord(null);
         initPremisLogger(parentObject);
 
@@ -303,22 +318,38 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .addEventDetail("first premis event")
                 .write();
 
-        // create a write lock
-        PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());
-        Lock logLock = lockManager.awaitWriteLock(logPid);
+        // start write thread
+        Resource anotherEvent = logger.buildEvent(Premis.note)
+                .addEventDetail("second premis event")
+                .create();
+        Runnable writeThreadRunnable = new Runnable() {
+            @Override
+            public void run() {
+                logger.writeEvents(anotherEvent);
+            }
+        };
+        Thread writeThread = new Thread(writeThreadRunnable);
+        writeThread.start();
 
-        // attempt to read log and fail
-        Model logModel = retrieveLogger.getEventsModel();
-        Resource logEventResc = logModel.getResource(event.getURI());
-        assertFalse(logEventResc.hasProperty(Premis.note));
+        // start read thread
+        List<String> premisNotes = new ArrayList<>();
+        Runnable readThreadRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Model logModel = retrieveLogger.getEventsModel();
+                Resource logEventResc = logModel.getResource(anotherEvent.getURI());
+                premisNotes.add(logEventResc.getProperty(Premis.note).getString());
+            }
+        };
+        Thread readThread = new Thread(readThreadRunnable);
+        readThread.start();
 
         // release write lock
-        logLock.unlock();
+        writeThread.join();
 
         // attempt to read log and succeed
-        logModel = retrieveLogger.getEventsModel();
-        logEventResc = logModel.getResource(event.getURI());
-        assertEquals("first premis event", logEventResc.getProperty(Premis.note).getString());
+        readThread.join();
+        assertEquals("second premis event", premisNotes.get(0));
     }
 
     @Test
@@ -354,20 +385,17 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Thread thread = new Thread(commitThread);
         thread.start();
 
-        // give thread time to run
-        Thread.sleep(5000);
+        Thread.sleep(25);
 
-        Model logModel = retrieveLogger.getEventsModel();
-        Resource logEvent1Resc = logModel.getResource(event.getURI());
-        assertFalse(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+        assertTrue(thread.isAlive());
 
         // release read lock
         logLock.unlock();
 
         // attempt to write log and succeed
         thread.join();
-        logModel = retrieveLogger.getEventsModel();
-        logEvent1Resc = logModel.getResource(event.getURI());
+        Model logModel = retrieveLogger.getEventsModel();
+        Resource logEvent1Resc = logModel.getResource(event.getURI());
         assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
     }
 }
