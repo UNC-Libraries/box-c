@@ -1,5 +1,5 @@
-define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
-		function($, ui, _, AbstractStatusMonitor, depositMonitorJobTemplate, depositMonitorDetailsTemplate, ResubmitPackageForm) {
+define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'ActionEventHandler', 'tpl!../templates/admin/statusMonitor/depositMonitorJob', 'tpl!../templates/admin/statusMonitor/depositMonitorJobDetails', 'ResubmitPackageForm'],
+		function($, ui, _, AbstractStatusMonitor, ActionEventHandler, depositMonitorJobTemplate, depositMonitorDetailsTemplate, ResubmitPackageForm) {
 			
 	var defaultOptions = {
 		name : "deposit",
@@ -33,6 +33,8 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 	DepositMonitor.prototype.init = function() {
 		AbstractStatusMonitor.prototype.init.call(this);
 		
+		this.actionHandler = new ActionEventHandler({});
+		
 		$(this.element).on("click", ".monitor_action", function(){
 			var $this = $(this);
 			$this.text($this.text() + "...");
@@ -53,6 +55,17 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 			// FIXME: prepending "uuid:" is a hack??
 			resubmitPackageForm.open("uuid:" + $this.data("uuid"));
 			return false;
+		});
+		
+		var self = this;
+		$(this.element).on("click", ".status_monitor_actions button", function() {
+			var actionName = this.id.split("_", 2)[0];
+			$(".status_monitor_actions button", self.element).prop('disabled', true);
+			self.actionHandler.addEvent({
+				action : 'ChangeDepositPipelineState',
+				pipelineAction : actionName,
+				confirmAnchor : $(this)
+			});
 		});
 	};
 	

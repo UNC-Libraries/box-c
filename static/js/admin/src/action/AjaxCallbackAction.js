@@ -157,7 +157,7 @@ define('AjaxCallbackAction', [ 'jquery', 'jquery-ui', 'RemoteStateChangeMonitor'
 	};
 
 	AjaxCallbackAction.prototype.resolveParameters = function(url) {
-		if (!url || !this.context.target.pid)
+		if (!url || !this.context.target || !this.context.target.pid)
 			return url;
 		return url.replace("{idPath}", this.context.target.pid);
 	};

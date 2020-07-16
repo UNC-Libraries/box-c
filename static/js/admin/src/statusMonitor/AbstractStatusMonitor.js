@@ -9,7 +9,7 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 		},
 		overviewConfig : {
 			url : undefined,
-			refresh : 10000,
+			refresh : 5000,
 			render : undefined,
 			template : overviewTemplate
 		}

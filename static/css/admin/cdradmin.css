@@ -529,3 +529,19 @@ div.in-admin-iframe,
 .update_button {
 	color: white;
 }
+
+.status_monitor_actions {
+	float: right;
+	margin-top: -40px;
+	margin-bottom: 10px;
+}
+
+.status_monitor_actions > button {
+	width: 10em;
+	height: 2em;
+	box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.status_monitor_actions > button:disabled {
+	opacity: 70%;
+}
