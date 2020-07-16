@@ -15,7 +15,7 @@
     limitations under the License.
 
 --%>
-<html>
+<html lang="en">
 <body>
 <h2>CDR Services</h2>
 </body>

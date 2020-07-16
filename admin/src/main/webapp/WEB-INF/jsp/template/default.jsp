@@ -20,7 +20,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!doctype html>
-<html>
+<html lang="en">
 <head>
 	<c:set var="url">${adminBaseUrl}</c:set>
     <base href="${url}" />

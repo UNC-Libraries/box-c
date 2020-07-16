@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Libre+Baskerville:400i|Open+Sans:400,600');
 
 $unc-blue: #4B9CD3;
-$link-blue: #007FAE;
 $unc-navy: #13294B;
 $light-gray: #E1E1E1;
 $dark-gray: #767676;
@@ -16,10 +15,6 @@ $black: #151515;
 
 body {
   font-family: 'Open Sans', sans-serif;
-}
-
-a {
-  color: $link-blue;
 }
 
 .logo-row {
@@ -85,7 +80,8 @@ a {
 .logo-small {
   a, i {
     color: white;
-    font-size: 16px;
+    font-size: 19px;
+    font-weight: 700;
   }
 
   img {
@@ -205,7 +201,7 @@ header {
       color: white;
       font-size: 16px;
       &:hover, &:active {
-        color: $unc-blue;
+        color: $unc-navy;
       }
     }
   }

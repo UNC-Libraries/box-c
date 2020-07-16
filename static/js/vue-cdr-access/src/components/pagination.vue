@@ -134,7 +134,7 @@
 
 <style scoped lang="scss">
     $link-color: #007FAE;
-    $no-link-color: gray;
+    $no-link-color: #686868;
 
     .pagination {
         display: inline-block;

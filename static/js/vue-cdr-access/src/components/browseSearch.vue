@@ -2,7 +2,8 @@
     <div>
         <div class="browse-search field has-addons">
             <div class="control">
-                <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query" placeholder="Search within this level">
+                <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query"
+                       placeholder="Search within this level" aria-label="Search within this level">
             </div>
             <div class="control">
                 <button @click="getResults" class="button">Search</button>

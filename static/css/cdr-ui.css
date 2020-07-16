@@ -3,10 +3,6 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
-a {
-  color: #007FAE;
-}
-
 .logo-row {
   background-color: #4B9CD3;
 }
@@ -68,7 +64,8 @@ a {
 
 .logo-small a, .logo-small i {
   color: white;
-  font-size: 16px;
+  font-size: 19px;
+  font-weight: 700;
 }
 .logo-small img {
   max-width: 150px;
@@ -180,7 +177,7 @@ header .search a {
   font-size: 16px;
 }
 header .search a:hover, header .search a:active {
-  color: #4B9CD3;
+  color: #13294B;
 }
 header .search-row-large {
   background-color: #13294B;
@@ -415,6 +412,18 @@ footer a:hover, footer a:active {
   color: #fff;
 }
 
+/* Class to display content for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
 .searchitem.deleted,
 .browseitem.deleted {
   color: #888;
@@ -588,8 +597,8 @@ p.spacing {
 }
 
 .item_container_count {
-  background-color: #4B9CD3;
-  border: 1px solid #4B9CD3;
+  background-color: #1A698C;
+  border: 1px solid #1A698C;
   border-radius: 5px;
   color: white;
   line-height: 18px;
@@ -683,12 +692,6 @@ p.no-search-results {
   margin: 10px 15px;
   width: 98%;
 }
-.collection-browse .item_container_count {
-  background-color: inherit;
-  border: none;
-  color: gray;
-  font-size: inherit;
-}
 .collection-browse:last-child {
   margin-bottom: 50px;
 }
@@ -745,8 +748,8 @@ p.no-search-results {
   margin-top: -10px;
 }
 .display-wrapper .display-note-btn {
-  background-color: #4B9CD3;
-  border: 1px solid #4B9CD3;
+  background-color: #1A698C;
+  border: 1px solid #1A698C;
   border-radius: 100%;
   color: white;
   font-weight: bold;
