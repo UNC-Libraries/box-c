@@ -11,6 +11,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 			fields : ["Status", "Submitter", "Submit time", "Progress", "First object", "Note"],
 			jobTypes : [
 				{name : "running", refresh : 1000, detailsRefresh : 1000},
+				{name : "quieted", refresh : 5000},
 				{name : "queued", refresh : 10000},
 				{name : "paused", refresh : 10000},
 				{name : "finished", refresh : 10000},

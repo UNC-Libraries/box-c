@@ -48,6 +48,7 @@ import org.apache.jena.rdf.model.Selector;
 import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.tdb.transaction.TDBTransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,6 +166,9 @@ public abstract class AbstractDepositJob implements Runnable {
                 dataset.commit();
             }
         } catch (Exception e) {
+            // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
+            Thread.interrupted();
+
             if (dataset.isInTransaction()) {
                 if (rollbackDatasetOnFailure) {
                     log.debug("Aborting deposit model changes for {} after failure", depositUUID);
@@ -405,7 +409,15 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public Model getWritableModel() {
         String uri = getDepositPID().getURI();
-        this.dataset.begin(ReadWrite.WRITE);
+        try {
+            this.dataset.begin(ReadWrite.WRITE);
+        } catch (TDBTransactionException e) {
+            if (e.getCause() instanceof InterruptedException) {
+                throw new JobInterruptedException("Interrupted while waiting for TDB write lock for deposit " + uri,
+                        e);
+            }
+            throw e;
+        }
         if (!this.dataset.containsNamedModel(uri)) {
             this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
         }
@@ -414,7 +426,15 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public Model getReadOnlyModel() {
         String uri = getDepositPID().getURI();
-        this.dataset.begin(ReadWrite.READ);
+        try {
+            this.dataset.begin(ReadWrite.READ);
+        } catch (TDBTransactionException e) {
+            if (e.getCause() instanceof InterruptedException) {
+                throw new JobInterruptedException("Interrupted while waiting for TDB read lock for deposit " + uri,
+                        e);
+            }
+            throw e;
+        }
         return this.dataset.getNamedModel(uri);
     }
 

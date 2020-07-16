@@ -364,12 +364,7 @@ public class DepositSupervisor implements WorkerListener {
     protected void quiet(boolean stopWorkers, boolean stopNow) {
         isQuieted = true;
 
-        if (stopWorkers) {
-            // End the worker pools to prevent further processing, immediately if requested
-            for (WorkerPool pool : depositWorkerPools) {
-                pool.end(stopNow);
-            }
-        } else {
+        if (!stopWorkers) {
             // Pause all worker pools to prevent new jobs from starting
             for (WorkerPool pool : depositWorkerPools) {
                 pool.togglePause(true);
@@ -384,6 +379,13 @@ public class DepositSupervisor implements WorkerListener {
             if (DepositState.running.equals(depositState)) {
                 String uuid = fields.get(DepositField.uuid.name());
                 depositStatusFactory.setState(uuid, DepositState.quieted);
+            }
+        }
+
+        if (stopWorkers) {
+            // End the worker pools to prevent further processing, immediately if requested
+            for (WorkerPool pool : depositWorkerPools) {
+                pool.end(stopNow);
             }
         }
 
@@ -466,7 +468,7 @@ public class DepositSupervisor implements WorkerListener {
                     if (depositSet.get(uuid).contains(CleanupDepositJob.class.getName())) {
                         depositStatusFactory.setState(uuid, DepositState.finished);
                     } else {
-                        LOG.debug("Skipping resumption of deposit {} because it already is in the queue", uuid);
+                        LOG.info("Skipping resumption of deposit {} because it already is in the queue", uuid);
                     }
                 } else {
                     depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
