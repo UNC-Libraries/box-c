@@ -95,7 +95,7 @@ public class XMLExportService {
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
             searchRequest.setRootPid(pid);
             searchRequest.setApplyCutoffs(false);
-            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest, true);
 
             if (resultResponse == null) {
                 throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");

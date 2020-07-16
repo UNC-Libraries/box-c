@@ -123,7 +123,7 @@ public class XMLExportJob implements Runnable {
         try {
             Document objectDoc = new Document();
             Element objectEl = new Element("object");
-            objectEl.setAttribute("pid", pid.toString());
+            objectEl.setAttribute("pid", pid.getQualifiedId());
             objectDoc.addContent(objectEl);
 
             if (mods != null) {

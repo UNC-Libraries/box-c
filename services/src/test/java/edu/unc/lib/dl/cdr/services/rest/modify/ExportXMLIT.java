@@ -145,7 +145,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
         when(searchStateFactory.createSearchState()).thenReturn(searchState);
         SearchResultResponse results = mock(SearchResultResponse.class);
-        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
+        when(queryLayer.performSearch(any(SearchRequest.class), any(Boolean.class))).thenReturn(results);
 
         BriefObjectMetadataBean md = new BriefObjectMetadataBean();
         md.setId(exports.get(0));

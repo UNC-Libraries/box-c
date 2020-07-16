@@ -170,7 +170,7 @@ public class XMLExportServiceTest {
         childrenMd.add(mockMd(pid1));
         childrenMd.add(mockMd(pid2));
         when(resultResponse.getResultList()).thenReturn(childrenMd);
-        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(resultResponse);
+        when(queryLayer.performSearch(any(SearchRequest.class), any(Boolean.class))).thenReturn(resultResponse);
 
         service.exportXml(username, group, request);
 
@@ -203,7 +203,7 @@ public class XMLExportServiceTest {
 
         Element objEl = rootEl.getChild("object");
 
-        assertEquals(pid1.getRepositoryPath(), objEl.getAttributeValue("pid"));
+        assertEquals(pid1.getQualifiedId(), objEl.getAttributeValue("pid"));
 
         Element updateEl = objEl.getChild("update");
         assertEquals("MODS", updateEl.getAttributeValue("type"));
@@ -247,7 +247,7 @@ public class XMLExportServiceTest {
         PID parentPid = registerObject();
 
         when(resultResponse.getResultList()).thenReturn(Collections.emptyList());
-        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(resultResponse);
+        when(queryLayer.performSearch(any(SearchRequest.class), any(Boolean.class))).thenReturn(resultResponse);
 
         service.exportXml(username, group, request);
 
@@ -300,7 +300,7 @@ public class XMLExportServiceTest {
         List<Element> objEls = rootEl.getChildren("object");
         for (Element objEl : objEls) {
             String pidAttr = objEl.getAttributeValue("pid");
-            if (pid.getRepositoryPath().equals(pidAttr)) {
+            if (pid.getQualifiedId().equals(pidAttr)) {
                 return objEl;
             }
         }

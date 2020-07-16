@@ -119,9 +119,7 @@ public class SolrQueryLayerService extends SolrSearchService {
      * Retrieves the facet list for the search defined by searchState. The facet results optionally can ignore
      * hierarchical cutoffs.
      *
-     * @param searchState
-     * @param facetsToRetrieve
-     * @param applyCutoffs
+     * @param searchRequest
      * @return
      */
     public SearchResultResponse getFacetList(SearchRequest searchRequest) {
@@ -241,6 +239,10 @@ public class SolrQueryLayerService extends SolrSearchService {
     }
 
     public SearchResultResponse performSearch(SearchRequest searchRequest) {
+        return performSearch(searchRequest, false);
+    }
+
+    public SearchResultResponse performSearch(SearchRequest searchRequest, boolean allResults) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
         SearchState originalState = searchRequest.getSearchState();
         searchRequest.setSearchState(searchState);
@@ -249,7 +251,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         // Adjust the number of results to retrieve
         if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() < 0) {
             searchState.setRowsPerPage(searchSettings.defaultPerPage);
-        } else if (searchState.getRowsPerPage() > searchSettings.getMaxPerPage()) {
+        } else if (!allResults && searchState.getRowsPerPage() > searchSettings.getMaxPerPage()) {
             searchState.setRowsPerPage(searchSettings.getMaxPerPage());
         }
 
