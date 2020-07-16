@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.quieted;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.shutdown;
 import static java.util.Collections.singletonMap;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -104,6 +106,22 @@ public class DepositPipelineController {
             return new ResponseEntity<>(
                     singletonMap(ERROR_KEY, "Invalid action specified, must specify one of the follow: " + allowed),
                     HttpStatus.BAD_REQUEST);
+        }
+
+        DepositPipelineState currentState = pipelineStatusFactory.getPipelineState();
+        String errorMsg = null;
+        if (DepositPipelineState.stopped.equals(currentState) || shutdown.equals(currentState)) {
+            errorMsg = "Cannot perform actions while in the '" + currentState.name()
+                    + "' state, the service must be restarted";
+        } else if (DepositPipelineAction.quiet.equals(action) && !DepositPipelineState.active.equals(currentState)) {
+            errorMsg = "Cannot perform quiet, the pipeline must be 'active' but is " +  currentState.name();
+        } else if (DepositPipelineAction.unquiet.equals(action) && !quieted.equals(currentState)) {
+            errorMsg = "Cannot perform unquiet, the pipeline must be 'quieted' but is " +  currentState.name();
+        }
+
+        if (errorMsg != null) {
+            return new ResponseEntity<>(singletonMap(ERROR_KEY, errorMsg),
+                    HttpStatus.CONFLICT);
         }
 
         log.info("Requesting deposit pipeline action {}", actionName);

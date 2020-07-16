@@ -92,13 +92,39 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void requestAction_ValidAction() throws Exception {
+    public void requestAction_ValidQuiet() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+
         MvcResult result = mvc.perform(post("/edit/depositPipeline/quiet"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("quiet", respMap.get(ACTION_KEY));
+    }
+
+    @Test
+    public void requestAction_ValidUnquiet() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/unquiet"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("unquiet", respMap.get(ACTION_KEY));
+    }
+
+    @Test
+    public void requestAction_ValidStop() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/stop"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("stop", respMap.get(ACTION_KEY));
     }
 
     @Test
@@ -121,5 +147,56 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
         Map<String, Object> respMap = getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY)).contains("Invalid action specified"));
+    }
+
+    @Test
+    public void requestAction_QuietInvalidState() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/quiet"))
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertTrue(((String) respMap.get(ERROR_KEY)).contains("Cannot perform quiet, the pipeline must be 'active'"));
+    }
+
+    @Test
+    public void requestAction_UnquietInvalidState() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/unquiet"))
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertTrue(((String) respMap.get(ERROR_KEY))
+                .contains("Cannot perform unquiet, the pipeline must be 'quieted'"));
+    }
+
+    @Test
+    public void requestAction_StoppedState() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.stopped);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/quiet"))
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertTrue(((String) respMap.get(ERROR_KEY))
+                .contains("Cannot perform actions while in the 'stopped' state"));
+    }
+
+    @Test
+    public void requestAction_ShutdownState() throws Exception {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.shutdown);
+
+        MvcResult result = mvc.perform(post("/edit/depositPipeline/unquiet"))
+                .andExpect(status().isConflict())
+                .andReturn();
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertTrue(((String) respMap.get(ERROR_KEY))
+                .contains("Cannot perform actions while in the 'shutdown' state"));
     }
 }

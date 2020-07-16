@@ -50,6 +50,10 @@
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
+    <bean id="depositPipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
     <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
