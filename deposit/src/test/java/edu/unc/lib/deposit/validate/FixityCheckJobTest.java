@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
@@ -40,6 +44,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -58,6 +63,8 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
  * @author bbpennel
  */
 public class FixityCheckJobTest extends AbstractDepositJobTest {
+    private static final Logger log = getLogger(FixityCheckJobTest.class);
+
     private static final String CONTENT1 = "Something to digest";
     private static final String CONTENT1_MD5 = "7afbf05666feeebe7fbbf1c9071584e6";
     private static final String CONTENT1_SHA1 = "23d51c61a578a8cb00c5eec6b29c12b7da15c8de";
@@ -319,6 +326,50 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid1.getQualifiedId());
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid2.getQualifiedId());
+    }
+
+    @Test
+    public void interruptionTest() throws Exception {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        String stagingPath = stageFile(CONTENT1);
+        PID filePid = addFileObject(depBag, stagingPath);
+        addDigest(model, filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
+
+        String stagingPath2 = stageFile(CONTENT1);
+        PID filePid2 = addFileObject(depBag, stagingPath2);
+        addDigest(model, filePid2, DigestAlgorithm.SHA1, CONTENT1_SHA1);
+        job.closeModel();
+
+        AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
+        AtomicReference<Exception> otherException = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            try {
+                job.run();
+            } catch (JobInterruptedException e) {
+                gotJobInterrupted.set(true);
+            } catch (Exception e) {
+                otherException.set(e);
+            }
+        });
+        thread.start();
+
+        Thread.sleep((long) new Random().nextFloat() * 90);
+        if (thread.isAlive()) {
+            thread.interrupt();
+            thread.join();
+
+            if (gotJobInterrupted.get()) {
+                // success
+            } else {
+                if (otherException.get() != null) {
+                    throw otherException.get();
+                }
+            }
+        } else {
+            log.warn("Job completed before interruption");
+        }
     }
 
     private String stageFile(String content) throws IOException {

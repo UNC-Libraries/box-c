@@ -24,6 +24,8 @@ import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -36,6 +38,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
@@ -158,29 +161,46 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Override
     public final void run() {
-        try (Timer.Context context = timer.time()) {
-            interruptJobIfStopped();
+        try {
+            try (Timer.Context context = timer.time()) {
+                interruptJobIfStopped();
 
-            runJob();
-            if (dataset.isInTransaction()) {
-                dataset.commit();
-            }
-        } catch (Exception e) {
-            // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
-            Thread.interrupted();
-
-            if (dataset.isInTransaction()) {
-                if (rollbackDatasetOnFailure) {
-                    log.debug("Aborting deposit model changes for {} after failure", depositUUID);
-                    dataset.abort();
-                } else {
-                    log.debug("Committing deposit model changes for {} after failure", depositUUID);
+                runJob();
+                if (dataset.isInTransaction()) {
                     dataset.commit();
                 }
+            } catch (Exception e) {
+                // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
+                Thread.interrupted();
+
+                if (dataset.isInTransaction()) {
+                    if (rollbackDatasetOnFailure) {
+                        log.debug("Aborting deposit model changes for {} after failure", depositUUID);
+                        dataset.abort();
+                    } else {
+                        log.debug("Committing deposit model changes for {} after failure", depositUUID);
+                        dataset.commit();
+                    }
+                }
+                throw e;
+            } finally {
+                dataset.end();
             }
+        } catch (Exception e) {
+            // Recast nested exceptions to more informative types
+            resolveNestedExceptions(e);
             throw e;
-        } finally {
-            dataset.end();
+        }
+    }
+
+    private void resolveNestedExceptions(Exception e) {
+        Throwable root = ExceptionUtils.getRootCause(e);
+        if (root == null) {
+            root = e;
+        }
+        if (root instanceof ClosedByInterruptException || root instanceof ClosedChannelException) {
+            throw new JobInterruptedException("Job " + jobUUID
+                    + " interrupted during TDB operation in deposit " + depositUUID, e);
         }
     }
 
@@ -192,7 +212,9 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public void setDepositUUID(String depositUUID) {
         this.depositUUID = depositUUID;
-        this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+        if (depositUUID != null) {
+            this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+        }
     }
 
     public PID getDepositPID() {
@@ -313,7 +335,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected PID getDestinationPID() {
         Map<String, String> depositStatus = getDepositStatus();
         String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destPid = PIDs.get(destinationPath);
+        PID destPid = destinationPath != null ? PIDs.get(destinationPath) : null;
         if (destPid == null) {
             failJob("Invalid destination URI", "The provide destination uri " + destinationPath
                     + " was not a valid repository path");

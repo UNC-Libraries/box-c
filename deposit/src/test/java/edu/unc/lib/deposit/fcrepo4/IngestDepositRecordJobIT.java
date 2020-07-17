@@ -23,11 +23,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
@@ -37,8 +41,10 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -61,6 +67,7 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
+    private static final Logger log = getLogger(IngestDepositRecordJobIT.class);
 
     private static final String DEPOSITOR_NAME = "boxy_depositor";
 
@@ -154,6 +161,63 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 authgent.hasProperty(RDF.type, PremisAgentType.Person));
         assertTrue("Authorizing agent did not have name",
                 authgent.hasLiteral(FOAF.name, DEPOSITOR_NAME));
+    }
+
+    @Test
+    public void interruptTest() throws Exception {
+        depositStatusFactory.set(depositUUID, DepositField.packagingType, PackagingType.BAGIT.getUri());
+        depositStatusFactory.set(depositUUID, DepositField.packageProfile, "no profile");
+        depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        URI manifestUri1 = Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toUri();
+        URI manifestUri2 = Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toUri();
+        writeStringToFile(new File(manifestUri1), MANIFEST_BODY1, UTF_8);
+        writeStringToFile(new File(manifestUri2), MANIFEST_BODY2, UTF_8);
+        depBag.addProperty(CdrDeposit.storageUri, manifestUri1.toString());
+        depBag.addProperty(CdrDeposit.storageUri, manifestUri2.toString());
+        job.closeModel();
+
+        AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
+        AtomicReference<Exception> otherException = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            try {
+                job.run();
+            } catch (JobInterruptedException e) {
+                gotJobInterrupted.set(true);
+            } catch (Exception e) {
+                otherException.set(e);
+            }
+        });
+        thread.start();
+
+        // Wait random amount of time and then interrupt thread if still alive
+        Thread.sleep(50 + (long) new Random().nextFloat() * 600);
+        if (thread.isAlive()) {
+            thread.interrupt();
+            thread.join();
+
+            if (gotJobInterrupted.get()) {
+                // success
+            } else {
+                if (otherException.get() != null) {
+                    throw otherException.get();
+                }
+            }
+        } else {
+            log.warn("Job completed before interruption");
+        }
+    }
+
+    // Repeat interruption test due to randomness of interruption timing
+    @Test
+    public void interruptTest2() throws Exception {
+        interruptTest();
+    }
+    @Test
+    public void interruptTest3() throws Exception {
+        interruptTest();
     }
 
     private PID getPidBySuffix(List<PID> pids, String suffix) {
