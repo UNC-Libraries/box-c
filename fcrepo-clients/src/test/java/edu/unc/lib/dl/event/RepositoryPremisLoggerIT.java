@@ -95,7 +95,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                         InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
                         Path tempFilePath = createTempFile("temp_content", null);
                         copyInputStreamToFile(contentStream, tempFilePath.toFile());
-                        contentStream.close();
                         Files.move(tempFilePath, path, StandardCopyOption.REPLACE_EXISTING);
                         return path.toUri();
                     }
@@ -203,17 +202,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         List<Resource> events = new ArrayList<>();
         List<String> eventUris = new ArrayList<>();
 
-        Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(SoftwareAgent.clamav.toString())
-                .create();
-        events.add(event1Resc);
-
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
-        Resource event2Resc = logger.buildEvent(null, Premis.Ingestion, ingestDate)
-                .addEventDetail("Ingested")
-                .create();
-        events.add(event2Resc);
-
         for (int i = 1; i <= 200; i++) {
             Resource anotherEvent = logger.buildEvent(new PID("event" + System.currentTimeMillis() + i), Premis.note,
                     ingestDate)
@@ -248,13 +237,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertEquals("first premis event", logOriginalEventResc.getProperty(Premis.note).getString());
 
         // check rest of events
-        Resource logEvent1Resc = logModel.getResource(event1Resc.getURI());
-        assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
-
-        Resource logEvent2Resc = logModel.getResource(event2Resc.getURI());
-        assertTrue(logEvent2Resc.hasProperty(RDF.type, Premis.Ingestion));
-        assertEquals("2010-01-02T12:00:00.000Z", logEvent2Resc.getProperty(DCTerms.date).getString());
-
         int i = 1;
         for (String uri : eventUris) {
             Resource logEventResc = logModel.getResource(uri);
@@ -313,14 +295,9 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
 
-        // add event
-        Resource event = logger.buildEvent(Premis.note)
-                .addEventDetail("first premis event")
-                .write();
-
         // start write thread
         Resource anotherEvent = logger.buildEvent(Premis.note)
-                .addEventDetail("second premis event")
+                .addEventDetail("first premis event")
                 .create();
         Runnable writeThreadRunnable = new Runnable() {
             @Override
@@ -329,7 +306,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
             }
         };
         Thread writeThread = new Thread(writeThreadRunnable);
-        writeThread.start();
 
         // start read thread
         List<String> premisNotes = new ArrayList<>();
@@ -342,14 +318,17 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
             }
         };
         Thread readThread = new Thread(readThreadRunnable);
+        writeThread.start();
         readThread.start();
+
+        assertEquals(0, premisNotes.size());
 
         // release write lock
         writeThread.join();
 
         // attempt to read log and succeed
         readThread.join();
-        assertEquals("second premis event", premisNotes.get(0));
+        assertEquals("first premis event", premisNotes.get(0));
     }
 
     @Test
@@ -362,11 +341,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
-
-        // add an event
-        logger.buildEvent(Premis.note)
-                .addEventDetail("first premis event")
-                .write();
 
         // create a read lock
         PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());

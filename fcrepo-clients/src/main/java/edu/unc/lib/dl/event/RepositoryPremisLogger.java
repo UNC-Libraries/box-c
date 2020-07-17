@@ -155,8 +155,6 @@ public class RepositoryPremisLogger implements PremisLogger {
                     throw new RepositoryException("Failed to close log existing stream", e);
                 }
             }
-        } catch (Exception e) {
-            throw new RepositoryException("Failed to write events to premis log", e);
         } finally {
             logLock.unlock();
         }
