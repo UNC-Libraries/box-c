@@ -91,11 +91,12 @@ public class XMLExportService {
             searchState.setResultFields(resultFields);
             searchState.setSortType("export");
             searchState.setRowsPerPage(Integer.MAX_VALUE);
+            searchState.setAllResults(true);
 
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
             searchRequest.setRootPid(pid);
             searchRequest.setApplyCutoffs(false);
-            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest, true);
+            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
             if (resultResponse == null) {
                 throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");

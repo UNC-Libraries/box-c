@@ -239,15 +239,10 @@ public class SolrQueryLayerService extends SolrSearchService {
     }
 
     public SearchResultResponse performSearch(SearchRequest searchRequest) {
-        return performSearch(searchRequest, false);
-    }
-
-    public SearchResultResponse performSearch(SearchRequest searchRequest, boolean allResults) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
         SearchState originalState = searchRequest.getSearchState();
         searchRequest.setSearchState(searchState);
         searchState.setFacetsToRetrieve(null);
-        searchState.setAllResults(allResults);
 
         // Adjust the number of results to retrieve
         if (searchState.getRowsPerPage() == null || searchState.getRowsPerPage() < 0) {

@@ -170,7 +170,7 @@ public class XMLExportServiceTest {
         childrenMd.add(mockMd(pid1));
         childrenMd.add(mockMd(pid2));
         when(resultResponse.getResultList()).thenReturn(childrenMd);
-        when(queryLayer.performSearch(any(SearchRequest.class), any(Boolean.class))).thenReturn(resultResponse);
+        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(resultResponse);
 
         service.exportXml(username, group, request);
 
@@ -247,7 +247,7 @@ public class XMLExportServiceTest {
         PID parentPid = registerObject();
 
         when(resultResponse.getResultList()).thenReturn(Collections.emptyList());
-        when(queryLayer.performSearch(any(SearchRequest.class), any(Boolean.class))).thenReturn(resultResponse);
+        when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(resultResponse);
 
         service.exportXml(username, group, request);
 

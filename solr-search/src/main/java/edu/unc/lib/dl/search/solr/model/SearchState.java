@@ -54,7 +54,7 @@ public class SearchState implements Serializable, Cloneable {
     private boolean sortNormalOrder = true;
     private List<String> resourceTypes;
     private String searchTermOperator;
-    private boolean allResults;
+    private boolean allResults = false;
     private List<String> resultFields;
     private Boolean rollup;
     private String rollupField;
@@ -124,7 +124,6 @@ public class SearchState implements Serializable, Cloneable {
         searchTermOperator = searchState.getSearchTermOperator();
         rollup = searchState.getRollup();
         rollupField = searchState.rollupField;
-        allResults = searchState.allResults;
         includeParts = searchState.includeParts;
     }
 
