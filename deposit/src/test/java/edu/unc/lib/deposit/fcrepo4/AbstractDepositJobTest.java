@@ -131,7 +131,7 @@ public class AbstractDepositJobTest {
         depositDir.mkdir();
         depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 
-        dataset = TDBFactory.createDataset();
+        dataset = TDBFactory.createDataset(tmpFolder.newFolder("tdb").getAbsolutePath());
 
         when(txManager.startTransaction()).thenReturn(tx);
         doAnswer(new Answer<Void>() {

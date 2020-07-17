@@ -20,10 +20,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
@@ -36,12 +40,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
 
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
+    private static final Logger log = getLogger(DirectoryToBagJobTest.class);
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
@@ -121,6 +128,44 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
+    }
+
+    @Test
+    public void interruptionTest() throws Exception {
+        status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.mediaId.name(), "789");
+        status.put(DepositField.accessionNumber.name(), "123456");
+
+        AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
+        AtomicReference<Exception> otherException = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            try {
+                job.run();
+            } catch (JobInterruptedException e) {
+                gotJobInterrupted.set(true);
+            } catch (Exception e) {
+                otherException.set(e);
+            }
+        });
+        thread.start();
+
+        // Wait random amount of time and then interrupt thread if still alive
+        Thread.sleep(20 + (long) new Random().nextFloat() * 100);
+        if (thread.isAlive()) {
+            thread.interrupt();
+            thread.join();
+
+            if (gotJobInterrupted.get()) {
+                // success
+            } else {
+                if (otherException.get() != null) {
+                    throw otherException.get();
+                }
+            }
+        } else {
+            log.warn("Job completed before interruption");
+        }
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

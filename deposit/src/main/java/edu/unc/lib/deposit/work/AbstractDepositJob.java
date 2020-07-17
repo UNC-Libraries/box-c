@@ -24,6 +24,8 @@ import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -36,6 +38,7 @@ import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
@@ -158,29 +161,46 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Override
     public final void run() {
-        try (Timer.Context context = timer.time()) {
-            interruptJobIfStopped();
+        try {
+            try (Timer.Context context = timer.time()) {
+                interruptJobIfStopped();
 
-            runJob();
-            if (dataset.isInTransaction()) {
-                dataset.commit();
-            }
-        } catch (Exception e) {
-            // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
-            Thread.interrupted();
-
-            if (dataset.isInTransaction()) {
-                if (rollbackDatasetOnFailure) {
-                    log.debug("Aborting deposit model changes for {} after failure", depositUUID);
-                    dataset.abort();
-                } else {
-                    log.debug("Committing deposit model changes for {} after failure", depositUUID);
+                runJob();
+                if (dataset.isInTransaction()) {
                     dataset.commit();
                 }
+            } catch (Exception e) {
+                // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
+                Thread.interrupted();
+
+                if (dataset.isInTransaction()) {
+                    if (rollbackDatasetOnFailure) {
+                        log.debug("Aborting deposit model changes for {} after failure", depositUUID);
+                        dataset.abort();
+                    } else {
+                        log.debug("Committing deposit model changes for {} after failure", depositUUID);
+                        dataset.commit();
+                    }
+                }
+                throw e;
+            } finally {
+                dataset.end();
             }
+        } catch (Exception e) {
+            // Recast nested exceptions to more informative types
+            resolveNestedExceptions(e);
             throw e;
-        } finally {
-            dataset.end();
+        }
+    }
+
+    private void resolveNestedExceptions(Exception e) {
+        Throwable root = ExceptionUtils.getRootCause(e);
+        if (root == null) {
+            root = e;
+        }
+        if (root instanceof ClosedByInterruptException || root instanceof ClosedChannelException) {
+            throw new JobInterruptedException("Job " + jobUUID
+                    + " interrupted during TDB operation in deposit " + depositUUID, e);
         }
     }
 

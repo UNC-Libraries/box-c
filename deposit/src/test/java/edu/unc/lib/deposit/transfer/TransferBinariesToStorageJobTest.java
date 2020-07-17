@@ -27,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.net.URI;
@@ -35,6 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
@@ -45,8 +49,10 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -63,6 +69,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  *
  */
 public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTest {
+
+    private static final Logger log = getLogger(TransferBinariesToStorageJobTest.class);
 
     private final static String LOC1_ID = "loc1";
     private final static String LOC2_ID = "loc2";
@@ -145,6 +153,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
         workBag.addProperty(Cdr.primaryObject, fileResc);
+
         job.closeModel();
 
         job.run();
@@ -154,6 +163,49 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
+    }
+
+    // Ensure that interruptions come through as JobInterruptedExceptions
+    @Test
+    public void interruptionTest() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        Bag workBag1 = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc1 = addFileObject(workBag1, FILE_CONTENT1, true);
+        workBag1.addProperty(Cdr.primaryObject, fileResc1);
+        job.closeModel();
+
+        AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
+        AtomicReference<Exception> otherException = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            try {
+                job.run();
+            } catch (JobInterruptedException e) {
+                gotJobInterrupted.set(true);
+            } catch (Exception e) {
+                otherException.set(e);
+            }
+        });
+        thread.start();
+
+        // Wait random amount of time and then interrupt thread if still alive
+        Thread.sleep((long) new Random().nextFloat() * 20);
+        if (thread.isAlive()) {
+            thread.interrupt();
+            thread.join();
+
+            if (gotJobInterrupted.get()) {
+                // success
+            } else {
+                if (otherException.get() != null) {
+                    throw otherException.get();
+                }
+            }
+        } else {
+            log.warn("Job completed before interruption");
+        }
     }
 
     @Test

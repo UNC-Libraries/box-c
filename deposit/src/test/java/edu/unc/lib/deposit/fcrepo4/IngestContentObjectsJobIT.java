@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -35,6 +36,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,10 +51,12 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -91,6 +97,8 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
+
+    private static final Logger log = getLogger(IngestContentObjectsJobIT.class);
 
     static {
         System.setProperty("fcrepo.properties.management", "relaxed");
@@ -136,7 +144,24 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     @Before
     public void init() throws Exception {
+        constructJob();
 
+        // Create a destination folder where deposits will be ingested to
+        setupDestination();
+
+        FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
+
+        // Create deposit record for this deposit to reference
+        depositRecord = repoObjFactory.createDepositRecord(depositPid, null);
+        Model model = job.getWritableModel();
+        Resource depositResc = model.getResource(depositPid.getRepositoryPath());
+        depositResc.addProperty(Cdr.storageLocation, LOC1_ID);
+        job.closeModel();
+
+        depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
+    }
+
+    private void constructJob() {
         job = new IngestContentObjectsJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
@@ -158,20 +183,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "locationManager", storageLocationManager);
         setField(job, "updateDescService", updateDescService);
         job.init();
-
-        // Create a destination folder where deposits will be ingested to
-        setupDestination();
-
-        FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
-
-        // Create deposit record for this deposit to reference
-        depositRecord = repoObjFactory.createDepositRecord(depositPid, null);
-        Model model = job.getWritableModel();
-        Resource depositResc = model.getResource(depositPid.getRepositoryPath());
-        depositResc.addProperty(Cdr.storageLocation, LOC1_ID);
-        job.closeModel();
-
-        depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
     }
 
     private void setupDestination() throws Exception {
@@ -1003,6 +1014,70 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, workObj);
         FileObject fileObj = repoObjLoader.getFileObject(filePid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, fileObj);
+    }
+
+    @Test
+    public void interruptTest() throws Exception {
+        String label = "testwork";
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID folderObj1Pid = pidMinter.mintContentPid();
+        Bag folder1Bag = model.createBag(folderObj1Pid.getRepositoryPath());
+        folder1Bag.addProperty(RDF.type, Cdr.Folder);
+        depBag.add(folder1Bag);
+
+        // Constructing the work in the deposit model with a label
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+
+        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+
+        folder1Bag.add(workBag);
+
+        workBag.asResource().addProperty(Cdr.primaryObject,
+                model.getResource(mainPid.getRepositoryPath()));
+
+        job.closeModel();
+
+        AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
+        AtomicReference<Exception> otherException = new AtomicReference<>();
+        Thread thread = new Thread(() -> {
+            try {
+                job.run();
+            } catch (JobInterruptedException e) {
+                gotJobInterrupted.set(true);
+            } catch (Exception e) {
+                otherException.set(e);
+            }
+        });
+        thread.start();
+
+        // Wait random amount of time and then interrupt thread if still alive
+        Thread.sleep(50 + (long) new Random().nextFloat() * 600);
+        if (thread.isAlive()) {
+            thread.interrupt();
+            thread.join();
+
+            if (gotJobInterrupted.get()) {
+                // success
+            } else {
+                if (otherException.get() != null) {
+                    throw otherException.get();
+                }
+            }
+        } else {
+            log.warn("Job completed before interruption");
+        }
+    }
+
+    @Test
+    public void interruptAndResume2() throws Exception {
+        interruptTest();
     }
 
     private void assertTimestamps(Date expectedCreated, Date expectedModified, ContentObject obj) {

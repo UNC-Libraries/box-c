@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.tdb.TDBFactory;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -67,7 +68,6 @@ public class AbstractFedoraDepositJobIT {
     protected String baseAddress;
     @Autowired
     protected RepositoryPIDMinter pidMinter;
-    @Autowired
     protected Dataset dataset;
     @Autowired
     protected JobStatusFactory jobStatusFactory;
@@ -106,6 +106,8 @@ public class AbstractFedoraDepositJobIT {
         depositDir.mkdir();
 
         depositStatusFactory.setState(depositUUID, DepositState.running);
+
+        dataset = TDBFactory.createDataset(tmpFolder.newFolder("tdb").getAbsolutePath());
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

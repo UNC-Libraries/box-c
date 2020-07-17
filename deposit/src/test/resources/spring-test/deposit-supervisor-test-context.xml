@@ -12,6 +12,9 @@
 
     <context:property-placeholder />
     
+    <bean id="dataSet" class="org.apache.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
+    </bean>
+    
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
     </bean>
