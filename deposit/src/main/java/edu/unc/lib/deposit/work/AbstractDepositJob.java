@@ -212,7 +212,9 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public void setDepositUUID(String depositUUID) {
         this.depositUUID = depositUUID;
-        this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+        if (depositUUID != null) {
+            this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+        }
     }
 
     public PID getDepositPID() {
@@ -333,7 +335,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected PID getDestinationPID() {
         Map<String, String> depositStatus = getDepositStatus();
         String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destPid = PIDs.get(destinationPath);
+        PID destPid = destinationPath != null ? PIDs.get(destinationPath) : null;
         if (destPid == null) {
             failJob("Invalid destination URI", "The provide destination uri " + destinationPath
                     + " was not a valid repository path");
