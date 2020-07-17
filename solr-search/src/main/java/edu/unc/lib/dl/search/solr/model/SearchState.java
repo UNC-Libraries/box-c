@@ -54,7 +54,7 @@ public class SearchState implements Serializable, Cloneable {
     private boolean sortNormalOrder = true;
     private List<String> resourceTypes;
     private String searchTermOperator;
-    private boolean allResults = false;
+    private boolean ignoreMaxRows = false;
     private List<String> resultFields;
     private Boolean rollup;
     private String rollupField;
@@ -120,7 +120,7 @@ public class SearchState implements Serializable, Cloneable {
         rowsPerPage = searchState.getRowsPerPage();
         sortType = searchState.getSortType();
         sortNormalOrder = searchState.getSortNormalOrder();
-        allResults = searchState.getAllResults();
+        ignoreMaxRows = searchState.getIgnoreMaxRows();
         searchTermOperator = searchState.getSearchTermOperator();
         rollup = searchState.getRollup();
         rollupField = searchState.rollupField;
@@ -183,12 +183,12 @@ public class SearchState implements Serializable, Cloneable {
         this.sortNormalOrder = sortNormalOrder;
     }
 
-    public boolean getAllResults() {
-        return allResults;
+    public boolean getIgnoreMaxRows() {
+        return ignoreMaxRows;
     }
 
-    public void setAllResults(boolean allResults) {
-        this.allResults = allResults;
+    public void setIgnoreMaxRows(boolean ignoreMaxRows) {
+        this.ignoreMaxRows = ignoreMaxRows;
     }
 
     private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"[^\"]*\"|[^\" ,]+)");

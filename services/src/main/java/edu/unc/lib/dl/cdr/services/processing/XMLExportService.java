@@ -91,7 +91,7 @@ public class XMLExportService {
             searchState.setResultFields(resultFields);
             searchState.setSortType("export");
             searchState.setRowsPerPage(Integer.MAX_VALUE);
-            searchState.setAllResults(true);
+            searchState.setIgnoreMaxRows(true);
 
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
             searchRequest.setRootPid(pid);
