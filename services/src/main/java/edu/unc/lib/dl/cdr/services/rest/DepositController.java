@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jdom2.Content;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -57,11 +58,13 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import redis.clients.jedis.Jedis;
@@ -88,20 +91,13 @@ public class DepositController {
     private JobStatusFactory jobStatusFactory;
 
     @Resource
+    private DepositPipelineStatusFactory pipelineStatusFactory;
+
+    @Resource
     private File batchIngestFolder;
 
     @Autowired
     private GlobalPermissionEvaluator globalPermissionEvaluator;
-
-    class MutableInt {
-          int value = 0;
-          public void increment () {
-              ++value;
-          }
-          public int get () {
-              return value;
-          }
-    }
 
     @PostConstruct
     public void init() {
@@ -113,17 +109,16 @@ public class DepositController {
         LOG.debug("getInfo() called");
         Map<String, Object> result = new HashMap<>();
 
-        Map<String, MutableInt> counts = countWorkerStates();
+        DepositPipelineState pipelineState = pipelineStatusFactory.getPipelineState();
+        String pipeline = pipelineState == null ? "unknown" : pipelineState.toString();
         Map<String, MutableInt> countDepositStates = countDepositStates();
-        int active = counts.get("active").get();
-        result.put("active", (active > 0) ? true : false);
-        result.put("idle", (counts.get("idle").get()) > 0 ? true : false);
-        //result.put("activeJobs", counts.get("active").get());
-        result.put("activeJobs", countDepositStates.get(DepositState.running.name()).get());
-        result.put("queuedJobs", countDepositStates.get(DepositState.queued.name()).get());
-        result.put("pausedJobs", countDepositStates.get(DepositState.paused.name()).get());
-        result.put("failedJobs", countDepositStates.get(DepositState.failed.name()).get());
-        result.put("finishedJobs", countDepositStates.get(DepositState.finished.name()).get());
+        result.put("state", pipeline);
+        result.put("workers", determineWorkerState());
+        result.put("activeJobs", countDepositStates.get(DepositState.running.name()).getValue());
+        result.put("queuedJobs", countDepositStates.get(DepositState.queued.name()).getValue());
+        result.put("pausedJobs", countDepositStates.get(DepositState.paused.name()).getValue());
+        result.put("failedJobs", countDepositStates.get(DepositState.failed.name()).getValue());
+        result.put("finishedJobs", countDepositStates.get(DepositState.finished.name()).getValue());
         result.put("id", "DEPOSIT");
         LOG.debug("getInfo() added counts: {}", result);
 
@@ -134,6 +129,38 @@ public class DepositController {
             uris.put(s.name(), BASE_PATH + s.name());
         }
         LOG.debug("getInfo() has: {}", result);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        result.put("isAdmin", globalPermissionEvaluator.hasGlobalPermission(principals,
+                Permission.createAdminUnit));
+
+        return result;
+    }
+
+    private String determineWorkerState() {
+        Map<String, MutableInt> counts = countWorkerStates();
+        int active = counts.get("active").getValue();
+        int idle = counts.get("idle").getValue();
+        int paused = counts.get("paused").getValue();
+
+        LOG.debug("Work states: Active {}, Idle {}, Paused {}", active, idle, paused);
+
+        String result = "";
+        if (active > 0) {
+            result = active + " active";
+        }
+        if (idle > 0) {
+            if (result.length() > 0) {
+                result += ", ";
+            }
+            result += idle + " idle";
+        }
+        if (paused > 0) {
+            if (result.length() > 0) {
+                result += ", ";
+            }
+            result += paused + " paused";
+        }
 
         return result;
     }
@@ -169,7 +196,7 @@ public class DepositController {
             final Set<String> workerNames = jedis.smembers("resque:workers");
             for (final String workerName : workerNames) {
                 final String statusPayload = jedis.get("resque:worker:" + workerName);
-                if (statusPayload == null) { // no payload key for works that just started
+                if (statusPayload == null) { // no payload key for workers that just started
                     result.get("idle").increment();
                 } else {
                     try {

@@ -68,11 +68,14 @@ import edu.unc.lib.dl.metrics.CounterFactory;
 import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineAction;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 import io.dropwizard.metrics5.Counter;
@@ -101,6 +104,9 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private DepositStatusFactory depositStatusFactory;
+
+    @Autowired
+    private DepositPipelineStatusFactory pipelineStatusFactory;
 
     @Autowired
     private JobStatusFactory jobStatusFactory;
@@ -149,9 +155,16 @@ public class DepositSupervisor implements WorkerListener {
     @Autowired
     private File depositsDirectory;
 
+    private long actionMonitorDelay = 1000l;
+
     private int cleanupDelaySeconds;
 
     private int unavailableDelaySeconds;
+
+    private boolean isQuieted;
+
+    // Visible for testing
+    protected ActionMonitoringTask actionMonitoringTask;
 
     public int getCleanupDelaySeconds() {
         return cleanupDelaySeconds;
@@ -171,6 +184,7 @@ public class DepositSupervisor implements WorkerListener {
 
     public DepositSupervisor() {
         id = UUID.randomUUID().toString();
+        actionMonitoringTask = new ActionMonitoringTask();
     }
 
     private static enum Queue {
@@ -199,6 +213,8 @@ public class DepositSupervisor implements WorkerListener {
     }
 
     public void start() {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.starting);
+
         // Repopulate the queue
         requeueAll();
 
@@ -207,59 +223,14 @@ public class DepositSupervisor implements WorkerListener {
             return;
         }
         timer = new Timer("DepositSupervisor " + id);
-        timer.schedule(new TimerTask() {
+        timer.schedule(actionMonitoringTask, actionMonitorDelay, actionMonitorDelay);
 
-            @Override
-            public void run() {
+        startWorkerPools();
 
-                try {
-                    // Scan for actions and trigger them
-                    for (Map<String, String> fields : depositStatusFactory.getAll()) {
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+    }
 
-                        String requestedActionName = fields.get(DepositField.actionRequest.name());
-                        String uuid = fields.get(DepositField.uuid.name());
-
-                        if (DepositAction.register.name().equals(requestedActionName)) {
-
-                            LOG.info("Registering job {}", uuid);
-
-                            if (depositStatusFactory.addSupervisorLock(uuid, id)) {
-                                try {
-                                    queueNewDeposit(uuid, fields);
-                                } finally {
-                                    depositStatusFactory.removeSupervisorLock(uuid);
-                                }
-                            }
-
-                        } else if (DepositAction.pause.name().equals(requestedActionName)) {
-
-                            LOG.info("Pausing job {}", uuid);
-
-                            depositStatusFactory.setState(uuid, DepositState.paused);
-                            depositStatusFactory.clearActionRequest(uuid);
-
-                        } else if (DepositAction.resume.name().equals(requestedActionName)) {
-
-                            LOG.info("Resuming job {}", uuid);
-
-                            if (depositStatusFactory.addSupervisorLock(uuid, id)) {
-                                try {
-                                    resumeDeposit(uuid, fields);
-                                } finally {
-                                    depositStatusFactory.removeSupervisorLock(uuid);
-                                }
-                            }
-
-                        }
-
-                    }
-                } catch (Throwable t) {
-                    LOG.error("Encountered an exception while checking for action requests", t);
-                }
-            }
-
-        }, 1000, 1000);
-
+    protected void startWorkerPools() {
         for (WorkerPool pool : depositWorkerPools) {
             if (pool.isShutdown()) {
                 throw new Error("Cannot start deposit workers, already shutdown.");
@@ -271,6 +242,183 @@ public class DepositSupervisor implements WorkerListener {
                 pool.run();
             }
         }
+    }
+
+    /**
+     * TimerTask used to monitor for actions to the deposit pipeline or deposits
+     */
+    protected class ActionMonitoringTask extends TimerTask {
+        @Override
+        public void run() {
+            try {
+                // Check for actions taken against the deposit pipeline
+                DepositPipelineAction pipelineAction = pipelineStatusFactory.getPipelineAction();
+
+                if (pipelineAction != null) {
+                    performPipelineAction(pipelineAction);
+                    return;
+                }
+
+                // Do not process deposit actions while quieted
+                if (isQuieted) {
+                    return;
+                }
+
+                // Scan for deposit actions and trigger them
+                for (Map<String, String> fields : depositStatusFactory.getAll()) {
+                    performDepositAction(fields);
+                }
+            } catch (Throwable t) {
+                LOG.error("Encountered an exception while checking for action requests", t);
+            }
+        }
+
+        private void performPipelineAction(DepositPipelineAction pipelineAction) {
+            DepositPipelineState state = pipelineStatusFactory.getPipelineState();
+
+            switch (pipelineAction) {
+            case quiet:
+                LOG.warn("Quieting the deposit pipeline, deposits and works will cease work soon");
+                if (DepositPipelineState.active.equals(state)) {
+                    quiet(false, false);
+                } else {
+                    LOG.debug("Cannot unquiet deposit pipeline in state {}", state);
+                }
+
+                break;
+            case stop:
+                if (DepositPipelineState.shutdown.equals(state)
+                        || DepositPipelineState.stopped.equals(state)) {
+                    LOG.debug("Cannot stop deposit pipeline in state {}", state);
+                } else {
+                    stop(true);
+                }
+                break;
+            case unquiet:
+                if (DepositPipelineState.quieted.equals(state)) {
+                    unquiet();
+                } else {
+                    LOG.debug("Cannot unquiet deposit pipeline in state {}", state);
+                }
+                break;
+            default:
+                LOG.warn("Unknown deposit pipeline action {} requested", pipelineAction);
+                break;
+            }
+
+            pipelineStatusFactory.clearPipelineActionRequest();
+        }
+
+        private void performDepositAction(Map<String, String> fields) {
+            String requestedActionName = fields.get(DepositField.actionRequest.name());
+            if (requestedActionName == null) {
+                return;
+            }
+
+            String uuid = fields.get(DepositField.uuid.name());
+            DepositAction depositAction = DepositAction.valueOf(requestedActionName);
+
+            switch (depositAction) {
+            case register:
+                LOG.info("Registering job {}", uuid);
+
+                if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+                    try {
+                        queueNewDeposit(uuid, fields);
+                    } finally {
+                        depositStatusFactory.removeSupervisorLock(uuid);
+                    }
+                }
+                break;
+            case resume:
+                LOG.info("Resuming job {}", uuid);
+                if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+                    try {
+                        resumeDeposit(uuid, fields);
+                    } finally {
+                        depositStatusFactory.removeSupervisorLock(uuid);
+                    }
+                }
+                break;
+            case pause:
+                LOG.info("Pausing job {}", uuid);
+                depositStatusFactory.setState(uuid, DepositState.paused);
+                break;
+            case cancel:
+            case destroy:
+            default:
+                LOG.warn("Deposit action {} is not currently supported", requestedActionName);
+                break;
+            }
+
+            depositStatusFactory.clearActionRequest(uuid);
+        }
+    }
+
+    /**
+     * Quiet the pipeline and running deposits, so that no new deposits or deposit jobs will start
+     *
+     * @param stopWorkers will stop the worker pools if true
+     * @param stopNow will attempt to immediately stop workers
+     */
+    protected void quiet(boolean stopWorkers, boolean stopNow) {
+        isQuieted = true;
+
+        if (!stopWorkers) {
+            // Pause all worker pools to prevent new jobs from starting
+            for (WorkerPool pool : depositWorkerPools) {
+                pool.togglePause(true);
+            }
+        }
+
+        // Quiet all deposits
+        Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
+
+        for (Map<String, String> fields : depositStatuses) {
+            DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
+            if (DepositState.running.equals(depositState)) {
+                String uuid = fields.get(DepositField.uuid.name());
+                depositStatusFactory.setState(uuid, DepositState.quieted);
+            }
+        }
+
+        if (stopWorkers) {
+            // End the worker pools to prevent further processing, immediately if requested
+            for (WorkerPool pool : depositWorkerPools) {
+                pool.end(stopNow);
+            }
+        }
+
+        if (stopWorkers) {
+            pipelineStatusFactory.setPipelineState(DepositPipelineState.stopped);
+        } else {
+            pipelineStatusFactory.setPipelineState(DepositPipelineState.quieted);
+        }
+    }
+
+    /**
+     * Resume the deposit pipeline and all quieted deposits
+     */
+    protected void unquiet() {
+        // Resume all quieted deposits
+        Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
+
+        for (Map<String, String> fields : depositStatuses) {
+            DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
+            // If the deposit is quieted and has no queued actions, then request it be resumed
+            if (DepositState.quieted.equals(depositState) && !fields.containsKey(DepositField.actionRequest.name())) {
+                String uuid = fields.get(DepositField.uuid.name());
+                depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+            }
+        }
+
+        // Unpause workers
+        for (WorkerPool pool : depositWorkerPools) {
+            pool.togglePause(false);
+        }
+
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+        isQuieted = false;
     }
 
     private Map<String, Set<String>> getQueuedDepositsWithJobs() {
@@ -306,9 +454,10 @@ public class DepositSupervisor implements WorkerListener {
 
         LOG.info("Repopulating the deposit queue, {} items in backlog", depositStatuses.size());
 
-        // Requeue the previously running jobs from where they left off first
+        // Requeue the previously running or quieted jobs from where they left off first
         for (Map<String, String> fields : depositStatuses) {
-            if (DepositState.running.name().equals(fields.get(DepositField.state.name()))) {
+            DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
+            if (DepositState.running.equals(depositState) || DepositState.quieted.equals(depositState)) {
                 String uuid = fields.get(DepositField.uuid.name());
 
                 // Job may have been locked to a particular supervisor depend on when it was interrupted
@@ -319,7 +468,7 @@ public class DepositSupervisor implements WorkerListener {
                     if (depositSet.get(uuid).contains(CleanupDepositJob.class.getName())) {
                         depositStatusFactory.setState(uuid, DepositState.finished);
                     } else {
-                        LOG.debug("Skipping resumption of deposit {} because it already is in the queue", uuid);
+                        LOG.info("Skipping resumption of deposit {} because it already is in the queue", uuid);
                     }
                 } else {
                     depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
@@ -329,7 +478,8 @@ public class DepositSupervisor implements WorkerListener {
 
         // Requeue the "queued" jobs next
         for (Map<String, String> fields : depositStatuses) {
-            if (DepositState.queued.name().equals(fields.get(DepositField.state.name()))) {
+            DepositState depositState = DepositState.valueOf(fields.get(DepositField.state.name()));
+            if (DepositState.queued.equals(depositState)) {
                 String uuid = fields.get(DepositField.uuid.name());
 
                 depositStatusFactory.removeSupervisorLock(uuid);
@@ -353,19 +503,21 @@ public class DepositSupervisor implements WorkerListener {
         }
     }
 
-    public void stop() {
-        LOG.info("Stopping the Deposit Supervisor");
-        if (timer != null) { // stop registering new deposits
+    /**
+     * Stops the deposit supervisor, preventing new jobs from starting or actions being processed
+     *
+     * @param stopNow if true, ongoing deposit jobs will be interrupted, potentially ending them before a breakpoint
+     */
+    public void stop(boolean stopNow) {
+        LOG.info("Stopping the deposit pipeline, workers will stop and deposits will be quieted.");
+        if (timer != null) { // stop processing deposit actions
             this.timer.cancel();
             this.timer.purge();
             this.timer = null;
         }
 
-        for (WorkerPool pool : depositWorkerPools) {
-            pool.togglePause(true); // take no new jobs
-            pool.end(false); // cancel running jobs without interrupting
-        }
-        LOG.info("Stopped the Deposit Supervisor");
+        quiet(true, stopNow);
+        LOG.warn("Stopped the deposit pipeline. To resume operations, restart the deposit service.");
     }
 
     public DepositStatusFactory getDepositStatusFactory() {
@@ -392,9 +544,18 @@ public class DepositSupervisor implements WorkerListener {
         this.depositsDirectory = depositsDirectory;
     }
 
+    public void setActionMonitorDelay(long monitorDelay) {
+        this.actionMonitorDelay = monitorDelay;
+    }
+
     @PreDestroy
     public void shutdown() {
-        stop();
+        LOG.info("Stopping the Deposit Supervisor");
+
+        stop(false);
+
+        pipelineStatusFactory.setPipelineState(DepositPipelineState.shutdown);
+        LOG.info("Stopped the Deposit Supervisor");
     }
 
     public Job makeJob(@SuppressWarnings("rawtypes") Class jobClass,

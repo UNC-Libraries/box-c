@@ -82,6 +82,7 @@ import edu.unc.lib.dl.util.ZipFileUtil;
  *
  */
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/redis-server-context.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/ingest-it-servlet.xml")
 })

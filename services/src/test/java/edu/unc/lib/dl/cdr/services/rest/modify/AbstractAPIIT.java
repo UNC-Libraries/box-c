@@ -62,7 +62,7 @@ public abstract class AbstractAPIIT {
     protected String baseAddress;
     @Autowired
     protected WebApplicationContext context;
-    @Autowired
+    @Autowired(required = false)
     protected AccessControlService aclService;
     @Autowired(required = false)
     protected RepositoryObjectFactory repositoryObjectFactory;

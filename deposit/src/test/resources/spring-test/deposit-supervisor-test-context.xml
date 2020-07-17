@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder />
+    
+    <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
+    </bean>
+    
+    <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.deposit.work.DepositEmailHandler" />
+    </bean>
+    
+    <bean id="mockDepositDirectory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="java.io.File" />
+    </bean>
+    
+    <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
+        <constructor-arg ref="jesqueConfig" />
+        <constructor-arg ref="jedisPool" />
+    </bean>
+    
+    <bean id="jobFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.util.SpringJobFactory" />
+    </bean>
+    
+    <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE</value>
+                        <value>DELAYED_PREPARE</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="2" />
+    </bean>
+    
+    <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_HIGH_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="2" />
+    </bean>
+    
+    <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
+        <ref bean="depositWorkerPool"/>
+        <ref bean="highPriorityDepositWorkerPool"/>
+    </util:list>
+    
+    <bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" >
+        <property name="jesqueConfig" ref="jesqueConfig"/>
+        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
+        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
+    </bean>
+</beans>

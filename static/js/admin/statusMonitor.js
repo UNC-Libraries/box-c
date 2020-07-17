@@ -11,6 +11,7 @@ require.config({
 		
 		'StatusMonitorManager' : 'cdr-admin',
 		'AbstractStatusMonitor' : 'cdr-admin',
+		'ActionEventHandler' : 'cdr-admin',
 		'DepositMonitor' : 'cdr-admin',
 		'URLUtilities' : 'cdr-admin',
 		
