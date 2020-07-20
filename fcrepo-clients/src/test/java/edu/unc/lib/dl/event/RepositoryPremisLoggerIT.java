@@ -299,10 +299,18 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Resource anotherEvent = logger.buildEvent(Premis.note)
                 .addEventDetail("first premis event")
                 .create();
+        PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());
         Runnable writeThreadRunnable = new Runnable() {
             @Override
             public void run() {
+                Lock writeLock = lockManager.awaitWriteLock(logPid);
                 logger.writeEvents(anotherEvent);
+                try {
+                    Thread.sleep(25);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                writeLock.unlock();
             }
         };
         Thread writeThread = new Thread(writeThreadRunnable);
@@ -319,7 +327,6 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         };
         Thread readThread = new Thread(readThreadRunnable);
         writeThread.start();
-        Thread.sleep(25);
         readThread.start();
 
         assertEquals(0, premisNotes.size());
