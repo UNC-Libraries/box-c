@@ -319,6 +319,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         };
         Thread readThread = new Thread(readThreadRunnable);
         writeThread.start();
+        Thread.sleep(25);
         readThread.start();
 
         assertEquals(0, premisNotes.size());
