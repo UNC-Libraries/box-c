@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -48,7 +50,6 @@ import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -161,16 +162,11 @@ public class ExportController extends AbstractSolrSearchController {
         }
 
         // DATA_FILE info: mime type, checksum, file size
-
-        Datastream dataFileDatastream = null;
-
-        if (ResourceType.File.equals(object.getResourceType())) {
-//            dataFileDatastream = object.getDatastreamObject(ContentModelHelper.Datastream.DATA_FILE.toString());
-        }
+        Datastream dataFileDatastream = object.getDatastreamObject(ORIGINAL_FILE.getId());
 
         if (dataFileDatastream != null) {
             printer.print(dataFileDatastream.getMimetype());
-            printer.print(dataFileDatastream.getChecksum());
+            printer.print(dataFileDatastream.getChecksum().replace("urn:", ""));
 
             Long filesize = dataFileDatastream.getFilesize();
 
