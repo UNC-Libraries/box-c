@@ -81,7 +81,7 @@ public class FilePremisLogger implements PremisLogger {
     /**
      * Adds an event to the log file
      *
-     * @param eventResc
+     * @param eventResources
      * @return
      */
     @Override

@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.services;
+package edu.unc.lib.dl.persist.api.services;
+
+import com.google.common.util.concurrent.Striped;
+import edu.unc.lib.dl.fedora.PID;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-
-import com.google.common.util.concurrent.Striped;
-
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Manager for getting locks on PID objects

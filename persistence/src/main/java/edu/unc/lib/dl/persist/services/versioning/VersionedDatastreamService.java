@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import org.apache.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -35,7 +36,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.PidLockManager;
 
 /**
  * Service for managing versions of a datastream using an XML based history log.

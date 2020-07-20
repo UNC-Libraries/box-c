@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -50,6 +51,8 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
+
 
 /**
  * Logs PREMIS events for a repository object, which are persisted as PREMIS
@@ -61,6 +64,7 @@ import edu.unc.lib.dl.util.RDFModelUtil;
 public class RepositoryPremisLogger implements PremisLogger {
 
     private static final Logger log = getLogger(RepositoryPremisLogger.class);
+    private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
@@ -101,54 +105,58 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     @Override
     public PremisLogger writeEvents(Resource... eventResources) {
-        Model logModel = ModelFactory.createDefaultModel();
-
-        Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
-        boolean isNewLog = s == null;
-
-        // For new logs, add in representation statement
-        if (isNewLog) {
-            Resource repoObjResc = logModel.getResource(repoObject.getPid().getRepositoryPath());
-            repoObjResc.addProperty(RDF.type, Premis.Representation);
-        }
-
-        // Add new events to log
-        for (Resource eventResc: eventResources) {
-            logModel.add(eventResc.getModel());
-        }
-
-        // Stream the event RDF as NTriples
-        InputStream modelStream;
+        PID objPid = repoObject.getPid();
+        PID logPid = getMdEventsPid(objPid);
+        Lock logLock = lockManager.awaitWriteLock(logPid);
         try {
-            modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
-        } catch (IOException e) {
-            throw new ObjectPersistenceException("Failed to serialize event to RDF for " + repoObject.getPid(), e);
-        }
+            Model logModel = ModelFactory.createDefaultModel();
 
-        // Premis event log not created yet
-        if (isNewLog) {
-            createLog(modelStream);
-        } else {
-            PID objPid = repoObject.getPid();
-            log.debug("Adding events to PREMIS log for {}", objPid);
+            Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+            boolean isNewLog = s == null;
 
-            PID logPid = getMdEventsPid(objPid);
-            // Event log exists, append new events to it
-            BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
-
-            InputStream newContentStream = new SequenceInputStream(
-                    new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
-                    modelStream);
-
-            try (InputStream existingLogStream = logObj.getBinaryStream()) {
-                InputStream mergedStream = new SequenceInputStream(
-                        existingLogStream,
-                        newContentStream);
-
-                updateOrCreateLog(mergedStream);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to close log existing stream", e);
+            // For new logs, add in representation statement
+            if (isNewLog) {
+                Resource repoObjResc = logModel.getResource(objPid.getRepositoryPath());
+                repoObjResc.addProperty(RDF.type, Premis.Representation);
             }
+
+            // Add new events to log
+            for (Resource eventResc: eventResources) {
+                logModel.add(eventResc.getModel());
+            }
+
+            // Stream the event RDF as NTriples
+            InputStream modelStream;
+            try {
+                modelStream = RDFModelUtil.streamModel(logModel, RDFFormat.NTRIPLES);
+            } catch (IOException e) {
+                throw new ObjectPersistenceException("Failed to serialize event to RDF for " + objPid, e);
+            }
+
+            // Premis event log not created yet
+            if (isNewLog) {
+                createLog(modelStream);
+            } else {
+                log.debug("Adding events to PREMIS log for {}", objPid);
+                // Event log exists, append new events to it
+                BinaryObject logObj = repoObjLoader.getBinaryObject(logPid);
+
+                InputStream newContentStream = new SequenceInputStream(
+                        new ByteArrayInputStream(lineSeparator().getBytes(UTF_8)),
+                        modelStream);
+
+                try (InputStream existingLogStream = logObj.getBinaryStream()) {
+                    InputStream mergedStream = new SequenceInputStream(
+                            existingLogStream,
+                            newContentStream);
+
+                    updateOrCreateLog(mergedStream);
+                } catch (IOException e) {
+                    throw new RepositoryException("Failed to close log existing stream", e);
+                }
+            }
+        } finally {
+            logLock.unlock();
         }
 
         return this;
@@ -175,11 +183,14 @@ public class RepositoryPremisLogger implements PremisLogger {
     @Override
     public Model getEventsModel() {
         PID logPid = DatastreamPids.getMdEventsPid(repoObject.getPid());
+        Lock logLock = lockManager.awaitReadLock(logPid);
         try {
             BinaryObject eventsObj = repoObjLoader.getBinaryObject(logPid);
             return RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
         } catch (NotFoundException e) {
             return ModelFactory.createDefaultModel();
+        } finally {
+            logLock.unlock();
         }
     }
 
