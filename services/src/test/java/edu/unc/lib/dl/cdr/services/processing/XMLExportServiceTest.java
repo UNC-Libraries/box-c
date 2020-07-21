@@ -203,7 +203,7 @@ public class XMLExportServiceTest {
 
         Element objEl = rootEl.getChild("object");
 
-        assertEquals(pid1.getRepositoryPath(), objEl.getAttributeValue("pid"));
+        assertEquals(pid1.getQualifiedId(), objEl.getAttributeValue("pid"));
 
         Element updateEl = objEl.getChild("update");
         assertEquals("MODS", updateEl.getAttributeValue("type"));
@@ -300,7 +300,7 @@ public class XMLExportServiceTest {
         List<Element> objEls = rootEl.getChildren("object");
         for (Element objEl : objEls) {
             String pidAttr = objEl.getAttributeValue("pid");
-            if (pid.getRepositoryPath().equals(pidAttr)) {
+            if (pid.getQualifiedId().equals(pidAttr)) {
                 return objEl;
             }
         }
