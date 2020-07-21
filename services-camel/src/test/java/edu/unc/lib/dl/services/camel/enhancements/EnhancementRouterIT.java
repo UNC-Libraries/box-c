@@ -181,7 +181,7 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(3)
+                .whenCompleted(7)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
@@ -201,7 +201,7 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
+                .whenCompleted(2)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
@@ -225,7 +225,7 @@ public class EnhancementRouterIT {
 
         // Separate exchanges when multicasting
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(9)
+                .whenCompleted(13)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);

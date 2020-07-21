@@ -42,11 +42,6 @@ public class FulltextRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct:process.enhancement.extractFulltext")
             .routeId("CdrServiceFulltextExtraction")

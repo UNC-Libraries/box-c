@@ -18,7 +18,6 @@ package edu.unc.lib.dl.services.camel.longleaf;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.directvm.DirectVmConsumerNotAvailableException;
 
 /**
  * Router for longleaf operations
@@ -35,12 +34,6 @@ public class LongleafRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        onException(DirectVmConsumerNotAvailableException.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries(3)
-            .backOffMultiplier("{{error.backOffMultiplier}}")
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
-
         from("direct-vm:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
             .startupOrder(4)

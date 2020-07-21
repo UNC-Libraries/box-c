@@ -35,24 +35,18 @@ public class SolrRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        onException(NotFoundException.class)
-        .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
-        .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
-        .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
-        .retryAttemptedLogLevel(LoggingLevel.DEBUG);
-
-        onException(ObjectTombstonedException.class)
-        .retryAttemptedLogLevel(LoggingLevel.DEBUG);
-
-        onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
-
         from("direct:solrIndexing")
             .routeId("CdrServiceSolr")
             .startupOrder(40)
+            .onException(NotFoundException.class)
+                .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
+                .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
+                .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
+                .retryAttemptedLogLevel(LoggingLevel.DEBUG)
+            .end()
+            .onException(ObjectTombstonedException.class)
+                .retriesExhaustedLogLevel(LoggingLevel.DEBUG)
+            .end()
             .log(LoggingLevel.DEBUG, "Calling solr indexing route for ${headers[org.fcrepo.jms.identifier]}")
             .bean(solrIngestProcessor);
     }

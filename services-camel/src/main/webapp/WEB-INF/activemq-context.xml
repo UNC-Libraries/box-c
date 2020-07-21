@@ -33,6 +33,8 @@
 
     <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig" />
+        <property name="transacted" value="true" />
+        <property name="lazyCreateTransactionManager" value="false" />
     </bean>
     
     <bean class="org.springframework.jms.core.JmsTemplate">
