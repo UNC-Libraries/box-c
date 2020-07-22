@@ -1,7 +1,7 @@
 <template>
     <div class="browse-sort select is-medium">
         <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">
-            <option value="">Sort by...</option>
+            <option value="default,normal">Sort by...</option>
             <option value="title,normal">Title A-Z</option>
             <option value="title,reverse">Title Z-A</option>
             <option value="dateAdded,normal">Date Created (newest)</option>
@@ -12,6 +12,7 @@
 
 <script>
     import routeUtils from '../mixins/routeUtils';
+    const DEFAULT_SEARCH = 'default,normal';
 
     export default {
         name: 'browseSort',
@@ -24,20 +25,18 @@
 
         data() {
             return {
-                sort_order: ''
+                sort_order: DEFAULT_SEARCH
             }
         },
 
         watch: {
             '$route.query'(route) {
-                this.sort_order = this.$route.query.sort || this.setDefaultSort();
+                this.setSort();
             }
         },
 
         methods: {
             sortRecords() {
-                this.setDefaultSort();
-
                 let is_search_sort = this.browseType === 'search';
 
                 this.$router.push({
@@ -50,15 +49,13 @@
                 });
             },
 
-            setDefaultSort() {
-                if (this.sort_order === '') {
-                    this.sort_order = 'title,normal';
-                }
+            setSort() {
+                this.sort_order = this.$route.query.sort || DEFAULT_SEARCH;
             }
         },
 
         mounted() {
-            this.sort_order = this.$route.query.sort || this.setDefaultSort();
+            this.setSort();
         }
     };
 </script>
