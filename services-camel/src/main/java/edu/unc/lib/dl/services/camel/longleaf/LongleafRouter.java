@@ -35,6 +35,8 @@ public class LongleafRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("direct-vm:filter.longleaf")
+            .routeId("RegisterLongleafQueuing")
+            .startupOrder(4)
             .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")
             .log(LoggingLevel.DEBUG, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to("sjms:register.longleaf?transacted=true");
@@ -44,10 +46,14 @@ public class LongleafRouter extends RouteBuilder {
                 + "&consumerCount={{longleaf.register.consumers}}"
                 + "&aggregationStrategy=#longleafAggregationStrategy"
                 + "&connectionFactory=jmsFactory")
+            .routeId("RegisterLongleafProcessing")
+            .startupOrder(3)
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf registrations")
             .bean(registerProcessor);
 
         from("activemq://activemq:queue:filter.longleaf.deregister")
+            .routeId("DeregisterLongleafQueuing")
+            .startupOrder(2)
             .log(LoggingLevel.DEBUG, "Queuing ${body} for deregistration in longleaf")
             .to("sjms:deregister.longleaf?transacted=true");
 
@@ -56,6 +62,8 @@ public class LongleafRouter extends RouteBuilder {
                 + "&consumerCount={{longleaf.register.consumers}}"
                 + "&aggregationStrategy=#longleafAggregationStrategy"
                 + "&connectionFactory=jmsFactory")
+            .routeId("DeregisterLongleafProcessing")
+            .startupOrder(1)
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf deregistrations")
             .bean(deregisterProcessor);
     }

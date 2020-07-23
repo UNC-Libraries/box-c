@@ -20,10 +20,13 @@ import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.LoggingLevel.INFO;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
@@ -38,6 +41,8 @@ import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
  *
  */
 public class EnhancementRouter extends RouteBuilder {
+    private static final Logger log = getLogger(EnhancementRouter.class);
+
     @BeanInject(value = "binaryEnhancementProcessor")
     private BinaryEnhancementProcessor enProcessor;
 
@@ -54,16 +59,19 @@ public class EnhancementRouter extends RouteBuilder {
     private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
+
+        // Queue which interprets fedora messages into enhancement requests
         from("{{cdr.enhancement.stream.camel}}")
             .routeId("ProcessEnhancementQueue")
+            .startupOrder(110)
             .process(enProcessor)
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Tombstone.getURI() + "'"))
-                    .log(DEBUG, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
+                    .log(DEBUG, log, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
                 // Process binary enhancement requests
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-                    .log(INFO, "Processing binary ${headers[CamelFcrepoUri]}")
+                    .log(INFO, log, "Processing binary ${headers[CamelFcrepoUri]}")
                     .to("direct:process.binary")
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
@@ -72,42 +80,60 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
-                    .log(DEBUG, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
+                    .log(DEBUG, log, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .process(nbProcessor)
-                    .choice()
-                        .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
-                            .to("direct-vm:solrIndexing")
-                        .otherwise()
-                            .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
-                                    "for ${headers[CamelFcrepoUri]}")
-                            .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
-                            .multicast()
-                            .to("direct:process.enhancements", "direct-vm:solrIndexing")
-                    .end()
+                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                    .to("{{cdr.enhancement.perform.camel}}")
             .end();
 
+        // Route which processes fedora binary objects
         from("direct:process.binary")
             .routeId("ProcessBinary")
+            .startupOrder(109)
             .multicast()
             .to("direct-vm:filter.longleaf", "direct:process.original");
 
+        // Route to perform enhancements IF a binary is an original file
         from("direct:process.original")
             .routeId("ProcessOriginalBinary")
+            .startupOrder(108)
             .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
                 .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
-            .log(INFO, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
-                    "for ${headers[CamelFcrepoUri]}")
-            .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
-            .process(mdProcessor)
-            .filter(header(CdrBinaryPath).isNotNull())
-                .multicast()
-                .to("direct:process.enhancements", "direct-vm:solrIndexing");
+                .process(mdProcessor)
+                .filter(header(CdrBinaryPath).isNotNull())
+                    .to("{{cdr.enhancement.perform.camel}}");
 
+        // Queue for executing enhancnement operations
+        from("{{cdr.enhancement.perform.camel}}")
+            .routeId("PerformEnhancementsQueue")
+            .startupOrder(107)
+            .choice()
+            .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
+                .log(INFO, log, "Indexing queued resource without binary path ${headers[CamelFcrepoUri]}")
+                .to("direct:solrIndexing")
+            .otherwise()
+                .log(INFO, log, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                    "for ${headers[CamelFcrepoUri]}")
+                .multicast()
+                // trigger enhancements sequentially followed by indexing
+                .to("direct:process.enhancements", "direct:solrIndexing")
+            .end();
+
+        // Expands enhancement requests into individual services
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
-            .split(simple("${headers[CdrEnhancementSet]}"))
-                .log(INFO, "Calling enhancement direct-vm:process.enhancement.${body}")
-                .toD("direct-vm:process.enhancement.${body}");
+            .startupOrder(106)
+            .doTry()
+                .split(simple("${headers[CdrEnhancementSet]}"))
+                    .shareUnitOfWork()
+                    .log(LoggingLevel.INFO, log, "Calling enhancement direct:process.enhancement.${body}")
+                    .toD("direct:process.enhancement.${body}")
+                .end()
+            .endDoTry()
+            .doCatch(IllegalStateException.class)
+                .log(LoggingLevel.WARN, log, "Shutdown interrupted processing of ${headers[CdrBinaryPath]}, requeuing")
+                .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
+                .inOnly("{{cdr.enhancement.perform.camel}}");
+
     }
 }

@@ -103,9 +103,6 @@ public class EnhancementRouterIT {
     @Autowired
     private CamelContext cdrEnhancements;
 
-    @Autowired
-    private CamelContext cdrServiceSolr;
-
     @Produce(uri = "{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
 
@@ -184,18 +181,11 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
-                .create();
-
-        NotifyBuilder notify2 = new NotifyBuilder(cdrServiceSolr)
-                .whenCompleted(1)
+                .whenCompleted(7)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
         assertTrue("Enhancement route not satisfied", result1);
-
-        boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Indexing route not satisfied", result2);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
@@ -211,7 +201,7 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(1)
+                .whenCompleted(2)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
@@ -235,18 +225,11 @@ public class EnhancementRouterIT {
 
         // Separate exchanges when multicasting
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(3)
-                .create();
-
-        NotifyBuilder notify2 = new NotifyBuilder(cdrServiceSolr)
-                .whenCompleted(1)
+                .whenCompleted(13)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
         assertTrue("Enhancement route not satisfied", result1);
-
-        boolean result2 = notify2.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Indexing route not satisfied", result2);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));

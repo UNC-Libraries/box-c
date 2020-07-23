@@ -15,10 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.fulltext;
 
-import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+
+import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 
 /**
  * Routes ingests with full text available through a pipeline to extract
@@ -41,14 +42,10 @@ public class FulltextRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("direct-vm:process.enhancement.extractFulltext")
+        from("direct:process.enhancement.extractFulltext")
             .routeId("CdrServiceFulltextExtraction")
+            .startupOrder(31)
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
             .filter().method(adProcessor, "needsRun")
             .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
@@ -58,6 +55,7 @@ public class FulltextRouter extends RouteBuilder {
 
         from("direct:fulltext.extraction")
             .routeId("ExtractingText")
+            .startupOrder(30)
             .log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
             .bean(ftProcessor);
     }

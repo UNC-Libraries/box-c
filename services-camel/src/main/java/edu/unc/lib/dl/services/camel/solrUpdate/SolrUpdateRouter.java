@@ -36,16 +36,16 @@ public class SolrUpdateRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         onException(NotFoundException.class)
-        .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
-        .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
-        .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
-        .retryAttemptedLogLevel(LoggingLevel.DEBUG);
+            .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
+            .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
+            .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
+            .retryAttemptedLogLevel(LoggingLevel.DEBUG);
 
         onException(Exception.class)
-        .redeliveryDelay("{{error.retryDelay}}")
-        .maximumRedeliveries("{{error.maxRedeliveries}}")
-        .backOffMultiplier("{{error.backOffMultiplier}}")
-        .retryAttemptedLogLevel(LoggingLevel.WARN);
+            .redeliveryDelay("{{error.retryDelay}}")
+            .maximumRedeliveries("{{error.maxRedeliveries}}")
+            .backOffMultiplier("{{error.backOffMultiplier}}")
+            .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.solrupdate.stream.camel}}")
             .routeId("CdrServiceSolrUpdate")

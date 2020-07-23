@@ -123,6 +123,11 @@ public class AddDerivativeProcessor implements Processor {
             parentDir.mkdirs();
         }
 
+        if (log.isDebugEnabled()) {
+            log.debug("Moving derivative file from source {} to destination {}, which exists? {}",
+                    derivativeTmpPath, derivativeFinalPath, derivative.exists());
+        }
+
         Files.move(Paths.get(derivativeTmpPath),
                 derivativeFinalPath, REPLACE_EXISTING);
     }
