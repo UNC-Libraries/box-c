@@ -15,18 +15,30 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -40,32 +52,98 @@ public class RecursiveTreeIndexer {
 
     private IndexingMessageSender messageSender;
 
+    private SparqlQueryService queryService;
+
+    private Set<String> CONTAINER_TYPES = new HashSet<>(Arrays.asList(Cdr.AdminUnit.getURI(),
+            Cdr.Collection.getURI(),
+            Cdr.ContentRoot.getURI(),
+            Cdr.Folder.getURI(),
+            Cdr.Work.getURI()));
+
     public RecursiveTreeIndexer() {
     }
 
     public void index(RepositoryObject repoObj, IndexingActionType actionType, String userid) throws IndexingException {
         PID pid = repoObj.getPid();
+        Set<String> types = repoObj.getResource().listProperties(RDF.type).toList().stream()
+                .map(Statement::getResource)
+                .map(Resource::getURI)
+                .collect(Collectors.toSet());
 
+        index(pid, types, actionType, userid);
+    }
+
+    private void index(PID pid, Set<String> types, IndexingActionType actionType, String userid) throws IndexingException {
+        if (types.contains(Cdr.Tombstone.getURI())) {
+            log.debug("Skipping indexing tombstone object {}", pid.getQualifiedId());
+            return;
+        }
+
+        long start = System.currentTimeMillis();
         messageSender.sendIndexingOperation(userid, pid, actionType);
+        log.warn("Time to send {} {}: {}", pid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
 
-        // Start indexing the children
-        if (repoObj instanceof ContentContainerObject) {
-            indexChildren((ContentContainerObject) repoObj, actionType, userid);
+        if (types.stream().anyMatch(CONTAINER_TYPES::contains)) {
+            // Start indexing the children
+            indexChildren(pid, actionType, userid);
         }
     }
 
-    public void indexChildren(ContentContainerObject parent, IndexingActionType actionType, String userid)
+    private void indexChildren(PID parentPid, IndexingActionType actionType, String userid)
             throws IndexingException {
-        List<ContentObject> children = parent.getMembers();
-        if (children == null || children.size() == 0) {
+        long start = System.currentTimeMillis();
+        Map<String, Set<String>> childToTypes = getMembers(parentPid);
+
+        if (childToTypes.size() == 0) {
             return;
         }
-        log.debug("Queuing {} children of {} for indexing", children.size(), parent.getPid());
-        for (ContentObject child : children) {
-            if (!(child instanceof Tombstone)) {
-                this.index(child, actionType, userid);
+        log.warn("Time to get children for {} {}: {}", parentPid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
+        start = System.currentTimeMillis();
+        log.debug("Queuing {} children of {} for indexing", childToTypes.size(), parentPid);
+        childToTypes.forEach((childPid, types) -> {
+            index(PIDs.get(childPid), types, actionType, userid);
+        });
+        log.warn("Finshed queuing children for {} {}: {}", parentPid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
+    }
+
+    private final static String CHILDREN_QUERY =
+            "select ?pid ?rdfType"
+            + " where {"
+                + " ?pid <%1$s> <%2$s> ."
+                + " ?pid <%3$s> ?rdfType . }";
+
+    private Map<String, Set<String>> getMembers(PID parentPid) {
+        String queryString = String.format(CHILDREN_QUERY,
+                PcdmModels.memberOf, parentPid.getURI(), RDF.type, Cdr.NS);
+
+        log.debug("Performing member query:\n{}", queryString);
+
+        Map<String, Set<String>> childToTypes = new HashMap<>();
+
+        try (QueryExecution qexec = queryService.executeQuery(queryString)) {
+            ResultSet results = qexec.execSelect();
+
+            while (results.hasNext()) {
+                QuerySolution soln = results.nextSolution();
+                Resource pidResc = soln.getResource("pid");
+                Resource type = soln.getResource("rdfType");
+
+                if (pidResc == null || type == null) {
+                    continue;
+                }
+
+                String pid = pidResc.getURI();
+
+                Set<String> types = childToTypes.get(pid);
+                if (types == null) {
+                    types = new HashSet<>();
+                    childToTypes.put(pid, types);
+                }
+                types.add(type.getURI());
             }
         }
+
+        return childToTypes;
     }
 
     /**
@@ -73,5 +151,9 @@ public class RecursiveTreeIndexer {
      */
     public void setIndexingMessageSender(IndexingMessageSender messageSender) {
         this.messageSender = messageSender;
+    }
+
+    public void setSparqlQueryService(SparqlQueryService queryService) {
+        this.queryService = queryService;
     }
 }

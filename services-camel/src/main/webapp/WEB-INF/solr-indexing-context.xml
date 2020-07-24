@@ -258,6 +258,7 @@
     
     <bean id="recursiveTreeIndexer" class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveTreeIndexer">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="updateTreeAction"
