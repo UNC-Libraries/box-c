@@ -154,6 +154,8 @@ public class PIDs {
             if (CONTENT_BASE.equals(idPart)) {
                 return RepositoryPaths.getContentBasePid();
             }
+        } else if (CONTENT_BASE.equals(id)) {
+            return RepositoryPaths.getContentBasePid();
         }
 
         return null;

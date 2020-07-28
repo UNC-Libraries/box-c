@@ -261,6 +261,16 @@ public class PIDsTest {
     }
 
     @Test
+    public void getContentBaseFromQualifiedIdTest() {
+        PID pid = PIDs.get(CONTENT_BASE);
+        PID fromQualified = PIDs.get(pid.getQualifiedId());
+
+        assertEquals(FEDORA_BASE + CONTENT_BASE, fromQualified.getRepositoryPath());
+        assertEquals(CONTENT_BASE, fromQualified.getId());
+        assertEquals(REPOSITORY_ROOT_ID, fromQualified.getQualifier());
+    }
+
+    @Test
     public void getRootFromIdTest() {
         PID pid = PIDs.get(REPOSITORY_ROOT_ID);
 
