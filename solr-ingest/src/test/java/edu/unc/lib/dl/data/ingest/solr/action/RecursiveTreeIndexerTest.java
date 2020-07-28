@@ -29,6 +29,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,10 +38,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -63,14 +68,24 @@ public class RecursiveTreeIndexerTest {
     @Captor
     protected ArgumentCaptor<PID> pidCaptor;
 
+    protected Model sparqlModel;
+    protected RecursiveTreeIndexer treeIndexer;
+    protected SparqlQueryService sparqlQueryService;
+
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
         containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
+        sparqlModel = ModelFactory.createDefaultModel();
+        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
+
+        indexTriples(containerObj);
+
         indexer = new RecursiveTreeIndexer();
         indexer.setIndexingMessageSender(messageSender);
+        indexer.setSparqlQueryService(sparqlQueryService);
     }
 
     @Test
@@ -107,6 +122,8 @@ public class RecursiveTreeIndexerTest {
         addMembers(containerObj, child1Obj, child2Obj);
         addMembers(child1Obj, fileObj);
 
+        indexTriples(containerObj, child1Obj, fileObj, child2Obj);
+
         indexer.index(containerObj, ADD, USER);
 
         verify(messageSender, times(4)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
@@ -117,5 +134,11 @@ public class RecursiveTreeIndexerTest {
         assertTrue(pids.contains(child1Obj.getPid()));
         assertTrue(pids.contains(fileObj.getPid()));
         assertTrue(pids.contains(child2Obj.getPid()));
+    }
+
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
+            sparqlModel.add(obj.getResource().getModel());
+        }
     }
 }

@@ -20,8 +20,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -29,6 +33,8 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  *
@@ -48,6 +54,10 @@ public class MockRepositoryObjectHelpers {
         FileObject fileObj = mock(FileObject.class);
         when(fileObj.getPid()).thenReturn(pid);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObj);
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(pid.getRepositoryPath());
+        resc.addProperty(RDF.type, Cdr.FileObject);
+        when(fileObj.getResource()).thenReturn(resc);
 
         return fileObj;
     }
@@ -61,6 +71,10 @@ public class MockRepositoryObjectHelpers {
         when(container.getMembers()).thenReturn(new ArrayList<>());
         when(container.getPid()).thenReturn(pid);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(pid.getRepositoryPath());
+        resc.addProperty(RDF.type, Cdr.Work);
+        when(container.getResource()).thenReturn(model.getResource(pid.getRepositoryPath()));
 
         return container;
     }
@@ -73,19 +87,21 @@ public class MockRepositoryObjectHelpers {
     public static ContentContainerObject addContainerToParent(ContentContainerObject container, PID childPid,
             RepositoryObjectLoader repositoryObjectLoader) {
         ContentContainerObject memberObj = makeContainer(childPid, repositoryObjectLoader);
-        container.getMembers().add(memberObj);
+        ContentObject child = (ContentObject) repositoryObjectLoader.getRepositoryObject(childPid);
+        child.getResource().addProperty(PcdmModels.memberOf, container.getResource());
         return memberObj;
     }
 
-    public static void addFileObjectToParent(ContentContainerObject container, PID childPid,
+    public static FileObject addFileObjectToParent(ContentContainerObject container, PID childPid,
             RepositoryObjectLoader repositoryObjectLoader) {
-        ContentObject memberObj = mock(FileObject.class);
-        when(memberObj.getPid()).thenReturn(childPid);
-        when(repositoryObjectLoader.getRepositoryObject(eq(childPid))).thenReturn(memberObj);
-        container.getMembers().add(memberObj);
+        FileObject memberObj = makeFileObject(childPid, repositoryObjectLoader);
+        memberObj.getResource().addProperty(PcdmModels.memberOf, container.getResource());
+        return memberObj;
     }
 
     public static void addMembers(ContentContainerObject container, ContentObject... children) {
-        when(container.getMembers()).thenReturn(Arrays.asList(children));
+        for (ContentObject child : children) {
+            child.getResource().addProperty(PcdmModels.memberOf, container.getResource());
+        }
     }
 }

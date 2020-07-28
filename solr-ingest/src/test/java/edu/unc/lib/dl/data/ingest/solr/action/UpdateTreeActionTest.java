@@ -29,6 +29,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,9 +41,12 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -59,6 +64,7 @@ public class UpdateTreeActionTest {
 
     protected UpdateTreeAction action;
 
+    protected Model sparqlModel;
     protected RecursiveTreeIndexer treeIndexer;
 
     @Mock
@@ -66,6 +72,8 @@ public class UpdateTreeActionTest {
 
     @Captor
     protected ArgumentCaptor<PID> pidCaptor;
+
+    protected SparqlQueryService sparqlQueryService;
 
     @Before
     public void setupTreeAction() throws Exception {
@@ -76,12 +84,18 @@ public class UpdateTreeActionTest {
         // Establish basic containment relations
         ContentContainerObject obj1 = makeContainer(corpus.pid1, repositoryObjectLoader);
         ContentContainerObject obj2 = addContainerToParent(obj1, corpus.pid2, repositoryObjectLoader);
-        addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
-        addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
-        addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
+        FileObject file1 = addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
+        FileObject file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
+        FileObject file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
+
+        sparqlModel = ModelFactory.createDefaultModel();
+        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
+
+        indexTriples(obj1, obj2, file1, file2, file3);
 
         treeIndexer = new RecursiveTreeIndexer();
         treeIndexer.setIndexingMessageSender(messageSender);
+        treeIndexer.setSparqlQueryService(sparqlQueryService);
 
         action = getAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -108,27 +122,11 @@ public class UpdateTreeActionTest {
     }
 
     @Test
-    public void testDanglingContains() throws Exception {
-        // Add containment of non-existent object
-        ContentContainerObject obj4 = makeContainer(corpus.pid4, repositoryObjectLoader);
-        addFileObjectToParent(obj4, corpus.nonExistentPid, repositoryObjectLoader);
-
-        action.performAction(new SolrUpdateRequest(corpus.pid2.getRepositoryPath(),
-                RECURSIVE_ADD, "1", USER));
-
-        verify(messageSender, times(3)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
-                eq(IndexingActionType.ADD));
-
-        List<PID> pids = pidCaptor.getAllValues();
-        assertTrue(pids.contains(corpus.pid2));
-        assertTrue(pids.contains(corpus.pid4));
-        assertTrue(pids.contains(corpus.pid6));
-    }
-
-    @Test
     public void testNoDescendents() throws Exception {
         ContentObject obj6 = mock(ContentObject.class);
         when(obj6.getPid()).thenReturn(corpus.pid6);
+        Model model = ModelFactory.createDefaultModel();
+        when(obj6.getResource()).thenReturn(model.getResource(corpus.pid6.getRepositoryPath()));
         when(repositoryObjectLoader.getRepositoryObject(eq(corpus.pid6))).thenReturn(obj6);
 
         action.performAction(new SolrUpdateRequest(corpus.pid6.getRepositoryPath(), IndexingActionType.RECURSIVE_ADD));
@@ -138,5 +136,11 @@ public class UpdateTreeActionTest {
 
         List<PID> pids = pidCaptor.getAllValues();
         assertTrue(pids.contains(corpus.pid6));
+    }
+
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
+            sparqlModel.add(obj.getResource().getModel());
+        }
     }
 }
