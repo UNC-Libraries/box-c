@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -39,7 +38,6 @@ import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,11 +99,6 @@ public class SolrUpdateRouterTest {
         exchangeCaptor = ArgumentCaptor.forClass(Exchange.class);
     }
 
-    @AfterClass
-    public static void after() throws Exception {
-//        broker.stop();
-    }
-
     @Test
     public void indexSingleObject() throws Exception {
         Document msg = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.ADD);
@@ -115,8 +108,7 @@ public class SolrUpdateRouterTest {
                 .whenCompleted(2)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Message count did not match expectations", result);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -136,8 +128,7 @@ public class SolrUpdateRouterTest {
                 .whenCompleted(3)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Message count did not match expectations", result);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor, times(3)).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -158,8 +149,7 @@ public class SolrUpdateRouterTest {
                 .whenCompleted(4)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Message count did not match expectations", result);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor, times(3)).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -178,8 +168,7 @@ public class SolrUpdateRouterTest {
                 .whenCompleted(1)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Message count did not match expectations", result);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrLargeUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -202,8 +191,7 @@ public class SolrUpdateRouterTest {
                 .whenCompleted(3)
                 .create();
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Message count did not match expectations", result);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrLargeUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> largeExchanges = exchangeCaptor.getAllValues();
