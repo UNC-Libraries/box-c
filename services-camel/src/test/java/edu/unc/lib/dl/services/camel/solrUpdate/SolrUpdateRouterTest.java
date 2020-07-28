@@ -17,6 +17,8 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -28,20 +30,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -55,22 +63,29 @@ import edu.unc.lib.dl.util.IndexingActionType;
  * @author bbpennel
  *
  */
-public class SolrUpdateRouterTest extends CamelSpringTestSupport {
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/jms-context.xml"),
+    @ContextConfiguration("/solr-update-context.xml")
+})
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
+public class SolrUpdateRouterTest {
     private static final String USER = "user";
 
     @Produce(uri = "{{cdr.solrupdate.stream}}")
     private ProducerTemplate template;
 
-    @BeanInject(value = "cdrServiceSolrUpdate")
+    @Autowired
     private CamelContext cdrServiceSolrUpdate;
 
-    @BeanInject(value = "solrSmallUpdateProcessor")
+    @Autowired
     private SolrUpdateProcessor solrSmallUpdateProcessor;
 
-    @BeanInject(value = "solrLargeUpdateProcessor")
+    @Autowired
     private SolrUpdateProcessor solrLargeUpdateProcessor;
 
-    @BeanInject(value = "solrUpdatePreprocessor")
+    @Autowired
     private SolrUpdatePreprocessor solrUpdatePreprocessor;
 
     private ArgumentCaptor<Exchange> exchangeCaptor;
@@ -86,9 +101,9 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
         exchangeCaptor = ArgumentCaptor.forClass(Exchange.class);
     }
 
-    @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/spring-test/jms-context.xml", "/solr-update-context.xml");
+    @AfterClass
+    public static void after() throws Exception {
+//        broker.stop();
     }
 
     @Test

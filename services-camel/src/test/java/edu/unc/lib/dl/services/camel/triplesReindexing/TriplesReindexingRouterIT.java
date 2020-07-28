@@ -31,6 +31,8 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.fuseki.embedded.FusekiServer;
 import org.apache.jena.query.Dataset;
@@ -44,9 +46,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -72,13 +76,15 @@ import edu.unc.lib.dl.test.TestHelper;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/triples-reindexing-it-context.xml")
 })
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class TriplesReindexingRouterIT {
 
     @Autowired
@@ -180,7 +186,7 @@ public class TriplesReindexingRouterIT {
         // 3 resources compose the folder
         NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
                 .from(indexingEndpoint)
-                .whenDone(3)
+                .whenDone(2)
                 .create();
 
         notify.matches(5l, TimeUnit.SECONDS);
@@ -196,7 +202,7 @@ public class TriplesReindexingRouterIT {
         // Wait for roughly all of the objects to be indexed
         NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
                 .from(indexingEndpoint)
-                .whenDone(25)
+                .whenCompleted(15)
                 .create();
 
         notify.matches(25l, TimeUnit.SECONDS);

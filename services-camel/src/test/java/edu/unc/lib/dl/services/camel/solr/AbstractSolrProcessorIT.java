@@ -28,6 +28,8 @@ import java.net.URI;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -36,9 +38,9 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -54,13 +56,15 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 
 /**
  *
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -94,6 +98,8 @@ public abstract class AbstractSolrProcessorIT {
     protected RepositoryPIDMinter pidMinter;
     @Autowired
     private RepositoryInitializer repoInitializer;
+    @Autowired
+    private RepositoryObjectTreeIndexer treeIndexer;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -128,10 +134,8 @@ public abstract class AbstractSolrProcessorIT {
                 .thenReturn(obj.getPid().getRepositoryPath());
     }
 
-    protected void indexObjectsInTripleStore(RepositoryObject... objs) {
-        for (RepositoryObject obj : objs) {
-            queryModel.add(obj.getModel());
-        }
+    protected void indexObjectsInTripleStore() throws Exception {
+        treeIndexer.indexAll(baseAddress);
     }
 
     protected URI makeContentUri(String content) throws Exception {

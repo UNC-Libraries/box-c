@@ -63,7 +63,8 @@ public class RecursiveTreeIndexer {
     public RecursiveTreeIndexer() {
     }
 
-    public void index(RepositoryObject repoObj, IndexingActionType actionType, String userid) throws IndexingException {
+    public void index(RepositoryObject repoObj, IndexingActionType actionType, String userid)
+            throws IndexingException {
         PID pid = repoObj.getPid();
         Set<String> types = repoObj.getResource().listProperties(RDF.type).toList().stream()
                 .map(Statement::getResource)
@@ -73,15 +74,14 @@ public class RecursiveTreeIndexer {
         index(pid, types, actionType, userid);
     }
 
-    private void index(PID pid, Set<String> types, IndexingActionType actionType, String userid) throws IndexingException {
+    private void index(PID pid, Set<String> types, IndexingActionType actionType, String userid)
+            throws IndexingException {
         if (types.contains(Cdr.Tombstone.getURI())) {
             log.debug("Skipping indexing tombstone object {}", pid.getQualifiedId());
             return;
         }
 
-        long start = System.currentTimeMillis();
         messageSender.sendIndexingOperation(userid, pid, actionType);
-        log.warn("Time to send {} {}: {}", pid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
 
         if (types.stream().anyMatch(CONTAINER_TYPES::contains)) {
             // Start indexing the children
@@ -91,19 +91,15 @@ public class RecursiveTreeIndexer {
 
     private void indexChildren(PID parentPid, IndexingActionType actionType, String userid)
             throws IndexingException {
-        long start = System.currentTimeMillis();
         Map<String, Set<String>> childToTypes = getMembers(parentPid);
 
         if (childToTypes.size() == 0) {
             return;
         }
-        log.warn("Time to get children for {} {}: {}", parentPid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
-        start = System.currentTimeMillis();
         log.debug("Queuing {} children of {} for indexing", childToTypes.size(), parentPid);
         childToTypes.forEach((childPid, types) -> {
             index(PIDs.get(childPid), types, actionType, userid);
         });
-        log.warn("Finshed queuing children for {} {}: {}", parentPid.getQualifiedId(), actionType, (System.currentTimeMillis() - start));
     }
 
     private final static String CHILDREN_QUERY =

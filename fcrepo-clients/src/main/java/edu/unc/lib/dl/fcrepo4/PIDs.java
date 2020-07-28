@@ -149,8 +149,11 @@ public class PIDs {
     private static PID getBaseResourcePidFromId(String id) {
         if (REPOSITORY_ROOT_ID.equals(id)) {
             return RepositoryPaths.getRootPid();
-        } else if (CONTENT_BASE.equals(id)) {
-            return RepositoryPaths.getContentBasePid();
+        } else if (id.startsWith(REPOSITORY_ROOT_ID + "/")) {
+            String idPart = id.split("/")[1];
+            if (CONTENT_BASE.equals(idPart)) {
+                return RepositoryPaths.getContentBasePid();
+            }
         }
 
         return null;

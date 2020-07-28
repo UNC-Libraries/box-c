@@ -39,7 +39,7 @@
     <amq:connectionFactory id="jmsFactory"
         brokerURL="vm://localhost" />
 
-    <amq:broker useJmx="false" persistent="false" useShutdownHook="false">
+    <amq:broker useJmx="false" persistent="false" useShutdownHook="true">
         <amq:transportConnectors>
             <amq:transportConnector uri="vm://localhost:61616" />
         </amq:transportConnectors>

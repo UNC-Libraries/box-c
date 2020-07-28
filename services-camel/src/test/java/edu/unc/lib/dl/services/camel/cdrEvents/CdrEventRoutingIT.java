@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +42,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
@@ -59,11 +63,13 @@ import edu.unc.lib.dl.util.IndexingActionType;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/cdr-event-routing-it-context.xml")
 })
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class CdrEventRoutingIT {
 
     private static final String USER_ID = "user";
@@ -74,7 +80,10 @@ public class CdrEventRoutingIT {
     private OperationsMessageSender opsMsgSender;
 
     @Autowired
-    private SolrUpdateProcessor solrUpdateProcessor;
+    private SolrUpdateProcessor solrSmallUpdateProcessor;
+
+    @Autowired
+    private SolrUpdateProcessor solrLargeUpdateProcessor;
 
     @Autowired
     private CamelContext cdrServiceSolrUpdate;
@@ -92,7 +101,8 @@ public class CdrEventRoutingIT {
 
         TestHelper.setContentBase(BASE_URI);
 
-        solrUpdateProcessor.setSolrIndexingActionMap(mockActionMap);
+        solrSmallUpdateProcessor.setSolrIndexingActionMap(mockActionMap);
+        solrLargeUpdateProcessor.setSolrIndexingActionMap(mockActionMap);
 
         when(mockActionMap.get(any(IndexingActionType.class)))
                 .thenReturn(mockIndexingAction);

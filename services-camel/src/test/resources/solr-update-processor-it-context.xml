@@ -23,6 +23,7 @@
     
     <bean id="recursiveTreeIndexer" class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveTreeIndexer">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="updateTreeAction"
@@ -155,9 +156,18 @@
         class="edu.unc.lib.dl.services.IndexingMessageSender">
     </bean>
     
-    <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
+    
+    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+        <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+    </bean>
+    
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    </bean>
+    
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
         
     <camel:camelContext id="cdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>

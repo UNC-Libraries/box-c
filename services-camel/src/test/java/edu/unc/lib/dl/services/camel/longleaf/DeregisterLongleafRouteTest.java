@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,20 +34,24 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.services.MessageSender;
 
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/deregister-longleaf-router-context.xml")
 })
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class DeregisterLongleafRouteTest {
 
     @Autowired
