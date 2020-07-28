@@ -399,9 +399,18 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
-    <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
+    
+    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+        <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+    </bean>
+    
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    </bean>
+    
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
     
     <camel:camelContext id="CdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>

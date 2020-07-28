@@ -15,11 +15,12 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
-import static org.apache.camel.LoggingLevel.DEBUG;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fedora.NotFoundException;
 
@@ -30,8 +31,16 @@ import edu.unc.lib.dl.fedora.NotFoundException;
  *
  */
 public class SolrUpdateRouter extends RouteBuilder {
-    @BeanInject(value = "solrUpdateProcessor")
-    private SolrUpdateProcessor solrUpdateProcessor;
+    private final static Logger log = getLogger(SolrUpdateRouter.class);
+
+    @BeanInject(value = "solrLargeUpdateProcessor")
+    private SolrUpdateProcessor solrLargeUpdateProcessor;
+
+    @BeanInject(value = "solrSmallUpdateProcessor")
+    private SolrUpdateProcessor solrSmallUpdateProcessor;
+
+    @BeanInject(value = "solrUpdatePreprocessor")
+    private SolrUpdatePreprocessor solrUpdatePreprocessor;
 
     @Override
     public void configure() throws Exception {
@@ -42,16 +51,36 @@ public class SolrUpdateRouter extends RouteBuilder {
             .retryAttemptedLogLevel(LoggingLevel.DEBUG);
 
         onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
+            .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
+            .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
+            .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.solrupdate.stream.camel}}")
             .routeId("CdrServiceSolrUpdate")
-            .log(DEBUG, "Received solr update message")
-            .bean(solrUpdateProcessor);
+            .startupOrder(510)
+            .bean(solrUpdatePreprocessor)
+            .log(LoggingLevel.DEBUG, "Received solr update message with action ${header[CdrSolrUpdateAction]}")
+            .choice()
+                .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
+                    .to("{{cdr.solrupdate.large.consumer}}")
+                .when().method(SolrUpdatePreprocessor.class, "isSmallAction")
+                    .to("{{cdr.solrupdate.small.dest}}")
+                .otherwise()
+                    .bean(solrUpdatePreprocessor, "logUnknownSolrUpdate")
+            .endChoice();
 
+        from("{{cdr.solrupdate.small.consumer}}")
+            .routeId("CdrSolrUpdateSmall")
+            .startupOrder(508)
+            .log(LoggingLevel.DEBUG, log, "Performing batch of small solr updates")
+            .split(body())
+            .bean(solrSmallUpdateProcessor);
+
+        from("{{cdr.solrupdate.large.consumer}}")
+            .routeId("CdrSolrUpdateLarge")
+            .startupOrder(507)
+            .log(LoggingLevel.DEBUG, log, "Performing large solr update")
+            .bean(solrLargeUpdateProcessor);
     }
-
 }

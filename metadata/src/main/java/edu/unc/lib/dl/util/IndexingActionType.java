@@ -58,7 +58,8 @@ public enum IndexingActionType {
     UPDATE_TYPE("Update Resource Type", "Update the resource type of an object"),
     UPDATE_TYPE_TREE("Update Resource Type Tree",
             "Update the resource type of a set of objects and all their children"),
-    SET_PRIMARY_OBJECT("Set Primary Object", "Update the primary object for a work");
+    SET_PRIMARY_OBJECT("Set Primary Object", "Update the primary object for a work"),
+    UNKNOWN("Unknown action", "Unknown action");
 
     private final String label;
     private final String description;

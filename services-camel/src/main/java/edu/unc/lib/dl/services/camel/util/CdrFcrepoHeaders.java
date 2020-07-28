@@ -38,4 +38,6 @@ public abstract class CdrFcrepoHeaders {
     public static final String CdrEnhancementSet = "CdrEnhancementSet";
 
     public static final String FCREPO_RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
+
+    public static final String CdrSolrUpdateAction = "CdrSolrUpdateAction";
 }
