@@ -34,6 +34,7 @@
     import viewType from './viewType';
     import worksOnly from './worksOnly';
     import get from 'axios';
+    import isEmpty from 'lodash.isempty';
     import routeUtils from '../mixins/routeUtils';
 
     export default {
@@ -132,7 +133,11 @@
                 this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
                 this.is_collection = document.getElementById('is-collection') !== null;
                 this.is_folder = document.getElementById('is-folder') !== null;
-                this.updateUrl();
+
+                // Don't update route if no url parameters are passed in
+                if (!isEmpty(this.$route.query)) {
+                    this.updateUrl();
+                }
             }
         },
 
