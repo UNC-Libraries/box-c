@@ -64,18 +64,15 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -125,8 +122,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private AccessControlService aclService;
     @Autowired
     private DepositStatusFactory depositStatusFactory;
-    @Autowired
-    private RepositoryObjectLoader repoObjLoader;
+
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
     @Autowired
@@ -186,13 +182,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     private void setupDestination() throws Exception {
-        PID rootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-        }
-        ContentRootObject rootObj = repoObjLoader.getContentRootObject(rootPid);
-
         AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
         CollectionObject collObj = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Coll").addCanIngest(INGESTOR_PRINC).model);

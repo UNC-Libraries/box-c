@@ -41,15 +41,12 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -77,8 +74,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
 
-    private ContentRootObject rootObj;
-
     private ValidateDestinationJob job;
 
     private Model depModel;
@@ -93,13 +88,6 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "repoObjLoader", repoObjLoader);
         setField(job, "dataset", dataset);
-
-        PID rootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-        }
-        rootObj = repoObjLoader.getContentRootObject(rootPid);
 
         depModel = job.getWritableModel();
         depBag = depModel.createBag(depositPid.getRepositoryPath());

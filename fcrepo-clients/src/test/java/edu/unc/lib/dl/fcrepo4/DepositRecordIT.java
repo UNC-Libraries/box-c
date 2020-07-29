@@ -133,7 +133,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
         Model model = getDepositRecordModel();
         DepositRecord record = repoObjFactory.createDepositRecord(model);
 
-        repoObjFactory.createContentRootObject(getContentRootPid().getRepositoryUri(), null);
+        repoInitializer.initializeRepository();
         ContentRootObject rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
         AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(adminUnit);

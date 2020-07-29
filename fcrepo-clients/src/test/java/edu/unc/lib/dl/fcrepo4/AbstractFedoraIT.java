@@ -68,6 +68,8 @@ public class AbstractFedoraIT {
     protected Model queryModel;
     @Autowired
     protected RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired
+    protected RepositoryInitializer repoInitializer;
 
     @Before
     public void init_() {

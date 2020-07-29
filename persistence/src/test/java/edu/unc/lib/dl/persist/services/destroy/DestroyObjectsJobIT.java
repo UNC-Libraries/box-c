@@ -64,13 +64,13 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
@@ -127,6 +127,8 @@ public class DestroyObjectsJobIT {
     private AccessControlService aclService;
     @Autowired
     private InheritedAclFactory inheritedAclFactory;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
     @Mock
     private IndexingMessageSender indexingMessageSender;
     @Mock
@@ -321,12 +323,7 @@ public class DestroyObjectsJobIT {
 
     private List<PID> createContentTree() throws Exception {
         PID contentRootPid = getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(
-                    contentRootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
+        repoInitializer.initializeRepository();
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
 
         AdminUnit adminUnit = repoObjFactory.createAdminUnit(new AclModelBuilder("Unit")

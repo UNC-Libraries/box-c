@@ -15,28 +15,22 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.PremisAgentType;
-import edu.unc.lib.dl.rdf.Prov;
-import edu.unc.lib.dl.rdf.Rdf;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.test.TestHelper;
-import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -53,21 +47,28 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.PremisAgentType;
+import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.rdf.Rdf;
+import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.test.AclModelBuilder;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
@@ -90,6 +91,8 @@ public class ExpireEmbargoServiceIT {
     private SparqlQueryService sparqlQueryService;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -110,12 +113,7 @@ public class ExpireEmbargoServiceIT {
         service.setSparqlQueryService(sparqlQueryService);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(
-                    contentRootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
+        repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
     }
 
