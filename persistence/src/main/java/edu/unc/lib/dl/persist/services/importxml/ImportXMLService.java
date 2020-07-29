@@ -50,8 +50,10 @@ public class ImportXMLService extends MessageSender {
 
     public void init() throws IOException {
         storagePath = Paths.get(dataDir, "metadataImport");
-        // Create the directory if it doesn't already exist
-        Files.createDirectories(storagePath);
+        // Explicit check if directory exists before creating, to avoid failure due to mounted permissions check
+        if (!Files.exists(storagePath)) {
+            Files.createDirectories(storagePath);
+        }
     }
 
     public void pushJobToQueue(InputStream importStream, AgentPrincipals agent,
