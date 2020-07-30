@@ -72,7 +72,7 @@ public abstract class AbstractAPIIT {
     protected RepositoryPIDMinter pidMinter;
     @Autowired(required = false)
     protected RepositoryObjectTreeIndexer treeIndexer;
-    @Autowired
+    @Autowired(required = false)
     protected RepositoryInitializer repoInitializer;
 
     protected ContentRootObject contentRoot;
