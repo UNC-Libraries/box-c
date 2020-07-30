@@ -63,7 +63,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
-public class AbstractFedoraDepositJobIT {
+public abstract class AbstractFedoraDepositJobIT {
 
     @Autowired
     protected String serverAddress;

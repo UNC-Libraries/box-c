@@ -45,7 +45,7 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
-public class AbstractFedoraIT {
+public abstract class AbstractFedoraIT {
 
     @Autowired
     protected String baseAddress;
@@ -112,11 +112,5 @@ public class AbstractFedoraIT {
     protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
-    }
-
-    @Test
-    public void dummyTest() throws Exception {
-        // a placeholder to prevent JUnit from displaying an error for this test,
-        // which isn't intended to have its own test cases
     }
 }
