@@ -29,7 +29,6 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
@@ -60,7 +63,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
-public class AbstractFedoraDepositJobIT {
+public abstract class AbstractFedoraDepositJobIT {
 
     @Autowired
     protected String serverAddress;
@@ -85,12 +88,18 @@ public class AbstractFedoraDepositJobIT {
     protected StorageLocationManager storageLocationManager;
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Autowired
+    protected RepositoryInitializer repositoryInitializer;
+    @Autowired
+    protected RepositoryObjectLoader repoObjLoader;
 
     protected File depositsDirectory;
     protected File depositDir;
     protected String jobUUID;
     protected String depositUUID;
     protected PID depositPid;
+
+    protected ContentRootObject rootObj;
 
     @Before
     public void initBase() throws Exception {
@@ -108,6 +117,9 @@ public class AbstractFedoraDepositJobIT {
         depositStatusFactory.setState(depositUUID, DepositState.running);
 
         dataset = TDBFactory.createDataset(tmpFolder.newFolder("tdb").getAbsolutePath());
+
+        repositoryInitializer.initializeRepository();
+        rootObj = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
@@ -140,10 +152,5 @@ public class AbstractFedoraDepositJobIT {
             throw new FedoraException("Failed to check on object " + pid
                     + " during initialization", e);
         }
-    }
-
-    @Test
-    public void dummyTest() {
-
     }
 }

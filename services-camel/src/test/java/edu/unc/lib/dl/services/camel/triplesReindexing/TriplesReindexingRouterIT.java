@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.triplesReindexing;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -55,10 +56,10 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
@@ -93,7 +94,7 @@ public class TriplesReindexingRouterIT {
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private RepositoryInitializer repoInitializer;
     @Autowired
     private IndexingMessageSender messageSender;
     @Autowired
@@ -150,9 +151,8 @@ public class TriplesReindexingRouterIT {
     }
 
     private void generateBaseStructure() throws Exception {
-        PID rootPid = pidMinter.mintContentPid();
-        repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
+        repoInitializer.initializeRepository();
+        rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
         unitObj = repositoryObjectFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);

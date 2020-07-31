@@ -76,13 +76,13 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -121,6 +121,8 @@ public class PatronAccessAssignmentServiceIT {
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private TransactionManager txManager;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -148,12 +150,7 @@ public class PatronAccessAssignmentServiceIT {
         patronService.setTransactionManager(txManager);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(
-                    contentRootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
+        repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
     }
 

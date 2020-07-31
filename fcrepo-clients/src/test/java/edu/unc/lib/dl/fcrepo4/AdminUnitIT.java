@@ -68,8 +68,7 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
     @Test
     public void testGetParent() throws Exception {
-        repoObjFactory.createContentRootObject(
-                RepositoryPaths.getContentRootPid().getRepositoryUri(), null);
+        repoInitializer.initializeRepository();
 
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());

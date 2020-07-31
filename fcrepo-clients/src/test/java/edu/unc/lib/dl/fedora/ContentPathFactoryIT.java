@@ -53,12 +53,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     @Before
     public void init() {
         contentRootPid = RepositoryPaths.getContentRootPid();
-        try {
-            repoObjFactory.createContentRootObject(
-                    contentRootPid.getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
+        repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
 
         adminUnit = repoObjFactory.createAdminUnit(null);

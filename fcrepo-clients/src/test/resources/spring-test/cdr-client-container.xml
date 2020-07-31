@@ -33,6 +33,10 @@
         <property name="sparqlUpdateService" ref="sparqlUpdateService" />
     </bean>
     
+    <bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer">
+        <property name="objFactory" ref="repositoryObjectFactory" />
+    </bean>
+    
     <bean id="cacheTimeToLive" class="java.lang.Long">
         <constructor-arg value="100" />
     </bean>

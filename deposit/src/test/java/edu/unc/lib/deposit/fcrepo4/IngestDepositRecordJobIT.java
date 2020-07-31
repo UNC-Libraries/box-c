@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -49,7 +47,6 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -60,7 +57,6 @@ import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * @author bbpennel
@@ -99,9 +95,6 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "transferService", binaryTransferService);
         setField(job, "locationManager", storageLocationManager);
         job.init();
-
-        // Create deposits container
-        setupDestination();
 
         Model model = job.getWritableModel();
         Resource depositResc = model.getResource(depositPid.getRepositoryPath());
@@ -225,14 +218,5 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 .filter(p -> p.getRepositoryPath().endsWith(suffix))
                 .findFirst()
                 .orElse(null);
-    }
-
-    private void setupDestination() throws Exception {
-        String containerString = URIUtil.join(getBaseUri(), DEPOSIT_RECORD_BASE);
-        URI containerUri = URI.create(containerString);
-        try {
-            repoObjFactory.createOrTransformObject(containerUri, null);
-        } catch (FedoraException e) {
-        }
     }
 }

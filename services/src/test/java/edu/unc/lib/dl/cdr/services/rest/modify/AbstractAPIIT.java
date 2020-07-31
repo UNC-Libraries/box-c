@@ -41,10 +41,10 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
@@ -72,6 +72,8 @@ public abstract class AbstractAPIIT {
     protected RepositoryPIDMinter pidMinter;
     @Autowired(required = false)
     protected RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired(required = false)
+    protected RepositoryInitializer repoInitializer;
 
     protected ContentRootObject contentRoot;
 
@@ -97,12 +99,7 @@ public abstract class AbstractAPIIT {
     }
 
     protected void setupContentRoot() {
-        try {
-            repositoryObjectFactory.createContentRootObject(
-                    getContentRootPid().getRepositoryUri(), null);
-        } catch (FedoraException e) {
-            // Ignore failure as the content root will already exist after first test
-        }
+        repoInitializer.initializeRepository();
         contentRoot = repositoryObjectLoader.getContentRootObject(getContentRootPid());
     }
 

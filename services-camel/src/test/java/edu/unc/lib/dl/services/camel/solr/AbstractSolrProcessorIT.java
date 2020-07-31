@@ -46,6 +46,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -91,6 +92,8 @@ public abstract class AbstractSolrProcessorIT {
     protected DocumentIndexingPackageFactory dipFactory;
     @Autowired
     protected RepositoryPIDMinter pidMinter;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -102,10 +105,7 @@ public abstract class AbstractSolrProcessorIT {
     protected Message message;
 
     protected void generateBaseStructure() throws Exception {
-        URI contentRootUri = getContentRootPid().getRepositoryUri();
-        if (!repositoryObjectFactory.objectExists(contentRootUri)) {
-            repositoryObjectFactory.createContentRootObject(contentRootUri, null);
-        }
+        repoInitializer.initializeRepository();
         rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
         PID unitPid = pidMinter.mintContentPid();

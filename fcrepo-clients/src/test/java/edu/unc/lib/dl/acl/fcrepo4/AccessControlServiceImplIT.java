@@ -36,6 +36,7 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -82,6 +83,8 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private ContentPathFactory pathFactory;
     @Autowired
     private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
+    @Autowired
+    private RepositoryInitializer repoInitializer;
 
     private ObjectAclFactory aclFactory;
 
@@ -120,8 +123,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
             return;
         }
 
-        repoObjFactory.createContentRootObject(
-                RepositoryPaths.getContentRootPid().getRepositoryUri(), null);
+        repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
 
         adminUnit1 = repoObjFactory.createAdminUnit(
