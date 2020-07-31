@@ -326,7 +326,12 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         Statement mimeTypeStmt = bxc3Resc.getProperty(hasSourceMimeType.getProperty());
         if (mimeTypeStmt != null) {
-            fileResc.addProperty(CdrDeposit.mimetype, mimeTypeStmt.getString());
+            String mimeType = mimeTypeStmt.getString();
+            if (!mimeType.contains("cannot open")) {
+                fileResc.addProperty(CdrDeposit.mimetype, mimeTypeStmt.getString());
+            } else {
+                log.debug("Ignoring unusable mimetype for {}", originalPid);
+            }
         }
 
         List<DatastreamVersion> originalVersions = listDatastreamVersions(foxml, ORIGINAL_DS);

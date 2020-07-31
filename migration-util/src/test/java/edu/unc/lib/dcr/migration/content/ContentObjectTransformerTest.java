@@ -81,6 +81,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
+import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
@@ -457,8 +458,12 @@ public class ContentObjectTransformerTest {
     public void transformWorkWithFile() throws Exception {
         PID child1Pid = makePid();
         Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
+        Model child1Model = createFileModel(child1Pid);
+        // Set a source mimetype, which overrides the mimetype on the file
+        Resource child1Bxc3Resc = child1Model.getResource(toBxc3Uri(child1Pid));
+        child1Bxc3Resc.addLiteral(CDRProperty.hasSourceMimeType.getProperty(), "text/xml");
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
-                .relsExtModel(createFileModel(child1Pid))
+                .relsExtModel(child1Model)
                 .withDatastreamVersion(createDataFileVersion())
                 .build();
         serializeFoxml(objectsPath, child1Pid, foxml1);
@@ -495,6 +500,7 @@ public class ContentObjectTransformerTest {
         assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         // datastreams only have a created time
         assertTrue(child1Resc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.mimetype, "text/xml"));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
@@ -838,6 +844,60 @@ public class ContentObjectTransformerTest {
         assertTrue(bagChildren.contains(child2Resc));
 
         assertTrue(child2Resc.hasProperty(RDF.type, Cdr.Folder));
+    }
+
+    // BXC-2753
+    @Test
+    public void transformFileWithErrorMimetype() throws Exception {
+        PID child1Pid = makePid();
+        Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
+        String mimetype = "/data/path/to/file/uuid_0d554164-87c8-4a4f-b8aa-f78ce77d00a6+DATA_FILE+DATA_FILE.0: data\n"
+                + "-b:                                                                                               "
+                + "                                     cannot open `-b' (No such file or directory)\n"
+                + "--mime:                                                                                            "
+                + "                                    cannot open `--mime' (No such file or directory)";
+        Model child1Model = createFileModel(child1Pid);
+        // Set a source mimetype, which overrides the mimetype on the file
+        Resource child1Bxc3Resc = child1Model.getResource(toBxc3Uri(child1Pid));
+        child1Bxc3Resc.addLiteral(CDRProperty.hasSourceMimeType.getProperty(), mimetype);
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
+                .relsExtModel(child1Model)
+                .withDatastreamVersion(createDataFileVersion())
+                .build();
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        Model model = createContainerModel(startingPid, AGGREGATE_WORK);
+        addContains(model, startingPid, child1Pid);
+        addRelationship(model, startingPid, defaultWebObject.getProperty(), child1Pid);
+
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
+        Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
+
+        // Verify work properties
+        assertTrue(workBag.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(workBag.hasProperty(Cdr.primaryObject, child1Resc));
+
+        // Verify file properties
+        List<RDFNode> bagChildren = workBag.iterator().toList();
+        assertEquals(1, bagChildren.size());
+        assertTrue(bagChildren.contains(child1Resc));
+        assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
+        assertFalse(child1Resc.hasProperty(CdrDeposit.mimetype));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
     }
 
     private Model createContainerModel(PID pid, ContentModel... models) {
