@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
@@ -135,5 +136,10 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             throw new BinaryTransferException("Failed to delete file from destination "
                     + destination.getId(), e);
         }
+    }
+
+    @Override
+    public BinaryDetails getStoredBinaryDetails(PID binPid) {
+        return FileSystemTransferHelpers.getStoredBinaryDetails(destination, binPid);
     }
 }

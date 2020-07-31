@@ -162,6 +162,26 @@ public class BinaryTransferServiceImplIT {
         }
     }
 
+    @Test
+    public void checkIfTransferred() throws Exception {
+        PID binPid = pidMinter.mintContentPid();
+        StorageLocation destination = storageManager.getStorageLocationById("loc1");
+        Path sourceFile = createSourceFile(sourcePath1, "myfile.txt", "some content");
+        URI sourceUri = sourceFile.toUri();
+
+        try (BinaryTransferSession session = transferService.getSession(destination)) {
+            assertFalse(session.isTransferred(binPid, sourceUri));
+
+            // Perform transfer, should now return true
+            session.transfer(binPid, sourceFile.toUri());
+            assertTrue(session.isTransferred(binPid, sourceUri));
+
+            // Change the file and see if its still considered transferred
+            FileUtils.writeStringToFile(sourceFile.toFile(), "updated", "UTF-8");
+            assertFalse(session.isTransferred(binPid, sourceUri));
+        }
+    }
+
     private Map<String, Object> addStorageLocation(String id, String name, Path base) throws IOException {
         Map<String, Object> info = new HashMap<>();
         info.put("id", id);

@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.URI;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 
 /**
  * A session for transferring one or more binaries to a preservation storage location
@@ -96,6 +97,23 @@ public interface BinaryTransferSession extends AutoCloseable {
      * @param fileUri uri of the binary to delete.
      */
     void delete(URI fileUri);
+
+    /**
+     * Get details of a binary located in a storage location
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @return object containing binary details, or null if not found
+     */
+    BinaryDetails getStoredBinaryDetails(PID binPid);
+
+    /**
+     * Checks if a storage location already contains the source binary in its current state.
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @param sourceUri URI of the binary located in an IngestSource
+     * @return true if the storage location contains the source file
+     */
+    boolean isTransferred(PID binPid, URI sourceUri);
 
     /**
      * Closes the binary session. If there are any failures, they will be RuntimeExceptions.

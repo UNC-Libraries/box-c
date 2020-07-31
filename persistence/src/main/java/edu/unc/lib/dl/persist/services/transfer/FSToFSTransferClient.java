@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
@@ -132,5 +133,33 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     @Override
     public void shutdown() {
         // No finalization needed for FS to FS transfer
+    }
+
+    @Override
+    public boolean isTransferred(PID binPid, URI sourceUri) {
+        BinaryDetails storedDetails = getStoredBinaryDetails(binPid);
+        if (storedDetails == null) {
+            return false;
+        }
+
+        BinaryDetails stagedDetails = FileSystemTransferHelpers.getBinaryDetails(sourceUri);
+        if (stagedDetails == null) {
+            if (source.isReadOnly()) {
+                throw new BinaryTransferException("Source URI " + sourceUri + " does not exist");
+            } else {
+                log.debug("Source file {} from writable source no longer exists, it may have been moved",
+                        sourceUri);
+                return true;
+            }
+        }
+
+        // For the moment, just compare file size. Timestamps can lose precision during copying,
+        // and fixity checks are expensive/occur later on in fedora.
+        return storedDetails.getSize() == stagedDetails.getSize();
+    }
+
+    @Override
+    public BinaryDetails getStoredBinaryDetails(PID binPid) {
+        return FileSystemTransferHelpers.getStoredBinaryDetails(destination, binPid);
     }
 }
