@@ -150,7 +150,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
             Path stagingPath = getModsHistoryPath(objPid);
             if (Files.exists(stagingPath)) {
-                transferFile(modsPid, stagingPath.toUri(), transferSession, resc, CdrDeposit.descriptiveHistoryStorageUri);
+                transferFile(modsPid, stagingPath.toUri(), transferSession, resc,
+                        CdrDeposit.descriptiveHistoryStorageUri);
                 log.debug("Finished transferring MODS history file {}", modsPid.getQualifiedId());
             }
         }
