@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
@@ -167,7 +168,7 @@ public class DepositEmailHandler {
 
         Map<String, Object> data = new HashMap<>();
         data.putAll(status);
-        data.put("baseUrl", this.getBaseUrl());
+        data.put("baseUrl", formatBaseUrl());
 
         String html = failedHtmlTemplate.execute(data);
         String text = failedTextTemplate.execute(data);
@@ -226,7 +227,7 @@ public class DepositEmailHandler {
 
         Map<String, Object> data = new HashMap<>();
         data.putAll(status);
-        data.put("baseUrl", this.getBaseUrl());
+        data.put("baseUrl", formatBaseUrl());
         data.put("objectPid", objectPid);
 
         if (hasPatronRoleForPublicGroup) {
@@ -253,6 +254,14 @@ public class DepositEmailHandler {
             LOG.error("Cannot send notification email", e);
         }
 
+    }
+
+    private String formatBaseUrl() {
+        String url = this.getBaseUrl();
+        if (url.endsWith("/")) {
+           return StringUtils.chop(url);
+        }
+        return url;
     }
 
     private String getMainObjectPidForDeposit(String depositUUID) {
