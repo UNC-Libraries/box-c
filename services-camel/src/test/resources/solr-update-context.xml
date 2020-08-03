@@ -7,11 +7,32 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
-    <bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:solr-update-config.properties"/>
+    </bean>
+    
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:solr-update-config.properties"/>
+    </bean>
+    
+    <bean id="solrSmallUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
     </bean>
+    
+    <bean id="solrLargeUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
+    </bean>
+    
+    <bean id="solrUpdatePreprocessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="solrUpdatePreprocessorReal" />
+    </bean>
+    
+    <bean id="solrUpdatePreprocessorReal" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    </bean>
+    
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
 
-    <camel:camelContext id="CdrServiceSolrUpdate">
+    <camel:camelContext id="cdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
     

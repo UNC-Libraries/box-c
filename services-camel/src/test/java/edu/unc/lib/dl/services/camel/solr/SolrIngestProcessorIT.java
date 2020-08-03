@@ -99,7 +99,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(agent, workObj.getPid(), modsStream);
 
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         setMessageTarget(workObj);
         processor.process(exchange);
@@ -135,7 +135,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexCollection() throws Exception {
-        indexObjectsInTripleStore(rootObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         setMessageTarget(collObj);
         processor.process(exchange);
@@ -175,7 +175,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null, fileModel);
 
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         setMessageTarget(fileObj);
         processor.process(exchange);
@@ -215,7 +215,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         BinaryObject binObj = fileObj.getOriginalFile();
 
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj, binObj);
+        indexObjectsInTripleStore();
 
         setMessageTarget(binObj);
         when(message.getHeader(FCREPO_RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());

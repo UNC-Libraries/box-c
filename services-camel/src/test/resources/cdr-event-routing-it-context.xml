@@ -58,8 +58,15 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 
-    <bean id="solrUpdateProcessor"
+    <bean id="solrSmallUpdateProcessor"
         class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    </bean>
+    
+    <bean id="solrLargeUpdateProcessor"
+        class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    </bean>
+    
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
 
     <camel:camelContext id="cdrServiceCdrEvents">

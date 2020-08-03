@@ -25,6 +25,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -91,6 +93,8 @@ public class IndexTreeCleanActionTest {
 
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(containerObj);
         when(containerObj.getPid()).thenReturn(pid);
+        Model model = ModelFactory.createDefaultModel();
+        when(containerObj.getResource()).thenReturn(model.getResource(pid.getRepositoryPath()));
     }
 
     @Test

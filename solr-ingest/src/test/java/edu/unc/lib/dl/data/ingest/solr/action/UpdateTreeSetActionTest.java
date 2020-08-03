@@ -27,6 +27,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,9 +39,12 @@ import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -63,12 +68,19 @@ public class UpdateTreeSetActionTest {
 
     private RecursiveTreeIndexer treeIndexer;
 
+    protected Model sparqlModel;
+    protected SparqlQueryService sparqlQueryService;
+
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
+        sparqlModel = ModelFactory.createDefaultModel();
+        sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
+
         treeIndexer = new RecursiveTreeIndexer();
         treeIndexer.setIndexingMessageSender(messageSender);
+        treeIndexer.setSparqlQueryService(sparqlQueryService);
 
         action = new UpdateTreeSetAction();
         action.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -80,6 +92,8 @@ public class UpdateTreeSetActionTest {
     public void testSingleEmptyChild() throws Exception {
         ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
+
+        indexTriples(containerObj);
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -102,6 +116,8 @@ public class UpdateTreeSetActionTest {
         ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
+        indexTriples(container1Obj, container2Obj);
+
         request = new ChildSetRequest(container1Pid.getRepositoryPath(),
                 asList(container1Pid.getRepositoryPath(), container2Pid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -123,6 +139,8 @@ public class UpdateTreeSetActionTest {
         ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
         ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
+
+        indexTriples(containerObj, childObj);
 
         request = new ChildSetRequest(containerPid.getRepositoryPath(), asList(containerPid.getRepositoryPath()),
                 IndexingActionType.ADD, USER);
@@ -149,5 +167,11 @@ public class UpdateTreeSetActionTest {
                 IndexingActionType.ADD, USER);
 
         action.performAction(request);
+    }
+
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
+            sparqlModel.add(obj.getResource().getModel());
+        }
     }
 }

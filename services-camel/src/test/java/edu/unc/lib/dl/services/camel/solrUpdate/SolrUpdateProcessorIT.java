@@ -47,6 +47,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
@@ -74,6 +76,7 @@ import edu.unc.lib.dl.util.ResourceType;
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/solr-update-processor-it-context.xml")
 })
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     private SolrUpdateProcessor processor;
@@ -104,7 +107,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testReindexAcls() throws Exception {
-        indexObjectsInTripleStore(rootObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         indexDummyDocument(unitObj);
         indexDummyDocument(collObj);
@@ -112,12 +115,14 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(2)
+                .whenCompleted(4)
                 .create();
 
         processor.process(exchange);
 
         assertTrue(notify.matches(6l, TimeUnit.SECONDS));
+
+        Thread.sleep(100);
 
         server.commit();
 
@@ -146,7 +151,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(agent, collObj.getPid(), modsStream);
 
-        indexObjectsInTripleStore(rootObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         indexDummyDocument(collObj);
 
@@ -172,7 +177,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         CollectionObject coll2Obj = repositoryObjectFactory.createCollectionObject(null);
         unitObj.addMember(coll2Obj);
 
-        indexObjectsInTripleStore(rootObj, unitObj, collObj, coll2Obj);
+        indexObjectsInTripleStore();
 
         indexDummyDocument(unitObj);
         indexDummyDocument(collObj);
@@ -182,7 +187,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         makeIndexingMessage(unitObj, singleton(coll2Obj.getPid()), ADD_SET_TO_PARENT);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(1)
+                .whenCompleted(2)
                 .create();
 
         processor.process(exchange);
@@ -212,7 +217,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testDelete() throws Exception {
-        indexObjectsInTripleStore(rootObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         indexDummyDocument(unitObj);
         indexDummyDocument(collObj);
@@ -228,7 +233,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testDeleteTree() throws Exception {
-        indexObjectsInTripleStore(rootObj, unitObj, collObj);
+        indexObjectsInTripleStore();
 
         indexDummyDocument(rootObj);
         indexDummyDocument(unitObj);
@@ -236,7 +241,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         // Wait for indexing to complete
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(3)
+                .whenCompleted(4)
                 .create();
 
         makeIndexingMessage(rootObj, null, RECURSIVE_ADD);
@@ -244,16 +249,14 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         notify.matches(5l, TimeUnit.SECONDS);
 
-        server.commit();
+        Thread.sleep(100);
 
-        NotifyBuilder notifyDel = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(1)
-                .create();
+        server.commit();
 
         makeIndexingMessage(unitObj, null, DELETE_SOLR_TREE);
         processor.process(exchange);
 
-        notifyDel.matches(5l, TimeUnit.SECONDS);
+        Thread.sleep(100);
 
         server.commit();
 

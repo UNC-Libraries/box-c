@@ -53,7 +53,7 @@ public class IndexingMessageHelper {
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
         entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getRepositoryPath()));
+        entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getQualifiedId()));
         if (children != null && children.size() > 0) {
             Element childEl = new Element("children", CDR_MESSAGE_NS);
             entry.addContent(childEl);

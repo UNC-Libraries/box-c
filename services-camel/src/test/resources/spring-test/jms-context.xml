@@ -25,13 +25,21 @@
         class="org.apache.activemq.camel.component.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig" />
     </bean>
+    
+    <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
+    
+    <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
+        <property name="connectionFactory" ref="jmsFactory" />
+    </bean>
 
     <!-- JMS ConnectionFactory to use, configuring the embedded broker using 
         XML -->
     <amq:connectionFactory id="jmsFactory"
         brokerURL="vm://localhost" />
 
-    <amq:broker useJmx="false" persistent="false" useShutdownHook="false">
+    <amq:broker useJmx="false" persistent="false" useShutdownHook="true">
         <amq:transportConnectors>
             <amq:transportConnector uri="vm://localhost:61616" />
         </amq:transportConnectors>

@@ -44,14 +44,6 @@
     <bean id="deregisterLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor">
     </bean>
     
-    <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
-        <property name="connectionFactory" ref="jmsFactory" />
-    </bean>
-    
-    <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
-        <property name="connectionFactory" ref="jmsFactory" />
-    </bean>
-    
     <camel:camelContext id="cdrLongleaf">
         <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
     </camel:camelContext>

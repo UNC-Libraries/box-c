@@ -44,7 +44,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 public class SolrUpdateProcessor implements Processor {
-    final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
 
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 
