@@ -29,6 +29,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
@@ -148,5 +149,17 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
     @Override
     public void delete(URI fileUri) {
         getStreamClient().delete(fileUri);
+    }
+
+    @Override
+    public BinaryDetails getStoredBinaryDetails(PID binPid) {
+        return getStreamClient().getStoredBinaryDetails(binPid);
+    }
+
+    @Override
+    public boolean isTransferred(PID binPid, URI sourceUri) {
+        IngestSource source = sourceManager.getIngestSourceForUri(sourceUri);
+        BinaryTransferClient client = getTransferClient(source);
+        return client.isTransferred(binPid, sourceUri);
     }
 }

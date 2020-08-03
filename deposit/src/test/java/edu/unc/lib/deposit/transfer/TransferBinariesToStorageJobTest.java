@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -49,15 +51,19 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 
 import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
+import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
@@ -98,6 +104,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     private Path sourcePath;
     private Path candidatePath;
 
+    @Mock
+    private RepositoryObjectFactory repoObjFactory;
+
     @Before
     public void init() throws Exception {
         loc1Path = tmpFolder.newFolder("loc1").toPath();
@@ -131,6 +140,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
+        setField(job, "repoObjFactory", repoObjFactory);
         job.init();
 
         depositModel = job.getWritableModel();
@@ -339,6 +349,84 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
         assertFitsFileTransferred(postFileResc2);
+    }
+
+    @Test
+    public void pidCollision() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        String existingContent = "This thing already exists";
+
+        PID originalPid;
+        URI fileUri;
+        // Put the file into the storage location beforehand
+        try (BinaryTransferSession session = transferService.getSession(storageLoc)) {
+            originalPid = getOriginalFilePid(PIDs.get(fileResc.getURI()));
+            fileUri = session.transfer(originalPid, IOUtils.toInputStream(existingContent, UTF_8));
+        }
+
+        // Indicate that an object already exists in the repository
+        when(repoObjFactory.objectExists(originalPid.getRepositoryUri())).thenReturn(true);
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Expected exception");
+        } catch (JobFailedException e) {
+            assertTrue("Expected exception indicating that the object to which the binary belongs already exists",
+                    e.getMessage().contains("already exists"));
+            assertEquals("Existing file must not have been modified",
+                    existingContent, FileUtils.readFileToString(new File(fileUri), "UTF-8"));
+        }
+    }
+
+    @Test
+    public void fileAlreadyTransferredButNotRecorded() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        // Put the file into the storage location beforehand
+        try (BinaryTransferSession session = transferService.getSession(storageLoc)) {
+            PID originalPid = getOriginalFilePid(PIDs.get(fileResc.getURI()));
+            URI fileUri = URI.create(fileResc.getProperty(CdrDeposit.stagingLocation).getString());
+            session.transfer(originalPid, fileUri);
+        }
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertFileTransferred(postFileResc, FILE_CONTENT1);
+    }
+
+    @Test
+    public void filePartiallyTransferred() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        // Transfer part of the file beforehand
+        try (BinaryTransferSession session = transferService.getSession(storageLoc)) {
+            PID originalPid = getOriginalFilePid(PIDs.get(fileResc.getURI()));
+            session.transfer(originalPid, IOUtils.toInputStream("Some co", UTF_8));
+        }
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        // Expect the full file to be present after running
+        assertFileTransferred(postFileResc, FILE_CONTENT1);
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {

@@ -18,6 +18,7 @@ package edu.unc.lib.dl.persist.api.transfer;
 import java.net.URI;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 
 /**
  * Client for transferring binaries between a category of ingest sources and a
@@ -57,6 +58,23 @@ public interface BinaryTransferClient {
      * @return the URI of the binary in its destination.
      */
     URI transferVersion(PID binPid, URI sourceFileUri);
+
+    /**
+     * Checks if a storage location already contains the source binary in its current state.
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @param sourceUri URI of the binary located in an IngestSource
+     * @return true if the storage location contains the source file
+     */
+    boolean isTransferred(PID binPid, URI sourceUri);
+
+    /**
+     * Get details of a binary located in a storage location
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @return object containing binary details
+     */
+    BinaryDetails getStoredBinaryDetails(PID binPid);
 
     /**
      * Shut down this transfer client.

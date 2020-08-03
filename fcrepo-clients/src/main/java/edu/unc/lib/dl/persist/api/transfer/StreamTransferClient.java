@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.URI;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 
 /**
  * Client for streaming content to a preservation storage location
@@ -64,6 +65,14 @@ public interface StreamTransferClient {
      * @param fileUri uri of the file to delete
      */
     void delete(URI fileUri);
+
+    /**
+     * Get details of a binary located in a storage location
+     *
+     * @param binPid PID of the binary object the binary is associated with
+     * @return object containing binary details
+     */
+    BinaryDetails getStoredBinaryDetails(PID binPid);
 
     /**
      * Shut down this transfer client.

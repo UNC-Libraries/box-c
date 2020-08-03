@@ -18,6 +18,8 @@ package edu.unc.lib.dl.persist.services.transfer;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
@@ -39,6 +41,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
@@ -230,6 +233,72 @@ public class FSToFSTransferClientTest {
     @Test
     public void shutdownClientSucceeds() throws Exception {
         client.shutdown();
+    }
+
+    @Test
+    public void getStoredBinaryDetailsForAbsentFile() {
+        assertNull(client.getStoredBinaryDetails(binPid));
+    }
+
+    @Test
+    public void getStoredBinaryDetailsTransferredFile() throws Exception {
+        Path sourceFile = createSourceFile();
+
+        client.transfer(binPid, sourceFile.toUri());
+
+        BinaryDetails details = client.getStoredBinaryDetails(binPid);
+        assertNotNull(details);
+        assertNotNull(details.getLastModified());
+        assertEquals(12, details.getSize());
+    }
+
+    @Test
+    public void isTransferredNotPresent() throws Exception {
+        assertFalse(client.isTransferred(binPid, sourcePath.resolve("absent.txt").toUri()));
+    }
+
+    @Test
+    public void isTransferredMatch() throws Exception {
+        Path sourceFile = createSourceFile();
+        client.transfer(binPid, sourceFile.toUri());
+
+        assertTrue(client.isTransferred(binPid, sourceFile.toUri()));
+    }
+
+    @Test
+    public void isTransferredDoNotMatch() throws Exception {
+        Path sourceFile = createSourceFile();
+        client.transfer(binPid, sourceFile.toUri());
+
+        FileUtils.writeStringToFile(sourceFile.toFile(), "changed content", "UTF-8");
+        assertFalse(client.isTransferred(binPid, sourceFile.toUri()));
+    }
+
+    @Test
+    public void isTransferredSourceGoneReadOnly() throws Exception {
+        when(ingestSource.isReadOnly()).thenReturn(true);
+
+        Path sourceFile = createSourceFile();
+        client.transfer(binPid, sourceFile.toUri());
+        Files.delete(sourceFile);
+
+        try {
+            client.isTransferred(binPid, sourceFile.toUri());
+            fail("Expected BinaryTransferException");
+        } catch (BinaryTransferException e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void isTransferredSourceGoneWritable() throws Exception {
+        when(ingestSource.isReadOnly()).thenReturn(false);
+
+        Path sourceFile = createSourceFile();
+        client.transfer(binPid, sourceFile.toUri());
+
+        assertFalse(Files.exists(sourceFile));
+        assertTrue(client.isTransferred(binPid, sourceFile.toUri()));
     }
 
     protected Path createSourceFile() throws Exception {

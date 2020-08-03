@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
@@ -35,16 +34,21 @@ import java.util.Set;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
+import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -62,6 +66,9 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     private static final Set<Resource> TYPES_ALLOWING_DESC = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject));
+
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
 
     /**
      *
@@ -131,14 +138,9 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         if (resc.hasProperty(CdrDeposit.stagingLocation) && !resc.hasProperty(CdrDeposit.storageUri)) {
             PID originalPid = getOriginalFilePid(objPid);
 
-            if (!isObjectCompleted(originalPid)) {
-                URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
-                log.debug("Transferring original file from {} for {}", stagingUri, originalPid);
-                URI storageUri = transferSession.transfer(originalPid, stagingUri);
-                log.debug("Finished transferring original file from {} to {}", stagingUri, storageUri);
-                resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-                markObjectCompleted(originalPid);
-            }
+            URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
+            transferFile(originalPid, stagingUri, transferSession, resc, CdrDeposit.storageUri);
+            log.debug("Finished transferring original file for {}", originalPid.getQualifiedId());
         }
     }
 
@@ -146,17 +148,11 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         if (!resc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
 
-            if (!isObjectCompleted(modsPid)) {
-                Path stagingPath = getModsHistoryPath(objPid);
-
-                if (Files.exists(stagingPath)) {
-                    PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
-                    URI stagingUri = stagingPath.toUri();
-                    URI storageUri = transferSession.transfer(dsHistoryPid, stagingUri);
-                    log.debug("Finished transferring MODS history file from {} to {}", stagingUri, storageUri);
-                    resc.addLiteral(CdrDeposit.descriptiveHistoryStorageUri, storageUri.toString());
-                    markObjectCompleted(modsPid);
-                }
+            Path stagingPath = getModsHistoryPath(objPid);
+            if (Files.exists(stagingPath)) {
+                transferFile(modsPid, stagingPath.toUri(), transferSession, resc,
+                        CdrDeposit.descriptiveHistoryStorageUri);
+                log.debug("Finished transferring MODS history file {}", modsPid.getQualifiedId());
             }
         }
     }
@@ -165,13 +161,9 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
 
-            if (!isObjectCompleted(fitsPid)) {
-                URI stagingUri = getTechMdPath(objPid, false).toUri();
-                URI storageUri = transferSession.transfer(fitsPid, stagingUri);
-                log.debug("Finished transferring techmd file from {} to {}", stagingUri, storageUri);
-                resc.addLiteral(CdrDeposit.fitsStorageUri, storageUri.toString());
-                markObjectCompleted(fitsPid);
-            }
+            URI stagingUri = getTechMdPath(objPid, false).toUri();
+            transferFile(fitsPid, stagingUri, transferSession, resc, CdrDeposit.fitsStorageUri);
+            log.debug("Finished transferring techmd file {}", fitsPid.getQualifiedId());
         }
     }
 
@@ -187,13 +179,38 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             }
 
             PID manifestPid = getDepositManifestPid(objPid, manifestFile.getName());
+            transferFile(manifestPid, manifestUri, transferSession, resc, CdrDeposit.storageUri);
+        }
+    }
 
-            if (!isObjectCompleted(manifestPid)) {
-                URI storageUri = transferSession.transfer(manifestPid, manifestUri);
-                log.debug("Finished transferring manifest file from {} to {}", manifestUri, storageUri);
-                resc.addLiteral(CdrDeposit.storageUri, storageUri.toString());
-                markObjectCompleted(manifestPid);
+    private void transferFile(PID binPid, URI stagingUri, BinaryTransferSession transferSession,
+            Resource resc, Property storageProperty) {
+
+        log.debug("Transferring {} file from {} for {}", storageProperty.getLocalName(),
+                stagingUri, binPid.getQualifiedId());
+        URI storageUri;
+        try {
+            storageUri = transferSession.transfer(binPid, stagingUri);
+        } catch (BinaryAlreadyExistsException e) {
+            // Make sure a PID collision with an existing repository object isn't happening
+            if (repoObjFactory.objectExists(binPid.getRepositoryUri())) {
+                failJob(e, "Cannot transfer binary {0}, an object with PID {1} already exists in the repository",
+                        stagingUri, binPid.getQualifiedId());
+            }
+            // Check if the binary at the destination matches the staged copy
+            if (transferSession.isTransferred(binPid, stagingUri)) {
+                // binary was previously fully transferred so all we need to do is record the destination uri
+                log.debug("Binary {} was already transferred, recording and moving on", binPid.getQualifiedId());
+                BinaryDetails details = transferSession.getStoredBinaryDetails(binPid);
+                storageUri = details.getDestinationUri();
+            } else {
+                // binary was not previously fully transferred, so retry with replacement enabled
+                log.debug("Retransferring {} file from {} for {} with replacement enabled",
+                        storageProperty.getLocalName(), stagingUri, binPid.getQualifiedId());
+                storageUri = transferSession.transferReplaceExisting(binPid, stagingUri);
             }
         }
+        log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
+        resc.addLiteral(storageProperty, storageUri.toString());
     }
 }
