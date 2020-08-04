@@ -6,7 +6,7 @@
     <parent>
         <artifactId>cdr</artifactId>
         <groupId>edu.unc.lib.cdr</groupId>
-        <version>4.0-SNAPSHOT</version>
+        <version>5.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>services-camel</artifactId>
