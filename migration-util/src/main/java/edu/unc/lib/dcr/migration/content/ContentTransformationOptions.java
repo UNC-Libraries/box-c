@@ -40,6 +40,10 @@ public class ContentTransformationOptions {
             description = "Create referenced deposit records which do not have their own bxc3 object")
     private boolean createMissingDepositRecords;
 
+    @Option(names = {"--skip-members"},
+            description = "Only migrate the specified object, do not migrate its members")
+    private boolean skipMembers;
+
     @Option(names = {"-n", "--dry-run"},
             description = "Perform the transformation but do not save the results")
     private boolean dryRun;
@@ -78,6 +82,14 @@ public class ContentTransformationOptions {
 
     public void setCreateMissingDepositRecords(boolean createMissingDepositRecords) {
         this.createMissingDepositRecords = createMissingDepositRecords;
+    }
+
+    public boolean isSkipMembers() {
+        return skipMembers;
+    }
+
+    public void setSkipMembers(boolean skipMembers) {
+        this.skipMembers = skipMembers;
     }
 
     public boolean isDryRun() {

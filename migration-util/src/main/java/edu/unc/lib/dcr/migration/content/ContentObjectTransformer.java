@@ -262,15 +262,17 @@ public class ContentObjectTransformer extends RecursiveAction {
         containerBag.addProperty(RDF.type, resourceType);
 
         Map<PID, PID> oldToNewPids = new HashMap<>();
-        List<PID> contained = listContained(bxc3Resc);
-        for (PID containedPid : contained) {
-            // Determine PID to use for transformed child, in case we are generating or preserving ids.
-            PID newContainedPid = manager.getTransformedPid(containedPid);
-            oldToNewPids.put(containedPid, newContainedPid);
+        if (!options.isSkipMembers()) {
+            List<PID> contained = listContained(bxc3Resc);
+            for (PID containedPid : contained) {
+                // Determine PID to use for transformed child, in case we are generating or preserving ids.
+                PID newContainedPid = manager.getTransformedPid(containedPid);
+                oldToNewPids.put(containedPid, newContainedPid);
 
-            // Spawn and execute transformer for children
-            manager.createTransformer(containedPid, newContainedPid, newPid, resourceType)
-                   .fork();
+                // Spawn and execute transformer for children
+                manager.createTransformer(containedPid, newContainedPid, newPid, resourceType)
+                       .fork();
+            }
         }
 
         if (Cdr.Work.equals(resourceType)) {
