@@ -135,6 +135,8 @@ public class ContentObjectTransformerTest {
 
     private PremisLoggerFactory premisLoggerFactory;
 
+    private ContentTransformationOptions options;
+
     @Mock
     private PathIndex pathIndex;
 
@@ -160,15 +162,18 @@ public class ContentObjectTransformerTest {
         premisLoggerFactory = new PremisLoggerFactory();
         premisLoggerFactory.setPidMinter(pidMinter);
 
+        options = new ContentTransformationOptions();
+        options.setTopLevelAsUnit(true);
+
         manager = new ContentObjectTransformerManager();
         manager.setPathIndex(pathIndex);
         manager.setModelManager(modelManager);
         manager.setPidMinter(pidMinter);
-        manager.setTopLevelAsUnit(true);
+        manager.setOptions(options);
         manager.setDirectoryManager(directoryManager);
         manager.setPremisLoggerFactory(premisLoggerFactory);
 
-        service = new ContentTransformationService(depositPid, startingPid.getId(), true);
+        service = new ContentTransformationService(depositPid, startingPid.getId());
         service.setModelManager(modelManager);
         service.setTransformerManager(manager);
     }
@@ -253,7 +258,7 @@ public class ContentObjectTransformerTest {
     @Test
     public void transformFolderWithChildGenerateIds() throws Exception {
         // Enable id generation
-        manager.setGenerateIds(true);
+        options.setGenerateIds(true);
 
         // Create the children objects' foxml
         PID child1Pid = makePid();
@@ -508,7 +513,7 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformWorkWithFileWithGeneratedIds() throws Exception {
-        manager.setGenerateIds(true);
+        options.setGenerateIds(true);
 
         PID child1Pid = makePid();
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
@@ -738,7 +743,7 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformCollectionAtTopWithFlagFalse() throws Exception {
-        manager.setTopLevelAsUnit(false);
+        options.setTopLevelAsUnit(false);
 
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
         addStaffRoles(model, startingPid);

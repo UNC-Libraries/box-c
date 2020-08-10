@@ -119,7 +119,6 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     private PathIndex pathIndex;
     private DepositModelManager modelManager;
-    private boolean topLevelAsUnit;
     private ContentObjectTransformerManager manager;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
@@ -133,7 +132,7 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     private Document foxml;
 
-    private boolean createMissingDepositRecords;
+    private ContentTransformationOptions options;
 
     /**
      *
@@ -219,7 +218,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         PID originalDepPid = convertBxc3RefToPid(DEPOSIT_RECORD_BASE, originalDepStmt.getResource().getURI());
         depResc.addProperty(CdrDeposit.originalDeposit, createResource(originalDepPid.getRepositoryPath()));
 
-        if (createMissingDepositRecords) {
+        if (options.isCreateMissingDepositRecords()) {
             Path depRecPath = pathIndex.getPath(originalDepPid, OBJECT_TYPE);
             if (depRecPath == null && !createdDepositRecords.contains(originalDepPid)) {
                 createdDepositRecords.add(originalDepPid);
@@ -454,7 +453,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             return Cdr.Work;
         }
         if (contentModels.contains(COLLECTION.getResource())) {
-            if (Cdr.AdminUnit.equals(parentType) || !topLevelAsUnit) {
+            if (Cdr.AdminUnit.equals(parentType) || !options.isTopLevelAsUnit()) {
                 return Cdr.Collection;
             } else {
                 return Cdr.AdminUnit;
@@ -534,10 +533,6 @@ public class ContentObjectTransformer extends RecursiveAction {
         this.modelManager = modelManager;
     }
 
-    public void setTopLevelAsUnit(boolean topLevelAsUnit) {
-        this.topLevelAsUnit = topLevelAsUnit;
-    }
-
     public void setManager(ContentObjectTransformerManager manager) {
         this.manager = manager;
     }
@@ -562,7 +557,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         this.repoObjFactory = repoObjFactory;
     }
 
-    public void setCreateMissingDepositRecords(boolean createMissingDepositRecords) {
-        this.createMissingDepositRecords = createMissingDepositRecords;
+    public void setOptions(ContentTransformationOptions options) {
+        this.options = options;
     }
 }
