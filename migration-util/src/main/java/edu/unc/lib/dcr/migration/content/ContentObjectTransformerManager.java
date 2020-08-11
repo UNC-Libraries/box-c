@@ -44,9 +44,7 @@ public class ContentObjectTransformerManager {
 
     private PathIndex pathIndex;
     private DepositModelManager modelManager;
-    private boolean topLevelAsUnit;
-    private boolean generateIds;
-    private boolean createMissingDepositRecords;
+    private ContentTransformationOptions options;
     private RepositoryPIDMinter pidMinter;
     private DepositDirectoryManager directoryManager;
     private PremisLoggerFactory premisLoggerFactory;
@@ -75,13 +73,12 @@ public class ContentObjectTransformerManager {
                 originalPid, newPid, parentPid, parentType);
         transformer.setModelManager(modelManager);
         transformer.setPathIndex(pathIndex);
-        transformer.setTopLevelAsUnit(topLevelAsUnit);
         transformer.setManager(this);
         transformer.setPidMinter(pidMinter);
         transformer.setDirectoryManager(directoryManager);
         transformer.setPremisLoggerFactory(premisLoggerFactory);
         transformer.setRepositoryObjectFactory(repoObjFactory);
-        transformer.setCreateMissingDepositRecords(createMissingDepositRecords);
+        transformer.setOptions(options);
 
         createdTransformers.add(transformer);
         totalAdded.incrementAndGet();
@@ -113,7 +110,7 @@ public class ContentObjectTransformerManager {
     }
 
     public PID getTransformedPid(PID originalPid) {
-        return generateIds ? pidMinter.mintContentPid() : originalPid;
+        return options.isGenerateIds() ? pidMinter.mintContentPid() : originalPid;
     }
 
     public void setPathIndex(PathIndex pathIndex) {
@@ -122,10 +119,6 @@ public class ContentObjectTransformerManager {
 
     public void setModelManager(DepositModelManager modelManager) {
         this.modelManager = modelManager;
-    }
-
-    public void setTopLevelAsUnit(boolean topLevelAsUnit) {
-        this.topLevelAsUnit = topLevelAsUnit;
     }
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
@@ -140,15 +133,11 @@ public class ContentObjectTransformerManager {
         this.premisLoggerFactory = premisLoggerFactory;
     }
 
-    public void setGenerateIds(boolean generateIds) {
-        this.generateIds = generateIds;
-    }
-
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
     }
 
-    public void setCreateMissingDepositRecords(boolean createMissingDepositRecords) {
-        this.createMissingDepositRecords = createMissingDepositRecords;
+    public void setOptions(ContentTransformationOptions options) {
+        this.options = options;
     }
 }

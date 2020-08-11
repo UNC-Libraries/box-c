@@ -135,6 +135,8 @@ public class ContentObjectTransformerTest {
 
     private PremisLoggerFactory premisLoggerFactory;
 
+    private ContentTransformationOptions options;
+
     @Mock
     private PathIndex pathIndex;
 
@@ -160,15 +162,18 @@ public class ContentObjectTransformerTest {
         premisLoggerFactory = new PremisLoggerFactory();
         premisLoggerFactory.setPidMinter(pidMinter);
 
+        options = new ContentTransformationOptions();
+        options.setTopLevelAsUnit(true);
+
         manager = new ContentObjectTransformerManager();
         manager.setPathIndex(pathIndex);
         manager.setModelManager(modelManager);
         manager.setPidMinter(pidMinter);
-        manager.setTopLevelAsUnit(true);
+        manager.setOptions(options);
         manager.setDirectoryManager(directoryManager);
         manager.setPremisLoggerFactory(premisLoggerFactory);
 
-        service = new ContentTransformationService(depositPid, startingPid.getId(), true);
+        service = new ContentTransformationService(depositPid, startingPid.getId());
         service.setModelManager(modelManager);
         service.setTransformerManager(manager);
     }
@@ -253,7 +258,7 @@ public class ContentObjectTransformerTest {
     @Test
     public void transformFolderWithChildGenerateIds() throws Exception {
         // Enable id generation
-        manager.setGenerateIds(true);
+        options.setGenerateIds(true);
 
         // Create the children objects' foxml
         PID child1Pid = makePid();
@@ -508,7 +513,7 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformWorkWithFileWithGeneratedIds() throws Exception {
-        manager.setGenerateIds(true);
+        options.setGenerateIds(true);
 
         PID child1Pid = makePid();
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
@@ -738,7 +743,7 @@ public class ContentObjectTransformerTest {
 
     @Test
     public void transformCollectionAtTopWithFlagFalse() throws Exception {
-        manager.setTopLevelAsUnit(false);
+        options.setTopLevelAsUnit(false);
 
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
         addStaffRoles(model, startingPid);
@@ -898,6 +903,44 @@ public class ContentObjectTransformerTest {
         assertTrue(child1Resc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
+    }
+
+    @Test
+    public void transformFolderSkipMembers() throws Exception {
+        options.setSkipMembers(true);
+
+        // Create the child object's foxml
+        PID child1Pid = makePid();
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "child1")
+                .relsExtModel(createContainerModel(child1Pid))
+                .build();
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        // Create the parent's foxml
+        addPremisLog(startingPid);
+
+        Model model = createContainerModel(startingPid);
+        addContains(model, startingPid, child1Pid);
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
+
+        assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(parentBag.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(parentBag.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(parentBag.hasProperty(CdrDeposit.label, "folder"));
+
+        List<RDFNode> bagChildren = parentBag.iterator().toList();
+        assertEquals("No members should have been transformed", 0, bagChildren.size());
+
+        assertPremisTransformed(PIDs.get(startingPid.getURI()));
     }
 
     private Model createContainerModel(PID pid, ContentModel... models) {

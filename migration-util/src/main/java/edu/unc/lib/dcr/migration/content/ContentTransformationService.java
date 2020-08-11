@@ -35,7 +35,7 @@ public class ContentTransformationService {
     private ContentObjectTransformerManager transformerManager;
     private DepositModelManager modelManager;
 
-    public ContentTransformationService(PID depositPid, String startingId, boolean topLevelAsUnit) {
+    public ContentTransformationService(PID depositPid, String startingId) {
         this.startingPid = PIDs.get(startingId);
         this.depositPid = depositPid;
     }

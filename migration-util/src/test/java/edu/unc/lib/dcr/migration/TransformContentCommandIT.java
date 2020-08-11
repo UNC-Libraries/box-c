@@ -292,6 +292,53 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertEquals(SoftwareAgent.migrationUtil.getFullname(), agentResc.getProperty(Rdf.label).getString());
     }
 
+    @Test
+    public void transformSkipMembers() throws Exception {
+        PID innerPid = pidMinter.mintContentPid();
+        Model innerFolderModel = createModelWithTypes(innerPid, ContentModel.CONTAINER);
+
+        Model folderModel = createModelWithTypes(bxc3Pid, ContentModel.CONTAINER);
+        Resource folderResc = folderModel.getResource(toBxc3Uri(bxc3Pid));
+        Resource fileResc = folderModel.getResource(toBxc3Uri(innerPid));
+        folderResc.addProperty(Relationship.contains.getProperty(), fileResc);
+
+        addPremisLog(bxc3Pid);
+
+        Document foxml1 = new FoxmlDocumentBuilder(bxc3Pid, "folder")
+                .relsExtModel(folderModel)
+                .build();
+        serializeFoxml(bxc3Pid, foxml1);
+
+        Document foxml2 = new FoxmlDocumentBuilder(innerPid, "folder")
+                .relsExtModel(innerFolderModel)
+                .build();
+        serializeFoxml(innerPid, foxml2);
+
+        indexFiles();
+
+        String[] args = new String[] { "tc", bxc3Pid.getId(), "--skip-members" };
+        executeExpectSuccess(args);
+
+        PID depositPid = extractDepositPid(output);
+
+        assertTrue("Expected one transformation successful",
+                output.contains(" 1/1 "));
+        assertTrue("Expected transformation completed message",
+                output.contains("Finished transformation"));
+
+        DepositModelManager modelManager = new DepositModelManager(depositPid, tdbDir.toString());
+        Model depModel = modelManager.getReadModel();
+
+        Bag resultFolderResc = depModel.getBag(bxc3Pid.getRepositoryPath());
+        assertTrue(resultFolderResc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resultFolderResc.hasProperty(CdrDeposit.createTime, FoxmlDocumentBuilder.DEFAULT_CREATED_DATE));
+
+        List<RDFNode> bagChildren = resultFolderResc.iterator().toList();
+        assertEquals("No children should have been migrated due to skip-members", 0, bagChildren.size());
+
+        assertTrue("Deposit directory must exist", new File(depositBaseDir, depositPid.getId()).exists());
+    }
+
     private PID extractDepositPid(String output) {
         String fieldText = "Populating deposit: ";
         int start = output.indexOf(fieldText);
