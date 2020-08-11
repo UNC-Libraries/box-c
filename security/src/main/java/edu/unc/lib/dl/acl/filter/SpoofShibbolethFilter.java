@@ -30,7 +30,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Filter which enables shibboleth header spoofing for testing purposes
- * 
+ *
  * @author bbpennel
  *
  */
@@ -38,6 +38,7 @@ public class SpoofShibbolethFilter extends OncePerRequestFilter implements Servl
     private static final Logger log = LoggerFactory.getLogger(SpoofShibbolethFilter.class);
 
     private boolean spoofEnabled = false;
+    private String spoofEmailSuffix = "@localhost";
 
     @PostConstruct
     public void init() {
@@ -50,7 +51,7 @@ public class SpoofShibbolethFilter extends OncePerRequestFilter implements Servl
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         if (spoofEnabled) {
-            filterChain.doFilter(new SpoofShibbolethRequestWrapper(request), response);
+            filterChain.doFilter(new SpoofShibbolethRequestWrapper(request, spoofEmailSuffix), response);
         } else {
             filterChain.doFilter(request, response);
         }
@@ -62,5 +63,9 @@ public class SpoofShibbolethFilter extends OncePerRequestFilter implements Servl
 
     public void setSpoofEnabled(boolean spoofEnabled) {
         this.spoofEnabled = spoofEnabled;
+    }
+
+    public void setSpoofEmailSuffix(String spoofEmailSuffix) {
+        this.spoofEmailSuffix = spoofEmailSuffix;
     }
 }

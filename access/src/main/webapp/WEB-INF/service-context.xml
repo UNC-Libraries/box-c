@@ -119,5 +119,6 @@
     
     <bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
+        <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
     </bean>
 </beans>
