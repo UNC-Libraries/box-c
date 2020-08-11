@@ -7,7 +7,7 @@ matrix:
         - gem install sass
       services:
         - redis-server
-      script: mvn verify -pl services-camel
+      script: mvn verify -pl fcrepo-clients,services-camel
       sudo: false
       cache:
         directories:
