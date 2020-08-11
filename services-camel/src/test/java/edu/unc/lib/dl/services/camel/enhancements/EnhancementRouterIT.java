@@ -29,6 +29,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -93,6 +94,8 @@ import edu.unc.lib.dl.test.TestHelper;
 public class EnhancementRouterIT {
 
     private final static String FILE_CONTENT = "content";
+
+    private final static long ALLOW_WAIT = 5000;
 
     @Autowired
     private String baseAddress;
@@ -180,17 +183,10 @@ public class EnhancementRouterIT {
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(7)
-                .create();
-
-        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
-
-        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(solrIngestProcessor).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 
     @Test
@@ -200,16 +196,9 @@ public class EnhancementRouterIT {
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(2)
-                .create();
-
-        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
-
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(solrIngestProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -231,12 +220,12 @@ public class EnhancementRouterIT {
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
         assertTrue("Enhancement route not satisfied", result1);
 
-        verify(addSmallThumbnailProcessor).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
-        verify(solrIngestProcessor).process(any(Exchange.class));
-        verify(registerLongleafProcessor).process(any(Exchange.class));
+        verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(registerLongleafProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 
     @Test
