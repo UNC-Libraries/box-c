@@ -352,7 +352,8 @@ public class ImportXMLJob implements Runnable {
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
                                 try {
-                                    log.debug("Ending MODS tag for {}, preparing to update description", currentPid.getQualifiedId());
+                                    log.debug("Ending MODS tag for {}, preparing to update description",
+                                            currentPid.getQualifiedId());
                                     BinaryTransferSession transferSession =
                                             session.forDestination(locationManager.getStorageLocation(currentPid));
                                     updateService.updateDescription(transferSession, agent, currentPid, modsStream);
