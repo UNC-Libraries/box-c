@@ -7,6 +7,7 @@
     </encoder>
   </appender>
   <logger name="ch.qos.logback" level="ERROR"/>
+  <logger name="org.fcrepo" level="ERROR"/>
   <root level="WARN">
     <appender-ref ref="CONSOLE"/>
   </root>
