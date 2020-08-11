@@ -104,7 +104,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				accessBaseUrl : this.options.accessBaseUrl
 			});
 			
-			self.$resultPage.on("click", ".res_link", function(e){
+			self.$resultPage.on("click", ".page_update", function(e){
 				var url = $(this).attr("href");
 				self.changePage(url, true);
 				e.preventDefault();
