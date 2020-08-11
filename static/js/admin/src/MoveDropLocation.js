@@ -201,10 +201,16 @@ define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'],
 					};
 
 					$.each(self.manager.dragTargets, function() {
-						if (self._validTarget(this.metadata, destInfo)) {
-							selector.addClass("moving");
-						} else {
+						try {
+							if (self._validTarget(this.metadata, destInfo)) {
+								selector.addClass("moving");
+							} else {
+								selector.addClass("invalid_target");
+								return false;
+							}
+						} catch (e) { // Just set errored destinations to invalid drop targets instead of cancelling drop
 							selector.addClass("invalid_target");
+							console.log('Error checking drop destination for: ' + JSON.stringify(destInfo), e);
 							return false;
 						}
 					});

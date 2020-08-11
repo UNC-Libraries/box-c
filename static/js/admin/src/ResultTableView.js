@@ -197,12 +197,11 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				}
 				// Set the sort URL for the column
 				var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
-				var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
-				this.children[0].href = sortUrl;
+				this.children[0].href = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
 				
 				// If we're in paging mode, make the column link trigger a retrieval from server
 				if (self.pagingActive) {
-					$("a", $this).addClass("res_link");
+					$("a", $this).addClass("page_update");
 				}
 				
 				var $th = $(this);
