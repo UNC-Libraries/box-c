@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -138,9 +137,10 @@ public class ImportXMLJob implements Runnable {
 
         try (
                 Timer.Context context = timer.time();
+                InputStream importStream = new FileInputStream(importFile);
                 MultiDestinationTransferSession session = transferService.getSession();
         ) {
-            initializeXMLReader();
+            initializeXMLReader(importStream);
             processUpdates(session, null, null);
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     objectCount, System.currentTimeMillis() - startTime, username);
@@ -153,9 +153,9 @@ public class ImportXMLJob implements Runnable {
             log.error(e.getMessage());
             failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
             sendValidationFailureEmail(failed);
-        } catch (FileNotFoundException e) {
-            log.error("The import file could not be found on the server");
-            failed.put(importFile.getAbsolutePath(), "Import file could not be found on the server");
+        } catch (IOException e) {
+            log.error("Failed to read import file {}", importFile, e);
+            failed.put(importFile.getAbsolutePath(), "Failed to read import file: " + e.getMessage());
             sendValidationFailureEmail(failed);
         } finally {
             close();
@@ -242,8 +242,8 @@ public class ImportXMLJob implements Runnable {
         this.locationManager = locationManager;
     }
 
-    private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
-        xmlReader = createXMLInputFactory().createXMLEventReader(new FileInputStream(importFile));
+    private void initializeXMLReader(InputStream importStream) throws XMLStreamException {
+        xmlReader = createXMLInputFactory().createXMLEventReader(importStream);
     }
 
     private void processUpdates(MultiDestinationTransferSession session, PID resumePid, String resumeDs)
@@ -357,6 +357,7 @@ public class ImportXMLJob implements Runnable {
                                             session.forDestination(locationManager.getStorageLocation(currentPid));
                                     updateService.updateDescription(transferSession, agent, currentPid, modsStream);
                                     updated.add(currentPid.getId());
+                                    log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
