@@ -268,6 +268,7 @@ public class ImportXMLJob implements Runnable {
                             StartElement element = e.asStartElement();
                             // Make sure that this document begins with bulk md tag
                             if (element.getName().getLocalPart().equals(BULK_MD_TAG)) {
+                                log.debug("Starting bulk metadata import document");
                                 state = DocumentState.IN_BULK;
                             } else {
                                 throw new ServiceException("Submitted document is not a bulk-metadata-update doc");
@@ -283,6 +284,7 @@ public class ImportXMLJob implements Runnable {
 
                                 if (pid != null) {
                                     currentPid = PIDs.get(pid.getValue());
+                                    log.debug("Starting element for object {}", currentPid.getQualifiedId());
                                     objectCount++;
                                     state = DocumentState.IN_OBJECT;
                                 } else {
@@ -304,6 +306,7 @@ public class ImportXMLJob implements Runnable {
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
                                     currentDs = MODS_TYPE;
+                                    log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
                                 } else {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "Invalid import data, unsupported type in update tag");
@@ -349,6 +352,7 @@ public class ImportXMLJob implements Runnable {
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
                                 try {
+                                    log.debug("Ending MODS tag for {}, preparing to update description", currentPid.getQualifiedId());
                                     BinaryTransferSession transferSession =
                                             session.forDestination(locationManager.getStorageLocation(currentPid));
                                     updateService.updateDescription(transferSession, agent, currentPid, modsStream);
