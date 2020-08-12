@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 
 /**
  * Adds a derivative file to an existing file object
@@ -51,7 +52,6 @@ public class AddDerivativeProcessor implements Processor {
 
     private final String fileExtension;
     private final String derivativeBasePath;
-
 
     public AddDerivativeProcessor(String fileExtension, String derivativeBasePath) {
         this.fileExtension = fileExtension;
@@ -107,6 +107,24 @@ public class AddDerivativeProcessor implements Processor {
         String force = (String) in.getHeader("force");
 
         return (Files.notExists(derivativeFinalPath) || Boolean.parseBoolean(force));
+    }
+
+    /**
+     * Deletes a temp file listed in the CdrTempPath header if it is present
+     *
+     * @param exchange
+     * @throws Exception
+     */
+    public void cleanupTempFile(Exchange exchange) throws Exception {
+        final Message in = exchange.getIn();
+        String tempValue = (String) in.getHeader(CdrFcrepoHeaders.CdrTempPath);
+        tempValue += "." + fileExtension;
+        Path tempPath = Paths.get(tempValue);
+
+        boolean deleted = Files.deleteIfExists(tempPath);
+        if (deleted) {
+            log.debug("Cleaned up leftover temp file {}", tempPath);
+        }
     }
 
     private Path setDerivativeFinalPath(String binaryId) {
