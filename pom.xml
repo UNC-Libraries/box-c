@@ -176,7 +176,6 @@
         <module>fcrepo-clients</module>
         
         <module>metadata</module>
-        <module>oai4solr/oai2-plugin</module>
         <module>persistence</module>
         <module>services</module>
         <module>services-camel</module>
@@ -326,7 +325,6 @@
                     </includes>
                     <excludes>
                         <exclude>clamavj/**</exclude>
-                        <exclude>oai4solr/**</exclude>
                         <exclude>**/*.properties</exclude>
                     </excludes>
                     <properties>
