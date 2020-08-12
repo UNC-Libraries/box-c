@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
 import java.nio.file.Paths;
@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -53,12 +54,13 @@ import edu.unc.lib.dl.services.MessageSender;
 })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class DeregisterLongleafRouteTest {
+    private static final Logger log = getLogger(DeregisterLongleafRouteTest.class);
 
     @Autowired
     private MessageSender messageSender;
 
     @Autowired
-    private DeregisterLongleafProcessor processor;
+    private DeregisterLongleafProcessor deregisterLongleafProcessor;
 
     @Autowired
     private CamelContext cdrLongleaf;
@@ -75,7 +77,7 @@ public class DeregisterLongleafRouteTest {
         tmpFolder.create();
         outputPath = tmpFolder.newFile().getPath();
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
-        processor.setLongleafBaseCommand(longleafScript);
+        deregisterLongleafProcessor.setLongleafBaseCommand(longleafScript);
     }
 
     @Test
@@ -91,9 +93,7 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertDeregisterCalled(1);
-        assertDeregisterPaths(contentUri);
+        assertDeregisterPaths(2000, contentUri);
     }
 
     @Test
@@ -109,14 +109,11 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertDeregisterCalled(1);
-        assertDeregisterPaths(contentUris);
+        assertDeregisterPaths(2000, contentUris);
     }
 
     @Test
     public void deregisterMultipleBatches() throws Exception {
-        // Expecting 2 batch messages and 10 individual file messages, on different routes
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
                 .whenCompleted(2 + 10)
                 .create();
@@ -127,9 +124,7 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        output = LongleafTestHelpers.readOutput(outputPath);
-        assertDeregisterCalled(2);
-        assertDeregisterPaths(contentUris);
+        assertDeregisterPaths(5000, contentUris);
     }
 
     private String generateContentUri() {
@@ -150,15 +145,28 @@ public class DeregisterLongleafRouteTest {
         }
     }
 
-    private void assertDeregisterCalled(int expectedCount) {
-        int count = 0;
-        for (String line : output) {
-            if (("deregister -l @-").equals(line)) {
-                count++;
+    /**
+     * Assert that all of the provided content uris are present in the longleaf output
+     * @param timeout time in milliseconds allowed for the condition to become true,
+     *      to accommodate asynchronous unpredictable batch cutoffs
+     * @param contentUris list of expected content uris
+     * @throws Exception
+     */
+    private void assertDeregisterPaths(long timeout, String... contentUris) throws Exception {
+        long start = System.currentTimeMillis();
+        do {
+            try {
+                output = LongleafTestHelpers.readOutput(outputPath);
+                assertDeregisterPaths(contentUris);
+                return;
+            } catch (AssertionError e) {
+                if ((System.currentTimeMillis() - start) > timeout) {
+                    throw e;
+                }
+                Thread.sleep(25);
+                log.debug("DeregisterPaths not yet satisfied, retrying");
             }
-        }
-
-        assertEquals(expectedCount, count);
+        } while (true);
     }
 
     private void assertDeregisterPaths(String... contentUris) {
