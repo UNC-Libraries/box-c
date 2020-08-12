@@ -8,6 +8,7 @@
   </appender>
   <logger name="org.apache.camel" level="ERROR"/>
   <logger name="org.apache.activemq" level="ERROR"/>
+  <logger name="org.fcrepo" level="ERROR"/>
   <root level="WARN">
     <appender-ref ref="CONSOLE"/>
   </root>

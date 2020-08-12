@@ -33,10 +33,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 
-import edu.unc.lib.dl.model.DatastreamPids;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
@@ -51,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Premis;
@@ -300,17 +301,28 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .addEventDetail("first premis event")
                 .create();
         PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());
+
+        AtomicBoolean startedWrite = new AtomicBoolean();
+        Object writeMutex = new Object();
         Runnable writeThreadRunnable = new Runnable() {
             @Override
             public void run() {
-                Lock writeLock = lockManager.awaitWriteLock(logPid);
-                logger.writeEvents(anotherEvent);
                 try {
-                    Thread.sleep(25);
+                    synchronized(writeMutex) {
+                        Lock writeLock = lockManager.awaitWriteLock(logPid);
+
+                        startedWrite.set(true);
+                        writeMutex.notify();
+
+                        logger.writeEvents(anotherEvent);
+
+                        Thread.sleep(50);
+
+                        writeLock.unlock();
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                writeLock.unlock();
             }
         };
         Thread writeThread = new Thread(writeThreadRunnable);
@@ -327,6 +339,14 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         };
         Thread readThread = new Thread(readThreadRunnable);
         writeThread.start();
+
+        // Block so that the read thread doesn't start before the write starts
+        synchronized(writeMutex) {
+            while (!startedWrite.get()) {
+                writeMutex.wait(1000);
+            }
+        }
+
         readThread.start();
 
         assertEquals(0, premisNotes.size());

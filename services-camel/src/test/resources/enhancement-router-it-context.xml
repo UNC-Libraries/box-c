@@ -78,6 +78,12 @@
         <property name="connectionFactory" ref="jmsFactory" />
     </bean>
     
+    <!-- Force the camel context to shutdown before activemq broker -->
+    <bean id="camelShutdownHook" class="org.apache.activemq.camel.CamelShutdownHook">
+        <constructor-arg ref="activemqBroker" />
+        <property name="camelContext" ref="cdrEnhancements" />
+    </bean>
+    
     <camel:camelContext id="cdrLongleaf">
         <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
     </camel:camelContext>
