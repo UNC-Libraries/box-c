@@ -20,10 +20,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.SimpleUuidGenerator;
+import org.apache.camel.impl.JavaUuidGenerator;
+import org.apache.camel.spi.UuidGenerator;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 
 /**
  * Router which triggers the creation of thumbnails when applicable binaries
@@ -43,7 +45,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    private SimpleUuidGenerator uuidGenerator;
+    private UuidGenerator uuidGenerator;
 
     /**
      * Configure the thumbnail route workflow.
@@ -52,7 +54,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     public void configure() throws Exception {
         ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
 
-        uuidGenerator = new SimpleUuidGenerator();
+        uuidGenerator = new JavaUuidGenerator();
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
@@ -79,21 +81,32 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .startupOrder(22)
             .log(LoggingLevel.INFO, log, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addSmallThumbnailProcessor, "needsRun")
-                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                        + "${headers[CdrImagePath]} png 64 64 "
-                        + "${properties:services.tempDirectory}/${body}-small"))
-                .shareUnitOfWork()
-                .bean(addSmallThumbnailProcessor);
+                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-small"))
+                .doTry()
+                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
+                            + "${headers[CdrImagePath]} png 64 64 ${headers[CdrTempPath]}"))
+                    .bean(addSmallThumbnailProcessor)
+                .endDoTry()
+                .doFinally()
+                    // Ensure temp files get cleaned up in case of failure
+                    .bean(addSmallThumbnailProcessor, "cleanupTempFile")
+                .end();
+
 
         from("direct:large.thumbnail")
             .routeId("LargeThumbnail")
             .startupOrder(21)
             .log(LoggingLevel.INFO, log, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
             .filter().method(addLargeThumbProcessor, "needsRun")
-                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                        + "${headers[CdrImagePath]} png 128 128 "
-                        + "${properties:services.tempDirectory}/${body}-large"))
-                .bean(addLargeThumbProcessor);
+                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-large"))
+                .doTry()
+                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
+                            + "${headers[CdrImagePath]} png 128 128 ${headers[CdrTempPath]}"))
+                    .bean(addLargeThumbProcessor)
+                .endDoTry()
+                .doFinally()
+                    .bean(addLargeThumbProcessor, "cleanupTempFile")
+                .end();
 
         from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
@@ -105,9 +118,14 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
                 // Generate an random identifier to avoid derivative collisions
                 .bean(uuidGenerator)
-                .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                        + "${headers[CdrImagePath]} jp2 "
-                        + "${properties:services.tempDirectory}/${body}-access"))
-                .bean(addAccessCopyProcessor);
+                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
+                .doTry()
+                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
+                            + "${headers[CdrImagePath]} jp2 ${headers[CdrTempPath]}"))
+                    .bean(addAccessCopyProcessor)
+                .endDoTry()
+                .doFinally()
+                    .bean(addAccessCopyProcessor, "cleanupTempFile")
+                .end();
     }
 }

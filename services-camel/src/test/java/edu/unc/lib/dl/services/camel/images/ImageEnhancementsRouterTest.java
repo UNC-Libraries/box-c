@@ -38,9 +38,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.CamelContext;
+import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
@@ -51,7 +52,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -87,9 +87,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
-
-    @Autowired
-    private CamelContext cdrEnhancements;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -159,6 +156,33 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbSmallRouteScriptFails() throws Exception {
+        createContext(smallThumbRoute);
+
+        MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
+        shEndpoint.expectedMessageCount(1);
+        shEndpoint.whenAnyExchangeReceived(new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                throw new IllegalStateException("Failing run of exec");
+            }
+        });
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+        try {
+            template.sendBodyAndHeaders("", headers);
+            fail("Exception expected to be thrown");
+        } catch (CamelExecutionException e) {
+            assertTrue(e.getCause() instanceof IllegalStateException);
+        }
+
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -172,6 +196,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -189,6 +214,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor, never()).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -222,6 +248,33 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testThumbLargeRouteScriptFails() throws Exception {
+        createContext(largeThumbRoute);
+
+        MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
+        shEndpoint.expectedMessageCount(1);
+        shEndpoint.whenAnyExchangeReceived(new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                throw new IllegalStateException("Failing run of exec");
+            }
+        });
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+        try {
+            template.sendBodyAndHeaders("", headers);
+            fail("Exception expected to be thrown");
+        } catch (CamelExecutionException e) {
+            assertTrue(e.getCause() instanceof IllegalStateException);
+        }
+
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -238,6 +291,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -257,6 +311,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -290,6 +345,33 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyRouteScriptFails() throws Exception {
+        createContext(accessCopyRoute);
+
+        MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
+        shEndpoint.expectedMessageCount(1);
+        shEndpoint.whenAnyExchangeReceived(new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                throw new IllegalStateException("Failing run of exec");
+            }
+        });
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+        try {
+            template.sendBodyAndHeaders("", headers);
+            fail("Exception expected to be thrown");
+        } catch (CamelExecutionException e) {
+            assertTrue(e.getCause() instanceof IllegalStateException);
+        }
+
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
@@ -322,6 +404,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
 
