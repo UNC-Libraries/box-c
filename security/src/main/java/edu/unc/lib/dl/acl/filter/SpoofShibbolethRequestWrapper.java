@@ -44,13 +44,15 @@ public class SpoofShibbolethRequestWrapper extends HttpServletRequestWrapper {
 
     private final static String SPOOF_COOKIE_PREFIX = "AUTHENTICATION_SPOOFING-";
 
+    private String spoofEmailSuffix;
     private HashMap<String, String> values;
 
     private HttpServletRequest request;
 
-    public SpoofShibbolethRequestWrapper(HttpServletRequest request) throws IOException {
+    public SpoofShibbolethRequestWrapper(HttpServletRequest request, String spoofEmailSuffix) throws IOException {
         super(request);
         this.request = request;
+        this.spoofEmailSuffix = spoofEmailSuffix;
 
         extractSpoofValues();
     }
@@ -67,6 +69,9 @@ public class SpoofShibbolethRequestWrapper extends HttpServletRequestWrapper {
                     String value = URLDecoder.decode(c.getValue(), "UTF-8");
                     values.put(key, value);
                 }
+            }
+            if (request.getRemoteUser() == null && values.containsKey(REMOTE_USER)) {
+                values.put("mail", values.get(REMOTE_USER) + spoofEmailSuffix);
             }
         }
     }

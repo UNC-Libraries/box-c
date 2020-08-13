@@ -172,7 +172,8 @@ public class ImportXMLJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals("Import file could not be found on the server", problem.getValue());
+        assertTrue("Failure message did not match excepted value, was: " + problem.getValue(),
+                problem.getValue().contains("Failed to read import file"));
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
