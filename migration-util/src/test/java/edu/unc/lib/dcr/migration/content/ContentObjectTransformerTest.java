@@ -556,6 +556,51 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
+    public void transformWorkWithFileNoFileLabel() throws Exception {
+        addPremisLog(startingPid);
+
+        PID child1Pid = makePid();
+        Path dataFilePath = mockDatastreamFile(child1Pid, ORIGINAL_DS, 0);
+        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "dc-title-label.txt")
+                .label("")
+                .relsExtModel(createFileModel(child1Pid))
+                .withDatastreamVersion(createDataFileVersion())
+                .build();
+
+        serializeFoxml(objectsPath, child1Pid, foxml1);
+
+        Model model = createContainerModel(startingPid, AGGREGATE_WORK);
+        addContains(model, startingPid, child1Pid);
+        addRelationship(model, startingPid, defaultWebObject.getProperty(), child1Pid);
+
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        int result = service.perform();
+        assertEquals(0, result);
+
+        Model depModel = modelManager.getReadModel();
+        Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
+        Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
+
+        // Verify work properties
+        assertTrue(workBag.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(workBag.hasProperty(CdrDeposit.label, "work"));
+
+        assertPremisTransformed(startingPid);
+
+        // Verify file properties
+        List<RDFNode> bagChildren = workBag.iterator().toList();
+        assertEquals(1, bagChildren.size());
+        assertTrue(bagChildren.contains(child1Resc));
+        assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        assertTrue(child1Resc.hasProperty(CdrDeposit.label, "dc-title-label.txt"));
+    }
+
+    @Test
     public void transformWorkWithFileNoDcTitle() throws Exception {
         addPremisLog(startingPid);
 
@@ -567,6 +612,7 @@ public class ContentObjectTransformerTest {
                 // remove dc datastream
                 .withDatastreamVersions(DC_DS, null)
                 .build();
+
         serializeFoxml(objectsPath, child1Pid, foxml1);
 
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);

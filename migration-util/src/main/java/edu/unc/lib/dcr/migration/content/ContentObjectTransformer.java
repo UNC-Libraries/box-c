@@ -407,18 +407,19 @@ public class ContentObjectTransformer extends RecursiveAction {
     private String getLabel(Resource bxc3Resc, List<DatastreamVersion> originalVersions) {
         List<DatastreamVersion> dcVersions = listDatastreamVersions(foxml, DC_DS);
         String filename;
-        if (dcVersions != null && !dcVersions.isEmpty() ) {
-            DatastreamVersion dcVersion = dcVersions.get(0);
-            Element dcEl = dcVersion.getBodyEl();
-            filename = dcEl.getChildTextTrim("title", DC_NS);
+
+        Statement labelStmt = bxc3Resc.getProperty(FedoraProperty.label.getProperty());
+        if (labelStmt != null) {
+            filename = labelStmt.getString();
             if (!isEmpty(filename)) {
                 return filename;
             }
         }
 
-        Statement labelStmt = bxc3Resc.getProperty(FedoraProperty.label.getProperty());
-        if (labelStmt != null) {
-            filename = labelStmt.getString();
+        if (dcVersions != null && !dcVersions.isEmpty() ) {
+            DatastreamVersion dcVersion = dcVersions.get(0);
+            Element dcEl = dcVersion.getBodyEl();
+            filename = dcEl.getChildTextTrim("title", DC_NS);
             if (!isEmpty(filename)) {
                 return filename;
             }
