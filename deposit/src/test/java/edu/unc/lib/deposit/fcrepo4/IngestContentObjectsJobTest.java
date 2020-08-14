@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,6 +70,7 @@ import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -76,6 +79,7 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -86,12 +90,14 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -158,6 +164,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private StorageLocation storageLocation;
     @Mock
     private BinaryTransferSession mockTransferSession;
+    @Mock
+    private UpdateDescriptionService updateDescService;
 
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
@@ -190,6 +198,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "verificationService", verificationService);
         setField(job, "transferService", binaryTransferService);
         setField(job, "locationManager", storageLocationManager);
+        setField(job, "updateDescService", updateDescService);
 
         job.init();
 
@@ -448,6 +457,63 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+    }
+
+    @Test
+    public void ingestWorkObjectWithTransientChecksumFailure() throws Exception {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+
+        BinaryObject mockDescBin = mock(BinaryObject.class);
+        when(mockDescBin.getContentUri()).thenReturn(URI.create("file://path/to/desc"));
+        when(updateDescService.updateDescription(eq(mockTransferSession), any(AgentPrincipals.class),
+                any(ContentObject.class), any(InputStream.class))).thenReturn(mockDescBin);
+
+        Path modsPath = job.getModsPath(workPid, true);
+        FileUtils.writeStringToFile(modsPath.toFile(), "Mods content", UTF_8);
+
+        String mainLoc = "pdf.pdf";
+        String mainMime = "application/pdf";
+        PID mainPid = addFileObject(workBag, mainLoc, mainMime);
+        String supLoc = "text.txt";
+        String supMime = "text/plain";
+        PID supPid = addFileObject(workBag, supLoc, supMime);
+
+        workBag.asResource().addProperty(Cdr.primaryObject,
+                model.getResource(mainPid.getRepositoryPath()));
+
+        job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                .thenThrow(new ChecksumMismatchException("Temporarily bad"))
+                .thenReturn(mockFileObj);
+        when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
+
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
+        verify(destinationObj).addMember(eq(work));
+
+        verify(updateDescService).updateDescription(eq(mockTransferSession), any(AgentPrincipals.class),
+                any(ContentObject.class), any(InputStream.class));
+
+        verify(work, times(2)).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
+                eq(mainMime), anyString(), anyString(), any(Model.class));
+        verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
+                eq(supMime), anyString(), anyString(), any(Model.class));
+        verify(work).setPrimaryObject(mainPid);
+
+        // Add file count
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
+
+        verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
+                anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
+                any(Resource.class));
+
+        // Add work object itself
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test

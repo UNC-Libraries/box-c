@@ -70,7 +70,6 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -111,6 +110,8 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class IngestContentObjectsJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(IngestContentObjectsJob.class);
+
+    private static final int CHECKSUM_RETRIES = 3;
 
     private boolean resumed;
 
@@ -300,7 +301,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
                     ingestFolder(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc, 3);
+                    ingestWork(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
                     ingestCollection(destObj, parentResc, childResc);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
@@ -388,7 +389,22 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         populateAIPProperties(childResc, aResc);
 
         // Add the file to the work as the datafile of its own FileObject
-        FileObject fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
+        FileObject fileObj = null;
+        // Retry if there are checksum failures
+        for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
+            try {
+                fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
+                break;
+            } catch (ChecksumMismatchException e) {
+                if ((CHECKSUM_RETRIES - retryCnt) > 0) {
+                    log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
+                            childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
+                } else {
+                    failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
+                }
+            }
+        }
+
         // Record the size of the file for throughput stats
         if (storageUri.getScheme().equals("file")) {
             metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
@@ -613,7 +629,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc, int retries)
+    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
             throws DepositException, IOException {
         PID childPid = PIDs.get(childResc.getURI());
 
@@ -680,18 +696,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 // Cease refreshing the transaction
                 txRefresher.stop();
-            } catch (ChecksumMismatchException e) {
-                txRefresher.interrupt();
-                tx.cancelAndIgnore();
-
-                if (retries > 0) {
-                    retries--;
-                    log.warn("Retrying ingest for {} due to a checksum mismatch. Error: {}",
-                            childPid.getQualifiedId(), e.getMessage());
-                    ingestWork(parent, parentResc, childResc, retries);
-                } else {
-                    failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
-                }
             } catch (Exception e) {
                 txRefresher.interrupt();
                 tx.cancelAndIgnore();
@@ -791,14 +795,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addDescriptionHistory(obj, dResc);
 
         Path modsPath = getModsPath(obj.getPid());
-        if (!Files.exists(modsPath) || dResc.hasProperty(CdrDeposit.descriptiveStorageUri)) {
+        if (!Files.exists(modsPath)) {
             return;
         }
 
         InputStream modsStream = Files.newInputStream(modsPath);
-        BinaryObject descBin = updateDescService.updateDescription(
-                logTransferSession, agent, obj, modsStream);
-        dResc.addLiteral(CdrDeposit.descriptiveStorageUri, descBin.getContentUri().toString());
+        updateDescService.updateDescription(logTransferSession, agent, obj, modsStream);
     }
 
     private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
