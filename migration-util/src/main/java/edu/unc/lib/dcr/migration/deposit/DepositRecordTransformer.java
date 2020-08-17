@@ -18,6 +18,7 @@ package edu.unc.lib.dcr.migration.deposit;
 import static edu.unc.lib.dcr.migration.MigrationConstants.toBxc3Uri;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.MANIFEST_TYPE;
+import static edu.unc.lib.dcr.migration.premis.Premis2Constants.SOFTWARE_VERSION_BXC5;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FOXML_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
@@ -67,7 +68,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import edu.unc.lib.dl.util.SoftwareAgentConstants;
 
 /**
  * Action to transform a deposit record from bxc3 into a bxc5 repository object.
@@ -246,9 +247,10 @@ public class DepositRecordTransformer extends RecursiveAction {
                 premisTransformer.compute();
 
                 // Add migration event
+                SoftwareAgentConstants.setCdrVersion(SOFTWARE_VERSION_BXC5);
                 filePremisLogger.buildEvent(Premis.Ingestion)
                         .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
-                        .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())
+                        .addSoftwareAgent(SoftwareAgentConstants.SoftwareAgent.migrationUtil.getFullname())
                         .writeAndClose();
 
                 PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(depRecord, transferSession);
