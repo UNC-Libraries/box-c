@@ -552,6 +552,8 @@ public class DepositSupervisor implements WorkerListener {
     public void shutdown() {
         LOG.info("Stopping the Deposit Supervisor");
 
+        // Clear out old workers, if not active before stopping
+        depositStatusFactory.clearEmptyWorkers();
         stop(false);
 
         pipelineStatusFactory.setPipelineState(DepositPipelineState.shutdown);

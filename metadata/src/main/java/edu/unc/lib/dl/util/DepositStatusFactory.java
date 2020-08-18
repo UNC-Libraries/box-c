@@ -93,7 +93,9 @@ public class DepositStatusFactory {
     /**
      * Set a single deposit field.
      * 
-     * @param status
+     * @param depositUUID
+     * @param field
+     * @param value
      */
     public void set(String depositUUID, DepositField field, String value) {
         try (Jedis jedis = getJedisPool().getResource()) {
@@ -204,6 +206,21 @@ public class DepositStatusFactory {
     public void clearActionRequest(String depositUUID) {
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name());
+        }
+    }
+
+    /**
+     * Remove empty deposit service workers
+     */
+    public void clearEmptyWorkers() {
+        String workers = "resque:workers";
+        try (Jedis jedis = getJedisPool().getResource()) {
+            Set<String> members = jedis.smembers(workers);
+            for (String member : members) {
+                if (jedis.get(member) == null) {
+                    jedis.srem(workers, member);
+                }
+            }
         }
     }
 
