@@ -370,7 +370,10 @@ public abstract class AbstractDepositJob implements Runnable {
         }
 
         DepositState state = getDepositStatusFactory().getState(depositId);
-        if (!DepositState.running.equals(state)) {
+
+        // Only throw error if state is changed and it's not a finished deposit waiting on cleanup job
+        if (!DepositState.running.equals(state) &&
+                (!DepositState.finished.equals(state) && !jobName.contains("CleanupDepositJob"))) {
             throw new JobInterruptedException("State for deposit " + depositId + " changed from 'running' to '"
                     + state.name() + "', interrupting job " + jobName);
         }
