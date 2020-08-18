@@ -31,6 +31,7 @@ import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.addEvent;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.deserializeLogFile;
 import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventResources;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
+import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositBxc3;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.junit.Assert.assertEquals;
@@ -55,6 +56,7 @@ import edu.unc.lib.dl.rdf.Rdf;
 public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdfTransformerTest {
 
     protected DepositRecordPremisToRdfTransformer transformer;
+    private String depositVersion = depositService.getFullname(depositBxc3.getFullname());
 
     @Before
     public void setup() throws Exception {
@@ -96,7 +98,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.Ingestion, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(), eventResc);
+        assertAgent(depositVersion, eventResc);
     }
 
     @Test
@@ -141,7 +143,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.Validation, eventResc);
         assertEventDetail("METS schema validated", eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(), eventResc);
+        assertAgent(depositVersion, eventResc);
     }
 
     @Test
@@ -186,7 +188,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.InformationPackageCreation, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(), eventResc);
+        assertAgent(depositService.getFullname(depositBxc3.getFullname()), eventResc);
     }
 
     @Test
@@ -206,7 +208,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.Ingestion, eventResc);
         assertEventDetail("ingested as format: http://cdr.unc.edu/METS/profiles/Simple", eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(), eventResc);
+        assertAgent(depositVersion, eventResc);
     }
 
     @Test
@@ -295,7 +297,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.Ingestion, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(), eventResc);
+        assertAgent(depositVersion, eventResc);
     }
 
     private void assertAgent(String agentName, Resource eventResc) {

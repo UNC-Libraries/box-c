@@ -61,6 +61,10 @@ public class SoftwareAgentConstants {
             this.version = version;
         }
 
+        public String getFullname(String bxcVersion) {
+            return value + "-" + bxcVersion;
+        }
+
         public String getFullname() {
             if (version == null) {
                 return value + "-" + getCdrVersion();
