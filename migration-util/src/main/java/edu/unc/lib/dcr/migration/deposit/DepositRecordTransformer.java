@@ -18,7 +18,6 @@ package edu.unc.lib.dcr.migration.deposit;
 import static edu.unc.lib.dcr.migration.MigrationConstants.toBxc3Uri;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.getObjectModel;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.MANIFEST_TYPE;
-import static edu.unc.lib.dcr.migration.premis.Premis2Constants.SOFTWARE_VERSION_BXC5;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FOXML_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
@@ -247,7 +246,6 @@ public class DepositRecordTransformer extends RecursiveAction {
                 premisTransformer.compute();
 
                 // Add migration event
-                SoftwareAgentConstants.setCdrVersion(SOFTWARE_VERSION_BXC5);
                 filePremisLogger.buildEvent(Premis.Ingestion)
                         .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
                         .addSoftwareAgent(SoftwareAgentConstants.SoftwareAgent.migrationUtil.getFullname())

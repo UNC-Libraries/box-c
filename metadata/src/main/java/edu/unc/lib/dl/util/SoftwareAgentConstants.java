@@ -44,6 +44,7 @@ public class SoftwareAgentConstants {
         embargoUpdateService("embargo-update"),
         migrationUtil("bxc-migration-util"),
         clamav("clamav", "0.99"),
+        depositBxc3("3.0"),
         FITS("fits", "1.0.6"),
         curatorsWorkbench("curators-workbench"),
         embargoExpirationService("embargo-update-service");

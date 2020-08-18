@@ -41,7 +41,5 @@ public class Premis2Constants {
     public static final String FIXITY_AGENT = "edu.unc.lib.dl.cdr.services.fixity.FixityLogTask";
 
     public static final String SOFTWARE_ROLE = "Software";
-    public static final String SOFTWARE_VERSION_BXC3 = "3";
-    public static final String SOFTWARE_VERSION_BXC5 = "5";
     public static final String INITIATOR_ROLE = "Initiator";
 }
