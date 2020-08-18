@@ -56,7 +56,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -372,9 +371,8 @@ public abstract class AbstractDepositJob implements Runnable {
 
         DepositState state = getDepositStatusFactory().getState(depositId);
 
-        // Only throw error if state is changed and it's not a finished deposit waiting on cleanup job
-        if (!DepositState.running.equals(state) &&
-                (!DepositState.finished.equals(state) && !(this instanceof CleanupDepositJob))) {
+        // Only throw error if state is changed and it's not in a finished state
+        if (!DepositState.running.equals(state) && !DepositState.finished.equals(state)) {
             throw new JobInterruptedException("State for deposit " + depositId + " changed from 'running' to '"
                     + state.name() + "', interrupting job " + jobName);
         }
