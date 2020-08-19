@@ -56,7 +56,7 @@ import edu.unc.lib.dl.rdf.Rdf;
 public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdfTransformerTest {
 
     protected DepositRecordPremisToRdfTransformer transformer;
-    private String depositVersion = depositService.getFullname(depositBxc3.getFullname());
+    private String depositVersion = depositService.getFullname();
 
     @Before
     public void setup() throws Exception {
@@ -188,7 +188,7 @@ public class DepositRecordPremisToRdfTransformerTest extends AbstractPremisToRdf
         assertEventType(Premis.InformationPackageCreation, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent(depositService.getFullname(depositBxc3.getFullname()), eventResc);
+        assertAgent(depositService.getFullname(), eventResc);
     }
 
     @Test

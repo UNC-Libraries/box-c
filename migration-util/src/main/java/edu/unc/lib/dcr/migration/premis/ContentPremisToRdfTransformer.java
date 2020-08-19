@@ -26,7 +26,6 @@ import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATION_TYPE;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.curatorsWorkbench;
-import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositBxc3;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.embargoUpdateService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.fixityCheckingService;
@@ -308,11 +307,7 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
     }
 
     private void addEvent(Element eventEl, Resource eventType, String eventDetail, SoftwareAgent agent) {
-        String agentFullname = agent.getFullname();
-        if (agentFullname.equals("deposit")) {
-            agentFullname += depositBxc3.getFullname();
-        }
-        addEvent(eventEl, eventType, eventDetail, true, agentFullname);
+        addEvent(eventEl, eventType, eventDetail, true, agent.getFullname());
     }
 
     private void addEvent(Element eventEl, Resource eventType, String eventDetail,

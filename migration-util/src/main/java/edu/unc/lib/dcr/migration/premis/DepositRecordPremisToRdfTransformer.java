@@ -18,7 +18,6 @@ package edu.unc.lib.dcr.migration.premis;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VALIDATE_MODS_AGENT;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.VIRUS_CHECK_TYPE;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
-import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositBxc3;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -50,7 +49,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
     private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile(
             "Normalized deposit package from ([^ ]+) to.*");
 
-    private final String depositVersion = depositService.getFullname(depositBxc3.getFullname());
+    private final String depositVersion = depositService.getFullname();
 
     public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
         super(pid, premisLogger, doc);
