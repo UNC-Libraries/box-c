@@ -22,9 +22,11 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -42,6 +44,8 @@ import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.HistogramFactory;
@@ -85,11 +89,11 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         Message aggrMsg = exchange.getIn();
 
         // Key is the digest key, value is a map of storage uri to digest value
-        Map<String, Map<URI, String>> digestsMap = new HashMap<>();
-        Map<URI, String> md5Map = new HashMap<>();
-        Map<URI, String> sha1Map = new HashMap<>();
-        digestsMap.put("md5", md5Map);
-        digestsMap.put("sha1", sha1Map);
+        Map<String, List<DigestEntry>> digestsMap = new HashMap<>();
+        List<DigestEntry> md5Entries = new ArrayList<>();
+        List<DigestEntry> sha1Entries = new ArrayList<>();
+        digestsMap.put("md5", md5Entries);
+        digestsMap.put("sha1", sha1Entries);
 
         List<String> messages = aggrMsg.getBody(List.class);
         for (String fcrepoUri : messages) {
@@ -101,22 +105,27 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
                 String sha1 = trimFedoraDigest(binObj.getSha1Checksum(), ":");
                 URI storageUri = binObj.getContentUri();
 
+                if (storageUri == null) {
+                    log.error("Unable to register {}, it did not have a content URI.");
+                    continue;
+                }
+
                 if (md5 != null) {
-                    md5Map.put(storageUri, md5);
+                    md5Entries.add(new DigestEntry(fcrepoUri, storageUri, md5));
                 }
                 if (sha1 != null) {
-                    sha1Map.put(storageUri, sha1);
+                    sha1Entries.add(new DigestEntry(fcrepoUri, storageUri, sha1));
                 }
                 if (md5 == null && sha1 == null) {
-                    sha1Map.put(storageUri, calculateSha1(pid));
+                    sha1Entries.add(new DigestEntry(fcrepoUri, storageUri, calculateSha1(pid)));
                 }
-            } catch (Exception e) {
-                log.error("Failed to add {} to batch for regisration to longleaf", fcrepoUri, e);
+            } catch (NotFoundException | ObjectTypeMismatchException e) {
+                log.error("Cannot register {}: {}", fcrepoUri, e.getMessage());
             }
         }
 
         try (Timer.Context context = timer.time()) {
-            registerFiles(digestsMap);
+            registerFiles(messages, digestsMap);
         }
     }
 
@@ -141,24 +150,25 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     /**
      * Executes longleaf register command for a batch of files with digests
      *
+     * @param messages list of fcrepoUris from the exchange
      * @param digestsMap mapping of digest algorithms to paths plus digest values
      */
-    private void registerFiles(Map<String, Map<URI, String>> digestsMap) {
+    private void registerFiles(List<String> messages, Map<String, List<DigestEntry>> digestsMap) {
         long start = System.currentTimeMillis();
 
         StringBuilder sb = new StringBuilder();
         MutableInt cnt = new MutableInt(0);
         digestsMap.entrySet().forEach(digestGroup -> {
-            Map<URI, String> digestToPath = digestGroup.getValue();
-            if (digestToPath.size() == 0) {
+            List<DigestEntry> digestEntries = digestGroup.getValue();
+            if (digestEntries.size() == 0) {
                 return;
             }
             sb.append(digestGroup.getKey()).append(":\n");
 
-            digestToPath.entrySet().forEach(manifestEntry -> {
-                sb.append(manifestEntry.getValue())
+            digestEntries.forEach(manifestEntry -> {
+                sb.append(manifestEntry.digest)
                     .append(' ')
-                    .append(Paths.get(manifestEntry.getKey()).toString())
+                    .append(Paths.get(manifestEntry.storageUri).toString())
                     .append('\n');
                 cnt.increment();
             });
@@ -173,16 +183,47 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         // Record statistics about the number of objects registered
         batchSizeHistogram.update(entryCount);
 
-        int exitVal = executeCommand("register --force -m @-", sb.toString());
+        ExecuteResult result = executeCommand("register --force -m @-", sb.toString());
 
-        if (exitVal == 0) {
+        if (result.exitVal == 0) {
             log.info("Successfully registered {} entries to longleaf", entryCount);
         } else {
+            // trim successfully registered files out of the message before failing
+            if (!result.completed.isEmpty()) {
+                result.completed.stream()
+                    .map(completedPath -> findFcrepoUri(completedPath, digestsMap))
+                    .filter(fcrepoUri -> fcrepoUri != null)
+                    .forEach(messages::remove);
+            }
             throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
-                    + "Check longleaf logs, command returned: " + exitVal);
+                    + "Check longleaf logs, command returned: " + result.exitVal);
         }
 
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
+    }
+
+    private String findFcrepoUri(String seekPath, Map<String, List<DigestEntry>> digestsMap) {
+        URI seekUri = Paths.get(seekPath).toUri();
+        Optional<DigestEntry> entry = digestsMap.values().stream().flatMap(List::stream)
+            .filter(de -> de.storageUri.equals(seekUri))
+            .findFirst();
+        if (entry.isPresent()) {
+            return entry.get().fcrepoUri;
+        } else {
+            return null;
+        }
+    }
+
+    private static class DigestEntry {
+        protected String fcrepoUri;
+        protected URI storageUri;
+        protected String digest;
+
+        public DigestEntry(String fcrepoUri, URI storageUri, String digest) {
+            this.fcrepoUri = fcrepoUri;
+            this.storageUri = storageUri;
+            this.digest = digest;
+        }
     }
 
     private String trimFedoraDigest(String fedoraDigest, String separator) {

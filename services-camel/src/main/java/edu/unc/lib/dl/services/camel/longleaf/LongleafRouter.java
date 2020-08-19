@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services.camel.longleaf;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Router for longleaf operations
@@ -32,8 +33,19 @@ public class LongleafRouter extends RouteBuilder {
     @BeanInject(value = "deregisterLongleafProcessor")
     private DeregisterLongleafProcessor deregisterProcessor;
 
+    @Value("${longleaf.maxRedelivieries:3}")
+    private int longleafMaxRedelivieries;
+
+    @Value("${longleaf.redeliveryDelay:10000}")
+    private long longleafRedeliveryDelay;
+
     @Override
     public void configure() throws Exception {
+        errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
+                .maximumRedeliveries(longleafMaxRedelivieries)
+                .redeliveryDelay(longleafRedeliveryDelay)
+                .retryAttemptedLogLevel(LoggingLevel.ERROR));
+
         from("direct-vm:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
             .startupOrder(4)
@@ -41,11 +53,7 @@ public class LongleafRouter extends RouteBuilder {
             .log(LoggingLevel.DEBUG, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to("sjms:register.longleaf?transacted=true");
 
-        from("sjms-batch:register.longleaf?completionTimeout={{longleaf.register.completionTimeout}}"
-                + "&completionSize={{longleaf.register.completionSize}}"
-                + "&consumerCount={{longleaf.register.consumers}}"
-                + "&aggregationStrategy=#longleafAggregationStrategy"
-                + "&connectionFactory=jmsFactory")
+        from("{{longleaf.register.consumer}}")
             .routeId("RegisterLongleafProcessing")
             .startupOrder(3)
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf registrations")
@@ -57,15 +65,10 @@ public class LongleafRouter extends RouteBuilder {
             .log(LoggingLevel.DEBUG, "Queuing ${body} for deregistration in longleaf")
             .to("sjms:deregister.longleaf?transacted=true");
 
-        from("sjms-batch:deregister.longleaf?completionTimeout={{longleaf.register.completionTimeout}}"
-                + "&completionSize={{longleaf.register.completionSize}}"
-                + "&consumerCount={{longleaf.register.consumers}}"
-                + "&aggregationStrategy=#longleafAggregationStrategy"
-                + "&connectionFactory=jmsFactory")
+        from("{{longleaf.deregister.consumer}}")
             .routeId("DeregisterLongleafProcessing")
             .startupOrder(1)
             .log(LoggingLevel.DEBUG, "Processing batch of longleaf deregistrations")
             .bean(deregisterProcessor);
     }
-
 }

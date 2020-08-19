@@ -23,10 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Helpers for longleaf tests
@@ -55,7 +57,7 @@ public class LongleafTestHelpers {
 
         longleafScript.deleteOnExit();
 
-        Set<PosixFilePermission> ownerExecutable = PosixFilePermissions.fromString("r-x------");
+        Set<PosixFilePermission> ownerExecutable = PosixFilePermissions.fromString("rwx------");
         Files.setPosixFilePermissions(longleafScript.toPath(), ownerExecutable);
 
         return longleafScript.getAbsolutePath();
@@ -63,6 +65,9 @@ public class LongleafTestHelpers {
 
     public static List<String> readOutput(String outputPath) throws IOException {
         String outputText = FileUtils.readFileToString(new File(outputPath), UTF_8);
+        if (StringUtils.isEmpty(outputText)) {
+            return Collections.emptyList();
+        }
         return Arrays.asList(outputText.split("\n"));
     }
 }

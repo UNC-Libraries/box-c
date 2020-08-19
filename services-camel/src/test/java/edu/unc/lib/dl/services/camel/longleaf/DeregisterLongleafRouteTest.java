@@ -15,25 +15,30 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.commons.io.FileUtils;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -53,11 +58,11 @@ import edu.unc.lib.dl.services.MessageSender;
     @ContextConfiguration("/deregister-longleaf-router-context.xml")
 })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-public class DeregisterLongleafRouteTest {
-    private static final Logger log = getLogger(DeregisterLongleafRouteTest.class);
-
+public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Autowired
     private MessageSender messageSender;
+    @EndpointInject(uri = "mock:direct:longleaf.dlq")
+    private MockEndpoint mockDlq;
 
     @Autowired
     private DeregisterLongleafProcessor deregisterLongleafProcessor;
@@ -69,8 +74,6 @@ public class DeregisterLongleafRouteTest {
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private String longleafScript;
-    private String outputPath;
-    private List<String> output;
 
     @Before
     public void setup() throws Exception {
@@ -93,7 +96,7 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        assertDeregisterPaths(2000, contentUri);
+        assertSubmittedPaths(2000, contentUri);
     }
 
     @Test
@@ -109,7 +112,7 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        assertDeregisterPaths(2000, contentUris);
+        assertSubmittedPaths(2000, contentUris);
     }
 
     @Test
@@ -124,7 +127,43 @@ public class DeregisterLongleafRouteTest {
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Deregister route not satisfied", result1);
 
-        assertDeregisterPaths(5000, contentUris);
+        assertSubmittedPaths(5000, contentUris);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void deregisterPartialSuccess() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(3)
+                .create();
+
+        String[] contentUris = generateContentUris(3);
+
+        // Append to existing script
+        FileUtils.writeStringToFile(new File(longleafScript),
+                "\necho \"SUCCESS register " + Paths.get(URI.create(contentUris[0])).toString() + "\"" +
+                "\necho \"FAILURE register " + Paths.get(URI.create(contentUris[1])).toString() + "\"" +
+                "\necho \"SUCCESS register " + Paths.get(URI.create(contentUris[2])).toString() + "\"" +
+                "\nexit 2",
+                UTF_8, true);
+
+        sendMessages(contentUris);
+
+        boolean result1 = notify.matches(20l, TimeUnit.SECONDS);
+        assertTrue("Deregister route not satisfied", result1);
+
+        assertSubmittedPaths(5000, contentUris);
+
+        mockDlq.assertIsSatisfied(1000);
+        List<Exchange> dlqExchanges = mockDlq.getExchanges();
+
+        Exchange failed = dlqExchanges.get(0);
+        List<String> failedList = failed.getIn().getBody(List.class);
+        assertEquals("Only two uris should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(contentUris[1]));
     }
 
     private String generateContentUri() {
@@ -142,38 +181,6 @@ public class DeregisterLongleafRouteTest {
     private void sendMessages(String... contentUris) {
         for (String contentUri : contentUris) {
             messageSender.sendMessage(contentUri);
-        }
-    }
-
-    /**
-     * Assert that all of the provided content uris are present in the longleaf output
-     * @param timeout time in milliseconds allowed for the condition to become true,
-     *      to accommodate asynchronous unpredictable batch cutoffs
-     * @param contentUris list of expected content uris
-     * @throws Exception
-     */
-    private void assertDeregisterPaths(long timeout, String... contentUris) throws Exception {
-        long start = System.currentTimeMillis();
-        do {
-            try {
-                output = LongleafTestHelpers.readOutput(outputPath);
-                assertDeregisterPaths(contentUris);
-                return;
-            } catch (AssertionError e) {
-                if ((System.currentTimeMillis() - start) > timeout) {
-                    throw e;
-                }
-                Thread.sleep(25);
-                log.debug("DeregisterPaths not yet satisfied, retrying");
-            }
-        } while (true);
-    }
-
-    private void assertDeregisterPaths(String... contentUris) {
-        for (String contentUri : contentUris) {
-            URI uri = URI.create(contentUri);
-            String contentPath = Paths.get(uri).toString();
-            assertTrue("Expected content uri to be deregistered: " + contentPath, output.contains(contentPath));
         }
     }
 }

@@ -69,13 +69,19 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
         }).collect(Collectors.joining("\n"));
 
         try (Timer.Context context = timer.time()) {
-            int exitVal = executeCommand("deregister -l @-", deregList);
+            ExecuteResult result = executeCommand("deregister -l @-", deregList);
 
-            if (exitVal == 0) {
+            if (result.exitVal == 0) {
                 log.info("Successfully deregistered {} entries in longleaf", entryCount);
             } else {
+                // Trim successfully deregistered files from the message before throwing exception
+                if (!result.completed.isEmpty()) {
+                    result.completed.stream()
+                        .map(c -> Paths.get(c).toUri().toString())
+                        .forEach(messages::remove);
+                }
                 throw new ServiceException("Failed to deregister " + entryCount + " entries in Longleaf.  "
-                        + "Check longleaf logs, command returned: " + exitVal);
+                        + "Check longleaf logs, command returned: " + result.exitVal);
             }
 
             batchSizeHistogram.update(entryCount);

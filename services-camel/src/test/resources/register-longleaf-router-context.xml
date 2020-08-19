@@ -27,21 +27,13 @@
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
     
-    <bean id="registerLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor" />
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:filter.longleaf.deregister" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-    
-    <bean id="binaryDestroyedMessageSender" class="edu.unc.lib.dl.services.MessageSender">
-        <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
-    </bean>
-    
-    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor">
+    <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor" />
     </bean>
     
     <camel:camelContext id="cdrLongleaf">
