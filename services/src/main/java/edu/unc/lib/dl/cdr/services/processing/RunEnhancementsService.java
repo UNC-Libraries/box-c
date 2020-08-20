@@ -114,7 +114,9 @@ public class RunEnhancementsService {
     private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
-        PID originalPid = (originalDs != null) ? DatastreamPids.getOriginalFilePid(pid) : pid;
+        String resourceType = metadata.getResourceType();
+        PID originalPid = (ResourceType.File.equals(resourceType) && originalDs != null) ?
+                DatastreamPids.getOriginalFilePid(pid) : pid;
         Document msg = makeEnhancementOperationBody(username, originalPid, force);
         messageSender.sendMessage(msg);
     }
