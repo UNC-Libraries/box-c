@@ -104,21 +104,22 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals(1, depositBag.size());
 
-        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
+        Bag bagContainer = model.getBag((Resource) depositBag.iterator().next());
+        assertEquals("Bag folder label was not set", "Test File", bagContainer.getProperty(CdrDeposit.label).getString());
+        assertEquals("Content model was not set", RDF.Bag, bagContainer.getPropertyResourceValue(RDF.type));
 
-        Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
-        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
+        Resource emptyFolder = getChildByLabel(bagContainer, "empty_test");
+        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Work));
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
         assertEquals(0, emptyBag.size());
 
-        Resource folder = getChildByLabel(bagFolder, "test");
-        assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
+        Resource work = getChildByLabel(bagContainer, "test");
+        assertTrue("Content model was not set", work.hasProperty(RDF.type, Cdr.Work));
+        assertTrue("Content model was not set", work.hasProperty(Cdr.primaryObject, Cdr.FileObject));
 
-        Bag childrenBag = model.getBag(folder.getURI());
+        Bag childrenBag = model.getBag(work.getURI());
 
         assertEquals(1, childrenBag.size());
 

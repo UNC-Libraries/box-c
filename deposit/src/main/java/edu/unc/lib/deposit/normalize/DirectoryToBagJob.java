@@ -54,7 +54,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
     @Override
     public void runJob() {
         Model model = getWritableModel();
-        Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+        Bag depositBag = model.createBag(getDepositPID().getURI());
 
         Map<String, String> status = getDepositStatus();
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
@@ -68,7 +68,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         interruptJobIfStopped();
 
         // Turn the base directory itself into the top level folder for this deposit
-        Bag sourceBag = getSourceBag(depositBag, sourceFile);
+        Bag sourceBag = getSourceBag(depositBag, sourceFile, Cdr.Work);
 
         int i = 0;
         // Add all of the payload objects into the bag folder
@@ -80,7 +80,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
             log.debug("Adding object {}: {}", i++, file.getName());
 
-            Boolean isDir = file.isDirectory();
+            boolean isDir = file.isDirectory();
 
             Path filePath = sourcePath.getParent().relativize(file.toPath());
             String filePathString = filePath.toString();
@@ -93,9 +93,10 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
                 Path storedPath = Paths.get(file.getAbsolutePath());
                 model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
             } else {
-                Bag folderBag = getFolderBag(sourceBag, filePathString);
-                model.add(folderBag, CdrDeposit.label, filename);
-                model.add(folderBag, RDF.type, Cdr.Folder);
+                Bag workBag = getFolderBag(sourceBag, filePathString);
+                model.add(workBag, CdrDeposit.label, filename);
+                model.add(workBag, RDF.type, Cdr.Work);
+                model.add(workBag, Cdr.primaryObject, Cdr.FileObject);
             }
         }
     }

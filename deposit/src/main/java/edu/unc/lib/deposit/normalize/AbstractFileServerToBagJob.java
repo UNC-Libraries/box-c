@@ -68,31 +68,37 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     @Override
     public abstract void runJob();
 
-    protected Bag getSourceBag(Bag depositBag, File sourceFile) {
+    protected Bag getSourceBag(Bag depositBag, File sourceFile, Resource objectType) {
         Model model = depositBag.getModel();
         Map<String, String> status = getDepositStatus();
 
         PID containerPID = createPID();
-        Bag bagFolder = model.createBag(containerPID.getURI());
+        Bag bagContainer = model.createBag(containerPID.getURI());
         // Determine the label to use for this the root directory of the deposit package
-        String label = status.get(DepositField.depositSlug.name());
+        String label = null;
+
+        if (!objectType.equals(Cdr.Work)) {
+            label = status.get(DepositField.depositSlug.name());
+        }
+
         if (label == null) {
             label = status.get(DepositField.fileName.name());
         }
         if (label == null) {
             label = sourceFile.getName();
         }
-        model.add(bagFolder, CdrDeposit.label, label);
-        model.add(bagFolder, RDF.type, Cdr.Folder);
-        depositBag.add(bagFolder);
+
+        model.add(bagContainer, CdrDeposit.label, label);
+        model.add(bagContainer, RDF.type, objectType);
+        depositBag.add(bagContainer);
 
         // Cache the source bag folder
-        pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
+        pathToFolderBagCache.put(sourceFile.getName(), bagContainer);
 
         // Add extra descriptive information
         addDescription(containerPID, status);
 
-        return bagFolder;
+        return bagContainer;
     }
 
     /**
@@ -127,7 +133,6 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      *
      * @param sourceBag
      * @param filepath
-     * @param model
      * @return
      */
     protected Bag getFolderBag(Bag sourceBag, String filepath) {
