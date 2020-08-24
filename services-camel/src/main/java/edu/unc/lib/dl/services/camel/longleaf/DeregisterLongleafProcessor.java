@@ -80,6 +80,11 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
                         .map(c -> Paths.get(c).toUri().toString())
                         .forEach(messages::remove);
                 }
+                if (messages.isEmpty()) {
+                    log.error("Result from longleaf indicates deregistration failed, but there are "
+                            + "no failed URIs remaining. See longleaf logs for details.");
+                    return;
+                }
                 throw new ServiceException("Failed to deregister " + entryCount + " entries in Longleaf.  "
                         + "Check longleaf logs, command returned: " + result.exitVal);
             }

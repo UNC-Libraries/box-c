@@ -42,6 +42,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
     private String longleafBaseCommand;
 
     private Pattern SUCCESS_PATTERN = Pattern.compile("^SUCCESS \\w+ (.+)$");
+    private Pattern FAILURE_PATTERN = Pattern.compile("^(FAILURE|ERROR).+");
 
     /**
      * Execute a command in longleaf, using the configured base command
@@ -65,6 +66,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
             }
 
             ExecuteResult result = new ExecuteResult(process.waitFor());
+            boolean encounteredFailures = result.failuresEncountered();
 
             // log longleaf output
             String line;
@@ -72,12 +74,13 @@ public abstract class AbstractLongleafProcessor implements Processor {
                     new InputStreamReader(process.getInputStream()))) {
                 while ((line = in.readLine()) != null) {
                     longleafLog.info(line);
-                    // If the command was not totally successful, record uris of any commands that succeed
-                    if (result.failuresEncountered()) {
-                        Matcher matcher = SUCCESS_PATTERN.matcher(line);
-                        if (matcher.matches()) {
-                            result.completed.add(matcher.group(1));
-                        }
+                    // record uris of any commands that succeed
+                    Matcher matcher = SUCCESS_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        result.completed.add(matcher.group(1));
+                    } else if (!encounteredFailures) {
+                        // Check for failures in the output that were not reflected in the exit code
+                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
                     }
                 }
             }
@@ -85,7 +88,15 @@ public abstract class AbstractLongleafProcessor implements Processor {
                     new InputStreamReader(process.getErrorStream()))) {
                 while ((line = err.readLine()) != null) {
                     longleafLog.error(line);
+                    if (!encounteredFailures) {
+                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
+                    }
                 }
+            }
+
+            // Escalate the result to indicate errors were encountered if there were errors in the output
+            if (encounteredFailures && result.exitVal == 0) {
+                result.exitVal = 1;
             }
 
             return result;

@@ -195,6 +195,11 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
                     .filter(fcrepoUri -> fcrepoUri != null)
                     .forEach(messages::remove);
             }
+            if (messages.isEmpty()) {
+                log.error("Result from longleaf indicates registration failed, but there are "
+                        + "no failed URIs remaining. See longleaf logs for details.");
+                return;
+            }
             throw new ServiceException("Failed to register " + entryCount + " entries to Longleaf.  "
                     + "Check longleaf logs, command returned: " + result.exitVal);
         }
