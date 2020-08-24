@@ -148,12 +148,12 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         FileObject workFile = workObj
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
-        PID filePid = workFile.getPid();
-        setResultMetadataObject(filePid, ResourceType.Work.name());
+        PID workPid = workObj.getPid();
+        setResultMetadataObject(workPid, ResourceType.Work.name());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + filePid.getId() + "\"]}")
+                .content("{\"force\":false,\"pids\":[\"" + workFile.getPid().getId() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -162,7 +162,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, filePid, USER_NAME);
+        assertMessageValues(msgDoc, workPid, USER_NAME);
     }
 
     @Test
