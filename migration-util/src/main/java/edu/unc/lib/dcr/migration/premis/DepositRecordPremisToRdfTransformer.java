@@ -49,6 +49,8 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
     private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile(
             "Normalized deposit package from ([^ ]+) to.*");
 
+    private final String depositVersion = depositService.getFullname();
+
     public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
         super(pid, premisLogger, doc);
     }
@@ -104,7 +106,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         // ingested as PID
         createEventBuilder(Premis.Ingestion, eventEl)
             .addEventDetail(getEventDetail(eventEl))
-            .addSoftwareAgent(depositService.getFullname())
+            .addSoftwareAgent(depositVersion)
             .write();
     }
 
@@ -128,7 +130,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
 
         createEventBuilder(Premis.Validation, eventEl)
             .addEventDetail("METS schema validated")
-            .addSoftwareAgent(depositService.getFullname())
+            .addSoftwareAgent(depositVersion)
             .write();
     }
 
@@ -147,7 +149,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         if (eventDetail.contains("Assigned PID")) {
             createEventBuilder(Premis.InformationPackageCreation, eventEl)
                 .addEventDetail(eventDetail)
-                .addSoftwareAgent(depositService.getFullname())
+                .addSoftwareAgent(depositVersion)
                 .write();
             return;
         }
@@ -162,7 +164,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         String format = matcher.group(1);
         createEventBuilder(Premis.Ingestion, eventEl)
             .addEventDetail("ingested as format: " + format)
-            .addSoftwareAgent(depositService.getFullname())
+            .addSoftwareAgent(depositVersion)
             .write();
     }
 }

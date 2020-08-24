@@ -119,4 +119,13 @@
             init-method="createIndexTable">
         <property name="pathIndex" ref="pathIndex" />
     </bean>
+
+    <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+        <property name="arguments">
+            <list>
+                <value>5.0</value>
+            </list>
+        </property>
+    </bean>
 </beans>
