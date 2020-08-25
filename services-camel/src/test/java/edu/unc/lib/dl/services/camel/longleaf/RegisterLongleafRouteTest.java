@@ -224,7 +224,39 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
         assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
                 failedList.contains(origBin2.getPid().getRepositoryPath()));
+    }
 
+    // command fails with usage error, but successful response
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerCommandError() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        FileUtils.writeStringToFile(new File(longleafScript),
+                "\necho 'ERROR: \"longleaf register\" was called with arguments [\"--ohno\"]'",
+                UTF_8, true);
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        mockDlq.assertIsSatisfied(1000);
+
+        List<Exchange> dlqExchanges = mockDlq.getExchanges();
+        assertEquals(1, dlqExchanges.size());
+        Exchange failed = dlqExchanges.get(0);
+        List<String> failedList = failed.getIn().getBody(List.class);
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin.getPid().getRepositoryPath()));
     }
 
     private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {

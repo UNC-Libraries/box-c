@@ -18,16 +18,21 @@
         <property name="brokerURL" value="${jms.brokerUrl}" />
         <property name="userName" value="${jms.username}" />
         <property name="password" value="${jms.password}" />
+        <property name="trustedPackages">
+            <util:list>
+                <value>java.util</value>
+            </util:list>
+        </property>
     </bean>
 
-    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+    <bean id="pooledAmqConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
         init-method="start" destroy-method="stop">
         <property name="maxConnections" value="${jms.connections}" />
         <property name="connectionFactory" ref="connectionFactory" />
     </bean>
 
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
         <property name="concurrentConsumers" value="${jms.consumers}" />
     </bean>
 
@@ -38,16 +43,16 @@
     </bean>
     
     <bean class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
         <property name="defaultDestinationName" value="repository.updates" />
         <property name="pubSubDomain" value="true" />
     </bean>
     
     <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
     </bean>
     
     <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
-        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
     </bean>
 </beans>

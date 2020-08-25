@@ -166,6 +166,40 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 failedList.contains(contentUris[1]));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void deregisterCommandErrorSuccessExit() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(1)
+                .create();
+
+        String[] contentUris = generateContentUris(1);
+
+        // Append to existing script
+        FileUtils.writeStringToFile(new File(longleafScript),
+                "\necho 'ERROR: \"longleaf deregister\" was called with arguments [\"--ohno\"]'",
+                UTF_8, true);
+
+        sendMessages(contentUris);
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Deregister route not satisfied", result1);
+
+        assertSubmittedPaths(5000, contentUris);
+
+        mockDlq.assertIsSatisfied(1000);
+
+        List<Exchange> dlqExchanges = mockDlq.getExchanges();
+        Exchange failed = dlqExchanges.get(0);
+        List<String> failedList = failed.getIn().getBody(List.class);
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the unprocessed binary",
+                failedList.contains(contentUris[0]));
+    }
+
     private String generateContentUri() {
         return "file:///path/to/file/" + UUID.randomUUID().toString();
     }

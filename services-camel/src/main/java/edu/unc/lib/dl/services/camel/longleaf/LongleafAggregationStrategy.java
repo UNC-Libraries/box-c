@@ -15,9 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
+import static java.util.Collections.singletonList;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.camel.Exchange;
@@ -37,24 +39,29 @@ public class LongleafAggregationStrategy implements AggregationStrategy {
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
         String binaryUri = (String) newExchange.getIn().getHeader(FCREPO_URI);
+        List<String> incomingList ;
         if (binaryUri == null) {
             Object body = newExchange.getIn().getBody();
             if (body instanceof String) {
-                binaryUri = (String) body;
+                incomingList = singletonList((String) body);
+            } else if (body instanceof List) {
+                incomingList = (List<String>) body;
             } else {
                 log.error("Received unexpected message of type {}, ignoring", body.getClass().getName());
                 return oldExchange;
             }
+        } else {
+            incomingList = Collections.singletonList(binaryUri);
         }
 
         if (oldExchange == null) {
             List<String> list = new ArrayList<>();
-            list.add(binaryUri);
+            list.addAll(incomingList);
             newExchange.getIn().setBody(list);
             return newExchange;
         } else {
             List<String> list = oldExchange.getIn().getBody(List.class);
-            list.add(binaryUri);
+            list.addAll(incomingList);
             return oldExchange;
         }
     }

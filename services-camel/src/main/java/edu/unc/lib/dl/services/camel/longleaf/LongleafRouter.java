@@ -20,6 +20,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 
+import edu.unc.lib.dl.services.camel.AddFailedRouteProcessor;
+
 /**
  * Router for longleaf operations
  *
@@ -41,10 +43,12 @@ public class LongleafRouter extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        AddFailedRouteProcessor failedRouteProcessor = new AddFailedRouteProcessor();
+
         errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)
                 .redeliveryDelay(longleafRedeliveryDelay)
-                .retryAttemptedLogLevel(LoggingLevel.ERROR));
+                .onPrepareFailure(failedRouteProcessor));
 
         from("direct-vm:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
