@@ -64,6 +64,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -71,6 +72,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * @author lfarrell
@@ -125,7 +127,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         PID filePid = fileObj.getPid();
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
-        setResultMetadataObject(filePid);
+        setResultMetadataObject(filePid, ResourceType.File.name());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -142,12 +144,34 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     }
 
     @Test
-    public void runEnhancementsNonFileObject() throws Exception {
+    public void runEnhancementsWorkObject() throws Exception {
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        FileObject workFile = workObj
+                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        PID workPid = workObj.getPid();
+        setResultMetadataObject(workPid, ResourceType.Work.name());
+
+        MvcResult result = mvc.perform(post("/runEnhancements")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"force\":false,\"pids\":[\"" + workFile.getPid().getId() + "\"]}")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        assertResponseSuccess(result);
+
+        verify(messageSender).sendMessage(docCaptor.capture());
+        Document msgDoc = docCaptor.getValue();
+        assertMessageValues(msgDoc, workPid, USER_NAME);
+    }
+
+    @Test
+    public void runEnhancementsNonFileNonWorkObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
         FileObject fileObj = folderObj.addWork()
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID filePid = fileObj.getPid();
-        setResultMetadataObject(filePid);
+        setResultMetadataObject(filePid, ResourceType.Folder.name());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -160,14 +184,14 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         verify(messageSender).sendMessage(docCaptor.capture());
         Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, fileObj.getOriginalFile().getPid(), USER_NAME);
+        assertMessageValues(msgDoc, fileObj.getPid(), USER_NAME);
     }
 
     @Test
     public void runEnhancementsNoAccess() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
-        setResultMetadataObject(fileObj.getPid());
+        setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 
         PID objPid = fileObj.getPid();
         doThrow(new AccessRestrictionException()).when(aclServices)
@@ -195,10 +219,11 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         return dataFile.toPath().toUri();
     }
 
-    private void setResultMetadataObject(PID pid) {
+    private void setResultMetadataObject(PID pid, String resourceType) {
         BriefObjectMetadataBean md = new BriefObjectMetadataBean();
         md.setId(pid.getId());
         md.setDatastream(asList("original_file|image/png|small|png|3333||"));
+        md.setResourceType(resourceType);
 
         when(results.getResultList()).thenReturn(Arrays.asList(md));
 
