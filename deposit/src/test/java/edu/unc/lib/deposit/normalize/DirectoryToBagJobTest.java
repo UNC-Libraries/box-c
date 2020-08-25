@@ -104,27 +104,30 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals(1, depositBag.size());
 
-        Bag bagContainer = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Test File", bagContainer.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", RDF.Bag, bagContainer.getPropertyResourceValue(RDF.type));
+        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+        assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
+        assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
 
-        Resource emptyFolder = getChildByLabel(bagContainer, "empty_test");
-        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Work));
+        Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
+        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
         assertEquals(0, emptyBag.size());
 
-        Resource work = getChildByLabel(bagContainer, "test");
-        assertTrue("Content model was not set", work.hasProperty(RDF.type, Cdr.Work));
-        assertTrue("Content model was not set", work.hasProperty(Cdr.primaryObject, Cdr.FileObject));
+        Resource folder = getChildByLabel(bagFolder, "test");
+        assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
 
-        Bag childrenBag = model.getBag(work.getURI());
+        Bag childrenBag = model.getBag(folder.getURI());
 
-        assertEquals(1, childrenBag.size());
+        assertEquals(2, childrenBag.size());
 
         // Verify that file and its properties were added to work
-        Resource file = getChildByLabel(childrenBag, "lorem.txt");
+        Resource work = getChildByLabel(childrenBag, "lorem.txt");
+        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+
+        Bag workBag = model.getBag(work.getURI());
+        Resource file = getChildByLabel(workBag, "lorem.txt");
         assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();

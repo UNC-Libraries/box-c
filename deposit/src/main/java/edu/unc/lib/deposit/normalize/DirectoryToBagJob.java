@@ -31,6 +31,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -80,23 +81,33 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
             log.debug("Adding object {}: {}", i++, file.getName());
 
-            boolean isDir = file.isDirectory();
-
             Path filePath = sourcePath.getParent().relativize(file.toPath());
             String filePathString = filePath.toString();
             String filename = filePath.getFileName().toString();
+            Bag folderBag = getFolderBag(sourceBag, filePathString);
+            model.add(folderBag, CdrDeposit.label, filename);
 
-            if (!isDir) {
-                Resource fileResource = getFileResource(sourceBag, filePathString);
+            if (!file.isDirectory()) {
+                // Create work object
+                PID workPid = pidMinter.mintContentPid();
+                Bag workBag = model.createBag(workPid.getURI());
+                model.add(folderBag, RDF.type, Cdr.Work);
+                model.add(folderBag, CdrDeposit.label, filename);
 
-                // Find staged path for the file
-                Path storedPath = Paths.get(file.getAbsolutePath());
-                model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
-            } else {
-                Bag workBag = getFolderBag(sourceBag, filePathString);
+                // Add file object to work
+                model.add(workBag, RDF.type, Cdr.FileObject);
                 model.add(workBag, CdrDeposit.label, filename);
-                model.add(workBag, RDF.type, Cdr.Work);
-                model.add(workBag, Cdr.primaryObject, Cdr.FileObject);
+
+                Path storedPath = Paths.get(file.getAbsolutePath());
+                model.add(workBag, CdrDeposit.stagingLocation, storedPath.toUri().toString());
+
+                Resource fileResource = getFileResource(folderBag, filePathString);
+                workBag.add(fileResource);
+                workBag.addProperty(Cdr.primaryObject, fileResource);
+
+                folderBag.add(workBag);
+            } else {
+                model.add(folderBag, RDF.type, Cdr.Folder);
             }
         }
     }
