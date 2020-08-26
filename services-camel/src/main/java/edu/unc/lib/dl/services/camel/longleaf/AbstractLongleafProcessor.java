@@ -21,6 +21,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
@@ -37,6 +41,9 @@ public abstract class AbstractLongleafProcessor implements Processor {
 
     private String longleafBaseCommand;
 
+    private Pattern SUCCESS_PATTERN = Pattern.compile("^SUCCESS \\w+ (.+)$");
+    private Pattern FAILURE_PATTERN = Pattern.compile("^(FAILURE|ERROR).+");
+
     /**
      * Execute a command in longleaf, using the configured base command
      *
@@ -44,7 +51,7 @@ public abstract class AbstractLongleafProcessor implements Processor {
      * @param pipedContent content to pipe into the command. Optional.
      * @return exit code from register command
      */
-    protected int executeCommand(String command, String pipedContent) {
+    protected ExecuteResult executeCommand(String command, String pipedContent) {
         try {
             // only register binaries with md5sum
             String longleafCommmand = longleafBaseCommand + " " + command;
@@ -58,7 +65,8 @@ public abstract class AbstractLongleafProcessor implements Processor {
                 }
             }
 
-            int exitVal = process.waitFor();
+            ExecuteResult result = new ExecuteResult(process.waitFor());
+            boolean encounteredFailures = result.failuresEncountered();
 
             // log longleaf output
             String line;
@@ -66,23 +74,52 @@ public abstract class AbstractLongleafProcessor implements Processor {
                     new InputStreamReader(process.getInputStream()))) {
                 while ((line = in.readLine()) != null) {
                     longleafLog.info(line);
+                    // record uris of any commands that succeed
+                    Matcher matcher = SUCCESS_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        result.completed.add(matcher.group(1));
+                    } else if (!encounteredFailures) {
+                        // Check for failures in the output that were not reflected in the exit code
+                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
+                    }
                 }
             }
             try (BufferedReader err = new BufferedReader(
                     new InputStreamReader(process.getErrorStream()))) {
                 while ((line = err.readLine()) != null) {
                     longleafLog.error(line);
+                    if (!encounteredFailures) {
+                        encounteredFailures = FAILURE_PATTERN.matcher(line).matches();
+                    }
                 }
             }
 
-            return exitVal;
+            // Escalate the result to indicate errors were encountered if there were errors in the output
+            if (encounteredFailures && result.exitVal == 0) {
+                result.exitVal = 1;
+            }
+
+            return result;
         } catch (IOException e) {
             log.error("IOException while executing longleaf command: {}", command, e);
         } catch (InterruptedException e) {
             log.error("InterruptedException while executing longleaf command: {}", command, e);
         }
 
-        return 1;
+        return new ExecuteResult(1);
+    }
+
+    protected static class ExecuteResult {
+        protected int exitVal;
+        protected List<String> completed = new ArrayList<>();
+
+        protected ExecuteResult(int exitVal) {
+            this.exitVal = exitVal;
+        }
+
+        protected boolean failuresEncountered() {
+            return exitVal != 0;
+        }
     }
 
     public void setLongleafBaseCommand(String longleafBaseCommand) {

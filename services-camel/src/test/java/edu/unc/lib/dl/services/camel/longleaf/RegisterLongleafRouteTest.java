@@ -1,0 +1,274 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.dl.services.camel.longleaf;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.test.TestHelper;
+
+/**
+ * @author bbpennel
+ */
+@RunWith(CamelSpringRunner.class)
+@BootstrapWith(CamelTestContextBootstrapper.class)
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/jms-context.xml"),
+    @ContextConfiguration("/register-longleaf-router-context.xml")
+})
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
+public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
+    private static final String TEXT1_BODY = "Some content";
+    private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
+
+    @Produce(uri = "direct-vm:filter.longleaf")
+    private ProducerTemplate template;
+
+    @EndpointInject(uri = "mock:direct:longleaf.dlq")
+    private MockEndpoint mockDlq;
+
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Autowired
+    private String baseAddress;
+    @Autowired
+    private CamelContext cdrLongleaf;
+
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
+
+    @Autowired
+    private StorageLocationManager locManager;
+    @Autowired
+    private BinaryTransferService transferService;
+    private BinaryTransferSession transferSession;
+    @Autowired
+    private RegisterToLongleafProcessor processor;
+
+    private String longleafScript;
+
+    @Before
+    public void init() throws Exception {
+        TestHelper.setContentBase(baseAddress);
+        tmpFolder.create();
+
+        outputPath = tmpFolder.newFile().getPath();
+        output = null;
+        longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
+        processor.setLongleafBaseCommand(longleafScript);
+
+        StorageLocation loc = locManager.getStorageLocationById("loc1");
+        transferSession = transferService.getSession(loc);
+    }
+
+    @Test
+    public void registerSingleFileWithSha1() throws Exception {
+        mockDlq.expectedMessageCount(0);
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+        URI contentUri = origBin.getContentUri();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenCompleted(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        mockDlq.assertIsSatisfied();
+
+        assertSubmittedPaths(2000, contentUri.toString());
+    }
+
+    @Test
+    public void registerBinaryNotFound() throws Exception {
+        mockDlq.expectedMessageCount(0);
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        PID binPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenCompleted(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(binPid));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        mockDlq.assertIsSatisfied();
+
+        assertNoSubmittedPaths();
+    }
+
+    @Test
+    public void registerExecuteFails() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        FileUtils.writeStringToFile(new File(longleafScript), "exit 1", UTF_8);
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        mockDlq.assertIsSatisfied(1000);
+
+        assertNoSubmittedPaths();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerPartiallySucceeds() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        FileObject fileObj1 = repoObjFactory.createFileObject(null);
+        BinaryObject origBin1 = createOriginalBinary(fileObj1, TEXT1_BODY, TEXT1_SHA1, null);
+        URI contentUri1 = origBin1.getContentUri();
+        FileObject fileObj2 = repoObjFactory.createFileObject(null);
+        BinaryObject origBin2 = createOriginalBinary(fileObj2, TEXT1_BODY, TEXT1_SHA1, null);
+        URI contentUri2 = origBin2.getContentUri();
+
+        // Append to existing script
+        FileUtils.writeStringToFile(new File(longleafScript),
+                "\necho \"SUCCESS register " + Paths.get(contentUri1).toString() + "\"" +
+                "\necho \"FAILURE register " + Paths.get(contentUri2).toString() + " bad stuff\"" +
+                "\nexit 2",
+                UTF_8, true);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin1.getPid()));
+        template.sendBodyAndHeaders("", createEvent(origBin2.getPid()));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        assertSubmittedPaths(2000, contentUri1.toString(), contentUri2.toString());
+
+        mockDlq.assertIsSatisfied(1000);
+        List<Exchange> dlqExchanges = mockDlq.getExchanges();
+
+        Exchange failed = dlqExchanges.get(0);
+        List<String> failedList = failed.getIn().getBody(List.class);
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin2.getPid().getRepositoryPath()));
+    }
+
+    // command fails with usage error, but successful response
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerCommandError() throws Exception {
+        mockDlq.expectedMessageCount(1);
+
+        FileUtils.writeStringToFile(new File(longleafScript),
+                "\necho 'ERROR: \"longleaf register\" was called with arguments [\"--ohno\"]'",
+                UTF_8, true);
+
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenDone(2)
+                .create();
+
+        template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
+
+        mockDlq.assertIsSatisfied(1000);
+
+        List<Exchange> dlqExchanges = mockDlq.getExchanges();
+        assertEquals(1, dlqExchanges.size());
+        Exchange failed = dlqExchanges.get(0);
+        List<String> failedList = failed.getIn().getBody(List.class);
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin.getPid().getRepositoryPath()));
+    }
+
+    private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {
+        PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
+        URI storageUri = transferSession.transfer(originalPid, new ByteArrayInputStream(content.getBytes(UTF_8)));
+        return fileObj.addOriginalFile(storageUri, "original.txt", "plain/text", sha1, md5);
+    }
+
+    private static Map<String, Object> createEvent(PID pid) {
+        final Map<String, Object> headers = new HashMap<>();
+        headers.put(FCREPO_URI, pid.getRepositoryPath());
+
+        return headers;
+    }
+}
