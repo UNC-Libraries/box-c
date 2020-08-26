@@ -86,6 +86,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -856,7 +857,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } else {
                 builder.addEventDetail("added {0} child objects to this container", numChildren);
             }
-            builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+            builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                     .addAuthorizingAgent(depositor)
                     .write();
         }
@@ -873,7 +874,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             builder.addEventDetail("ingested as PID: {0}",
                     obj.getPid().getQualifiedId());
         }
-        builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+        builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .addAuthorizingAgent(depositor)
                 .write();
     }

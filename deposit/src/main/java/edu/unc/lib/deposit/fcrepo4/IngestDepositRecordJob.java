@@ -39,6 +39,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -163,7 +164,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         PremisEventBuilder eventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion)
                 .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
                         aipObjResc.getProperty(DcElements.title).getObject().toString())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .addAuthorizingAgent(status.get(DepositField.depositorName.name()));
 
         // Add in deposit format if present

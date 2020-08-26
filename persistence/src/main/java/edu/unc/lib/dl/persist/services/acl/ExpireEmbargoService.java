@@ -15,21 +15,15 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.metrics.TimerFactory;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import io.dropwizard.metrics5.Timer;
+import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
+import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
+import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -40,14 +34,22 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
-import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
-import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that manages embargo expiration
@@ -101,7 +103,7 @@ public class ExpireEmbargoService {
                             formatDateToUTC(parseUTCToDate(embargoDate));
                     // Produce the premis event for this embargo
                     repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                            .addSoftwareAgent(SoftwareAgent.embargoExpirationService.getFullname())
+                            .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService))
                             .addEventDetail(eventText)
                             .writeAndClose();
                 } catch (Exception e) {

@@ -118,7 +118,7 @@ public class AbstractDepositJobTest {
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
-        when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);
+        when(premisEventBuilder.addSoftwareAgent(any(PID.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.create()).thenReturn(testResource);
 
         tmpFolder.create();

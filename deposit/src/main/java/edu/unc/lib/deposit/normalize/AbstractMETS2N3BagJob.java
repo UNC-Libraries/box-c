@@ -41,6 +41,7 @@ import org.xml.sax.SAXException;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
@@ -130,7 +131,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             PremisLogger premisLogger = getPremisLogger(pid);
             premisLogger.buildEvent(Premis.Accession)
                     .addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
-                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                     .write();
 
             count++;
@@ -189,7 +190,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
         premisDepositLogger.buildEvent(Premis.Validation)
                 .addEventDetail("METS schema(s) validated")
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 

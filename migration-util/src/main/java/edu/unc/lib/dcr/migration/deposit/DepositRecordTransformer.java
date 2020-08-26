@@ -63,6 +63,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -248,7 +249,7 @@ public class DepositRecordTransformer extends RecursiveAction {
                 // Add migration event
                 filePremisLogger.buildEvent(Premis.Ingestion)
                         .addEventDetail("Object migrated from Boxc 3 to Boxc 5")
-                        .addSoftwareAgent(SoftwareAgent.migrationUtil.getFullname())
+                        .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.migrationUtil))
                         .writeAndClose();
 
                 PremisLogger repoPremisLogger = premisLoggerFactory.createPremisLogger(depRecord, transferSession);

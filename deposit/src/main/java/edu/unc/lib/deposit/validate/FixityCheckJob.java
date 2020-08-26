@@ -40,6 +40,7 @@ import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.MultiDigestInputStreamWrapper;
@@ -127,7 +128,7 @@ public class FixityCheckJob extends AbstractDepositJob {
         // Store event for calculation of checksums
         PremisLogger premisDepositLogger = getPremisLogger(pid);
         PremisEventBuilder builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname());
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService));
         details.forEach(builder::addEventDetail);
         builder.write();
     }

@@ -33,6 +33,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -105,7 +106,7 @@ public class VirusScanJob extends AbstractDepositJob {
                     PremisLogger premisLogger = getPremisLogger(href.getKey());
                     PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
-                    premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                    premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                             .addEventDetail("File passed pre-ingest scan for viruses")
                             .addOutcome(true)
                             .write();
@@ -132,7 +133,7 @@ public class VirusScanJob extends AbstractDepositJob {
             PID depositPID = getDepositPID();
             PremisLogger premisDepositLogger = getPremisLogger(depositPID);
             premisDepositLogger.buildEvent(Premis.VirusCheck)
-                    .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                    .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                     .addEventDetail(scannedObjects + "files scanned for viruses.")
                     .write();
         }

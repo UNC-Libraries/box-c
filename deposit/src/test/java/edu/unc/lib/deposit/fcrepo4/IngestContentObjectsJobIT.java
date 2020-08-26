@@ -74,6 +74,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -755,7 +756,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)
                 .addEventDetail("Event 2")
-                .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         job.closeModel();
@@ -812,7 +813,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)
                 .addEventDetail("Event 2")
-                .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         job.closeModel();

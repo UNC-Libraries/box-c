@@ -15,10 +15,15 @@
  */
 package edu.unc.lib.dl.util;
 
+import static java.text.Normalizer.Form.NFD;
+import static java.util.Locale.ENGLISH;
+
 import java.net.URI;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -28,7 +33,7 @@ public class URIUtil {
 
     /**
      * Join path segments to a base URI
-     * 
+     *
      * @param base
      * @param segments
      * @return
@@ -40,7 +45,7 @@ public class URIUtil {
     /**
      * Join path segments to form a URI path. Path will not end with a trailing
      * slash.
-     * 
+     *
      * @param base
      *            Base of the path. If null or empty, the resulting path will be
      *            relative
@@ -76,4 +81,20 @@ public class URIUtil {
 
         return pathBuilder.toString();
     }
+
+    private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+    private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+
+    /**
+     * Encode the provided value as a slug
+     *
+     * @param value value to encode
+     * @return value encoded as a slug
+     */
+    public static String toSlug(String value) {
+        String nowhitespace = WHITESPACE.matcher(value).replaceAll("-");
+        String normalized = Normalizer.normalize(nowhitespace, NFD);
+        String slug = NONLATIN.matcher(normalized).replaceAll("");
+        return slug.toLowerCase(ENGLISH);
+      }
 }

@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -113,7 +114,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource eventResc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         // Retrieve all of the events
@@ -134,7 +135,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         // Add two of the events together
@@ -376,7 +377,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // attempt to write log and fail
         Resource event = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .create();
         Runnable commitThread = new Runnable() {
             @Override

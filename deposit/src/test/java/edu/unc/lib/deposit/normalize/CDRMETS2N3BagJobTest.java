@@ -53,6 +53,7 @@ import com.google.common.io.Files;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -150,7 +151,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
             verify(premisLogger).buildEvent(eq(Premis.Validation));
             verify(premisLogger, times(4)).buildEvent(eq(Premis.Accession));
             verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
-            verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
+            verify(premisEventBuilder, times(4)).addSoftwareAgent(any(PID.class));
             verify(premisEventBuilder, times(5)).write();
         }
     }

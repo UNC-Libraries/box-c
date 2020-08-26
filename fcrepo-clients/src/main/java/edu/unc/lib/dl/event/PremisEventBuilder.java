@@ -121,12 +121,13 @@ public class PremisEventBuilder {
     /**
      * Add a related software agent to this event
      *
-     * @param agent Identifier for the agent
+     * @param agentPid PID for the agent
      * @return this event builder
      */
-    public PremisEventBuilder addSoftwareAgent(String agent) {
-        addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.Software,
-                toSlug("#softwareAgent", agent), agent);
+    public PremisEventBuilder addSoftwareAgent(PID agentPid) {
+        Resource premisObjResc = getResource();
+        Resource agentResc = model.createResource(agentPid.getRepositoryPath());
+        premisObjResc.addProperty(Premis.hasEventRelatedAgentExecutor, agentResc);
 
         return this;
     }
