@@ -26,10 +26,12 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import java.net.URI;
 import java.util.regex.Matcher;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.PIDConstants;
 
 /**
  * Provides static methods for creating PID objects
@@ -42,8 +44,8 @@ public class PIDs {
     private static final Logger log = LoggerFactory.getLogger(PIDs.class);
 
     private PIDs() {
-
     }
+
     /**
      * Get a PID object for the given URI.
      *
@@ -67,15 +69,26 @@ public class PIDs {
             return null;
         }
 
+        if (value.startsWith(getBaseUri())) {
+            return buildPidFromUri(value);
+        } else {
+            return buildPidFromId(value);
+        }
+    }
+
+    private static PID buildPidFromUri(String value) {
+        // Given value was a fedora path. Remove the base and decompose
+        String path = value.substring(getBaseUri().length());
+        String qualifier = StringUtils.substringBefore(path, "/");
         String id;
-        String qualifier;
         String componentPath;
         String repositoryPath;
 
-        if (value.startsWith(getBaseUri())) {
-            // Given value was a fedora path. Remove the base and decompose
-            String path = value.substring(getBaseUri().length());
-
+        if (PIDConstants.AGENTS_QUALIFIER.equals(qualifier)) {
+            id = StringUtils.substringAfter(path, qualifier + "/");
+            componentPath = null;
+            repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
+        } else {
             Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
             if (matcher.matches()) {
                 // extract the qualifier/category portion of the path, ex: deposit, content, etc.
@@ -98,41 +111,8 @@ public class PIDs {
                 // Return either a pid to a base resource or null if invalid path
                 return basePid;
             }
-        } else {
-            // Determine if the value matches the pattern for an identifier
-            Matcher matcher = RepositoryPathConstants.identifierPattern.matcher(value);
-            if (matcher.matches()) {
-                // Store the qualifier if specified, otherwise use the default "content" qualifier
-                qualifier = matcher.group(2);
-                if (qualifier == null) {
-                    qualifier = RepositoryPathConstants.CONTENT_BASE;
-                }
-                // store the trailing component path
-                componentPath = matcher.group(8);
-                if (matcher.group(5) != null) {
-                    // store the identifier for the main object
-                    id = matcher.group(5);
-
-                    // Expand the identifier into a repository path
-                    repositoryPath = getRepositoryPath(id, qualifier, componentPath, true);
-                } else {
-                    // Reserved id found, path does not need to be expanded
-                    id = matcher.group(6);
-
-                    repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
-                }
-            } else {
-                // Handle base object ids
-                PID basePid = getBaseResourcePidFromId(value);
-                if (basePid == null) {
-                    log.warn("Invalid qualified path {}, cannot construct PID", value);
-                }
-                // Return either a pid to a base resource or null if invalid path
-                return basePid;
-            }
         }
 
-        // Build and return the new pid object
         return new FedoraPID(id, qualifier, componentPath, URI.create(repositoryPath));
     }
 
@@ -144,6 +124,58 @@ public class PIDs {
         }
 
         return null;
+    }
+
+    private static PID buildPidFromId(String value) {
+        String qualifier;
+        String id;
+        String componentPath;
+        String repositoryPath;
+        // Determine if the value matches the pattern for an identifier
+        Matcher matcher = RepositoryPathConstants.identifierPattern.matcher(value);
+        if (matcher.matches()) {
+            // Store the qualifier if specified, otherwise use the default "content" qualifier
+            qualifier = matcher.group(2);
+            if (qualifier == null) {
+                qualifier = RepositoryPathConstants.CONTENT_BASE;
+            }
+            // store the trailing component path
+            componentPath = matcher.group(8);
+            if (matcher.group(5) != null) {
+                // store the identifier for the main object
+                id = matcher.group(5);
+
+                // Expand the identifier into a repository path
+                repositoryPath = getRepositoryPath(id, qualifier, componentPath, true);
+            } else {
+                // Reserved id found, path does not need to be expanded
+                id = matcher.group(6);
+
+                repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
+            }
+        } else {
+            if (value.contains("/")) {
+                qualifier = StringUtils.substringBefore(value, "/");
+            } else {
+                qualifier = PIDConstants.CONTENT_QUALIFIER;
+            }
+
+            if (PIDConstants.AGENTS_QUALIFIER.equals(qualifier)) {
+                id = StringUtils.substringAfter(value, "/");
+                componentPath = null;
+                repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
+            } else {
+                // Handle base object ids
+                PID basePid = getBaseResourcePidFromId(value);
+                if (basePid == null) {
+                    log.warn("Invalid qualified path {}, cannot construct PID", value);
+                }
+                // Return either a pid to a base resource or null if invalid path
+                return basePid;
+            }
+        }
+
+        return new FedoraPID(id, qualifier, componentPath, URI.create(repositoryPath));
     }
 
     private static PID getBaseResourcePidFromId(String id) {
