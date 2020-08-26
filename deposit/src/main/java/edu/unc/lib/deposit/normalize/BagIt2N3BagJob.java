@@ -53,7 +53,6 @@ import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.verify.MandatoryVerifier;
 
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -105,7 +104,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             Set<Manifest> payloadManifests = bagReader.getPayLoadManifests();
 
             // Turn the bag itself into the top level folder for this deposit
-            org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, new File(sourceUri), Cdr.Folder);
+            org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, new File(sourceUri));
 
             int i = 0;
             // Add all of the payload objects into the bag folder

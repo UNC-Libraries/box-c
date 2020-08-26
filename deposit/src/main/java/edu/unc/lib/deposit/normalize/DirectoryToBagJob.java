@@ -31,7 +31,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -69,7 +68,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         interruptJobIfStopped();
 
         // Turn the base directory itself into the top level folder for this deposit
-        Bag sourceBag = getSourceBag(depositBag, sourceFile, Cdr.Work);
+        Bag sourceBag = getSourceBag(depositBag, sourceFile);
 
         int i = 0;
         // Add all of the payload objects into the bag folder
@@ -88,24 +87,11 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
             model.add(folderBag, CdrDeposit.label, filename);
 
             if (!file.isDirectory()) {
-                // Create work object
-                PID workPid = pidMinter.mintContentPid();
-                Bag workBag = model.createBag(workPid.getURI());
-                model.add(folderBag, RDF.type, Cdr.Work);
-                model.add(folderBag, CdrDeposit.label, filename);
+                Resource fileResource = getFileResource(sourceBag, filePathString);
 
-                // Add file object to work
-                model.add(workBag, RDF.type, Cdr.FileObject);
-                model.add(workBag, CdrDeposit.label, filename);
-
+                // Find staged path for the file
                 Path storedPath = Paths.get(file.getAbsolutePath());
-                model.add(workBag, CdrDeposit.stagingLocation, storedPath.toUri().toString());
-
-                Resource fileResource = getFileResource(folderBag, filePathString);
-                workBag.add(fileResource);
-                workBag.addProperty(Cdr.primaryObject, fileResource);
-
-                folderBag.add(workBag);
+                model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
             } else {
                 model.add(folderBag, RDF.type, Cdr.Folder);
             }

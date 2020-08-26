@@ -68,37 +68,31 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     @Override
     public abstract void runJob();
 
-    protected Bag getSourceBag(Bag depositBag, File sourceFile, Resource objectType) {
+    protected Bag getSourceBag(Bag depositBag, File sourceFile) {
         Model model = depositBag.getModel();
         Map<String, String> status = getDepositStatus();
 
         PID containerPID = createPID();
-        Bag bagContainer = model.createBag(containerPID.getURI());
+        Bag bagFolder = model.createBag(containerPID.getURI());
         // Determine the label to use for this the root directory of the deposit package
-        String label = null;
-
-        if (!objectType.equals(Cdr.Work)) {
-            label = status.get(DepositField.depositSlug.name());
-        }
-
+        String label = status.get(DepositField.depositSlug.name());
         if (label == null) {
             label = status.get(DepositField.fileName.name());
         }
         if (label == null) {
             label = sourceFile.getName();
         }
-
-        model.add(bagContainer, CdrDeposit.label, label);
-        model.add(bagContainer, RDF.type, objectType);
-        depositBag.add(bagContainer);
+        model.add(bagFolder, CdrDeposit.label, label);
+        model.add(bagFolder, RDF.type, Cdr.Folder);
+        depositBag.add(bagFolder);
 
         // Cache the source bag folder
-        pathToFolderBagCache.put(sourceFile.getName(), bagContainer);
+        pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
 
         // Add extra descriptive information
         addDescription(containerPID, status);
 
-        return bagContainer;
+        return bagFolder;
     }
 
     /**
@@ -110,19 +104,25 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * @return
      */
     protected Resource getFileResource(Bag sourceBag, String filepath) {
+        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
         Bag parentBag = getParentBag(sourceBag, filepath);
 
-        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+        // Create work object
+        PID workPid = createPID();
+        Model model = parentBag.getModel();
+        Bag workBag = model.createBag(workPid.getURI());
+        model.add(workBag, RDF.type, Cdr.Work);
+        model.add(workBag, CdrDeposit.label, filename);
 
+        // Generate the file object and add to the work
         PID pid = createPID();
-
-        // Generate the file object and add to work
-        Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
+        Resource fileResource = workBag.getModel().createResource(pid.getURI());
         fileResource.addProperty(RDF.type, Cdr.FileObject);
-
         fileResource.addProperty(CdrDeposit.label, filename);
+        workBag.add(fileResource);
 
-        parentBag.add(fileResource);
+        workBag.addProperty(Cdr.primaryObject, fileResource);
+        parentBag.add(workBag);
 
         return fileResource;
     }
