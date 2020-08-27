@@ -104,19 +104,25 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * @return
      */
     protected Resource getFileResource(Bag sourceBag, String filepath) {
+        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
         Bag parentBag = getParentBag(sourceBag, filepath);
 
-        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+        // Create work object
+        PID workPid = createPID();
+        Model model = parentBag.getModel();
+        Bag workBag = model.createBag(workPid.getURI());
+        model.add(workBag, RDF.type, Cdr.Work);
+        model.add(workBag, CdrDeposit.label, filename);
 
+        // Generate the file object and add to the work
         PID pid = createPID();
-
-        // Generate the file object and add to work
-        Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
+        Resource fileResource = workBag.getModel().createResource(pid.getURI());
         fileResource.addProperty(RDF.type, Cdr.FileObject);
-
         fileResource.addProperty(CdrDeposit.label, filename);
+        workBag.add(fileResource);
 
-        parentBag.add(fileResource);
+        workBag.addProperty(Cdr.primaryObject, fileResource);
+        parentBag.add(workBag);
 
         return fileResource;
     }
@@ -127,7 +133,6 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      *
      * @param sourceBag
      * @param filepath
-     * @param model
      * @return
      */
     protected Bag getFolderBag(Bag sourceBag, String filepath) {

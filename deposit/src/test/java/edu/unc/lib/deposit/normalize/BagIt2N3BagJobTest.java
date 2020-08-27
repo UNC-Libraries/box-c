@@ -144,12 +144,31 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
     }
 
-    private void assertFileAdded(Resource file, String md5sum, String fileLocation) {
+    private void assertFileAdded(Resource work, String md5sum, String fileLocation) {
+        assertTrue("Missing RDF type", work.hasProperty(RDF.type, Cdr.Work));
+        String[] pathParts = fileLocation.split("/");
+
+        Bag workBag = work.getModel().getBag(work.getURI());
+        Resource file = getChildByLabel(workBag, pathParts[pathParts.length - 1]);
+
         assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
         assertEquals("Checksum was not set", md5sum,
                 file.getProperty(CdrDeposit.md5sum).getString());
         assertEquals("File location not set", fileLocation,
                 file.getProperty(CdrDeposit.stagingLocation).getString());
+    }
+
+    private Resource getChildByLabel(Bag bagResc, String seekLabel) {
+        NodeIterator iterator = bagResc.iterator();
+        while (iterator.hasNext()) {
+            Resource childResc = (Resource) iterator.next();
+            String label = childResc.getProperty(CdrDeposit.label).getString();
+            if (label.equals(seekLabel)) {
+                iterator.close();
+                return childResc;
+            }
+        }
+        throw new AssertionError("Failed to find child with label " + seekLabel + " in bag " + bagResc);
     }
 
     @Test(expected = JobFailedException.class)
@@ -159,5 +178,4 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         job.run();
     }
-
 }

@@ -54,7 +54,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
     @Override
     public void runJob() {
         Model model = getWritableModel();
-        Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+        Bag depositBag = model.createBag(getDepositPID().getURI());
 
         Map<String, String> status = getDepositStatus();
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
@@ -80,13 +80,11 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
             log.debug("Adding object {}: {}", i++, file.getName());
 
-            Boolean isDir = file.isDirectory();
-
             Path filePath = sourcePath.getParent().relativize(file.toPath());
             String filePathString = filePath.toString();
             String filename = filePath.getFileName().toString();
 
-            if (!isDir) {
+            if (!file.isDirectory()) {
                 Resource fileResource = getFileResource(sourceBag, filePathString);
 
                 // Find staged path for the file
