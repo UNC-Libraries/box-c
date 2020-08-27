@@ -260,7 +260,7 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
                 if (agent.equals("CDR Workbench")) {
                     builder.addSoftwareAgent(AgentPids.forSoftware(curatorsWorkbench));
                 } else {
-                    builder.addAuthorizingAgent(agent);
+                    builder.addAuthorizingAgent(AgentPids.forPerson(agent));
                 }
             });
             builder.write();
@@ -320,7 +320,7 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
     private void addEvent(Element eventEl, Resource eventType, String eventDetail, String agentName) {
         PremisEventBuilder builder = createEventBuilder(eventType, eventEl)
             .addEventDetail(eventDetail);
-        builder.addImplementorAgent(agentName);
+        builder.addImplementorAgent(AgentPids.forPerson(agentName));
         builder.write();
     }
 }

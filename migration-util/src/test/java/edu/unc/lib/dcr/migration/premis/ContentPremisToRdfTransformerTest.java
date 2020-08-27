@@ -42,7 +42,6 @@ import static edu.unc.lib.dcr.migration.premis.TestPremisEventHelpers.listEventR
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentAuthorizor;
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentExecutor;
 import static edu.unc.lib.dl.rdf.Premis.hasEventRelatedAgentImplementor;
-import static edu.unc.lib.dl.rdf.PremisAgentType.Person;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.servicesAPI;
@@ -55,8 +54,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,8 +61,6 @@ import org.junit.Test;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.PremisAgentType;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -296,6 +291,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         String detail = "Changed resource type from Folder to Collection";
         Element eventEl = addEvent(premisDoc, MIGRATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "username");
+        PID agentPid = AgentPids.forPerson("username");
 
         transformer.compute();
 
@@ -307,7 +303,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertEventType(Premis.MetadataModification, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent("username", hasEventRelatedAgentImplementor, Person, eventResc);
+        assertAgent(agentPid, hasEventRelatedAgentImplementor, eventResc);
     }
 
     @Test
@@ -379,6 +375,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         String detail = "Container created";
         Element eventEl = addEvent(premisDoc, CREATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "PID", INITIATOR_ROLE, "username");
+        PID agentPid = AgentPids.forPerson("username");
 
         transformer.compute();
 
@@ -390,7 +387,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertEventType(Premis.Creation, eventResc);
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
-        assertAgent("username", hasEventRelatedAgentImplementor, Person, eventResc);
+        assertAgent(agentPid, hasEventRelatedAgentImplementor, eventResc);
     }
 
     @Test
@@ -399,6 +396,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         Element eventEl = addEvent(premisDoc, CREATION_TYPE, detail, EVENT_DATE);
         addAgent(eventEl, "Name", "Creator", "CDR Workbench");
         addAgent(eventEl, "Name", "Creator", "username");
+        PID agentPid = AgentPids.forPerson("username");
 
         transformer.compute();
 
@@ -411,7 +409,7 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
         assertEventDetail(detail, eventResc);
         assertEventDateTime(EVENT_DATE_UTC, eventResc);
         assertAgent(SoftwareAgent.curatorsWorkbench, eventResc);
-        assertAgent("username", hasEventRelatedAgentAuthorizor, Person, eventResc);
+        assertAgent(agentPid, hasEventRelatedAgentAuthorizor, eventResc);
     }
 
     @Test
@@ -613,25 +611,5 @@ public class ContentPremisToRdfTransformerTest extends AbstractPremisToRdfTransf
 
         fail(String.format("No %s relation to agent with value %s present",
                 hasProperty, agentPid.getQualifiedId()));
-    }
-
-    private void assertAgent(String agentName, Property hasProperty, Resource agentType, Resource eventResc) {
-        for (Statement stmt: eventResc.listProperties(hasProperty).toList()) {
-            Resource agentResc = stmt.getResource();
-            if (agentType.equals(agentResc.getPropertyResourceValue(RDF.type))) {
-                String name;
-                if (Person.equals(agentType) || PremisAgentType.Organization.equals(agentType)) {
-                    name = agentResc.getProperty(FOAF.name).getString();
-                } else {
-                    name = agentResc.getProperty(Rdf.label).getString();
-                }
-                if (name.equals(agentName)) {
-                    return;
-                }
-            }
-        }
-
-        fail(String.format("No %s relation to agent of type %s with value %s present",
-                hasProperty, agentType, agentName));
     }
 }

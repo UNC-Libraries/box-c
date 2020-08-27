@@ -95,7 +95,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         PID eventPid = makePid("content");
         when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
 
-        when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
+        when(premisEventBuilder.addAuthorizingAgent(any(PID.class))).thenReturn(premisEventBuilder);
 
         when(storageLocationManager.getStorageLocationById(anyString())).thenReturn(storageLocation);
         when(binaryTransferService.getSession(any(StorageLocation.class))).thenReturn(mockTransferSession);
@@ -142,6 +142,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.fileName.name(), "valid-bag");
         depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
+        depositStatus.put(DepositField.depositorName.name(), "depositor");
         when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
         Resource resc = depositModel.getResource(depositPid.getRepositoryPath());

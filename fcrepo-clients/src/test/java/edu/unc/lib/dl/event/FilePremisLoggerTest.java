@@ -29,7 +29,6 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,7 +41,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -88,11 +86,12 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         String message = "Test event successfully added";
 
         PID softwarePid = AgentPids.forSoftware(SoftwareAgent.clamav);
+        PID authPid = AgentPids.forPerson("agent2");
         Resource premisBuilder = premis.buildEvent(null, eventType, date)
                 .addEventDetail(message)
                 .addOutcome(true)
                 .addSoftwareAgent(softwarePid)
-                .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(authPid)
                 .create();
 
         premis.writeEvents(premisBuilder);
@@ -110,9 +109,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 resource.getProperty(Premis.outcome).getResource());
         assertEquals("Virus check property depositing agent not written to file", softwarePid.getRepositoryPath(),
                 resource.getProperty(Premis.hasEventRelatedAgentExecutor).getResource().getURI());
-        assertEquals("Virus check property authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
-                resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
-                .getProperty(FOAF.name).getObject().toString());
+        assertEquals("Virus check property authorizing agent not written to file", authPid.getRepositoryPath(),
+                resource.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource().getURI());
 
         Resource objResc = model.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
@@ -121,9 +119,10 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
     @Test
     public void testMultipleEvents() throws Exception {
+        PID agentPid1 = AgentPids.forPerson("agent1");
         Resource event1 = premis.buildEvent(null, Premis.Normalization, date)
                 .addEventDetail("Event 1")
-                .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(agentPid1)
                 .write();
 
         PID agentPid2 = AgentPids.forSoftware(SoftwareAgent.clamav);
@@ -144,9 +143,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 resc1.getProperty(RDF.type).getObject());
         assertEquals("Event detail not written to file", "Event 1",
                 resc1.getProperty(Premis.note).getObject().toString());
-        assertEquals("Authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
-                resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor)
-                        .getProperty(FOAF.name).getObject().toString());
+        assertEquals("Authorizing agent not written to file", agentPid1.getRepositoryPath(),
+                resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource().getURI());
 
         assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
                 resc2.getProperty(RDF.type).getObject());
@@ -169,8 +167,9 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
                 .addEventDetail("Event 1").addSoftwareAgent(agentPid1)
                 .write();
 
+        PID agentPid2 = AgentPids.forPerson("agent2");
         Resource event2 = premis.buildEvent(null, Premis.VirusCheck, date)
-                .addEventDetail("Event 2").addAuthorizingAgent("Agent 2")
+                .addEventDetail("Event 2").addAuthorizingAgent(agentPid2)
                 .write();
 
         Model logModel = premis.getEventsModel();
@@ -189,10 +188,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         assertEquals("Event detail not written to file", "Event 2",
                 logEvent2Resc.getProperty(Premis.note).getString());
         Resource event2AgentAuth = logEvent2Resc.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource();
-        assertEquals("Authorizing agent not written to file", PremisAgentType.Person,
-                event2AgentAuth.getProperty(RDF.type).getObject());
-        assertEquals("Authorizing agent name not written to file", "Agent 2",
-                event2AgentAuth.getProperty(FOAF.name).getObject().toString());
+        assertEquals(agentPid2.getRepositoryPath(), event2AgentAuth.getURI());
 
         Resource objResc = logModel.getResource(pid.getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));

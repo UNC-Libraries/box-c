@@ -239,6 +239,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         Map<String, String> depositStatus = new HashMap<>();
         depositStatus.put(DepositField.containerId.name(), destinationPid.getQualifiedId());
         depositStatus.put(DepositField.permissionGroups.name(), "depositor");
+        depositStatus.put(DepositField.depositorName.name(), "depositor");
 
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 

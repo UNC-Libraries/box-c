@@ -56,6 +56,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -168,7 +169,7 @@ public class PatronAccessAssignmentService {
 
         // Add PREMIS event indicating the role changes
         return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                .addImplementorAgent(agent.getUsernameUri())
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail(createRoleEventDetails(assignments))
                 .create();
     }
@@ -238,7 +239,7 @@ public class PatronAccessAssignmentService {
         } else {
             // Produce the premis event for this embargo
             return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(agent.getUsernameUri())
+                    .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail(eventText)
                     .create();
         }

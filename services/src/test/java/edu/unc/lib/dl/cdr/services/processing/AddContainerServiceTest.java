@@ -116,6 +116,7 @@ public class AddContainerServiceTest {
         initMocks(this);
 
         when(agent.getPrincipals()).thenReturn(groups);
+        when(agent.getUsername()).thenReturn("user");
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(premisLogger.buildEvent(eq(Premis.Creation))).thenReturn(eventBuilder);

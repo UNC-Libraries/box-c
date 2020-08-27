@@ -45,7 +45,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
@@ -247,8 +246,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue("Ingestion event did not have expected note",
                 eventResc.hasProperty(Premis.note, "ingested as PID: " + folder.getPid().getQualifiedId()));
         Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
-        assertTrue("Authorizing agent name missing from ingestion event",
-                authAgent.hasProperty(FOAF.name, DEPOSITOR_NAME));
+        assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
 
         assertClickCount(1);
         ingestedObjectsCount(1);
@@ -318,8 +316,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         List<Resource> eventRescs = workLogModel.listResourcesWithProperty(Prov.generated).toList();
         for (Resource eventResc: eventRescs) {
             Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
-            assertTrue("Authorizing agent name missing from ingestion event",
-                    authAgent.hasProperty(FOAF.name, DEPOSITOR_NAME));
+            assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
         }
 
         // Verify that ingestion event gets added for primary object
@@ -751,7 +748,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Event 1")
-                .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(AgentPids.forPerson("someuser"))
                 .write();
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)
@@ -808,7 +805,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Event 1")
-                .addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(AgentPids.forPerson("someuser"))
                 .write();
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)

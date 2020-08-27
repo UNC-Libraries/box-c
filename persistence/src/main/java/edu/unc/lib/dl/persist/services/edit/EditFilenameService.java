@@ -17,8 +17,6 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
-import io.dropwizard.metrics5.Timer;
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -31,10 +29,12 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that manages editing of the ebucore:filename property on an object
@@ -84,7 +84,7 @@ public class EditFilenameService {
 
             obj.getPremisLog()
                 .buildEvent(Premis.FilenameChange)
-                .addImplementorAgent(agent.getUsernameUri())
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
                 .writeAndClose();
         } catch (Exception e) {

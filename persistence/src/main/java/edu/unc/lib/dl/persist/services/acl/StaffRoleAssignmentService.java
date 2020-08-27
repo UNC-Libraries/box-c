@@ -49,6 +49,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -110,7 +111,7 @@ public class StaffRoleAssignmentService {
             replaceStaffRoles(repoObj, assignments);
 
             repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(agent.getUsernameUri())
+                    .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail(createEventDetails(target))
                     .writeAndClose();
 

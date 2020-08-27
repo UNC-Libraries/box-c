@@ -87,6 +87,7 @@ public class RestoreDeletedJobTest {
         when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(contentObj);
 
         when(agent.getPrincipals()).thenReturn(groups);
+        when(agent.getUsername()).thenReturn("user");
 
         when(contentObj.getMetadataUri()).thenReturn(URI.create(""));
 

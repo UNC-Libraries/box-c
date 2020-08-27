@@ -34,6 +34,7 @@ public class AgentPids {
 
     public static final String SOFTWARE_AGENT_DOMAIN = "software";
     public static final String PERSON_AGENT_DOMAIN = "person";
+    public static final String ONYEN_DOMAIN = "ONYEN";
 
     /**
      * Get a PID object representing the given software agent
@@ -63,7 +64,8 @@ public class AgentPids {
      * @return PID for user
      */
     public static PID forPerson(String username) {
-        return null;
+        return PIDs.get(PIDConstants.AGENTS_QUALIFIER, PERSON_AGENT_DOMAIN
+                + "/" + ONYEN_DOMAIN + "/" + URIUtil.toSlug(username));
     }
 
     /**
@@ -72,7 +74,7 @@ public class AgentPids {
      * @param princ agent principals
      * @return PID object for user
      */
-    public static PID forAgentPrincipals(AgentPrincipals princ) {
-        return null;
+    public static PID forPerson(AgentPrincipals princ) {
+        return forPerson(princ.getUsername());
     }
 }

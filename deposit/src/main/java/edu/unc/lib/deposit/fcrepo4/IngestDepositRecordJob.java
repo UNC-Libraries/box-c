@@ -165,7 +165,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
                 .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
                         aipObjResc.getProperty(DcElements.title).getObject().toString())
                 .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
-                .addAuthorizingAgent(status.get(DepositField.depositorName.name()));
+                .addAuthorizingAgent(AgentPids.forPerson(status.get(DepositField.depositorName.name())));
 
         // Add in deposit format if present
         String depositFormat = null;
