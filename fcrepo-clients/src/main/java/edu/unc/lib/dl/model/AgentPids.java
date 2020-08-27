@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.model;
 
+import java.util.Objects;
+
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
@@ -34,7 +36,7 @@ public class AgentPids {
 
     public static final String SOFTWARE_AGENT_DOMAIN = "software";
     public static final String PERSON_AGENT_DOMAIN = "person";
-    public static final String ONYEN_DOMAIN = "ONYEN";
+    public static final String ONYEN_DOMAIN = "onyen";
 
     /**
      * Get a PID object representing the given software agent
@@ -43,6 +45,7 @@ public class AgentPids {
      * @return PID for software agent
      */
     public static PID forSoftware(SoftwareAgent agent) {
+        Objects.requireNonNull(agent, "Agent must not be null");
         return PIDs.get(PIDConstants.AGENTS_QUALIFIER, SOFTWARE_AGENT_DOMAIN + "/" + agent.getFullname());
     }
 
@@ -54,6 +57,7 @@ public class AgentPids {
      * @return PID for the software agent
      */
     public static PID forSoftware(String name) {
+        Objects.requireNonNull(name, "Agent name must not be null");
         return PIDs.get(PIDConstants.AGENTS_QUALIFIER, SOFTWARE_AGENT_DOMAIN + "/" + URIUtil.toSlug(name));
     }
 
@@ -64,6 +68,7 @@ public class AgentPids {
      * @return PID for user
      */
     public static PID forPerson(String username) {
+        Objects.requireNonNull(username, "Username must not be null");
         return PIDs.get(PIDConstants.AGENTS_QUALIFIER, PERSON_AGENT_DOMAIN
                 + "/" + ONYEN_DOMAIN + "/" + URIUtil.toSlug(username));
     }
@@ -75,6 +80,7 @@ public class AgentPids {
      * @return PID object for user
      */
     public static PID forPerson(AgentPrincipals princ) {
+        Objects.requireNonNull(princ, "Agent principals must not be null");
         return forPerson(princ.getUsername());
     }
 }

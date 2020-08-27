@@ -36,10 +36,10 @@ public class SoftwareAgentConstants {
     }
 
     public enum SoftwareAgent {
-        depositService("deposit", true),
+        depositService("bxc-deposit", true),
         servicesWorker("services-worker", "3.0"),
         selfDepositForms("forms"),
-        servicesAPI("services", true),
+        servicesAPI("bxc-services", true),
         fixityCheckingService("fixity", "3.0"),
         embargoUpdateService("embargo-update", "3.0"),
         migrationUtil("bxc-migration-util", true),
@@ -47,7 +47,7 @@ public class SoftwareAgentConstants {
         depositBxc3("deposit", "3.0"),
         FITS("fits", "1.0.6"),
         curatorsWorkbench("curators-workbench"),
-        embargoExpirationService("embargo-update-service", true);
+        embargoExpirationService("bxc-embargo-update-service", true);
 
         private String value;
         private String version;
