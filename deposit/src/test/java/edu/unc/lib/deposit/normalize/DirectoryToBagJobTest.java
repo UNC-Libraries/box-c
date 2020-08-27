@@ -120,7 +120,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Bag childrenBag = model.getBag(folder.getURI());
 
-        assertEquals(2, childrenBag.size());
+        assertEquals(1, childrenBag.size());
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(childrenBag, "lorem.txt");
@@ -218,7 +218,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(2, bagSubdir2.iterator().toList().size());
 
         Resource rescFile1 = getChildByLabel(bagSubdir2, "lorem.txt");
-        assertTrue("Type was not set", rescFile1.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue("Type was not set", rescFile1.hasProperty(RDF.type, Cdr.Work));
 
         Resource rescSubdir3 = getChildByLabel(bagSubdir2, "subdir3");
         assertTrue("Content model was not set", rescSubdir3.hasProperty(RDF.type, Cdr.Folder));
@@ -227,7 +227,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, bagSubdir3.iterator().toList().size());
 
         Resource rescFile2 = getChildByLabel(bagSubdir3, "ipsum.txt");
-        assertTrue("Type was not set", rescFile2.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue("Type was not set", rescFile2.hasProperty(RDF.type, Cdr.Work));
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

@@ -83,8 +83,6 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
             Path filePath = sourcePath.getParent().relativize(file.toPath());
             String filePathString = filePath.toString();
             String filename = filePath.getFileName().toString();
-            Bag folderBag = getFolderBag(sourceBag, filePathString);
-            model.add(folderBag, CdrDeposit.label, filename);
 
             if (!file.isDirectory()) {
                 Resource fileResource = getFileResource(sourceBag, filePathString);
@@ -93,6 +91,8 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
                 Path storedPath = Paths.get(file.getAbsolutePath());
                 model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
             } else {
+                Bag folderBag = getFolderBag(sourceBag, filePathString);
+                model.add(folderBag, CdrDeposit.label, filename);
                 model.add(folderBag, RDF.type, Cdr.Folder);
             }
         }
