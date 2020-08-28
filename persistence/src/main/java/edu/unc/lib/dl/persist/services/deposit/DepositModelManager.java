@@ -67,8 +67,8 @@ public class DepositModelManager {
     private static final String TDB_SUBDIR = "jena-tdb-dataset";
     private static final int DEPOSIT_LOCK_STRIPES = 5;
     private static final int DATASET_CACHE_SIZE = 10;
-    // 15 minutes
-    private static final long DATASET_CACHE_TTL = 1000 * 60 * 15;
+    // expire cache entries after 7 days
+    private static final long DATASET_CACHE_TTL = 1000 * 60 * 60 * 24 * 7;
 
     private Path depositsPath;
     // Locks to prevent simultaneous attempts to get the same dataset
@@ -92,8 +92,7 @@ public class DepositModelManager {
 
         depositLocker = Striped.lazyWeakLock(DEPOSIT_LOCK_STRIPES);
         datasetCache = CacheBuilder.newBuilder()
-                .maximumSize(DATASET_CACHE_SIZE)
-                .expireAfterWrite(DATASET_CACHE_TTL, TimeUnit.MILLISECONDS)
+                .expireAfterAccess(DATASET_CACHE_TTL, TimeUnit.MILLISECONDS)
                 .build(new DatasetCacheLoader());
     }
 
@@ -107,6 +106,10 @@ public class DepositModelManager {
             log.info("Initiating deposit dataset at {}", datasetTdbPath);
             return TDBFactory.createDataset(datasetTdbPath.toString());
         }
+    }
+
+    public void stopDeposit(PID depositPid) {
+        datasetCache.invalidate(depositPid);
     }
 
     /**
@@ -165,6 +168,12 @@ public class DepositModelManager {
             return dataset.getNamedModel(depositUri);
         } catch (InterruptedException e) {
             throw new InterruptedRuntimeException(e);
+        } catch (TDBTransactionException e) {
+            if (e.getCause() instanceof InterruptedException) {
+                throw new InterruptedRuntimeException("Interrupted while waiting for TDB read lock for deposit "
+                        + depositUri, e);
+            }
+            throw e;
         } finally {
             lock.unlock();
         }
@@ -301,10 +310,20 @@ public class DepositModelManager {
     }
 
     /**
-     * Commit changes to the dataset for the specified deposit
-     * @param depositPid pid of the deposit
+     * Commit changes to the dataset for the specified deposit,
+     * ending the transaction.
+     * @param depositPid
      */
     public void commit(PID depositPid) {
+        commit(depositPid, true);
+    }
+
+    /**
+     * Commit changes to the dataset for the specified deposit
+     * @param depositPid pid of the deposit
+     * @param endTx end the transaction if true
+     */
+    public void commit(PID depositPid, boolean endTx) {
         String depositUri = depositPid.getURI();
 
         Lock lock = depositLocker.get(depositUri);
@@ -314,6 +333,31 @@ public class DepositModelManager {
             Dataset dataset = datasetCache.getUnchecked(depositPid);
             if (dataset.isInTransaction()) {
                 dataset.commit();
+                if (endTx) {
+                    dataset.end();
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new InterruptedRuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void commitOrAbort(PID depositPid, boolean abort) {
+        String depositUri = depositPid.getURI();
+
+        Lock lock = depositLocker.get(depositUri);
+        try {
+            lock.lockInterruptibly();
+
+            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            if (dataset.isInTransaction()) {
+                if (abort) {
+                    dataset.abort();
+                } else {
+                    dataset.commit();
+                }
                 dataset.end();
             }
         } catch (InterruptedException e) {

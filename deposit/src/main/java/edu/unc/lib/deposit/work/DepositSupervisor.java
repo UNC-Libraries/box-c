@@ -34,7 +34,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -64,8 +63,10 @@ import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.metrics.CounterFactory;
 import edu.unc.lib.dl.metrics.HistogramFactory;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
@@ -119,6 +120,9 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private Dataset dataset;
+
+    @Autowired
+    private DepositModelManager depositModelManager;
 
     @Autowired
     private QueueInfoDAO queueDAO;
@@ -599,6 +603,7 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         depositUUID = (String) job.getArgs()[1];
+        PID depositPid = PIDs.get(PIDConstants.DEPOSITS_QUALIFIER, depositUUID);
         Map<String, String> status = this.depositStatusFactory.get(depositUUID);
 
         j = (AbstractDepositJob) runner;
@@ -636,6 +641,7 @@ public class DepositSupervisor implements WorkerListener {
                 if (t instanceof JobInterruptedException) {
                     LOG.info("Job {} in deposit {} was interrupted: {}", jobUUID, depositUUID, t.getMessage());
                     jobStatusFactory.interrupted(jobUUID);
+                    depositModelManager.stopDeposit(depositPid);
                     return;
                 }
 
@@ -665,6 +671,8 @@ public class DepositSupervisor implements WorkerListener {
                 // End job timer if failed
                 depositDuration(depositUUID, status);
 
+                depositModelManager.stopDeposit(depositPid);
+
                 final Counter failed = CounterFactory.createCounter(job.getClass(), "failed-deposits");
                 failed.inc();
 
@@ -678,11 +686,13 @@ public class DepositSupervisor implements WorkerListener {
         // Now that state from the previous job is recorded, prevent further processing if interrupted
         if (isJobPaused(status)) {
             LOG.debug("Job {} has been paused", depositUUID);
+            depositModelManager.stopDeposit(depositPid);
             return;
         }
 
         if (CleanupDepositJob.class.getName().equals(job.getClassName())) {
             LOG.debug("Job {} is cleanup job, deposit state will expire", depositUUID);
+            depositModelManager.stopDeposit(depositPid);
             return;
         }
 
@@ -702,6 +712,7 @@ public class DepositSupervisor implements WorkerListener {
                 } catch (DepositFailedException e) {
                     LOG.error("Failed to enqueue next job for deposit " + depositUUID, e);
                     depositStatusFactory.fail(depositUUID);
+                    depositModelManager.stopDeposit(depositPid);
                 }
                 break;
             default:
@@ -867,6 +878,8 @@ public class DepositSupervisor implements WorkerListener {
             // Send message indicating the deposit has completed
             sendDepositCompleteEvent(depositUUID);
 
+            depositModelManager.stopDeposit(PIDs.get(PIDConstants.DEPOSITS_QUALIFIER, depositUUID));
+
             // schedule cleanup job after the configured delay
             Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
             LOG.info("Queuing {} for deposit {}",
@@ -946,8 +959,7 @@ public class DepositSupervisor implements WorkerListener {
         Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
         try {
-            dataset.begin(ReadWrite.READ);
-            Model model = dataset.getNamedModel(depositPid.getRepositoryPath());
+            Model model = depositModelManager.getReadModel(depositPid);
 
             Bag depositBag = model.getBag(depositPid.getRepositoryPath());
 
@@ -963,7 +975,7 @@ public class DepositSupervisor implements WorkerListener {
             opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
                     Arrays.asList(destPid), addedPids, null, depositUUID);
         } finally {
-            dataset.end();
+            depositModelManager.end(depositPid);
         }
     }
 }
