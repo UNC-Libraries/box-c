@@ -25,6 +25,15 @@
         <property name="location" ref="propertiesURI"/>
     </bean>
     
+    <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+        <property name="arguments">
+            <list>
+                <value>5.0</value>
+            </list>
+        </property>
+    </bean>
+    
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
         <constructor-arg value="${fcrepo.baseUrl}" />
         <constructor-arg value="${fcrepo.auth.host}" />
