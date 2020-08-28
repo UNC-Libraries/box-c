@@ -48,7 +48,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
@@ -62,6 +61,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -188,8 +188,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(depositPid, tdbDir.toString());
-        Model depModel = modelManager.getReadModel();
+        DepositModelManager modelManager = new DepositModelManager(depositBaseDir.toPath());
+        Model depModel = modelManager.getReadModel(depositPid);
 
         Resource resultFolderResc = depModel.getResource(bxc3Pid.getRepositoryPath());
         assertTrue(resultFolderResc.hasProperty(RDF.type, Cdr.Folder));
@@ -234,11 +234,6 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected dry run message",
                 output.contains("Dry run, deposit model not saved"));
 
-        DepositModelManager modelManager = new DepositModelManager(depositPid, tdbDir.toString());
-        Model depModel = modelManager.getReadModel();
-
-        assertTrue("No deposit model should have been produced", depModel.isEmpty());
-
         assertFalse("Deposit directory must not exist", new File(depositBaseDir, depositPid.getId()).exists());
     }
 
@@ -268,8 +263,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(depositPid, tdbDir.toString());
-        Model depModel = modelManager.getReadModel();
+        DepositModelManager modelManager = new DepositModelManager(depositBaseDir.toPath());
+        Model depModel = modelManager.getReadModel(depositPid);
 
         Resource resultFolderResc = depModel.getResource(bxc3Pid.getRepositoryPath());
         assertTrue(resultFolderResc.hasProperty(RDF.type, Cdr.Folder));
@@ -327,8 +322,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(depositPid, tdbDir.toString());
-        Model depModel = modelManager.getReadModel();
+        DepositModelManager modelManager = new DepositModelManager(depositBaseDir.toPath());
+        Model depModel = modelManager.getReadModel(depositPid);
 
         Bag resultFolderResc = depModel.getBag(bxc3Pid.getRepositoryPath());
         assertTrue(resultFolderResc.hasProperty(RDF.type, Cdr.Folder));

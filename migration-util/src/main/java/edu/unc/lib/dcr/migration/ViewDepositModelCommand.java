@@ -31,9 +31,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -71,12 +71,12 @@ public class ViewDepositModelCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
 
-        DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.depositBaseDir);
 
         if (sparqlQuery == null) {
             RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
 
-            output.info(IOUtils.toString(streamModel(depositModelManager.getReadModel(), format), UTF_8));
+            output.info(IOUtils.toString(streamModel(depositModelManager.getReadModel(depositPid), format), UTF_8));
         } else {
             String queryString;
             if (sparqlQuery.equals(STDIN_PATH)) {
@@ -85,11 +85,11 @@ public class ViewDepositModelCommand implements Callable<Integer> {
                 queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
             }
 
-            String results = depositModelManager.performQuery(queryString);
+            String results = depositModelManager.performQuery(depositPid, queryString);
             output.info(results);
         }
 
-        depositModelManager.commit();
+        depositModelManager.commit(depositPid);
 
         return 0;
     }

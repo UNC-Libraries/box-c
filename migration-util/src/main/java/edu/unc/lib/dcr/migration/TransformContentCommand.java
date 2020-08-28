@@ -28,7 +28,6 @@ import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationOptions;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
@@ -36,6 +35,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Parameters;
@@ -75,10 +75,11 @@ public class TransformContentCommand implements Callable<Integer> {
 
         RepositoryPIDMinter pidMinter = (RepositoryPIDMinter) context.getBean("repositoryPIDMinter");
         PID depositPid = pidMinter.mintDepositRecordPid();
+        options.setDepositPid(depositPid);
 
         output.info("Populating deposit: " + depositPid.getId());
 
-        DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.depositBaseDir.toString());
         DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
                 depositPid, parentCommand.depositBaseDir, options.isHashNesting());
 
@@ -110,7 +111,7 @@ public class TransformContentCommand implements Callable<Integer> {
 
         if (options.isDryRun()) {
             output.info("Dry run, deposit model not saved");
-            depositModelManager.removeModel();
+            depositModelManager.removeModel(depositPid);
             depositDirectoryManager.cleanupDepositDirectory();
             return result;
         }
