@@ -27,6 +27,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
@@ -78,7 +79,7 @@ public class RestoreDeletedJob implements Runnable {
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
         repoObj.getPremisLog().buildEvent(Premis.Accession)
-                .addImplementorAgent(agent.getUsernameUri())
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Item restored from deletion")
                 .writeAndClose();
     }

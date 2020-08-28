@@ -17,7 +17,6 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
@@ -25,6 +24,7 @@ import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +46,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,6 +81,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
@@ -512,8 +512,7 @@ public class StaffRoleAssignmentServiceIT {
         assertTrue("Event type was not set",
                 eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-        assertTrue("Event agent was not set",
-                agentResc.hasLiteral(FOAF.name, USER_NAMESPACE + USER_PRINC));
+        assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
         String eventDetail = eventResc.getProperty(Premis.note).getString();
         assertThat(eventDetail, containsString("Staff roles for item set to:"));
         return eventDetail;

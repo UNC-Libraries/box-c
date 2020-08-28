@@ -28,6 +28,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
@@ -86,7 +87,7 @@ public class MarkForDeletionJob implements Runnable {
             sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
             repoObj.getPremisLog().buildEvent(Premis.Deaccession)
-                    .addImplementorAgent(agent.getUsernameUri())
+                    .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Item marked for deletion and not available without permissions")
                     .addEventDetail(message)
                     .writeAndClose();

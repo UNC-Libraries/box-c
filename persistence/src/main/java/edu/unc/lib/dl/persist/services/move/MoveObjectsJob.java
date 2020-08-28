@@ -42,6 +42,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
@@ -159,7 +160,7 @@ public class MoveObjectsJob implements Runnable {
 
         if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
             moveObj.getPremisLog().buildEvent(Premis.MetadataModification)
-                    .addAuthorizingAgent(agent.getUsername())
+                    .addAuthorizingAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Object moved from source {0} ({1}) in Admin Unit {2} ({3}) " +
                                     "to destination {4} ({5}) in Admin Unit {6} ({7})",
                             currentContainerInfo.get("container"), currentContainerInfo.get("containerTitle"),

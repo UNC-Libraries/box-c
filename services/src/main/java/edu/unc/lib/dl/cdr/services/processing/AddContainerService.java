@@ -43,6 +43,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
@@ -136,7 +137,7 @@ public class AddContainerService {
 
             child.getPremisLog()
                 .buildEvent(Premis.Creation)
-                .addImplementorAgent(agent.getUsernameUri())
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Container added at destination " + parentPid)
                 .writeAndClose();
         } catch (Exception e) {

@@ -92,12 +92,12 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -1106,7 +1106,9 @@ public class ContentObjectTransformerTest {
                 migrationEventResc.hasProperty(Premis.note, "Object migrated from Boxc 3 to Boxc 5"));
         Resource agentResc = migrationEventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
         assertNotNull("Migration agent not set", agentResc);
-        assertEquals(SoftwareAgent.migrationUtil.getFullname(), agentResc.getProperty(Rdf.label).getString());
+
+        assertEquals(AgentPids.forSoftware(SoftwareAgent.migrationUtil).getRepositoryPath(),
+                agentResc.getURI());
     }
 
     private void addPatronAccess(Model bxc3Model, PID startingPid) {

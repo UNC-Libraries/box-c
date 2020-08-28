@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -277,5 +278,62 @@ public class PIDsTest {
         assertEquals(FEDORA_BASE, pid.getRepositoryPath());
         assertEquals(REPOSITORY_ROOT_ID, pid.getId());
         assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+    }
+
+    @Test
+    public void agentPidFromPath() {
+        String id = "person/subdomain/username";
+        String path = RepositoryPaths.getBaseUri() + PIDConstants.AGENTS_QUALIFIER + "/" + id;
+
+        PID pid = PIDs.get(path);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Repository path was incorrect", path, pid.getRepositoryPath());
+        assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
+        assertNull("Component path should not be set", pid.getComponentPath());
+    }
+
+    @Test
+    public void agentPidFromId() {
+        String id = "person/subdomain/username";
+        String qualifiedId = PIDConstants.AGENTS_QUALIFIER + "/" + id;
+
+        String expectedPath = RepositoryPaths.getBaseUri() + qualifiedId;
+
+        PID pid = PIDs.get(qualifiedId);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryPath());
+        assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
+        assertEquals("Incorrect qualified id", qualifiedId, pid.getQualifiedId());
+        assertNull("Component path should not be set", pid.getComponentPath());
+    }
+
+    @Test
+    public void agentPidFromQualifierAndId() {
+        String id = "person/subdomain/username";
+
+        String expectedQualifiedId = PIDConstants.AGENTS_QUALIFIER + "/" + id;
+        String expectedPath = RepositoryPaths.getBaseUri() + expectedQualifiedId;
+
+        PID pid = PIDs.get(PIDConstants.AGENTS_QUALIFIER, id);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryPath());
+        assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
+        assertEquals("Incorrect qualified id", expectedQualifiedId, pid.getQualifiedId());
+        assertNull("Component path should not be set", pid.getComponentPath());
+    }
+
+    @Test
+    public void rejectsAgentPidWithoutQualifier() {
+        String id = "person/subdomain/username";
+
+        PID pid = PIDs.get(id);
+
+        assertNull(pid);
     }
 }

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -92,7 +93,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         premisDepositLogger.buildEvent(Premis.Accession)
                 .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
                         PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 

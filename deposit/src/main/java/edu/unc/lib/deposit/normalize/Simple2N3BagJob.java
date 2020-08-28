@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -91,7 +92,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         premisDepositLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Normalized deposit package from {0} to {1}",
                         PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 

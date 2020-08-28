@@ -28,7 +28,6 @@ import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.clamav;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.curatorsWorkbench;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.depositService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.embargoUpdateService;
-import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.fixityCheckingService;
 import static edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent.servicesAPI;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -195,7 +195,11 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
 
         // Move operations and type changes
         if (eventDetail.contains("Changed resource type") || eventDetail.contains("object moved from")) {
-            addEvent(eventEl, Premis.MetadataModification, eventDetail, isSoftwareAgent, agent);
+            if (isSoftwareAgent) {
+                addEvent(eventEl, Premis.MetadataModification, eventDetail, servicesAPI);
+            } else {
+                addEvent(eventEl, Premis.MetadataModification, eventDetail, agent);
+            }
             return;
         }
         // Rename representation 1
@@ -245,7 +249,7 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
         // Container creation via the API
         if (eventDetail.contains("Container created")) {
             String agent = getLinkingAgent(eventEl);
-            addEvent(eventEl, Premis.Creation, eventDetail, false, agent);
+            addEvent(eventEl, Premis.Creation, eventDetail, agent);
             return;
         }
         // From the time before deposit records, SIP creation was recorded here
@@ -254,9 +258,9 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
                 .addEventDetail(eventDetail);
             getLinkingAgents(eventEl).forEach(agent -> {
                 if (agent.equals("CDR Workbench")) {
-                    builder.addSoftwareAgent(curatorsWorkbench.getValue());
+                    builder.addSoftwareAgent(AgentPids.forSoftware(curatorsWorkbench));
                 } else {
-                    builder.addAuthorizingAgent(agent);
+                    builder.addAuthorizingAgent(AgentPids.forPerson(agent));
                 }
             });
             builder.write();
@@ -293,9 +297,9 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
         eventEl.getChildren("linkingAgentIdentifier", PREMIS_V2_NS).forEach(agentEl -> {
             String idType = agentEl.getChildTextTrim("linkingAgentIdentifierType", PREMIS_V2_NS);
             String idVal = agentEl.getChildTextTrim("linkingAgentIdentifierValue", PREMIS_V2_NS);
-            builder.addSoftwareAgent(idType + " " + idVal);
+            builder.addSoftwareAgent(AgentPids.forSoftware(idType + " " + idVal));
         });
-        builder.addSoftwareAgent(fixityCheckingService.getFullname());
+        builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.fixityCheckingService));
 
         eventEl.getChildren("linkingObjectIdentifier", PREMIS_V2_NS).stream().forEach(objEl -> {
             String objectType = objEl.getChildTextTrim("linkingObjectIdentifierType", PREMIS_V2_NS);
@@ -307,18 +311,16 @@ public class ContentPremisToRdfTransformer extends AbstractPremisToRdfTransforme
     }
 
     private void addEvent(Element eventEl, Resource eventType, String eventDetail, SoftwareAgent agent) {
-        addEvent(eventEl, eventType, eventDetail, true, agent.getFullname());
+        PremisEventBuilder builder = createEventBuilder(eventType, eventEl)
+                .addEventDetail(eventDetail);
+        builder.addSoftwareAgent(AgentPids.forSoftware(agent));
+        builder.write();
     }
 
-    private void addEvent(Element eventEl, Resource eventType, String eventDetail,
-            boolean isSoftwareAgent, String agentName) {
+    private void addEvent(Element eventEl, Resource eventType, String eventDetail, String agentName) {
         PremisEventBuilder builder = createEventBuilder(eventType, eventEl)
             .addEventDetail(eventDetail);
-        if (isSoftwareAgent) {
-            builder.addSoftwareAgent(agentName);
-        } else {
-            builder.addImplementorAgent(agentName);
-        }
+        builder.addImplementorAgent(AgentPids.forPerson(agentName));
         builder.write();
     }
 }

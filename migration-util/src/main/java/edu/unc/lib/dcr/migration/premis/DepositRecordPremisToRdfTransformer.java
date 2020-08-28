@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
@@ -49,7 +50,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
     private static final Pattern NORMALIZE_FORMAT_PATTERN = Pattern.compile(
             "Normalized deposit package from ([^ ]+) to.*");
 
-    private final String depositVersion = depositService.getFullname();
+    private PID depositServicePid;
 
     public DepositRecordPremisToRdfTransformer(PID pid, PremisLogger premisLogger, Document doc) {
         super(pid, premisLogger, doc);
@@ -61,6 +62,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
 
     @Override
     public void compute() {
+        depositServicePid = AgentPids.forSoftware(depositService);
         List<Element> eventEls = getDocument().getRootElement().getChildren("event", PREMIS_V2_NS);
 
         for (Element eventEl: eventEls) {
@@ -87,7 +89,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
     private void addVirusCheckEvent(Element eventEl) {
         createEventBuilder(Premis.VirusCheck, eventEl)
             .addEventDetail(getEventDetail(eventEl))
-            .addSoftwareAgent(clamav.getFullname())
+            .addSoftwareAgent(AgentPids.forSoftware(clamav))
             .write();
     }
 
@@ -106,7 +108,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         // ingested as PID
         createEventBuilder(Premis.Ingestion, eventEl)
             .addEventDetail(getEventDetail(eventEl))
-            .addSoftwareAgent(depositVersion)
+            .addSoftwareAgent(depositServicePid)
             .write();
     }
 
@@ -130,7 +132,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
 
         createEventBuilder(Premis.Validation, eventEl)
             .addEventDetail("METS schema validated")
-            .addSoftwareAgent(depositVersion)
+            .addSoftwareAgent(depositServicePid)
             .write();
     }
 
@@ -149,7 +151,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         if (eventDetail.contains("Assigned PID")) {
             createEventBuilder(Premis.InformationPackageCreation, eventEl)
                 .addEventDetail(eventDetail)
-                .addSoftwareAgent(depositVersion)
+                .addSoftwareAgent(depositServicePid)
                 .write();
             return;
         }
@@ -164,7 +166,7 @@ public class DepositRecordPremisToRdfTransformer extends AbstractPremisToRdfTran
         String format = matcher.group(1);
         createEventBuilder(Premis.Ingestion, eventEl)
             .addEventDetail("ingested as format: " + format)
-            .addSoftwareAgent(depositVersion)
+            .addSoftwareAgent(depositServicePid)
             .write();
     }
 }

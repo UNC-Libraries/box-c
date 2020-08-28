@@ -35,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,12 +47,11 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.rdf.Prov;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -144,16 +142,12 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 + PackagingType.BAGIT.getUri() + " with profile no profile"));
 
         Resource execAgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-        assertTrue("Executing agent did not have software type",
-                execAgent.hasProperty(RDF.type, PremisAgentType.Software));
-        assertTrue("Executing agent did not have name",
-                execAgent.hasLiteral(Rdf.label, SoftwareAgent.depositService.getFullname()));
+        assertEquals(AgentPids.forSoftware(SoftwareAgent.depositService).getRepositoryPath(),
+                execAgent.getURI());
 
         Resource authgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource();
-        assertTrue("Authorizing agent did not have person type",
-                authgent.hasProperty(RDF.type, PremisAgentType.Person));
-        assertTrue("Authorizing agent did not have name",
-                authgent.hasLiteral(FOAF.name, DEPOSITOR_NAME));
+        assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(),
+                authgent.getURI());
     }
 
     @Test

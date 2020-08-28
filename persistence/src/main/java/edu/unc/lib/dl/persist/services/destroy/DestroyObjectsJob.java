@@ -61,6 +61,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
@@ -139,7 +140,7 @@ public class DestroyObjectsJob implements Runnable {
                     // Add premis event to parent
                     String lineSeparator = System.getProperty("line.separator");
                     parentObj.getPremisLog().buildEvent(Premis.Deletion)
-                            .addAuthorizingAgent(agent.getUsername())
+                            .addAuthorizingAgent(AgentPids.forPerson(agent))
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
                             .addEventDetail("Objects destroyed:" + lineSeparator
@@ -186,7 +187,7 @@ public class DestroyObjectsJob implements Runnable {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
-            .addAuthorizingAgent(agent.getUsername())
+            .addAuthorizingAgent(AgentPids.forPerson(agent))
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();
     }

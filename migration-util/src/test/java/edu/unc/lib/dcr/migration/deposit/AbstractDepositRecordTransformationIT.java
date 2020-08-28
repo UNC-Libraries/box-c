@@ -34,8 +34,8 @@ import edu.unc.lib.dcr.migration.AbstractTransformationIT;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -71,7 +71,7 @@ public abstract class AbstractDepositRecordTransformationIT extends AbstractTran
         assertTrue("Missing migration event note",
                 migrationEventResc.hasProperty(Premis.note, "Object migrated from Boxc 3 to Boxc 5"));
         Resource agentResc = migrationEventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-        assertNotNull("Migration agent not set", agentResc);
-        assertEquals(SoftwareAgent.migrationUtil.getFullname(), agentResc.getProperty(Rdf.label).getString());
+        assertEquals(AgentPids.forSoftware(SoftwareAgent.migrationUtil).getRepositoryPath(),
+                agentResc.getURI());
     }
 }

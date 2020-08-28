@@ -86,6 +86,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -151,6 +152,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     private Resource depositResc;
 
     private String depositor;
+    private PID depositorPid;
 
     private boolean overrideTimestamps;
 
@@ -213,6 +215,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
         depositor = depositStatus.get(DepositField.depositorName.name());
+        depositorPid = AgentPids.forPerson(depositor);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
@@ -856,8 +859,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             } else {
                 builder.addEventDetail("added {0} child objects to this container", numChildren);
             }
-            builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                    .addAuthorizingAgent(depositor)
+            builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
+                    .addAuthorizingAgent(depositorPid)
                     .write();
         }
     }
@@ -873,8 +876,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             builder.addEventDetail("ingested as PID: {0}",
                     obj.getPid().getQualifiedId());
         }
-        builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .addAuthorizingAgent(depositor)
+        builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
+                .addAuthorizingAgent(depositorPid)
                 .write();
     }
 

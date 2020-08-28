@@ -36,24 +36,30 @@ public class SoftwareAgentConstants {
     }
 
     public enum SoftwareAgent {
-        depositService("deposit"),
-        servicesWorker("services-worker"),
+        depositService("bxc-deposit", true),
+        servicesWorker("services-worker", "3.0"),
         selfDepositForms("forms"),
-        servicesAPI("services"),
-        fixityCheckingService("fixity"),
-        embargoUpdateService("embargo-update"),
-        migrationUtil("bxc-migration-util"),
+        servicesAPI("bxc-services", true),
+        fixityCheckingService("fixity", "3.0"),
+        embargoUpdateService("embargo-update", "3.0"),
+        migrationUtil("bxc-migration-util", true),
         clamav("clamav", "0.99"),
         depositBxc3("deposit", "3.0"),
         FITS("fits", "1.0.6"),
         curatorsWorkbench("curators-workbench"),
-        embargoExpirationService("embargo-update-service");
+        embargoExpirationService("bxc-embargo-update-service", true);
 
         private String value;
         private String version;
+        private boolean useCdrVersion = false;
 
         private SoftwareAgent(String value) {
             this.value = value;
+        }
+
+        private SoftwareAgent(String value, boolean useCdrVersion) {
+            this.value = value;
+            this.useCdrVersion = useCdrVersion;
         }
 
         private SoftwareAgent(String value, String version) {
@@ -63,7 +69,11 @@ public class SoftwareAgentConstants {
 
         public String getFullname() {
             if (version == null) {
-                return value + "-" + getCdrVersion();
+                if (useCdrVersion) {
+                    return value + "-" + getCdrVersion();
+                } else {
+                    return value;
+                }
             }
 
             return value + "-" + version;

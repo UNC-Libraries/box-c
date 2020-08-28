@@ -57,11 +57,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.rdf.Prov;
-import edu.unc.lib.dl.rdf.Rdf;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.test.AclModelBuilder;
@@ -258,10 +257,8 @@ public class ExpireEmbargoServiceIT {
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.Dissemination));
             Resource execAgent = eventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-            assertTrue("Executing agent did not have software type",
-                    execAgent.hasProperty(RDF.type, PremisAgentType.Software));
-            assertTrue("Executing agent did not have name",
-                    execAgent.hasLiteral(Rdf.label, SoftwareAgent.embargoExpirationService.getFullname()));
+            assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
+                    execAgent.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }
 

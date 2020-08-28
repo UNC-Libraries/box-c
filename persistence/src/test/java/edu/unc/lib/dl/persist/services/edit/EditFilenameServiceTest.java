@@ -128,6 +128,7 @@ public class EditFilenameServiceTest {
         when(binaryObj.getModel()).thenReturn(model);
         when(model.getResource(anyString())).thenReturn(resc);
         when(agent.getPrincipals()).thenReturn(groups);
+        when(agent.getUsername()).thenReturn("user");
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(repoObj.getPremisLog()).thenReturn(premisLogger);

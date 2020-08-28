@@ -65,6 +65,7 @@ import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
@@ -247,7 +248,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent("some_user")
+            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
@@ -290,7 +291,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent("some_user")
+            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)

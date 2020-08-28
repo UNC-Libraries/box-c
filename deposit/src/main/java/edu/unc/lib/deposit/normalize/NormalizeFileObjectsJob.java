@@ -39,6 +39,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -184,7 +185,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
         premisDepositLogger.buildEvent(Premis.Creation)
                 .addEventDetail("Work created to contain FileObject {0}",
                         filePid.getRepositoryPath())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 }

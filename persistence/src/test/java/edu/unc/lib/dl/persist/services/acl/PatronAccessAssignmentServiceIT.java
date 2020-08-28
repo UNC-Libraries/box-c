@@ -17,7 +17,6 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
@@ -50,7 +49,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,6 +83,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
@@ -683,8 +682,7 @@ public class PatronAccessAssignmentServiceIT {
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-            assertTrue("Event agent was not set",
-                    agentResc.hasLiteral(FOAF.name, USER_NAMESPACE + USER_PRINC));
+            assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }
 
