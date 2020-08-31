@@ -23,7 +23,7 @@ describe('staffRoles.vue', () => {
                 alertHandler: {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
-                objectPath: [{ 
+                objectPath: [{
                     pid: 'collections',
                     name: 'Content Collections Root',
                     container: true
@@ -127,7 +127,7 @@ describe('staffRoles.vue', () => {
             done();
         });
     });
-    
+
     it("displays names of containers that roles are assigned to in inherited table", (done) => {
         wrapper = shallowMount(staffRoles, {
             localVue,
@@ -135,7 +135,7 @@ describe('staffRoles.vue', () => {
                 alertHandler: {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
-                objectPath: [{ 
+                objectPath: [{
                     pid: 'collections',
                     name: 'Content Collections Root',
                     container: true
@@ -157,22 +157,22 @@ describe('staffRoles.vue', () => {
                 uuid: '4f2be243-ce9e-4f26-91fc-08f1b592734d'
             }
         });
-        
+
         const response = {
             inherited: {
                 roles: [{ principal: 'test_admin', role: 'unitOwner', assignedTo: '73bc003c-9603-4cd9-8a65-93a22520ef6a' },
-                { principal: 'test_manager', role: 'canManage', assignedTo: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb' }]
+                    { principal: 'test_manager', role: 'canManage', assignedTo: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb' }]
             },
             assigned: {
                 roles: []
             }
         };
-        
+
         moxios.stubRequest(`/services/api/acl/staff/${wrapper.vm.uuid}`, {
             status: 200,
             response: JSON.stringify(response)
         });
-        
+
         moxios.wait(() => {
             let cells = wrapper.findAll('.inherited-permissions td');
             expect(cells.at(0).text()).toEqual(response.inherited.roles[0].principal);
@@ -272,19 +272,19 @@ describe('staffRoles.vue', () => {
     });
 
     it("removes deleted users before submitting", (done) => {
-       moxios.wait(() => {
-           let first_user_role = { principal: 'testy', role: 'canManage' };
+        moxios.wait(() => {
+            let first_user_role = { principal: 'testy', role: 'canManage' };
 
-           wrapper.setData({
-               deleted_users: [user_role],
-               updated_staff_roles: [first_user_role, user_role]
-           });
+            wrapper.setData({
+                deleted_users: [user_role],
+                updated_staff_roles: [first_user_role, user_role]
+            });
 
-           wrapper.vm.setRoles();
+            wrapper.vm.setRoles();
 
-           expect(wrapper.vm.updated_staff_roles).toEqual([first_user_role]);
-           done();
-       });
+            expect(wrapper.vm.updated_staff_roles).toEqual([first_user_role]);
+            done();
+        });
     });
 
     it("it updates button text based on context", (done) => {
@@ -340,6 +340,7 @@ describe('staffRoles.vue', () => {
 
     it("displays a submit button for admin units and collections", async () => {
         wrapper.setProps({containerType: 'AdminUnit'});
+        await wrapper.vm.$nextTick();
         let btn = wrapper.find('#is-submitting');
         expect(btn.element).toBeVisible();
 
