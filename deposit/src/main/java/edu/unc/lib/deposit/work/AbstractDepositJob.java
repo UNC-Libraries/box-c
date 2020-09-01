@@ -39,6 +39,7 @@ import java.util.Map.Entry;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -134,6 +135,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Autowired
     private DepositModelManager depositModelManager;
+    protected Dataset dataset;
 
     public AbstractDepositJob() {
     }
@@ -163,12 +165,12 @@ public abstract class AbstractDepositJob implements Runnable {
                 interruptJobIfStopped();
 
                 runJob();
-                depositModelManager.commit(depositPID);
+                depositModelManager.commit(depositPID, dataset, true);
             } catch (Exception e) {
                 // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
                 Thread.interrupted();
 
-                depositModelManager.commitOrAbort(depositPID, rollbackDatasetOnFailure);
+                depositModelManager.commitOrAbort(depositPID, dataset, rollbackDatasetOnFailure);
                 throw e;
             }
         } catch (Exception e) {

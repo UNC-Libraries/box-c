@@ -33,14 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,12 +64,11 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
     public void setup() throws Exception {
         status = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(status);
-        Dataset dataset = TDBFactory.createDataset();
 
         job = new BagIt2N3BagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         job.init();

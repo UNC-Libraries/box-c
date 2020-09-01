@@ -87,7 +87,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         setField(job, "pidMinter", pidMinter);
         job.setClamScan(clamScan);
         job.setPremisLoggerFactory(premisLoggerFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);

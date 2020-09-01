@@ -46,13 +46,11 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
@@ -177,15 +175,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Before
     public void init() throws Exception {
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new IngestContentObjectsJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "aclService", aclService);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
@@ -199,6 +195,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "transferService", binaryTransferService);
         setField(job, "locationManager", storageLocationManager);
         setField(job, "updateDescService", updateDescService);
+        setField(job, "depositModelManager", depositModelManager);
 
         job.init();
 

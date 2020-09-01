@@ -29,12 +29,10 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,14 +74,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new DirectoryToBagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
 

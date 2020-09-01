@@ -36,12 +36,10 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,7 +87,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
         when(metsSipSchema.newValidator()).thenReturn(metsValidator);
-        Dataset dataset = TDBFactory.createDataset();
         makePid(RepositoryPathConstants.CONTENT_BASE);
 
         data = new File(depositDir, "data");
@@ -100,7 +97,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         status.put(DepositField.sourceUri.name(), metsPath.toUri().toString());
 
         job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         job.setDepositDirectory(depositDir);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);

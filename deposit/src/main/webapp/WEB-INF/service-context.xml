@@ -78,9 +78,6 @@
     <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager">
         <constructor-arg value="${deposits.dir}" />
     </bean>
-    <bean id="dataSet" class="org.apache.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
-        <constructor-arg value="${deposits.dir}/jena-tdb-dataset"/>
-    </bean>
 
     <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
         <constructor-arg name="workerFactory">

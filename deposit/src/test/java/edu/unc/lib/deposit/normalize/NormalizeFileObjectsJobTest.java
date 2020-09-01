@@ -34,12 +34,10 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,13 +84,11 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
     @Before
     public void init() {
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new NormalizeFileObjectsJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         job.setDepositStatusFactory(depositStatusFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "pidMinter", pidMinter);

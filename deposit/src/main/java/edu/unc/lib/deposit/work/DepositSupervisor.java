@@ -33,7 +33,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -117,9 +116,6 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private OperationsMessageSender opsMessageSender;
-
-    @Autowired
-    private Dataset dataset;
 
     @Autowired
     private DepositModelManager depositModelManager;
@@ -641,7 +637,7 @@ public class DepositSupervisor implements WorkerListener {
                 if (t instanceof JobInterruptedException) {
                     LOG.info("Job {} in deposit {} was interrupted: {}", jobUUID, depositUUID, t.getMessage());
                     jobStatusFactory.interrupted(jobUUID);
-                    depositModelManager.stopDeposit(depositPid);
+                    depositModelManager.closeModel(depositPid);
                     return;
                 }
 
@@ -671,7 +667,7 @@ public class DepositSupervisor implements WorkerListener {
                 // End job timer if failed
                 depositDuration(depositUUID, status);
 
-                depositModelManager.stopDeposit(depositPid);
+                depositModelManager.closeModel(depositPid);
 
                 final Counter failed = CounterFactory.createCounter(job.getClass(), "failed-deposits");
                 failed.inc();
@@ -686,13 +682,13 @@ public class DepositSupervisor implements WorkerListener {
         // Now that state from the previous job is recorded, prevent further processing if interrupted
         if (isJobPaused(status)) {
             LOG.debug("Job {} has been paused", depositUUID);
-            depositModelManager.stopDeposit(depositPid);
+            depositModelManager.closeModel(depositPid);
             return;
         }
 
         if (CleanupDepositJob.class.getName().equals(job.getClassName())) {
             LOG.debug("Job {} is cleanup job, deposit state will expire", depositUUID);
-            depositModelManager.stopDeposit(depositPid);
+            depositModelManager.closeModel(depositPid);
             return;
         }
 
@@ -712,7 +708,7 @@ public class DepositSupervisor implements WorkerListener {
                 } catch (DepositFailedException e) {
                     LOG.error("Failed to enqueue next job for deposit " + depositUUID, e);
                     depositStatusFactory.fail(depositUUID);
-                    depositModelManager.stopDeposit(depositPid);
+                    depositModelManager.closeModel(depositPid);
                 }
                 break;
             default:
@@ -878,7 +874,7 @@ public class DepositSupervisor implements WorkerListener {
             // Send message indicating the deposit has completed
             sendDepositCompleteEvent(depositUUID);
 
-            depositModelManager.stopDeposit(PIDs.get(PIDConstants.DEPOSITS_QUALIFIER, depositUUID));
+            depositModelManager.closeModel(PIDs.get(PIDConstants.DEPOSITS_QUALIFIER, depositUUID));
 
             // schedule cleanup job after the configured delay
             Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
