@@ -107,7 +107,6 @@ public abstract class AbstractFedoraDepositJobIT {
 
         depositsDirectory = tmpFolder.newFolder("deposits");
         depositModelManager.setDepositsPath(depositsDirectory.toPath());
-        depositModelManager.init();
 
         jobUUID = UUID.randomUUID().toString();
 

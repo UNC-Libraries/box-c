@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +31,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -61,40 +64,55 @@ import edu.unc.lib.dl.fedora.PID;
 public class DepositModelManager {
 
     private static final Logger log = LoggerFactory.getLogger(DepositModelManager.class);
-    private static final String TDB_SUBDIR = "jena-tdb-dataset";
     private static final int DEPOSIT_LOCK_STRIPES = 5;
 
-    private Path depositsPath;
+    private Path tdbBasePath;
     // Locks to prevent simultaneous attempts to get the same dataset
     private Striped<Lock> depositLocker;
 
     /**
      * Construct a deposit model manager
-     * @param depositsDir path to the deposits directory
+     * @param tdbBaseDir path to the tdb directory
      */
-    public DepositModelManager(String depositsDir) {
-        this(Paths.get(depositsDir));
+    public DepositModelManager(String tdbBaseDir) {
+        this(Paths.get(tdbBaseDir));
     }
 
     /**
      * Construct and initialize a deposit model manager
-     * @param depositsPath
+     * @param depositsPtdbBasePathath
      */
-    public DepositModelManager(Path depositsPath) {
-        this.depositsPath = depositsPath;
-        init();
+    public DepositModelManager(Path tdbBasePath) {
+        this();
+        this.tdbBasePath = tdbBasePath;
+    }
+
+    /**
+     * Cleanup leftover empty dataset directories in the tdb directory
+     */
+    public void cleanupEmptyDatasets() {
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tdbBasePath)) {
+            for (Path childPath : dirStream) {
+                // delete the child if it is both a directory and is empty
+                if (Files.isDirectory(childPath)) {
+                    try (DirectoryStream<Path> childDirStream = Files.newDirectoryStream(childPath)) {
+                        if (!childDirStream.iterator().hasNext()) {
+                            Files.delete(childPath);
+                        }
+                    } catch (DirectoryNotEmptyException e) {
+                        // Ignore attempts to delete directories that contain files
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("Failed to cleanup empty directories in {}", tdbBasePath, e);
+        }
     }
 
     /**
      * Construct a deposit model manager
      */
     public DepositModelManager() {
-    }
-
-    /**
-     * Initialize the manager
-     */
-    public void init() {
         depositLocker = Striped.lazyWeakLock(DEPOSIT_LOCK_STRIPES);
     }
 
@@ -115,7 +133,7 @@ public class DepositModelManager {
     }
 
     private Path getDatasetPath(PID depositPid) {
-        return depositsPath.resolve(depositPid.getId()).resolve(TDB_SUBDIR);
+        return tdbBasePath.resolve(depositPid.getId());
     }
 
     /**
@@ -130,6 +148,17 @@ public class DepositModelManager {
         }
         Dataset dataset = loadDataset(depositPid);
         dataset.close();
+    }
+
+    /**
+     * Close the provided model
+     * @param model must be a DatasetModelDecorator
+     */
+    public void close(Model model) {
+        if (!(model instanceof DatasetModelDecorator)) {
+            throw new IllegalArgumentException("Must provide a DatasetModelDecorator");
+        }
+        ((DatasetModelDecorator) model).getDataset().close();
     }
 
     /**
@@ -214,6 +243,11 @@ public class DepositModelManager {
         removeModel(depositPid, dataset);
     }
 
+    /**
+     * Removes and closes the model for the given dataset
+     * @param depositPid
+     * @param dataset
+     */
     public void removeModel(PID depositPid, Dataset dataset) {
         String uri = depositPid.getURI();
         if (!dataset.isInTransaction()) {
@@ -223,6 +257,13 @@ public class DepositModelManager {
         dataset.commit();
         dataset.end();
         dataset.close();
+
+        Path datasetPath = getDatasetPath(depositPid);
+        try {
+            FileUtils.deleteDirectory(datasetPath.toFile());
+        } catch (IOException e) {
+            log.debug("Unable to delete TDB directory {}", datasetPath);
+        }
     }
 
     /**
@@ -433,6 +474,6 @@ public class DepositModelManager {
     }
 
     public void setDepositsPath(Path depositsPath) {
-        this.depositsPath = depositsPath;
+        this.tdbBasePath = depositsPath;
     }
 }
