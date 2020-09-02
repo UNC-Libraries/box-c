@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.services.deposit.DatasetModelDecorator;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
@@ -89,8 +88,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         Model m = getWritableModel();
-        // Get the dataset for committing later, so that a new tdb dataset won't be created after deletion
-        dataset = ((DatasetModelDecorator) m).getDataset();
 
         // clean up staged files according to staging area policy
         deleteStagedFiles(m);
@@ -99,7 +96,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
         deleteCleanupFiles(m);
 
         // destroy the Jena model for this deposit
-        this.destroyModel();
+        destroyModel();
 
         // delete deposit folder
         try {

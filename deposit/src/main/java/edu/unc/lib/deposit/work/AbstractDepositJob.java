@@ -64,6 +64,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DatasetModelDecorator;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -421,6 +422,7 @@ public abstract class AbstractDepositJob implements Runnable {
     public Model getWritableModel() {
         long start = System.nanoTime();
         Model model = depositModelManager.getWriteModel(depositPID);
+        this.dataset = ((DatasetModelDecorator) model).getDataset();
         System.out.println((System.nanoTime() - start) + " getWritableModel "
                 + this.getClass().getSimpleName());
         return model;
@@ -429,17 +431,18 @@ public abstract class AbstractDepositJob implements Runnable {
     public Model getReadOnlyModel() {
         long start = System.nanoTime();
         Model model = depositModelManager.getReadModel(depositPID);
+        this.dataset = ((DatasetModelDecorator) model).getDataset();
         System.out.println((System.nanoTime() - start) + " getReadOnlyModel "
                 + this.getClass().getSimpleName());
         return model;
     }
 
     public void closeModel() {
-        depositModelManager.commit(depositPID);
+        depositModelManager.commit(depositPID, dataset, true);
     }
 
     public void destroyModel() {
-        depositModelManager.removeModel(depositPID);
+        depositModelManager.removeModel(depositPID, dataset);
     }
 
     protected void setTotalClicks(int totalClicks) {

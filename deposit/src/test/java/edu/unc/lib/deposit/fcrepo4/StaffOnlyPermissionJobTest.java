@@ -89,7 +89,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertTrue(roles.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
         assertTrue(roles.hasProperty(none.getProperty(), PUBLIC_PRINC));
 
-        assertFalse(fileResc.hasProperty(none.getProperty()));
+        Resource resultFileResc = model.getResource(fileResc.getURI());
+        assertFalse(resultFileResc.hasProperty(none.getProperty()));
     }
 
     @Test
@@ -116,7 +117,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertFalse(roles.hasProperty(none.getProperty()));
         assertFalse(roles.hasProperty(none.getProperty()));
 
-        assertFalse(fileResc.hasProperty(none.getProperty()));
+        Resource resultFileResc = model.getResource(fileResc.getURI());
+        assertFalse(resultFileResc.hasProperty(none.getProperty()));
     }
 
     private Resource addFileObject(Bag parent) throws Exception {

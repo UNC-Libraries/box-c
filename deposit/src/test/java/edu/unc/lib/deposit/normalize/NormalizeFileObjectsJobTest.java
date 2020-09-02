@@ -133,6 +133,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void fileObjectInFolderTest() throws Exception {
         Bag folderBag = addContainer(Cdr.Folder);
+        String folderUri = folderBag.getURI();
 
         Resource childResc = addFileObject(folderBag);
         childResc.addLiteral(CdrAcl.embargoUntil,
@@ -155,11 +156,13 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         // Verify that the label was set
         assertEquals(FILENAME, workResc.getProperty(CdrDeposit.label).getString());
 
+        folderBag = model.getBag(folderUri);
         // Verify that the folder contains the work, not the file
         assertEquals("Folder must contain work",
                 folderBag.iterator().next().asResource(),
                 workResc);
 
+        childResc = model.getResource(childResc.getURI());
         // Verify that ACL properties are transfered to work
         assertFalse(childResc.hasProperty(CdrAcl.embargoUntil));
         assertTrue(workResc.hasProperty(CdrAcl.embargoUntil));

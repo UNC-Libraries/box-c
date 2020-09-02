@@ -89,8 +89,6 @@ public class ViewDepositModelCommand implements Callable<Integer> {
             output.info(results);
         }
 
-        depositModelManager.commit(depositPid);
-
         return 0;
     }
 }

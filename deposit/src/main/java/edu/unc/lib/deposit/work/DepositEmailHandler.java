@@ -265,8 +265,9 @@ public class DepositEmailHandler {
 
     private String getMainObjectPidForDeposit(String depositUUID) {
         PID depositPID = PIDs.get(depositUUID);
+        Model model = null;
         try {
-            Model model = depositModelManager.getReadModel(depositPID);
+            model = depositModelManager.getReadModel(depositPID);
 
             String depositPid = depositPID.getURI();
             Bag depositBag = model.getBag(depositPid);
@@ -281,7 +282,7 @@ public class DepositEmailHandler {
                 return null;
             }
         } finally {
-            depositModelManager.end(depositPID);
+            depositModelManager.end(model);
         }
     }
 

@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.csv.CSVFormat;
@@ -47,12 +46,10 @@ import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.Striped;
 
 import edu.unc.lib.dl.exceptions.InterruptedRuntimeException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -66,13 +63,10 @@ public class DepositModelManager {
     private static final Logger log = LoggerFactory.getLogger(DepositModelManager.class);
     private static final String TDB_SUBDIR = "jena-tdb-dataset";
     private static final int DEPOSIT_LOCK_STRIPES = 5;
-    // expire cache entries after 15 minutes
-    private static final long DATASET_CACHE_TTL = 1000 * 60 * 15;
 
     private Path depositsPath;
     // Locks to prevent simultaneous attempts to get the same dataset
     private Striped<Lock> depositLocker;
-    private LoadingCache<PID, Dataset> datasetCache;
 
     /**
      * Construct a deposit model manager
@@ -102,32 +96,40 @@ public class DepositModelManager {
      */
     public void init() {
         depositLocker = Striped.lazyWeakLock(DEPOSIT_LOCK_STRIPES);
-        datasetCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(DATASET_CACHE_TTL, TimeUnit.MILLISECONDS)
-                .build(new DatasetCacheLoader());
     }
 
-    private class DatasetCacheLoader extends CacheLoader<PID, Dataset> {
-        @Override
-        public Dataset load(PID key) throws Exception {
-            long start = System.currentTimeMillis();
-            Path datasetTdbPath = depositsPath.resolve(key.getId()).resolve(TDB_SUBDIR);
-            if (Files.notExists(datasetTdbPath)) {
+    private Dataset loadDataset(PID depositPid) {
+        long start = System.currentTimeMillis();
+        Path datasetTdbPath = getDatasetPath(depositPid);
+        if (Files.notExists(datasetTdbPath)) {
+            try {
                 Files.createDirectories(datasetTdbPath);
+            } catch (IOException e) {
+                throw new RepositoryException("Failed to create dataset directory for deposit", e);
             }
-            log.info("Initiating deposit dataset at {}", datasetTdbPath);
-            Dataset dataset = TDBFactory.createDataset(datasetTdbPath.toString());
-            log.warn("Loaded dataset for {} in {}ms", key.getId(), (System.currentTimeMillis() - start));
-            return dataset;
         }
+        log.info("Initiating deposit dataset at {}", datasetTdbPath);
+        Dataset dataset = TDBFactory.createDataset(datasetTdbPath.toString());
+        log.warn("Loaded dataset for {} in {}ms", depositPid.getId(), (System.currentTimeMillis() - start));
+        return dataset;
     }
 
-    public void closeModel(PID depositPid) {
-        Dataset dataset = datasetCache.getIfPresent(depositPid);
-        if (dataset != null) {
-            dataset.close();
+    private Path getDatasetPath(PID depositPid) {
+        return depositsPath.resolve(depositPid.getId()).resolve(TDB_SUBDIR);
+    }
+
+    /**
+     * Close the model and dataset for a deposit
+     * @param depositPid
+     */
+    public void close(PID depositPid) {
+        Path datasetTdbPath = getDatasetPath(depositPid);
+        // Skip further closing if the dataset does not exist
+        if (Files.notExists(datasetTdbPath)) {
+            return;
         }
-        datasetCache.invalidate(depositPid);
+        Dataset dataset = loadDataset(depositPid);
+        dataset.close();
     }
 
     /**
@@ -143,7 +145,7 @@ public class DepositModelManager {
         try {
             lock.lockInterruptibly();
 
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            Dataset dataset = loadDataset(depositPid);
             return getWriteModel(depositUri, dataset);
         } catch (InterruptedException e) {
             throw new InterruptedRuntimeException(e);
@@ -185,7 +187,7 @@ public class DepositModelManager {
         try {
             lock.lockInterruptibly();
 
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            Dataset dataset = loadDataset(depositPid);
             dataset.begin(ReadWrite.READ);
             return new DatasetModelDecorator(dataset.getNamedModel(depositUri), dataset);
         } catch (InterruptedException e) {
@@ -203,20 +205,24 @@ public class DepositModelManager {
     }
 
     /**
-     * Removes the model for a deposit from the manager
+     * Removes and closes the model for a deposit from the manager
      *
      * @param depositPid
      */
     public synchronized void removeModel(PID depositPid) {
+        Dataset dataset = loadDataset(depositPid);
+        removeModel(depositPid, dataset);
+    }
+
+    public void removeModel(PID depositPid, Dataset dataset) {
         String uri = depositPid.getURI();
-        Dataset dataset = datasetCache.getUnchecked(depositPid);
         if (!dataset.isInTransaction()) {
             dataset.begin(ReadWrite.WRITE);
         }
         dataset.removeNamedModel(uri);
         dataset.commit();
         dataset.end();
-        datasetCache.invalidate(depositPid);
+        dataset.close();
     }
 
     /**
@@ -245,7 +251,7 @@ public class DepositModelManager {
         try {
             lock.lockInterruptibly();
 
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            Dataset dataset = loadDataset(depositPid);
 
             Model depositModel = getWriteModel(depositUri, dataset);
             try {
@@ -283,7 +289,7 @@ public class DepositModelManager {
         try {
             lock.lockInterruptibly();
 
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            Dataset dataset = loadDataset(depositPid);
             Model depositModel = getWriteModel(depositUri, dataset);
             try {
                 UpdateAction.parseExecute(query, depositModel);
@@ -335,15 +341,6 @@ public class DepositModelManager {
     }
 
     /**
-     * Commit changes to the dataset for the specified deposit,
-     * ending the transaction.
-     * @param depositPid
-     */
-    public void commit(PID depositPid) {
-        commit(depositPid, true);
-    }
-
-    /**
      * Commit changes to the dataset
      * @param depositPid pid of the deposit
      * @param dataset dataset to commit, or null, in which case the dataset will be retrieved
@@ -369,7 +366,7 @@ public class DepositModelManager {
         try {
             lock.lockInterruptibly();
 
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
+            Dataset dataset = loadDataset(depositPid);
             commit(dataset, endTx);
         } catch (InterruptedException e) {
             throw new InterruptedRuntimeException(e);
@@ -401,8 +398,8 @@ public class DepositModelManager {
             try {
                 lock.lockInterruptibly();
 
-                Dataset cachedDataset = datasetCache.getUnchecked(depositPid);
-                commitOrAbort(cachedDataset, abort);
+                Dataset loadedDataset = loadDataset(depositPid);
+                commitOrAbort(loadedDataset, abort);
             } catch (InterruptedException e) {
                 throw new InterruptedRuntimeException(e);
             } finally {
@@ -425,23 +422,14 @@ public class DepositModelManager {
     }
 
     /**
-     * End a transaction for a deposit model
-     * @param depositPid pid of the deposit
+     * End a transaction on the dataset associated with the given model
+     * @param model must be of type DatasetModelDecorator
      */
-    public void end(PID depositPid) {
-        String depositUri = depositPid.getURI();
-
-        Lock lock = depositLocker.get(depositUri);
-        try {
-            lock.lockInterruptibly();
-
-            Dataset dataset = datasetCache.getUnchecked(depositPid);
-            dataset.end();
-        } catch (InterruptedException e) {
-            throw new InterruptedRuntimeException(e);
-        } finally {
-            lock.unlock();
+    public void end(Model model) {
+        if (!(model instanceof DatasetModelDecorator)) {
+            throw new IllegalArgumentException("Must provide a DatasetModelDecorator");
         }
+        ((DatasetModelDecorator) model).getDataset().end();
     }
 
     public void setDepositsPath(Path depositsPath) {
