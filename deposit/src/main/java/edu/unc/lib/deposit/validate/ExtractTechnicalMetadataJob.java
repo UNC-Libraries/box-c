@@ -138,6 +138,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
                 // Store the premis report to file
                 writePremisReport(objPid, premisDoc);
+                addClicks(1);
             } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
@@ -145,6 +146,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                         objPid, xmlOutputter.outputString(fitsDoc));
             }
         }
+
+        setTotalClicks(stagingList.size());
     }
 
     /**
@@ -317,8 +320,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      * Overrides the mimetype for this object in the deposit model when the FITS
      * generated value is preferred.
      *
-     * @param objPid
-     * @param model
+     * @param objResc
      * @param fitsMimetype
      */
     private void overrideDepositMimetype(Resource objResc, String fitsMimetype) {
@@ -365,7 +367,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      *
      * @param objResc
      * @param fitsDoc
-     * @param premisDoc
+     * @param premisObjCharsEl
      */
     private void addFileinfoToReport(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
         Element fileinfoEl = fitsDoc.getRootElement().getChild("fileinfo", FITS_NS);

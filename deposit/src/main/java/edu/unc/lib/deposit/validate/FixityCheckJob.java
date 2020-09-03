@@ -92,6 +92,7 @@ public class FixityCheckJob extends AbstractDepositJob {
                 recordDigestsForResource(rescPid, objResc, digestWrapper.getDigests());
                 markObjectCompleted(rescPid);
                 log.debug("Completed fixity recording for {}", stagedUri);
+                addClicks(1);
             } catch (InvalidChecksumException e) {
                 failJob(String.format("Fixity check failed for %s belonging to %s",
                         stagedUri, objResc.getURI()),
@@ -100,6 +101,8 @@ public class FixityCheckJob extends AbstractDepositJob {
                 failJob(e, "Failed to read file {0} for fixity check", stagedUri);
             }
         }
+
+        setTotalClicks(stagingList.size());
     }
 
     private Map<DigestAlgorithm, String> getDigestsForResource(Resource resc) {

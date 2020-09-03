@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -114,6 +116,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         assertTrue(fileResc.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
 
         assertChecksumEvent(filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -133,6 +138,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         assertTrue(fileResc.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
 
         assertChecksumEvent(filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -174,6 +182,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         assertChecksumEvent(filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
         assertChecksumEvent(filePid, DigestAlgorithm.MD5, CONTENT1_MD5);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -242,6 +253,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
         assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -284,6 +298,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
         assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -326,6 +343,9 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid1.getQualifiedId());
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid2.getQualifiedId());
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test

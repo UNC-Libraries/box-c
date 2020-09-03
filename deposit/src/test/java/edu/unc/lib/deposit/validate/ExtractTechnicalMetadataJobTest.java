@@ -23,7 +23,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -129,6 +131,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
         job.initJob();
 
         model = job.getWritableModel();
@@ -182,7 +185,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     public void exifSymlinkConflictMimetypeTest() throws Exception {
         respondWithFile("/fitsReports/exifSymlinkConflict.xml");
 
-        // Providing octet stream mimetype to be overrridden
+        // Providing octet stream mimetype to be overridden
         PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
         job.closeModel();
 
@@ -326,6 +329,9 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         assertEquals("Mimetype not set in deposit model", expectedMimetype,
                 fileResc.getProperty(CdrDeposit.mimetype).getString());
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String md5sum) {
