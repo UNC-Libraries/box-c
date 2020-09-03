@@ -126,9 +126,9 @@ public class DepositModelManager {
                 throw new RepositoryException("Failed to create dataset directory for deposit", e);
             }
         }
-        log.info("Initiating deposit dataset at {}", datasetTdbPath);
         Dataset dataset = TDBFactory.createDataset(datasetTdbPath.toString());
-        log.warn("Loaded dataset for {} in {}ms", depositPid.getId(), (System.currentTimeMillis() - start));
+        log.debug("Loaded dataset for {} at {} in {}ms",
+                depositPid.getId(), datasetTdbPath, (System.currentTimeMillis() - start));
         return dataset;
     }
 
@@ -198,7 +198,7 @@ public class DepositModelManager {
             }
             throw e;
         } finally {
-            log.warn("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+            log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
         }
     }
 
@@ -229,7 +229,7 @@ public class DepositModelManager {
             throw e;
         } finally {
             lock.unlock();
-            log.warn("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
+            log.debug("Created write model for {} in {}ms", depositUri, (System.currentTimeMillis() - start));
         }
     }
 

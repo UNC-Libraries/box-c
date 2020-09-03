@@ -420,20 +420,14 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public Model getWritableModel() {
-        long start = System.nanoTime();
         Model model = depositModelManager.getWriteModel(depositPID);
         this.dataset = ((DatasetModelDecorator) model).getDataset();
-        System.out.println((System.nanoTime() - start) + " getWritableModel "
-                + this.getClass().getSimpleName());
         return model;
     }
 
     public Model getReadOnlyModel() {
-        long start = System.nanoTime();
         Model model = depositModelManager.getReadModel(depositPID);
         this.dataset = ((DatasetModelDecorator) model).getDataset();
-        System.out.println((System.nanoTime() - start) + " getReadOnlyModel "
-                + this.getClass().getSimpleName());
         return model;
     }
 
