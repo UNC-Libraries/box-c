@@ -208,7 +208,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         log.debug("Creating content AIPS for deposit {}", getDepositPID());
 
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
 
         PID destPid = getDestinationPID();
 
