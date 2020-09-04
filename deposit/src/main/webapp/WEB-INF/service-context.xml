@@ -76,7 +76,7 @@
     </bean>
     
     <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
-            init-method="cleanupEmptyDatasets">
+            destroy-method="close">
         <constructor-arg value="${deposits.tdb.dir}" />
     </bean>
 

@@ -282,7 +282,7 @@ public class DepositEmailHandler {
                 return null;
             }
         } finally {
-            depositModelManager.end(model);
+            depositModelManager.end();
         }
     }
 

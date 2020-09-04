@@ -130,7 +130,7 @@ public class AbstractDepositJobTest {
         depositDir.mkdir();
         depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 
-        depositModelManager = new DepositModelManager(depositsDirectory.toPath());
+        depositModelManager = DepositModelManager.inMemoryManager();
 
         when(txManager.startTransaction()).thenReturn(tx);
         doAnswer(new Answer<Void>() {

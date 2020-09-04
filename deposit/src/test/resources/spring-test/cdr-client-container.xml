@@ -151,7 +151,8 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager">
+    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+            factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
     <bean id="redisServer" class="redis.embedded.RedisServer" init-method="start" destroy-method="stop">

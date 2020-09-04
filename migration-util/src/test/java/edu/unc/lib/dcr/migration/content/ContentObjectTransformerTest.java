@@ -152,7 +152,7 @@ public class ContentObjectTransformerTest {
         startingPid = pidMinter.mintContentPid();
 
         depositPid = pidMinter.mintDepositRecordPid();
-        modelManager = new DepositModelManager(depositBasePath.toString());
+        modelManager = DepositModelManager.inMemoryManager();
         directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
         originalDepositPid = pidMinter.mintDepositRecordPid();

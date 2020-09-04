@@ -39,7 +39,6 @@ import java.util.Map.Entry;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -64,7 +63,6 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.deposit.DatasetModelDecorator;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -136,7 +134,6 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Autowired
     private DepositModelManager depositModelManager;
-    protected Dataset dataset;
 
     public AbstractDepositJob() {
     }
@@ -166,12 +163,12 @@ public abstract class AbstractDepositJob implements Runnable {
                 interruptJobIfStopped();
 
                 runJob();
-                depositModelManager.commit(depositPID, dataset, true);
+                depositModelManager.commit();
             } catch (Exception e) {
                 // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
                 Thread.interrupted();
 
-                depositModelManager.commitOrAbort(depositPID, dataset, rollbackDatasetOnFailure);
+                depositModelManager.commitOrAbort(rollbackDatasetOnFailure);
                 throw e;
             }
         } catch (Exception e) {
@@ -420,27 +417,23 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public Model getWritableModel() {
-        Model model = depositModelManager.getWriteModel(depositPID);
-        this.dataset = ((DatasetModelDecorator) model).getDataset();
-        return model;
+        return depositModelManager.getWriteModel(depositPID);
     }
 
     public Model getReadOnlyModel() {
-        Model model = depositModelManager.getReadModel(depositPID);
-        this.dataset = ((DatasetModelDecorator) model).getDataset();
-        return model;
+        return depositModelManager.getReadModel(depositPID);
     }
 
     public void commit(Runnable runnable) {
-        depositModelManager.commit(dataset, runnable);
+        depositModelManager.commit(runnable, true);
     }
 
     public void closeModel() {
-        depositModelManager.commit(depositPID, dataset, true);
+        depositModelManager.commit();
     }
 
     public void destroyModel() {
-        depositModelManager.removeModel(depositPID, dataset);
+        depositModelManager.removeModel(depositPID);
     }
 
     protected void setTotalClicks(int totalClicks) {
