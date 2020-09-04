@@ -102,7 +102,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
 
         Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
         assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
@@ -62,7 +63,8 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
         // deposit RDF bag
         PID depositPID = getDepositPID();
-        Model model = getWritableModel();
+        Model depModel = getReadOnlyModel();
+        Model model = ModelFactory.createDefaultModel().add(depModel);
         Bag depositBag = model.createBag(depositPID.getURI().toString());
 
         // Generate a uuid for the main object
@@ -81,6 +83,8 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
         // Store main resource as child of the deposit
         depositBag.add(mainResource);
+
+        commit(() -> depModel.add(model));
 
         if (!this.getDepositDirectory().exists()) {
             log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());

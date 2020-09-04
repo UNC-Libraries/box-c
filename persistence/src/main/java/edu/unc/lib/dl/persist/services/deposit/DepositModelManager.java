@@ -250,7 +250,13 @@ public class DepositModelManager {
      */
     public void removeModel(PID depositPid, Dataset dataset) {
         String uri = depositPid.getURI();
-        if (!dataset.isInTransaction()) {
+        // Start a write transaction if one isn't already active
+        ReadWrite txType = dataset.transactionMode();
+        if (!ReadWrite.WRITE.equals(txType)) {
+            // End a read transaction if active
+            if (txType != null) {
+                dataset.end();
+            }
             dataset.begin(ReadWrite.WRITE);
         }
         dataset.removeNamedModel(uri);

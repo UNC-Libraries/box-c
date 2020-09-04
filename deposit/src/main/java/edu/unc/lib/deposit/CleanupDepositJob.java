@@ -87,7 +87,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model m = getWritableModel();
+        Model m = getReadOnlyModel();
 
         // clean up staged files according to staging area policy
         deleteStagedFiles(m);

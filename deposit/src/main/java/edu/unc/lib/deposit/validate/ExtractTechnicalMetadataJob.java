@@ -107,7 +107,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
 
         // Get the list of files that need processing
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
@@ -132,7 +132,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 // Record the format info for this file
                 addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
 
-                addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
+                addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
                 addFitsResults(premisDoc, fitsDoc);
 
@@ -332,14 +332,16 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             }
         }
 
-        // Not using a provided mimetype, so use the FITS mimetype
-        if (isMimetypeMeaningful(fitsMimetype)) {
-            objResc.removeAll(mimetype)
-                    .addProperty(mimetype, fitsMimetype);
-        } else {
-            objResc.removeAll(mimetype)
-                    .addProperty(mimetype, "application/octet-stream");
-        }
+        commit(() -> {
+            // Not using a provided mimetype, so use the FITS mimetype
+            if (isMimetypeMeaningful(fitsMimetype)) {
+                objResc.removeAll(mimetype)
+                        .addProperty(mimetype, fitsMimetype);
+            } else {
+                objResc.removeAll(mimetype)
+                        .addProperty(mimetype, "application/octet-stream");
+            }
+        });
     }
 
     /**
@@ -363,11 +365,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Add file info, including md5 checksum and filesize to the premis report and
      *
-     * @param objResc
      * @param fitsDoc
      * @param premisDoc
      */
-    private void addFileinfoToReport(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
+    private void addFileinfoToReport(Document fitsDoc, Element premisObjCharsEl) {
         Element fileinfoEl = fitsDoc.getRootElement().getChild("fileinfo", FITS_NS);
 
         // Add file size and composition level
