@@ -431,6 +431,10 @@ public abstract class AbstractDepositJob implements Runnable {
         return model;
     }
 
+    public void commit(Runnable runnable) {
+        depositModelManager.commit(dataset, runnable);
+    }
+
     public void closeModel() {
         depositModelManager.commit(depositPID, dataset, true);
     }

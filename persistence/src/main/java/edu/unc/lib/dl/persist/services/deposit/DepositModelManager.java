@@ -416,6 +416,37 @@ public class DepositModelManager {
         }
     }
 
+    /**
+     * Perform the provided actions and commits the changes to the dataset
+     * @param dataset
+     * @param actions Runnable which performs actions on the dataset to commit
+     */
+    public void commit(Dataset dataset, Runnable actions) {
+        commit(dataset, actions, true);
+    }
+
+    /**
+     * Perform the provided actions and commits the changes to the dataset
+     * @param dataset
+     * @param actions Runnable which performs actions on the dataset to commit
+     * @param inTx if true, the dataset will be assumed to already be in a read transaction
+     */
+    public void commit(Dataset dataset, Runnable actions, boolean inTx) {
+        try {
+            if (inTx) {
+                dataset.end();
+            }
+            dataset.begin(ReadWrite.WRITE);
+            actions.run();
+            dataset.commit();
+            if (inTx) {
+                dataset.begin(ReadWrite.READ);
+            }
+        } catch (Exception e) {
+            throw new RepositoryException("Failed to commit to deposit model", e);
+        }
+    }
+
     private void commit(Dataset dataset, boolean endTx) {
         if (dataset.isInTransaction()) {
             dataset.commit();
