@@ -188,7 +188,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(depositBaseDir.toPath());
+        DepositModelManager modelManager = new DepositModelManager(tdbDir.toString());
         Model depModel = modelManager.getReadModel(depositPid);
 
         Resource resultFolderResc = depModel.getResource(bxc3Pid.getRepositoryPath());
