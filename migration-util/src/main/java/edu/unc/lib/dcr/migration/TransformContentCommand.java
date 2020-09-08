@@ -79,7 +79,7 @@ public class TransformContentCommand implements Callable<Integer> {
 
         output.info("Populating deposit: " + depositPid.getId());
 
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.depositBaseDir.toString());
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
         DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
                 depositPid, parentCommand.depositBaseDir, options.isHashNesting());
 

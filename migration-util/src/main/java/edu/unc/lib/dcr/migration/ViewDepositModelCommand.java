@@ -71,7 +71,7 @@ public class ViewDepositModelCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
 
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.depositBaseDir);
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
 
         if (sparqlQuery == null) {
             RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
@@ -88,6 +88,8 @@ public class ViewDepositModelCommand implements Callable<Integer> {
             String results = depositModelManager.performQuery(depositPid, queryString);
             output.info(results);
         }
+
+        depositModelManager.commit();
 
         return 0;
     }

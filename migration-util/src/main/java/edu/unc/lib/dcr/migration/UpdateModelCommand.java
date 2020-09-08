@@ -63,7 +63,7 @@ public class UpdateModelCommand implements Callable<Integer> {
         long start = System.currentTimeMillis();
 
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.depositBaseDir);
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
 
         String queryString;
         if (sparqlQuery.equals(STDIN_PATH)) {

@@ -62,7 +62,6 @@ import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.metrics.CounterFactory;
 import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
@@ -599,7 +598,6 @@ public class DepositSupervisor implements WorkerListener {
         }
 
         depositUUID = (String) job.getArgs()[1];
-        PID depositPid = PIDs.get(PIDConstants.DEPOSITS_QUALIFIER, depositUUID);
         Map<String, String> status = this.depositStatusFactory.get(depositUUID);
 
         j = (AbstractDepositJob) runner;
@@ -946,9 +944,8 @@ public class DepositSupervisor implements WorkerListener {
     private void sendDepositCompleteEvent(String depositUUID) {
         Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
-        Model model = null;
         try {
-            model = depositModelManager.getReadModel(depositPid);
+            Model model = depositModelManager.getReadModel(depositPid);
 
             Bag depositBag = model.getBag(depositPid.getRepositoryPath());
 

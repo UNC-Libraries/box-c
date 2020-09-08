@@ -51,8 +51,8 @@ import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * Manager which provides synchronized access to a common deposit model, allowing
- * multiple transformation jobs to write to it at the same time.
+ * Manager which provides access to a common deposit dataset used for
+ * deposit models.
  *
  * @author bbpennel
  */
@@ -82,13 +82,13 @@ public class DepositModelManager {
         loadDataset();
     }
 
-    /**
-     * Construct an in-memory deposit model manager for testing purposes
-     */
     private DepositModelManager() {
         dataset = TDB2Factory.createDataset();
     }
 
+    /**
+     * Construct an in-memory deposit model manager for testing purposes
+     */
     public static DepositModelManager inMemoryManager() {
         return new DepositModelManager();
     }

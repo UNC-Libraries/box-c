@@ -264,10 +264,10 @@ public class DepositEmailHandler {
     }
 
     private String getMainObjectPidForDeposit(String depositUUID) {
-        PID depositPID = PIDs.get(depositUUID);
-        Model model = null;
         try {
-            model = depositModelManager.getReadModel(depositPID);
+            PID depositPID = PIDs.get(depositUUID);
+
+            Model model = depositModelManager.getReadModel(depositPID);
 
             String depositPid = depositPID.getURI();
             Bag depositBag = model.getBag(depositPid);
