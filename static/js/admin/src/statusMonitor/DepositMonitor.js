@@ -107,22 +107,17 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 		}
 
 		if ("jobs" in results) {
-			const jobsWithCounts = [
-				"ValidateFileAvailabilityJob",
-				"VirusScanJob",
-				"FixityCheckJob",
-				"ExtractTechnicalMetadataJob",
-				"IngestContentObjectsJob"
-			];
-
 			for (var index in results.jobs) {
 				var job = results.jobs[index];
 				var jobName = job.name.substring(job.name.lastIndexOf(".") + 1);
 				
 				job["shortName"] = jobName;
 
-				if (jobsWithCounts.includes(jobName) && "total" in job) {
+				var hasCount = job.num > 0;
+				if (hasCount && "total" in job) {
 					job["completion"] = job.num + " / " + job.total;
+				} else if (hasCount) {
+					job["completion"] = job.num;
 				}
 				var etime = job.endtime? (job.endtime - job.starttime) : 0;
 				if(etime != 0 ) job["time"] = etime + "ms";

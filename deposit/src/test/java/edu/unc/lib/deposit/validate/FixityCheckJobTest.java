@@ -299,7 +299,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
         assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
@@ -344,7 +344,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid1.getQualifiedId());
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid2.getQualifiedId());
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 

@@ -27,6 +27,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -173,6 +176,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     // Ensure that interruptions come through as JobInterruptedExceptions
@@ -241,6 +247,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -277,6 +286,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource postFileResc2 = model.getResource(fileResc2.getURI());
         assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
         assertFitsFileTransferred(postFileResc2);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(4));
+        verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -309,6 +321,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertManifestTranferred(manifestStorageUris, manifest1Name);
         assertManifestTranferred(manifestStorageUris, manifest2Name);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -349,6 +364,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
         assertFitsFileTransferred(postFileResc2);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(4));
+        verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test

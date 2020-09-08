@@ -70,6 +70,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
 
+    private int ingestedObjCount = 0;
+
     /**
      *
      */
@@ -94,6 +96,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         // All objects in deposit should have the same destination, so pull storage loc from deposit record
         try (BinaryTransferSession transferSession = getTransferSession(model)) {
             transferBinaries(depositBag, transferSession);
+            setTotalClicks(ingestedObjCount);
         }
     }
 
@@ -212,5 +215,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
         log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
         resc.addLiteral(storageProperty, storageUri.toString());
+        addClicks(1);
+        ingestedObjCount++;
     }
 }

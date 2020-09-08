@@ -111,6 +111,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
         // Get the list of files that need processing
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
+        setTotalClicks(stagingList.size());
 
         for (Entry<PID, String> stagedPair : stagingList) {
             interruptJobIfStopped();
@@ -146,8 +147,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                         objPid, xmlOutputter.outputString(fitsDoc));
             }
         }
-
-        setTotalClicks(stagingList.size());
     }
 
     /**

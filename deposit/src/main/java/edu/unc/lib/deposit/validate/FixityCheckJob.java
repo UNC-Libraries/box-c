@@ -69,6 +69,8 @@ public class FixityCheckJob extends AbstractDepositJob {
         Model model = getWritableModel();
 
         List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
+        setTotalClicks(stagingList.size());
+
         for (Entry<PID, String> stagingEntry : stagingList) {
             PID rescPid = stagingEntry.getKey();
             // Skip already checked files
@@ -101,8 +103,6 @@ public class FixityCheckJob extends AbstractDepositJob {
                 failJob(e, "Failed to read file {0} for fixity check", stagedUri);
             }
         }
-
-        setTotalClicks(stagingList.size());
     }
 
     private Map<DigestAlgorithm, String> getDigestsForResource(Resource resc) {
