@@ -74,7 +74,7 @@ public class DepositModelManager {
 
     /**
      * Construct and initialize a deposit model manager
-     * @param depositsPtdbBasePathath
+     * @param tdbBasePath
      */
     public DepositModelManager(Path tdbBasePath) {
         Objects.requireNonNull(tdbBasePath, "Must provide a base path for TDB dataset");
