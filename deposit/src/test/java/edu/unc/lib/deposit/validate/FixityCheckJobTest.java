@@ -87,7 +87,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         job = new FixityCheckJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "premisLoggerFactory", premisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);

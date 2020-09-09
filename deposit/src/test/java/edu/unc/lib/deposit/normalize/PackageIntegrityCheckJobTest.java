@@ -36,44 +36,44 @@ import edu.unc.lib.dl.util.SpringJobFactory;
 public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
 
     private PackageIntegrityCheckJob job;
-    
+
     @Before
     public void setup() {
         job = new PackageIntegrityCheckJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositsDirectory", depositsDirectory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         job.init();
     }
-    
+
     @Autowired
     SpringJobFactory springJobFactory = null;
-    
+
     @Test
     public void test() {
         DepositTestUtils.makeTestDir(
                 depositsDirectory,
                 depositUUID, new File("src/test/resources/depositFileZipped.zip"));
-        
+
         Map<String, String> status = new HashMap<>();
         status.put(DepositField.depositMd5.name(), "c949138500f67e8617ac9968d2632d4e");
         status.put(DepositField.fileName.name(), "cdrMETS.zip");
         when(depositStatusFactory.get(anyString())).thenReturn(status);
-        
+
         job.run();
     }
-    
+
     @Test(expected = JobFailedException.class)
     public void testFileCorrupted() {
         DepositTestUtils.makeTestDir(
                 depositsDirectory,
                 depositUUID, new File("src/test/resources/depositFileZipped.zip"));
-        
+
         Map<String, String> status = new HashMap<>();
         status.put(DepositField.depositMd5.name(), "a949138500f67e8617ac9968d2632d4e");
         status.put(DepositField.fileName.name(), "cdrMETS.zip");
         when(depositStatusFactory.get(anyString())).thenReturn(status);
-        
+
         job.run();
     }
 }

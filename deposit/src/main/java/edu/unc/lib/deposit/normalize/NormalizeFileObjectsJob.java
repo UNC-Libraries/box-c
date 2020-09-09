@@ -65,7 +65,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getURI().toString());
 
         normalizeChildren(depositBag);
@@ -85,7 +85,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
             }
             if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
                 // Found standalone fileObject, wrap with work
-                wrapWithWork(parent, childResc);
+                commit(() -> wrapWithWork(parent, childResc));
             } else {
                 // Found other type, traverse
                 normalizeChildren(childResc);

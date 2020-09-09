@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.dl.rdf.Cdr;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -35,8 +34,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * @author lfarrell
@@ -55,7 +55,7 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.init();
@@ -89,7 +89,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertTrue(roles.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
         assertTrue(roles.hasProperty(none.getProperty(), PUBLIC_PRINC));
 
-        assertFalse(fileResc.hasProperty(none.getProperty()));
+        Resource resultFileResc = model.getResource(fileResc.getURI());
+        assertFalse(resultFileResc.hasProperty(none.getProperty()));
     }
 
     @Test
@@ -116,7 +117,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         assertFalse(roles.hasProperty(none.getProperty()));
         assertFalse(roles.hasProperty(none.getProperty()));
 
-        assertFalse(fileResc.hasProperty(none.getProperty()));
+        Resource resultFileResc = model.getResource(fileResc.getURI());
+        assertFalse(resultFileResc.hasProperty(none.getProperty()));
     }
 
     private Resource addFileObject(Bag parent) throws Exception {

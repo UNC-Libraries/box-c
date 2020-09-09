@@ -87,7 +87,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "aclService", aclService);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "repoObjLoader", repoObjLoader);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
 
         depModel = job.getWritableModel();
         depBag = depModel.createBag(depositPid.getRepositoryPath());

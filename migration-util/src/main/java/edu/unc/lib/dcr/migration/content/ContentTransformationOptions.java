@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dcr.migration.content;
 
+import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Option;
 
 /**
@@ -51,6 +52,8 @@ public class ContentTransformationOptions {
     @Option(names = {"--deposit-into"},
             description = "Submits the transformed content for deposit to the provided container UUID")
     private String depositInto;
+
+    private PID depositPid;
 
     public boolean isTopLevelAsUnit() {
         return topLevelAsUnit;
@@ -106,5 +109,13 @@ public class ContentTransformationOptions {
 
     public void setDepositInto(String depositInto) {
         this.depositInto = depositInto;
+    }
+
+    public PID getDepositPid() {
+        return depositPid;
+    }
+
+    public void setDepositPid(PID depositPid) {
+        this.depositPid = depositPid;
     }
 }

@@ -28,12 +28,10 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,8 +82,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         destResc = destModel.getResource(destPid.getRepositoryPath());
         when(destObj.getResource()).thenReturn(destResc);
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new ValidateContentModelJob();
         job.setAclValidator(aclValidator);
         job.setJobUUID(jobUUID);
@@ -94,7 +90,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.setDepositStatusFactory(depositStatusFactory);
         job.setRepositoryObjectLoader(repoObjectLoader);
         setField(job, "pidMinter", pidMinter);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         job.init();
 
         depositPid = job.getDepositPID();

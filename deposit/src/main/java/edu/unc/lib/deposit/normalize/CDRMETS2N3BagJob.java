@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
         Path sourceDir = Paths.get(sourceUri).getParent();
 
-        Model model = getWritableModel();
+        Model depModel = getReadOnlyModel();
+        Model model = ModelFactory.createDefaultModel().add(depModel);
         CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
         LOG.info("Extractor initialized");
         extractor.addArrangement(model);
@@ -95,6 +97,8 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
                         PackagingType.BAG_WITH_N3.getUri())
                 .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
+
+        commit(() -> depModel.add(model));
     }
 
 }

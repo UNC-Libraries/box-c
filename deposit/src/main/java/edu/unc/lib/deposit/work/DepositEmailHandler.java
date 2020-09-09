@@ -25,8 +25,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -43,6 +41,7 @@ import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
@@ -71,7 +70,7 @@ public class DepositEmailHandler {
     private Template failedTextTemplate = null;
 
     @Autowired
-    private Dataset dataset;
+    protected DepositModelManager depositModelManager;
 
     @Autowired
     private AccessControlService aclService;
@@ -268,9 +267,7 @@ public class DepositEmailHandler {
         try {
             PID depositPID = PIDs.get(depositUUID);
 
-            String uri = depositPID.getURI();
-            this.dataset.begin(ReadWrite.READ);
-            Model model = this.dataset.getNamedModel(uri);
+            Model model = depositModelManager.getReadModel(depositPID);
 
             String depositPid = depositPID.getURI();
             Bag depositBag = model.getBag(depositPid);
@@ -285,7 +282,7 @@ public class DepositEmailHandler {
                 return null;
             }
         } finally {
-            this.dataset.end();
+            depositModelManager.end();
         }
     }
 

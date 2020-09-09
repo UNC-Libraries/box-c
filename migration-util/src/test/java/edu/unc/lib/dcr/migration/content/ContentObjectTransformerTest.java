@@ -53,7 +53,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -79,7 +78,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
@@ -93,6 +91,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -146,7 +145,6 @@ public class ContentObjectTransformerTest {
 
         datastreamsPath = tmpFolder.newFolder("datastreams").toPath();
         objectsPath = tmpFolder.newFolder("objects").toPath();
-        File tdbDir = tmpFolder.newFolder("tdb");
         depositBasePath = tmpFolder.newFolder("deposits").toPath();
 
         pidMinter = new RepositoryPIDMinter();
@@ -154,7 +152,7 @@ public class ContentObjectTransformerTest {
         startingPid = pidMinter.mintContentPid();
 
         depositPid = pidMinter.mintDepositRecordPid();
-        modelManager = new DepositModelManager(depositPid, tdbDir.toString());
+        modelManager = DepositModelManager.inMemoryManager();
         directoryManager = new DepositDirectoryManager(depositPid, depositBasePath, false);
 
         originalDepositPid = pidMinter.mintDepositRecordPid();
@@ -164,6 +162,7 @@ public class ContentObjectTransformerTest {
 
         options = new ContentTransformationOptions();
         options.setTopLevelAsUnit(true);
+        options.setDepositPid(depositPid);
 
         manager = new ContentObjectTransformerManager();
         manager.setPathIndex(pathIndex);
@@ -192,7 +191,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(resc.hasProperty(RDF.type, Cdr.Folder));
@@ -234,7 +233,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
 
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
@@ -279,7 +278,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag depositBag = depModel.getBag(depositPid.getRepositoryPath());
         List<RDFNode> depChildren = depositBag.iterator().toList();
         assertEquals(1, depChildren.size());
@@ -325,7 +324,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
 
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
@@ -352,7 +351,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(resc.hasProperty(RDF.type, Cdr.Folder));
@@ -375,7 +374,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
@@ -401,7 +400,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
@@ -429,7 +428,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
         assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
 
@@ -485,7 +484,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -536,7 +535,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag depositBag = depModel.getBag(depositPid.getRepositoryPath());
         List<RDFNode> depChildren = depositBag.iterator().toList();
         assertEquals(1, depChildren.size());
@@ -581,7 +580,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -627,7 +626,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -666,7 +665,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         // original pid should now refer to a newly generated work
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         List<RDFNode> bagChildren = workBag.iterator().toList();
@@ -727,7 +726,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         // original pid should now refer to a newly generated work
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         List<RDFNode> bagChildren = workBag.iterator().toList();
@@ -765,7 +764,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource unitResc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(unitResc.hasProperty(RDF.type, Cdr.AdminUnit));
@@ -802,7 +801,7 @@ public class ContentObjectTransformerTest {
 
         service.perform();
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
 
         assertTrue(resc.hasProperty(RDF.type, Cdr.Collection));
@@ -828,7 +827,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals("Transformation should contain failure", 1, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         assertDoesNotContainSubject(depModel, startingPid);
     }
 
@@ -853,7 +852,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         assertDoesNotContainSubject(depModel, startingPid);
     }
 
@@ -880,7 +879,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
 
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));
@@ -929,7 +928,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag workBag = depModel.getBag(startingPid.getRepositoryPath());
         Resource child1Resc = depModel.getResource(child1Pid.getRepositoryPath());
 
@@ -975,7 +974,7 @@ public class ContentObjectTransformerTest {
         int result = service.perform();
         assertEquals(0, result);
 
-        Model depModel = modelManager.getReadModel();
+        Model depModel = modelManager.getReadModel(depositPid);
         Bag parentBag = depModel.getBag(startingPid.getRepositoryPath());
 
         assertTrue(parentBag.hasProperty(RDF.type, Cdr.Folder));

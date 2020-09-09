@@ -66,7 +66,7 @@ public class FixityCheckJob extends AbstractDepositJob {
     @Override
     public void runJob() {
         log.debug("Performing FixityCheckJob for deposit {}", depositUUID);
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
 
         List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
         for (Entry<PID, String> stagingEntry : stagingList) {
@@ -115,14 +115,16 @@ public class FixityCheckJob extends AbstractDepositJob {
     private void recordDigestsForResource(PID pid, Resource resc, Map<DigestAlgorithm, String> digests) {
         List<String> details = new ArrayList<>();
         // Store newly calculate digests into deposit model
-        digests.forEach((alg, digest) -> {
-            if (resc.hasProperty(alg.getDepositProperty())) {
-                log.debug("{} fixity check for {} passed with value {}", alg.getName(), resc.getURI(), digest);
-            } else {
-                log.debug("Storing {} digest for {} with value {}", alg.getName(), resc.getURI(), digest);
-                resc.addLiteral(alg.getDepositProperty(), digest);
-            }
-            details.add(alg.getName().toUpperCase() + " checksum calculated: " + digest);
+        commit(() -> {
+            digests.forEach((alg, digest) -> {
+                if (resc.hasProperty(alg.getDepositProperty())) {
+                    log.debug("{} fixity check for {} passed with value {}", alg.getName(), resc.getURI(), digest);
+                } else {
+                    log.debug("Storing {} digest for {} with value {}", alg.getName(), resc.getURI(), digest);
+                    resc.addLiteral(alg.getDepositProperty(), digest);
+                }
+                details.add(alg.getName().toUpperCase() + " checksum calculated: " + digest);
+            });
         });
 
         // Store event for calculation of checksums

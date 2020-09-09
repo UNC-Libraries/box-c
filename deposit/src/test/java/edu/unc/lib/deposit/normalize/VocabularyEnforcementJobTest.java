@@ -33,11 +33,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -74,8 +72,6 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
     @Before
     public void setup() throws Exception {
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new VocabularyEnforcementJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
@@ -84,7 +80,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "vocabManager", vocabManager);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
 
         PID depositPid = pidMinter.mintContentPid();
         depositStatus = new HashMap<>();

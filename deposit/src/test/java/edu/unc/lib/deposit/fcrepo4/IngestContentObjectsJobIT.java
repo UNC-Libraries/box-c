@@ -165,7 +165,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "pidMinter", pidMinter);
         setField(job, "aclService", aclService);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "txManager", txManager);

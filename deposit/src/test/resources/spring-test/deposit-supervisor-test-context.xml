@@ -12,7 +12,8 @@
 
     <context:property-placeholder />
     
-    <bean id="dataSet" class="org.apache.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
+    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+            factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
