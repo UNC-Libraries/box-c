@@ -29,12 +29,10 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,14 +74,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new DirectoryToBagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
 
@@ -106,7 +102,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
 
         Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
         assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));

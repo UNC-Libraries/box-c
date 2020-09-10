@@ -39,11 +39,8 @@ import java.util.Map.Entry;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -51,7 +48,6 @@ import org.apache.jena.rdf.model.Selector;
 import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.tdb.transaction.TDBTransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +63,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -136,7 +133,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected boolean rollbackDatasetOnFailure = true;
 
     @Autowired
-    private Dataset dataset;
+    private DepositModelManager depositModelManager;
 
     public AbstractDepositJob() {
     }
@@ -166,25 +163,13 @@ public abstract class AbstractDepositJob implements Runnable {
                 interruptJobIfStopped();
 
                 runJob();
-                if (dataset.isInTransaction()) {
-                    dataset.commit();
-                }
+                depositModelManager.commit();
             } catch (Exception e) {
                 // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
                 Thread.interrupted();
 
-                if (dataset.isInTransaction()) {
-                    if (rollbackDatasetOnFailure) {
-                        log.debug("Aborting deposit model changes for {} after failure", depositUUID);
-                        dataset.abort();
-                    } else {
-                        log.debug("Committing deposit model changes for {} after failure", depositUUID);
-                        dataset.commit();
-                    }
-                }
+                depositModelManager.commitOrAbort(rollbackDatasetOnFailure);
                 throw e;
-            } finally {
-                dataset.end();
             }
         } catch (Exception e) {
             // Recast nested exceptions to more informative types
@@ -432,51 +417,23 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public Model getWritableModel() {
-        String uri = getDepositPID().getURI();
-        try {
-            this.dataset.begin(ReadWrite.WRITE);
-        } catch (TDBTransactionException e) {
-            if (e.getCause() instanceof InterruptedException) {
-                throw new JobInterruptedException("Interrupted while waiting for TDB write lock for deposit " + uri,
-                        e);
-            }
-            throw e;
-        }
-        if (!this.dataset.containsNamedModel(uri)) {
-            this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
-        }
-        return this.dataset.getNamedModel(uri);
+        return depositModelManager.getWriteModel(depositPID);
     }
 
     public Model getReadOnlyModel() {
-        String uri = getDepositPID().getURI();
-        try {
-            this.dataset.begin(ReadWrite.READ);
-        } catch (TDBTransactionException e) {
-            if (e.getCause() instanceof InterruptedException) {
-                throw new JobInterruptedException("Interrupted while waiting for TDB read lock for deposit " + uri,
-                        e);
-            }
-            throw e;
-        }
-        return this.dataset.getNamedModel(uri);
+        return depositModelManager.getReadModel(depositPID);
+    }
+
+    public void commit(Runnable runnable) {
+        depositModelManager.commit(runnable, true);
     }
 
     public void closeModel() {
-        if (dataset.isInTransaction()) {
-            dataset.commit();
-            dataset.end();
-        }
+        depositModelManager.commit();
     }
 
     public void destroyModel() {
-        String uri = getDepositPID().getURI();
-        if (!dataset.isInTransaction()) {
-            getWritableModel();
-        }
-        if (this.dataset.containsNamedModel(uri)) {
-            this.dataset.removeNamedModel(uri);
-        }
+        depositModelManager.removeModel(depositPID);
     }
 
     protected void setTotalClicks(int totalClicks) {

@@ -21,7 +21,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
@@ -73,6 +75,17 @@ public class RDFModelUtil {
             RDFDataMgr.write(bos, model, format);
             return new ByteArrayInputStream(bos.toByteArray());
         }
+    }
+
+    /**
+     * Serialize a model as a TTL string
+     * @param model
+     * @return string representation of the model
+     * @throws IOException
+     */
+    public static String toString(Model model) throws IOException {
+        InputStream stream = streamModel(model);
+        return IOUtils.toString(stream, StandardCharsets.UTF_8);
     }
 
     /**

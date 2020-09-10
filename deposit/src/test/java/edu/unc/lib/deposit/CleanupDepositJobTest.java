@@ -96,7 +96,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
 
         job.init();
     }

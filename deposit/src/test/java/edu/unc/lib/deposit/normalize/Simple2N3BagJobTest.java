@@ -26,11 +26,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,14 +55,12 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new Simple2N3BagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
 

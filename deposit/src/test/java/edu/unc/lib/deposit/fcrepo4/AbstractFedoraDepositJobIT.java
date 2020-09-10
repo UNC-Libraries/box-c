@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.http.HttpStatus;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.tdb.TDBFactory;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -47,6 +45,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -71,7 +70,8 @@ public abstract class AbstractFedoraDepositJobIT {
     protected String baseAddress;
     @Autowired
     protected RepositoryPIDMinter pidMinter;
-    protected Dataset dataset;
+    @Autowired
+    protected DepositModelManager depositModelManager;
     @Autowired
     protected JobStatusFactory jobStatusFactory;
     @Autowired
@@ -115,8 +115,6 @@ public abstract class AbstractFedoraDepositJobIT {
         depositDir.mkdir();
 
         depositStatusFactory.setState(depositUUID, DepositState.running);
-
-        dataset = TDBFactory.createDataset(tmpFolder.newFolder("tdb").getAbsolutePath());
 
         repositoryInitializer.initializeRepository();
         rootObj = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());

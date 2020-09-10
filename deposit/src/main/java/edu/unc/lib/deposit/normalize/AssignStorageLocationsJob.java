@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static java.util.Arrays.asList;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -49,6 +51,8 @@ public class AssignStorageLocationsJob extends AbstractDepositJob {
     private static final Set<Resource> TYPES_NEEDING_LOCATION = new HashSet<>(asList(
             Cdr.Folder, Cdr.Work, Cdr.Collection, Cdr.AdminUnit, Cdr.FileObject, Cdr.DepositRecord));
 
+    private List<Statement> locAssignments = new ArrayList<>();
+
     /**
      *
      */
@@ -65,16 +69,19 @@ public class AssignStorageLocationsJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
         String storageId = retrieveStorageLocation();
 
         assignStorageLocation(depositBag, storageId);
+
+        commit(() -> model.add(locAssignments));
     }
 
     private void assignStorageLocation(Resource resc, String storageId) {
-        resc.addLiteral(Cdr.storageLocation, storageId);
+        locAssignments.add(ResourceFactory.createStatement(resc,
+                Cdr.storageLocation, ResourceFactory.createStringLiteral(storageId)));
 
         NodeIterator iterator = getChildIterator(resc);
         // No more children, nothing further to do in this tree

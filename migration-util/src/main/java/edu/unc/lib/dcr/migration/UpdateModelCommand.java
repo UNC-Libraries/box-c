@@ -27,9 +27,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
@@ -63,7 +63,7 @@ public class UpdateModelCommand implements Callable<Integer> {
         long start = System.currentTimeMillis();
 
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
-        DepositModelManager depositModelManager = new DepositModelManager(depositPid, parentCommand.tdbDir);
+        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
 
         String queryString;
         if (sparqlQuery.equals(STDIN_PATH)) {
@@ -75,7 +75,7 @@ public class UpdateModelCommand implements Callable<Integer> {
         output.info("Executing sparql update on deposit {}:\n{}", depositPid.getId(), queryString);
 
         try {
-            depositModelManager.performUpdate(queryString);
+            depositModelManager.performUpdate(depositPid, queryString);
 
             output.info("Completed sparql update on deposit {} in {}ms",
                     depositPid.getId(), (System.currentTimeMillis() - start));

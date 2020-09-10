@@ -26,9 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -50,6 +48,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -100,7 +99,7 @@ public class AbstractDepositJobTest {
     protected PID depositPid;
     protected String depositJobId;
 
-    protected Dataset dataset;
+    protected DepositModelManager depositModelManager;
     @Mock
     protected FedoraTransaction tx;
 
@@ -131,7 +130,7 @@ public class AbstractDepositJobTest {
         depositDir.mkdir();
         depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 
-        dataset = TDBFactory.createDataset(tmpFolder.newFolder("tdb").getAbsolutePath());
+        depositModelManager = DepositModelManager.inMemoryManager();
 
         when(txManager.startTransaction()).thenReturn(tx);
         doAnswer(new Answer<Void>() {

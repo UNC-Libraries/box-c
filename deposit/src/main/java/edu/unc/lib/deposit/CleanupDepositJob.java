@@ -87,13 +87,16 @@ public class CleanupDepositJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model m = getWritableModel();
+        Model m = getReadOnlyModel();
 
         // clean up staged files according to staging area policy
         deleteStagedFiles(m);
 
         // delete files identified for cleanup
         deleteCleanupFiles(m);
+
+        // destroy the Jena model for this deposit
+        destroyModel();
 
         // delete deposit folder
         try {
@@ -103,9 +106,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
             LOG.error("Cannot delete deposit directory: "
                     + getDepositDirectory().getAbsolutePath(), e);
         }
-
-        // destroy the Jena model for this deposit
-        this.destroyModel();
 
         // set this deposit's Redis keys to expire
         getDepositStatusFactory().expireKeys(getDepositUUID(),

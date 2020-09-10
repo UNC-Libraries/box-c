@@ -79,7 +79,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
@@ -94,6 +93,7 @@ import edu.unc.lib.dl.fedora.ConflictException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -197,7 +197,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         extractMods();
 
         // Push triples for this object to the shared model for this deposit
-        modelManager.addTriples(depositModel, newPid, parentPid);
+        modelManager.addTriples(options.getDepositPid(), depositModel, newPid, parentPid);
     }
 
     private void populateTimestamps(Resource bxc3Resc, Resource depResc) {

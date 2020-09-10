@@ -33,8 +33,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -66,6 +64,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.CounterFactory;
 import edu.unc.lib.dl.metrics.HistogramFactory;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
@@ -118,7 +117,7 @@ public class DepositSupervisor implements WorkerListener {
     private OperationsMessageSender opsMessageSender;
 
     @Autowired
-    private Dataset dataset;
+    private DepositModelManager depositModelManager;
 
     @Autowired
     private QueueInfoDAO queueDAO;
@@ -946,8 +945,7 @@ public class DepositSupervisor implements WorkerListener {
         Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
         try {
-            dataset.begin(ReadWrite.READ);
-            Model model = dataset.getNamedModel(depositPid.getRepositoryPath());
+            Model model = depositModelManager.getReadModel(depositPid);
 
             Bag depositBag = model.getBag(depositPid.getRepositoryPath());
 
@@ -963,7 +961,7 @@ public class DepositSupervisor implements WorkerListener {
             opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
                     Arrays.asList(destPid), addedPids, null, depositUUID);
         } finally {
-            dataset.end();
+            depositModelManager.end();
         }
     }
 }

@@ -90,7 +90,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
         // All objects in deposit should have the same destination, so pull storage loc from deposit record
@@ -191,7 +191,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
         log.debug("Transferring {} file from {} for {}", storageProperty.getLocalName(),
                 stagingUri, binPid.getQualifiedId());
-        URI storageUri;
+        URI storageUri = null;
         try {
             storageUri = transferSession.transfer(binPid, stagingUri);
         } catch (BinaryAlreadyExistsException e) {
@@ -212,9 +212,14 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                         storageProperty.getLocalName(), stagingUri, binPid.getQualifiedId());
                 storageUri = transferSession.transferReplaceExisting(binPid, stagingUri);
             }
+        } finally {
+            if (storageUri != null) {
+                final URI finalStorageUri = storageUri;
+                commit(() -> resc.addLiteral(storageProperty, finalStorageUri.toString()));
+            }
         }
+
         log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
-        resc.addLiteral(storageProperty, storageUri.toString());
         addClicks(1);
         ingestedObjCount++;
     }

@@ -40,7 +40,7 @@ public class UnpackDepositJobTest extends AbstractDepositJobTest {
         job = new UnpackDepositJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositsDirectory", depositsDirectory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         job.init();
     }
 

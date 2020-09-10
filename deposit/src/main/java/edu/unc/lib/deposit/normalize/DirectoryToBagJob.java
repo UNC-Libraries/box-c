@@ -26,6 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
@@ -53,7 +54,10 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        Model depModel = getReadOnlyModel();
+        // Cache all the changes for committing at the end
+        Model model = ModelFactory.createDefaultModel().add(depModel);
+
         Bag depositBag = model.createBag(getDepositPID().getURI());
 
         Map<String, String> status = getDepositStatus();
@@ -96,5 +100,6 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
                 model.add(folderBag, RDF.type, Cdr.Folder);
             }
         }
+        commit(() -> depModel.add(model));
     }
 }

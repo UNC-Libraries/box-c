@@ -32,11 +32,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
 import gov.loc.repository.bagit.exceptions.CorruptChecksumException;
@@ -52,8 +54,6 @@ import gov.loc.repository.bagit.exceptions.VerificationException;
 import gov.loc.repository.bagit.reader.BagReader;
 import gov.loc.repository.bagit.verify.BagVerifier;
 import gov.loc.repository.bagit.verify.MandatoryVerifier;
-
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Transforms bagit bags stored in a staging location into n3 for deposit
@@ -77,8 +77,9 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
     @Override
     public void runJob() {
+        Model depModel = getReadOnlyModel();
+        Model model = ModelFactory.createDefaultModel().add(depModel);
 
-        Model model = getWritableModel();
         org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
         Map<String, String> status = getDepositStatus();
@@ -162,5 +163,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             failJob("Unable to normalize bag " + sourceUri + ", it was not complete according to bagit specifications",
                     e.getMessage());
         }
+
+        commit(() -> depModel.add(model));
     }
 }

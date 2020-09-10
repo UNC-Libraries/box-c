@@ -19,9 +19,9 @@ import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import org.apache.jena.rdf.model.Model;
 
-import edu.unc.lib.dcr.migration.deposit.DepositModelManager;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 
 /**
  * Service which transforms a tree of content objects starting from a single root.
@@ -52,7 +52,7 @@ public class ContentTransformationService {
         // Populate the bag for the deposit itself
         Model depositObjModel = createDefaultModel();
         depositObjModel.createBag(depositPid.getRepositoryPath());
-        modelManager.addTriples(depositObjModel);
+        modelManager.addTriples(depositPid, depositObjModel);
 
         // Kick off transformation of the tree from the starting object
         transformerManager.createTransformer(startingPid, newPid, depositPid, null)

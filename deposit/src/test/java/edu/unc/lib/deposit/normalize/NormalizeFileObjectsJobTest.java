@@ -34,12 +34,10 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,13 +84,11 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
     @Before
     public void init() {
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new NormalizeFileObjectsJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         job.setDepositStatusFactory(depositStatusFactory);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "pidMinter", pidMinter);
@@ -137,6 +133,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void fileObjectInFolderTest() throws Exception {
         Bag folderBag = addContainer(Cdr.Folder);
+        String folderUri = folderBag.getURI();
 
         Resource childResc = addFileObject(folderBag);
         childResc.addLiteral(CdrAcl.embargoUntil,
@@ -159,11 +156,13 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         // Verify that the label was set
         assertEquals(FILENAME, workResc.getProperty(CdrDeposit.label).getString());
 
+        folderBag = model.getBag(folderUri);
         // Verify that the folder contains the work, not the file
         assertEquals("Folder must contain work",
                 folderBag.iterator().next().asResource(),
                 workResc);
 
+        childResc = model.getResource(childResc.getURI());
         // Verify that ACL properties are transfered to work
         assertFalse(childResc.hasProperty(CdrAcl.embargoUntil));
         assertTrue(workResc.hasProperty(CdrAcl.embargoUntil));

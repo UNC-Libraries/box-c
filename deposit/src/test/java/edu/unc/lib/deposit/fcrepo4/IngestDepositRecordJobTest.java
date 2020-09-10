@@ -34,10 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,11 +108,9 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         depositDir.mkdir();
         FileUtils.copyDirectory(new File(packagePath), depositDir);
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new IngestDepositRecordJob();
         job.setDepositUUID(depositUUID);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         job.setPremisLoggerFactory(premisLoggerFactory);

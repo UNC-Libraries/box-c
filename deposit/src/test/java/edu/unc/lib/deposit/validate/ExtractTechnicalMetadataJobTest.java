@@ -128,7 +128,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
         job.setPremisLoggerFactory(premisLoggerFactory);
 
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);

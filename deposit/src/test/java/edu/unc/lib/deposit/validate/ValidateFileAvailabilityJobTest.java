@@ -29,11 +29,9 @@ import java.net.URI;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,15 +72,13 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     @Before
     public void init() throws Exception {
 
-        Dataset dataset = TDBFactory.createDataset();
-
         job = new ValidateFileAvailabilityJob();
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setIngestSourceManager(sourceManager);
-        setField(job, "dataset", dataset);
+        setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
