@@ -180,6 +180,16 @@
         class="edu.unc.lib.dl.services.IndexingMessageSender">
     </bean>
 
+    <bean id="binaryDestroyDerivativesJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
+        <property name="defaultDestinationName" value="${cdr.destroy.derivatives.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="binaryDestroyDerivativesMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+        <property name="jmsTemplate" ref="binaryDestroyDerivativesJmsTemplate" />
+    </bean>
+
     <!-- Processors -->
     <bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
     </bean>
@@ -219,6 +229,29 @@
     <bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
+
+    <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroy.BinaryInfoProcessor">
+    </bean>
+
+    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
+    </bean>
+
+    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
+    </bean>
+
+    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.jp2}" />
+    </bean>
+
+    <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.fulltext}" />
+    </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
@@ -235,6 +268,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="binaryDestroyDerivativesMessageSender" ref="binaryDestroyDerivativesMessageSender" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">

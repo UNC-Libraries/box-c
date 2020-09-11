@@ -37,6 +37,7 @@ import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
  * Processor which handles messages requesting the destruction of objects.
@@ -61,6 +62,7 @@ public class DestroyObjectsProcessor implements Processor {
     private BinaryTransferService transferService;
     private IndexingMessageSender indexingMessageSender;
     private MessageSender binaryDestroyedMessageSender;
+    private OperationsMessageSender binaryDestroyDerivativesMessageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -85,6 +87,7 @@ public class DestroyObjectsProcessor implements Processor {
         job.setStorageLocationManager(locManager);
         job.setIndexingMessageSender(indexingMessageSender);
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        job.setBinaryDestroyDerivativesMessageSender(binaryDestroyDerivativesMessageSender);
         return job;
     }
 
@@ -130,5 +133,10 @@ public class DestroyObjectsProcessor implements Processor {
 
     public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
         this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
+    }
+
+    public void setBinaryDestroyDerivativesMessageSender(OperationsMessageSender
+                                                                 binaryDestroyDerivativesMessageSender) {
+        this.binaryDestroyDerivativesMessageSender = binaryDestroyDerivativesMessageSender;
     }
 }

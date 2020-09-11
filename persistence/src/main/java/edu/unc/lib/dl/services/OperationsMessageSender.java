@@ -146,7 +146,7 @@ public class OperationsMessageSender extends MessageSender {
      * Sends a Remove operation message, indicating that objects are being removed from the repository
      *
      * @param userid id of user who triggered the operation
-     * @param destinations containers objects were added to
+     * @param destination containers objects were added to
      * @param removed objects removed
      * @return id of operation message
      */
@@ -167,6 +167,34 @@ public class OperationsMessageSender extends MessageSender {
         Document msg = contentEl.getDocument();
         sendMessage(msg);
         LOG.debug("sent remove operation JMS message using JMS template: {}", this.getJmsTemplate());
+
+        return getMessageId(msg);
+    }
+
+    /**
+     * Sends a remove derivatives operation message, as objects are being removed from the repository
+     *
+     * @param userid id of user who triggered the operation
+     * @param removed object removed
+     * @param mimeType object mimetype
+     * @return id of operation message
+     */
+    public String sendRemoveDerivativesOperation(String userid, PID removed, String mimeType) {
+        Element contentEl = createAtomEntry(userid, removed, CDRActions.REMOVE);
+
+        Element remove = new Element("remove", CDR_MESSAGE_NS);
+        contentEl.addContent(remove);
+        contentEl.addContent(new Element("mimetype").setText(mimeType));
+        contentEl.addContent(new Element("pidId").setText(removed.getId()));
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        remove.addContent(subjects);
+
+        subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(removed.getRepositoryPath()));
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+        LOG.debug("sent remove derivative operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }

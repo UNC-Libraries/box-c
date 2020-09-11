@@ -27,6 +27,7 @@ import static java.util.stream.Collectors.toList;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -74,6 +75,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -94,7 +96,7 @@ public class DestroyObjectsJob implements Runnable {
 
     private MultiDestinationTransferSession transferSession;
 
-    private List<URI> cleanupBinaryUris;
+    private HashMap<URI, HashMap<String, String>> cleanupBinaryUris;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
@@ -107,11 +109,12 @@ public class DestroyObjectsJob implements Runnable {
     private BinaryTransferService transferService;
     private IndexingMessageSender indexingMessageSender;
     private MessageSender binaryDestroyedMessageSender;
+    private OperationsMessageSender binaryDestroyDerivativesMessageSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
         this.agent = request.getAgent();
-        this.cleanupBinaryUris = new ArrayList<>();
+        this.cleanupBinaryUris = new HashMap<>();
     }
 
     @Override
@@ -212,7 +215,12 @@ public class DestroyObjectsJob implements Runnable {
         BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
-            cleanupBinaryUris.add(origFile.getContentUri());
+
+            HashMap<String, String> contentMetadata = new HashMap<>();
+            contentMetadata.put("pid", origFile.getPid().getQualifiedId());
+            contentMetadata.put("mimeType", origFile.getMimetype());
+
+            cleanupBinaryUris.put(origFile.getContentUri(), contentMetadata);
         }
     }
 
@@ -224,13 +232,16 @@ public class DestroyObjectsJob implements Runnable {
         if (transferSession == null) {
             transferSession = transferService.getSession();
         }
-        cleanupBinaryUris.forEach(contentUri -> {
+        cleanupBinaryUris.forEach((contentUri, metadata) -> {
             try {
                 log.debug("Deleting destroyed binary {}", contentUri);
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
                 binaryDestroyedMessageSender.sendMessage(contentUri.toString());
+                binaryDestroyDerivativesMessageSender
+                        .sendRemoveDerivativesOperation(agent.getUsername(), PIDs.get(metadata.get("pid")),
+                                metadata.get("mimeType"));
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
@@ -335,5 +346,9 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
         this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
+    }
+
+    public void setBinaryDestroyDerivativesMessageSender(OperationsMessageSender binaryDestroyDerivativesMessageSender) {
+        this.binaryDestroyDerivativesMessageSender = binaryDestroyDerivativesMessageSender;
     }
 }
