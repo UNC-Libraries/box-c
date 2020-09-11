@@ -230,25 +230,25 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
-    <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroy.BinaryInfoProcessor">
+    <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.BinaryInfoProcessor">
     </bean>
 
-    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
 
-    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
 
-    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
-    <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyDerivativesProcessor">
+    <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
@@ -455,5 +455,9 @@
     
     <camel:camelContext id="CdrDestroyObjects">
         <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="CdrDestroyDerivatives">
+        <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
     </camel:camelContext>
 </beans>
