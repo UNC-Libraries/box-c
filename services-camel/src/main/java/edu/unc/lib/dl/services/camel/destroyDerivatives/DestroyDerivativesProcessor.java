@@ -18,6 +18,10 @@ package edu.unc.lib.dl.services.camel.destroyDerivatives;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.dl.model.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
 
 import java.io.IOException;
@@ -25,6 +29,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -60,25 +66,36 @@ public class DestroyDerivativesProcessor implements Processor {
 
     private void deleteDerivative(Path derivativePath, String binaryId) {
         try {
-            if (Files.isRegularFile(derivativePath) || isEmptyDir(derivativePath)) {
+            if (shouldRemoveFile(derivativePath)) {
                 boolean deleted = Files.deleteIfExists(derivativePath);
                 if (deleted) {
                     deleteDerivative(derivativePath.getParent(), binaryId);
                 }
+                log.info("Derivative and parent directories destroyed for {}", binaryId);
             }
-
-            log.info("Derivative and parent directories destroyed for {}", binaryId);
         } catch (IOException e) {
             log.warn("Unable to destroy derivative and parent directories for {}: {}", binaryId, e.getMessage());
         }
     }
 
-    private boolean isEmptyDir(Path path) throws IOException {
+    private boolean shouldRemoveFile(Path path) throws IOException {
+        List<String> rootDirs = Arrays.asList(
+                THUMBNAIL_SMALL.getId(),
+                THUMBNAIL_LARGE.getId(),
+                JP2_ACCESS_COPY.getId(),
+                FULLTEXT_EXTRACTION.getId()
+        );
+        String dirName = path.getFileName().toString();
+
+        if (rootDirs.contains(dirName)) {
+            return false;
+        }
+
         if (Files.isDirectory(path)) {
             try (DirectoryStream<Path> directory = Files.newDirectoryStream(path)) {
                 return !directory.iterator().hasNext();
             }
         }
-        return false;
+        return true;
     }
 }

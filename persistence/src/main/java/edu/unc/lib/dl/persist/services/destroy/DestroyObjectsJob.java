@@ -29,6 +29,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -96,7 +97,7 @@ public class DestroyObjectsJob implements Runnable {
 
     private MultiDestinationTransferSession transferSession;
 
-    private HashMap<URI, HashMap<String, String>> cleanupBinaryUris;
+    private Map<URI, Map<String, String>> cleanupBinaryUris;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
@@ -216,7 +217,7 @@ public class DestroyObjectsJob implements Runnable {
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
 
-            HashMap<String, String> contentMetadata = new HashMap<>();
+            Map<String, String> contentMetadata = new HashMap<>();
             contentMetadata.put("pid", origFile.getPid().getQualifiedId());
             contentMetadata.put("mimeType", origFile.getMimetype());
 
@@ -348,7 +349,8 @@ public class DestroyObjectsJob implements Runnable {
         this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
     }
 
-    public void setBinaryDestroyDerivativesMessageSender(OperationsMessageSender binaryDestroyDerivativesMessageSender) {
+    public void setBinaryDestroyDerivativesMessageSender(OperationsMessageSender
+                                                                 binaryDestroyDerivativesMessageSender) {
         this.binaryDestroyDerivativesMessageSender = binaryDestroyDerivativesMessageSender;
     }
 }

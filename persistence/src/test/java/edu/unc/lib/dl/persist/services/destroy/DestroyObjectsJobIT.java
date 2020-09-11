@@ -37,7 +37,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
@@ -60,10 +62,12 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -82,6 +86,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
@@ -133,6 +138,8 @@ public class DestroyObjectsJobIT {
     private IndexingMessageSender indexingMessageSender;
     @Mock
     private MessageSender binaryDestroyedMessageSender;
+    @Mock
+    private OperationsMessageSender binaryDestroyDerivativesMessageSender;
 
     @Autowired
     private StorageLocationManagerImpl locationManager;
@@ -195,6 +202,13 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
         verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
+
+        List<BinaryObject> binaries = fileObj.getBinaryObjects();
+        for (BinaryObject binary: binaries) {
+            verify(binaryDestroyDerivativesMessageSender)
+                    .sendRemoveDerivativesOperation(agent.getUsername(), binary.getPid(),
+                    binary.getMimetype());
+        }
     }
 
     @Test
@@ -207,7 +221,9 @@ public class DestroyObjectsJobIT {
         PID workObjPid = objsToDestroy.get(1);
         PID folderObjPid = objsToDestroy.get(0);
 
-        URI contentUri = repoObjLoader.getFileObject(fileObjPid).getOriginalFile().getContentUri();
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+        ArrayList<Map<String, String>> binaryDerivs = derivativesToCleanup(fileObj.getBinaryObjects());
+        URI contentUri = fileObj.getOriginalFile().getContentUri();
 
         job.run();
 
@@ -233,6 +249,7 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
         verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
+        assertDerivativeDestroyMsgSent(binaryDerivs);
     }
 
     @Test
@@ -375,6 +392,7 @@ public class DestroyObjectsJobIT {
         job.setStorageLocationManager(locationManager);
         job.setIndexingMessageSender(indexingMessageSender);
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        job.setBinaryDestroyDerivativesMessageSender(binaryDestroyDerivativesMessageSender);
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
@@ -383,5 +401,25 @@ public class DestroyObjectsJobIT {
                     true);
             sparqlUpdateService.executeUpdate(pid.getRepositoryUri().toString(), updateString);
         }
+    }
+
+    private ArrayList<Map<String, String>> derivativesToCleanup(List<BinaryObject> binaries) {
+        ArrayList<Map<String, String>> cleanupBinaryUris = new ArrayList<>();
+
+        for (BinaryObject binary : binaries) {
+            Map<String, String> contentMetadata = new HashMap<>();
+            contentMetadata.put("pid", binary.getPid().getQualifiedId());
+            contentMetadata.put("mimeType", binary.getMimetype());
+
+            cleanupBinaryUris.add(contentMetadata);
+        }
+
+        return cleanupBinaryUris;
+    }
+
+    private void assertDerivativeDestroyMsgSent(ArrayList<Map<String, String>> binary) {
+        binary.forEach(b -> verify(binaryDestroyDerivativesMessageSender)
+                .sendRemoveDerivativesOperation(agent.getUsername(), PIDs.get(b.get("pid")),
+                        b.get("mimeType")));
     }
 }
