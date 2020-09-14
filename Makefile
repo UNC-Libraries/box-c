@@ -4,7 +4,7 @@ build-all: build-admin build-access
 
 build-admin:
 	# Build vue permissions application files
-	npm --prefix static/js/admin/vue-permissions-editor install
+	npm --prefix static/js/admin/vue-permissions-editor ci
 
 ifeq ($(DEPLOY_TYPE), prod)
 	npm --prefix static/js/admin/vue-permissions-editor run build
@@ -63,7 +63,7 @@ endif
 
 build-access:
 # Build vue application(s) files
-	npm --prefix static/js/vue-cdr-access install
+	npm --prefix static/js/vue-cdr-access ci
 
 ifeq ($(DEPLOY_TYPE), prod)
 	npm --prefix static/js/vue-cdr-access run build
