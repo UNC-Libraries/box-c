@@ -35,6 +35,7 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
@@ -70,8 +71,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
 
-    private int ingestedObjCount = 0;
-
     /**
      *
      */
@@ -93,10 +92,18 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
+        // Count how many objects are being deposited
+        int i = 0;
+        ResIterator subjectIterator = model.listSubjects();
+        while (subjectIterator.hasNext()) {
+            i++;
+            subjectIterator.next();
+        }
+        setTotalClicks(i);
+
         // All objects in deposit should have the same destination, so pull storage loc from deposit record
         try (BinaryTransferSession transferSession = getTransferSession(model)) {
             transferBinaries(depositBag, transferSession);
-            setTotalClicks(ingestedObjCount);
         }
     }
 
@@ -221,6 +228,5 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
         log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
         addClicks(1);
-        ingestedObjCount++;
     }
 }

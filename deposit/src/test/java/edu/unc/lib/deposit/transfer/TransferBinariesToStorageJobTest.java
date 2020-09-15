@@ -177,7 +177,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
@@ -248,7 +248,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
@@ -365,7 +365,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
         assertFitsFileTransferred(postFileResc2);
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(4));
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(5));
         verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
     }
 
