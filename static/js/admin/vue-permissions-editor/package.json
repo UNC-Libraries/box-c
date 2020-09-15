@@ -9,9 +9,9 @@
     "build-dev": "vue-cli-service build --mode development"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.20.0",
     "core-js": "^3.6.5",
-    "date-fns": "^2.16.0",
+    "date-fns": "^2.16.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.findindex": "^4.6.0",
     "lodash.isempty": "^4.4.0",
@@ -20,14 +20,14 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.4",
-    "@vue/cli-plugin-babel": "^4.5.4",
-    "@vue/cli-plugin-unit-jest": "^4.5.4",
-    "@vue/cli-service": "^4.5.4",
-    "@vue/test-utils": "1.0.5",
+    "@vue/cli-plugin-babel": "^4.5.6",
+    "@vue/cli-plugin-unit-jest": "^4.5.6",
+    "@vue/cli-service": "^4.5.6",
+    "@vue/test-utils": "1.1.0",
     "babel-jest": "^26.3.0",
     "moxios": "^0.4.0",
     "sass": "^1.26.10",
-    "sass-loader": "^10.0.1",
+    "sass-loader": "^10.0.2",
     "vue-template-compiler": "^2.6.12"
   }
 }
