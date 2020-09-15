@@ -30,10 +30,6 @@ import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
  */
 public class FulltextRouter extends RouteBuilder {
 
-    private static final String MIMETYPE_PATTERN = "^(text/|application/pdf|application/msword"
-            + "|application/vnd\\.|application/rtf|application/powerpoint"
-            + "|application/postscript).*$";
-
     @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor ftProcessor;
 
@@ -48,7 +44,7 @@ public class FulltextRouter extends RouteBuilder {
             .startupOrder(31)
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
             .filter().method(adProcessor, "needsRun")
-            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+            .filter().method(FulltextProcessor.class, "allowedTextType")
             .log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
                     + " of type ${headers[CdrMimeType]}")
             .to("direct:fulltext.extraction");

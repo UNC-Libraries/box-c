@@ -26,13 +26,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
 
 import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,12 +84,10 @@ public class DestroyDerivativesProcessorTest {
         derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
         file = new File(derivativeFinalDir, pathId + ".txt");
 
-        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-            writeFile.write("my text");
-        }
+        FileUtils.writeStringToFile(file, "my text", StandardCharsets.UTF_8);
 
-        derivativeTypeBaseDir = new File(derivativeDirBase + "/" + derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".txt", derivativeDirBase + "/" + derivativeTypeDir);
+        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
+        processor = new DestroyDerivativesProcessor(".txt", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("text/plain");
@@ -110,12 +108,10 @@ public class DestroyDerivativesProcessorTest {
         derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
         file = new File(derivativeFinalDir, pathId + ".png");
 
-        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-            writeFile.write("fake image");
-        }
+        FileUtils.writeStringToFile(file, "fake image", StandardCharsets.UTF_8);
 
-        derivativeTypeBaseDir = new File(derivativeDirBase + "/" + derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".png", derivativeDirBase + "/" + derivativeTypeDir);
+        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
+        processor = new DestroyDerivativesProcessor(".png", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/png");
@@ -136,16 +132,14 @@ public class DestroyDerivativesProcessorTest {
         derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
         file = new File(derivativeFinalDir, pathId + ".jp2");
 
-        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-            writeFile.write("fake jp2");
-        }
+        FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
 
-        processor = new DestroyDerivativesProcessor(".jp2", derivativeDirBase + "/" + derivativeTypeDir);
+        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
+        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/jp2");
 
-        derivativeTypeBaseDir = new File(derivativeDirBase + "/" + derivativeTypeDir);
         processor.process(exchange);
 
         // Deleted file

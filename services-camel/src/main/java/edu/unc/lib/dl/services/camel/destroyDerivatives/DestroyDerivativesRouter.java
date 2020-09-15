@@ -21,6 +21,9 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
+import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
+import edu.unc.lib.dl.services.camel.images.ImageDerivativeProcessor;
+
 /**
  * Router to process requests to destroy derivatives for an object
  *
@@ -43,11 +46,6 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject(value = "destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
-    private static final String IMAGE_MIMETYPE_PATTERN = "^(image.*$|application.*?(photoshop|psd)$)";
-    private static final String TEXT_MIMETYPE_PATTERN = "^(text/|application/pdf|application/msword"
-            + "|application/vnd\\.|application/rtf|application/powerpoint"
-            + "|application/postscript).*$";
-
     public void configure() throws Exception {
         onException(Exception.class)
                 .redeliveryDelay("{{error.retryDelay}}")
@@ -60,9 +58,9 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .log(DEBUG, "Received destroy derivatives message")
                 .process(binaryInfoProcessor)
                 .choice()
-                    .when(simple("${headers[CdrMimeType]} regex '" + IMAGE_MIMETYPE_PATTERN + "'"))
+                    .when(method(ImageDerivativeProcessor.class, "allowedImageType"))
                         .to("direct:image.derivatives.destroy")
-                    .when(simple("${headers[CdrMimeType]} regex '" + TEXT_MIMETYPE_PATTERN + "'"))
+                    .when(method(FulltextProcessor.class, "allowedTextType"))
                         .to("direct:fulltext.derivatives.destroy")
                 .end();
 

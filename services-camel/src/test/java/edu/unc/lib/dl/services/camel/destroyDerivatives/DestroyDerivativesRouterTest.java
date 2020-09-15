@@ -102,7 +102,6 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(CdrBinaryMimeType, mimetype);
         headers.put(CdrBinaryPidId, "dee2614c-8a4b-4ac2-baf2-4b4afc11af87");
-       // http://localhost:8181/fcrepo/rest/content/de/e2/61/4c/dee2614c-8a4b-4ac2-baf2-4b4afc11af87/datafs/original_file
 
         return headers;
     }

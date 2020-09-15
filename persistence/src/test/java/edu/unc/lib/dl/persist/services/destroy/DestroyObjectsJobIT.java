@@ -222,7 +222,7 @@ public class DestroyObjectsJobIT {
         PID folderObjPid = objsToDestroy.get(0);
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        ArrayList<Map<String, String>> binaryDerivs = derivativesToCleanup(fileObj.getBinaryObjects());
+        List<Map<String, String>> binaryDerivs = derivativesToCleanup(fileObj.getBinaryObjects());
         URI contentUri = fileObj.getOriginalFile().getContentUri();
 
         job.run();
@@ -403,8 +403,8 @@ public class DestroyObjectsJobIT {
         }
     }
 
-    private ArrayList<Map<String, String>> derivativesToCleanup(List<BinaryObject> binaries) {
-        ArrayList<Map<String, String>> cleanupBinaryUris = new ArrayList<>();
+    private List<Map<String, String>> derivativesToCleanup(List<BinaryObject> binaries) {
+        List<Map<String, String>> cleanupBinaryUris = new ArrayList<>();
 
         for (BinaryObject binary : binaries) {
             Map<String, String> contentMetadata = new HashMap<>();
@@ -417,7 +417,7 @@ public class DestroyObjectsJobIT {
         return cleanupBinaryUris;
     }
 
-    private void assertDerivativeDestroyMsgSent(ArrayList<Map<String, String>> binary) {
+    private void assertDerivativeDestroyMsgSent(List<Map<String, String>> binary) {
         binary.forEach(b -> verify(binaryDestroyDerivativesMessageSender)
                 .sendRemoveDerivativesOperation(agent.getUsername(), PIDs.get(b.get("pid")),
                         b.get("mimeType")));
