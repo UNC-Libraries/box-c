@@ -178,7 +178,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertFitsFileTransferred(postFileResc);
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
-        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     // Ensure that interruptions come through as JobInterruptedExceptions
@@ -249,7 +249,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -288,7 +288,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertFitsFileTransferred(postFileResc2);
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(4));
-        verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(7)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -366,7 +366,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertFitsFileTransferred(postFileResc2);
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(5));
-        verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(9)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test

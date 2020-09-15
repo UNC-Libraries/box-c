@@ -127,6 +127,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             transferDepositManifests(objPid, resc, transferSession);
         }
 
+        addClicks(1);
+
         NodeIterator iterator = getChildIterator(resc);
         // No more children, nothing further to do in this tree
         if (iterator == null) {
@@ -227,6 +229,5 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
 
         log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
-        addClicks(1);
     }
 }
