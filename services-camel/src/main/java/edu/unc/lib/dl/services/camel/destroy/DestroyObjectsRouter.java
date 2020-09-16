@@ -44,5 +44,13 @@ public class DestroyObjectsRouter extends RouteBuilder {
             .routeId("CdrDestroyObjects")
             .log(DEBUG, "Received destroy objects message")
             .bean(destroyObjectsProcessor);
+
+        from("{{cdr.destroy.cleanup.stream.camel}}")
+            .routeId("CdrDestroyObjectsCleanup")
+            .log(DEBUG, "Received destroy objects cleanup message")
+            .multicast()
+            .parallelProcessing()
+            .to("activemq://activemq:queue:filter.longleaf.deregister")
+            .to("{{cdr.destroy.derivatives.stream.camel}}");
     }
 }

@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
+import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
@@ -43,6 +44,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,6 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
-import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -110,7 +111,6 @@ public class DestroyObjectsJob implements Runnable {
     private BinaryTransferService transferService;
     private IndexingMessageSender indexingMessageSender;
     private MessageSender binaryDestroyedMessageSender;
-    private OperationsMessageSender binaryDestroyDerivativesMessageSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
@@ -152,6 +152,8 @@ public class DestroyObjectsJob implements Runnable {
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
+                Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), pid, cleanupBinaryUris);
+                binaryDestroyedMessageSender.sendMessage(destroyMsg);
            }
         } catch (Exception e) {
              tx.cancel(e);
@@ -239,10 +241,6 @@ public class DestroyObjectsJob implements Runnable {
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
-                binaryDestroyedMessageSender.sendMessage(contentUri.toString());
-                binaryDestroyDerivativesMessageSender
-                        .sendRemoveDerivativesOperation(agent.getUsername(), PIDs.get(metadata.get("pid")),
-                                metadata.get("mimeType"));
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
@@ -347,10 +345,5 @@ public class DestroyObjectsJob implements Runnable {
 
     public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
         this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
-    }
-
-    public void setBinaryDestroyDerivativesMessageSender(OperationsMessageSender
-                                                                 binaryDestroyDerivativesMessageSender) {
-        this.binaryDestroyDerivativesMessageSender = binaryDestroyDerivativesMessageSender;
     }
 }

@@ -106,7 +106,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void destroyObject() throws Exception {
-        createContext(DESTROY_ROUTE);
+        createContext(DESTROY_ROUTE, "direct:start");
 
         String id = UUID.randomUUID().toString();
         PID pid = PIDs.get(id);
@@ -131,11 +131,11 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         verify(repoObjFactory).createOrTransformObject(eq(pid.getRepositoryUri()), any(Model.class));
     }
 
-    private void createContext(String routeName) throws Exception {
+    private void createContext(String routeName, String currentRoute) throws Exception {
         context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                replaceFromWith("direct:start");
+                replaceFromWith(currentRoute);
                 mockEndpointsAndSkip("*");
             }
         });

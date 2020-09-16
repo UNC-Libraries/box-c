@@ -180,16 +180,6 @@
         class="edu.unc.lib.dl.services.IndexingMessageSender">
     </bean>
 
-    <bean id="binaryDestroyDerivativesJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="${cdr.destroy.derivatives.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
-    <bean id="binaryDestroyDerivativesMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
-        <property name="jmsTemplate" ref="binaryDestroyDerivativesJmsTemplate" />
-    </bean>
-
     <!-- Processors -->
     <bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
     </bean>
@@ -268,7 +258,6 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
-        <property name="binaryDestroyDerivativesMessageSender" ref="binaryDestroyDerivativesMessageSender" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
@@ -399,7 +388,7 @@
     
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:filter.longleaf.deregister" />
+        <property name="defaultDestinationName" value="${cdr.destroy.cleanup.stream.camel}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     
