@@ -149,4 +149,72 @@ public class DestroyDerivativesProcessorTest {
         // Didn't delete root derivative type dir
         assertTrue(derivativeTypeBaseDir.exists());
     }
+
+    @Test
+    public void multipleDirectoryTest() throws Exception {
+        derivativeTypeDir = JP2_ACCESS_COPY.getId();
+
+        // Derivative to destroy
+        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        file = new File(derivativeFinalDir, pathId + ".jp2");
+        FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
+
+        // Another derivative at the same level
+        File siblingDir = derivativeDir.newFolder(derivativeTypeDir, "de", "55", "c8", "21");
+        String siblingPidId = "de55c821-9e0f-4b1f-8631-2060ab3580cc";
+        String siblingRescId = FEDORA_BASE + "content/de/55/c8/21/" + siblingPidId;
+        String siblingPathId = PIDs.get(siblingRescId).getId();
+        File siblingFile = new File(siblingDir, siblingPathId + ".jp2");
+        FileUtils.writeStringToFile(siblingFile, "fake jp2 too", StandardCharsets.UTF_8);
+
+        // Run processor
+        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
+        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
+
+        when(message.getHeader(eq(CdrBinaryMimeType)))
+                .thenReturn("image/jp2");
+
+        processor.process(exchange);
+
+        // Deleted file
+        assertFalse(file.exists());
+        // Deleted highest unique derivative dir
+        assertFalse(new File(derivativeTypeBaseDir, "75").exists());
+        // Didn't delete common parent dir
+        assertTrue(new File(derivativeTypeBaseDir, "de").exists());
+        // Didn't delete sibling derivative
+        assertTrue(siblingFile.exists());
+    }
+
+    @Test
+    public void multipleFilesInDirectoryTest() throws Exception {
+        derivativeTypeDir = JP2_ACCESS_COPY.getId();
+        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+
+        // Derivative to destroy
+        file = new File(derivativeFinalDir, pathId + ".jp2");
+        FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
+
+        // Another file at the same level
+        File siblingFile = new File(derivativeFinalDir, pathId + ".png");
+        FileUtils.writeStringToFile(siblingFile, "fake png", StandardCharsets.UTF_8);
+
+        // Run processor
+        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
+        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
+
+        when(message.getHeader(eq(CdrBinaryMimeType)))
+                .thenReturn("image/jp2");
+
+        processor.process(exchange);
+
+        // Deleted file
+        assertFalse(file.exists());
+        // Didn't delete sibling
+        assertTrue(siblingFile.exists());
+        // Didn't delete parent directory
+        assertTrue(derivativeFinalDir.exists());
+        // Didn't delete root derivative type dir
+        assertTrue(derivativeTypeBaseDir.exists());
+    }
 }

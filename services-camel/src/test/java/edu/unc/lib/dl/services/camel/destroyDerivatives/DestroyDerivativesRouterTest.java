@@ -17,11 +17,15 @@ package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
@@ -62,28 +66,38 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     public void routeRequestText() throws Exception {
         createContext(DESTROY_DERIVATIVES_ROUTE);
         template.sendBodyAndHeaders("", createEvent("text/plain"));
-        assertMockEndpointsSatisfied();
+        verify(binaryInfoProcessor).process(any(Exchange.class));
     }
 
     @Test
     public void routeRequestImage() throws Exception {
         createContext(DESTROY_DERIVATIVES_ROUTE);
         template.sendBodyAndHeaders("", createEvent("image/png"));
-        assertMockEndpointsSatisfied();
+        verify(binaryInfoProcessor).process(any(Exchange.class));
     }
 
     @Test
     public void destroyTextDerivative() throws Exception {
         createContext(DESTROY_FULLTEXT_ROUTE);
+
         template.sendBodyAndHeaders("", createEvent("text/plain"));
-        assertMockEndpointsSatisfied();
+
+        verify(destroyFulltextProcessor).process(any(Exchange.class));
+        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
     public void destroyImageDerivative() throws Exception {
         createContext(DESTROY_IMAGE_ROUTE);
+
         template.sendBodyAndHeaders("", createEvent("image/png"));
-        assertMockEndpointsSatisfied();
+
+        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor).process(any(Exchange.class));
+        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
     private void createContext(String routeName) throws Exception {

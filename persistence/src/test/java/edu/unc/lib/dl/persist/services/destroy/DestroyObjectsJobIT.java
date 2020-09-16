@@ -177,6 +177,7 @@ public class DestroyObjectsJobIT {
         initializeJob(asList(fileObjPid));
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+        List<Map<String, String>> binaries = derivativesToCleanup(fileObj.getBinaryObjects());
 
         URI contentUri = fileObj.getOriginalFile().getContentUri();
         assertTrue(Files.exists(Paths.get(contentUri)));
@@ -203,11 +204,10 @@ public class DestroyObjectsJobIT {
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
         verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
 
-        List<BinaryObject> binaries = fileObj.getBinaryObjects();
-        for (BinaryObject binary: binaries) {
+        for (Map<String, String> binary: binaries) {
             verify(binaryDestroyDerivativesMessageSender)
-                    .sendRemoveDerivativesOperation(agent.getUsername(), binary.getPid(),
-                    binary.getMimetype());
+                    .sendRemoveDerivativesOperation(agent.getUsername(), PIDs.get(binary.get("pid")),
+                    binary.get("mimeType"));
         }
     }
 
