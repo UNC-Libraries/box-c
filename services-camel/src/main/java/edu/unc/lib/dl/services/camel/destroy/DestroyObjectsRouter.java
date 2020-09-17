@@ -45,7 +45,7 @@ public class DestroyObjectsRouter extends RouteBuilder {
             .log(DEBUG, "Received destroy objects message")
             .bean(destroyObjectsProcessor);
 
-        from("{{cdr.destroy.cleanup.stream.camel}}")
+        from("{{cdr.destroy.post.stream.camel}}")
             .routeId("CdrDestroyObjectsCleanup")
             .log(DEBUG, "Received destroy objects cleanup message")
             .multicast()

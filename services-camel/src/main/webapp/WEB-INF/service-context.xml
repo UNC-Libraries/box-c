@@ -379,6 +379,9 @@
     
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -388,7 +391,7 @@
     
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="${cdr.destroy.cleanup.stream.camel}" />
+        <property name="defaultDestinationName" value="${cdr.destroy.post.stream.camel}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     

@@ -28,6 +28,8 @@ import edu.unc.lib.dl.services.camel.AddFailedRouteProcessor;
  * @author bbpennel
  */
 public class LongleafRouter extends RouteBuilder {
+    @BeanInject(value = "getUrisProcessor")
+    private GetUrisProcessor getUrisProcessor;
 
     @BeanInject(value = "registerLongleafProcessor")
     private RegisterToLongleafProcessor registerProcessor;
@@ -67,6 +69,7 @@ public class LongleafRouter extends RouteBuilder {
             .routeId("DeregisterLongleafQueuing")
             .startupOrder(2)
             .log(LoggingLevel.DEBUG, "Queuing ${body} for deregistration in longleaf")
+            .process(getUrisProcessor)
             .to("sjms:deregister.longleaf?transacted=true");
 
         from("{{longleaf.deregister.consumer}}")

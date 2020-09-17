@@ -56,7 +56,6 @@ public class DestroyObjectsMessageHelpers {
             entryValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
             entryValues.addContent(new Element("pidId").setText(metadata.get("pid")));
             pidList.addContent(entryValues);
-
         });
 
         entry.addContent(pidList);

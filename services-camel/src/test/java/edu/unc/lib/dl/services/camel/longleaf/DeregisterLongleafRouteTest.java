@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,6 +34,8 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -214,7 +217,21 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
     private void sendMessages(String... contentUris) {
         for (String contentUri : contentUris) {
-            messageSender.sendMessage(contentUri);
+            messageSender.sendMessage(makeDocument(contentUri));
         }
+    }
+
+    private Document makeDocument(String uri) {
+        Document msg = new Document();
+        Element entry = new Element("entry", ATOM_NS);
+
+        Element pidList = new Element("objsToDestroy", ATOM_NS);
+        Element entryValues = new Element("contentUri").setText(uri);
+        pidList.addContent(entryValues);
+
+        entry.addContent(pidList);
+        msg.addContent(entry);
+
+        return msg;
     }
 }

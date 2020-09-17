@@ -35,6 +35,9 @@
     <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor" />
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <camel:camelContext id="cdrLongleaf">
         <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
