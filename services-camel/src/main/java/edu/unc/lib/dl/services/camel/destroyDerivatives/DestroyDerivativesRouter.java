@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
-import static org.apache.camel.LoggingLevel.DEBUG;
-
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -55,7 +53,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("{{cdr.destroy.derivatives.stream.camel}}")
                 .routeId("CdrDestroyDerivatives")
-                .log(DEBUG, "Received destroy derivatives message")
+                .log(LoggingLevel.DEBUG, "Received destroy derivatives message")
                 .process(binaryInfoProcessor)
                 .choice()
                     .when(method(ImageDerivativeProcessor.class, "allowedImageType"))

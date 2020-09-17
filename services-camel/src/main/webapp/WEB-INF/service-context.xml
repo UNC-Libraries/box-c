@@ -391,7 +391,7 @@
     
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="${cdr.destroy.post.stream.camel}" />
+        <property name="defaultDestinationName" value="${cdr.destroy.post.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     

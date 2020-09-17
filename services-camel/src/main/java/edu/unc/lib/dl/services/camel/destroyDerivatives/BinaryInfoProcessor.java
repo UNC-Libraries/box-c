@@ -49,7 +49,8 @@ public class BinaryInfoProcessor implements Processor {
         }
 
         Element body = msgBody.getRootElement();
-        Element content = body.getChild("content", JDOMNamespaceUtil.ATOM_NS);
+        Element content = body.getChild("objsToDestroy", JDOMNamespaceUtil.ATOM_NS)
+                .getChild("contentUri");
         in.setHeader(CdrBinaryMimeType, content.getChild("mimetype").getTextTrim());
         in.setHeader(CdrBinaryPidId, content.getChild("pidId").getTextTrim());
     }

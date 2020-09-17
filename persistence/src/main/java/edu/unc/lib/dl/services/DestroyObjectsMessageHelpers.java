@@ -32,6 +32,9 @@ import edu.unc.lib.dl.fedora.PID;
  * @author lfarrell
  */
 public class DestroyObjectsMessageHelpers {
+    private DestroyObjectsMessageHelpers() {
+    }
+
     /**
      * Sends a remove object message from the repository message
      *
