@@ -328,4 +328,7 @@
         class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
 </beans>
