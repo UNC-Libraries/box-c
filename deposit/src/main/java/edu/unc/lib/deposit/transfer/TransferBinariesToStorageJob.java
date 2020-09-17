@@ -99,6 +99,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             i++;
             subjectIterator.next();
         }
+
+        resetClicks();
         setTotalClicks(i);
 
         // All objects in deposit should have the same destination, so pull storage loc from deposit record

@@ -444,6 +444,10 @@ public abstract class AbstractDepositJob implements Runnable {
         getJobStatusFactory().incrCompletion(getJobUUID(), clicks);
     }
 
+    protected void resetClicks() {
+        getJobStatusFactory().setCompletion(getJobUUID(), 0);
+    }
+
     public File getSubdir(String subpath) {
         return new File(getDepositDirectory(), subpath);
     }
