@@ -268,8 +268,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         // First, incomplete run
         job.run();
 
-        reset(repoObjFactory);
-
         depositModel = job.getWritableModel();
         // Refresh from update model
         workBag = depositModel.getBag(workBag);
