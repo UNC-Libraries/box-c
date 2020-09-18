@@ -225,7 +225,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
 
-        Element pidList = new Element("objsToDestroy", ATOM_NS);
+        Element pidList = new Element("objToDestroy", ATOM_NS);
         Element entryValues = new Element("contentUri").setText(uri);
         pidList.addContent(entryValues);
 

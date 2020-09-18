@@ -152,8 +152,10 @@ public class DestroyObjectsJob implements Runnable {
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
-                Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), pid, cleanupBinaryUris);
-                binaryDestroyedMessageSender.sendMessage(destroyMsg);
+                cleanupBinaryUris.forEach((contentUri, metadata) -> {
+                    Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
+                    binaryDestroyedMessageSender.sendMessage(destroyMsg);
+                });
            }
         } catch (Exception e) {
              tx.cancel(e);

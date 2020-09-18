@@ -24,6 +24,7 @@ import java.util.Map;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -39,27 +40,28 @@ public class DestroyObjectsMessageHelpers {
      * Sends a remove object message from the repository message
      *
      * @param  userid user making request
-     * @param objsToDestroy objects removed
+     * @param contentUri uri of object removed
+     * @param metadata metadata for object removed
      * @return id of operation message
      */
-    public static Document makeDestroyOperationBody(String userid, PID pid,
-                                                    Map<URI, Map<String, String>> objsToDestroy) {
+    public static Document makeDestroyOperationBody(String userid, URI contentUri, Map<String, String> metadata) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
 
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
 
+        String pidId = metadata.get("pid");
+        PID pid = PIDs.get(pidId);
+
         entry.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
 
-        Element pidList = new Element("objsToDestroy", ATOM_NS);
+        Element pidList = new Element("objToDestroy", ATOM_NS);
 
-        objsToDestroy.forEach((contentUri, metadata) -> {
-            Element entryValues = new Element("contentUri").setText(contentUri.toString());
-            entryValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
-            entryValues.addContent(new Element("pidId").setText(metadata.get("pid")));
-            pidList.addContent(entryValues);
-        });
+        Element entryValues = new Element("contentUri").setText(contentUri.toString());
+        entryValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
+        entryValues.addContent(new Element("pidId").setText(metadata.get("pid")));
+        pidList.addContent(entryValues);
 
         entry.addContent(pidList);
         msg.addContent(entry);

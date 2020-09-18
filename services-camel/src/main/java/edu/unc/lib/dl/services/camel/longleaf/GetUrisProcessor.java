@@ -17,9 +17,6 @@ package edu.unc.lib.dl.services.camel.longleaf;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -31,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
- * Retrieve contentUris from JDOM document and send out as a list
+ * Retrieve contentUri from JDOM document and send out as a list
  *
  * @author lfarrell
  */
@@ -44,18 +41,14 @@ public class GetUrisProcessor implements Processor {
         Document doc = MessageUtil.getDocumentBody(in);
 
         if (doc == null) {
-            log.warn("Event message contained no body with contentUris to deregister");
+            log.warn("Event message contained no body with contentUri to deregister");
             return;
         }
 
         Element root = doc.getRootElement();
-        List<Element> uris = root.getChild("objsToDestroy", ATOM_NS).getChildren();
+        String contentUri = root.getChild("objToDestroy", ATOM_NS)
+                .getChild("contentUri").getTextTrim();
 
-        List<String> contentUris = new ArrayList<>();
-        for (Element uri : uris) {
-            contentUris.add(uri.getTextTrim());
-        }
-
-        in.setBody(contentUris);
+        in.setBody(contentUri);
     }
 }

@@ -210,7 +210,7 @@ public class DestroyObjectsJobIT {
 
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
         Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, fileObjPid, binaries);
+        assertMessagesEqual(returnedMsgDoc, binaries);
     }
 
     @Test
@@ -252,7 +252,7 @@ public class DestroyObjectsJobIT {
 
         verify(binaryDestroyedMessageSender, times(4)).sendMessage(docCaptor.capture());
         Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, fileObjPid, binaryDerivs);
+        assertMessagesEqual(returnedMsgDoc, binaryDerivs);
     }
 
     @Test
@@ -320,7 +320,7 @@ public class DestroyObjectsJobIT {
 
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
         Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, fileObj.getPid(), binaryDerivs);
+        assertMessagesEqual(returnedMsgDoc, binaryDerivs);
     }
 
     @Test
@@ -401,10 +401,13 @@ public class DestroyObjectsJobIT {
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
     }
 
-    private void assertMessagesEqual(Document returnedDoc, PID pid ,
+    private void assertMessagesEqual(Document returnedDoc,
                                  Map<URI, Map<String, String>> binaryDerivs) {
-        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), pid, binaryDerivs);
-        assertEquals(returnedDoc.getRootElement().toString(), destroyMsg.getRootElement().toString());
+
+        binaryDerivs.forEach((contentUri, metadata) -> {
+            Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
+            assertEquals(returnedDoc.getRootElement().toString(), destroyMsg.getRootElement().toString());
+        });
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
