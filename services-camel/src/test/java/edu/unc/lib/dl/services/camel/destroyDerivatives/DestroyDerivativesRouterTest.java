@@ -64,16 +64,37 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void routeRequestText() throws Exception {
+        getMockEndpoint("mock:direct:image.derivatives.destroy").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(1);
+
         createContext(DESTROY_DERIVATIVES_ROUTE);
         template.sendBodyAndHeaders("", createEvent("text/plain"));
         verify(binaryInfoProcessor).process(any(Exchange.class));
+
+        assertMockEndpointsSatisfied();
     }
 
     @Test
     public void routeRequestImage() throws Exception {
+        getMockEndpoint("mock:direct:image.derivatives.destroy").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(0);
+
         createContext(DESTROY_DERIVATIVES_ROUTE);
         template.sendBodyAndHeaders("", createEvent("image/png"));
         verify(binaryInfoProcessor).process(any(Exchange.class));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void routeNonBinary() throws Exception {
+        getMockEndpoint("mock:direct:image.derivatives.destroy").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(0);
+
+        createContext(DESTROY_DERIVATIVES_ROUTE);
+        template.sendBodyAndHeaders("", createEvent("application"));
+
+        assertMockEndpointsSatisfied();
     }
 
     @Test
