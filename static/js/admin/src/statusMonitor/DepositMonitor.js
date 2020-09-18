@@ -105,18 +105,19 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 		if ("currentJob" in results) {
 			var currentJob = results.jobs[results.currentJob];
 		}
-		
+
 		if ("jobs" in results) {
 			for (var index in results.jobs) {
 				var job = results.jobs[index];
 				var jobName = job.name.substring(job.name.lastIndexOf(".") + 1);
 				
 				job["shortName"] = jobName;
-				
-				if (jobName == "IngestContentObjectsJob" && "total" in job) {
-					var completion = results.ingestedObjects? results.ingestedObjects : 0;
-					completion += " / " + job.total;
-					job["completion"] = completion;
+
+				var hasCount = job.num > 0;
+				if (hasCount && "total" in job) {
+					job["completion"] = job.num + " / " + job.total;
+				} else if (hasCount) {
+					job["completion"] = job.num;
 				}
 				var etime = job.endtime? (job.endtime - job.starttime) : 0;
 				if(etime != 0 ) job["time"] = etime + "ms";
@@ -125,7 +126,7 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 		
 		this.detailsContent.html(typeConfig.template({data : typeConfig.results, type : typeConfig, dateFormat : this.dateFormat, username : this.options.username}));
 	};
-		
+
 	DepositMonitor.prototype.dateFormat = function(dateObject) {
 		return moment(parseInt(dateObject)).format("MM/DD/YYYY h:mma");
 	};

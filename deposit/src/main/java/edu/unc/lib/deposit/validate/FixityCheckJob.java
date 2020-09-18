@@ -69,6 +69,8 @@ public class FixityCheckJob extends AbstractDepositJob {
         Model model = getReadOnlyModel();
 
         List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
+        setTotalClicks(stagingList.size());
+
         for (Entry<PID, String> stagingEntry : stagingList) {
             PID rescPid = stagingEntry.getKey();
             // Skip already checked files
@@ -92,6 +94,7 @@ public class FixityCheckJob extends AbstractDepositJob {
                 recordDigestsForResource(rescPid, objResc, digestWrapper.getDigests());
                 markObjectCompleted(rescPid);
                 log.debug("Completed fixity recording for {}", stagedUri);
+                addClicks(1);
             } catch (InvalidChecksumException e) {
                 failJob(String.format("Fixity check failed for %s belonging to %s",
                         stagedUri, objResc.getURI()),

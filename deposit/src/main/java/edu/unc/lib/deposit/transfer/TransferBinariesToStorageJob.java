@@ -35,6 +35,7 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
@@ -91,6 +92,17 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         Model model = getReadOnlyModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
+        // Count how many objects are being deposited
+        int i = 0;
+        ResIterator subjectIterator = model.listSubjects();
+        while (subjectIterator.hasNext()) {
+            i++;
+            subjectIterator.next();
+        }
+
+        resetClicks();
+        setTotalClicks(i);
+
         // All objects in deposit should have the same destination, so pull storage loc from deposit record
         try (BinaryTransferSession transferSession = getTransferSession(model)) {
             transferBinaries(depositBag, transferSession);
@@ -116,6 +128,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
             transferDepositManifests(objPid, resc, transferSession);
         }
+
+        addClicks(1);
 
         NodeIterator iterator = getChildIterator(resc);
         // No more children, nothing further to do in this tree

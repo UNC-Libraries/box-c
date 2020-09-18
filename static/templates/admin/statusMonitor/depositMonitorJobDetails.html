@@ -27,7 +27,8 @@
 		<% for (var i in data.jobs) {
 			var job = data.jobs[i];
 			%>
-			<li><span title="<%- job.shortName %>"><%= job.shortName %></span> <%= job.status %> <%= job.completion %> <%= job.time %></li>
+	<li><span title="<%- job.shortName %>"><%= job.shortName %></span>
+		<%= job.status %> <%= job.completion %> <% if (job.time) { %> in <%= job.time %> <% } %></li>
 		<% } %>
 			</ul>
 		</p>
