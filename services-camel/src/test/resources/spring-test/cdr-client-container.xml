@@ -94,16 +94,16 @@
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
-    
+
     <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
-            factory-method="createLocationManagerWithBasicConfig">
+          factory-method="createLocationManagerWithBasicConfig">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
-    
+
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
-    
+
     <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

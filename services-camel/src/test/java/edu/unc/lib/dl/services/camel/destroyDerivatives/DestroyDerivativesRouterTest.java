@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,10 +35,13 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.dl.rdf.Cdr;
+
 public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     private static final String DESTROY_DERIVATIVES_ROUTE = "CdrDestroyDerivatives";
     private static final String DESTROY_FULLTEXT_ROUTE = "CdrDestroyFullText";
     private static final String DESTROY_IMAGE_ROUTE = "CdrDestroyImage";
+    private static final String DESTROY_ACCESS_COPY_ROUTE = "CdrDestroyAccessCopy";
 
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
@@ -68,7 +72,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(1);
 
         createContext(DESTROY_DERIVATIVES_ROUTE);
-        template.sendBodyAndHeaders("", createEvent("text/plain"));
+        template.sendBodyAndHeaders("", createEvent("text/plain", Cdr.FileObject.getURI()));
         verify(binaryInfoProcessor).process(any(Exchange.class));
 
         assertMockEndpointsSatisfied();
@@ -80,7 +84,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(0);
 
         createContext(DESTROY_DERIVATIVES_ROUTE);
-        template.sendBodyAndHeaders("", createEvent("image/png"));
+        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.FileObject.getURI()));
         verify(binaryInfoProcessor).process(any(Exchange.class));
 
         assertMockEndpointsSatisfied();
@@ -92,7 +96,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(0);
 
         createContext(DESTROY_DERIVATIVES_ROUTE);
-        template.sendBodyAndHeaders("", createEvent("application"));
+        template.sendBodyAndHeaders("", createEvent("application", Cdr.FileObject.getURI()));
 
         assertMockEndpointsSatisfied();
     }
@@ -101,7 +105,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     public void destroyTextDerivative() throws Exception {
         createContext(DESTROY_FULLTEXT_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent("text/plain"));
+        template.sendBodyAndHeaders("", createEvent("text/plain", Cdr.FileObject.getURI()));
 
         verify(destroyFulltextProcessor).process(any(Exchange.class));
         verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
@@ -110,16 +114,65 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void destroyImageDerivative() throws Exception {
+    public void destroyImageThumbnailDerivative() throws Exception {
         createContext(DESTROY_IMAGE_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent("image/png"));
+        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.FileObject.getURI()));
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void destroyImageThumbnailDerivativeCollection() throws Exception {
+        createContext(DESTROY_IMAGE_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.Collection.getURI()));
+
+        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+    }
+
+    // See if any messages are routed for object with no mimetype
+    @Test
+    public void destroyImageThumbnailNoDerivativeCollection() throws Exception {
+        getMockEndpoint("mock:direct:image.derivatives.destroy").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:fulltext.derivatives.destroy").expectedMessageCount(0);
+
+        createContext(DESTROY_DERIVATIVES_ROUTE);
+        template.sendBodyAndHeaders("", createEvent("", Cdr.Collection.getURI()));
+        verify(binaryInfoProcessor).process(any(Exchange.class));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void destroyImageAccessDerivative() throws Exception {
+        createContext(DESTROY_ACCESS_COPY_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.FileObject.getURI()));
+
+        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
+
+    // See if any message is routed from direct:image.access.destroy
+    @Test
+    public void destroyImageAccessDerivativeCollection() throws Exception {
+        getMockEndpoint("mock:direct:image.access.destroy").expectedMessageCount(0);
+
+        createContext(DESTROY_IMAGE_ROUTE);
+        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.Collection.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
 
     private void createContext(String routeName) throws Exception {
         context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
@@ -133,9 +186,10 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(String mimetype) {
+    private static Map<String, Object> createEvent(String mimetype, String objType) {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(CdrBinaryMimeType, mimetype);
+        headers.put(CdrObjectType, objType);
         headers.put(CdrBinaryPidId, "dee2614c-8a4b-4ac2-baf2-4b4afc11af87");
 
         return headers;

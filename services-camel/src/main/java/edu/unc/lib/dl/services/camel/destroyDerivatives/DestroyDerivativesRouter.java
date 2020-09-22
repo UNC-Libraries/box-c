@@ -15,10 +15,13 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.ImageDerivativeProcessor;
 
@@ -53,6 +56,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("{{cdr.destroy.derivatives.stream.camel}}")
                 .routeId("CdrDestroyDerivatives")
+                .startupOrder(203)
                 .log(LoggingLevel.DEBUG, "Received destroy derivatives message")
                 .process(binaryInfoProcessor)
                 .choice()
@@ -64,12 +68,23 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("direct:fulltext.derivatives.destroy")
                 .routeId("CdrDestroyFullText")
+                .startupOrder(202)
+                .log(LoggingLevel.DEBUG, "Destroying derivative text files")
                 .bean(destroyFulltextProcessor);
 
         from("direct:image.derivatives.destroy")
                 .routeId("CdrDestroyImage")
+                .startupOrder(201)
+                .log(LoggingLevel.DEBUG, "Destroying derivative thumbnails")
                 .bean(destroySmallThumbnailProcessor)
                 .bean(destroyLargeThumbnailProcessor)
+                .filter(simple("${headers['" + CdrObjectType + "']} == '" + Cdr.FileObject.getURI() + "'"))
+                    .to("direct:image.access.destroy");
+
+        from("direct:image.access.destroy")
+                .routeId("CdrDestroyAccessCopy")
+                .startupOrder(200)
+                .log(LoggingLevel.DEBUG, "Destroying access copy")
                 .bean(destroyAccessCopyProcessor);
     }
 }

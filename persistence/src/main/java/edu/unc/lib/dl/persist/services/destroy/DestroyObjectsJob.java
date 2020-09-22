@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.asser
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
 import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
@@ -132,6 +133,8 @@ public class DestroyObjectsJob implements Runnable {
                     continue;
                 }
 
+                String objType = getObjType(repoObj.getTypes());
+
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
                     RepositoryObject parentObj = repoObj.getParent();
 
@@ -156,6 +159,17 @@ public class DestroyObjectsJob implements Runnable {
                     Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
                     binaryDestroyedMessageSender.sendMessage(destroyMsg);
                 });
+
+                // Send message for the object itself, unless FileObj which is added in destroyFile() method
+                if (!objType.equals(Cdr.FileObject.getURI())) {
+                    Map<String, String> metadata = new HashMap<>();
+                    metadata.put("objType", objType);
+                    metadata.put("pid", repoObj.getPid().getUUID());
+                    metadata.put("mimeType", "");
+
+                    Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), repoObj.getUri(), metadata);
+                    binaryDestroyedMessageSender.sendMessage(destroyMsg);
+                }
            }
         } catch (Exception e) {
              tx.cancel(e);
@@ -165,6 +179,24 @@ public class DestroyObjectsJob implements Runnable {
 
         // Defer binary cleanup until after fedora destroy transaction completes
         destroyBinaries();
+    }
+
+    private String getObjType(List<String> objTypes) {
+        List<String> cdrObjTypes = asList(
+                Cdr.AdminUnit.getURI(),
+                Cdr.Collection.getURI(),
+                Cdr.Folder.getURI(),
+                Cdr.Work.getURI(),
+                Cdr.FileObject.getURI()
+        );
+
+        for (String cdrObjType : cdrObjTypes) {
+            if (objTypes.contains(cdrObjType)) {
+                return cdrObjType;
+            }
+        }
+
+        return "";
     }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
@@ -222,6 +254,7 @@ public class DestroyObjectsJob implements Runnable {
             addBinaryMetadataToParent(resc, origFile);
 
             Map<String, String> contentMetadata = new HashMap<>();
+            contentMetadata.put("objType", Cdr.FileObject.getURI());
             contentMetadata.put("pid", origFile.getPid().getQualifiedId());
             contentMetadata.put("mimeType", origFile.getMimetype());
 

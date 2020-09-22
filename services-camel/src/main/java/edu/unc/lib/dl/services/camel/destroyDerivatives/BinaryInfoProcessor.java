@@ -15,8 +15,17 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -26,6 +35,7 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -36,7 +46,12 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 public class BinaryInfoProcessor implements Processor {
+    private final String derivativeBasePath;
     private static final Logger log = LoggerFactory.getLogger(BinaryInfoProcessor.class);
+
+    public BinaryInfoProcessor(String derivativeBasePath) {
+        this.derivativeBasePath = derivativeBasePath;
+    }
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -49,9 +64,32 @@ public class BinaryInfoProcessor implements Processor {
         }
 
         Element body = msgBody.getRootElement();
-        Element content = body.getChild("objsToDestroy", JDOMNamespaceUtil.ATOM_NS)
+        Element content = body.getChild("objToDestroy", JDOMNamespaceUtil.ATOM_NS)
                 .getChild("contentUri");
-        in.setHeader(CdrBinaryMimeType, content.getChild("mimetype").getTextTrim());
-        in.setHeader(CdrBinaryPidId, content.getChild("pidId").getTextTrim());
+
+        String objType = content.getChild("objType").getTextTrim();
+
+        // Skip works and folders
+        if (objType.equals(Cdr.Work.getURI()) || objType.equals(Cdr.Folder.getURI())) {
+            return;
+        }
+
+        String mimeType = content.getChild("mimetype").getTextTrim();
+        String pidId = content.getChild("pidId").getTextTrim();
+        String binaryPath = content.getTextTrim();
+
+        if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
+            String binarySubPath = idToPath(pidId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+            Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, pidId + ".png");
+
+            if (Files.exists(derivativePath)) {
+                mimeType = "image/png";
+            }
+        }
+
+        in.setHeader(CdrBinaryMimeType, mimeType);
+        in.setHeader(CdrBinaryPidId, pidId);
+        in.setHeader(CdrBinaryPath, binaryPath);
+        in.setHeader(CdrObjectType, objType);
     }
 }

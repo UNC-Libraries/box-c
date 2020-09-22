@@ -59,6 +59,7 @@ public class DestroyObjectsMessageHelpers {
         Element pidList = new Element("objToDestroy", ATOM_NS);
 
         Element entryValues = new Element("contentUri").setText(contentUri.toString());
+        entryValues.addContent(new Element("objType").setText(metadata.get("objType")));
         entryValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
         entryValues.addContent(new Element("pidId").setText(metadata.get("pid")));
         pidList.addContent(entryValues);

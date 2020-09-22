@@ -21,8 +21,8 @@
         <property name="location" value="classpath:destroy-derivatives-router-it-config.properties"/>
     </bean>
 
-    <bean id="binaryInfoProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.BinaryInfoProcessor" />
+    <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.BinaryInfoProcessor">
+        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
 
     <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
@@ -50,6 +50,35 @@
     <bean id="binaryDestroyedMessageSender" class="edu.unc.lib.dl.services.MessageSender">
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
+
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+          init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="5000" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+          init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="5000" />
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+    </bean>
+
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectAclFactory" ref="objectAclFactory" />
+    </bean>
+
+    <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
+    </bean>
+
+    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
+        <constructor-arg ref="queryModel" />
+        <constructor-arg ref="fcrepoClient" />
+    </bean>
+
 
     <bean id="camelShutdownHook" class="org.apache.activemq.camel.CamelShutdownHook">
         <constructor-arg ref="activemqBroker" />
