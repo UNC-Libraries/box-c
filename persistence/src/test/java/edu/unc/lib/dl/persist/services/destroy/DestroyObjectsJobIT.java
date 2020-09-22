@@ -250,7 +250,7 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
 
-        verify(binaryDestroyedMessageSender, times(4)).sendMessage(docCaptor.capture());
+        verify(binaryDestroyedMessageSender, times(7)).sendMessage(docCaptor.capture());
         Document returnedMsgDoc = docCaptor.getValue();
         assertMessagesEqual(returnedMsgDoc, binaryDerivs);
     }
@@ -318,7 +318,7 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
 
-        verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
+        verify(binaryDestroyedMessageSender, times(2)).sendMessage(docCaptor.capture());
         Document returnedMsgDoc = docCaptor.getValue();
         assertMessagesEqual(returnedMsgDoc, binaryDerivs);
     }
