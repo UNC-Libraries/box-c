@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.asser
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
 import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
@@ -79,6 +78,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -133,7 +133,7 @@ public class DestroyObjectsJob implements Runnable {
                     continue;
                 }
 
-                String objType = getObjType(repoObj.getTypes());
+                ResourceType objType = ResourceType.getResourceTypeForUris(repoObj.getTypes());
 
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
                     RepositoryObject parentObj = repoObj.getParent();
@@ -155,17 +155,12 @@ public class DestroyObjectsJob implements Runnable {
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
-                cleanupBinaryUris.forEach((contentUri, metadata) -> {
-                    Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
-                    binaryDestroyedMessageSender.sendMessage(destroyMsg);
-                });
 
                 // Send message for the object itself, unless FileObj which is added in destroyFile() method
-                if (!objType.equals(Cdr.FileObject.getURI())) {
+                if (!(repoObj instanceof FileObject)) {
                     Map<String, String> metadata = new HashMap<>();
-                    metadata.put("objType", objType);
+                    metadata.put("objType", objType.getUri());
                     metadata.put("pid", repoObj.getPid().getUUID());
-                    metadata.put("mimeType", "");
 
                     Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), repoObj.getUri(), metadata);
                     binaryDestroyedMessageSender.sendMessage(destroyMsg);
@@ -179,24 +174,6 @@ public class DestroyObjectsJob implements Runnable {
 
         // Defer binary cleanup until after fedora destroy transaction completes
         destroyBinaries();
-    }
-
-    private String getObjType(List<String> objTypes) {
-        List<String> cdrObjTypes = asList(
-                Cdr.AdminUnit.getURI(),
-                Cdr.Collection.getURI(),
-                Cdr.Folder.getURI(),
-                Cdr.Work.getURI(),
-                Cdr.FileObject.getURI()
-        );
-
-        for (String cdrObjType : cdrObjTypes) {
-            if (objTypes.contains(cdrObjType)) {
-                return cdrObjType;
-            }
-        }
-
-        return "";
     }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
@@ -276,6 +253,9 @@ public class DestroyObjectsJob implements Runnable {
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
+
+                Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
+                binaryDestroyedMessageSender.sendMessage(destroyMsg);
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);

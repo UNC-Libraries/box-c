@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.longleaf;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -46,8 +46,8 @@ public class GetUrisProcessor implements Processor {
         }
 
         Element root = doc.getRootElement();
-        String contentUri = root.getChild("objToDestroy", ATOM_NS)
-                .getChild("contentUri").getTextTrim();
+        String contentUri = root.getChild("objToDestroy", CDR_MESSAGE_NS)
+                .getChildTextTrim("contentUri");
 
         in.setBody(contentUri);
     }

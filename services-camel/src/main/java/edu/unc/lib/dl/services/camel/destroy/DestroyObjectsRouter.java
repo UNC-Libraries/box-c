@@ -50,7 +50,7 @@ public class DestroyObjectsRouter extends RouteBuilder {
             .log(DEBUG, "Received destroy objects cleanup message")
             .multicast()
             .parallelProcessing()
-            .to("activemq://activemq:queue:filter.longleaf.deregister")
-            .to("{{cdr.destroy.derivatives.stream.camel}}");
+            .to("activemq://activemq:queue:filter.longleaf.deregister",
+                    "{{cdr.destroy.derivatives.stream.camel}}");
     }
 }

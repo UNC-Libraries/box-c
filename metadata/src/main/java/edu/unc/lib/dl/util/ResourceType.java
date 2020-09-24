@@ -45,6 +45,10 @@ public enum ResourceType {
         return this.displayOrder;
     }
 
+    public String getUri() {
+        return this.uri;
+    }
+
     public boolean equals(String name) {
         return this.name().equals(name);
     }

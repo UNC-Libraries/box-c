@@ -24,9 +24,6 @@ import java.util.Map;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
-
 /**
  * Helper methods for destroy objects messages
  *
@@ -51,20 +48,18 @@ public class DestroyObjectsMessageHelpers {
         entry.addContent(new Element("author", ATOM_NS)
                 .addContent(new Element("name", ATOM_NS).setText(userid)));
 
-        String pidId = metadata.get("pid");
-        PID pid = PIDs.get(pidId);
+        Element objToDestroyEl = new Element("objToDestroy", CDR_MESSAGE_NS);
+        entry.addContent(objToDestroyEl);
 
-        entry.addContent(new Element("pid", CDR_MESSAGE_NS).setText(pid.getRepositoryPath()));
+        Element contentUriValue= new Element("contentUri").setText(contentUri.toString());
+        objToDestroyEl.addContent(contentUriValue);
 
-        Element pidList = new Element("objToDestroy", ATOM_NS);
+        Element metadataValues = new Element(("metadata"));
+        metadataValues.addContent(new Element("objType").setText(metadata.get("objType")));
+        metadataValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
+        metadataValues.addContent(new Element("pidId").setText(metadata.get("pid")));
+        objToDestroyEl.addContent(metadataValues);
 
-        Element entryValues = new Element("contentUri").setText(contentUri.toString());
-        entryValues.addContent(new Element("objType").setText(metadata.get("objType")));
-        entryValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
-        entryValues.addContent(new Element("pidId").setText(metadata.get("pid")));
-        pidList.addContent(entryValues);
-
-        entry.addContent(pidList);
         msg.addContent(entry);
 
         return msg;

@@ -319,8 +319,11 @@ public class DestroyObjectsJobIT {
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
 
         verify(binaryDestroyedMessageSender, times(2)).sendMessage(docCaptor.capture());
-        Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, binaryDerivs);
+
+        List<Document> returnedMsgDocs = docCaptor.getAllValues();
+        for (Document returnedMsgDoc : returnedMsgDocs) {
+            assertMessagesEqual(returnedMsgDoc, binaryDerivs);
+        }
     }
 
     @Test
@@ -403,7 +406,6 @@ public class DestroyObjectsJobIT {
 
     private void assertMessagesEqual(Document returnedDoc,
                                  Map<URI, Map<String, String>> binaryDerivs) {
-
         binaryDerivs.forEach((contentUri, metadata) -> {
             Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
             assertEquals(returnedDoc.getRootElement().toString(), destroyMsg.getRootElement().toString());

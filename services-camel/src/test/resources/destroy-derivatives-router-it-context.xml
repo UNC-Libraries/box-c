@@ -22,7 +22,7 @@
     </bean>
 
     <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.BinaryInfoProcessor">
-        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
+        <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
     <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">

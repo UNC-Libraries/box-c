@@ -46,11 +46,11 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 public class BinaryInfoProcessor implements Processor {
-    private final String derivativeBasePath;
+    private final String srcBasePath;
     private static final Logger log = LoggerFactory.getLogger(BinaryInfoProcessor.class);
 
-    public BinaryInfoProcessor(String derivativeBasePath) {
-        this.derivativeBasePath = derivativeBasePath;
+    public BinaryInfoProcessor(String srcBasePath) {
+        this.srcBasePath = srcBasePath;
     }
 
     @Override
@@ -64,26 +64,26 @@ public class BinaryInfoProcessor implements Processor {
         }
 
         Element body = msgBody.getRootElement();
-        Element content = body.getChild("objToDestroy", JDOMNamespaceUtil.ATOM_NS)
-                .getChild("contentUri");
+        Element content = body.getChild("objToDestroy", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        Element metadata = content.getChild("metadata");
 
-        String objType = content.getChild("objType").getTextTrim();
+        String objType = metadata.getChildTextTrim("objType");
 
         // Skip works and folders
         if (objType.equals(Cdr.Work.getURI()) || objType.equals(Cdr.Folder.getURI())) {
             return;
         }
 
-        String mimeType = content.getChild("mimetype").getTextTrim();
-        String pidId = content.getChild("pidId").getTextTrim();
-        String binaryPath = content.getTextTrim();
+        String mimeType = metadata.getChildTextTrim("mimetype");
+        String pidId = metadata.getChildTextTrim("pidId");
+        String binaryPath = content.getChildTextTrim("contentUri");
 
         if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
             String binarySubPath = idToPath(pidId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, pidId + ".png");
+            Path srcPath = Paths.get(srcBasePath, binarySubPath, pidId);
 
-            if (Files.exists(derivativePath)) {
-                mimeType = "image/png";
+            if (Files.exists(srcPath)) {
+                mimeType = "image/*";
             }
         }
 
