@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.longleaf;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -225,11 +226,11 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
 
-        Element pidList = new Element("objToDestroy", ATOM_NS);
-        Element entryValues = new Element("contentUri").setText(uri);
-        pidList.addContent(entryValues);
+        Element obj = new Element("objToDestroy", CDR_MESSAGE_NS);
+        Element uriValue = new Element("contentUri").setText(uri);
+        obj.addContent(uriValue);
 
-        entry.addContent(pidList);
+        entry.addContent(obj);
         msg.addContent(entry);
 
         return msg;
