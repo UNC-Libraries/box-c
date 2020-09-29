@@ -25,6 +25,10 @@
         <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
+    <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
     <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>

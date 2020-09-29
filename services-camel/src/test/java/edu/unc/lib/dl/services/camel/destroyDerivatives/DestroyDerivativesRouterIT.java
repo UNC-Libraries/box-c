@@ -133,6 +133,9 @@ public class DestroyDerivativesRouterIT {
     @BeanInject(value = "binaryInfoProcessor")
     private BinaryInfoProcessor binaryInfoProcessor;
 
+    @BeanInject(value = "destroyCollectionSrcImgProcessor")
+    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
+
     @BeanInject(value = "destroySmallThumbnailProcessor")
     private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
 
@@ -181,6 +184,7 @@ public class DestroyDerivativesRouterIT {
         contentRoot.addMember(adminUnit);
         adminUnit.addMember(collection);
 
+        reset(destroyCollectionSrcImgProcessor);
         reset(destroySmallThumbnailProcessor);
         reset(destroyLargeThumbnailProcessor);
         reset(destroyAccessCopyProcessor);
@@ -209,7 +213,9 @@ public class DestroyDerivativesRouterIT {
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
@@ -233,6 +239,7 @@ public class DestroyDerivativesRouterIT {
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -251,6 +258,7 @@ public class DestroyDerivativesRouterIT {
 
         verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -271,6 +279,7 @@ public class DestroyDerivativesRouterIT {
 
         verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor).process(any(Exchange.class));
     }
@@ -290,6 +299,7 @@ public class DestroyDerivativesRouterIT {
 
         verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }

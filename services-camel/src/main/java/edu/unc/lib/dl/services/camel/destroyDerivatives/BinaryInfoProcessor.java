@@ -27,9 +27,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.jena.sparql.function.library.uuid;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -74,16 +76,18 @@ public class BinaryInfoProcessor implements Processor {
             return;
         }
 
-        String mimeType = metadata.getChildTextTrim("mimetype");
+        String mimeType = metadata.getChildTextTrim("mimeType");
         String pidId = metadata.getChildTextTrim("pidId");
         String binaryPath = content.getChildTextTrim("contentUri");
 
         if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
-            String binarySubPath = idToPath(pidId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            Path srcPath = Paths.get(srcBasePath, binarySubPath, pidId);
+            String uuid = PIDs.get(pidId).getUUID();
+            String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+            Path srcPath = Paths.get(srcBasePath, binarySubPath, uuid);
 
             if (Files.exists(srcPath)) {
                 mimeType = "image/*";
+                in.setHeader("CollectionThumb", true);
             }
         }
 
@@ -91,5 +95,6 @@ public class BinaryInfoProcessor implements Processor {
         in.setHeader(CdrBinaryPidId, pidId);
         in.setHeader(CdrBinaryPath, binaryPath);
         in.setHeader(CdrObjectType, objType);
+
     }
 }

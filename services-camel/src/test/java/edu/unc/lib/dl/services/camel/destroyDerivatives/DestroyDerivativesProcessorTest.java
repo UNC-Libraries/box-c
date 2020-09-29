@@ -127,6 +127,36 @@ public class DestroyDerivativesProcessorTest {
     }
 
     @Test
+    public void deleteCollectionSrcImgTest() throws Exception {
+        String srcDirBase = "srcDir";
+        File srcDir = derivativeDir.newFolder(srcDirBase, "de", "75", "d8", "11");
+        File srcFile = new File(srcDir, pathId);
+        FileUtils.writeStringToFile(srcFile, "fake image src", StandardCharsets.UTF_8);
+
+        derivativeTypeBaseDir = new File(derivativeDirBase, srcDirBase);
+
+        processor = new DestroyDerivativesProcessor("", derivativeTypeBaseDir.getAbsolutePath());
+
+        when(message.getHeader(eq(CdrBinaryMimeType)))
+                .thenReturn("image/*");
+
+        when(message.getHeader(eq("CollectionThumb")))
+                .thenReturn(true);
+
+        assertTrue(srcFile.exists());
+        assertTrue(srcDir.exists());
+
+        processor.process(exchange);
+
+        // Make sure src image is removed
+        assertFalse(srcFile.exists());
+        assertFalse(srcDir.exists());
+
+        // Didn't delete root derivative type dir
+        assertTrue(derivativeTypeBaseDir.exists());
+    }
+
+    @Test
     public void deleteJp2Test() throws Exception {
         derivativeTypeDir = JP2_ACCESS_COPY.getId();
         derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");

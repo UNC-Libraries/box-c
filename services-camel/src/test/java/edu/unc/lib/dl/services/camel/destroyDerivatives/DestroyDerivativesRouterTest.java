@@ -42,12 +42,16 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     private static final String DESTROY_FULLTEXT_ROUTE = "CdrDestroyFullText";
     private static final String DESTROY_IMAGE_ROUTE = "CdrDestroyImage";
     private static final String DESTROY_ACCESS_COPY_ROUTE = "CdrDestroyAccessCopy";
+    private static final String DESTROY_SRC_COPY = "CdrDestroyCollectionUpload";
 
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
     @BeanInject(value = "binaryInfoProcessor")
     private BinaryInfoProcessor binaryInfoProcessor;
+
+    @BeanInject(value = "destroyCollectionSrcImgProcessor")
+    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
 
     @BeanInject(value = "destroySmallThumbnailProcessor")
     private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
@@ -109,6 +113,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
 
         verify(destroyFulltextProcessor).process(any(Exchange.class));
         verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
     }
@@ -121,6 +126,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -129,10 +135,26 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     public void destroyImageThumbnailDerivativeCollection() throws Exception {
         createContext(DESTROY_IMAGE_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.Collection.getURI()));
+        template.sendBodyAndHeaders("", createEvent("image/*", Cdr.Collection.getURI()));
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
         verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void destroyImageSrcCopyCollection() throws Exception {
+        createContext(DESTROY_SRC_COPY);
+
+        Map<String, Object> headers = createEvent("image/*", Cdr.Collection.getURI());
+        headers.put("CollectionThumb", true);
+        template.sendBodyAndHeaders("", headers);
+
+        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -168,7 +190,8 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:image.access.destroy").expectedMessageCount(0);
 
         createContext(DESTROY_IMAGE_ROUTE);
-        template.sendBodyAndHeaders("", createEvent("image/png", Cdr.Collection.getURI()));
+        Map<String, Object> headers = createEvent("image/png", Cdr.Collection.getURI());
+        template.sendBodyAndHeaders("CollectionThumb", headers);
 
         assertMockEndpointsSatisfied();
     }

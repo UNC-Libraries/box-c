@@ -35,6 +35,9 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject(value = "binaryInfoProcessor")
     private BinaryInfoProcessor binaryInfoProcessor;
 
+    @BeanInject(value = "destroyCollectionSrcImgProcessor")
+    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
+
     @BeanInject(value = "destroySmallThumbnailProcessor")
     private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
 
@@ -56,7 +59,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("{{cdr.destroy.derivatives.stream.camel}}")
                 .routeId("CdrDestroyDerivatives")
-                .startupOrder(203)
+                .startupOrder(204)
                 .log(LoggingLevel.DEBUG, "Received destroy derivatives message")
                 .process(binaryInfoProcessor)
                 .choice()
@@ -68,23 +71,33 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("direct:fulltext.derivatives.destroy")
                 .routeId("CdrDestroyFullText")
-                .startupOrder(202)
+                .startupOrder(203)
                 .log(LoggingLevel.DEBUG, "Destroying derivative text files")
                 .bean(destroyFulltextProcessor);
 
         from("direct:image.derivatives.destroy")
                 .routeId("CdrDestroyImage")
-                .startupOrder(201)
+                .startupOrder(202)
                 .log(LoggingLevel.DEBUG, "Destroying derivative thumbnails")
                 .bean(destroySmallThumbnailProcessor)
                 .bean(destroyLargeThumbnailProcessor)
-                .filter(simple("${headers['" + CdrObjectType + "']} == '" + Cdr.FileObject.getURI() + "'"))
-                    .to("direct:image.access.destroy");
+                .choice()
+                    .when(simple("${headers['" + CdrObjectType + "']} == '" + Cdr.FileObject.getURI() + "'"))
+                        .to("direct:image.access.destroy")
+                    .when(simple("${headers['CollectionThumb']} != null"))
+                        .to("direct:image.collection.destroy")
+                .end();
 
         from("direct:image.access.destroy")
                 .routeId("CdrDestroyAccessCopy")
-                .startupOrder(200)
+                .startupOrder(201)
                 .log(LoggingLevel.DEBUG, "Destroying access copy")
                 .bean(destroyAccessCopyProcessor);
+
+        from("direct:image.collection.destroy")
+                .routeId("CdrDestroyCollectionUpload")
+                .startupOrder(200)
+                .log(LoggingLevel.DEBUG, "Destroying collection imag upload")
+                .bean(destroyCollectionSrcImgProcessor);
     }
 }

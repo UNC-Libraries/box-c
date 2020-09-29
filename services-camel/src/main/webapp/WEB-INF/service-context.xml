@@ -224,6 +224,11 @@
         <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
+    <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="" />
+        <constructor-arg value="${sourceImages.dir}" />
+    </bean>
+
     <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
