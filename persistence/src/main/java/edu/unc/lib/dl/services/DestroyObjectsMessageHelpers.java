@@ -51,12 +51,17 @@ public class DestroyObjectsMessageHelpers {
         Element objToDestroyEl = new Element("objToDestroy", CDR_MESSAGE_NS);
         entry.addContent(objToDestroyEl);
 
-        Element contentUriValue= new Element("contentUri").setText(contentUri.toString());
+        Element contentUriValue = new Element("contentUri").setText(contentUri.toString());
         objToDestroyEl.addContent(contentUriValue);
 
         Element metadataValues = new Element(("metadata"));
         metadataValues.addContent(new Element("objType").setText(metadata.get("objType")));
-        metadataValues.addContent(new Element("mimetype").setText(metadata.get("mimeType")));
+
+        String mimetype = metadata.get("mimeType");
+        if (mimetype != null) {
+            metadataValues.addContent(new Element("mimeType").setText(metadata.get("mimeType")));
+        }
+
         metadataValues.addContent(new Element("pidId").setText(metadata.get("pid")));
         objToDestroyEl.addContent(metadataValues);
 

@@ -227,14 +227,15 @@ public class DestroyDerivativesRouterIT {
         treeIndexer.indexAll(baseAddress);
 
         // Create collection thumbnail
-        String uuid = collectionWithImg.getPid().getUUID();
+        PID collPid = collectionWithImg.getPid();
+        String uuid = collPid.getUUID();
         String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + binarySubPath + "/" + uuid);
         FileUtils.writeStringToFile(existingFile, "thumbnail", "UTF-8");
 
-        initMarkForDeletionJob(collectionWithImg.getPid());
+        initMarkForDeletionJob(collPid);
         deletionJob.run();
-        initializeDestroyJob(Collections.singletonList(collectionWithImg.getPid()));
+        initializeDestroyJob(Collections.singletonList(collPid));
         destroyJob.run();
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));

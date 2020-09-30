@@ -99,7 +99,7 @@ public class DestroyObjectsJob implements Runnable {
 
     private MultiDestinationTransferSession transferSession;
 
-    private Map<URI, Map<String, String>> cleanupBinaryUris;
+    private List<URI> cleanupBinaryUris;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
@@ -116,7 +116,7 @@ public class DestroyObjectsJob implements Runnable {
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
         this.agent = request.getAgent();
-        this.cleanupBinaryUris = new HashMap<>();
+        this.cleanupBinaryUris = new ArrayList<>();
     }
 
     @Override
@@ -132,8 +132,6 @@ public class DestroyObjectsJob implements Runnable {
                     log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
                     continue;
                 }
-
-                ResourceType objType = ResourceType.getResourceTypeForUris(repoObj.getTypes());
 
                 if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
                     RepositoryObject parentObj = repoObj.getParent();
@@ -155,17 +153,7 @@ public class DestroyObjectsJob implements Runnable {
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
-
-                // Send message for the object itself, unless FileObj which is added in destroyFile() method
-                if (!(repoObj instanceof FileObject)) {
-                    Map<String, String> metadata = new HashMap<>();
-                    metadata.put("objType", objType.getUri());
-                    metadata.put("pid", repoObj.getPid().getUUID());
-
-                    Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), repoObj.getUri(), metadata);
-                    binaryDestroyedMessageSender.sendMessage(destroyMsg);
-                }
-           }
+            }
         } catch (Exception e) {
              tx.cancel(e);
         } finally {
@@ -176,24 +164,52 @@ public class DestroyObjectsJob implements Runnable {
         destroyBinaries();
     }
 
+    private void sendDestroyDerivativesMsg(URI repoUri, RepositoryObject repoObj) {
+        Map<String, String> metadata = new HashMap<>();
+        String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
+        metadata.put("objType", objType);
+        String qualifiedId;
+
+        if (repoObj instanceof FileObject) {
+            FileObject fileObj = (FileObject) repoObj;
+            BinaryObject binaryObj = fileObj.getOriginalFile();
+            String mimetype = binaryObj.getMimetype();
+            metadata.put("mimeType", mimetype);
+            qualifiedId = binaryObj.getPid().getQualifiedId();
+        } else {
+            qualifiedId = repoObj.getPid().getQualifiedId();
+        }
+        metadata.put("pid", qualifiedId);
+
+        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), repoUri, metadata);
+        binaryDestroyedMessageSender.sendMessage(destroyMsg);
+    }
+
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
         log.debug("Performing destroy on object {} of type {}",
                 rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
+
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
+
             for (ContentObject member : members) {
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
+
             }
+            sendDestroyDerivativesMsg(rootOfTree.getUri(), rootOfTree);
         }
 
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
-            destroyFile((FileObject) rootOfTree, rootResc);
+            FileObject fileObj = (FileObject) rootOfTree;
+            destroyFile(fileObj, rootResc);
+            sendDestroyDerivativesMsg(fileObj.getOriginalFile().getContentUri(), fileObj);
         }
+
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
             deleteNonContentObjects(rootModel);
@@ -229,13 +245,7 @@ public class DestroyObjectsJob implements Runnable {
         BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
-
-            Map<String, String> contentMetadata = new HashMap<>();
-            contentMetadata.put("objType", Cdr.FileObject.getURI());
-            contentMetadata.put("pid", origFile.getPid().getQualifiedId());
-            contentMetadata.put("mimeType", origFile.getMimetype());
-
-            cleanupBinaryUris.put(origFile.getContentUri(), contentMetadata);
+            cleanupBinaryUris.add(origFile.getContentUri());
         }
     }
 
@@ -247,15 +257,12 @@ public class DestroyObjectsJob implements Runnable {
         if (transferSession == null) {
             transferSession = transferService.getSession();
         }
-        cleanupBinaryUris.forEach((contentUri, metadata) -> {
+        cleanupBinaryUris.forEach(contentUri -> {
             try {
                 log.debug("Deleting destroyed binary {}", contentUri);
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
-
-                Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
-                binaryDestroyedMessageSender.sendMessage(destroyMsg);
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);

@@ -17,12 +17,13 @@ package edu.unc.lib.dl.persist.services.destroy;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
-import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -34,6 +35,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +53,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,6 +99,8 @@ import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.util.ResourceType;
+
 /**
  *
  * @author harring
@@ -177,12 +182,12 @@ public class DestroyObjectsJobIT {
     }
 
     @Test
-    public void destroySingleFileObjectTest() {
+    public void destroySingleFileObjectTest() throws Exception {
         PID fileObjPid = objsToDestroy.get(2);
         initializeJob(asList(fileObjPid));
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        Map<URI, Map<String, String>> binaries = derivativesToCleanup(fileObj.getBinaryObjects());
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
 
         URI contentUri = fileObj.getOriginalFile().getContentUri();
         assertTrue(Files.exists(Paths.get(contentUri)));
@@ -209,22 +214,27 @@ public class DestroyObjectsJobIT {
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
 
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
-        Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, binaries);
+
+        assertMessagePresent(docCaptor.getAllValues(), filesToCleanup);
     }
 
     @Test
-    public void destroyObjectsInSameTreeTest() {
-        initializeJob(objsToDestroy);
+    public void destroyObjectsInSameTreeTest() throws Exception {
         //remove unrelated folder obj before running job
         objsToDestroy.remove(3);
+
+        initializeJob(objsToDestroy);
 
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
         PID folderObjPid = objsToDestroy.get(0);
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        Map<URI, Map<String, String>> binaryDerivs = derivativesToCleanup(fileObj.getBinaryObjects());
+        WorkObject workObj = repoObjLoader.getWorkObject(workObjPid);
+        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
+        filesToCleanup.put(folderObj.getUri(), nonBinaryToCleanup(folderObj));
+        filesToCleanup.put(workObj.getUri(), nonBinaryToCleanup(workObj));
 
         job.run();
 
@@ -250,9 +260,9 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
 
-        verify(binaryDestroyedMessageSender, times(7)).sendMessage(docCaptor.capture());
-        Document returnedMsgDoc = docCaptor.getValue();
-        assertMessagesEqual(returnedMsgDoc, binaryDerivs);
+        verify(binaryDestroyedMessageSender, times(3)).sendMessage(docCaptor.capture());
+
+        assertMessagePresent(docCaptor.getAllValues(), filesToCleanup);
     }
 
     @Test
@@ -290,15 +300,16 @@ public class DestroyObjectsJobIT {
     }
 
     @Test
-    public void destroyFolderTest() {
+    public void destroyFolderTest() throws Exception {
         PID folderObjPid = objsToDestroy.get(0);
         initializeJob(Arrays.asList(folderObjPid));
         FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
         WorkObject workObj = (WorkObject) folderObj.getMembers().get(0);
         FileObject fileObj = (FileObject) workObj.getMembers().get(0);
 
-        Map<URI, Map<String, String>> binaryDerivs = derivativesToCleanup(fileObj.getBinaryObjects());
-        URI contentUri = fileObj.getOriginalFile().getContentUri();
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
+        filesToCleanup.put(folderObj.getUri(), nonBinaryToCleanup(folderObj));
+        filesToCleanup.put(workObj.getUri(), nonBinaryToCleanup(workObj));
 
         job.run();
 
@@ -318,12 +329,9 @@ public class DestroyObjectsJobIT {
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
 
-        verify(binaryDestroyedMessageSender, times(2)).sendMessage(docCaptor.capture());
-
-        List<Document> returnedMsgDocs = docCaptor.getAllValues();
-        for (Document returnedMsgDoc : returnedMsgDocs) {
-            assertMessagesEqual(returnedMsgDoc, binaryDerivs);
-        }
+        verify(binaryDestroyedMessageSender, times(3)).sendMessage(docCaptor.capture());
+        List<Document> values = docCaptor.getAllValues();
+        assertMessagePresent(values, filesToCleanup);
     }
 
     @Test
@@ -404,12 +412,28 @@ public class DestroyObjectsJobIT {
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
     }
 
-    private void assertMessagesEqual(Document returnedDoc,
-                                 Map<URI, Map<String, String>> binaryDerivs) {
-        binaryDerivs.forEach((contentUri, metadata) -> {
-            Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), contentUri, metadata);
-            assertEquals(returnedDoc.getRootElement().toString(), destroyMsg.getRootElement().toString());
-        });
+    private void assertMessagePresent(List<Document> returnedDocs, Map<URI, Map<String, String>> filesToCleanup)
+            throws URISyntaxException {
+
+        for (Document returnedDoc : returnedDocs) {
+            Element root = returnedDoc.getRootElement();
+            Element info = root.getChild("objToDestroy", CDR_MESSAGE_NS);
+            URI uri = new URI(info.getChildTextTrim("contentUri"));
+            Element metadata = info.getChild("metadata");
+
+            Map<String, String> cleanupFile = filesToCleanup.get(uri);
+            assertEquals(metadata.getChildTextTrim("pidId"), cleanupFile.get("pid"));
+
+            String objType = cleanupFile.get("objType");
+            assertEquals(metadata.getChildTextTrim("objType"), objType);
+
+            String mimetype = metadata.getChildTextTrim("mimeType");
+            if (!objType.equals(Cdr.FileObject.getURI())) {
+                assertNull(mimetype);
+            } else {
+                assertEquals(mimetype, cleanupFile.get("mimeType"));
+            }
+        }
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
@@ -420,16 +444,22 @@ public class DestroyObjectsJobIT {
         }
     }
 
-    private Map<URI, Map<String, String>> derivativesToCleanup(List<BinaryObject> binaries) {
+    private Map<String, String> nonBinaryToCleanup(RepositoryObject obj) {
+        Map<String, String> contentMetadata = new HashMap<>();
+        contentMetadata.put("objType", ResourceType.getResourceTypeForUris(obj.getTypes()).getUri());
+        contentMetadata.put("pid", obj.getPid().getQualifiedId());
+        return contentMetadata;
+    }
+
+    private Map<URI, Map<String, String>> derivativesToCleanup(FileObject fileObj) {
         HashMap<URI, Map<String, String>> cleanupBinaryUris = new HashMap<>();
 
-        for (BinaryObject binary : binaries) {
-            Map<String, String> contentMetadata = new HashMap<>();
-            contentMetadata.put("pid", binary.getPid().getQualifiedId());
-            contentMetadata.put("mimeType", binary.getMimetype());
-
-            cleanupBinaryUris.put(binary.getContentUri(), contentMetadata);
-        }
+        BinaryObject binary = fileObj.getOriginalFile();
+        Map<String, String> contentMetadata = new HashMap<>();
+        contentMetadata.put("objType", Cdr.FileObject.getURI());
+        contentMetadata.put("pid", binary.getPid().getQualifiedId());
+        contentMetadata.put("mimeType", binary.getMimetype());
+        cleanupBinaryUris.put(binary.getContentUri(), contentMetadata);
 
         return cleanupBinaryUris;
     }
