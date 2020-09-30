@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import org.apache.camel.BeanInject;
@@ -117,6 +118,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         when(workObj.getResource()).thenReturn(resc);
         when(workObj.getPid()).thenReturn(pid);
         when(workObj.getUri()).thenReturn(pid.getRepositoryUri());
+        when(workObj.getTypes()).thenReturn(Collections.singletonList(Cdr.Work.getURI()));
 
         when(objectPathFactory.getPath(pid)).thenReturn(objPath);
         when(objPath.toNamePath()).thenReturn("/path/to/stuff");
