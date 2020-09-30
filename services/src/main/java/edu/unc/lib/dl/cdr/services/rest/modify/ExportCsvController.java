@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.admin.controller;
+package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
@@ -57,8 +57,8 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
  *
  */
 @Controller
-@RequestMapping("export")
-public class ExportController extends AbstractSolrSearchController {
+@RequestMapping("exportTree/csv")
+public class ExportCsvController extends AbstractSolrSearchController {
 
     @Autowired
     private ChildrenCountService childrenCountService;
