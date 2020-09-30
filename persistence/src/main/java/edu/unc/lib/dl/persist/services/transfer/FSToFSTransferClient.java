@@ -90,13 +90,9 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             File sourceFile = Paths.get(sourceFileUri).toFile();
             File newFile = newFilePath.toFile();
-            // Copy/move new file
-            if (source.isReadOnly()) {
-                // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
-                FileUtils.copyFile(sourceFile, newFile, true);
-            } else {
-                FileUtils.moveFile(sourceFile, newFile);
-            }
+
+            // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
+            FileUtils.copyFile(sourceFile, newFile, true);
 
             // Rename old file to .old extension
             if (destFileExists) {
@@ -111,6 +107,16 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             } catch (IOException e) {
                 // Ignore. New file is already in place
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
+            }
+
+            // Remove source file after deposited
+            if (!source.isReadOnly()) {
+                Path sourcePath = sourceFile.toPath();
+                try {
+                    Files.deleteIfExists(sourcePath);
+                } catch (IOException e) {
+                    log.warn("Unable to delete source file {}. Reason {}", sourcePath, e.getMessage());
+                }
             }
         } catch (IOException e) {
             log.debug("Attempting to roll back failed transfer of {} to {}",
