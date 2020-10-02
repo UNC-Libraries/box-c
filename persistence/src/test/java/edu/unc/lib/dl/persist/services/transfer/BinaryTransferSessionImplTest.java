@@ -160,7 +160,6 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
             assertFileContent(Paths.get(result2), "stuff");
             // First source file should still be present
             assertIsSourceFile(sourceFile);
-            assertFalse("Second source file should no longer exist", sourceFile2.toFile().exists());
         }
     }
 

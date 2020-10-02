@@ -108,16 +108,6 @@ public class FSToFSTransferClient implements BinaryTransferClient {
                 // Ignore. New file is already in place
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
             }
-
-            // Remove source file after deposited
-            if (!source.isReadOnly()) {
-                Path sourcePath = sourceFile.toPath();
-                try {
-                    Files.deleteIfExists(sourcePath);
-                } catch (IOException e) {
-                    log.warn("Unable to delete source file {}. Reason {}", sourcePath, e.getMessage());
-                }
-            }
         } catch (IOException e) {
             log.debug("Attempting to roll back failed transfer of {} to {}",
                     sourceFileUri, destinationPath);

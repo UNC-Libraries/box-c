@@ -98,7 +98,7 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             }
 
             // Move temp file into final location
-            Files.copy(newFilePath, destPath, REPLACE_EXISTING);
+            Files.move(newFilePath, destPath, REPLACE_EXISTING);
 
             // Delete old file.
             try {
@@ -106,13 +106,6 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             } catch (IOException e) {
                 // Ignore. New file is already in place
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
-            }
-
-            // Remove temp file after it's moved into its final location
-            try {
-                Files.deleteIfExists(newFilePath);
-            } catch (IOException e) {
-                log.warn("Unable to delete source file {}. Reason {}", newFilePath, e.getMessage());
             }
         } catch (IOException e) {
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destPath);
