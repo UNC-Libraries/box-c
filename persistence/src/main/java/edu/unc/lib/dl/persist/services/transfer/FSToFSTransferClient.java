@@ -90,13 +90,9 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             File sourceFile = Paths.get(sourceFileUri).toFile();
             File newFile = newFilePath.toFile();
-            // Copy/move new file
-            if (source.isReadOnly()) {
-                // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
-                FileUtils.copyFile(sourceFile, newFile, true);
-            } else {
-                FileUtils.moveFile(sourceFile, newFile);
-            }
+
+            // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
+            FileUtils.copyFile(sourceFile, newFile, true);
 
             // Rename old file to .old extension
             if (destFileExists) {

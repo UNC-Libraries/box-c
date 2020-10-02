@@ -24,7 +24,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
@@ -239,8 +238,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         Model model = job.getReadOnlyModel();
         Resource postWorkResc = model.getResource(workBag.getURI());
-
-        assertFalse("History file should no longer exist in deposits directory", historyFile.exists());
 
         URI historyUri = URI.create(postWorkResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
         Path historyPath = Paths.get(historyUri);
@@ -467,9 +464,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertOriginalFileTransferred(Resource resc, String expectedContent) throws Exception {
-        URI stagingUri = URI.create(resc.getProperty(CdrDeposit.stagingLocation).getString());
-        assertFalse("Staged file should no longer exist", Files.exists(Paths.get(stagingUri)));
-
         assertFileTransferred(resc, expectedContent);
     }
 
@@ -482,11 +476,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertFitsFileTransferred(Resource resc) throws Exception {
-        PID objPid = PIDs.get(resc.getURI());
-
-        File fitsSource = job.getTechMdPath(objPid, false).toFile();
-        assertFalse("FITS file should no longer exist in deposits directory", fitsSource.exists());
-
         URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
         Path fitsPath = Paths.get(fitsUri);
         assertTrue("FITS file should exist at storage uri", Files.exists(fitsPath));

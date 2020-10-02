@@ -117,7 +117,6 @@ public class BinaryTransferServiceImplIT {
             URI destUri = session.transfer(binPid, sourceFile.toUri());
 
             assertTrue(new File(destUri).exists());
-            assertFalse(sourceFile.toFile().exists());
         }
     }
 
@@ -133,7 +132,6 @@ public class BinaryTransferServiceImplIT {
             StorageLocation dest1 = storageManager.getStorageLocationById("loc1");
             URI destUri1 = session.forDestination(dest1).transfer(binPid1, sourceFile1.toUri());
             assertTrue(new File(destUri1).exists());
-            assertFalse(sourceFile1.toFile().exists());
 
             StorageLocation dest2 = storageManager.getStorageLocationById("loc2");
             URI destUri2 = session.forDestination(dest2).transfer(binPid2, sourceFile2.toUri());

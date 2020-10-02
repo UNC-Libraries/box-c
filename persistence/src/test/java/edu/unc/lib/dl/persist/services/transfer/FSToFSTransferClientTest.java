@@ -111,7 +111,6 @@ public class FSToFSTransferClientTest {
         client.transfer(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
-        assertFalse("Source file should not exist after transfer", sourceFile.toFile().exists());
     }
 
     @Test(expected = BinaryAlreadyExistsException.class)
@@ -152,7 +151,6 @@ public class FSToFSTransferClientTest {
         client.transferReplaceExisting(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
-        assertFalse("Source file should not exist after transfer", sourceFile.toFile().exists());
     }
 
     @Test
@@ -166,7 +164,6 @@ public class FSToFSTransferClientTest {
         client.transferReplaceExisting(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
-        assertFalse("Source file should not exist after transfer", sourceFile.toFile().exists());
     }
 
     @Test
@@ -297,7 +294,6 @@ public class FSToFSTransferClientTest {
         Path sourceFile = createSourceFile();
         client.transfer(binPid, sourceFile.toUri());
 
-        assertFalse(Files.exists(sourceFile));
         assertTrue(client.isTransferred(binPid, sourceFile.toUri()));
     }
 
