@@ -47,7 +47,7 @@ public class GetUrisProcessor implements Processor {
 
         Element root = doc.getRootElement();
         String contentUri = root.getChild("objToDestroy", CDR_MESSAGE_NS)
-                .getChildTextTrim("contentUri");
+                .getChildTextTrim("contentUri", CDR_MESSAGE_NS);
 
         in.setBody(contentUri);
     }

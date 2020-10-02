@@ -32,8 +32,8 @@ import edu.unc.lib.dl.services.camel.images.ImageDerivativeProcessor;
  *
  */
 public class DestroyDerivativesRouter extends RouteBuilder {
-    @BeanInject(value = "binaryInfoProcessor")
-    private BinaryInfoProcessor binaryInfoProcessor;
+    @BeanInject(value = "destroyedMsgProcessor")
+    private DestroyedMsgProcessor destroyedMsgProcessor;
 
     @BeanInject(value = "destroyCollectionSrcImgProcessor")
     private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
@@ -61,7 +61,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .routeId("CdrDestroyDerivatives")
                 .startupOrder(204)
                 .log(LoggingLevel.DEBUG, "Received destroy derivatives message")
-                .process(binaryInfoProcessor)
+                .process(destroyedMsgProcessor)
                 .choice()
                     .when(method(ImageDerivativeProcessor.class, "allowedImageType"))
                         .to("direct:image.derivatives.destroy")
@@ -97,7 +97,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
         from("direct:image.collection.destroy")
                 .routeId("CdrDestroyCollectionUpload")
                 .startupOrder(200)
-                .log(LoggingLevel.DEBUG, "Destroying collection imag upload")
+                .log(LoggingLevel.DEBUG, "Destroying collection image upload")
                 .bean(destroyCollectionSrcImgProcessor);
     }
 }

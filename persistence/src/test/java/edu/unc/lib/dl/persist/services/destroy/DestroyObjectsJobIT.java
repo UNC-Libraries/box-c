@@ -418,16 +418,15 @@ public class DestroyObjectsJobIT {
         for (Document returnedDoc : returnedDocs) {
             Element root = returnedDoc.getRootElement();
             Element info = root.getChild("objToDestroy", CDR_MESSAGE_NS);
-            URI uri = new URI(info.getChildTextTrim("contentUri"));
-            Element metadata = info.getChild("metadata");
+            URI uri = new URI(info.getChildTextTrim("contentUri", CDR_MESSAGE_NS));
 
             Map<String, String> cleanupFile = filesToCleanup.get(uri);
-            assertEquals(metadata.getChildTextTrim("pidId"), cleanupFile.get("pid"));
+            assertEquals(info.getChildTextTrim("pidId", CDR_MESSAGE_NS), cleanupFile.get("pid"));
 
             String objType = cleanupFile.get("objType");
-            assertEquals(metadata.getChildTextTrim("objType"), objType);
+            assertEquals(info.getChildTextTrim("objType", CDR_MESSAGE_NS), objType);
 
-            String mimetype = metadata.getChildTextTrim("mimeType");
+            String mimetype = info.getChildTextTrim("mimeType", CDR_MESSAGE_NS);
             if (!objType.equals(Cdr.FileObject.getURI())) {
                 assertNull(mimetype);
             } else {

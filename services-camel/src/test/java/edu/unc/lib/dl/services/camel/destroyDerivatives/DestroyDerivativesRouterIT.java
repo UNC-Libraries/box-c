@@ -57,7 +57,6 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -130,8 +129,8 @@ public class DestroyDerivativesRouterIT {
     @Mock
     private ObjectPath path;
 
-    @BeanInject(value = "binaryInfoProcessor")
-    private BinaryInfoProcessor binaryInfoProcessor;
+    @BeanInject(value = "destroyedMsgProcessor")
+    private DestroyedMsgProcessor destroyedMsgProcessor;
 
     @BeanInject(value = "destroyCollectionSrcImgProcessor")
     private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
@@ -147,8 +146,6 @@ public class DestroyDerivativesRouterIT {
 
     @BeanInject(value = "destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
-
-    private MarkForDeletionJob deletionJob;
 
     private DestroyObjectsJob destroyJob;
 
@@ -206,8 +203,7 @@ public class DestroyDerivativesRouterIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        initMarkForDeletionJob(fileObj.getPid());
-        deletionJob.run();
+        markForDeletionJob(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
@@ -216,7 +212,6 @@ public class DestroyDerivativesRouterIT {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
-        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -230,12 +225,13 @@ public class DestroyDerivativesRouterIT {
         PID collPid = collectionWithImg.getPid();
         String uuid = collPid.getUUID();
         String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + binarySubPath + "/" + uuid);
+        Path existingFileDirs = Files.createDirectories(new File("target/" + binarySubPath).toPath());
+        File existingFile = new File(existingFileDirs.toString() + "/" + uuid);
         FileUtils.writeStringToFile(existingFile, "thumbnail", "UTF-8");
 
-        initMarkForDeletionJob(collPid);
-        deletionJob.run();
+        markForDeletionJob(collPid);
         initializeDestroyJob(Collections.singletonList(collPid));
+
         destroyJob.run();
 
         verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
@@ -252,8 +248,7 @@ public class DestroyDerivativesRouterIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        initMarkForDeletionJob(collectionWithImg.getPid());
-        deletionJob.run();
+        markForDeletionJob(collectionWithImg.getPid());
         initializeDestroyJob(Collections.singletonList(collectionWithImg.getPid()));
         destroyJob.run();
 
@@ -273,8 +268,7 @@ public class DestroyDerivativesRouterIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        initMarkForDeletionJob(work.getPid());
-        deletionJob.run();
+        markForDeletionJob(work.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
@@ -293,8 +287,7 @@ public class DestroyDerivativesRouterIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        initMarkForDeletionJob(fileObj.getPid());
-        deletionJob.run();
+        markForDeletionJob(fileObj.getPid());
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
@@ -306,9 +299,7 @@ public class DestroyDerivativesRouterIT {
     }
 
     private FileObject addFileToWork(WorkObject work, String mimetype) throws Exception {
-        FolderObject folder = repoObjectFactory.createFolderObject(null);
-        collection.addMember(folder);
-        folder.addMember(work);
+        collection.addMember(work);
 
         String bodyString = "Content";
         Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getStorageUri(work.getPid()));
@@ -321,9 +312,9 @@ public class DestroyDerivativesRouterIT {
         return work.addDataFile(contentFile.toURI(), filename, mimetype, sha1, null);
     }
 
-    private void initMarkForDeletionJob(PID pid) {
-        deletionJob =  new MarkForDeletionJob(pid, "", agent, repoObjLoader,
-                sparqlUpdateService, aclService);
+    private void markForDeletionJob(PID pid) {
+        new MarkForDeletionJob(pid, "", agent, repoObjLoader,
+                sparqlUpdateService, aclService).run();
     }
 
     private void initializeDestroyJob(List<PID> objsToDestroy) {

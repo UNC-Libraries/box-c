@@ -31,7 +31,6 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.jena.sparql.function.library.uuid;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -47,11 +46,11 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author lfarrell
  *
  */
-public class BinaryInfoProcessor implements Processor {
+public class DestroyedMsgProcessor implements Processor {
     private final String srcBasePath;
-    private static final Logger log = LoggerFactory.getLogger(BinaryInfoProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(DestroyedMsgProcessor.class);
 
-    public BinaryInfoProcessor(String srcBasePath) {
+    public DestroyedMsgProcessor(String srcBasePath) {
         this.srcBasePath = srcBasePath;
     }
 
@@ -67,18 +66,16 @@ public class BinaryInfoProcessor implements Processor {
 
         Element body = msgBody.getRootElement();
         Element content = body.getChild("objToDestroy", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-        Element metadata = content.getChild("metadata");
-
-        String objType = metadata.getChildTextTrim("objType");
+        String objType = content.getChildTextTrim("objType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
         // Skip works and folders
         if (objType.equals(Cdr.Work.getURI()) || objType.equals(Cdr.Folder.getURI())) {
             return;
         }
 
-        String mimeType = metadata.getChildTextTrim("mimeType");
-        String pidId = metadata.getChildTextTrim("pidId");
-        String binaryPath = content.getChildTextTrim("contentUri");
+        String mimeType = content.getChildTextTrim("mimeType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        String pidId = content.getChildTextTrim("pidId", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        String binaryPath = content.getChildTextTrim("contentUri", JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
         if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
             String uuid = PIDs.get(pidId).getUUID();

@@ -13,8 +13,8 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="binaryInfoProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.BinaryInfoProcessor" />
+    <bean id="destroyedMsgProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor" />
     </bean>
 
     <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">

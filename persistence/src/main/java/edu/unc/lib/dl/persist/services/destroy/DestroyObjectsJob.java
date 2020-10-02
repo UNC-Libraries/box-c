@@ -164,24 +164,28 @@ public class DestroyObjectsJob implements Runnable {
         destroyBinaries();
     }
 
-    private void sendDestroyDerivativesMsg(URI repoUri, RepositoryObject repoObj) {
+    private void sendDestroyDerivativesMsg(RepositoryObject repoObj) {
         Map<String, String> metadata = new HashMap<>();
         String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
         metadata.put("objType", objType);
         String qualifiedId;
+        URI objUri;
 
         if (repoObj instanceof FileObject) {
             FileObject fileObj = (FileObject) repoObj;
             BinaryObject binaryObj = fileObj.getOriginalFile();
             String mimetype = binaryObj.getMimetype();
             metadata.put("mimeType", mimetype);
+
             qualifiedId = binaryObj.getPid().getQualifiedId();
+            objUri = fileObj.getOriginalFile().getContentUri();
         } else {
             qualifiedId = repoObj.getPid().getQualifiedId();
+            objUri = repoObj.getUri();
         }
         metadata.put("pid", qualifiedId);
 
-        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), repoUri, metadata);
+        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), objUri, metadata);
         binaryDestroyedMessageSender.sendMessage(destroyMsg);
     }
 
@@ -199,7 +203,6 @@ public class DestroyObjectsJob implements Runnable {
                 destroyTree(member);
 
             }
-            sendDestroyDerivativesMsg(rootOfTree.getUri(), rootOfTree);
         }
 
         Resource rootResc = rootOfTree.getResource();
@@ -207,8 +210,9 @@ public class DestroyObjectsJob implements Runnable {
         if (rootOfTree instanceof FileObject) {
             FileObject fileObj = (FileObject) rootOfTree;
             destroyFile(fileObj, rootResc);
-            sendDestroyDerivativesMsg(fileObj.getOriginalFile().getContentUri(), fileObj);
         }
+
+        sendDestroyDerivativesMsg(rootOfTree);
 
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {

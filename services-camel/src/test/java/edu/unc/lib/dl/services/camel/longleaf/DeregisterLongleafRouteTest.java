@@ -227,7 +227,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         Element entry = new Element("entry", ATOM_NS);
 
         Element obj = new Element("objToDestroy", CDR_MESSAGE_NS);
-        Element uriValue = new Element("contentUri").setText(uri);
+        Element uriValue = new Element("contentUri", CDR_MESSAGE_NS).setText(uri);
         obj.addContent(uriValue);
 
         entry.addContent(obj);
