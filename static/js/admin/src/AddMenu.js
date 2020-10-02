@@ -15,7 +15,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		if (canIngest) {
 			var self = this;
 			var folderOrCollection = this.container.type === "Folder" || this.container.type === "Collection";
-			var workOrFile = this.container.type === "Work" || this.container.type === "File";
 			
 			if (folderOrCollection
 				|| (this.container.type === "AdminUnit" && $.inArray('createCollection', this.container.permissions) !== -1)
@@ -34,7 +33,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 				items["addFile"] = { name : "Add File" };
 			}
 			
-			if (!workOrFile) {
+			if (this.container.type === "Collection") {
 				// items["ingestPackage"] = { name : "Add Ingest Package" }
 				items["ingestSource"] = { name : "Add from File Server" }
 			}
