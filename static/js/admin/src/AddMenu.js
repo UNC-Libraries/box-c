@@ -33,7 +33,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 				items["addFile"] = { name : "Add File" };
 			}
 			
-			if (this.container.type === "Collection") {
+			if (folderOrCollection) {
 				// items["ingestPackage"] = { name : "Add Ingest Package" }
 				items["ingestSource"] = { name : "Add from File Server" }
 			}
