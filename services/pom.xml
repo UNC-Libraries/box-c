@@ -102,6 +102,12 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>solr-ingest</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>access-common</artifactId>
         </dependency>
         <dependency>

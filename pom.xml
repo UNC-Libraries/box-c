@@ -597,6 +597,13 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>solr-ingest</artifactId>
+                <version>${cdr.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>access-common</artifactId>
                 <version>${cdr.version}</version>
             </dependency>

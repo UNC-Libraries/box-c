@@ -52,13 +52,35 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
+ * Controller which generates a CSV listing of a repository object
+ * and all of its children, recursively depth first.
  *
  * @author bbpennel
- *
  */
 @Controller
 @RequestMapping("exportTree/csv")
 public class ExportCsvController extends AbstractSolrSearchController {
+
+    public static final String OBJ_TYPE_HEADER = "Object Type";
+    public static final String PID_HEADER = "PID";
+    public static final String TITLE_HEADER = "Title";
+    public static final String PATH_HEADER = "Path";
+    public static final String LABEL_HEADER = "Label";
+    public static final String DEPTH_HEADER = "Depth";
+    public static final String DELETED_HEADER = "Deleted";
+    public static final String DATE_ADDED_HEADER = "Date Added";
+    public static final String DATE_UPDATED_HEADER = "Date Updated";
+    public static final String MIME_TYPE_HEADER = "MIME Type";
+    public static final String CHECKSUM_HEADER = "Checksum";
+    public static final String FILE_SIZE_HEADER = "File Size (bytes)";
+    public static final String NUM_CHILDREN_HEADER = "Number of Children";
+    public static final String DESCRIBED_HEADER = "Description";
+
+    private static final String[] CSV_HEADERS = new String[] {
+            OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER, LABEL_HEADER,
+            DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
+            MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
+            DESCRIBED_HEADER};
 
     @Autowired
     private ChildrenCountService childrenCountService;
@@ -98,9 +120,7 @@ public class ExportCsvController extends AbstractSolrSearchController {
         try (ServletOutputStream out = response.getOutputStream()) {
             Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
 
-            try (CSVPrinter printer = CSVFormat.EXCEL.print(writer)) {
-                printHeaders(printer);
-
+            try (CSVPrinter printer = getPrinter(writer)) {
                 for (BriefObjectMetadata object : objects) {
                     printObject(printer, object);
                 }
@@ -108,10 +128,8 @@ public class ExportCsvController extends AbstractSolrSearchController {
         }
     }
 
-    private void printHeaders(CSVPrinter printer) throws IOException {
-        printer.printRecord("Object Type", "PID", "Title", "Path", "Label","Depth",
-                "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum",
-                "File Size (bytes)", "Number of Children", "Description");
+    private CSVPrinter getPrinter(Writer writer) throws IOException {
+        return CSVFormat.EXCEL.withHeader(CSV_HEADERS).print(writer);
     }
 
     private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
@@ -193,9 +211,10 @@ public class ExportCsvController extends AbstractSolrSearchController {
 
         // Description: does object have a MODS description?
 
-        if (object.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED) ) {
+        List<String> contentStatus = object.getContentStatus();
+        if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED) ) {
             printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
-        } else if (object.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED)) {
+        } else if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             printer.print(FacetConstants.CONTENT_DESCRIBED);
         } else {
             printer.print("");
