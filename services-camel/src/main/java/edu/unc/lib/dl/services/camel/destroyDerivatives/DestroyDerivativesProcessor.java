@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUUID;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -52,8 +53,10 @@ public class DestroyDerivativesProcessor implements Processor {
     public void process(Exchange exchange) {
         Message in = exchange.getIn();
         String binaryId = (String) in.getHeader(CdrBinaryPidId);
-        String binarySubPath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + fileExtension);
+        String binaryUUID = (String) in.getHeader(CdrBinaryUUID);
+        String binarySubPath = idToPath(binaryUUID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        String addDot = fileExtension.equals("") ? "" : ".";
+        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryUUID + addDot + fileExtension);
 
         deleteDerivative(derivativePath, binaryId);
     }

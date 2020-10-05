@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUUID;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -50,8 +51,9 @@ public class DestroyDerivativesProcessorTest {
     private File derivativeFinalDir;
     private String derivativeTypeDir;
     private static final String FEDORA_BASE = "http://example.com/rest/";
-    private static final String PID_ID = "de75d811-9e0f-4b1f-8631-2060ab3580cc";
-    private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/" + PID_ID;
+    private static final String PID_UUID = "de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private static final String PID_ID = "content/de/75/d8/11/" + PID_UUID;
+    private static final String RESC_ID = FEDORA_BASE + PID_ID;
 
     @Rule
     public TemporaryFolder derivativeDir = new TemporaryFolder();
@@ -75,6 +77,9 @@ public class DestroyDerivativesProcessorTest {
         when(message.getHeader(eq(CdrBinaryPidId)))
                 .thenReturn(PID_ID);
 
+        when(message.getHeader(eq(CdrBinaryUUID)))
+                .thenReturn(PID_UUID);
+
         derivativeDirBase = derivativeDir.getRoot().getAbsolutePath();
     }
 
@@ -82,12 +87,12 @@ public class DestroyDerivativesProcessorTest {
     public void deleteFulltextTest() throws Exception {
         derivativeTypeDir = FULLTEXT_EXTRACTION.getId();
         derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
-        file = new File(derivativeFinalDir, pathId + ".txt");
+        file = new File(derivativeFinalDir, PID_UUID + ".txt");
 
         FileUtils.writeStringToFile(file, "my text", StandardCharsets.UTF_8);
 
         derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".txt", derivativeTypeBaseDir.getAbsolutePath());
+        processor = new DestroyDerivativesProcessor("txt", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("text/plain");
@@ -111,7 +116,7 @@ public class DestroyDerivativesProcessorTest {
         FileUtils.writeStringToFile(file, "fake image", StandardCharsets.UTF_8);
 
         derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".png", derivativeTypeBaseDir.getAbsolutePath());
+        processor = new DestroyDerivativesProcessor("png", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/png");
@@ -165,7 +170,7 @@ public class DestroyDerivativesProcessorTest {
         FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
 
         derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
+        processor = new DestroyDerivativesProcessor("jp2", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/jp2");
@@ -199,7 +204,7 @@ public class DestroyDerivativesProcessorTest {
 
         // Run processor
         derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
+        processor = new DestroyDerivativesProcessor("jp2", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/jp2");
@@ -231,7 +236,7 @@ public class DestroyDerivativesProcessorTest {
 
         // Run processor
         derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor(".jp2", derivativeTypeBaseDir.getAbsolutePath());
+        processor = new DestroyDerivativesProcessor("jp2", derivativeTypeBaseDir.getAbsolutePath());
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/jp2");

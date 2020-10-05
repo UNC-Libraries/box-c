@@ -220,7 +220,7 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
-    <bean id="binaryInfoProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor">
+    <bean id="destroyedMsgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor">
         <constructor-arg value="${sourceImages.dir}" />
     </bean>
 

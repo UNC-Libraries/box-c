@@ -423,6 +423,9 @@ public class DestroyObjectsJobIT {
             Map<String, String> cleanupFile = filesToCleanup.get(uri);
             assertEquals(info.getChildTextTrim("pidId", CDR_MESSAGE_NS), cleanupFile.get("pid"));
 
+            String uuid = cleanupFile.get("uuid");
+            assertEquals(info.getChildTextTrim("uuid", CDR_MESSAGE_NS), uuid);
+
             String objType = cleanupFile.get("objType");
             assertEquals(info.getChildTextTrim("objType", CDR_MESSAGE_NS), objType);
 
@@ -446,7 +449,9 @@ public class DestroyObjectsJobIT {
     private Map<String, String> nonBinaryToCleanup(RepositoryObject obj) {
         Map<String, String> contentMetadata = new HashMap<>();
         contentMetadata.put("objType", ResourceType.getResourceTypeForUris(obj.getTypes()).getUri());
-        contentMetadata.put("pid", obj.getPid().getQualifiedId());
+        PID pid = obj.getPid();
+        contentMetadata.put("pid", pid.getQualifiedId());
+        contentMetadata.put("uuid", pid.getUUID());
         return contentMetadata;
     }
 
@@ -454,9 +459,11 @@ public class DestroyObjectsJobIT {
         HashMap<URI, Map<String, String>> cleanupBinaryUris = new HashMap<>();
 
         BinaryObject binary = fileObj.getOriginalFile();
+        PID binaryPid = binary.getPid();
         Map<String, String> contentMetadata = new HashMap<>();
         contentMetadata.put("objType", Cdr.FileObject.getURI());
-        contentMetadata.put("pid", binary.getPid().getQualifiedId());
+        contentMetadata.put("pid", binaryPid.getQualifiedId());
+        contentMetadata.put("uuid", binaryPid.getUUID());
         contentMetadata.put("mimeType", binary.getMimetype());
         cleanupBinaryUris.put(binary.getContentUri(), contentMetadata);
 

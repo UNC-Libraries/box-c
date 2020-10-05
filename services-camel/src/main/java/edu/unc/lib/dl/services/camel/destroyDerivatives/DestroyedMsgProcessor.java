@@ -21,13 +21,13 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUUID;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -67,18 +67,12 @@ public class DestroyedMsgProcessor implements Processor {
         Element body = msgBody.getRootElement();
         Element content = body.getChild("objToDestroy", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String objType = content.getChildTextTrim("objType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-
-        // Skip works and folders
-        if (objType.equals(Cdr.Work.getURI()) || objType.equals(Cdr.Folder.getURI())) {
-            return;
-        }
-
         String mimeType = content.getChildTextTrim("mimeType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String pidId = content.getChildTextTrim("pidId", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String binaryPath = content.getChildTextTrim("contentUri", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        String uuid = content.getChildTextTrim("uuid", JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
         if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
-            String uuid = PIDs.get(pidId).getUUID();
             String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
             Path srcPath = Paths.get(srcBasePath, binarySubPath, uuid);
 
@@ -88,10 +82,15 @@ public class DestroyedMsgProcessor implements Processor {
             }
         }
 
+        if (mimeType == null) {
+            mimeType = "";
+            log.info("No mimeType given for {} of object type {}", pidId, objType);
+        }
+
         in.setHeader(CdrBinaryMimeType, mimeType);
         in.setHeader(CdrBinaryPidId, pidId);
+        in.setHeader(CdrBinaryUUID, uuid);
         in.setHeader(CdrBinaryPath, binaryPath);
         in.setHeader(CdrObjectType, objType);
-
     }
 }

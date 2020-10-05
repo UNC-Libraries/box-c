@@ -166,9 +166,7 @@ public class DestroyObjectsJob implements Runnable {
 
     private void sendDestroyDerivativesMsg(RepositoryObject repoObj) {
         Map<String, String> metadata = new HashMap<>();
-        String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
-        metadata.put("objType", objType);
-        String qualifiedId;
+        PID pid;
         URI objUri;
 
         if (repoObj instanceof FileObject) {
@@ -176,17 +174,26 @@ public class DestroyObjectsJob implements Runnable {
             BinaryObject binaryObj = fileObj.getOriginalFile();
             String mimetype = binaryObj.getMimetype();
             metadata.put("mimeType", mimetype);
-
-            qualifiedId = binaryObj.getPid().getQualifiedId();
+            pid = binaryObj.getPid();
             objUri = fileObj.getOriginalFile().getContentUri();
         } else {
-            qualifiedId = repoObj.getPid().getQualifiedId();
+            pid = repoObj.getPid();
             objUri = repoObj.getUri();
         }
-        metadata.put("pid", qualifiedId);
+
+        setCommonMetadata(metadata, repoObj, pid);
 
         Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), objUri, metadata);
         binaryDestroyedMessageSender.sendMessage(destroyMsg);
+    }
+
+    private Map<String, String> setCommonMetadata(Map<String, String> metadata, RepositoryObject repoObj, PID pid) {
+        String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
+        metadata.put("objType", objType);
+        metadata.put("pid", pid.getQualifiedId());
+        metadata.put("uuid", pid.getUUID());
+
+        return metadata;
     }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
