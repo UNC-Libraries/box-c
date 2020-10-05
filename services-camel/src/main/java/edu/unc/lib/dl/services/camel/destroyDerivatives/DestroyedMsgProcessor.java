@@ -21,7 +21,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUUID;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
 
 import java.nio.file.Files;
@@ -36,6 +35,7 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -70,9 +70,9 @@ public class DestroyedMsgProcessor implements Processor {
         String mimeType = content.getChildTextTrim("mimeType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String pidId = content.getChildTextTrim("pidId", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String binaryPath = content.getChildTextTrim("contentUri", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-        String uuid = content.getChildTextTrim("uuid", JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
         if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
+            String uuid = PIDs.get(pidId).getId();
             String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
             Path srcPath = Paths.get(srcBasePath, binarySubPath, uuid);
 
@@ -89,7 +89,6 @@ public class DestroyedMsgProcessor implements Processor {
 
         in.setHeader(CdrBinaryMimeType, mimeType);
         in.setHeader(CdrBinaryPidId, pidId);
-        in.setHeader(CdrBinaryUUID, uuid);
         in.setHeader(CdrBinaryPath, binaryPath);
         in.setHeader(CdrObjectType, objType);
     }

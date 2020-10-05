@@ -51,9 +51,6 @@ public class DestroyObjectsMessageHelpers {
         Element objToDestroyEl = new Element("objToDestroy", CDR_MESSAGE_NS);
         entry.addContent(objToDestroyEl);
 
-        Element uuid = new Element("uuid", CDR_MESSAGE_NS).setText(metadata.get("uuid"));
-        objToDestroyEl.addContent(uuid);
-
         Element contentUriValue = new Element("contentUri", CDR_MESSAGE_NS).setText(contentUri.toString());
         objToDestroyEl.addContent(contentUriValue);
         Element objType = new Element("objType", CDR_MESSAGE_NS).setText(metadata.get("objType"));

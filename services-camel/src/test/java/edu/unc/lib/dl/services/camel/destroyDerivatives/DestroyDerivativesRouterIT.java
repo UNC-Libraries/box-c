@@ -223,7 +223,7 @@ public class DestroyDerivativesRouterIT {
 
         // Create collection thumbnail
         PID collPid = collectionWithImg.getPid();
-        String uuid = collPid.getUUID();
+        String uuid = collPid.getId();
         String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         Path existingFileDirs = Files.createDirectories(new File("target/" + binarySubPath).toPath());
         File existingFile = new File(existingFileDirs.toString(), uuid);

@@ -31,8 +31,6 @@ public abstract class CdrFcrepoHeaders {
 
     public static final String CdrObjectType = "CdrObjectType";
 
-    public static final String CdrBinaryUUID = "CdrBinaryUUID";
-
     // URI identifying the location of content for a binary
     public static final String CdrBinaryPath = "CdrBinaryPath";
 

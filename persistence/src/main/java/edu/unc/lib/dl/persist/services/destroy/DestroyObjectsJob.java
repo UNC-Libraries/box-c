@@ -191,7 +191,6 @@ public class DestroyObjectsJob implements Runnable {
         String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
         metadata.put("objType", objType);
         metadata.put("pid", pid.getQualifiedId());
-        metadata.put("uuid", pid.getUUID());
 
         return metadata;
     }

@@ -423,9 +423,6 @@ public class DestroyObjectsJobIT {
             Map<String, String> cleanupFile = filesToCleanup.get(uri);
             assertEquals(info.getChildTextTrim("pidId", CDR_MESSAGE_NS), cleanupFile.get("pid"));
 
-            String uuid = cleanupFile.get("uuid");
-            assertEquals(info.getChildTextTrim("uuid", CDR_MESSAGE_NS), uuid);
-
             String objType = cleanupFile.get("objType");
             assertEquals(info.getChildTextTrim("objType", CDR_MESSAGE_NS), objType);
 
@@ -451,7 +448,7 @@ public class DestroyObjectsJobIT {
         contentMetadata.put("objType", ResourceType.getResourceTypeForUris(obj.getTypes()).getUri());
         PID pid = obj.getPid();
         contentMetadata.put("pid", pid.getQualifiedId());
-        contentMetadata.put("uuid", pid.getUUID());
+
         return contentMetadata;
     }
 
@@ -463,7 +460,6 @@ public class DestroyObjectsJobIT {
         Map<String, String> contentMetadata = new HashMap<>();
         contentMetadata.put("objType", Cdr.FileObject.getURI());
         contentMetadata.put("pid", binaryPid.getQualifiedId());
-        contentMetadata.put("uuid", binaryPid.getUUID());
         contentMetadata.put("mimeType", binary.getMimetype());
         cleanupBinaryUris.put(binary.getContentUri(), contentMetadata);
 
