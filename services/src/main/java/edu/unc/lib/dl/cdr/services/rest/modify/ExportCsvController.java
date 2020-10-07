@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -25,7 +26,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -33,13 +36,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
@@ -60,6 +68,7 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 @Controller
 @RequestMapping("exportTree/csv")
 public class ExportCsvController extends AbstractSolrSearchController {
+    private static final Logger log = LoggerFactory.getLogger(ExportCsvController.class);
 
     public static final String OBJ_TYPE_HEADER = "Object Type";
     public static final String PID_HEADER = "PID";
@@ -88,44 +97,74 @@ public class ExportCsvController extends AbstractSolrSearchController {
     protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
     @RequestMapping(value = "{pid}", method = RequestMethod.GET)
-    public void export(@PathVariable("pid") String pidString, HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        PID pid = PIDs.get(pidString);
-        String filename = pid.getId().replace(":", "_") + ".csv";
-        response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        response.addHeader("Content-Type", "text/csv");
+    public ResponseEntity<Map<String, Object>> export(@PathVariable("pid") String pidString, HttpServletRequest request,
+                                                      HttpServletResponse response) throws IOException {
 
-        SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
-        searchRequest.setRootPid(pid);
-        searchRequest.setApplyCutoffs(false);
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "exportCsv");
+        result.put("username", request.getRemoteUser());
 
-        SearchState searchState = searchRequest.getSearchState();
-        searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-                SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
-                SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
-                SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-                SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-                SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
-        searchState.setSortType("export");
-        searchState.setRowsPerPage(searchSettings.maxPerPage);
+        try {
+            if (pidString.equals("collections")) {
+                throw new FedoraException("Not allowed to download repository root");
+            }
 
-        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
-                searchRequest.getAccessGroups());
-        SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+            PID pid = PIDs.get(pidString);
 
-        List<BriefObjectMetadata> objects = resultResponse.getResultList();
-        objects.add(0, container);
-        childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
+            SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
+            searchRequest.setRootPid(pid);
+            searchRequest.setApplyCutoffs(false);
 
-        try (ServletOutputStream out = response.getOutputStream()) {
-            Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+            SearchState searchState = searchRequest.getSearchState();
+            searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+                    SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
+                    SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
+                    SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
+                    SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
+                    SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
+            searchState.setSortType("export");
+            searchState.setRowsPerPage(searchSettings.maxPerPage);
 
-            try (CSVPrinter printer = getPrinter(writer)) {
-                for (BriefObjectMetadata object : objects) {
-                    printObject(printer, object);
+            BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+                    searchRequest.getAccessGroups());
+            SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+
+            List<BriefObjectMetadata> objects = resultResponse.getResultList();
+            objects.add(0, container);
+
+            childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
+
+            String filename = pid.getId().replace(":", "_") + ".csv";
+            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            response.addHeader("Content-Type", "text/csv");
+
+            try (ServletOutputStream out = response.getOutputStream()) {
+                Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+
+                try (CSVPrinter printer = getPrinter(writer)) {
+                    for (BriefObjectMetadata object : objects) {
+                        printObject(printer, object);
+                    }
                 }
             }
+        } catch (FedoraException e) {
+            log.error("Error exporting CSV for {}. Not allowed to export collection root", pidString);
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+        } catch (NullPointerException e) {
+            log.error("Error exporting CSV for {}. Unable to find PID, {}", pidString, e.getMessage());
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        } catch (StringIndexOutOfBoundsException e) {
+            log.error("Error exporting CSV for {}. Invalid PID, {}", pidString, e.getMessage());
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("Error exporting CSV for {}, {}", pidString, e.getMessage());
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return null;
     }
 
     private CSVPrinter getPrinter(Writer writer) throws IOException {
@@ -154,8 +193,7 @@ public class ExportCsvController extends AbstractSolrSearchController {
         // Status: deleted
 
         if (object.getStatus() != null) {
-            printer.print(object.getStatus().contains("Deleted") ||
-                    object.getStatus().contains("Parent Deleted"));
+            printer.print(object.getStatus().contains(MARKED_FOR_DELETION));
         } else {
             printer.print("");
         }
@@ -201,7 +239,6 @@ public class ExportCsvController extends AbstractSolrSearchController {
         }
 
         // Container info: child count
-
         Long childCount = object.getCountMap().get("child");
         if (childCount > 0) {
             printer.print(childCount.toString());
@@ -210,7 +247,6 @@ public class ExportCsvController extends AbstractSolrSearchController {
         }
 
         // Description: does object have a MODS description?
-
         List<String> contentStatus = object.getContentStatus();
         if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED) ) {
             printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
@@ -221,7 +257,5 @@ public class ExportCsvController extends AbstractSolrSearchController {
         }
 
         printer.println();
-
     }
-
 }
