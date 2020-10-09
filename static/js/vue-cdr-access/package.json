@@ -17,20 +17,20 @@
     "lodash.isempty": "^4.4.0",
     "lodash.range": "^3.2.0",
     "vue": "^2.6.12",
-    "vue-router": "^3.4.3"
+    "vue-router": "^3.4.6"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.4",
-    "@vue/cli-plugin-babel": "^4.5.6",
-    "@vue/cli-plugin-unit-jest": "^4.5.6",
-    "@vue/cli-service": "^4.5.6",
+    "@vue/cli-plugin-babel": "^4.5.7",
+    "@vue/cli-plugin-unit-jest": "^4.5.7",
+    "@vue/cli-service": "^4.5.7",
     "@vue/test-utils": "1.1.0",
-    "babel-jest": "^26.3.0",
-    "jest-environment-jsdom": "^26.3.0",
+    "babel-jest": "^26.5.2",
+    "jest-environment-jsdom": "^26.5.2",
     "jest-localstorage-mock": "^2.4.3",
     "moxios": "^0.4.0",
     "pretty": "^2.0.0",
-    "sass": "^1.26.10",
+    "sass": "^1.27.0",
     "sass-loader": "^10.0.2",
     "vue-template-compiler": "^2.6.12"
   }
