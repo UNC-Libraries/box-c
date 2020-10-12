@@ -65,6 +65,9 @@
 
     <bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <bean id="updateAccessControlAction"
         class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">

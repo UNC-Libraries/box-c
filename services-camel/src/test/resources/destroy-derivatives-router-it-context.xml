@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:destroy-derivatives-it-config.properties"/>
+    </bean>
+
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:destroy-derivatives-router-it-config.properties"/>
+    </bean>
+
+    <bean id="destroyedMsgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor">
+        <constructor-arg value="${sourceImages.dir}" />
+    </bean>
+
+    <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
+    <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
+    <bean id="destroyLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
+    <bean id="destroyAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
+    <bean id="destroyFulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+    </bean>
+
+    <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.destroy.derivatives.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="binaryDestroyedMessageSender" class="edu.unc.lib.dl.services.MessageSender">
+        <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
+    </bean>
+
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+          init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="5000" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
+    </bean>
+
+    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
+        <constructor-arg ref="queryModel" />
+        <constructor-arg ref="fcrepoClient" />
+    </bean>
+
+    <bean id="camelShutdownHook" class="org.apache.activemq.camel.CamelShutdownHook">
+        <constructor-arg ref="activemqBroker" />
+        <property name="camelContext" ref="cdrDestroyDerivatives" />
+    </bean>
+
+    <camel:camelContext id="cdrDestroyDerivatives">
+        <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
+    </camel:camelContext>
+</beans>

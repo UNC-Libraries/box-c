@@ -19,36 +19,48 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -60,6 +72,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -86,6 +99,8 @@ import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.util.ResourceType;
+
 /**
  *
  * @author harring
@@ -133,6 +148,8 @@ public class DestroyObjectsJobIT {
     private IndexingMessageSender indexingMessageSender;
     @Mock
     private MessageSender binaryDestroyedMessageSender;
+    @Captor
+    private ArgumentCaptor<Document> docCaptor;
 
     @Autowired
     private StorageLocationManagerImpl locationManager;
@@ -165,11 +182,12 @@ public class DestroyObjectsJobIT {
     }
 
     @Test
-    public void destroySingleFileObjectTest() {
+    public void destroySingleFileObjectTest() throws Exception {
         PID fileObjPid = objsToDestroy.get(2);
         initializeJob(asList(fileObjPid));
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
 
         URI contentUri = fileObj.getOriginalFile().getContentUri();
         assertTrue(Files.exists(Paths.get(contentUri)));
@@ -194,20 +212,29 @@ public class DestroyObjectsJobIT {
         assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
-        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
+
+        verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
+
+        assertMessagePresent(docCaptor.getAllValues(), filesToCleanup);
     }
 
     @Test
-    public void destroyObjectsInSameTreeTest() {
-        initializeJob(objsToDestroy);
+    public void destroyObjectsInSameTreeTest() throws Exception {
         //remove unrelated folder obj before running job
         objsToDestroy.remove(3);
+
+        initializeJob(objsToDestroy);
 
         PID fileObjPid = objsToDestroy.get(2);
         PID workObjPid = objsToDestroy.get(1);
         PID folderObjPid = objsToDestroy.get(0);
 
-        URI contentUri = repoObjLoader.getFileObject(fileObjPid).getOriginalFile().getContentUri();
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+        WorkObject workObj = repoObjLoader.getWorkObject(workObjPid);
+        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
+        filesToCleanup.put(folderObj.getUri(), nonBinaryToCleanup(folderObj));
+        filesToCleanup.put(workObj.getUri(), nonBinaryToCleanup(workObj));
 
         job.run();
 
@@ -232,7 +259,10 @@ public class DestroyObjectsJobIT {
                 "Item deleted from repository and replaced by tombstone"));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
-        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
+
+        verify(binaryDestroyedMessageSender, times(3)).sendMessage(docCaptor.capture());
+
+        assertMessagePresent(docCaptor.getAllValues(), filesToCleanup);
     }
 
     @Test
@@ -270,14 +300,16 @@ public class DestroyObjectsJobIT {
     }
 
     @Test
-    public void destroyFolderTest() {
+    public void destroyFolderTest() throws Exception {
         PID folderObjPid = objsToDestroy.get(0);
         initializeJob(Arrays.asList(folderObjPid));
         FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
         WorkObject workObj = (WorkObject) folderObj.getMembers().get(0);
         FileObject fileObj = (FileObject) workObj.getMembers().get(0);
 
-        URI contentUri = fileObj.getOriginalFile().getContentUri();
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
+        filesToCleanup.put(folderObj.getUri(), nonBinaryToCleanup(folderObj));
+        filesToCleanup.put(workObj.getUri(), nonBinaryToCleanup(workObj));
 
         job.run();
 
@@ -296,7 +328,10 @@ public class DestroyObjectsJobIT {
         assertTrue(folderResc.hasProperty(RDF.type, Cdr.Tombstone));
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folderObjPid), eq(DELETE_SOLR_TREE));
-        verify(binaryDestroyedMessageSender).sendMessage(contentUri.toString());
+
+        verify(binaryDestroyedMessageSender, times(3)).sendMessage(docCaptor.capture());
+        List<Document> values = docCaptor.getAllValues();
+        assertMessagePresent(values, filesToCleanup);
     }
 
     @Test
@@ -305,7 +340,7 @@ public class DestroyObjectsJobIT {
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
         Resource event = fileObj.getPremisLog().buildEvent(null, Premis.Ingestion, new Date(1L)).write();
 
-        initializeJob(Arrays.asList(fileObjPid));
+        initializeJob(Collections.singletonList(fileObjPid));
 
         job.run();
 
@@ -377,11 +412,57 @@ public class DestroyObjectsJobIT {
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
     }
 
+    private void assertMessagePresent(List<Document> returnedDocs, Map<URI, Map<String, String>> filesToCleanup)
+            throws URISyntaxException {
+
+        for (Document returnedDoc : returnedDocs) {
+            Element root = returnedDoc.getRootElement();
+            Element info = root.getChild("objToDestroy", CDR_MESSAGE_NS);
+            URI uri = new URI(info.getChildTextTrim("contentUri", CDR_MESSAGE_NS));
+
+            Map<String, String> cleanupFile = filesToCleanup.get(uri);
+            assertEquals(info.getChildTextTrim("pidId", CDR_MESSAGE_NS), cleanupFile.get("pid"));
+
+            String objType = cleanupFile.get("objType");
+            assertEquals(info.getChildTextTrim("objType", CDR_MESSAGE_NS), objType);
+
+            String mimetype = info.getChildTextTrim("mimeType", CDR_MESSAGE_NS);
+            if (!objType.equals(Cdr.FileObject.getURI())) {
+                assertNull(mimetype);
+            } else {
+                assertEquals(mimetype, cleanupFile.get("mimeType"));
+            }
+        }
+    }
+
     private void markObjsForDeletion(List<PID> objsToDestroy) {
         for (PID pid : objsToDestroy) {
             String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion,
                     true);
             sparqlUpdateService.executeUpdate(pid.getRepositoryUri().toString(), updateString);
         }
+    }
+
+    private Map<String, String> nonBinaryToCleanup(RepositoryObject obj) {
+        Map<String, String> contentMetadata = new HashMap<>();
+        contentMetadata.put("objType", ResourceType.getResourceTypeForUris(obj.getTypes()).getUri());
+        PID pid = obj.getPid();
+        contentMetadata.put("pid", pid.getQualifiedId());
+
+        return contentMetadata;
+    }
+
+    private Map<URI, Map<String, String>> derivativesToCleanup(FileObject fileObj) {
+        HashMap<URI, Map<String, String>> cleanupBinaryUris = new HashMap<>();
+
+        BinaryObject binary = fileObj.getOriginalFile();
+        PID binaryPid = binary.getPid();
+        Map<String, String> contentMetadata = new HashMap<>();
+        contentMetadata.put("objType", Cdr.FileObject.getURI());
+        contentMetadata.put("pid", binaryPid.getQualifiedId());
+        contentMetadata.put("mimeType", binary.getMimetype());
+        cleanupBinaryUris.put(binary.getContentUri(), contentMetadata);
+
+        return cleanupBinaryUris;
     }
 }

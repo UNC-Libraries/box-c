@@ -57,6 +57,9 @@
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <camel:camelContext id="fcrepoTriplestoreIndexer">
         <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>

@@ -146,7 +146,7 @@ public class OperationsMessageSender extends MessageSender {
      * Sends a Remove operation message, indicating that objects are being removed from the repository
      *
      * @param userid id of user who triggered the operation
-     * @param destinations containers objects were added to
+     * @param destination containers objects were added to
      * @param removed objects removed
      * @return id of operation message
      */

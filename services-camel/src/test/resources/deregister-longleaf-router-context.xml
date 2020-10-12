@@ -26,6 +26,9 @@
     
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <bean id="registerLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor" />

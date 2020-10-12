@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import org.apache.camel.BeanInject;
@@ -106,7 +107,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void destroyObject() throws Exception {
-        createContext(DESTROY_ROUTE);
+        createContext(DESTROY_ROUTE, "direct:start");
 
         String id = UUID.randomUUID().toString();
         PID pid = PIDs.get(id);
@@ -117,6 +118,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         when(workObj.getResource()).thenReturn(resc);
         when(workObj.getPid()).thenReturn(pid);
         when(workObj.getUri()).thenReturn(pid.getRepositoryUri());
+        when(workObj.getTypes()).thenReturn(Collections.singletonList(Cdr.Work.getURI()));
 
         when(objectPathFactory.getPath(pid)).thenReturn(objPath);
         when(objPath.toNamePath()).thenReturn("/path/to/stuff");
@@ -131,11 +133,11 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         verify(repoObjFactory).createOrTransformObject(eq(pid.getRepositoryUri()), any(Model.class));
     }
 
-    private void createContext(String routeName) throws Exception {
+    private void createContext(String routeName, String currentRoute) throws Exception {
         context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
-                replaceFromWith("direct:start");
+                replaceFromWith(currentRoute);
                 mockEndpointsAndSkip("*");
             }
         });

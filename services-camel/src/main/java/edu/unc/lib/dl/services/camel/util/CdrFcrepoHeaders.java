@@ -27,6 +27,10 @@ public abstract class CdrFcrepoHeaders {
 
     public static final String CdrBinaryChecksum = "CdrChecksum";
 
+    public static final String CdrBinaryPidId = "CdrBinaryPidId";
+
+    public static final String CdrObjectType = "CdrObjectType";
+
     // URI identifying the location of content for a binary
     public static final String CdrBinaryPath = "CdrBinaryPath";
 

@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
@@ -56,8 +58,33 @@ public class FulltextProcessor implements Processor {
 
     private final String derivativeBasePath;
 
+    private static final Pattern MIMETYPE_PATTERN = Pattern.compile( "^(text/|application/pdf|application/msword"
+            + "|application/vnd\\.|application/rtf|application/powerpoint"
+            + "|application/postscript).*$");
+
     public FulltextProcessor(String derivativeBasePath) {
         this.derivativeBasePath = derivativeBasePath;
+    }
+
+    /**
+     * Returns true if the subject of the exchange is a binary which
+     * is eligible for having image derivatives generated from it.
+     *
+     * @param exchange
+     * @return
+     */
+    public static boolean allowedTextType(Exchange exchange) {
+        Message in = exchange.getIn();
+        String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
+        String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryPath);
+
+        if (!MIMETYPE_PATTERN.matcher(mimetype).matches()) {
+            log.debug("File type {} on object {} is not applicable for text derivatives", mimetype, binPath);
+            return false;
+        }
+
+        log.debug("Object {} with type {} is permitted for text derivatives", binPath, mimetype);
+        return true;
     }
 
     @Override

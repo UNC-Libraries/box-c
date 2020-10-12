@@ -47,7 +47,7 @@ public class ImageDerivativeProcessor implements Processor {
      * @param exchange
      * @return
      */
-    public boolean allowedImageType(Exchange exchange) {
+    public static boolean allowedImageType(Exchange exchange) {
         Message in = exchange.getIn();
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
         String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryPath);

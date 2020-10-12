@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
+import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
@@ -27,7 +28,9 @@ import static java.util.stream.Collectors.toList;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -41,6 +44,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +78,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -148,7 +153,7 @@ public class DestroyObjectsJob implements Runnable {
                             .writeAndClose();
                 }
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
-           }
+            }
         } catch (Exception e) {
              tx.cancel(e);
         } finally {
@@ -159,24 +164,62 @@ public class DestroyObjectsJob implements Runnable {
         destroyBinaries();
     }
 
+    private void sendDestroyDerivativesMsg(RepositoryObject repoObj) {
+        Map<String, String> metadata = new HashMap<>();
+        PID pid;
+        URI objUri;
+
+        if (repoObj instanceof FileObject) {
+            FileObject fileObj = (FileObject) repoObj;
+            BinaryObject binaryObj = fileObj.getOriginalFile();
+            String mimetype = binaryObj.getMimetype();
+            metadata.put("mimeType", mimetype);
+            pid = binaryObj.getPid();
+            objUri = fileObj.getOriginalFile().getContentUri();
+        } else {
+            pid = repoObj.getPid();
+            objUri = repoObj.getUri();
+        }
+
+        setCommonMetadata(metadata, repoObj, pid);
+
+        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), objUri, metadata);
+        binaryDestroyedMessageSender.sendMessage(destroyMsg);
+    }
+
+    private Map<String, String> setCommonMetadata(Map<String, String> metadata, RepositoryObject repoObj, PID pid) {
+        String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
+        metadata.put("objType", objType);
+        metadata.put("pid", pid.getQualifiedId());
+
+        return metadata;
+    }
+
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
         log.debug("Performing destroy on object {} of type {}",
                 rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
+
         if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
+
             for (ContentObject member : members) {
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
+
             }
         }
 
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
         if (rootOfTree instanceof FileObject) {
-            destroyFile((FileObject) rootOfTree, rootResc);
+            FileObject fileObj = (FileObject) rootOfTree;
+            destroyFile(fileObj, rootResc);
         }
+
+        sendDestroyDerivativesMsg(rootOfTree);
+
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
             deleteNonContentObjects(rootModel);
@@ -230,7 +273,6 @@ public class DestroyObjectsJob implements Runnable {
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);
-                binaryDestroyedMessageSender.sendMessage(contentUri.toString());
             } catch (BinaryTransferException e) {
                 String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
                 log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);

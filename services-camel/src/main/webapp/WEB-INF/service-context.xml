@@ -219,6 +219,35 @@
     <bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
+
+    <bean id="destroyedMsgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor">
+        <constructor-arg value="${sourceImages.dir}" />
+    </bean>
+
+    <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="" />
+        <constructor-arg value="${sourceImages.dir}" />
+    </bean>
+
+    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
+    </bean>
+
+    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
+    </bean>
+
+    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.jp2}" />
+    </bean>
+
+    <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.fulltext}" />
+    </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
@@ -356,6 +385,9 @@
     
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
+
+    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    </bean>
     
     <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -365,7 +397,7 @@
     
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:filter.longleaf.deregister" />
+        <property name="defaultDestinationName" value="${cdr.destroy.post.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     
@@ -421,5 +453,9 @@
     
     <camel:camelContext id="CdrDestroyObjects">
         <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="CdrDestroyDerivatives">
+        <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
     </camel:camelContext>
 </beans>
