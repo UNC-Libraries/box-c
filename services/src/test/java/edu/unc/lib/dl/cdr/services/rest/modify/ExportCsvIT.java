@@ -472,7 +472,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     private List<CSVRecord> parseCsvResponse(MockHttpServletResponse response) throws Exception {
         List<CSVRecord> csvList = new ArrayList<>();
-        System.out.println(response.getContentAsString());
+
         CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(new StringReader(response.getContentAsString()))
