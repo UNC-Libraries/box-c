@@ -67,9 +67,9 @@ public class DestroyDerivativesProcessor implements Processor {
             if (shouldRemoveFile(derivativePath)) {
                 boolean deleted = Files.deleteIfExists(derivativePath);
                 if (deleted) {
+                    log.debug("Deleted derivative path {}", derivativePath);
                     deleteDerivative(derivativePath.getParent(), binaryId);
                 }
-                log.info("Derivative and parent directories destroyed for {}", binaryId);
             }
         } catch (IOException e) {
             log.warn("Unable to destroy derivative and parent directories for {}: {}", binaryId, e.getMessage());
