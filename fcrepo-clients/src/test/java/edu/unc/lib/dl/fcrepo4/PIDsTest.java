@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.dl.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.test.TestHelper;
@@ -85,12 +86,11 @@ public class PIDsTest {
         assertEquals("Incorrect component path", component, pid.getComponentPath());
     }
 
-    @Test
+    @Test(expected = InvalidPidException.class)
     public void getInvalidRepositoryPath() {
         String path = "http://notmyrepo.example.com/";
 
-        PID pid = PIDs.get(path);
-        assertNull(pid);
+        PIDs.get(path);
     }
 
     @Test
@@ -138,13 +138,11 @@ public class PIDsTest {
         assertEquals("Incorrect component path", component, pid.getComponentPath());
     }
 
-    @Test
+    @Test(expected = InvalidPidException.class)
     public void getInvalidFromIdentifier() {
         String identifier = "/ab/c1/23/abcd123";
 
-        PID pid = PIDs.get(identifier);
-
-        assertNull(pid);
+        PIDs.get(identifier);
     }
 
     @Test
@@ -201,13 +199,11 @@ public class PIDsTest {
         verifyReservedPid(pid, qualified, expectedPath, component);
     }
 
-    @Test
+    @Test(expected = InvalidPidException.class)
     public void getInvalidReservedPidTest() {
         String identifier = "fakereserved";
 
-        PID pid = PIDs.get(identifier);
-
-        assertNull(pid);
+        PIDs.get(identifier);
     }
 
     @Test
@@ -328,12 +324,10 @@ public class PIDsTest {
         assertNull("Component path should not be set", pid.getComponentPath());
     }
 
-    @Test
+    @Test(expected = InvalidPidException.class)
     public void rejectsAgentPidWithoutQualifier() {
         String id = "person/subdomain/username";
 
-        PID pid = PIDs.get(id);
-
-        assertNull(pid);
+        PIDs.get(id);
     }
 }

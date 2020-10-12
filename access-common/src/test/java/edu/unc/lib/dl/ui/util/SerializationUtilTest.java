@@ -58,8 +58,6 @@ public class SerializationUtilTest extends Assert {
     private static final List<String> DATASTREAMS =
             singletonList("datastream|image/jpeg|image.jpg|jpg|orig|582753|");
 
-    private static final String API_PATH = "http://example.com/api/";
-
     private ObjectMapper mapper;
 
     @Mock
@@ -80,7 +78,7 @@ public class SerializationUtilTest extends Assert {
                 .thenReturn(Collections.emptySet());
 
         md = new BriefObjectMetadataBean();
-        md.setId("uuid:test");
+        md.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
     }
 
     @SuppressWarnings("unchecked")
@@ -93,7 +91,7 @@ public class SerializationUtilTest extends Assert {
         String json = SerializationUtil.metadataToJSON(md, null);
         Map<String, Object> jsonMap = getResultMap(json);
 
-        assertEquals("uuid:test", jsonMap.get("id"));
+        assertEquals("48aeb594-6d95-45e9-bb20-dd631ecc93e9", jsonMap.get("id"));
         assertEquals("Test Item", jsonMap.get("title"));
         assertEquals(false, jsonMap.get("isPart"));
         assertEquals(1, ((List<String>) jsonMap.get("datastream")).size());
@@ -104,7 +102,7 @@ public class SerializationUtilTest extends Assert {
         md.setTitle("Test Item");
 
         BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
-        md2.setId("uuid:test2");
+        md2.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
         md2.setTitle("Test Item 2");
         md.setDatastream(DATASTREAMS);
 
@@ -114,20 +112,20 @@ public class SerializationUtilTest extends Assert {
         List<Map<String, Object>> resultList = SerializationUtil.resultsToList(response, null);
 
         assertEquals(2, resultList.size());
-        assertEquals("uuid:test", resultList.get(0).get("id"));
-        assertEquals("uuid:test2", resultList.get(1).get("id"));
+        assertEquals("48aeb594-6d95-45e9-bb20-dd631ecc93e9", resultList.get(0).get("id"));
+        assertEquals("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1", resultList.get(1).get("id"));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testStructureToJSON() throws Exception {
         BriefObjectMetadataBean rootMd = new BriefObjectMetadataBean();
-        rootMd.setId("uuid:test");
-        rootMd.setAncestorPath(singletonList("1,uuid:test"));
+        rootMd.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
+        rootMd.setAncestorPath(singletonList("1,48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
         BriefObjectMetadataBean childMd = new BriefObjectMetadataBean();
-        childMd.setId("uuid:child");
-        childMd.setAncestorPath(asList("1,uuid:test"));
+        childMd.setId("7c73296f-54ae-438e-b8d5-1890eba41676");
+        childMd.setAncestorPath(asList("1,48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
         List<BriefObjectMetadata> mdList = asList(rootMd, childMd);
 
@@ -142,14 +140,14 @@ public class SerializationUtilTest extends Assert {
         // Verify that we got a root node containing the child node
         Map<String, Object> rootObj = (Map<String, Object>) jsonMap.get("root");
         Map<String, Object> rootEntry = (Map<String, Object>) rootObj.get("entry");
-        assertEquals("uuid:test", rootEntry.get("id"));
+        assertEquals("48aeb594-6d95-45e9-bb20-dd631ecc93e9", rootEntry.get("id"));
 
         List<Object> childrenList = (List<Object>) rootObj.get("children");
         assertEquals(1, childrenList.size());
 
         Map<String, Object> childObj = (Map<String, Object>) childrenList.get(0);
         Map<String, Object> childEntry = (Map<String, Object>) childObj.get("entry");
-        assertEquals("uuid:child", childEntry.get("id"));
+        assertEquals("7c73296f-54ae-438e-b8d5-1890eba41676", childEntry.get("id"));
     }
 
     @Test

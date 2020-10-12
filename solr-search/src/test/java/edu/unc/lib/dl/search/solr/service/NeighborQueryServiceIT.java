@@ -223,20 +223,19 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     @Test
     public void testNeighborsSameTitle() throws Exception {
         List<SolrInputDocument> docs = new ArrayList<>();
-        PID basePid = makePid();
-        String baseUuid = basePid.getId();
+        String idPrefix = "9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d";
         for (int i = 0; i < 3; i++) {
-            PID pid = PIDs.get(baseUuid + i);
+            PID pid = PIDs.get(idPrefix + i);
             addObject(docs, pid, "title", ResourceType.File,
                     testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
         }
 
-        PID tpid = PIDs.get(baseUuid + 3);
+        PID tpid = PIDs.get(idPrefix + "3");
         addObject(docs, tpid, "title", ResourceType.File,
                 testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
 
         for (int i = 4; i < 7; i++) {
-            PID pid = PIDs.get(baseUuid + i);
+            PID pid = PIDs.get(idPrefix + i);
             addObject(docs, pid, "title", ResourceType.File,
                     testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
         }
@@ -253,27 +252,26 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
 
         for (int i = 0; i < results.size(); i++) {
             BriefObjectMetadata result = results.get(i);
-            assertEquals(baseUuid + i, result.getId());
+            assertEquals(idPrefix + i, result.getId());
         }
     }
 
     @Test
     public void testNeighborsNoTitle() throws Exception {
         List<SolrInputDocument> docs = new ArrayList<>();
-        PID basePid = makePid();
-        String baseUuid = basePid.getId();
-        PID nPid0 = PIDs.get(baseUuid + "3");
+        String idPrefix = "9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d";
+        PID nPid0 = PIDs.get(idPrefix + "3");
         addObject(docs, nPid0, "title", ResourceType.File,
                 testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
-        PID nPid1 = PIDs.get(baseUuid + "0");
+        PID nPid1 = PIDs.get(idPrefix + "0");
         addObject(docs, nPid1, "", ResourceType.File,
                 testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
 
-        PID tpid = PIDs.get(baseUuid + 1);
+        PID tpid = PIDs.get(idPrefix + 1);
         addObject(docs, tpid, "", ResourceType.File,
                 testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
 
-        PID nPid2 = PIDs.get(baseUuid + "2");
+        PID nPid2 = PIDs.get(idPrefix + "2");
         addObject(docs, nPid2, "", ResourceType.File, testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
 
         server.add(docs);
@@ -288,7 +286,7 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
 
         for (int i = 0; i < results.size(); i++) {
             BriefObjectMetadata result = results.get(i);
-            assertEquals(baseUuid + i, result.getId());
+            assertEquals(idPrefix + i, result.getId());
         }
     }
 

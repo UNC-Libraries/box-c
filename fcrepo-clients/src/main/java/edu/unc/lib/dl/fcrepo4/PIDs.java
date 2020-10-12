@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 
@@ -42,6 +43,8 @@ import edu.unc.lib.dl.fedora.PIDConstants;
 public class PIDs {
 
     private static final Logger log = LoggerFactory.getLogger(PIDs.class);
+
+    //[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}
 
     private PIDs() {
     }
@@ -168,9 +171,9 @@ public class PIDs {
                 // Handle base object ids
                 PID basePid = getBaseResourcePidFromId(value);
                 if (basePid == null) {
-                    log.warn("Invalid qualified path {}, cannot construct PID", value);
+                    throw new InvalidPidException("Invalid qualified path " + value + ", cannot construct PID");
                 }
-                // Return either a pid to a base resource or null if invalid path
+                // Return either a pid to a base resource
                 return basePid;
             }
         }

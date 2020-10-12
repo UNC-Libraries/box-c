@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -155,10 +156,9 @@ public class ExportCsvController extends AbstractSolrSearchController {
             log.error("Error exporting CSV for {}. Unable to find PID, {}", pidString, e.getMessage());
             result.put("error", e.getMessage());
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
-        } catch (StringIndexOutOfBoundsException e) {
-            log.error("Error exporting CSV for {}. Invalid PID, {}", pidString, e.getMessage());
+        } catch (InvalidPidException e) {
             result.put("error", e.getMessage());
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
         } catch (Exception e) {
             log.error("Error exporting CSV for {}, {}", pidString, e.getMessage());
             result.put("error", e.getMessage());
