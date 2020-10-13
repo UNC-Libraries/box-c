@@ -63,6 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -396,21 +397,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retry if there are checksum failures
         for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
             try {
-                if (retryCnt > 1) {
-                    try {
-                        Thread.sleep(retryCnt * 1000);
-                    } catch (InterruptedException e) {
-                        log.debug("Retry ingest pause for {} due to a checksum mismatch, {} retries remaining: {}",
-                                childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
-                    }
-                }
-
                 fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
                 break;
             } catch (ChecksumMismatchException e) {
                 if ((CHECKSUM_RETRIES - retryCnt) > 0) {
                     log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
                             childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
+                    try {
+                        Thread.sleep(retryCnt * 1000);
+                    } catch (InterruptedException ef) {
+                        throw new JobInterruptedException(e.getMessage());
+                    }
                 } else {
                     failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
                 }
