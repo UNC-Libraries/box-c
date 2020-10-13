@@ -189,7 +189,7 @@
     </bean>
 
     <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
-        <property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+        <property name="collectionFilters" value="src/test/resources/application.properties" />
     </bean>
 
     <bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
