@@ -396,6 +396,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retry if there are checksum failures
         for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
             try {
+                if (retryCnt > 1) {
+                    try {
+                        Thread.sleep(retryCnt * 1000);
+                    } catch (InterruptedException e) {
+                        log.debug("Retry ingest pause for {} due to a checksum mismatch, {} retries remaining: {}",
+                                childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
+                    }
+                }
+
                 fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
                 break;
             } catch (ChecksumMismatchException e) {
@@ -626,8 +635,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * relationship to one of its children if specified.
      *
      * @param parent
+     * @param parentResc
      * @param childResc
-     * @param retries
      * @return
      * @throws DepositException
      * @throws IOException
