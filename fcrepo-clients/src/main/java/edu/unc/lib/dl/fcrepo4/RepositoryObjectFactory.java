@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -691,7 +692,7 @@ public class RepositoryObjectFactory {
     }
 
     private String formatMimetype(String mimetype) {
-        return (mimetype != null) ? mimetype.replaceAll(";?\\s*charset=[^;]+;?", "") : null;
+        return (mimetype != null) ? StringUtils.substringBefore(mimetype.trim(), ";") : null;
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
