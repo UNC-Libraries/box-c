@@ -150,10 +150,8 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportCollectionCsv() throws Exception {
-        solrIndexer.index(rootObj.getPid(),
-                unitObj.getPid(),
-                collObj.getPid(),
-                folderObj.getPid());
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), collObj2.getPid(), folderObj.getPid());
 
         String id = collObj.getPid().getId();
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
@@ -173,9 +171,15 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportWorkWithFile() throws Exception {
-        Map<String, PID> pidList = addFolderAndWork("Folder", true);
-        PID folderPid = pidList.get("folderPid");
+        Map<String, PID> pidList = addWorkToFolder();
+        PID folderPid = folderObj.getPid();
         String id = folderPid.getId();
+        PID workPid = pidList.get("workPid");
+        PID filePid = pidList.get("filePid");
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
+                workPid, filePid);
 
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
                 .andExpect(status().is2xxSuccessful())
@@ -187,12 +191,10 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals("Unexpected number of results", 3, csvList.size());
 
-        String pathToFolder = "/Content Collections Root/Admin unit/Collection2/Folder";
-        PID workPid = pidList.get("workPid");
-        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                pathToFolder, 3, false, 1, false);
+        assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
+                FOLDER_PATH, 3, false, 1, false);
 
-        String pathToWork = pathToFolder + "/" + workPid.getId();
+        String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
                 1, false);
@@ -205,8 +207,8 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportDescribedResource() throws Exception {
-        Map<String, PID> pidList = addFolderAndWork("Folder2", false);
-        PID folderPid = pidList.get("folderPid");
+        Map<String, PID> pidList = addWorkToFolder();
+        PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
 
@@ -214,8 +216,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         updateDescService.updateDescription(getAgentPrincipals(), workPid, Files.newInputStream(MODS_PATH_2));
 
         treeIndexer.indexAll(baseAddress);
-        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj2.getPid(), folderPid,
-                workPid, pidList.get("filePid"));
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
+                workPid, filePid);
 
         String id = folderPid.getId();
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
@@ -228,7 +230,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
 
         // MODS title supersedes folder name
-        String pathToFolder = "/Content Collections Root/Admin unit/Collection2/Test";
+        String pathToFolder = COLLECTION_PATH + "/Test";
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Test",
                 pathToFolder, 3, false, 1, true);
 
@@ -246,8 +248,8 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportDeletedResource() throws Exception {
-        Map<String, PID> pidList = addFolderAndWork("FolderDeleted", false);
-        PID folderPid = pidList.get("folderPid");
+        Map<String, PID> pidList = addWorkToFolder();
+        PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
 
@@ -255,7 +257,7 @@ public class ExportCsvIT extends AbstractAPIIT {
                 sparqlUpdateService, aclService).run();
 
         treeIndexer.indexAll(baseAddress);
-        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj2.getPid(), folderPid, workPid, filePid);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         String id = folderPid.getId();
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
@@ -267,11 +269,10 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         List<CSVRecord> csvList = parseCsvResponse(response);
 
-        String pathToFolder = "/Content Collections Root/Admin unit/Collection2/FolderDeleted";
-        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "FolderDeleted",
-                pathToFolder, 3, true, 1, false);
+        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
+                FOLDER_PATH, 3, true, 1, false);
 
-        String pathToWork = pathToFolder + "/" + workPid.getId();
+        String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWorkDeleted",
                 pathToWork, 4, true, null, null, null,
                 1, false);
@@ -284,9 +285,14 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportFileResourceDirectly() throws Exception {
-        Map<String, PID> pidList = addFolderAndWork("Folder3", true);
+        Map<String, PID> pidList = addWorkToFolder();
+        PID folderPid = folderObj.getPid();
+        PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
         String id = filePid.getId();
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
                 .andExpect(status().is2xxSuccessful())
@@ -298,8 +304,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals("Unexpected number of results", 1, csvList.size());
 
-        String pathToFile = "/Content Collections Root/Admin unit/Collection2/Folder3/" +
-                pidList.get("workPid").getId() + "/" + id;
+        String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/" + id;
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
                 null, false);
@@ -307,14 +312,10 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportOneResult() throws Exception {
-        PID folderPid = pidMinter.mintContentPid();
-        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid,
-                new AclModelBuilder("Folder4")
-                        .addCanViewOriginals(AUTHENTICATED_PRINC).model);
-        collObj2.addMember(folder);
+        PID folderPid = folderObj.getPid();
 
         treeIndexer.indexAll(baseAddress);
-        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj2.getPid(), folderPid);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
         MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
@@ -326,23 +327,22 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals("Unexpected number of results", 1, csvList.size());
-        String folderPath = "/Content Collections Root/Admin unit/Collection2/Folder4";
-        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder4",
-                folderPath, 3, false, null, false);
+        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
+                FOLDER_PATH, 3, false, null, false);
     }
 
     @Test
     public void exportContentRoot() throws Exception {
         String id = rootObj.getPid().getId();
         mvc.perform(get("/exportTree/csv/" + id))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isBadRequest())
                 .andReturn();
     }
 
     @Test
     public void exportInvalidPidCsv() throws Exception {
         mvc.perform(get("/exportTree/csv/1234"))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isForbidden())
                 .andReturn();
     }
 
@@ -350,18 +350,12 @@ public class ExportCsvIT extends AbstractAPIIT {
     public void exportNonExistentPidCsv() throws Exception {
         String id = UUID.randomUUID().toString();
         mvc.perform(get("/exportTree/csv/" + id))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isNotFound())
                 .andReturn();
     }
 
-    private Map<String, PID> addFolderAndWork(String folderName, boolean shouldIndex) throws Exception {
-        PID folderPid = pidMinter.mintContentPid();
-        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid,
-                new AclModelBuilder(folderName)
-                        .addCanViewOriginals(AUTHENTICATED_PRINC).model);
-        collObj2.addMember(folder);
-
-        WorkObject workObj = folder.addWork();
+    private Map<String, PID> addWorkToFolder() throws Exception {
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         PID workPid = workObj.getPid();
 
         String bodyString = "Content";
@@ -376,13 +370,9 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         workObj.addMember(fileObj);
 
-        if (shouldIndex) {
-            treeIndexer.indexAll(baseAddress);
-            solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj2.getPid(), folderPid, workPid, filePid);
-        }
+        folderObj.addMember(workObj);
 
         Map<String, PID> pidList = new HashMap<>();
-        pidList.put("folderPid", folderPid);
         pidList.put("workPid", workPid);
         pidList.put("filePid", filePid);
 
