@@ -49,10 +49,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -112,18 +110,18 @@ public class ExportCsvController extends AbstractSolrSearchController {
         result.put("action", "exportCsv");
         result.put("username", request.getRemoteUser());
 
+        if (CONTENT_ROOT_ID.equals(pidString)) {
+            log.debug("Error exporting CSV for {}. Not allowed to export collection root", pidString);
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet accessGroups = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient privileges to export CSV for " + pid.getUUID(),
+                pid, accessGroups, viewHidden);
+
         try {
-            if (CONTENT_ROOT_ID.equals(pidString)) {
-                log.warn("Error exporting CSV for {}. Not allowed to export collection root", pidString);
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-            }
-
-            PID pid = PIDs.get(pidString);
-
-            AccessGroupSet accessGroups = getAgentPrincipals().getPrincipals();
-            aclService.assertHasAccess("Insufficient privileges to export CSV for " + pid.getUUID(),
-                    pid, accessGroups, viewHidden);
-
             SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
             searchRequest.setRootPid(pid);
             searchRequest.setApplyCutoffs(false);
@@ -165,17 +163,9 @@ public class ExportCsvController extends AbstractSolrSearchController {
                     }
                 }
             }
-        } catch (InvalidPidException e) {
-            result.put("error", e.getMessage());
-            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
         } catch (Exception e) {
-            log.debug("Error exporting CSV for {}, {}", pidString, e.getMessage());
+            log.error("Error exporting CSV for {}, {}", pidString, e.getMessage());
             result.put("error", e.getMessage());
-
-            if (e instanceof AccessRestrictionException) {
-                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-            }
-
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return null;
