@@ -18,7 +18,7 @@
   </mods:subject>
   <mods:note></mods:note>
   <mods:language>
-    <mods:languageTerm authority="iso639-2b" type="code"/>
+    <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
   </mods:language>
   <mods:typeOfResource>text</mods:typeOfResource>
   <mods:genre/>
