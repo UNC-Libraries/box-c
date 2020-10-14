@@ -17,6 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -141,6 +142,10 @@ public class SetAccessStatusFilterTest {
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
 
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
@@ -187,6 +192,10 @@ public class SetAccessStatusFilterTest {
 
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
 
         filter.filter(dip);
 
@@ -241,6 +250,10 @@ public class SetAccessStatusFilterTest {
         addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewAccessCopies, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
 
         filter.filter(dip);
 

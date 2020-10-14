@@ -96,6 +96,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
 
         List<RoleAssignment> inheritedAssignments = inheritedAclFactory.getPatronAccess(pid);
         Map<String, Set<String>> objPrincRoles = objAclFactory.getPrincipalRoles(pid);
+        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(pid);
 
         if (allPatronsRevoked(objPrincRoles)) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
@@ -105,7 +106,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (objPrincRoles.size() > 0) {
+        if (objPatronRoles.size() > 0) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
 
