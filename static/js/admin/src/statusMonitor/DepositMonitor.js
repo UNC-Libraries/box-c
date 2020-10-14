@@ -85,14 +85,20 @@ define('DepositMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusM
 				var jobName = currentJob.name.substring(currentJob.name.lastIndexOf(".") + 1);
 				result["shortName"] = jobName;
 				
-				if (jobName == "IngestContentObjectsJob" && "total" in currentJob) {
+				if (jobName === "IngestContentObjectsJob" && "total" in currentJob) {
 					var completion = result.ingestedObjects? result.ingestedObjects : 0;
 					completion += " / " + currentJob.total;
 					result["completion"] = completion;
 				}
 			}
-			
-			if (result.state == "finished") {
+
+			// Simple file ingests don't have total or ingestedObjects fields
+			if (result.packagingType === "http://cdr.unc.edu/model/Simple") {
+				var completedCount = (result.state === "finished") ? 1 : 0;
+				result["completion"] = completedCount + " / 1";
+			}
+
+			if (result.state === "finished" && result.ingestedObjects !== undefined) {
 				result["completion"] = result.ingestedObjects + " / " + result.ingestedObjects;
 			}
 			typeConfig.placeholder.after(typeConfig.template({data : result, type : typeConfig, dateFormat : this.dateFormat, selected : selected}));
