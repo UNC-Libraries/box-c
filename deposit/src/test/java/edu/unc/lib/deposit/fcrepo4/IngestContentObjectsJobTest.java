@@ -241,6 +241,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
         destinationObj = mock(FolderObject.class);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
     }
@@ -564,6 +565,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestAdminUnitTest() {
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         AdminUnit adminUnit = mock(AdminUnit.class);
@@ -620,6 +622,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestCollectionTest() {
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         CollectionObject collection = mock(CollectionObject.class);

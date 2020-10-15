@@ -231,6 +231,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
+        Model destLogModel = destObj.getPremisLog().getEventsModel();
+        assertTrue(destLogModel.contains(null, Premis.note,
+                "added child object " + folderPid.getRepositoryPath() + " to this container"));
+
         // Make sure that the folder is present and is actually a folder
         ContentObject mFolder = findContentObjectByPid(destMembers, folderPid);
         assertTrue("Child was not a folder", mFolder instanceof FolderObject);
@@ -335,6 +339,59 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         ingestedObjectsCount(3);
 
         assertLinksToDepositRecord(mWork, primaryObj);
+    }
+
+    /**
+     * Test that a single file can be ingested into an existing work, as in the SimpleFile deposit case
+     */
+    @Test
+    public void ingestSimpleFile() throws Exception {
+        WorkObject destWork = repoObjFactory.createWorkObject(null);
+        FolderObject parentFolder = repoObjLoader.getFolderObject(destinationPid);
+        parentFolder.addMember(destWork);
+
+        treeIndexer.indexTree(destWork.getModel());
+
+        depositStatusFactory.set(depositUUID, DepositField.containerId, destWork.getPid().getRepositoryPath());
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID mainPid = addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        // Make sure that the work is present and is actually a work
+        WorkObject mWork = repoObjLoader.getWorkObject(destWork.getPid());
+
+        // Verify that the properties of the primary object were added
+        FileObject primaryObj = (FileObject) mWork.getMembers().get(0);
+        assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+
+        // Check the right number of members are present
+        List<ContentObject> workMembers = mWork.getMembers();
+        assertEquals("Incorrect number of members in work", 1, workMembers.size());
+
+        // Verify that ingestion event gets added for work
+        Model workLogModel = mWork.getPremisLog().getEventsModel();
+        assertTrue(workLogModel.contains(null, Premis.note,
+                "added child object " + mainPid.getRepositoryPath() + " to this container"));
+
+        // Verify that ingestion event gets added for primary object
+        Model primLogModel = primaryObj.getPremisLog().getEventsModel();
+        assertTrue(primLogModel.contains(null, Premis.note,
+                "ingested as PID: " + mainPid.getQualifiedId()
+                + "\n ingested as filename: " + FILE1_LOC));
+
+        assertClickCount(1);
+        ingestedObjectsCount(1);
+
+        assertLinksToDepositRecord(primaryObj);
     }
 
     @Test
@@ -933,6 +990,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FolderObject folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
         Resource f3DepositResc = folder3.getResource().getProperty(Cdr.originalDeposit).getResource();
         assertEquals(deposit3Pid.getRepositoryPath(), f3DepositResc.getURI());
+
+        ContentObject destObj = repoObjLoader.getFolderObject(destinationPid);
+        Model destLogModel = destObj.getPremisLog().getEventsModel();
+        assertTrue(destLogModel.contains(null, Premis.note,
+                "added 3 child objects to this container"));
     }
 
     private final static String CREATED_STRING = "2011-10-04T20:36:44.902Z";

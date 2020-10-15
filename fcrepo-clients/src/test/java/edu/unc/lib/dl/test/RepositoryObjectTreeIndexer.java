@@ -78,7 +78,7 @@ public class RepositoryObjectTreeIndexer {
      * @param model Model to index
      * @throws Exception
      */
-    private void indexTree(Model model) throws Exception {
+    public void indexTree(Model model) throws Exception {
         queryModel.add(model);
 
         indexRelated(model, Ldp.contains);

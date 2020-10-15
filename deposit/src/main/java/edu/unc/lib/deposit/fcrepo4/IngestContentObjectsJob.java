@@ -252,7 +252,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
             ingestChildren((ContentContainerObject) destObj, depositBag);
             // Add ingestion event for the parent container
-            addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
+            addIngestionEventForDestination((ContentContainerObject) destObj, depositBag.asResource());
         } catch (DepositException | FedoraException | IOException e) {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
         } finally {
@@ -348,8 +348,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         overrideModifiedTimestamp(obj, childResc);
 
-        // Increment the count of objects deposited
-        filesIngestedInWork++;
+        if (parentResc.equals(depositResc)) {
+            // File object at the root of the deposit, increment ingested count immediately
+            addClicks(1);
+            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
+        } else {
+            // Defer increment of ingested count until the work obj finishes in case of rollback
+            filesIngestedInWork++;
+        }
+
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
     }
 
@@ -843,7 +850,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
+    private void addIngestionEventForDestination(ContentContainerObject obj, Resource parentResc) throws IOException {
+        addIngestionEventForContainer(obj, parentResc, true);
+    }
+
     private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc) throws IOException {
+        addIngestionEventForContainer(obj, parentResc, false);
+    }
+
+    private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc, boolean isDestination)
+            throws IOException {
         NodeIterator childIt = getChildIterator(parentResc);
         int numChildren = 0;
         PID childPid = null;
@@ -857,17 +873,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
         // don't add event unless at least one child is ingested
         if (numChildren > 0) {
-            PremisLogger premisLogger = getPremisLogger(obj.getPid());
-            PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
-            if (numChildren == 1 && childPid != null) {
-                builder.addEventDetail("added child object {0} to this container",
-                        childPid.toString());
-            } else {
-                builder.addEventDetail("added {0} child objects to this container", numChildren);
+            // If target for this event is the existing destination object, then write to live log
+            try (PremisLogger premisLogger = isDestination ? obj.getPremisLog() : getPremisLogger(obj.getPid())) {
+                PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
+                if (numChildren == 1 && childPid != null) {
+                    builder.addEventDetail("added child object {0} to this container",
+                            childPid.toString());
+                } else {
+                    builder.addEventDetail("added {0} child objects to this container", numChildren);
+                }
+                builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
+                        .addAuthorizingAgent(depositorPid)
+                        .write();
             }
-            builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
-                    .addAuthorizingAgent(depositorPid)
-                    .write();
         }
     }
 
