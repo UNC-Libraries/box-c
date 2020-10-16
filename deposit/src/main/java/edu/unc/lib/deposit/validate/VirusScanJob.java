@@ -112,10 +112,12 @@ public class VirusScanJob extends AbstractDepositJob {
                             .write();
 
                     scannedObjects++;
+
+                    addClicks(1);
+                    markObjectCompleted(objPid);
+
                     break;
             }
-            addClicks(1);
-            markObjectCompleted(objPid);
         }
 
         if (failures.size() > 0) {
