@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 
@@ -54,6 +55,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         log.error("Failed to authenticate with fedora", ex);
         String bodyOfResponse = "Authentication failure";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    }
+
+    @ExceptionHandler(value = { InvalidPidException.class })
+    protected ResponseEntity<Object> handleInvalidPidException(RuntimeException ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN, request);
     }
 
     @ExceptionHandler(value = { NotFoundException.class })

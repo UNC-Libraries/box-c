@@ -63,6 +63,9 @@ public class RepositoryPathConstants {
     // Number of characters to use per level of hierarchy in a hashed path
     public static final int HASHED_PATH_SIZE = 2;
 
+    public static final String UUID_PATTERN =
+            "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}";
+
     // Regex pattern for decomposing a repository URI for an object or component of an object
     // Group 1 = transaction id
     // Group 2 = base container
@@ -75,9 +78,9 @@ public class RepositoryPathConstants {
     public static final Pattern repositoryPathPattern = Pattern
             .compile("/?(tx:[a-f0-9\\-]+/)?([a-zA-Z]+)/(([a-f0-9]{"
                     + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
-                    + "([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+                    + "(" + UUID_PATTERN + ")|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 
     // Regex pattern for decomposing an identifier for an object or component
     public static final Pattern identifierPattern = Pattern
-            .compile("(([a-zA-Z]+)/)?(uuid:)?(([a-fA-F0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+            .compile("(([a-zA-Z]+)/)?(uuid:)?((" + UUID_PATTERN + ")|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 }

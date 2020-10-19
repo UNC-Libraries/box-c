@@ -102,6 +102,12 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>solr-ingest</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>access-common</artifactId>
         </dependency>
         <dependency>
@@ -196,6 +202,10 @@
         <dependency>
             <groupId>com.github.kstyrc</groupId>
             <artifactId>embedded-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId>
         </dependency>
     </dependencies>
 </project>

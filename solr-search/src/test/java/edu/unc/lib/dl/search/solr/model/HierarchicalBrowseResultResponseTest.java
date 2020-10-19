@@ -32,14 +32,14 @@ public class HierarchicalBrowseResultResponseTest extends Assert {
 
     private List<BriefObjectMetadata> getMetadataObjects() {
         BriefObjectMetadataBean md1 = new BriefObjectMetadataBean();
-        md1.setId("uuid:test1");
+        md1.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
         md1.setResourceType(Folder.name());
         Map<String, Long> countMap = new HashMap<>();
         countMap.put("child", 0L);
         md1.setCountMap(countMap);
 
         BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
-        md2.setId("uuid:test2");
+        md2.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9");
         md1.setResourceType(Folder.name());
         countMap = new HashMap<>();
         countMap.put("child", 2L);
@@ -57,31 +57,31 @@ public class HierarchicalBrowseResultResponseTest extends Assert {
         resp.removeContainersWithoutContents();
 
         assertEquals(1, resp.getResultList().size());
-        assertEquals("uuid:test2", resp.getResultList().get(0).getId());
+        assertEquals("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9", resp.getResultList().get(0).getId());
     }
 
     @Test
     public void retainDirectMatches() {
         HierarchicalBrowseResultResponse resp = new HierarchicalBrowseResultResponse();
         resp.setResultList(getMetadataObjects());
-        resp.setMatchingContainerPids(Arrays.asList("uuid:test1"));
+        resp.setMatchingContainerPids(Arrays.asList("48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
         resp.removeContainersWithoutContents();
 
         assertEquals(2, resp.getResultList().size());
-        assertEquals("uuid:test1", resp.getResultList().get(0).getId());
-        assertEquals("uuid:test2", resp.getResultList().get(1).getId());
+        assertEquals("48aeb594-6d95-45e9-bb20-dd631ecc93e9", resp.getResultList().get(0).getId());
+        assertEquals("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9", resp.getResultList().get(1).getId());
     }
 
     @Test
     public void removeContentsDirectMatches() {
         HierarchicalBrowseResultResponse resp = new HierarchicalBrowseResultResponse();
         resp.setResultList(getMetadataObjects());
-        resp.setMatchingContainerPids(Arrays.asList("uuid:test2"));
+        resp.setMatchingContainerPids(Arrays.asList("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9"));
 
         resp.removeContainersWithoutContents();
 
         assertEquals(1, resp.getResultList().size());
-        assertEquals("uuid:test2", resp.getResultList().get(0).getId());
+        assertEquals("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9", resp.getResultList().get(0).getId());
     }
 }

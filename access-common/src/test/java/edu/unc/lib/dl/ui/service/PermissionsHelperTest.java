@@ -66,7 +66,7 @@ public class PermissionsHelperTest {
         roleGroups = new ArrayList<>();
 
         mdObject = new BriefObjectMetadataBean();
-        mdObject.setId("uuid:test");
+        mdObject.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
         mdObject.setRoleGroup(roleGroups);
         List<String> datastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|",
