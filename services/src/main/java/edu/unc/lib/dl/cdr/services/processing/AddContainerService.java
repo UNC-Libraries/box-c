@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -132,6 +133,11 @@ public class AddContainerService {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
+                patronService.updatePatronAccess(agent, containerPid, accessDetails);
+            } else if (Cdr.Collection.equals(containerType)) {
+                PatronAccessDetails accessDetails = new PatronAccessDetails();
+                accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, canViewOriginals),
+                        new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
                 patronService.updatePatronAccess(agent, containerPid, accessDetails);
             }
 
