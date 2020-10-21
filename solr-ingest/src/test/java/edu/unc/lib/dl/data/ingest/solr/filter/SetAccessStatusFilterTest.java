@@ -48,6 +48,7 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
@@ -87,6 +88,10 @@ public class SetAccessStatusFilterTest {
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Work.getURI()));
 
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
@@ -138,6 +143,126 @@ public class SetAccessStatusFilterTest {
     }
 
     @Test
+    public void testPatronSettingsUnit() throws Exception {
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.AdminUnit.getURI()));
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsNoRolesWork() throws Exception {
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithCanViewOriginalsRolesWork() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithMetadataRoleWork() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithDifferentRolesWork() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsNoRolesCollection() throws Exception {
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithCanViewOriginalsCollection() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithMetadataRoleCollection() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testPatronSettingsWithDifferentRolesCollection() throws Exception {
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
     public void testHasStaffOnlyAccess() throws Exception {
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
@@ -150,7 +275,6 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
     }
 
@@ -304,5 +428,11 @@ public class SetAccessStatusFilterTest {
         c.setTime(dt);
         c.add(Calendar.DATE, 365);
         return c.getTime();
+    }
+
+    private List<String> typesForObj(String objType) {
+        List<String> objTypes = new ArrayList<>();
+        objTypes.add(objType);
+        return objTypes;
     }
 }
