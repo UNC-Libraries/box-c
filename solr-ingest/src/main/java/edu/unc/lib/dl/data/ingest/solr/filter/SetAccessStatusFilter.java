@@ -136,11 +136,15 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             return true;
         }
 
-        UserRole roleOne = objPatronRoles.get(0).getRole();
-        UserRole roleTwo = objPatronRoles.get(1).getRole();
         String canViewOrig = canViewOriginals.getURI().toString();
+        UserRole roleOne = objPatronRoles.get(0).getRole();
 
-        return (!roleOne.equals(canViewOrig) || !roleTwo.equals(canViewOrig));
+        if (numRoles > 1) {
+            UserRole roleTwo = objPatronRoles.get(1).getRole();
+            return (!roleOne.equals(canViewOrig) || !roleTwo.equals(canViewOrig));
+        }
+
+        return !roleOne.equals(canViewOrig);
     }
 
     private boolean allPatronsRevoked(Map<String, Set<String>> objPrincRoles) {
