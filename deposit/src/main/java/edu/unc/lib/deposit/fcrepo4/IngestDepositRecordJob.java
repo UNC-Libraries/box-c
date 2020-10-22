@@ -154,6 +154,10 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         if (depositPackageProfile != null) {
             aipObjResc.addProperty(Cdr.depositPackageProfile, depositPackageProfile);
         }
+        if (deposit.hasProperty(Cdr.storageLocation)) {
+            String val = deposit.getProperty(Cdr.storageLocation).getString();
+            aipObjResc.addLiteral(Cdr.storageLocation, val);
+        }
 
         return aipObjResc;
     }

@@ -217,6 +217,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
         folderBag.addProperty(RDF.type, Cdr.Folder);
         folderBag.addProperty(CdrDeposit.label, label);
+        folderBag.addLiteral(Cdr.storageLocation, LOC1_ID);
 
         depBag.add(folderBag);
         job.closeModel();
@@ -251,6 +252,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 eventResc.hasProperty(Premis.note, "ingested as PID: " + folder.getPid().getQualifiedId()));
         Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
         assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
+        assertStorageLocationPresent(folder);
 
         assertClickCount(1);
         ingestedObjectsCount(1);
@@ -700,8 +702,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         assertEquals("Incorrect number of children in last tier", 1, members.size());
         WorkObject work = (WorkObject) members.get(0);
+        assertStorageLocationPresent(work);
         FileObject primaryFile = work.getPrimaryObject();
         assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+        assertStorageLocationPresent(primaryFile);
         deposited.add(work);
         deposited.add(primaryFile);
 
@@ -1170,6 +1174,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         if (stagingLocation != null) {
             fileResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                     stagingLocation).toUri().toString());
+            fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
         }
         fileResc.addProperty(CdrDeposit.mimetype, mimetype);
         if (sha1 != null) {
@@ -1197,6 +1202,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag workBag = model.createBag(workPid.getRepositoryPath());
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, "testwork");
+        workBag.addLiteral(Cdr.storageLocation, LOC1_ID);
 
         PID fileObjPid = addFileObject(workBag, stagingLocation, mimetype, sha1, md5);
         workBag.addProperty(Cdr.primaryObject, createResource(fileObjPid.getRepositoryPath()));
@@ -1213,5 +1219,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertTrue("No original deposit link for " + deposited.getPid(),
                     linked.contains(deposited.getPid()));
         }
+    }
+
+    private void assertStorageLocationPresent(ContentObject contentObj) {
+        assertTrue("Storage location property was not set",
+                contentObj.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID));
     }
 }
