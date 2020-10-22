@@ -119,6 +119,9 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         job.run();
 
         DepositRecord record = repoObjLoader.getDepositRecord(depositPid);
+        assertTrue("Storage location property was not set",
+                record.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID));
+
         List<PID> manifestPids = record.listManifests();
 
         assertEquals(2, manifestPids.size());

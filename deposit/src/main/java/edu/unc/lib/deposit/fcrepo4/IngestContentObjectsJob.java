@@ -753,6 +753,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             Literal createdLiteral = aResc.getModel().createTypedLiteral(val, XSDDatatype.XSDdateTime);
             aResc.addLiteral(Fcrepo4Repository.created, createdLiteral);
         }
+        if (dResc.hasProperty(Cdr.storageLocation)) {
+            String val = dResc.getProperty(Cdr.storageLocation).getString();
+            aResc.addLiteral(Cdr.storageLocation, val);
+        }
     }
 
     private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {
