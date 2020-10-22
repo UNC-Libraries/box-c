@@ -131,7 +131,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         }
 
         for (RoleAssignment role : objPatronRoles) {
-            if (!role.getRole().equals(canViewOriginals.getURI().toString())) {
+            if (!role.getRole().equals(canViewOriginals.getPropertyString())) {
                 return true;
             }
         }
