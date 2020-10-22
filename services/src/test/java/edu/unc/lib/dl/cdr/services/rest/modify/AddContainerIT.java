@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static org.junit.Assert.assertEquals;
@@ -192,6 +193,62 @@ public class AddContainerIT extends AbstractAPIIT {
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
+    }
+
+    @Test
+    public void testAddDefaultCollection() throws UnsupportedOperationException, Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "collection";
+        String adminId = adminUnit.getPid().getId();
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
+                .param("label", label)
+                .param("staffOnly", "false"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(adminId, respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        ContentObject member = getMemberByLabel(adminUnit, label);
+        assertHasAssignment(PUBLIC_PRINC, canViewOriginals, member);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, member);
+    }
+
+    @Test
+    public void testAddStaffOnlyCollection() throws UnsupportedOperationException, Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "collection";
+        String adminId = adminUnit.getPid().getId();
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
+                .param("label", label)
+                .param("staffOnly", "true"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(adminId, respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        ContentObject member = getMemberByLabel(adminUnit, label);
+        assertHasAssignment(PUBLIC_PRINC, none, member);
+        assertHasAssignment(AUTHENTICATED_PRINC, none, member);
     }
 
     @Test
