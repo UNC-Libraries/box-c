@@ -35,6 +35,9 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
@@ -105,11 +108,35 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (objPrincRoles.size() > 0) {
+        if (hasPatronSettings(dip.getContentObject())) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
 
         return status;
+    }
+
+    private boolean hasPatronSettings(ContentObject contentObj) {
+        if (contentObj instanceof AdminUnit) {
+            return false;
+        }
+
+        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(contentObj.getPid());
+        int numRoles = objPatronRoles.size();
+        boolean isCollection = contentObj instanceof CollectionObject;
+
+        if (!isCollection && numRoles == 0) {
+            return false;
+        } else if (isCollection && numRoles < 2) {
+            return true;
+        }
+
+        for (RoleAssignment role : objPatronRoles) {
+            if (!role.getRole().equals(canViewOriginals.getPropertyString())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean allPatronsRevoked(Map<String, Set<String>> objPrincRoles) {
