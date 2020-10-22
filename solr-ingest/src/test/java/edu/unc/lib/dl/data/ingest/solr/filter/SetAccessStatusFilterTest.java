@@ -21,6 +21,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -46,9 +47,10 @@ import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
@@ -90,8 +92,6 @@ public class SetAccessStatusFilterTest {
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getPid()).thenReturn(pid);
-
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Work.getURI()));
 
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
@@ -144,7 +144,6 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testPatronSettingsUnit() throws Exception {
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.AdminUnit.getURI()));
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
@@ -205,8 +204,22 @@ public class SetAccessStatusFilterTest {
     }
 
     @Test
+    public void testPatronSettingsAdminUnit() throws Exception {
+        contentObj = mock(AdminUnit.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
     public void testPatronSettingsNoRolesCollection() throws Exception {
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
 
         filter.filter(dip);
 
@@ -216,13 +229,16 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testPatronSettingsWithCanViewOriginalsCollection() throws Exception {
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
 
         RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
         RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
         when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
 
         filter.filter(dip);
 
@@ -232,13 +248,16 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testPatronSettingsWithMetadataRoleCollection() throws Exception {
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
 
         RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
         RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
         when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
 
         filter.filter(dip);
 
@@ -248,13 +267,16 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testPatronSettingsWithDifferentRolesCollection() throws Exception {
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
         addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
 
         RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
         RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
         when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
-        when(contentObj.getTypes()).thenReturn(typesForObj(Cdr.Collection.getURI()));
 
         filter.filter(dip);
 
@@ -428,11 +450,5 @@ public class SetAccessStatusFilterTest {
         c.setTime(dt);
         c.add(Calendar.DATE, 365);
         return c.getTime();
-    }
-
-    private List<String> typesForObj(String objType) {
-        List<String> objTypes = new ArrayList<>();
-        objTypes.add(objType);
-        return objTypes;
     }
 }

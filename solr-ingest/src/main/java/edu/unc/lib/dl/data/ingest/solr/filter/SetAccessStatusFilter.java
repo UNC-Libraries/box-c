@@ -35,11 +35,11 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Sets access-related status tags
@@ -108,43 +108,35 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (addPatronSettings(dip.getContentObject())) {
+        if (hasPatronSettings(dip.getContentObject())) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
 
         return status;
     }
 
-    private boolean addPatronSettings(ContentObject contentObj) {
-        List<String> objTypes = contentObj.getTypes();
-        ResourceType objType = ResourceType.getResourceTypeForUris(objTypes);
-        if (objType == null || objType.equals(Cdr.AdminUnit.getURI())) {
+    private boolean hasPatronSettings(ContentObject contentObj) {
+        if (contentObj instanceof AdminUnit) {
             return false;
         }
 
-        return hasPatronSettings(contentObj.getPid(), objType);
-    }
-
-    private boolean hasPatronSettings(PID pid, ResourceType rescType) {
-        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(pid);
+        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(contentObj.getPid());
         int numRoles = objPatronRoles.size();
-        boolean isCollection = rescType.equals(Cdr.Collection.getLocalName());
+        boolean isCollection = contentObj instanceof CollectionObject;
 
-        if ((!isCollection && numRoles == 0)) {
+        if (!isCollection && numRoles == 0) {
             return false;
         } else if (isCollection && numRoles < 2) {
             return true;
         }
 
-        String canViewOrig = canViewOriginals.getURI().toString();
-        UserRole roleOne = objPatronRoles.get(0).getRole();
-
-        if (numRoles > 1) {
-            UserRole roleTwo = objPatronRoles.get(1).getRole();
-            return (!roleOne.equals(canViewOrig) || !roleTwo.equals(canViewOrig));
+        for (RoleAssignment role : objPatronRoles) {
+            if (!role.getRole().equals(canViewOriginals.getURI().toString())) {
+                return true;
+            }
         }
 
-        return !roleOne.equals(canViewOrig);
+        return false;
     }
 
     private boolean allPatronsRevoked(Map<String, Set<String>> objPrincRoles) {
