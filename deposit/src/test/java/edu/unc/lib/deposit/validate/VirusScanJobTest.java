@@ -195,7 +195,9 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         } catch(JobFailedException e) {
             // Both files should have been scanned
             verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-            verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+
+            // Only marks the successful file as completed
+            verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
 
             // Only the file that passed should have a premis log
             verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
@@ -203,6 +205,38 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
             verify(premisEventBuilder).addOutcome(true);
         }
+    }
+
+    @Test
+    public void failAndRescanTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.FAILED)
+                .thenReturn(Status.PASSED);
+        File textFile = new File(depositDir, "text.txt");
+        doReturn(scanResult).when(clamScan).scan(argThat(new FileArgumentMatcher(textFile)));
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID filePid = addFileObject(depBag, textFile);
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail();
+        } catch(JobFailedException e) {
+            verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+            verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), eq(0));
+        }
+
+        job.run();
+
+        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(filePid), any(File.class));
+        verify(premisEventBuilder).addOutcome(true);
     }
 
     @Test
