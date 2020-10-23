@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'contextMenu'],
+		function($, ui, StringUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -112,46 +112,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(dataFile['fileSize']) + ")"};
 		}
-		if (resultObject.metadata.type == 'Collection') {
-			items["sepbrowse"] = "";
-			items["viewTrash"] = {name : "View trash for this collection"};
-			items["review"] = {name : "Review unpublished"};
-		}
-		
-		// Modification options
-		items["sepedit"] = "";
-		if ($.inArray('addRemoveContents', metadata.permissions) != -1 && metadata.isPart) {
-			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
-			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
-				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
-			};
-		}
-		if ($.inArray('publish', metadata.permissions) != -1)
-			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
-		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
-			items["editAccess"] = {name : 'Edit Access'};
-		
-		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			if (isContainerFlag) {
-				items["editLabel"] = {name : 'Edit Label'};
-			} else {
-				items["editFilename"] = {name : 'Edit Filename'};
-			}
-		}
-		
-		if ($.inArray('editAccessControl', metadata.permissions) != -1
-				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
-			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
-		}
-		
-		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			items["editDescription"] = {name : 'Edit Description'};
-		}
-
-		// Add files to collections and compound objects
-		if (metadata.type === 'Aggregate') {
-			items["addFile"] = {name : 'Add File'};
-		}
 
 		// Export actions
 		items["sepexport"] = "";
@@ -162,23 +122,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
-		
-		// Admin actions
-		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
-			items["sepdestroy"] = "";
-			items["runEnhancements"] = {name : 'Run enhancements'};
-			if ($.inArray('purgeForever', metadata.permissions) != -1) {
-				items["reindex"] = {name : 'Reindex'};
-				items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
-			}
-		}
-		
-		// Trash actions
-		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
-			items["septrash"] = "";
-			items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
-			items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
-		}
 		
 		return {
 			callback: function(key, options) {
@@ -208,103 +151,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							url : "list/" + metadata.id
 						});
 						break;
-					case "viewTrash" :
-						self.actionHandler.addEvent({
-							action : 'ChangeLocation',
-							url : "trash/" + metadata.id
-						});
-						break;
-					case "review" :
-						self.actionHandler.addEvent({
-							action : 'ChangeLocation',
-							url : "review/" + metadata.id
-						});
-						break;
-					case "publish" :
-						self.actionHandler.addEvent({
-							action : $.inArray("Unpublished", resultObject.metadata.status) == -1? 
-									'Unpublish' : 'Publish',
-							target : resultObject
-						});
-						break;
-					case "editAccess" :
-						self.editAccess(resultObject);
-						break;
-					case "addFile" :
-						new AddFileForm({
-							alertHandler : self.options.alertHandler
-						}).open(resultObject);
-						break;
-					case "editLabel" :
-						self.editLabel(resultObject);
-						break;
-					case "editFilename" :
-						self.editFilename(resultObject);
-						break;
-					case "editType" :
-						self.actionHandler.addEvent({
-							action : 'EditTypeBatch',
-							targets : [resultObject]
-						});
-						break;
-					case "editDescription" :
-						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
-						self.actionHandler.addEvent({
-							action : 'ChangeLocation',
-							url : "describe/" + metadata.id
-						});
-						break;
-					case "editCollectionSettings" :
-						self.actionHandler.addEvent({
-							action : 'EditCollectionSettings',
-							target : resultObject
-						});
-						break;
-					case "setDefaultWebObject" : case "clearDefaultWebObject" :
-						self.actionHandler.addEvent({
-							action : 'SetAsDefaultWebObjectBatch',
-							targets : [resultObject],
-							clear : key == "clearDefaultWebObject",
-							confirm : false
-						});
-						break;
-					case "destroy" :
-						self.actionHandler.addEvent({
-							action : 'DestroyResult',
-							target : resultObject
-						});
-						break;
-					case "deleteResult": case "restoreResult":
-						self.actionHandler.addEvent({
-							action : ($.inArray('Deleted', metadata.status) == -1)? 
-									'DeleteResult' : 'RestoreResult',
-							target : resultObject,
-							confirmAnchor : options.$trigger
-						});
-						break;
-					case "reindex" :
-						self.actionHandler.addEvent({
-							action : 'ReindexResult',
-							target : resultObject,
-							confirmAnchor : options.$trigger
-						});
-						break;
 					case "exportCSV" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "export/" + metadata.id
 						});
 						break;
-					
 					case "exportXML" :
 						self.actionHandler.addEvent({
 							action : 'ExportMetadataXMLBatch',
-							targets : [resultObject]
-						});
-						break;
-					case "runEnhancements" :
-						self.actionHandler.addEvent({
-							action : 'RunEnhancementsBatch',
 							targets : [resultObject]
 						});
 						break;
@@ -392,24 +247,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		dialog.load("acl/" + resultObject.metadata.id, function(responseText, textStatus, xmlHttpRequest){
 			dialog.dialog('option', 'position', 'center');
 		});
-	};
-	
-	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
-		var editLabelForm = new EditLabelForm({
-			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler
-		});
-		editLabelForm.open(resultObject);
-		
-	};
-
-	ResultObjectActionMenu.prototype.editFilename = function(resultObject) {
-		var editFilenameForm = new EditFilenameForm({
-			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler
-		});
-		editFilenameForm.open(resultObject);
-		
 	};
 	
 	ResultObjectActionMenu.prototype.disable = function() {

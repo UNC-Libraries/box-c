@@ -109,16 +109,16 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 	AbstractStatusMonitor.prototype.activate = function() {
 		this.active = true;
 		// Start refreshing of overview panel
-		this.refreshType(this.overviewConfig, true);
+		this.refreshType(this.overviewConfig, false);
 		// Start refreshing of job types
 		for (var index in this.jobConfig.jobTypes) {
 			var jobType = this.jobConfig.jobTypes[index];
-			this.refreshType(jobType, true);
+			this.refreshType(jobType, false);
 		}
 		// Restart details refreshing if a job is selected
 		if (this.detailsType) {
 			clearTimeout(this.detailsType.repeatId);
-			this.refreshType(this.detailsType, true);
+			this.refreshType(this.detailsType, false);
 		}
 		return this;
 	};
@@ -166,7 +166,7 @@ define('AbstractStatusMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 			detailsType.render = self.renderJobDetails;
 			if (detailsType.detailsRefresh)
 				detailsType.refresh = detailsType.detailsRefresh;
-			self.refreshType(detailsType, true);
+			self.refreshType(detailsType, false);
 			self.element.addClass("show_details");
 			self.positionDetailsView();
 		});

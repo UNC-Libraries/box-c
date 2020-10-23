@@ -24,30 +24,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 							actions : [
 								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
 							]
-						},
-						{
-							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'},
-								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
-							]
-						},
-						{
-							actions : [
-								{action : 'PublishBatch', label : 'Publish'},
-								{action : 'UnpublishBatch', label : 'Unpublish'}
-							]
-						}, {
-							actions : [
-								{action : 'RestoreBatch', label : 'Restore'},
-								{action : 'DeleteBatch', label : 'Delete'}
-							]
-						},
-						{
-							actions : [
-								{action : 'RunEnhancementsBatch', label : 'Run Enhancements', joiner : ' on'}
-							],
-							hideInTableMenu : true
-						},
+						}
 					]
 		},
 		

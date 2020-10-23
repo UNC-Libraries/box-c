@@ -3,24 +3,7 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 
 	var defaultOptions = {
 		resultObjectList : null,
-		actions : {
-			deleteBatch : {
-				label : "Delete",
-				action : "DeleteBatch"
-			}, restoreBatch : {
-				label : "Restore",
-				action : "RestoreBatch"
-			}, destroyBatch : {
-				label : "Destroy",
-				action : "DestroyBatch"
-			}, publish : {
-				label : "Publish",
-				action : "PublishBatch"
-			}, unpublish : {
-				label : "Unpublish",
-				action : "UnpublishBatch"
-			}
-		},
+		actions : {},
 		groups : undefined
 	};
 	

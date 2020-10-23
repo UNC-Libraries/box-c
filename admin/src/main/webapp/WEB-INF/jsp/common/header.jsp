@@ -61,16 +61,20 @@
 	</ul>
 	<div class="dark shadowbottom">
 		<div class="cdr-header">
-			<h1 id="cdr-logo"><a href="${pageContext.request.contextPath}/" id="titlelink"><span class="dark-title">DIGITAL</span> <span class="light-title"></span>COLLECTIONS<span class="dark-title">REPOSITORY</span><span class="sub-title">Administration</span></a></h1>
+			<h1 id="cdr-logo">
+				<a href="${pageContext.request.contextPath}/" id="titlelink">
+					<span class="dark-title">DIGITAL</span>
+					<span class="light-title">COLLECTIONS</span>
+					<span class="dark-title">REPOSITORY</span>
+					<span class="sub-title">Administration</span>
+				</a>
+				<span class="read-only"> (Read Only Mode)</span>
+			</h1>
 			
 			<ul id="mainmenu">
 				<li>
 					<c:set var="tabClass"><c:if test="${requestScope.queryMethod == 'list' || requestScope.queryMethod == 'search'}">active</c:if></c:set>
 					<a class="${tabClass}" href="${pageContext.request.contextPath}/list">Browse</a>
-				</li>
-				<li>
-					<c:set var="tabClass"><c:if test="${requestScope.queryMethod == 'trash'}">active</c:if></c:set>
-					<a class="${tabClass}" href="${pageContext.request.contextPath}/trash">Trash</a>
 				</li>
 				<li>
 					<c:set var="tabClass"><c:if test="${contentPage == 'report/statusMonitor.jsp'}">active</c:if></c:set>
@@ -82,10 +86,6 @@
 						<a href="performanceMonitor" class="${tabClass}">Metrics</a>
 					</li>
 				</c:if>
-				<li>
-					<c:set var="tabClass"><c:if test="${contentPage == 'collector/listBins.jsp'}">active</c:if></c:set>
-					<a href="collector" class="${tabClass}">Deposit Collectors</a>
-				</li>
 			</ul>
 		</div>
 	</div>

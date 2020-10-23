@@ -126,8 +126,15 @@ h1 {
 	padding-left: 3px;
 }
 
+.read-only {
+	color: firebrick;
+	letter-spacing: normal;
+	padding-left: 25px;
+	word-spacing: normal;
+}
+
 #header_banner {
-	padding: 5px 20px 0px;
+	padding: 5px 20px 0;
 }
 
 .header_right {
