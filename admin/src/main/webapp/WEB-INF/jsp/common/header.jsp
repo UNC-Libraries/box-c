@@ -49,7 +49,15 @@
 	</ul>
 	<div class="dark shadowbottom">
 		<div class="cdr-header">
-			<h1 id="cdr-logo"><a href="${pageContext.request.contextPath}/" id="titlelink"><span class="dark-title">DIGITAL</span> <span class="light-title">COLLECTIONS</span> <span class="dark-title">REPOSITORY</span><span class="sub-title">Administration</span></a></h1>
+			<h1 id="cdr-logo">
+				<a href="${pageContext.request.contextPath}/" id="titlelink">
+					<span class="dark-title">DIGITAL</span>
+					<span class="light-title">COLLECTIONS</span>
+					<span class="dark-title">REPOSITORY</span>
+					<span class="sub-title">Administration</span>
+				</a>
+				<span class="read-only"> (Read Only Mode)</span>
+			</h1>
 			
 			<ul id="mainmenu">
 				<li>

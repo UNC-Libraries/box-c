@@ -2,14 +2,14 @@
 	<h3>Details for ingest</h3> (<span class="<%= data.state.toLowerCase() %>"><%= data.state %></span>, refreshed <%= moment().format('h:mm:ssa') %>)
 
 	<% if (data.depositorName == username || data.isAdmin) { %>
-	<% if (data.state == "failed" || data.state == "paused") { %>
+	<!--<% if (data.state == "failed" || data.state == "paused") { %>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=resume" class="monitor_action">Resume</a></p>
 	<% } %>
-	
+
 	<% if (data.state == "running") { %>
 		<p><a href="/services/api/edit/deposit/<%= data.uuid %>?action=pause" class="monitor_action">Pause</a></p>
 	<% } %>
-	<% } %>
+	<% } %>-->
 	
 	<% if (data.errorMessage) { %>
 		<p class="error_message"><label>Error:</label> <%= data.errorMessage %></p>

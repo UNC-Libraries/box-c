@@ -121,7 +121,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
     items["viewEventLog"] = {name : "View Event Log"};
 		
 		// Modification options
-		items["sepedit"] = "";
+		/*items["sepedit"] = "";
 		if (!isContentRoot && $.inArray('editResourceType', metadata.permissions) != -1) {
 			if (isFile) {
 				if ($.inArray('Is Primary Object', metadata.contentStatus) != -1) {
@@ -142,7 +142,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			}
 
 			items["editTitle"] = {name : 'Edit Title'};
-		}
+		}*/
 		
 		/* Evaluating if retaining feature
 		if ($.inArray('changePatronAccess', metadata.permissions) != -1
@@ -151,7 +151,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 		*/
 
-		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
+		/*if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
@@ -162,7 +162,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Add files to work objects
 		if (!isContentRoot && metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
-		}
+		}*/
 
 		// Export actions
 		items["sepexport"] = "";
@@ -175,7 +175,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
-		var adminItems = [];
+		/*var adminItems = [];
 		if ($.inArray('destroy', metadata.permissions) != -1 || $.inArray('reindex', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
 			if ($.inArray('reindex', metadata.permissions) != -1) {
@@ -208,11 +208,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		if (!isContentRoot && canAssignStaffRoles) {
 			items["staffPermissions"] = {name : 'Staff permissions'};
-		}
+		} */
 
 
 		// Get data object for vue permissions editor
-		var perms_editor_data = perms_editor.$children[0].$children[0].$data;
+	//	var perms_editor_data = perms_editor.$children[0].$children[0].$data;
 
 		return {
 			callback: function(key, options) {
@@ -258,7 +258,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							url : "list/" + metadata.id
 						});
 						break;
-					case "review" :
+				/*	case "review" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "review/" + metadata.id
@@ -337,7 +337,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							target : resultObject,
 							confirmAnchor : options.$trigger
 						});
-						break;
+						break;*/
 					case "exportCSV" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
@@ -352,16 +352,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							targets : [resultObject]
 						});
 						break;
-					case "runEnhancements" :
+				/*	case "runEnhancements" :
 						self.actionHandler.addEvent({
 							action : 'RunEnhancementsBatch',
 							targets : [resultObject]
 						});
-						break;
+						break;*/
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
-					case "patronPermissions" :
+					/*case "patronPermissions" :
 						perms_editor_data.permissionType = 'Patron';
 						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
@@ -372,7 +372,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
 						perms_editor_data.alertHandler = self.options.alertHandler;
-						break;
+						break;*/
 				}
 			},
 			items : items

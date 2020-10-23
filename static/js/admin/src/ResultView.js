@@ -23,12 +23,12 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 							actions : [
 								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
 							]
-						},
+						}
 						/*{
 							actions : [
 								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'}
 							]
-						},*/
+						},
 						{
 							actions : [
 								{action : 'RestoreBatch', label : 'Restore'},
@@ -45,7 +45,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 								{action : 'RunEnhancementsBatch', label : 'Run Enhancements', joiner : ' on'}
 							],
 							hideInTableMenu : true
-						},
+						},*/
 					]
 		},
 		

@@ -1,10 +1,10 @@
-<% if (data.isAdmin) { %>
+<!--<% if (data.isAdmin) { %>
 <div class="status_monitor_actions">
   <button id="quiet_pipeline_btn" <%= data.state == "active" ? "" : "disabled" %> title="Stops processing of new deposit jobs, pauses any active jobs">Quiet</button>
   <button id="unquiet_pipeline_btn" <%= data.state == "quieted" ? "" : "disabled" %> title="Resumes processing of new deposit jobs, resumes jobs paused by quieting">Unquiet</button>
   <button id="stop_pipeline_btn" <%= data.state == "active" ? "" : "disabled" %> title="Stops processing of new deposit jobs, interrupts any active jobs. Deposit service must be restarted to resume.">Stop</button>
 </div>
-<% } %>
+<% } %>-->
 <table class="status_monitor_overview">
 	<tbody>
 		<tr class="column_headers">
