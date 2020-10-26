@@ -14,6 +14,13 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>getUsername</name>
+		<function-class>edu.unc.lib.dl.acl.util.GroupsThreadStore</function-class>
+		<function-signature>
+			java.lang.String getUsername()
+		</function-signature>
+	</function>
+	<function>
 		<name>getFacetField</name>
 		<function-class>edu.unc.lib.dl.search.solr.model.FacetFieldList</function-class>
 		<function-signature>
