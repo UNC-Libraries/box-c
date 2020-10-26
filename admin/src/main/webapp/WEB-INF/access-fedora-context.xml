@@ -42,6 +42,7 @@
     
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <!-- Initialize access control dependencies -->

@@ -76,8 +76,13 @@
             value="${sword.password}" />
     </bean>
     
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+        destroy-method="shutdown">
+    </bean>
+    
     <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
         <property name="lorisPath" value="${loris.base.url}"/>
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
 
     <bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">

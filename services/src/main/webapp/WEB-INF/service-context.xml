@@ -212,9 +212,14 @@
             value="${google.trackingId}" />
     </bean>
     
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+    </bean>
+    
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
