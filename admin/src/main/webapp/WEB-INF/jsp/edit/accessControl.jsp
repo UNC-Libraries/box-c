@@ -132,7 +132,7 @@
 		</tr>
 	</table>
 	<div class="update_field">
-		<input type="button" value="Update" class="update_button"/>
+		<input type="button" disabled="disabled" value="Update" class="update_button"/>
 	</div>
 </div>
 

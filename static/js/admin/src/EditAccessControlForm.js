@@ -13,61 +13,16 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 			
 			$.fn.editable.defaults.mode = 'inline';
 			this.addEmbargo = $(".add_embargo", this.element).editable({
-				emptytext: 'Add embargo',
-				format: 'MM/DD/YYYY',
-				viewformat: 'MM/DD/YYYY',
-				template: 'MM/DD/YYYY',
-				clear: true,
-				onblur:'submit',
-				combodate: {
-					minYear: moment().year(),
-					maxYear: moment().add('years', 75).year(),
-					minuteStep: 1,
-					yearDescending: true
-				}
-			}).on('save', function(e, params) {
-				if (params.newValue == null || params.newValue == "") {
-					self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
-					return;
-				}
-				var formattedDate = moment(params.newValue).format('YYYY-MM-DD[T]HH:mm:ss');
-				self.addAttribute(self.accessControlModel, 'embargo-until', formattedDate, self.aclNS, self.aclPrefix);
+				disabled: true,
 			}).on('hidden', function(e, reason) {
 				if (reason === 'cancel') {
 					$(".add_embargo", this.element).editable('setValue', null);
 					self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
 					return;
-			    } 
-			    
-			});
-			
-			$(".roles_granted .remove_group", this.element).hide();
-			
-			$(".boolean_toggle", this.element).click(function(){
-				$.proxy(self.toggleField(this), self);
-				return false;
-			});
-			
-			$(".inherit_toggle", this.element).click(function(){
-				$.proxy(self.toggleField(this), self);
-				var rolesGranted = $('.roles_granted', self.element);
-				rolesGranted.toggleClass('inheritance_disabled');
-			});
-			
-			$(".edit_role_granted a", this.element).click(function(){
-				$(".roles_granted a", self.element).show();
-				$(".edit_role_granted", self.element).hide();
-				$(".add_role_granted", self.element).show();
-				return false;
-			});
-			
-			$(".add_group_name, .add_role_name", this.element).keypress(function(e){
-				var code = (e.keyCode ? e.keyCode : e.which);
-				if (code == 13) {
-					$(".add_role_button", self.element).click();
-					e.preventDefault();
 				}
 			});
+
+			$(".roles_granted .remove_group", this.element).hide();
 			
 			$('.add_group_name').one('focus', function(){
 				var addGroup = $(this);
@@ -77,79 +32,13 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 					});
 				});
 			});
-			
-			$(".add_role_button", this.element).click(function(){
-				var roleValue = $(".add_role_name", self.element).val();
-				var groupName = $.trim($(".add_group_name", self.element).val());
-				if (roleValue == "" || groupName == "" || self.groupRoleExists(self.accessControlModel, roleValue, groupName, self.aclPrefix))
-					return false;
-				
-				var roleRow = $("tr.role_groups[data-value='" + roleValue +"']", self.element);
-				if (roleRow.length == 0) {
-					roleRow = $("<tr class='role_groups' data-value='" + roleValue + "'><td class='role'>" + 
-							roleValue + "</td><td class='groups'></td></tr>");
-					$(".edit_role_granted", self.element).before(roleRow);
-				}
-				
-				var grantElement = $(self.addElement(self.accessControlModel, 'grant', self.aclNS, self.aclPrefix));
-				self.addAttribute(grantElement, 'role', roleValue, self.aclNS, self.aclPrefix);
-				self.addAttribute(grantElement, 'group', groupName, self.aclNS, self.aclPrefix);
-				
-				$(".groups", roleRow).append("<span>" + groupName + "</span><a class='remove_group'>x</a><br/>");
-				$('.add_group_name').autocomplete('search');
-			});
-			
-			$(this.element).on("click", ".roles_granted .remove_group", function(){
-				var groupName = $(this).prev("span").html();
-				var roleValue = $(this).parents('.role_groups')[0].getAttribute('data-value');
-				self.accessControlModel.children().each(function(){
-					var group = self.getAttribute($(this), 'group', self.aclNS);
-					var role = self.getAttribute($(this), 'role', self.aclNS);
-					if (group == groupName && role == roleValue) {
-						$(this).remove();
-						return false;
-					}
-				});
-				
-				$(this).prev("span").remove();
-				$(this).next("br").remove();
-				var parentTd = $(this).parent();
-				if (parentTd.children("span").length == 0){
-					parentTd.parent().remove();
-				}
-				$(this).remove();
-			});
-			
+
 			var containing = this.options.containingDialog;
-			$('.update_button').click(function(){
-				setTimeout(function() {
-					var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
-					var overlay = new ModalLoadingOverlay(container);
-					$.ajax({
-						url : self.options.updateUrl,
-						type : 'PUT',
-						data : self.xml2Str(self.accessControlModel),
-						success : function(data) {
-							containing.data('can-close', true);
-							overlay.remove();
-							if (self.options.containingDialog != null) {
-								self.options.containingDialog.dialog('close');
-							}
-							self.alertHandler.alertHandler('success', 'Access control changes saved');
-						},
-						error : function(data) {
-							overlay.remove();
-							self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
-						}
-					});
-				}, 0);
-				
-			});
 			
 			if (this.options.containingDialog) {
 				containing.data('can-close', false);
 				var confirmationDialog = new ConfirmationDialog({
-					'promptText' : 'There are unsaved access control changes, close without saving?',
+					'promptText' : 'Are you sure you would like to close the access control panel?',
 					'confirmFunction' : function() {
 						containing.data('can-close', true);
 						containing.dialog('close');

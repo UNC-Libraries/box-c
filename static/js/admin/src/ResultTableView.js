@@ -1,6 +1,6 @@
 define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'detachplus'],
+		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -143,7 +143,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			];
 		
 			// Initialize click and drag operations
-			self._initMoveLocations();
 			self._initReordering();
 			
 			self.firstRender = false;
@@ -435,17 +434,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		this.contextMenus[1].setSelectedCount(selectedCount);
 	};
 	
-	//Initializes the droppable elements used in move operations
-	ResultTableView.prototype._initMoveLocations = function() {
-		// Jquery result containing all elements to use as move drop zones
-		this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
-			var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
-			// Needs to be a valid container with sufficient perms
-			if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
-			return dropObject.metadata;
-		});
-	};
-	
 	ResultTableView.prototype.deactivateMove = function() {
 		this.dragTargets = null;
 		this.dropActive = false;
@@ -460,18 +448,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		for (var index in this.dropLocations) {
 			this.dropLocations[index].setMoveActive(true);
 		}
-	};
-	
-	ResultTableView.prototype.addMoveDropLocation = function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
-		if (!this.dropLocations)
-			this.dropLocations = [];
-		var dropLocation = new MoveDropLocation($dropLocation, {
-			dropTargetSelector : dropTargetSelector,
-			dropTargetGetDataFunction : dropTargetGetDataFunction,
-			manager : this,
-			actionHandler : this.actionHandler
-		});
-		this.dropLocations.push(dropLocation);
 	};
 	
 	// Initializes draggable elements used in move and reorder operations

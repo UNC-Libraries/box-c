@@ -84,31 +84,6 @@ public class MODSController extends AbstractSwordController {
 		namespaces.put(JDOMNamespaceUtil.MODS_V3_NS.getPrefix(), JDOMNamespaceUtil.MODS_V3_NS.getURI());
 	}
 
-	/**
-	 * Forwards user to the MODS editor page with the
-	 *
-	 * @param idPrefix
-	 * @param id
-	 * @param model
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
-	public String editDescription(@PathVariable("pid") String pid, Model model,
-			HttpServletRequest request) {
-
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		// Retrieve the record for the object being edited
-		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
-		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
-		if (resultObject == null) {
-			throw new InvalidRecordRequestException();
-		}
-
-		model.addAttribute("resultObject", resultObject);
-		return "edit/description";
-	}
-
 	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET, produces = {"application/json; text/*; charset=UTF-8"})
 	public @ResponseBody
 	Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
@@ -130,7 +105,7 @@ public class MODSController extends AbstractSwordController {
 		}
 
 		results.put("resultObject", resultObject);
-		
+
 		// Structure vocabulary info into a map usable by the editor
 		Map<String, Object> vocabConfigs = new HashMap<>();
 		// xpath selectors for each vocabulary
@@ -203,23 +178,6 @@ public class MODSController extends AbstractSwordController {
 			log.error("Error while attempting to stream Fedora content for " + pid, e);
 		}
 		return mods;
-	}
-
-	/**
-	 * Pushes a MODS document to the target object
-	 *
-	 * @param idPrefix
-	 * @param id
-	 * @param model
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "describe/{pid}", method = RequestMethod.POST, produces = {"application/json; text/*; charset=UTF-8"})
-	public @ResponseBody
-	String updateDescription(@PathVariable("pid") String pid, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		String datastream = Datastream.MD_DESCRIPTIVE.getName();
-		return this.updateDatastream(pid, datastream, request, response);
 	}
 
 	public void setSwordUrl(String swordUrl) {

@@ -121,7 +121,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["exportXML"] = {name : 'Export MODS'};
 		}
+
+		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
+			items["sepedit"] = "";
+			items["editAccess"] = {name : 'Edit Access'};
+		}
+
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
+
+		if ($.inArray('editAccessControl', metadata.permissions) != -1 &&
+			$.inArray('purgeForever', metadata.permissions) != -1) {
+				items["sepdestroy"] = "";
+				items["reindex"] = {name : 'Reindex'};
+		}
 		
 		return {
 			callback: function(key, options) {
@@ -150,6 +162,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'co
 							action : 'ChangeLocation',
 							url : "list/" + metadata.id
 						});
+						break;
+					case "reindex" :
+						self.actionHandler.addEvent({
+							action : 'ReindexResult',
+							target : resultObject,
+							confirmAnchor : options.$trigger
+						});
+						break;
+					case "editAccess" :
+						self.editAccess(resultObject);
 						break;
 					case "exportCSV" :
 						self.actionHandler.addEvent({

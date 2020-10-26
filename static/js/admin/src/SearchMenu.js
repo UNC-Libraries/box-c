@@ -143,17 +143,6 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 						$structureView.addClass('inset facet');
 						// Inform the result view that the structure browse is ready for move purposes
 						if (self.options.resultTableView) {
-							self.options.resultTableView.addMoveDropLocation(
-								$structureView.find(".structure_content"),
-								'.entry > .primary_action', 
-								function($dropTarget){
-									var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
-									// Needs to be a valid container with sufficient perms
-									if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
-										return false;
-									return dropObject.metadata;
-								}
-							);
 							data = $structureView;
 						}
 						
