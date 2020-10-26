@@ -28,7 +28,7 @@ import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationOptions;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
 import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
-import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
+import edu.unc.lib.dcr.migration.deposit.PreconstructedDepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -125,15 +125,16 @@ public class TransformContentCommand implements Callable<Integer> {
 
                 PID destinationPid = PIDs.get(options.getDepositInto());
 
-                DepositSubmissionService depositService = new DepositSubmissionService(
-                        parentCommand.redisHost, parentCommand.redisPort);
+                try (PreconstructedDepositSubmissionService depositService =
+                        new PreconstructedDepositSubmissionService(parentCommand.redisHost, parentCommand.redisPort)) {
 
-                output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
+                    output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
 
-                result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                        depositPid, destinationPid);
+                    result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
+                            depositPid, destinationPid);
 
-                output.info("Deposit submitted");
+                    output.info("Deposit submitted");
+                }
             }
 
             return result;

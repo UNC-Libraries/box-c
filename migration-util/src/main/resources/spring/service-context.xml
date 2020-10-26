@@ -99,8 +99,7 @@
             destroy-method="shutdown">
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl"
-            destroy-method="destroy">
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
@@ -122,7 +121,8 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="pathIndex" class="edu.unc.lib.dcr.migration.paths.PathIndex">
+    <bean id="pathIndex" class="edu.unc.lib.dcr.migration.paths.PathIndex"
+            destroy-method="close">
     </bean>
     
     <bean id="depositRecordTransformerManager" class="edu.unc.lib.dcr.migration.deposit.DepositRecordTransformerManager">

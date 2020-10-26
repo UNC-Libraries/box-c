@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 
-import edu.unc.lib.dcr.migration.deposit.DepositSubmissionService;
+import edu.unc.lib.dcr.migration.deposit.PreconstructedDepositSubmissionService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
@@ -56,19 +56,20 @@ public class SubmitDepositCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         output.info(BannerUtility.getBanner());
 
-        DepositSubmissionService depositService = new DepositSubmissionService(
-                parentCommand.redisHost, parentCommand.redisPort);
+        try (PreconstructedDepositSubmissionService depositService = new PreconstructedDepositSubmissionService(
+                parentCommand.redisHost, parentCommand.redisPort)) {
 
-        PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
-        PID destinationPid = PIDs.get(destinationId);
+            PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
+            PID destinationPid = PIDs.get(destinationId);
 
-        output.info("Submitting {} for deposit to {}", depositPid.getQualifiedId(), destinationPid.getId());
+            output.info("Submitting {} for deposit to {}", depositPid.getQualifiedId(), destinationPid.getId());
 
-        int result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                depositPid, destinationPid);
+            int result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
+                    depositPid, destinationPid);
 
-        output.info("Deposit submitted");
+            output.info("Deposit submitted");
 
-        return result;
+            return result;
+        }
     }
 }
