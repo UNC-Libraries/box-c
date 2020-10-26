@@ -67,25 +67,24 @@ public class TransformDepositRecordsCommand implements Callable<Integer> {
 
         output.info("Using properties from {}", System.getProperty("config.properties.uri"));
 
-        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath);
+        try (ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath)) {
 
-        PathIndex pathIndex = (PathIndex) context.getBean("pathIndex");
-        pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
+            PathIndex pathIndex = (PathIndex) context.getBean("pathIndex");
+            pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
-        DepositRecordTransformationService transformService =
-                (DepositRecordTransformationService) context.getBean("depositRecordTransformationService");
-        transformService.setGenerateIds(generateIds);
+            DepositRecordTransformationService transformService =
+                    (DepositRecordTransformationService) context.getBean("depositRecordTransformationService");
+            transformService.setGenerateIds(generateIds);
 
-        output.info("Transforming deposit records from {}", pidListPath);
-        output.info("===========================================");
+            output.info("Transforming deposit records from {}", pidListPath);
+            output.info("===========================================");
 
-        int result = transformService.perform(pidListPath, storageLocationId);
+            int result = transformService.perform(pidListPath, storageLocationId);
 
-        output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+            output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
 
-        context.close();
-
-        return result;
+            return result;
+        }
     }
 
     public void setApplicationContextPath(String applicationContextPath) {

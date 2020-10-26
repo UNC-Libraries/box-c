@@ -71,71 +71,70 @@ public class TransformContentCommand implements Callable<Integer> {
         output.info("Transforming content tree starting from {}", startingId);
         output.info("===========================================");
 
-        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath);
+        try (ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath)) {
 
-        RepositoryPIDMinter pidMinter = (RepositoryPIDMinter) context.getBean("repositoryPIDMinter");
-        PID depositPid = pidMinter.mintDepositRecordPid();
-        options.setDepositPid(depositPid);
+            RepositoryPIDMinter pidMinter = (RepositoryPIDMinter) context.getBean("repositoryPIDMinter");
+            PID depositPid = pidMinter.mintDepositRecordPid();
+            options.setDepositPid(depositPid);
 
-        output.info("Populating deposit: " + depositPid.getId());
+            output.info("Populating deposit: " + depositPid.getId());
 
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
-        DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
-                depositPid, parentCommand.depositBaseDir, options.isHashNesting());
+            DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
+            DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
+                    depositPid, parentCommand.depositBaseDir, options.isHashNesting());
 
-        PathIndex pathIndex = (PathIndex) context.getBean("pathIndex");
-        pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
+            PathIndex pathIndex = (PathIndex) context.getBean("pathIndex");
+            pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
-        PremisLoggerFactory premisLoggerFactory = (PremisLoggerFactory) context.getBean("premisLoggerFactory");
-        RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory) context.getBean("repositoryObjectFactory");
+            PremisLoggerFactory premisLoggerFactory = (PremisLoggerFactory) context.getBean("premisLoggerFactory");
+            RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory) context.getBean("repositoryObjectFactory");
 
-        ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
-        transformerManager.setModelManager(depositModelManager);
-        transformerManager.setPathIndex(pathIndex);
-        transformerManager.setPidMinter(pidMinter);
-        transformerManager.setDirectoryManager(depositDirectoryManager);
-        transformerManager.setPremisLoggerFactory(premisLoggerFactory);
-        transformerManager.setRepositoryObjectFactory(repoObjFactory);
-        transformerManager.setOptions(options);
+            ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
+            transformerManager.setModelManager(depositModelManager);
+            transformerManager.setPathIndex(pathIndex);
+            transformerManager.setPidMinter(pidMinter);
+            transformerManager.setDirectoryManager(depositDirectoryManager);
+            transformerManager.setPremisLoggerFactory(premisLoggerFactory);
+            transformerManager.setRepositoryObjectFactory(repoObjFactory);
+            transformerManager.setOptions(options);
 
-        ContentTransformationService transformService = new ContentTransformationService(
-                depositPid, startingId);
-        transformService.setTransformerManager(transformerManager);
-        transformService.setModelManager(depositModelManager);
+            ContentTransformationService transformService = new ContentTransformationService(
+                    depositPid, startingId);
+            transformService.setTransformerManager(transformerManager);
+            transformService.setModelManager(depositModelManager);
 
-        int result = transformService.perform();
+            int result = transformService.perform();
 
-        output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+            output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
 
-        context.close();
-
-        if (options.isDryRun()) {
-            output.info("Dry run, deposit model not saved");
-            depositModelManager.removeModel(depositPid);
-            depositDirectoryManager.cleanupDepositDirectory();
-            return result;
-        }
-
-        if (options.getDepositInto() != null) {
-            if (result != 0) {
-                output.info("Encountered issues during transformation, skipping deposit submission");
+            if (options.isDryRun()) {
+                output.info("Dry run, deposit model not saved");
+                depositModelManager.removeModel(depositPid);
+                depositDirectoryManager.cleanupDepositDirectory();
                 return result;
             }
 
-            PID destinationPid = PIDs.get(options.getDepositInto());
+            if (options.getDepositInto() != null) {
+                if (result != 0) {
+                    output.info("Encountered issues during transformation, skipping deposit submission");
+                    return result;
+                }
 
-            DepositSubmissionService depositService = new DepositSubmissionService(
-                    parentCommand.redisHost, parentCommand.redisPort);
+                PID destinationPid = PIDs.get(options.getDepositInto());
 
-            output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
+                DepositSubmissionService depositService = new DepositSubmissionService(
+                        parentCommand.redisHost, parentCommand.redisPort);
 
-            result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                    depositPid, destinationPid);
+                output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
 
-            output.info("Deposit submitted");
+                result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
+                        depositPid, destinationPid);
+
+                output.info("Deposit submitted");
+            }
+
+            return result;
         }
-
-        return result;
     }
 
     public void setApplicationContextPath(String applicationContextPath) {
