@@ -18,6 +18,7 @@ package edu.unc.lib.dl.persist.services.deposit;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -56,7 +57,7 @@ import edu.unc.lib.dl.fedora.PID;
  *
  * @author bbpennel
  */
-public class DepositModelManager {
+public class DepositModelManager implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(DepositModelManager.class);
 
@@ -110,6 +111,7 @@ public class DepositModelManager {
     /**
      * Close the managed dataset
      */
+    @Override
     public void close() {
         dataset.close();
     }

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Resource;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -154,6 +155,11 @@ public class AbstractDepositJobTest {
             String objId = invocation.getArgumentAt(1, String.class);
             return completedIds.contains(objId);
         });
+    }
+
+    @After
+    public void tearDown() {
+        depositModelManager.close();
     }
 
     protected PID makePid() {

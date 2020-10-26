@@ -63,18 +63,17 @@ public class UpdateModelCommand implements Callable<Integer> {
         long start = System.currentTimeMillis();
 
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
+        try (DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir)) {
 
-        String queryString;
-        if (sparqlQuery.equals(STDIN_PATH)) {
-            queryString = IOUtils.toString(System.in, UTF_8);
-        } else {
-            queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
-        }
+            String queryString;
+            if (sparqlQuery.equals(STDIN_PATH)) {
+                queryString = IOUtils.toString(System.in, UTF_8);
+            } else {
+                queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
+            }
 
-        output.info("Executing sparql update on deposit {}:\n{}", depositPid.getId(), queryString);
+            output.info("Executing sparql update on deposit {}:\n{}", depositPid.getId(), queryString);
 
-        try {
             depositModelManager.performUpdate(depositPid, queryString);
 
             output.info("Completed sparql update on deposit {} in {}ms",

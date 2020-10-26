@@ -71,7 +71,10 @@ public class TransformContentCommand implements Callable<Integer> {
         output.info("Transforming content tree starting from {}", startingId);
         output.info("===========================================");
 
-        try (ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath)) {
+        try (
+                ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath);
+                DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
+            ) {
 
             RepositoryPIDMinter pidMinter = (RepositoryPIDMinter) context.getBean("repositoryPIDMinter");
             PID depositPid = pidMinter.mintDepositRecordPid();
@@ -79,7 +82,6 @@ public class TransformContentCommand implements Callable<Integer> {
 
             output.info("Populating deposit: " + depositPid.getId());
 
-            DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
             DepositDirectoryManager depositDirectoryManager = new DepositDirectoryManager(
                     depositPid, parentCommand.depositBaseDir, options.isHashNesting());
 
@@ -87,7 +89,8 @@ public class TransformContentCommand implements Callable<Integer> {
             pathIndex.setDatabaseUrl(parentCommand.databaseUrl);
 
             PremisLoggerFactory premisLoggerFactory = (PremisLoggerFactory) context.getBean("premisLoggerFactory");
-            RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory) context.getBean("repositoryObjectFactory");
+            RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory)
+                    context.getBean("repositoryObjectFactory");
 
             ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
             transformerManager.setModelManager(depositModelManager);

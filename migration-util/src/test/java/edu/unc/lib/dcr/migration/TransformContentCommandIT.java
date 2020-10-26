@@ -88,6 +88,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
     @Autowired
     private RepositoryPIDMinter pidMinter;
 
+    private DepositModelManager modelManager;
+
     final PrintStream originalOut = System.out;
     final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -141,6 +143,9 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         System.clearProperty("dcr.deposit.dir");
         System.clearProperty("dcr.migration.index.url");
         System.clearProperty("dcr.it.tdr.ingestSource");
+        if (modelManager != null) {
+            modelManager.close();
+        }
     }
 
     @Test
@@ -188,7 +193,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(tdbDir.toString());
+        modelManager = new DepositModelManager(tdbDir.toString());
         Model depModel = modelManager.getReadModel(depositPid);
 
         Resource resultFolderResc = depModel.getResource(bxc3Pid.getRepositoryPath());
@@ -263,7 +268,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(tdbDir.toString());
+        modelManager = new DepositModelManager(tdbDir.toString());
         Model depModel = modelManager.getReadModel(depositPid);
 
         Resource resultFolderResc = depModel.getResource(bxc3Pid.getRepositoryPath());
@@ -322,7 +327,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
 
-        DepositModelManager modelManager = new DepositModelManager(tdbDir.toString());
+        modelManager = new DepositModelManager(tdbDir.toString());
         Model depModel = modelManager.getReadModel(depositPid);
 
         Bag resultFolderResc = depModel.getBag(bxc3Pid.getRepositoryPath());
