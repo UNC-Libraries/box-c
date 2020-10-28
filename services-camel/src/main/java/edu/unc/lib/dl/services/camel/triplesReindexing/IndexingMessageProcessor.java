@@ -43,13 +43,13 @@ public class IndexingMessageProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        log.debug("Processing solr update");
         final Message in = exchange.getIn();
 
         Document msgBody = MessageUtil.getDocumentBody(in);
         Element body = msgBody.getRootElement();
 
         String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+        log.debug("Processing indexing message for {}", pidValue);
         PID pid = PIDs.get(pidValue);
         String action = body.getChild("actionType", ATOM_NS).getTextTrim();
         IndexingActionType actionType = IndexingActionType.getAction(action);

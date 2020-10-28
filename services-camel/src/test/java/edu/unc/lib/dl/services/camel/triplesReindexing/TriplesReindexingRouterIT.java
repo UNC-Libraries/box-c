@@ -58,6 +58,7 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
@@ -214,6 +215,33 @@ public class TriplesReindexingRouterIT {
         assertIndexed(folderObj2);
         assertIndexed(workObj);
         assertIndexed(fileObj);
+    }
+
+    @Test
+    public void testIndexingFromRepoRoot() throws Exception {
+        // Create a deposit record
+        DepositRecord depositRec = repositoryObjectFactory.createDepositRecord(null);
+
+        PID contentPid = RepositoryPaths.getRootPid();
+        messageSender.sendIndexingOperation("user", contentPid, RECURSIVE_REINDEX);
+
+        // Wait for roughly all of the objects to be indexed
+        NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
+                .from(indexingEndpoint)
+                .whenCompleted(16)
+                .create();
+
+        notify.matches(25l, TimeUnit.SECONDS);
+
+        assertIndexed(rootObj);
+        assertIndexed(unitObj);
+        assertIndexed(collObj);
+        assertIndexed(folderObj1);
+        assertIndexed(folderObj2);
+        assertIndexed(workObj);
+        assertIndexed(fileObj);
+
+        assertIndexed(depositRec);
     }
 
     private void assertIndexed(RepositoryObject repoObj) {
