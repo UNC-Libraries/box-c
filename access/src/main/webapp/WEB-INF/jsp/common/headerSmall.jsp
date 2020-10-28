@@ -31,7 +31,7 @@
             <span class="info-btns">
                 <a href="${contactUrl}">Contact Us</a>
                 <c:choose>
-                    <c:when test="${not empty pageContext.request.remoteUser}">
+                    <c:when test="${not empty cdr:getUsername()}">
                         <c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
                             <c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
                         </c:url>
@@ -81,7 +81,7 @@
                 </c:if>
                 <a class="navbar-item navbar-display" href="${contactUrl}">Contact Us</a>
                 <c:choose>
-                    <c:when test="${not empty pageContext.request.remoteUser}">
+                    <c:when test="${not empty cdr:getUsername()}">
                         <c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
                             <c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
                         </c:url>
