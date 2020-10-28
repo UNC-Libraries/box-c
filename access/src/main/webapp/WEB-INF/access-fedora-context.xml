@@ -28,10 +28,11 @@
         </property>
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
-
+    
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -58,6 +59,7 @@
     
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
 
     <!-- Initialize access control dependencies -->

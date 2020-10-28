@@ -111,7 +111,8 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="pathIndex" class="edu.unc.lib.dcr.migration.paths.PathIndex">
+    <bean id="pathIndex" class="edu.unc.lib.dcr.migration.paths.PathIndex"
+            destroy-method="close">
         <property name="databaseUrl" value="mem:test;DB_CLOSE_DELAY=-1" />
     </bean>
     

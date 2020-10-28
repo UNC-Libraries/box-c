@@ -32,6 +32,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.UnsupportedPackagingTypeException;
 
@@ -57,6 +58,8 @@ public class DepositSubmissionServiceTest {
     private AgentPrincipals depositingAgent;
     @Mock
     private PID depositPid;
+    @Mock
+    private DepositStatusFactory depositStatusFactory;
 
     private Map<PackagingType, DepositHandler> packageHandlers;
 

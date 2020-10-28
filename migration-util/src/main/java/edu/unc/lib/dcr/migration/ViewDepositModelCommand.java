@@ -71,25 +71,27 @@ public class ViewDepositModelCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositId);
 
-        DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
+        try (DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir)) {
 
-        if (sparqlQuery == null) {
-            RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
+            if (sparqlQuery == null) {
+                RDFFormat format = asTurtle ? TURTLE : NTRIPLES;
 
-            output.info(IOUtils.toString(streamModel(depositModelManager.getReadModel(depositPid), format), UTF_8));
-        } else {
-            String queryString;
-            if (sparqlQuery.equals(STDIN_PATH)) {
-                queryString = IOUtils.toString(System.in, UTF_8);
+                output.info(IOUtils.toString(
+                        streamModel(depositModelManager.getReadModel(depositPid), format), UTF_8));
             } else {
-                queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
+                String queryString;
+                if (sparqlQuery.equals(STDIN_PATH)) {
+                    queryString = IOUtils.toString(System.in, UTF_8);
+                } else {
+                    queryString = FileUtils.readFileToString(new File(sparqlQuery), UTF_8);
+                }
+
+                String results = depositModelManager.performQuery(depositPid, queryString);
+                output.info(results);
             }
 
-            String results = depositModelManager.performQuery(depositPid, queryString);
-            output.info(results);
+            depositModelManager.commit();
         }
-
-        depositModelManager.commit();
 
         return 0;
     }

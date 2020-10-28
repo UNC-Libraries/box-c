@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dcr.migration.deposit;
 
-import static edu.unc.lib.dcr.migration.deposit.DepositSubmissionService.EMAIL_SUFFIX;
+import static edu.unc.lib.dcr.migration.deposit.PreconstructedDepositSubmissionService.EMAIL_SUFFIX;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositMethod.BXC3_TO_5_MIGRATION_UTIL;
@@ -27,8 +27,10 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.IOException;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -47,7 +49,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 /**
  * @author bbpennel
  */
-public class DepositSubmissionServiceTest {
+public class PreconstructedDepositSubmissionServiceTest {
 
     private static final String DEPOSITOR = "testUser";
     private static final String DEPOSITOR_GROUPS = "somegroup";
@@ -60,16 +62,21 @@ public class DepositSubmissionServiceTest {
 
     private RepositoryPIDMinter pidMinter;
 
-    private DepositSubmissionService service;
+    private PreconstructedDepositSubmissionService service;
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        service = new DepositSubmissionService("localhost", 1);
+        service = new PreconstructedDepositSubmissionService("localhost", 1);
         setField(service, "depositStatusFactory", statusFactory);
 
         pidMinter = new RepositoryPIDMinter();
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        service.close();
     }
 
     @Test

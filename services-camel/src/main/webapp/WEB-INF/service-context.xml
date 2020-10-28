@@ -94,8 +94,13 @@
     </bean>
 
     <!-- ACL related beans -->
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+    </bean>
+    
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"

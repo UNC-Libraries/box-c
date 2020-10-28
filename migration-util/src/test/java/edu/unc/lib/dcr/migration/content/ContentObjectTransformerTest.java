@@ -71,6 +71,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 import org.jgroups.util.UUID;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -175,6 +176,11 @@ public class ContentObjectTransformerTest {
         service = new ContentTransformationService(depositPid, startingPid.getId());
         service.setModelManager(modelManager);
         service.setTransformerManager(manager);
+    }
+
+    @After
+    public void tearDown() {
+        modelManager.close();
     }
 
     @Test

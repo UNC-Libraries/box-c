@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PreDestroy;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,7 +31,6 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,29 +59,22 @@ public class AnalyticsTrackerUtil {
     // Google analytics tracking id
     private String gaTrackingID;
 
-    private final HttpClientConnectionManager httpManager;
-    private final CloseableHttpClient httpClient;
+    private HttpClientConnectionManager httpClientConnectionManager;
+    private CloseableHttpClient httpClient;
 
     private SolrSearchService solrSearchService;
 
-    public AnalyticsTrackerUtil() {
-
-        // Use a threaded manager with timeouts
-        httpManager = new PoolingHttpClientConnectionManager();
+    public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
+        this.httpClientConnectionManager = manager;
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(2000)
                 .build();
 
-        httpClient = HttpClients.custom()
-                .setConnectionManager(httpManager)
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(httpClientConnectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
-    }
-
-    @PreDestroy
-    public void destroy() {
-        httpManager.shutdown();
     }
 
     public void setGaTrackingID(String trackingID) {

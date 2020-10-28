@@ -18,6 +18,9 @@ package edu.unc.lib.dcr.migration.deposit;
 import static edu.unc.lib.dl.util.DepositMethod.BXC3_TO_5_MIGRATION_UTIL;
 import static edu.unc.lib.dl.util.PackagingType.BAG_WITH_N3;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.exceptions.RepositoryException;
@@ -34,19 +37,21 @@ import redis.clients.jedis.JedisPoolConfig;
  *
  * @author bbpennel
  */
-public class DepositSubmissionService {
+public class PreconstructedDepositSubmissionService implements Closeable {
 
     protected static final String EMAIL_SUFFIX = "@ad.unc.edu";
 
     private DepositStatusFactory depositStatusFactory;
 
-    public DepositSubmissionService(String redisHost, int redisPort) {
+    private JedisPool jedisPool;
+
+    public PreconstructedDepositSubmissionService(String redisHost, int redisPort) {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxIdle(15);
         jedisPoolConfig.setMaxTotal(25);
         jedisPoolConfig.setMinIdle(2);
 
-        JedisPool jedisPool = new JedisPool(jedisPoolConfig, redisHost, redisPort);
+        jedisPool = new JedisPool(jedisPoolConfig, redisHost, redisPort);
 
         depositStatusFactory = new DepositStatusFactory();
         depositStatusFactory.setJedisPool(jedisPool);
@@ -80,7 +85,8 @@ public class DepositSubmissionService {
         return 0;
     }
 
-    public void setDepositStatusFactory(DepositStatusFactory depositStatusFactory) {
-        this.depositStatusFactory = depositStatusFactory;
+    @Override
+    public void close() throws IOException {
+        jedisPool.close();
     }
 }

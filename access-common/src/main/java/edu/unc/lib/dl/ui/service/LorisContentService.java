@@ -19,7 +19,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 
-import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpStatus;
@@ -29,7 +28,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,26 +42,21 @@ public class LorisContentService {
     private static final Logger LOG = LoggerFactory.getLogger(LorisContentService.class);
 
     private CloseableHttpClient httpClient;
-    private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
+    private HttpClientConnectionManager httpClientConnectionManager;
 
     private String lorisPath;
 
-    public LorisContentService() {
-        multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
+    public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
+        this.httpClientConnectionManager = manager;
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(2000)
                 .build();
 
-        httpClient = HttpClients.custom()
-                .setConnectionManager(multiThreadedHttpConnectionManager)
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(httpClientConnectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
-    }
-
-    @PreDestroy
-    public void destroy() {
-        multiThreadedHttpConnectionManager.shutdown();
     }
 
     public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response) {

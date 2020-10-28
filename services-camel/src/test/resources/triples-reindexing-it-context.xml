@@ -34,9 +34,14 @@
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
+    
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+    </bean>
 
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl" >
         <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean id="triplesUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

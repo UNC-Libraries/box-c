@@ -18,7 +18,6 @@ package edu.unc.lib.dl.sparql;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -34,19 +33,7 @@ public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 
     private String fusekiQueryURL;
     private CloseableHttpClient httpClient;
-    private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
-
-    public FusekiSparqlQueryServiceImpl() {
-        this.multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
-        this.httpClient = HttpClients.custom()
-                .setConnectionManager(multiThreadedHttpConnectionManager)
-                .build();
-    }
-
-    public void destroy() {
-        this.httpClient = null;
-        this.multiThreadedHttpConnectionManager.shutdown();
-    }
+    private HttpClientConnectionManager httpClientConnectionManager;
 
     @Override
     public QueryExecution executeQuery(String queryString) {
@@ -57,5 +44,12 @@ public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 
     public void setFusekiQueryURL(String fusekiQueryURL) {
         this.fusekiQueryURL = fusekiQueryURL;
+    }
+
+    public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
+        this.httpClientConnectionManager = manager;
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(httpClientConnectionManager)
+                .build();
     }
 }
