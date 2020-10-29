@@ -53,6 +53,7 @@ import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
+import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -134,8 +135,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	public void onEvent(Document message) {
 
 		String action = JMSMessageUtil.getAction(message);
-		if (!FedoraActions.INGEST.getName().equals(action))
+		if (!FedoraActions.INGEST.getName().equals(action)) {
 			return;
+		}
 
 		PID pid = new PID(JMSMessageUtil.getPid(message));
 
@@ -319,8 +321,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	 * @throws DepositException
 	 */
 	private void addTopLevelToContainer(String pid) throws DepositException {
-		if (!topLevelPids.contains(pid))
+		if (!topLevelPids.contains(pid)) {
 			return;
+		}
 
 		while (true) {
 			try {
@@ -481,9 +484,12 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					String path = uri.getPath();
 					File file = getDepositDirectory().toPath().resolve(path).toFile();
 
-					// Make sure the file was inside the deposit directory
-					if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
-						throw new DepositException("File path was outside the deposit directory");
+					boolean isManifest = cLocation.getParentElement().getAttributeValue("ID")
+							.startsWith(ContentModelHelper.Datastream.DATA_MANIFEST.getName());
+
+					// Make sure the file was inside the deposit directory, unless it is from a deposit record manifest
+					if (!isManifest && !file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
+						throw new DepositException("File path was outside the deposit directory: " + file.toPath().toAbsolutePath());
 					}
 
 					repeatUpload: while (true) {
