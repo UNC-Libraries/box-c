@@ -186,6 +186,9 @@ public class PIDs {
             String idPart = id.split("/")[1];
             if (CONTENT_BASE.equals(idPart)) {
                 return RepositoryPaths.getContentBasePid();
+            } else if (REPOSITORY_ROOT_ID.equals(idPart)) {
+                // Matched based on qualified form of repository root
+                return RepositoryPaths.getRootPid();
             }
         } else if (CONTENT_BASE.equals(id)) {
             return RepositoryPaths.getContentBasePid();

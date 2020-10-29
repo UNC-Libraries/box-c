@@ -274,6 +274,17 @@ public class PIDsTest {
         assertEquals(FEDORA_BASE, pid.getRepositoryPath());
         assertEquals(REPOSITORY_ROOT_ID, pid.getId());
         assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+        assertEquals(REPOSITORY_ROOT_ID + "/" + REPOSITORY_ROOT_ID, pid.getQualifiedId());
+    }
+
+    @Test
+    public void getRootFromQualifiedIdTest() {
+        PID pid = PIDs.get(RepositoryPaths.getRootPid().getQualifiedId());
+
+        assertEquals(FEDORA_BASE, pid.getRepositoryPath());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getId());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+        assertEquals(REPOSITORY_ROOT_ID + "/" + REPOSITORY_ROOT_ID, pid.getQualifiedId());
     }
 
     @Test
