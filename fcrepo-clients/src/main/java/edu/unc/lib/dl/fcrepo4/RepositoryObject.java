@@ -27,6 +27,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A generic repository object, with properties common to objects in the repository.
@@ -116,6 +117,13 @@ public abstract class RepositoryObject {
             premisLog = driver.getPremisLog(this);
         }
         return premisLog;
+    }
+
+    /**
+     * @return the ResourceType which describes this object
+     */
+    public ResourceType getResourceType() {
+        return ResourceType.getResourceTypeForUris(getTypes());
     }
 
     /**

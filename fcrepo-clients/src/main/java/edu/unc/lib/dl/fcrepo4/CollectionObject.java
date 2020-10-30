@@ -20,6 +20,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Represents a collection within the repository. This is a second-level container to which
@@ -44,6 +45,11 @@ public class CollectionObject extends ContentContainerObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Object.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Collection;
     }
 
     @Override

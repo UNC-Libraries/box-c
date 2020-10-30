@@ -19,6 +19,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A repository object which represents the root of the content tree. Can only
@@ -53,4 +54,8 @@ public class ContentRootObject extends ContentContainerObject {
         return this;
     }
 
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.ContentRoot;
+    }
 }

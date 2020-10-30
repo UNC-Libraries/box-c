@@ -30,6 +30,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A repository object which represents a single work, and should contain one or
@@ -53,6 +54,11 @@ public class WorkObject extends ContentContainerObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a Work object.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Work;
     }
 
     /**

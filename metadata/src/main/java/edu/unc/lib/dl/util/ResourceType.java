@@ -17,7 +17,10 @@ package edu.unc.lib.dl.util;
 
 import java.util.List;
 
+import org.apache.jena.rdf.model.Resource;
+
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * Resource Types
@@ -25,28 +28,41 @@ import edu.unc.lib.dl.rdf.Cdr;
  *
  */
 public enum ResourceType {
-    AdminUnit(1, Cdr.AdminUnit.getURI()),
-    Collection(2, Cdr.Collection.getURI()),
-    Folder(6, Cdr.Folder.getURI()),
-    Work(10, Cdr.Work.getURI()),
-    File(20, Cdr.FileObject.getURI()),
-    DepositRecord(100, Cdr.DepositRecord.getURI()),
-    ContentRoot(100, Cdr.ContentRoot.getURI());
+    AdminUnit(1, Cdr.AdminUnit),
+    Collection(2, Cdr.Collection),
+    Folder(6, Cdr.Folder),
+    Work(10, Cdr.Work),
+    File(20, Cdr.FileObject),
+    Binary(30, Fcrepo4Repository.Binary),
+    DepositRecord(100, Cdr.DepositRecord),
+    ContentRoot(100, Cdr.ContentRoot);
 
     private int displayOrder;
     private String uri;
+    private Resource resource;
 
-    ResourceType(int displayOrder, String uri) {
+    ResourceType(int displayOrder, Resource resource) {
         this.displayOrder = displayOrder;
-        this.uri = uri;
+        this.resource = resource;
+        this.uri = resource.getURI();
     }
 
     public int getDisplayOrder() {
         return this.displayOrder;
     }
 
+    /**
+     * @return the resource type as a String URI
+     */
     public String getUri() {
         return this.uri;
+    }
+
+    /**
+     * @return the resource type represented as an RDF resource
+     */
+    public Resource getResource() {
+        return resource;
     }
 
     public boolean equals(String name) {

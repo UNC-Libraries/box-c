@@ -21,6 +21,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A repository object which represents a Folder. Folders are containers which
@@ -43,6 +44,11 @@ public class FolderObject extends ContentContainerObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a Folder object.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Folder;
     }
 
     @Override
