@@ -48,14 +48,14 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
 
 /**
  * Transforms bagit bags stored in a staging location into n3 for deposit
- * 
+ *
  * @author bbpennel
  * @author daines
  * @date Nov 9, 2015
  */
 public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
-	
+
 	public BagIt2N3BagJob() {
 		super();
 	}
@@ -66,26 +66,26 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
 	@Override
 	public void runJob() {
-		
+
 		Model model = getWritableModel();
 		com.hp.hpl.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
-		
+
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
-		
+
 		File sourceFile = new File(sourcePath);
-		
+
 		if (BagHelper.getVersion(sourceFile) == null) {
 			failJob("Can't find BagIt bag", "A BagIt bag could not be found at the source path.");
 		}
-		
+
 		BagFactory bagFactory = new BagFactory();
 		Bag bag = bagFactory.createBag(sourceFile);
-		
+
 		if (bag.getFormat() != Format.FILESYSTEM) {
 			failJob("Unsupported BagIt bag format", "Only filesystem bags are supported.");
 		}
-		
+
 		// Verify that the bag has all the required parts
 		SimpleResult completeResult = bag.verifyComplete();
 		if (!bag.verifyComplete().isSuccess()) {
@@ -94,33 +94,33 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			for (String error : completeResult.getErrorMessages()) {
 				msg.append(error).append("\n");
 			}
-			
+
 			failJob("Unable to normalize bag " + sourcePath + ", it was not complete according to bagit specifications",
 					msg.toString());
 		}
-		
+
 		Collection<BagFile> payload = bag.getPayload();
-		
+
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
 		Property md5sumProp = dprop(model, md5sum);
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
-		
+
 		// Turn the bag itself into the top level folder for this deposit
 		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
-		
+
 		int i = 0;
 		// Add all of the payload objects into the bag folder
 		for (BagFile file : payload) {
 			log.debug("Adding object {}: {}", i++, file.getFilepath());
-			
+
 			String filePath = file.getFilepath();
-			
+
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
-			
+
 			Resource fileResource = getFileResource(sourceBag, filePath);
-			
+
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
 			model.add(fileResource, labelProp, filename);
@@ -128,7 +128,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			if (checksums.containsKey(Manifest.Algorithm.MD5)) {
 				model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.MD5));
 			}
-			
+
 			// Find staged path for the file
 			Path storedPath = Paths.get(sourceFile.getAbsolutePath(), filePath);
 			try {
@@ -137,9 +137,9 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {0}", storedPath);
 			}
-			
+
 		}
-		
+
 		String sourceAbsPath = sourceFile.getAbsolutePath();
 		// Register tag file as deposit manifests, then register  them for cleanup later 
 		for (BagFile tag : bag.getTags()) {
@@ -147,26 +147,26 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			try {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
-					getDepositStatusFactory().addManifest(getDepositUUID(), stagedURI.toString());
+					getDepositStatusFactory().addManifest(getDepositUUID(), path.toAbsolutePath().toString());
 					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {0}", path);
 			}
 		}
-		
+
 		// Register the bag itself for cleanup
 		Path storedPath = sourceFile.toPath();
 		try {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());
-			
+
 			if (stagedURI != null) {
 				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 			}
 		} catch (StagingException e) {
 			failJob(e, "Unable to get staged path for file {0}", storedPath);
 		}
-		
+
 	}
-	
+
 }
