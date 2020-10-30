@@ -30,6 +30,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A Deposit Record repository object, which tracks information pertaining to a single deposit.
@@ -123,6 +124,11 @@ public class DepositRecord extends RepositoryObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.DepositRecord;
     }
 
     @Override

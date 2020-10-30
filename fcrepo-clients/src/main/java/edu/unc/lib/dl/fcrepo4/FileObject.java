@@ -36,6 +36,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.PcdmUse;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Repository object which contains a single original file and any number of
@@ -60,6 +61,11 @@ public class FileObject extends ContentObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a File Object.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.File;
     }
 
     /**

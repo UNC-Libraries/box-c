@@ -29,6 +29,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * A binary resource object in the repository. Represents a single binary file
@@ -85,6 +86,11 @@ public class BinaryObject extends RepositoryObject {
             throw new ObjectTypeMismatchException("Object " + pid + " is not a binary.");
         }
         return this;
+    }
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.Binary;
     }
 
     @Override
