@@ -34,10 +34,10 @@ public interface StreamTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceStream InputStream of the content to transfer.
-     * @return URI of the file in its destination
+     * @return information describing the outcome of the transfer
      * @throws BinaryAlreadyExistsException thrown if the binary already exists
      */
-    URI transfer(PID binPid, InputStream sourceStream);
+    BinaryTransferOutcome transfer(PID binPid, InputStream sourceStream);
 
     /**
      * Write the provided stream to a preservation storage location. If a binary already
@@ -45,9 +45,9 @@ public interface StreamTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceStream InputStream of the content to transfer.
-     * @return the URI of the binary in its destination.
+     * @return information describing the outcome of the transfer
      */
-    URI transferReplaceExisting(PID binPid, InputStream sourceStream);
+    BinaryTransferOutcome transferReplaceExisting(PID binPid, InputStream sourceStream);
 
     /**
      * Write the provided stream as a new version of binary in a preservation storage location. Previous
@@ -55,9 +55,9 @@ public interface StreamTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceStream InputStream of the content to transfer
-     * @return the URI of the binary in its destination.
+     * @return information describing the outcome of the transfer
      */
-    URI transferVersion(PID binPid, InputStream sourceStream);
+    BinaryTransferOutcome transferVersion(PID binPid, InputStream sourceStream);
 
     /**
      * Delete a binary in a preservation location.

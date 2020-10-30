@@ -56,6 +56,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.test.TestHelper;
@@ -157,7 +158,8 @@ public class RegisterToLongleafProcessorIT {
 
         PID filePid = pidMinter.mintContentPid();
         PID originalPid = DatastreamPids.getOriginalFilePid(filePid);
-        URI storageUri = transferSession.transfer(originalPid, streamString(TEXT1_BODY));
+        BinaryTransferOutcome outcome = transferSession.transfer(originalPid, streamString(TEXT1_BODY));
+        URI storageUri = outcome.getDestinationUri();
         FileObject fileObj = workObj.addDataFile(filePid, storageUri, "original", "text/plain", null, TEXT1_MD5, null);
         BinaryObject origBin = fileObj.getOriginalFile();
 
@@ -205,13 +207,15 @@ public class RegisterToLongleafProcessorIT {
     }
 
     private BinaryObject createBinary(PID binPid, String content, String sha1, String md5) {
-        URI storageUri = transferSession.transfer(binPid, streamString(content));
+        BinaryTransferOutcome outcome = transferSession.transfer(binPid, streamString(content));
+        URI storageUri = outcome.getDestinationUri();
         return repoObjFactory.createOrUpdateBinary(binPid, storageUri, "text.txt", "text/plain", sha1, md5, null);
     }
 
     private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
-        URI storageUri = transferSession.transfer(originalPid, streamString(content));
+        BinaryTransferOutcome outcome = transferSession.transfer(originalPid, streamString(content));
+        URI storageUri = outcome.getDestinationUri();
         return fileObj.addOriginalFile(storageUri, "original.txt", "plain/text", sha1, md5);
     }
 

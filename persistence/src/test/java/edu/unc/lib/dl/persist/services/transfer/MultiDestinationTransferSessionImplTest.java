@@ -34,6 +34,8 @@ import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
 /**
  * @author bbpennel
@@ -95,14 +97,15 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
 
         try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
                 sourceManager, storageLocationManager)) {
-            URI result1 = session.forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
-            URI result2 = session.forDestination(storageLoc).transfer(binPid2, sourceFile2.toUri());
+            BinaryTransferSession destSession = session.forDestination(storageLoc);
+            BinaryTransferOutcome result1 = destSession.transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome result2 = destSession.transfer(binPid2, sourceFile2.toUri());
 
             // Verify that results ended up in the right storage locations
-            assertTrue(result1.toString().contains("storage/"));
-            assertTrue(result2.toString().contains("storage/"));
-            assertFileContent(Paths.get(result1), FILE_CONTENT);
-            assertFileContent(Paths.get(result2), "stuff");
+            assertTrue(result1.getDestinationUri().toString().contains("storage/"));
+            assertTrue(result2.getDestinationUri().toString().contains("storage/"));
+            assertFileContent(Paths.get(result1.getDestinationUri()), FILE_CONTENT);
+            assertFileContent(Paths.get(result2.getDestinationUri()), "stuff");
         }
     }
 
@@ -122,14 +125,16 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
 
         try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
                 sourceManager, storageLocationManager)) {
-            URI result1 = session.forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
-            URI result2 = session.forDestination(storageLoc2).transfer(binPid2, sourceFile2.toUri());
+            BinaryTransferOutcome result1 = session
+                    .forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome result2 = session
+                    .forDestination(storageLoc2).transfer(binPid2, sourceFile2.toUri());
 
             // Verify that results ended up in the right storage locations
-            assertTrue(result1.toString().contains("storage/"));
-            assertTrue(result2.toString().contains("storage2/"));
-            assertFileContent(Paths.get(result1), FILE_CONTENT);
-            assertFileContent(Paths.get(result2), "stuff");
+            assertTrue(result1.getDestinationUri().toString().contains("storage/"));
+            assertTrue(result2.getDestinationUri().toString().contains("storage2/"));
+            assertFileContent(Paths.get(result1.getDestinationUri()), FILE_CONTENT);
+            assertFileContent(Paths.get(result2.getDestinationUri()), "stuff");
         }
     }
 }

@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
-import java.net.URI;
 import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
@@ -46,12 +45,13 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
 
 
 /**
@@ -174,10 +174,10 @@ public class RepositoryPremisLogger implements PremisLogger {
 
     private BinaryObject updateOrCreateLog(InputStream contentStream) {
         PID logPid = getMdEventsPid(repoObject.getPid());
-        URI logUri = transferSession.transferReplaceExisting(logPid, contentStream);
+        BinaryTransferOutcome outcome = transferSession.transferReplaceExisting(logPid, contentStream);
 
-        return repoObjFactory.createOrUpdateBinary(logPid, logUri,
-                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), null, null, null);
+        return repoObjFactory.createOrUpdateBinary(logPid, outcome.getDestinationUri(),
+                MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), outcome.getSha1(), null, null);
     }
 
     @Override

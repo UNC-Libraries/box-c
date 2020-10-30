@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
 
 /**
@@ -73,7 +74,8 @@ public class FSToPosixTransferClientTest extends FSToFSTransferClientTest {
 
         Path sourceFile = createSourceFile();
 
-        URI binUri = client.transfer(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceFile.toUri());
+        URI binUri = outcome.getDestinationUri();
         Path binPath = Paths.get(binUri);
 
         assertIsSourceFile(binPath);

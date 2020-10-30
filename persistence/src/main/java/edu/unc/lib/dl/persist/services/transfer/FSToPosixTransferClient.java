@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
 
 /**
@@ -48,12 +49,12 @@ public class FSToPosixTransferClient extends FSToFSTransferClient {
     }
 
     @Override
-    public URI transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
-        URI binUri = super.transfer(binPid, sourceFileUri, allowOverwrite);
+    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
+        BinaryTransferOutcome outcome = super.transfer(binPid, sourceFileUri, allowOverwrite);
         HashedPosixStorageLocation posixLoc = (HashedPosixStorageLocation) destination;
 
         if (posixLoc.getPermissions() != null) {
-            Path binPath = Paths.get(binUri);
+            Path binPath = Paths.get(outcome.getDestinationUri());
 
             try {
                 Files.setPosixFilePermissions(binPath, posixLoc.getPermissions());
@@ -62,6 +63,6 @@ public class FSToPosixTransferClient extends FSToFSTransferClient {
             }
         }
 
-        return binUri;
+        return outcome;
     }
 }

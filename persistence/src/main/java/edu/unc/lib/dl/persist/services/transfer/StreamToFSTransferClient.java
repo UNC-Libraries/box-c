@@ -35,6 +35,7 @@ import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 import edu.unc.lib.dl.util.FileTransferHelpers;
 
@@ -57,16 +58,16 @@ public class StreamToFSTransferClient implements StreamTransferClient {
     }
 
     @Override
-    public URI transfer(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transfer(PID binPid, InputStream sourceStream) {
         return writeStream(binPid, sourceStream, false);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferReplaceExisting(PID binPid, InputStream sourceStream) {
         return writeStream(binPid, sourceStream, true);
     }
 
-    protected URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
+    protected BinaryTransferOutcome writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         Path destPath = Paths.get(destUri);
         boolean destFileExists = destPath.toFile().exists();
@@ -115,11 +116,11 @@ public class StreamToFSTransferClient implements StreamTransferClient {
             FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
-        return destUri;
+        return new BinaryTransferOutcomeImpl(destUri, null);
     }
 
     @Override
-    public URI transferVersion(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferVersion(PID binPid, InputStream sourceStream) {
         throw new NotImplementedException("Versioning not yet implemented");
     }
 

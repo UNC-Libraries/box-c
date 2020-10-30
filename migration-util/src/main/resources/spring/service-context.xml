@@ -129,7 +129,6 @@
         <property name="pathIndex" ref="pathIndex" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="transactionManager" ref="txManager" />
     </bean>
     
     <bean id="depositRecordTransformationService" class="edu.unc.lib.dcr.migration.deposit.DepositRecordTransformationService">

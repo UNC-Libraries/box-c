@@ -34,6 +34,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.util.FileTransferHelpers;
 
 /**
@@ -56,16 +57,16 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     }
 
     @Override
-    public URI transfer(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri) {
         return transfer(binPid, sourceFileUri, false);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transferReplaceExisting(PID binPid, URI sourceFileUri) {
         return transfer(binPid, sourceFileUri, true);
     }
 
-    public URI transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
+    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         long currentTime = System.nanoTime();
         Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
@@ -118,11 +119,11 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
-        return destUri;
+        return new BinaryTransferOutcomeImpl(destUri, null);
     }
 
     @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
         throw new NotImplementedException("Versioning not yet implemented");
     }
 

@@ -50,6 +50,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -204,7 +205,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 stagingUri, binPid.getQualifiedId());
         URI storageUri = null;
         try {
-            storageUri = transferSession.transfer(binPid, stagingUri);
+            BinaryTransferOutcome outcome = transferSession.transfer(binPid, stagingUri);
+            storageUri = outcome.getDestinationUri();
         } catch (BinaryAlreadyExistsException e) {
             // Make sure a PID collision with an existing repository object isn't happening
             if (repoObjFactory.objectExists(binPid.getRepositoryUri())) {
@@ -221,7 +223,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 // binary was not previously fully transferred, so retry with replacement enabled
                 log.debug("Retransferring {} file from {} for {} with replacement enabled",
                         storageProperty.getLocalName(), stagingUri, binPid.getQualifiedId());
-                storageUri = transferSession.transferReplaceExisting(binPid, stagingUri);
+                BinaryTransferOutcome outcome = transferSession.transferReplaceExisting(binPid, stagingUri);
+                storageUri = outcome.getDestinationUri();
             }
         } finally {
             if (storageUri != null) {

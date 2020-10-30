@@ -59,6 +59,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.test.TestHelper;
@@ -261,7 +262,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
     private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
-        URI storageUri = transferSession.transfer(originalPid, new ByteArrayInputStream(content.getBytes(UTF_8)));
+        BinaryTransferOutcome outcome = transferSession.transfer(originalPid,
+                new ByteArrayInputStream(content.getBytes(UTF_8)));
+        URI storageUri = outcome.getDestinationUri();
         return fileObj.addOriginalFile(storageUri, "original.txt", "plain/text", sha1, md5);
     }
 

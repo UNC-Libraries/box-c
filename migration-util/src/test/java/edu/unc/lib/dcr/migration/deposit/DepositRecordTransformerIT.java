@@ -54,7 +54,6 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -95,8 +94,6 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
     @Autowired
-    private TransactionManager txManager;
-    @Autowired
     private StorageLocationManager locManager;
     @Autowired
     private BinaryTransferService transferService;
@@ -131,7 +128,6 @@ public class DepositRecordTransformerIT extends AbstractDepositRecordTransformat
         transformer.setPathIndex(pathIndex);
         transformer.setPremisLoggerFactory(premisLoggerFactory);
         transformer.setRepositoryObjectFactory(repoObjFactory);
-        transformer.setTransactionManager(txManager);
     }
 
     @After
