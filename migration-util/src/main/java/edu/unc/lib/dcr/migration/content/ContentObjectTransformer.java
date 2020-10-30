@@ -459,6 +459,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         if (contentModels.contains(COLLECTION.getResource())) {
             if (Cdr.AdminUnit.equals(parentType) || !options.isTopLevelAsUnit()) {
                 return Cdr.Collection;
+            } else if (Cdr.Collection.equals(parentType)) {
+                return Cdr.Folder;
             } else {
                 return Cdr.AdminUnit;
             }
