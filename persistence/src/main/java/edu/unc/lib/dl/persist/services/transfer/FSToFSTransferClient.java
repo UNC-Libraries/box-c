@@ -15,18 +15,28 @@
  */
 package edu.unc.lib.dl.persist.services.transfer;
 
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
@@ -35,6 +45,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.FileTransferHelpers;
 
 /**
@@ -67,6 +78,7 @@ public class FSToFSTransferClient implements BinaryTransferClient {
     }
 
     public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri, boolean allowOverwrite) {
+        String digest;
         URI destUri = destination.getStorageUri(binPid);
         long currentTime = System.nanoTime();
         Path oldFilePath = FileTransferHelpers.createFilePath(destUri, "old", currentTime);
@@ -89,11 +101,10 @@ public class FSToFSTransferClient implements BinaryTransferClient {
 
             cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destinationPath);
 
-            File sourceFile = Paths.get(sourceFileUri).toFile();
-            File newFile = newFilePath.toFile();
+            Path sourcePath = Paths.get(sourceFileUri);
 
             // Using FileUtils.copyFile since it defers to FileChannel.transferFrom, which is interruptible
-            FileUtils.copyFile(sourceFile, newFile, true);
+            digest = copyFile(sourcePath, newFilePath);
 
             // Rename old file to .old extension
             if (destFileExists) {
@@ -119,7 +130,59 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
 
-        return new BinaryTransferOutcomeImpl(destUri, null);
+        return new BinaryTransferOutcomeImpl(destUri, digest);
+    }
+
+    private static final long FILE_COPY_BUFFER_SIZE = 1024 * 1024 * 30;
+
+    /**
+     * Based on org.apache.commons.io.FileUtils.copyFile(File, File, boolean)
+     * but adds Digest calculation during transfer
+     * @param srcPath
+     * @param destPath
+     * @throws IOException
+     */
+    private static String copyFile(Path srcPath, Path destPath) throws IOException {
+        if (Files.exists(destPath) && Files.isDirectory(destPath)) {
+            throw new IOException("Destination '" + destPath + "' exists but is a directory");
+        }
+
+        String digest;
+        File srcFile = srcPath.toFile();
+        final long srcLen = srcFile.length();
+        File destFile = destPath.toFile();
+        try (
+                FileInputStream fis = new FileInputStream(srcFile);
+                DigestInputStream digestStream = new DigestInputStream(
+                        fis, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
+                ReadableByteChannel input = Channels.newChannel(digestStream);
+                FileOutputStream fos = new FileOutputStream(destFile);
+                FileChannel output = fos.getChannel()) {
+
+            long pos = 0;
+            long count = 0;
+            while (pos < srcLen) {
+                final long remain = srcLen - pos;
+                count = remain > FILE_COPY_BUFFER_SIZE ? FILE_COPY_BUFFER_SIZE : remain;
+                final long bytesCopied = output.transferFrom(input, pos, count);
+                if (bytesCopied == 0) {
+                    break; // ensure we don't loop forever
+                }
+                pos += bytesCopied;
+            }
+            digest = encodeHexString(digestStream.getMessageDigest().digest());
+        } catch (final NoSuchAlgorithmException e) {
+            throw new UnsupportedAlgorithmException(e);
+        }
+
+        final long dstLen = destFile.length();
+        if (srcLen != dstLen) {
+            throw new IOException("Failed to copy full contents from '" +
+                    srcFile + "' to '" + destFile + "' Expected length: " + srcLen + " Actual: " + dstLen);
+        }
+        destFile.setLastModified(srcFile.lastModified());
+
+        return digest;
     }
 
     @Override
