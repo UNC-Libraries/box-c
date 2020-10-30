@@ -18,10 +18,14 @@ package edu.unc.lib.dcr.migration.content;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Service which transforms a tree of content objects starting from a single root.
@@ -34,6 +38,7 @@ public class ContentTransformationService {
     private PID depositPid;
     private ContentObjectTransformerManager transformerManager;
     private DepositModelManager modelManager;
+    private RepositoryObjectLoader repoObjLoader;
 
     public ContentTransformationService(PID depositPid, String startingId) {
         this.startingPid = PIDs.get(startingId);
@@ -55,7 +60,18 @@ public class ContentTransformationService {
         modelManager.addTriples(depositPid, depositObjModel);
 
         // Kick off transformation of the tree from the starting object
-        transformerManager.createTransformer(startingPid, newPid, depositPid, null)
+        ContentTransformationOptions options = transformerManager.getOptions();
+
+        Resource parentType = null;
+        String depositInto = options.getDepositInto();
+        if (depositInto != null) {
+            PID depositInfoPid = PIDs.get(depositInto);
+            RepositoryObject repoObj = repoObjLoader.getRepositoryObject(depositInfoPid);
+            ResourceType rescType = repoObj.getResourceType();
+            parentType = rescType.getResource();
+        }
+
+        transformerManager.createTransformer(startingPid, newPid, depositPid, parentType)
                 .fork();
 
         // Wait for all transformers to finish
@@ -68,5 +84,9 @@ public class ContentTransformationService {
 
     public void setModelManager(DepositModelManager modelManager) {
         this.modelManager = modelManager;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }

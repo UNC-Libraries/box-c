@@ -33,6 +33,7 @@ import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
@@ -91,6 +92,8 @@ public class TransformContentCommand implements Callable<Integer> {
             PremisLoggerFactory premisLoggerFactory = (PremisLoggerFactory) context.getBean("premisLoggerFactory");
             RepositoryObjectFactory repoObjFactory = (RepositoryObjectFactory)
                     context.getBean("repositoryObjectFactory");
+            RepositoryObjectLoader repoObjLoader = (RepositoryObjectLoader)
+                    context.getBean("repositoryObjectLoader");
 
             ContentObjectTransformerManager transformerManager = new ContentObjectTransformerManager();
             transformerManager.setModelManager(depositModelManager);
@@ -105,6 +108,7 @@ public class TransformContentCommand implements Callable<Integer> {
                     depositPid, startingId);
             transformService.setTransformerManager(transformerManager);
             transformService.setModelManager(depositModelManager);
+            transformService.setRepositoryObjectLoader(repoObjLoader);
 
             int result = transformService.perform();
 
