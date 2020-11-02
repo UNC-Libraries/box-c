@@ -339,6 +339,9 @@ public class RepositoryObjectFactory {
         URI resultUri;
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
+        log.debug("Updating binary {} with fields:\n    uri = '{}'\n    mimetype = '{}', " +
+                "filename = '{}'\n    sha1 = '{}', m5 = '{}'", pid.getRepositoryPath(),
+                storageUri, mimetype, filename, sha1Checksum, md5Checksum);
         try (FcrepoResponse response = getClient().put(pid.getRepositoryUri())
                 .externalContent(storageUri, formatMimetype(mimetype), PROXY)
                 .addInteractionModel(LDP_NON_RDF_SOURCE)

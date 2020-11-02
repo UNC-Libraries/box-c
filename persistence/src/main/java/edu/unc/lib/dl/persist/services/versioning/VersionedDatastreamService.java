@@ -167,8 +167,8 @@ public class VersionedDatastreamService {
                 dsOutcome.getDestinationUri(),
                 newVersion.getFilename(),
                 newVersion.getContentType(),
-                newVersion.getMd5(),
                 dsOutcome.getSha1(),
+                newVersion.getMd5(),
                 newVersion.getProperties());
     }
 

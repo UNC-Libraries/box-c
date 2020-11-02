@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -54,6 +55,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination
@@ -206,6 +208,15 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         URI storageUri = null;
         try {
             BinaryTransferOutcome outcome = transferSession.transfer(binPid, stagingUri);
+            Statement digestStmt = resc.getProperty(DigestAlgorithm.DEFAULT_ALGORITHM.getDepositProperty());
+            if (digestStmt != null) {
+                String digest = digestStmt.getString();
+                if (!digest.equals(outcome.getSha1())) {
+                    throw new InvalidChecksumException("Checksum of copied file for " + binPid
+                            + " from " + stagingUri + " did not match expected SHA1: expected "
+                            + digest + ", calculated " + outcome.getSha1());
+                }
+            }
             storageUri = outcome.getDestinationUri();
         } catch (BinaryAlreadyExistsException e) {
             // Make sure a PID collision with an existing repository object isn't happening

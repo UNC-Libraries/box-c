@@ -16,23 +16,30 @@
 package edu.unc.lib.dl.event;
 
 import static java.nio.file.Files.createTempFile;
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 
@@ -48,15 +55,18 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -71,6 +81,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
     private RepositoryObject parentObject;
 
     private PidLockManager lockManager;
+
+    private Map<PID, String> previousDigestMap;
 
     @Mock
     private BinaryTransferService transferService;
@@ -91,16 +103,23 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         // No implementations of session available here, so mock from interface
         final Path path = createTempFile("content", null);
         when(mockSession.transferReplaceExisting(any(PID.class), any(InputStream.class)))
-                .thenAnswer(new Answer<URI>()  {
+                .thenAnswer(new Answer<BinaryTransferOutcome>()  {
                     @Override
-                    public URI answer(InvocationOnMock invocation) throws Throwable {
+                    public BinaryTransferOutcome answer(InvocationOnMock invocation) throws Throwable {
                         InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
+                        DigestInputStream digestStream = new DigestInputStream(
+                                contentStream, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
                         Path tempFilePath = createTempFile("temp_content", null);
-                        copyInputStreamToFile(contentStream, tempFilePath.toFile());
+                        copyInputStreamToFile(digestStream, tempFilePath.toFile());
                         Files.move(tempFilePath, path, StandardCopyOption.REPLACE_EXISTING);
-                        return path.toUri();
+                        BinaryTransferOutcome outcome = mock(BinaryTransferOutcome.class);
+                        when(outcome.getDestinationUri()).thenReturn(path.toUri());
+                        when(outcome.getSha1()).thenReturn(encodeHexString(digestStream.getMessageDigest().digest()));
+                        return outcome;
                     }
                 });
+
+        previousDigestMap = new HashMap<>();
     }
 
     private void initPremisLogger(RepositoryObject repoObj) {
@@ -127,6 +146,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
         assertTrue(objResc.hasProperty(RDF.type, Premis.Representation));
+
+        assertEventLogDigestChanged(parentObject);
     }
 
     @Test
@@ -138,6 +159,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
+        assertEventLogDigestChanged(parentObject);
+
         // Add two of the events together
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
         Resource event2Resc = logger.buildEvent(null, Premis.Ingestion, ingestDate)
@@ -148,6 +171,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .create();
 
         logger.writeEvents(event2Resc, event3Resc);
+
+        assertEventLogDigestChanged(parentObject);
 
         // Make a new logger to make sure everything is clean
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
@@ -245,6 +270,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
             assertEquals("another premis event " + i, logEventResc.getProperty(Premis.note).getString());
             i++;
         }
+
+        assertEventLogDigestChanged(parentObject);
+
+        retrieveLogger.close();
     }
 
     @Test
@@ -284,6 +313,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // release read lock
         logLock.unlock();
+
+        assertEventLogDigestChanged(parentObject);
+
+        retrieveLogger.close();
     }
 
     @Test
@@ -358,6 +391,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         // attempt to read log and succeed
         readThread.join();
         assertEquals("first premis event", premisNotes.get(0));
+
+        assertEventLogDigestChanged(parentObject);
+
+        retrieveLogger.close();
     }
 
     @Test
@@ -400,5 +437,21 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model logModel = retrieveLogger.getEventsModel();
         Resource logEvent1Resc = logModel.getResource(event.getURI());
         assertTrue(logEvent1Resc.hasProperty(RDF.type, Premis.VirusCheck));
+
+        assertEventLogDigestChanged(parentObject);
+
+        retrieveLogger.close();
+    }
+
+    private void assertEventLogDigestChanged(RepositoryObject contentObj) {
+        PID eventsPid = DatastreamPids.getMdEventsPid(contentObj.getPid());
+        BinaryObject eventsBin = repoObjLoader.getBinaryObject(eventsPid);
+        String newDigest = eventsBin.getSha1Checksum();
+        assertNotNull("No sha1 set for events log", newDigest);
+        String previousDigest = previousDigestMap.get(eventsPid);
+        if (previousDigest != null) {
+            assertNotEquals("Digest did not change from previous version", previousDigest, newDigest);
+        }
+        previousDigestMap.put(eventsPid, newDigest);
     }
 }
