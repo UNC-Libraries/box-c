@@ -28,7 +28,6 @@ import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dcr.migration.utils.DisplayProgressUtil;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
@@ -47,8 +46,6 @@ public class DepositRecordTransformerManager {
     private PremisLoggerFactory premisLoggerFactory;
 
     private RepositoryObjectFactory repoObjFactory;
-
-    private TransactionManager txManager;
 
     private BlockingQueue<DepositRecordTransformer> createdTransformers;
     private AtomicInteger totalAdded;
@@ -73,7 +70,6 @@ public class DepositRecordTransformerManager {
         transformer.setPathIndex(pathIndex);
         transformer.setPremisLoggerFactory(premisLoggerFactory);
         transformer.setRepositoryObjectFactory(repoObjFactory);
-        transformer.setTransactionManager(txManager);
 
         createdTransformers.add(transformer);
         totalAdded.incrementAndGet();
@@ -116,7 +112,4 @@ public class DepositRecordTransformerManager {
         this.repoObjFactory = repoObjFactory;
     }
 
-    public void setTransactionManager(TransactionManager txManager) {
-        this.txManager = txManager;
-    }
 }

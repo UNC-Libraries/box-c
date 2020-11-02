@@ -32,6 +32,7 @@ import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 
@@ -70,21 +71,21 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
     }
 
     @Override
-    public URI transfer(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
         return client.transfer(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transferReplaceExisting(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
         return client.transferReplaceExisting(binPid, sourceFileUri);
     }
 
     @Override
-    public URI transferVersion(PID binPid, URI sourceFileUri) {
+    public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
         return client.transferVersion(binPid, sourceFileUri);
@@ -115,17 +116,17 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
     }
 
     @Override
-    public URI transfer(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transfer(PID binPid, InputStream sourceStream) {
         return getStreamClient().transfer(binPid, sourceStream);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferReplaceExisting(PID binPid, InputStream sourceStream) {
         return getStreamClient().transferReplaceExisting(binPid, sourceStream);
     }
 
     @Override
-    public URI transferVersion(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferVersion(PID binPid, InputStream sourceStream) {
         return getStreamClient().transferVersion(binPid, sourceStream);
     }
 

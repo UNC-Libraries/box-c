@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
 
 /**
@@ -72,7 +73,8 @@ public class StreamToPosixTransferClientTest extends StreamToFSTransferClientTes
 
         InputStream sourceStream = toStream(STREAM_CONTENT);
 
-        URI binUri = client.transfer(binPid, sourceStream);
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceStream);
+        URI binUri = outcome.getDestinationUri();
 
         assertContent(binDestPath, STREAM_CONTENT);
 

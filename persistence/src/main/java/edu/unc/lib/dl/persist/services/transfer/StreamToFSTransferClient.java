@@ -17,6 +17,7 @@ package edu.unc.lib.dl.persist.services.transfer;
 
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.IOException;
@@ -25,17 +26,23 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.FileTransferHelpers;
 
 /**
@@ -57,16 +64,16 @@ public class StreamToFSTransferClient implements StreamTransferClient {
     }
 
     @Override
-    public URI transfer(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transfer(PID binPid, InputStream sourceStream) {
         return writeStream(binPid, sourceStream, false);
     }
 
     @Override
-    public URI transferReplaceExisting(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferReplaceExisting(PID binPid, InputStream sourceStream) {
         return writeStream(binPid, sourceStream, true);
     }
 
-    protected URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
+    protected BinaryTransferOutcome writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
         URI destUri = destination.getStorageUri(binPid);
         Path destPath = Paths.get(destUri);
         boolean destFileExists = destPath.toFile().exists();
@@ -89,8 +96,12 @@ public class StreamToFSTransferClient implements StreamTransferClient {
 
             cleanupThread = FileTransferHelpers.registerCleanup(oldFilePath, newFilePath, destPath);
 
+            DigestInputStream digestStream = new DigestInputStream(
+                    sourceStream, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
             // Write content to temp file in case of interruption
-            copyInputStreamToFile(sourceStream, newFilePath.toFile());
+            copyInputStreamToFile(digestStream, newFilePath.toFile());
+
+            String digest = encodeHexString(digestStream.getMessageDigest().digest());
 
             // Rename old file to .old extension
             if (destFileExists) {
@@ -107,19 +118,21 @@ public class StreamToFSTransferClient implements StreamTransferClient {
                 // Ignore. New file is already in place
                 log.warn("Unable to delete {}. Reason {}", oldFilePath, e.getMessage());
             }
+
+            return new BinaryTransferOutcomeImpl(destUri, digest);
         } catch (IOException e) {
             FileTransferHelpers.rollBackOldFile(oldFilePath, newFilePath, destPath);
             throw new BinaryTransferException("Failed to write stream to destination "
                     + destination.getId(), e);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new UnsupportedAlgorithmException(e);
         } finally {
             FileTransferHelpers.clearCleanupHook(cleanupThread);
         }
-
-        return destUri;
     }
 
     @Override
-    public URI transferVersion(PID binPid, InputStream sourceStream) {
+    public BinaryTransferOutcome transferVersion(PID binPid, InputStream sourceStream) {
         throw new NotImplementedException("Versioning not yet implemented");
     }
 

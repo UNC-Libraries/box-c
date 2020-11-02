@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -155,6 +156,7 @@ public class VersionedDatastreamServiceIT {
         Document storedDoc = inputStreamToDocument(dsObj.getBinaryStream());
 
         assertHasModsTitle(TEST_TITLE, storedDoc);
+        assertNotNull("Checksum not set", dsObj.getSha1Checksum());
     }
 
     @Test
@@ -168,18 +170,24 @@ public class VersionedDatastreamServiceIT {
 
         BinaryObject dsObj = service.addVersion(newV1);
         Date originalCreated = dsObj.getCreatedDate();
+        String digest1 = dsObj.getSha1Checksum();
+        assertNotNull("Checksum not set for first version", digest1);
 
         DatastreamVersion newV2 = new DatastreamVersion(dsPid);
         newV2.setContentStream(getModsDocumentStream("more titles"));
         newV2.setContentType("text/xml");
 
         BinaryObject dsObjUpdated = service.addVersion(newV2);
+        String digest2 = dsObjUpdated.getSha1Checksum();
+        assertNotNull("Checksum not set for second version", digest2);
+        assertNotEquals("Versions must have different digests",  digest1, digest2);
 
         Document headDoc = inputStreamToDocument(dsObjUpdated.getBinaryStream());
         assertHasModsTitle("more titles", headDoc);
 
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
+        assertNotNull("Checksum not set for history", dsHistoryObj.getSha1Checksum());
 
         Document logDoc = inputStreamToDocument(dsHistoryObj.getBinaryStream());
         List<Element> versions = listVersions(logDoc);
@@ -201,6 +209,8 @@ public class VersionedDatastreamServiceIT {
 
         BinaryObject dsObj = service.addVersion(newV1);
         Date version1Date = dsObj.getCreatedDate();
+        String digest1 = dsObj.getSha1Checksum();
+        assertNotNull("Checksum not set for first version", digest1);
 
         DatastreamVersion newV2 = new DatastreamVersion(dsPid);
         newV2.setContentStream(getModsDocumentStream("more titles"));
@@ -208,12 +218,20 @@ public class VersionedDatastreamServiceIT {
 
         BinaryObject dsObj2 = service.addVersion(newV2);
         Date version2Date = dsObj2.getLastModified();
+        String digest2 = dsObj2.getSha1Checksum();
+        assertNotNull("Checksum not set for second version", digest2);
 
         DatastreamVersion newV3 = new DatastreamVersion(dsPid);
         newV3.setContentStream(getModsDocumentStream("lets leave it here"));
         newV3.setContentType("text/xml");
 
         BinaryObject dsObjFinal = service.addVersion(newV3);
+        String digest3 = dsObjFinal.getSha1Checksum();
+        assertNotNull("Checksum not set for second version", digest3);
+
+        assertNotEquals(digest1, digest2);
+        assertNotEquals(digest2, digest3);
+        assertNotEquals(digest1, digest3);
 
         Document headDoc = inputStreamToDocument(dsObjFinal.getBinaryStream());
         assertHasModsTitle("lets leave it here", headDoc);
@@ -224,6 +242,7 @@ public class VersionedDatastreamServiceIT {
         // check historic versions
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
         BinaryObject dsHistoryObj = repoObjLoader.getBinaryObject(historyPid);
+        assertNotNull("Checksum not set for history", dsHistoryObj.getSha1Checksum());
 
         Document logDoc = inputStreamToDocument(dsHistoryObj.getBinaryStream());
         List<Element> versions = listVersions(logDoc);
@@ -253,6 +272,7 @@ public class VersionedDatastreamServiceIT {
             Document storedDoc = inputStreamToDocument(dsObj.getBinaryStream());
 
             assertHasModsTitle(TEST_TITLE, storedDoc);
+            assertNotNull("Checksum not set for first version", dsObj.getSha1Checksum());
         }
     }
 

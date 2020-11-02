@@ -44,15 +44,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination
@@ -204,7 +207,17 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 stagingUri, binPid.getQualifiedId());
         URI storageUri = null;
         try {
-            storageUri = transferSession.transfer(binPid, stagingUri);
+            BinaryTransferOutcome outcome = transferSession.transfer(binPid, stagingUri);
+            Statement digestStmt = resc.getProperty(DigestAlgorithm.DEFAULT_ALGORITHM.getDepositProperty());
+            if (digestStmt != null) {
+                String digest = digestStmt.getString();
+                if (!digest.equals(outcome.getSha1())) {
+                    throw new InvalidChecksumException("Checksum of copied file for " + binPid
+                            + " from " + stagingUri + " did not match expected SHA1: expected "
+                            + digest + ", calculated " + outcome.getSha1());
+                }
+            }
+            storageUri = outcome.getDestinationUri();
         } catch (BinaryAlreadyExistsException e) {
             // Make sure a PID collision with an existing repository object isn't happening
             if (repoObjFactory.objectExists(binPid.getRepositoryUri())) {
@@ -221,7 +234,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 // binary was not previously fully transferred, so retry with replacement enabled
                 log.debug("Retransferring {} file from {} for {} with replacement enabled",
                         storageProperty.getLocalName(), stagingUri, binPid.getQualifiedId());
-                storageUri = transferSession.transferReplaceExisting(binPid, stagingUri);
+                BinaryTransferOutcome outcome = transferSession.transferReplaceExisting(binPid, stagingUri);
+                storageUri = outcome.getDestinationUri();
             }
         } finally {
             if (storageUri != null) {

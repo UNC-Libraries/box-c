@@ -382,7 +382,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         // Put the file into the storage location beforehand
         try (BinaryTransferSession session = transferService.getSession(storageLoc)) {
             originalPid = getOriginalFilePid(PIDs.get(fileResc.getURI()));
-            fileUri = session.transfer(originalPid, IOUtils.toInputStream(existingContent, UTF_8));
+            fileUri = session.transfer(originalPid, IOUtils.toInputStream(existingContent, UTF_8)).getDestinationUri();
         }
 
         // Indicate that an object already exists in the repository

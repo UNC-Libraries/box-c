@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 
 /**
  * @author bbpennel
@@ -117,13 +118,13 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
         // Initialize session with the destination
         try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
-            URI result1 = session.transfer(binPid, sourceFile.toUri());
-            URI result2 = session.transfer(binPid2, sourceFile2.toUri());
+            BinaryTransferOutcome outcome1 = session.transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome outcome2 = session.transfer(binPid2, sourceFile2.toUri());
 
-            assertEquals(Paths.get(result1), binDestPath);
-            assertEquals(Paths.get(result2), binDestPath2);
-            assertFileContent(Paths.get(result1), FILE_CONTENT);
-            assertFileContent(Paths.get(result2), "stuff");
+            assertEquals(Paths.get(outcome1.getDestinationUri()), binDestPath);
+            assertEquals(Paths.get(outcome2.getDestinationUri()), binDestPath2);
+            assertFileContent(Paths.get(outcome1.getDestinationUri()), FILE_CONTENT);
+            assertFileContent(Paths.get(outcome2.getDestinationUri()), "stuff");
         }
     }
 
@@ -150,14 +151,14 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(ingestSource.isReadOnly()).thenReturn(true);
 
         try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
-            URI result1 = session.transfer(binPid, sourceFile.toUri());
-            URI result2 = session.transfer(binPid2, sourceFile2.toUri());
+            BinaryTransferOutcome outcome1 = session.transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome outcome2 = session.transfer(binPid2, sourceFile2.toUri());
 
             // Verify that results ended up in the right storage locations
-            assertTrue(result1.toString().contains("storage/"));
-            assertTrue(result2.toString().contains("storage/"));
-            assertFileContent(Paths.get(result1), FILE_CONTENT);
-            assertFileContent(Paths.get(result2), "stuff");
+            assertTrue(outcome1.getDestinationUri().toString().contains("storage/"));
+            assertTrue(outcome2.getDestinationUri().toString().contains("storage/"));
+            assertFileContent(Paths.get(outcome1.getDestinationUri()), FILE_CONTENT);
+            assertFileContent(Paths.get(outcome2.getDestinationUri()), "stuff");
             // First source file should still be present
             assertIsSourceFile(sourceFile);
         }

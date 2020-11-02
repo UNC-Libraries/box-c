@@ -60,10 +60,10 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -86,8 +86,6 @@ public class DepositRecordTransformer extends RecursiveAction {
     private PremisLoggerFactory premisLoggerFactory;
 
     private RepositoryObjectFactory repoObjFactory;
-
-    private TransactionManager txManager;
 
     private BinaryTransferSession transferSession;
 
@@ -303,7 +301,9 @@ public class DepositRecordTransformer extends RecursiveAction {
 
             PID manifestPid = getDepositManifestPid(bxc5Pid, dsName);
             // Transfer the manifest to its permanent storage location
-            URI manifestStoredUri = transferSession.transferReplaceExisting(manifestPid, manifestPath.toUri());
+            BinaryTransferOutcome transferOutcome = transferSession
+                    .transferReplaceExisting(manifestPid, manifestPath.toUri());
+            URI manifestStoredUri = transferOutcome.getDestinationUri();
 
             // Populate manifest timestamps
             Model manifestModel = ModelFactory.createDefaultModel();
@@ -314,7 +314,7 @@ public class DepositRecordTransformer extends RecursiveAction {
 
             // Create the manifest in fedora
             repoObjFactory.createOrUpdateBinary(manifestPid, manifestStoredUri, dsName,
-                    mimetype, null, md5, manifestModel);
+                    mimetype, transferOutcome.getSha1(), md5, manifestModel);
 
             manifestNum++;
             // Repeat until no more manifests found
@@ -331,10 +331,6 @@ public class DepositRecordTransformer extends RecursiveAction {
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
-    }
-
-    public void setTransactionManager(TransactionManager txManager) {
-        this.txManager = txManager;
     }
 
     public PID getPid() {

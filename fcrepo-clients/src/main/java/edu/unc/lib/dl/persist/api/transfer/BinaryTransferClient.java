@@ -34,10 +34,10 @@ public interface BinaryTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceFileUri URI of the binary located in an Ingest Source.
-     * @return URI of the file in its destination
+     * @return information describing the outcome of the transfer
      * @throws BinaryAlreadyExistsException thrown if the binary already exists
      */
-    URI transfer(PID binPid, URI sourceFileUri);
+    BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri);
 
     /**
      * Transfer a binary to the preservation storage location. If a binary already
@@ -45,9 +45,9 @@ public interface BinaryTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceFileUri URI of the binary located in an IngestSource.
-     * @return the URI of the binary in its destination.
+     * @return information describing the outcome of the transfer
      */
-    URI transferReplaceExisting(PID binPid, URI sourceFileUri);
+    BinaryTransferOutcome transferReplaceExisting(PID binPid, URI sourceFileUri);
 
     /**
      * Transfer a new version of binary to the preservation storage location. Previous
@@ -55,9 +55,9 @@ public interface BinaryTransferClient {
      *
      * @param binPid PID of the binary object the binary is associated with
      * @param sourceFileUri URI of the binary located in an IngestSource.
-     * @return the URI of the binary in its destination.
+     * @return information describing the outcome of the transfer
      */
-    URI transferVersion(PID binPid, URI sourceFileUri);
+    BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri);
 
     /**
      * Checks if a storage location already contains the source binary in its current state.

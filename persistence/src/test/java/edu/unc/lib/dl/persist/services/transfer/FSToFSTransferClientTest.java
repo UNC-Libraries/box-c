@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.transfer;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +30,9 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
@@ -45,6 +48,7 @@ import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 
 /**
  * @author bbpennel
@@ -54,6 +58,7 @@ public class FSToFSTransferClientTest {
 
     protected static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
     protected static final String FILE_CONTENT = "File content";
+    protected static final String FILE_CONTENT_SHA1 = "6c4244329888770c6fa7f3fbf1d3b8baf9ccb7d0";
 
     protected FSToFSTransferClient client;
 
@@ -96,10 +101,11 @@ public class FSToFSTransferClientTest {
 
         Path sourceFile = createSourceFile();
 
-        client.transfer(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
         assertIsSourceFile(sourceFile);
+        assertOutcome(outcome, binDestPath, FILE_CONTENT_SHA1);
     }
 
     @Test
@@ -108,9 +114,10 @@ public class FSToFSTransferClientTest {
 
         Path sourceFile = createSourceFile();
 
-        client.transfer(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
+        assertOutcome(outcome, binDestPath, FILE_CONTENT_SHA1);
     }
 
     @Test(expected = BinaryAlreadyExistsException.class)
@@ -136,10 +143,11 @@ public class FSToFSTransferClientTest {
 
         Path sourceFile = createSourceFile();
 
-        client.transferReplaceExisting(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transferReplaceExisting(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
         assertIsSourceFile(sourceFile);
+        assertOutcome(outcome, binDestPath, FILE_CONTENT_SHA1);
     }
 
     @Test
@@ -148,9 +156,10 @@ public class FSToFSTransferClientTest {
 
         Path sourceFile = createSourceFile();
 
-        client.transferReplaceExisting(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transferReplaceExisting(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
+        assertOutcome(outcome, binDestPath, FILE_CONTENT_SHA1);
     }
 
     @Test
@@ -161,9 +170,10 @@ public class FSToFSTransferClientTest {
         createFile(binDestPath, existingContent);
         Path sourceFile = createSourceFile();
 
-        client.transferReplaceExisting(binPid, sourceFile.toUri());
+        BinaryTransferOutcome outcome = client.transferReplaceExisting(binPid, sourceFile.toUri());
 
         assertIsSourceFile(binDestPath);
+        assertOutcome(outcome, binDestPath, FILE_CONTENT_SHA1);
     }
 
     @Test
@@ -196,11 +206,31 @@ public class FSToFSTransferClientTest {
         client.transferVersion(binPid, sourceFile.toUri());
     }
 
+    // Verify that file larger than file transfer buffer size is transferred
+    @Test
+    public void transferLargeFile() throws Exception {
+        when(ingestSource.isReadOnly()).thenReturn(true);
+
+        long fileSize = 100 * 1024 * 1024;
+        // Generate a 100mb file for transferring
+        Path sourceFile = sourcePath.resolve("file.txt");
+        try (RandomAccessFile filler = new RandomAccessFile(sourceFile.toFile(), "rw")) {
+            filler.setLength(fileSize);
+        }
+
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceFile.toUri());
+
+        assertTrue(Files.exists(binDestPath));
+        assertEquals(fileSize, Files.size(binDestPath));
+        String expectedSha1 = encodeHexString(DigestUtils.sha1(Files.newInputStream(binDestPath)));
+        assertOutcome(outcome, binDestPath, expectedSha1);
+    }
+
     @Test
     public void interruptTransfer() throws Exception {
         when(ingestSource.isReadOnly()).thenReturn(true);
 
-        // Generate a 10mb file for transferring
+        // Generate a 100mb file for transferring
         Path sourceFile = sourcePath.resolve("file.txt");
         try (RandomAccessFile filler = new RandomAccessFile(sourceFile.toFile(), "rw")) {
             filler.setLength(100 * 1024 * 1024);
@@ -309,5 +339,11 @@ public class FSToFSTransferClientTest {
     protected void assertIsSourceFile(Path path) throws Exception {
         assertTrue("Source file was not present at " + path, path.toFile().exists());
         assertEquals(FILE_CONTENT, FileUtils.readFileToString(path.toFile(), "UTF-8"));
+    }
+
+    protected void assertOutcome(BinaryTransferOutcome outcome, Path expectedDest, String expectedSha1) {
+        assertNotNull("Outcome was not returned", outcome);
+        assertEquals("Unexpected outcome destination", expectedDest, Paths.get(outcome.getDestinationUri()));
+        assertEquals("Unexpected outcome digest", expectedSha1, outcome.getSha1());
     }
 }

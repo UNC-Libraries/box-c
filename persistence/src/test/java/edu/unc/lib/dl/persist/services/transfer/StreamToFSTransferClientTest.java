@@ -17,8 +17,10 @@ package edu.unc.lib.dl.persist.services.transfer;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
@@ -42,6 +45,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 
 /**
  * @author bbpennel
@@ -52,6 +56,7 @@ public class StreamToFSTransferClientTest {
     protected static final String TEST_UUID = "a168cf29-a2a9-4da8-9b8d-025855b180d5";
     protected static final String ORIGINAL_CONTENT = "Some original stuff";
     protected static final String STREAM_CONTENT = "Stream content";
+    protected static final String STREAM_CONTENT_SHA1 = "bf29c7fd7f87fe7395b89012e73d91c85a0cb19b";
 
     protected StreamToFSTransferClient client;
 
@@ -84,9 +89,10 @@ public class StreamToFSTransferClientTest {
     public void transfer_NewFile() throws Exception {
         InputStream sourceStream = toStream(STREAM_CONTENT);
 
-        client.transfer(binPid, sourceStream);
+        BinaryTransferOutcome outcome = client.transfer(binPid, sourceStream);
 
         assertContent(binDestPath, STREAM_CONTENT);
+        assertOutcome(outcome, binDestPath, STREAM_CONTENT_SHA1);
     }
 
     @Test(expected = BinaryAlreadyExistsException.class)
@@ -108,7 +114,7 @@ public class StreamToFSTransferClientTest {
     @Test(expected = BinaryTransferException.class)
     public void transfer_StreamThrowsException() throws Exception {
         InputStream sourceStream = mock(InputStream.class);
-        when(sourceStream.read(any())).thenThrow(new IOException());
+        when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
 
         client.transfer(binPid, sourceStream);
 
@@ -122,15 +128,16 @@ public class StreamToFSTransferClientTest {
 
         InputStream sourceStream = toStream(STREAM_CONTENT);
 
-        client.transferReplaceExisting(binPid, sourceStream);
+        BinaryTransferOutcome outcome = client.transferReplaceExisting(binPid, sourceStream);
         // Verify that the file was replaced
         assertContent(binDestPath, STREAM_CONTENT);
+        assertOutcome(outcome, binDestPath, STREAM_CONTENT_SHA1);
     }
 
     @Test(expected = BinaryTransferException.class)
     public void transferReplaceExisting_ExistingFile_WriteFails() throws Exception {
         InputStream sourceStream = mock(InputStream.class);
-        when(sourceStream.read(any())).thenThrow(new IOException());
+        when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
 
         // Create existing file content
         createFile();
@@ -175,5 +182,11 @@ public class StreamToFSTransferClientTest {
 
     private void createFile() throws Exception {
         FileUtils.copyInputStreamToFile(toStream(ORIGINAL_CONTENT), binDestPath.toFile());
+    }
+
+    protected void assertOutcome(BinaryTransferOutcome outcome, Path expectedDest, String expectedSha1) {
+        assertNotNull("Outcome was not returned", outcome);
+        assertEquals("Unexpected outcome destination", expectedDest, Paths.get(outcome.getDestinationUri()));
+        assertEquals("Unexpected outcome digest", expectedSha1, outcome.getSha1());
     }
 }

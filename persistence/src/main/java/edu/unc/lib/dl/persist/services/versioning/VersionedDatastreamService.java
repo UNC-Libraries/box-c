@@ -23,9 +23,9 @@ import java.net.URI;
 import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import org.apache.jena.rdf.model.Model;
 
+import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -34,6 +34,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.persist.api.services.PidLockManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
@@ -128,19 +130,19 @@ public class VersionedDatastreamService {
                 currentDsObj.getMimetype(),
                 versionDate);
 
-        URI historyStorageUri;
+        BinaryTransferOutcome historyOutcome;
         try {
-            historyStorageUri = session.transferReplaceExisting(dsHistoryPid, historyLog.toInputStream());
+            historyOutcome = session.transferReplaceExisting(dsHistoryPid, historyLog.toInputStream());
         } catch (IOException e) {
             throw new ServiceException("Failed to serialize history for " + currentDsPid, e);
         }
 
         // Update the history object in fedora
         repoObjFactory.createOrUpdateBinary(dsHistoryPid,
-                historyStorageUri,
+                historyOutcome.getDestinationUri(),
                 null,
                 "text/xml",
-                null,
+                historyOutcome.getSha1(),
                 null,
                 null);
     }
@@ -148,19 +150,25 @@ public class VersionedDatastreamService {
     private BinaryObject updateHeadVersion(DatastreamVersion newVersion, BinaryTransferSession session) {
         PID dsPid = newVersion.getDsPid();
         // Transfer the incoming content to its storage location
-        URI dsStorageUri;
+        BinaryTransferOutcome dsOutcome;
         if (newVersion.getStagedContentUri() == null) {
-            dsStorageUri = session.transferReplaceExisting(dsPid, newVersion.getContentStream());
+            dsOutcome = session.transferReplaceExisting(dsPid, newVersion.getContentStream());
         } else {
-            dsStorageUri = session.transferReplaceExisting(dsPid, newVersion.getStagedContentUri());
+            dsOutcome = session.transferReplaceExisting(dsPid, newVersion.getStagedContentUri());
+        }
+
+        if (newVersion.getSha1() != null && !newVersion.getSha1().equals(dsOutcome.getSha1()) ) {
+            throw new InvalidChecksumException("Checksum mismatch when updating head version of datastream "
+                    + newVersion.getDsPid().getQualifiedId() + ": expected " + newVersion.getSha1()
+                    + ", calculated " + dsOutcome.getSha1());
         }
 
         return repoObjFactory.createOrUpdateBinary(newVersion.getDsPid(),
-                dsStorageUri,
+                dsOutcome.getDestinationUri(),
                 newVersion.getFilename(),
                 newVersion.getContentType(),
+                dsOutcome.getSha1(),
                 newVersion.getMd5(),
-                newVersion.getSha1(),
                 newVersion.getProperties());
     }
 

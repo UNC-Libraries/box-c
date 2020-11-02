@@ -17,7 +17,6 @@ package edu.unc.lib.dl.persist.services.transfer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +24,7 @@ import java.nio.file.Paths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;
 
 /**
@@ -42,12 +42,12 @@ public class StreamToPosixTransferClient extends StreamToFSTransferClient {
     }
 
     @Override
-    protected URI writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
-        URI binUri = super.writeStream(binPid, sourceStream, allowOverwrite);
+    protected BinaryTransferOutcome writeStream(PID binPid, InputStream sourceStream, boolean allowOverwrite) {
+        BinaryTransferOutcome outcome = super.writeStream(binPid, sourceStream, allowOverwrite);
         HashedPosixStorageLocation posixLoc = (HashedPosixStorageLocation) destination;
 
         if (posixLoc.getPermissions() != null) {
-            Path binPath = Paths.get(binUri);
+            Path binPath = Paths.get(outcome.getDestinationUri());
 
             try {
                 Files.setPosixFilePermissions(binPath, posixLoc.getPermissions());
@@ -57,6 +57,6 @@ public class StreamToPosixTransferClient extends StreamToFSTransferClient {
             }
         }
 
-        return binUri;
+        return outcome;
     }
 }

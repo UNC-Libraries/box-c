@@ -39,6 +39,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
@@ -114,9 +115,9 @@ public class BinaryTransferServiceImplIT {
         Path sourceFile = createSourceFile(sourcePath1, "myfile.txt", "some content");
 
         try (BinaryTransferSession session = transferService.getSession(destination)) {
-            URI destUri = session.transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome outcome = session.transfer(binPid, sourceFile.toUri());
 
-            assertTrue(new File(destUri).exists());
+            assertTrue(new File(outcome.getDestinationUri()).exists());
         }
     }
 
@@ -130,12 +131,12 @@ public class BinaryTransferServiceImplIT {
 
         try (MultiDestinationTransferSession session = transferService.getSession()) {
             StorageLocation dest1 = storageManager.getStorageLocationById("loc1");
-            URI destUri1 = session.forDestination(dest1).transfer(binPid1, sourceFile1.toUri());
-            assertTrue(new File(destUri1).exists());
+            BinaryTransferOutcome outcome1 = session.forDestination(dest1).transfer(binPid1, sourceFile1.toUri());
+            assertTrue(new File(outcome1.getDestinationUri()).exists());
 
             StorageLocation dest2 = storageManager.getStorageLocationById("loc2");
-            URI destUri2 = session.forDestination(dest2).transfer(binPid2, sourceFile2.toUri());
-            assertTrue(new File(destUri2).exists());
+            BinaryTransferOutcome outcome2 = session.forDestination(dest2).transfer(binPid2, sourceFile2.toUri());
+            assertTrue(new File(outcome2.getDestinationUri()).exists());
             assertTrue("Transfer from read only source should not delete source file",
                     sourceFile2.toFile().exists());
         }
@@ -149,9 +150,9 @@ public class BinaryTransferServiceImplIT {
         Path sourceFile = createSourceFile(sourcePath2, "myfile.txt", "some content");
 
         try (BinaryTransferSession session = transferService.getSession(destination)) {
-            URI destUri = session.transfer(binPid, sourceFile.toUri());
+            BinaryTransferOutcome outcome = session.transfer(binPid, sourceFile.toUri());
 
-            assertTrue(new File(destUri).exists());
+            assertTrue(new File(outcome.getDestinationUri()).exists());
             assertTrue("Transfer from read only source should not delete source file",
                     sourceFile.toFile().exists());
 
