@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
@@ -115,5 +117,15 @@ public class RDFModelUtil {
         }
     }
 
-
+    /**
+     * Returns a model built from the file at the given path
+     *
+     * @param filePath
+     * @param lang serialization language
+     * @return
+     * @throws IOException
+     */
+    public static Model createModel(String filePath, String lang) throws IOException {
+        return createModel(Files.newInputStream(Paths.get(filePath)), lang);
+    }
 }
