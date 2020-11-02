@@ -173,6 +173,14 @@ public class RecalculateDigestsCommandIT {
 
         RDFModelUtil.serializeModel(queryModel, modelFile);
 
+        String[] countArgs = new String[] { "recalculate_digests", "--count" };
+        executeExpectSuccess(countArgs);
+
+        assertTrue("Incorrect number of binaries found",
+                output.contains("Retrieved list of 3 binaries to update"));
+
+        out.reset();
+
         String[] dryArgs = new String[] { "recalculate_digests", "-n" };
         executeExpectSuccess(dryArgs);
 

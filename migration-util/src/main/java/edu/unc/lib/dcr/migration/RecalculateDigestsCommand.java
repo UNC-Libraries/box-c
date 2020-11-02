@@ -64,6 +64,10 @@ public class RecalculateDigestsCommand implements Callable<Integer> {
             description = "Perform the recalculation but do not save the results")
     private boolean dryRun;
 
+    @Option(names = {"--count"},
+            description = "Count the number of matching objects")
+    private boolean countOnly;
+
     private String applicationContextPath = "spring/service-context.xml";
 
     private final static String METADATA_SUFFIXES = String.join("|", Arrays.asList(
@@ -103,6 +107,11 @@ public class RecalculateDigestsCommand implements Callable<Integer> {
             }
 
             output.info("Retrieved list of {} binaries to update", binUris.size());
+
+            if (countOnly) {
+                return 0;
+            }
+
             if (dryRun) {
                 output.info("Dry run -- only calculating SHA1 digests");
             } else {
