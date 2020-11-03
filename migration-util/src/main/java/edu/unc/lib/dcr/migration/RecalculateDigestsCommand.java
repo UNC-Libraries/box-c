@@ -30,6 +30,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.FedoraHeaderConstants;
 import org.slf4j.Logger;
@@ -136,12 +137,17 @@ public class RecalculateDigestsCommand implements Callable<Integer> {
                     mimetype = resp.getHeaderValue("Content-Type");
                     filename = resp.getContentDisposition().get(FedoraHeaderConstants.CONTENT_DISPOSITION_FILENAME);
                     storageUri = URI.create(resp.getHeaderValue("Content-Location"));
+                } catch (FcrepoOperationFailedException e) {
+                    output.info("{}: Failed to update -- {}", binPid.getQualifiedId(), e.getMessage());
+                    continue;
                 }
-                output.info("{}: {}", binPid.getQualifiedId(), sha1);
 
-                if (!dryRun) {
+                if (dryRun) {
+                    output.info("{}: {} (dry run)", binPid.getQualifiedId(), sha1);
+                } else {
                     // Update the binary with existing metadata plus the requested digest
                     repoObjFactory.createOrUpdateBinary(binPid, storageUri, filename, mimetype, sha1, null, null);
+                    output.info("{}: {} (updated)", binPid.getQualifiedId(), sha1);
                 }
             }
 
