@@ -47,6 +47,7 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -155,6 +156,8 @@ public class RecalculateDigestsCommandIT {
         PID originalPid = DatastreamPids.getOriginalFilePid(file.getPid());
         createBinary(originalPid, "content");
 
+        DepositRecord depRec = repoObjFactory.createDepositRecord(null);
+
         work.addMember(file);
         coll.addMember(work);
         unit.addMember(coll);
@@ -169,6 +172,10 @@ public class RecalculateDigestsCommandIT {
         PID techMdPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
         createBinary(techMdPid, "highly technical");
 
+        PID manifestPid = DatastreamPids.getDepositManifestPid(depRec.getPid(), "manifest0");
+        BinaryTransferOutcome manifestOut = transferContent(manifestPid, "manifested");
+        depRec.addManifest(manifestOut.getDestinationUri(), "text/plain");
+
         treeIndexer.indexAll(baseAddress);
 
         RDFModelUtil.serializeModel(queryModel, modelFile);
@@ -177,7 +184,7 @@ public class RecalculateDigestsCommandIT {
         executeExpectSuccess(countArgs);
 
         assertTrue("Incorrect number of binaries found",
-                output.contains("Retrieved list of 3 binaries to update"));
+                output.contains("Retrieved list of 4 binaries to update"));
 
         out.reset();
 
@@ -185,19 +192,22 @@ public class RecalculateDigestsCommandIT {
         executeExpectSuccess(dryArgs);
 
         assertTrue("Incorrect number of binaries found",
-                output.contains("Retrieved list of 3 binaries to update"));
+                output.contains("Retrieved list of 4 binaries to update"));
         assertTrue("Did not process collections events",
                 output.contains(collEventsPid.getQualifiedId()));
         assertTrue("Did not process description binary",
                 output.contains(workDescPid.getQualifiedId()));
         assertTrue("Did not process techmd binary",
                 output.contains(techMdPid.getQualifiedId()));
+        assertTrue("Did not process manifest binary",
+                output.contains(manifestPid.getQualifiedId()));
 
         // Dry run, so no SHA1s should be set
         assertNoDigestPresent(originalPid);
         assertNoDigestPresent(collEventsPid);
         assertNoDigestPresent(workDescPid);
         assertNoDigestPresent(techMdPid);
+        assertNoDigestPresent(manifestPid);
 
         out.reset();
 
@@ -205,13 +215,14 @@ public class RecalculateDigestsCommandIT {
         executeExpectSuccess(args);
 
         assertTrue("Incorrect number of binaries found",
-                output.contains("Retrieved list of 3 binaries to update"));
+                output.contains("Retrieved list of 4 binaries to update"));
 
         // Original should not be updated, but the rest should
         assertNoDigestPresent(originalPid);
         assertDigestPresent(collEventsPid);
         assertDigestPresent(workDescPid);
         assertDigestPresent(techMdPid);
+        assertDigestPresent(manifestPid);
     }
 
     private BinaryObject createBinary(PID binPid, String content) throws Exception {

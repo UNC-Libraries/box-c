@@ -38,6 +38,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -74,7 +75,8 @@ public class RecalculateDigestsCommand implements Callable<Integer> {
             DatastreamType.MD_DESCRIPTIVE.getId(),
             DatastreamType.MD_DESCRIPTIVE_HISTORY.getId(),
             DatastreamType.MD_EVENTS.getId(),
-            DatastreamType.TECHNICAL_METADATA.getId()));
+            DatastreamType.TECHNICAL_METADATA.getId(),
+            RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER + "/.+"));
 
     private final static String ALL_METADATA_BINS_QUERY =
             "SELECT ?bin_pid" +
