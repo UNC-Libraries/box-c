@@ -193,6 +193,9 @@ header .search-large button {
   margin-left: -1px;
   border: 1px solid #dbdbdb;
 }
+header .search-large a:hover, header .search-large a:active {
+  color: whitesmoke;
+}
 
 .collection-links {
   margin: 2rem 0;
