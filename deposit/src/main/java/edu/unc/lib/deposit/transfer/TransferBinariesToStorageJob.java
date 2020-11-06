@@ -29,6 +29,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Bag;
@@ -38,7 +39,6 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +101,11 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         int i = 0;
         ResIterator subjectIterator = model.listSubjects();
         while (subjectIterator.hasNext()) {
-            i++;
-            subjectIterator.next();
+            Resource resc = subjectIterator.next();
+            // Only count subjects that have a type defined, which excludes binary resources
+            if (resc.hasProperty(RDF.type)) {
+                i++;
+            }
         }
 
         resetClicks();
@@ -153,21 +156,19 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferOriginalFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        Resource originalResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
         // add storageUri if doesn't already exist. It will exist in a resume scenario.
-        if (originalResc == null) {
-            failJob("File Object " + objPid + " must have an original file datastream, but none is present",
-                    "No original file for " + objPid);
-        }
+        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamOriginal)) {
+            PID originalPid = getOriginalFilePid(objPid);
+            Resource originalResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
 
-        PID originalPid = getOriginalFilePid(objPid);
-        URI stagingUri = URI.create(originalResc.getProperty(CdrDeposit.stagingLocation).getString());
-        transferFile(originalPid, stagingUri, transferSession, resc, CdrDeposit.hasDatastreamOriginal);
-        log.debug("Finished transferring original file for {}", originalPid.getQualifiedId());
+            URI stagingUri = URI.create(originalResc.getProperty(CdrDeposit.stagingLocation).getString());
+            transferFile(originalPid, stagingUri, transferSession, resc, CdrDeposit.hasDatastreamOriginal);
+            log.debug("Finished transferring original file for {}", originalPid.getQualifiedId());
+        }
     }
 
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        if (!resc.hasProperty(CdrDeposit.hasDatastreamDescriptiveHistory)) {
+        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamDescriptiveHistory)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
 
             Path stagingPath = getModsHistoryPath(objPid);
@@ -180,7 +181,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        if (!resc.hasProperty(CdrDeposit.hasDatastreamFits)) {
+        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamFits)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
 
             Path fitsPath = getTechMdPath(objPid, false);
@@ -194,10 +195,15 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
     }
 
+    private boolean datastreamNotTransferred(Resource resc, Property datastreamProp) {
+        return !resc.hasProperty(datastreamProp) ||
+               !resc.getPropertyResourceValue(datastreamProp)
+                        .hasProperty(CdrDeposit.storageUri);
+    }
+
     private void transferDepositManifests(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        StmtIterator manifestIt = resc.listProperties(CdrDeposit.hasDatastreamManifest);
-        while (manifestIt.hasNext()) {
-            Statement manifestStmt = manifestIt.next();
+        List<Statement> manifestStmts = resc.listProperties(CdrDeposit.hasDatastreamManifest).toList();
+        for (Statement manifestStmt : manifestStmts) {
             Resource manifestResc = manifestStmt.getResource();
 
             String manifestPath = manifestResc.getProperty(CdrDeposit.stagingLocation).getString();
@@ -227,19 +233,11 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
         log.debug("Transferring file from {} for {}", stagingUri, binPid.getQualifiedId());
 
+        Statement digestStmt = binResc.getProperty(DEFAULT_ALGORITHM.getDepositProperty());
         try {
             BinaryTransferOutcome outcome = transferSession.transfer(binPid, stagingUri);
-            Statement digestStmt = binResc.getProperty(DEFAULT_ALGORITHM.getDepositProperty());
-            if (digestStmt != null) {
-                digest = digestStmt.getString();
-                if (!digest.equals(outcome.getSha1())) {
-                    throw new InvalidChecksumException("Checksum of copied file for " + binPid
-                            + " from " + stagingUri + " did not match expected SHA1: expected "
-                            + digest + ", calculated " + outcome.getSha1());
-                }
-            } else {
-                digest = outcome.getSha1();
-            }
+            digest = outcome.getSha1();
+            assertProvidedDigestMatches(digestStmt, digest, binPid, stagingUri);
             storageUri = outcome.getDestinationUri();
         } catch (BinaryAlreadyExistsException e) {
             // Make sure a PID collision with an existing repository object isn't happening
@@ -253,15 +251,19 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 log.debug("Binary {} was already transferred, recording and moving on", binPid.getQualifiedId());
                 BinaryDetails details = transferSession.getStoredBinaryDetails(binPid);
                 storageUri = details.getDestinationUri();
+                digest = details.getDigest();
             } else {
                 // binary was not previously fully transferred, so retry with replacement enabled
                 log.debug("Retransferring file from {} for {} with replacement enabled",
                         stagingUri, binPid.getQualifiedId());
                 BinaryTransferOutcome outcome = transferSession.transferReplaceExisting(binPid, stagingUri);
                 storageUri = outcome.getDestinationUri();
+                digest = outcome.getSha1();
             }
         } finally {
             if (storageUri != null) {
+                assertProvidedDigestMatches(digestStmt, digest, binPid, stagingUri);
+
                 final URI finalStorageUri = storageUri;
                 final String finalDigest = digest;
                 commit(() -> {
@@ -276,5 +278,17 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
 
         log.debug("Finished transferring file from {} to {}", stagingUri, storageUri);
+    }
+
+    private void assertProvidedDigestMatches(Statement providedStmt, String generatedDigest,
+            PID binPid, URI stagingUri) {
+        if (providedStmt != null) {
+            String provided = providedStmt.getString();
+            if (!provided.equals(generatedDigest)) {
+                throw new InvalidChecksumException("Checksum of copied file for " + binPid
+                        + " from " + stagingUri + " did not match expected SHA1: expected "
+                        + provided + ", calculated " + generatedDigest);
+            }
+        }
     }
 }
