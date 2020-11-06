@@ -38,6 +38,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;
@@ -130,14 +133,14 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                     String filePath = relativePath.toString();
                     log.debug("Adding object {}: {}", i++, filePath);
 
-                    Resource fileResource = getFileResource(sourceBag, filePath);
+                    Resource originalResource = getFileResource(sourceBag, filePath);
 
                     // add checksums
-                    model.add(fileResource, checksumProperty, pathToChecksum.getValue());
+                    model.add(originalResource, checksumProperty, pathToChecksum.getValue());
 
                     // Find staged path for the file
                     Path storedPath = Paths.get(sourceFile.toAbsolutePath().toString(), filePath);
-                    model.add(fileResource, stagingLocation, storedPath.toUri().toString());
+                    model.add(originalResource, stagingLocation, storedPath.toUri().toString());
                 }
             }
 
@@ -145,9 +148,10 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             Files.list(bagReader.getRootDir())
                 .filter(Files::isRegularFile)
                 .forEach(path -> {
-                    String pathString = path.toUri().toString();
-                    getDepositStatusFactory().addManifest(getDepositUUID(), pathString);
-                    model.add(depositBag, cleanupLocation, pathString);
+                    PID manifestPid = DatastreamPids.getDepositManifestPid(depositPID, path.getFileName().toString());
+                    Resource manifestResc = model.getResource(manifestPid.getRepositoryPath());
+                    manifestResc.addLiteral(CdrDeposit.stagingLocation, path.toUri().toString());
+                    depositBag.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc);
                 });
 
             // Register the bag itself for cleanup

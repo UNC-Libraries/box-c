@@ -377,20 +377,27 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
 
-        String storageString = getPropertyValue(childResc, CdrDeposit.storageUri);
-        if (storageString == null) {
+        Resource storageResc = childResc.getPropertyResourceValue(CdrDeposit.storageUri);
+        if (storageResc == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
         }
-        URI storageUri = URI.create(storageString);
+        URI storageUri = URI.create(storageResc.getURI());
+
+        Resource originalResc = childResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+
         // Pull out file properties if they are present
-        String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
+        String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
 
-        String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
-        String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
+        String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
+        String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
 
-        String label = getPropertyValue(childResc, CdrDeposit.label);
+        // Label comes from file object if not set for binary
+        String label = getPropertyValue(originalResc, CdrDeposit.label);
+        if (label == null) {
+            label = getPropertyValue(childResc, CdrDeposit.label);
+        }
 
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -110,8 +112,15 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             StmtIterator it = deposit.listProperties(CdrDeposit.storageUri);
             while (it.hasNext()) {
                 Statement stmt = it.nextStatement();
-                URI manifestUri = URI.create(stmt.getString());
-                depositRecord.addManifest(manifestUri, "text/plain");
+                Resource storageResc = stmt.getResource();
+                String digest = null;
+                Statement digestStmt = storageResc.getProperty(DEFAULT_ALGORITHM.getDepositProperty());
+                if (digestStmt != null) {
+                    digest = digestStmt.getString();
+                }
+                URI manifestUri = URI.create(storageResc.toString());
+
+                depositRecord.addManifest(manifestUri, null, "text/plain", digest, null);
             }
         } catch (FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);

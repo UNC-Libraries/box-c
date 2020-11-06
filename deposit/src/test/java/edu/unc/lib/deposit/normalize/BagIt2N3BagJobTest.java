@@ -19,8 +19,6 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -32,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -111,11 +110,16 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         }
 
         // Verify that all manifests were added.
-        verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
-        List<String> capturedFilePaths = Arrays.asList(sourceUri.toString() + "bagit.txt",
+        List<String> manifestPaths = depositBag.listProperties(CdrDeposit.hasDatastreamManifest)
+                .toList().stream()
+                .map(Statement::getResource)
+                .map(r -> r.getProperty(CdrDeposit.stagingLocation).getString())
+                .collect(Collectors.toList());
+        assertEquals("Unexpected number of manifests", 2, manifestPaths.size());
+        List<String> expectedFilePaths = Arrays.asList(sourceUri.toString() + "bagit.txt",
                 sourceUri.toString() + "manifest-md5.txt");
-        assertTrue("Must contain all of the expected manifest files",
-                filePathCaptor.getAllValues().containsAll(capturedFilePaths));
+        assertTrue("Must contain all of the expected manifest files, but contained " + manifestPaths,
+                manifestPaths.containsAll(expectedFilePaths));
 
         // Verify that files and their properties were added
         assertFileAdded(children.get("lorem.txt"), "fa5c89f3c88b81bfd5e821b0316569af",
@@ -135,10 +139,8 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
             cleanupSet.add(stmt.getString());
         }
 
-        assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
+        assertEquals("Incorrect number of objects identified for cleanup", 1, cleanupSet.size());
         assertTrue("Cleanup of bag not set", cleanupSet.contains(sourceUri.toString()));
-        assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
-        assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
     }
 
     private void assertFileAdded(Resource work, String md5sum, String fileLocation) {
@@ -147,12 +149,13 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         Bag workBag = work.getModel().getBag(work.getURI());
         Resource file = getChildByLabel(workBag, pathParts[pathParts.length - 1]);
+        Resource originalResc = file.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
 
         assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
         assertEquals("Checksum was not set", md5sum,
-                file.getProperty(CdrDeposit.md5sum).getString());
-        assertEquals("File location not set", fileLocation,
-                file.getProperty(CdrDeposit.stagingLocation).getString());
+                originalResc.getProperty(CdrDeposit.md5sum).getString());
+        assertEquals("Binary location not set", fileLocation,
+                originalResc.getProperty(CdrDeposit.stagingLocation).getString());
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

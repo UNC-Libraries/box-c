@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -101,7 +102,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      *
      * @param sourceBag
      * @param filepath
-     * @return
+     * @return the resource representing the original binary for the created file resource
      */
     protected Resource getFileResource(Bag sourceBag, String filepath) {
         String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
@@ -121,10 +122,15 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         fileResource.addProperty(CdrDeposit.label, filename);
         workBag.add(fileResource);
 
+        // Add in the original binary resource
+        PID originalPid = DatastreamPids.getOriginalFilePid(pid);
+        Resource originalResc = model.getResource(originalPid.getRepositoryPath());
+        fileResource.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
+
         workBag.addProperty(Cdr.primaryObject, fileResource);
         parentBag.add(workBag);
 
-        return fileResource;
+        return originalResc;
     }
 
     /**

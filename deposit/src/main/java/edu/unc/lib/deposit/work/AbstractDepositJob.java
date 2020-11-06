@@ -65,6 +65,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -480,6 +481,28 @@ public abstract class AbstractDepositJob implements Runnable {
             PID p = PIDs.get(s.getSubject().getURI());
             String href = s.getObject().asLiteral().getString();
             Entry<PID, String> entry = new SimpleEntry<>(p, href);
+            results.add(entry);
+        }
+
+        return results;
+    }
+
+    /**
+     * Retrieve a list of FileObject pids with their associated original datastream staging location
+     * @param model
+     * @return
+     */
+    protected List<Entry<PID, String>> getOriginalStagingPairList(Model model) {
+        List<Entry<PID, String>> results = new ArrayList<>();
+
+        Selector stageSelector = new SimpleSelector((Resource) null, CdrDeposit.hasDatastreamOriginal, (RDFNode) null);
+        StmtIterator i = model.listStatements(stageSelector);
+        while (i.hasNext()) {
+            Statement s = i.nextStatement();
+            PID fileObjPid = PIDs.get(s.getSubject().getURI());
+            Resource originalResc = s.getResource();
+            String href = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
+            Entry<PID, String> entry = new SimpleEntry<>(fileObjPid, href);
             results.add(entry);
         }
 

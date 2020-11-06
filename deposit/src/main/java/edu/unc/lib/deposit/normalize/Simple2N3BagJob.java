@@ -29,8 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -112,14 +114,19 @@ public class Simple2N3BagJob extends AbstractDepositJob {
             alabel = contentFile.getName();
         }
         mainResource.addLiteral(CdrDeposit.label, alabel);
-        mainResource.addLiteral(CdrDeposit.size, Long.toString(contentFile.length()));
+        mainResource.addProperty(RDF.type, Cdr.FileObject);
+
+        PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(mainResource.getURI()));
+        Resource originalResc = mainResource.getModel().getResource(originalPid.getRepositoryPath());
+        mainResource.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
+
+        originalResc.addLiteral(CdrDeposit.size, Long.toString(contentFile.length()));
         if (mimetype != null) {
-            mainResource.addLiteral(CdrDeposit.mimetype, mimetype);
+            originalResc.addLiteral(CdrDeposit.mimetype, mimetype);
         }
 
         // Reference the content file as the data file
-        mainResource.addLiteral(CdrDeposit.stagingLocation, sourceUri.toString());
-        mainResource.addProperty(RDF.type, Cdr.FileObject);
+        originalResc.addLiteral(CdrDeposit.stagingLocation, sourceUri.toString());
     }
 
 }

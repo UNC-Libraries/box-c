@@ -65,13 +65,6 @@ public class DepositStatusFactory {
         return result;
     }
 
-    public void addManifest(String depositUUID, String value) {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            jedis.rpush(DEPOSIT_MANIFEST_PREFIX + depositUUID, value);
-        }
-
-    }
-
     public List<String> getManifestURIs(String depositUUID) {
         try (Jedis jedis = getJedisPool().getResource()) {
             return jedis.lrange(DEPOSIT_MANIFEST_PREFIX + depositUUID, 0, -1);
@@ -81,7 +74,7 @@ public class DepositStatusFactory {
     /**
      * Save deposit status, with the exception of incremented fields (jobs,
      * octets, objects)
-     * 
+     *
      * @param status
      */
     public void save(String depositUUID, Map<String, String> status) {
@@ -92,7 +85,7 @@ public class DepositStatusFactory {
 
     /**
      * Set a single deposit field.
-     * 
+     *
      * @param depositUUID
      * @param field
      * @param value
@@ -106,7 +99,7 @@ public class DepositStatusFactory {
     /**
      * Locks the given deposit for a designated supervisor. These are short term
      * locks and should be released after every set of jobs is queued.
-     * 
+     *
      * @param depositUUID
      *            identify of the deposit
      * @param owner
@@ -123,7 +116,7 @@ public class DepositStatusFactory {
 
     /**
      * Unlocks the given deposit, allowing a new supervisor to manage it.
-     * 
+     *
      * @param depositUUID
      */
     public void removeSupervisorLock(String depositUUID) {
@@ -226,7 +219,7 @@ public class DepositStatusFactory {
 
     /**
      * Expire the deposit status key after given interval.
-     * 
+     *
      * @param depositUUID
      * @param seconds
      *            time until expire

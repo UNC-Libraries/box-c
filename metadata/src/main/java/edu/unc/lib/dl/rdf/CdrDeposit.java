@@ -104,13 +104,20 @@ public class CdrDeposit {
     public static final Property descriptiveHistoryStorageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#descriptiveHistoryStorageUri" );
 
-    /** Link to binary objects contained by this object other than the main payload binary. */
-    public static final Property hasDatastream = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasDatastream" );
+    /** Link to original binary resource */
+    public static final Property hasDatastreamOriginal = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamOriginal" );
 
-    /** >Link to a manifest file for this deposit. */
-    public static final Property hasManifest = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasManifest" );
+    /** Link to FITS binary resource */
+    public static final Property hasDatastreamFits = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamFits" );
+
+    /** Link to description history binary resource */
+    public static final Property hasDatastreamDescriptiveHistory = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamDescriptiveHistory" );
+
+    public static final Property hasDatastreamManifest = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamManifest" );
 
     public static final Property hasSourceMetadata = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasSourceMetadata");

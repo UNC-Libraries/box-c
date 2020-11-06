@@ -29,6 +29,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
@@ -42,6 +44,8 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
@@ -196,11 +200,18 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
     /**
      * Stores a reference to the METS file for this deposit as the manifest
+     * @param model
      */
-    protected void addManifestURI() {
+    protected void addManifestURI(Model model) {
         File metsFile = getMETSFile();
+        Resource depositResc = model.getResource(depositUUID);
+
         log.debug("Adding manifest URI referencing {}", metsFile);
-        getDepositStatusFactory().addManifest(getDepositUUID(), metsFile.toPath().toUri().toString());
+        PID manifestPid = DatastreamPids.getDepositManifestPid(depositPID, "mets.xml");
+        Resource manifestResc = model.getResource(manifestPid.getRepositoryPath());
+        manifestResc.addLiteral(CdrDeposit.stagingLocation, metsFile.toPath().toUri().toString());
+
+        depositResc.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc);
     }
 
     protected void validateProfile(METSProfile profile) {

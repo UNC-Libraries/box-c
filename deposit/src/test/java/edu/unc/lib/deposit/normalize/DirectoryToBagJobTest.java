@@ -127,7 +127,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         Resource file = getChildByLabel(workBag, "lorem.txt");
         assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
-        String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
+        Resource originalResc = file.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
     }
 
