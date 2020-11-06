@@ -140,4 +140,8 @@ public class ContentObjectTransformerManager {
     public void setOptions(ContentTransformationOptions options) {
         this.options = options;
     }
+
+    public ContentTransformationOptions getOptions() {
+        return options;
+    }
 }

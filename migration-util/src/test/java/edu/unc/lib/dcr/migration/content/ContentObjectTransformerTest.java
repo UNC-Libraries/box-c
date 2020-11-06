@@ -50,6 +50,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -89,6 +90,8 @@ import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
@@ -98,6 +101,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -140,6 +144,12 @@ public class ContentObjectTransformerTest {
     @Mock
     private PathIndex pathIndex;
 
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
+
+    @Mock
+    RepositoryObject repoObj;
+
     @Before
     public void setup() throws Exception {
         initMocks(this);
@@ -176,6 +186,7 @@ public class ContentObjectTransformerTest {
         service = new ContentTransformationService(depositPid, startingPid.getId());
         service.setModelManager(modelManager);
         service.setTransformerManager(manager);
+        service.setRepositoryObjectLoader(repoObjLoader);
     }
 
     @After
@@ -790,6 +801,94 @@ public class ContentObjectTransformerTest {
         // Coll should now have the ACLs from the unit
         assertHasPatronAccess(collResc);
         assertNoStaffRoles(collResc);
+    }
+
+    @Test
+    public void transformCollectionInCollection() throws Exception {
+        PID collChildPid = makePid();
+        Model collChild = createContainerModel(collChildPid, ContentModel.COLLECTION);
+        Document nestCollFoxml = new FoxmlDocumentBuilder(collChildPid, "collection in collection")
+                .relsExtModel(collChild)
+                .build();
+        serializeFoxml(objectsPath, collChildPid, nestCollFoxml);
+
+        PID collPid = makePid();
+        Model collModel = createContainerModel(collPid, ContentModel.COLLECTION);
+        // Collection to collection
+        addContains(collModel, collPid, collChildPid);
+        Document collFoxml = new FoxmlDocumentBuilder(collPid, "collection")
+                .relsExtModel(collModel)
+                .build();
+        serializeFoxml(objectsPath, collPid, collFoxml);
+
+        // Create the parent's foxml
+        Model transformToAdminUnitModel = createContainerModel(startingPid, ContentModel.COLLECTION);
+        addContains(transformToAdminUnitModel, startingPid, collPid);
+        addPatronAccess(transformToAdminUnitModel, startingPid);
+        addStaffRoles(transformToAdminUnitModel, startingPid);
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
+                .relsExtModel(transformToAdminUnitModel)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        service.perform();
+
+        Model depModel = modelManager.getReadModel(depositPid);
+        Resource unitResc = depModel.getResource(startingPid.getRepositoryPath());
+
+        assertTrue(unitResc.hasProperty(RDF.type, Cdr.AdminUnit));
+        assertTrue(unitResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(unitResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
+        // patron ACLs should have migrated from unit to collection
+        assertNoPatronAccess(unitResc);
+        assertHasStaffRoles(unitResc);
+
+        Resource collResc = depModel.getResource(collPid.getRepositoryPath());
+
+        assertTrue(collResc.hasProperty(RDF.type, Cdr.Collection));
+        assertTrue(collResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(collResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(collResc.hasProperty(CdrDeposit.label, "collection"));
+        // Coll should now have the ACLs from the unit
+        assertHasPatronAccess(collResc);
+        assertNoStaffRoles(collResc);
+
+        // Nested collection transformed to a folder
+        Resource collChildResc = depModel.getResource(collChildPid.getRepositoryPath());
+        assertTrue(collChildResc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(collChildResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(collChildResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(collChildResc.hasProperty(CdrDeposit.label, "collection in collection"));
+    }
+
+    @Test
+    public void transformCollectionWithParentTypeSet() throws Exception {
+        options.setDepositInto("collections");
+
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
+        when(repoObj.getResourceType()).thenReturn(ResourceType.ContentRoot);
+        Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
+        addStaffRoles(model, startingPid);
+        addPatronAccess(model, startingPid);
+
+        Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(objectsPath, startingPid, foxml);
+
+        service.perform();
+
+        Model depModel = modelManager.getReadModel(depositPid);
+        Resource unitResc = depModel.getResource(startingPid.getRepositoryPath());
+
+        assertTrue(unitResc.hasProperty(RDF.type, Cdr.AdminUnit));
+        assertTrue(unitResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
+        assertTrue(unitResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
+        assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
+        // patron ACLs should have migrated from unit to collection
+        assertNoPatronAccess(unitResc);
+        assertHasStaffRoles(unitResc);
     }
 
     @Test

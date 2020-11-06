@@ -457,7 +457,11 @@ public class ContentObjectTransformer extends RecursiveAction {
             return Cdr.Work;
         }
         if (contentModels.contains(COLLECTION.getResource())) {
-            if (Cdr.AdminUnit.equals(parentType) || !options.isTopLevelAsUnit()) {
+            if (Cdr.Collection.equals(parentType)) {
+                log.warn("Parent object is a collection. Transforming current object {} from a collection " +
+                                "into a folder", originalPid);
+                return Cdr.Folder;
+            } else if (Cdr.AdminUnit.equals(parentType) || !options.isTopLevelAsUnit()) {
                 return Cdr.Collection;
             } else {
                 return Cdr.AdminUnit;
