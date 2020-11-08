@@ -54,8 +54,8 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.URIUtil;
@@ -124,6 +124,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        File manifestFile = new File(depositDir, "manifest.txt");
+        addManifestDatastreamResource(depBag, manifestFile.toPath().toUri().toString(), "manifest.txt");
 
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
@@ -134,14 +136,14 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
-        verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLogger, times(4)).buildEvent(eq(Premis.VirusCheck));
         verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
         verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
-        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
-        verify(premisEventBuilder, times(2)).addOutcome(true);
+        verify(premisLoggerFactory, times(2)).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder, times(3)).addOutcome(true);
     }
 
     @Test
@@ -154,11 +156,12 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
         PID file1Pid = addFileObject(depBag, pdfFile);
+        PID orig1Pid = DatastreamPids.getOriginalFilePid(file1Pid);
         PID file2Pid = addFileObject(depBag, textFile);
 
         job.closeModel();
 
-        when(jobStatusFactory.objectIsCompleted(depositJobId, file1Pid.getQualifiedId())).thenReturn(true);
+        when(jobStatusFactory.objectIsCompleted(depositJobId, orig1Pid.getQualifiedId())).thenReturn(true);
         job.run();
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
@@ -316,7 +319,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagedFile.toPath().toUri().toString());
+        addOriginalDatastreamResource(fileResc, stagedFile.toPath().toUri().toString());
 
         parent.add(fileResc);
 

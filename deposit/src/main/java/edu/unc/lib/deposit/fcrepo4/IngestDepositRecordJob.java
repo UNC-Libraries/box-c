@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
-import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,6 +46,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
+import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
@@ -109,18 +108,23 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             addPremisEvents(depositRecord);
 
             // Add manifest files
-            StmtIterator it = deposit.listProperties(CdrDeposit.storageUri);
+            StmtIterator it = deposit.listProperties(CdrDeposit.hasDatastreamManifest);//CdrDeposit.storageUri);
             while (it.hasNext()) {
                 Statement stmt = it.nextStatement();
-                Resource storageResc = stmt.getResource();
-                String digest = null;
-                Statement digestStmt = storageResc.getProperty(DEFAULT_ALGORITHM.getDepositProperty());
-                if (digestStmt != null) {
-                    digest = digestStmt.getString();
+                Resource manifestResc = stmt.getResource();
+                String storageUri = getPropertyValue(manifestResc, CdrDeposit.storageUri);
+                if (storageUri == null) {
+                    log.error("No storage URI for deposit record manifest {}", manifestResc.getURI());
+                    continue;
                 }
-                URI manifestUri = URI.create(storageResc.toString());
+                URI manifestUri = URI.create(storageUri);
 
-                depositRecord.addManifest(manifestUri, null, "text/plain", digest, null);
+                String sha1 = getPropertyValue(manifestResc, DigestAlgorithm.SHA1.getDepositProperty());
+                String md5 = getPropertyValue(manifestResc, DigestAlgorithm.MD5.getDepositProperty());
+                String mimetype = getPropertyValue(manifestResc, CdrDeposit.mimetype);
+                mimetype = mimetype == null ? "text/plain" : mimetype;
+                String filename = getPropertyValue(manifestResc, CdrDeposit.label);
+                depositRecord.addManifest(manifestUri, filename, mimetype, sha1, md5);
             }
         } catch (FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);

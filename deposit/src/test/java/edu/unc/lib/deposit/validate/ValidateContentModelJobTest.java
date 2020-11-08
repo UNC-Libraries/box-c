@@ -157,7 +157,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+        addOriginalDatastreamResource(childResc, "path");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -174,6 +174,27 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
     @Test(expected = JobFailedException.class)
     public void missingStagingLocationTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        addOriginalDatastreamResource(childResc, null);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test(expected = JobFailedException.class)
+    public void missingOriginalDatastreamTest() {
         PID objPid = makePid(CONTENT_BASE);
         Bag objBag = model.createBag(objPid.getRepositoryPath());
         objBag.addProperty(RDF.type, Cdr.Work);
@@ -198,7 +219,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+        addOriginalDatastreamResource(childResc, "path");
 
         depBag.add(childResc);
 
@@ -236,6 +257,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
+        addOriginalDatastreamResource(childResc, "path");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -256,6 +278,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
+        addOriginalDatastreamResource(childResc, "path");
         objBag.add(childResc);
 
         depBag.add(objBag);
@@ -272,7 +295,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+        addOriginalDatastreamResource(childResc, "path");
 
         depBag.add(childResc);
 
@@ -290,7 +313,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+        addOriginalDatastreamResource(childResc, "path");
 
         depBag.add(childResc);
 

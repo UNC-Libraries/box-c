@@ -72,12 +72,12 @@ public class DepositRecord extends RepositoryObject {
      */
     public BinaryObject addManifest(URI manifestUri, String filename, String mimetype, String sha1, String md5)
             throws FedoraException {
+        if (filename == null) {
+            filename = StringUtils.substringAfterLast(manifestUri.toString(), "/");
+        }
         PID manifestPid = getDepositManifestPid(getPid(), filename);
         if (mimetype == null) {
             mimetype = "text/plain";
-        }
-        if (filename == null) {
-            filename = StringUtils.substringAfterLast(manifestUri.toString(), "/");
         }
         return repoObjFactory.createOrUpdateBinary(manifestPid, manifestUri, filename, mimetype, sha1, md5, null);
     }

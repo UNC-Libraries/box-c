@@ -515,4 +515,19 @@ public abstract class AbstractDepositJob implements Runnable {
         StorageLocation destLocation = locationManager.getStorageLocationById(destLocationId);
         return transferService.getSession(destLocation);
     }
+
+    /**
+     * Get the String value of the specified property if present, or return null.
+     *
+     * @param resc
+     * @param property
+     * @return
+     */
+    protected String getPropertyValue(Resource resc, Property property) {
+        Statement stmt = resc.getProperty(property);
+        if (stmt == null) {
+            return null;
+        }
+        return stmt.getString();
+    }
 }

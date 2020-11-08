@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,6 +39,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.MultiDigestInputStreamWrapper;
@@ -68,7 +67,7 @@ public class FixityCheckJob extends AbstractDepositJob {
         log.debug("Performing FixityCheckJob for deposit {}", depositUUID);
         Model model = getReadOnlyModel();
 
-        List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
+        List<Entry<PID, String>> stagingList = getOriginalStagingPairList(model);
         setTotalClicks(stagingList.size());
 
         for (Entry<PID, String> stagingEntry : stagingList) {
@@ -84,14 +83,15 @@ public class FixityCheckJob extends AbstractDepositJob {
             URI stagedUri = URI.create(stagedPath);
 
             Resource objResc = model.getResource(rescPid.getRepositoryPath());
+            Resource origResc = objResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
 
             try (InputStream fStream = Files.newInputStream(Paths.get(stagedUri))) {
                 log.debug("Calculating digests for {}", stagedUri);
                 MultiDigestInputStreamWrapper digestWrapper = new MultiDigestInputStreamWrapper(
-                        fStream, getDigestsForResource(objResc), REQUIRED_ALGS);
+                        fStream, getDigestsForResource(origResc), REQUIRED_ALGS);
                 digestWrapper.checkFixity();
                 log.debug("Verified fixity of {}", stagedUri);
-                recordDigestsForResource(rescPid, objResc, digestWrapper.getDigests());
+                recordDigestsForResource(rescPid, origResc, digestWrapper.getDigests());
                 markObjectCompleted(rescPid);
                 log.debug("Completed fixity recording for {}", stagedUri);
                 addClicks(1);

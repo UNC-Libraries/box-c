@@ -20,17 +20,21 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -48,6 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -108,12 +113,14 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
-        URI manifestUri1 = Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toUri();
-        URI manifestUri2 = Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toUri();
-        writeStringToFile(new File(manifestUri1), MANIFEST_BODY1, UTF_8);
-        writeStringToFile(new File(manifestUri2), MANIFEST_BODY2, UTF_8);
-        depBag.addProperty(CdrDeposit.storageUri, manifestUri1.toString());
-        depBag.addProperty(CdrDeposit.storageUri, manifestUri2.toString());
+
+        String manifestFilename1 = "manifest-md5.txt";
+        ManifestDetails details1 = addManifest(model, depBag, manifestFilename1, "text/special",
+                MANIFEST_BODY1, true, true);
+
+        String manifestFilename2 = "bagit.txt";
+        ManifestDetails details2 = addManifest(model, depBag, manifestFilename2, null, MANIFEST_BODY2, true, false);
+
         job.closeModel();
 
         job.run();
@@ -130,10 +137,20 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         PID manifest2Pid = getPidBySuffix(manifestPids, "bagit.txt");
 
         BinaryObject manifest1Binary = repoObjLoader.getBinaryObject(manifest1Pid);
-        BinaryObject manifest2Binary = repoObjLoader.getBinaryObject(manifest2Pid);
-
         assertEquals(MANIFEST_BODY1, IOUtils.toString(manifest1Binary.getBinaryStream(), UTF_8));
+        assertEquals("urn:sha1:" + details1.sha1, manifest1Binary.getSha1Checksum());
+        assertEquals("urn:md5:" + details1.md5, manifest1Binary.getMd5Checksum());
+        assertEquals(manifestFilename1, manifest1Binary.getFilename());
+        assertEquals("text/special", manifest1Binary.getMimetype());
+        assertEquals(details1.uri, manifest1Binary.getContentUri());
+
+        BinaryObject manifest2Binary = repoObjLoader.getBinaryObject(manifest2Pid);
         assertEquals(MANIFEST_BODY2, IOUtils.toString(manifest2Binary.getBinaryStream(), UTF_8));
+        assertEquals("urn:sha1:" + details2.sha1, manifest2Binary.getSha1Checksum());
+        assertNull(manifest2Binary.getMd5Checksum());
+        assertEquals(manifestFilename2, manifest2Binary.getFilename());
+        assertEquals("text/plain", manifest2Binary.getMimetype());
+        assertEquals(details2.uri, manifest2Binary.getContentUri());
 
         // Verify that the ingestion event was created
         Model premisModel = record.getPremisLog().getEventsModel();
@@ -153,6 +170,36 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 authgent.getURI());
     }
 
+    private ManifestDetails addManifest(Model model, Bag depBag, String filename, String mimetype,
+            String content, boolean withSha1, boolean withMd5) throws Exception {
+        ManifestDetails details = new ManifestDetails();
+        Path manifestPath1 = Paths.get(depositDir.getAbsolutePath(), filename);
+        details.uri = manifestPath1.toUri();
+        writeStringToFile(manifestPath1.toFile(), content, UTF_8);
+        PID manifestPid1 = DatastreamPids.getDepositManifestPid(depositPid, filename);
+        Resource manifestResc1 = model.getResource(manifestPid1.getRepositoryPath());
+        manifestResc1.addLiteral(CdrDeposit.storageUri, manifestPath1.toUri().toString());
+        if (withSha1) {
+            details.sha1 = getDigest(manifestPath1, "SHA1");
+            manifestResc1.addLiteral(CdrDeposit.sha1sum, details.sha1);
+        }
+        if (withMd5) {
+            details.md5 = getDigest(manifestPath1, "MD5");
+            manifestResc1.addLiteral(CdrDeposit.md5sum, details.md5);
+        }
+        if (mimetype != null) {
+            manifestResc1.addLiteral(CdrDeposit.mimetype, mimetype);
+        }
+        depBag.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc1);
+        return details;
+    }
+
+    private class ManifestDetails {
+        public URI uri;
+        public String sha1;
+        public String md5;
+    }
+
     @Test
     public void interruptTest() throws Exception {
         depositStatusFactory.set(depositUUID, DepositField.packagingType, PackagingType.BAGIT.getUri());
@@ -161,12 +208,10 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
-        URI manifestUri1 = Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toUri();
-        URI manifestUri2 = Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toUri();
-        writeStringToFile(new File(manifestUri1), MANIFEST_BODY1, UTF_8);
-        writeStringToFile(new File(manifestUri2), MANIFEST_BODY2, UTF_8);
-        depBag.addProperty(CdrDeposit.storageUri, manifestUri1.toString());
-        depBag.addProperty(CdrDeposit.storageUri, manifestUri2.toString());
+        String manifestFilename1 = "manifest-md5.txt";
+        addManifest(model, depBag, manifestFilename1, "text/special", MANIFEST_BODY1, true, true);
+        String manifestFilename2 = "bagit.txt";
+        addManifest(model, depBag, manifestFilename2, null, MANIFEST_BODY2, true, false);
         job.closeModel();
 
         AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
@@ -215,5 +260,10 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 .filter(p -> p.getRepositoryPath().endsWith(suffix))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private String getDigest(Path filePath, String digestKey) throws Exception {
+        byte[] result = DigestUtils.digest(MessageDigest.getInstance(digestKey), filePath.toFile());
+        return Hex.encodeHexString(result);
     }
 }

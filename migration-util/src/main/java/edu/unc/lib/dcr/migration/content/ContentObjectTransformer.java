@@ -326,11 +326,15 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         fileResc.addProperty(RDF.type, Cdr.FileObject);
 
+        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
+        Resource origResc = depositModel.getResource(origPid.getURI());
+        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
+
         Statement mimeTypeStmt = bxc3Resc.getProperty(hasSourceMimeType.getProperty());
         if (mimeTypeStmt != null) {
             String mimeType = mimeTypeStmt.getString();
             if (!mimeType.contains("cannot open")) {
-                fileResc.addProperty(CdrDeposit.mimetype, mimeTypeStmt.getString());
+                origResc.addProperty(CdrDeposit.mimetype, mimeTypeStmt.getString());
             } else {
                 log.debug("Ignoring unusable mimetype for {}", originalPid);
             }
@@ -339,10 +343,10 @@ public class ContentObjectTransformer extends RecursiveAction {
         List<DatastreamVersion> originalVersions = listDatastreamVersions(foxml, ORIGINAL_DS);
         if (originalVersions.size() > 0) {
             DatastreamVersion lastV = originalVersions.get(originalVersions.size() - 1);
-            fileResc.addLiteral(CdrDeposit.md5sum, lastV.getMd5());
+            origResc.addLiteral(CdrDeposit.md5sum, lastV.getMd5());
             fileResc.addLiteral(CdrDeposit.createTime, lastV.getCreated());
             fileResc.addLiteral(CdrDeposit.lastModifiedTime, lastV.getCreated());
-            fileResc.addProperty(CdrDeposit.size, lastV.getSize());
+            origResc.addProperty(CdrDeposit.size, lastV.getSize());
         }
 
         // Populate the original file path
@@ -350,7 +354,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         if (originalPath == null) {
             log.warn("No original file path for {}", originalPid);
         } else {
-            fileResc.addLiteral(stagingLocation, originalPath.toUri().toString());
+            origResc.addLiteral(stagingLocation, originalPath.toUri().toString());
         }
 
         String label = getLabel(bxc3Resc, originalVersions);

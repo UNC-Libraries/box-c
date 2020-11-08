@@ -135,7 +135,7 @@ public class FileObject extends ContentObject {
                 associationRelation, typeRelation, type);
     }
 
-    private BinaryObject addBinary(PID binPid, URI storageUri, String filename,
+    public BinaryObject addBinary(PID binPid, URI storageUri, String filename,
             String mimetype, String sha1Checksum, String md5Checksum,
             Property associationRelation, Property typeRelation, Resource type) {
 

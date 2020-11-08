@@ -517,13 +517,14 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
+        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         // datastreams only have a created time
         assertTrue(child1Resc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.mimetype, "text/xml"));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        assertTrue(origResc.hasLiteral(CdrDeposit.mimetype, "text/xml"));
+        assertTrue(origResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
     }
 
@@ -612,7 +613,8 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "dc-title-label.txt"));
     }
 
@@ -658,7 +660,8 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "label.txt"));
     }
 
@@ -700,13 +703,14 @@ public class ContentObjectTransformerTest {
 
         // Verify file properties
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(fileResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
+        Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue("File should be using the creation time of the datastream",
                 fileResc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         // datastreams only have a created time
         assertTrue(fileResc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
-        assertTrue(fileResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
-        assertTrue(fileResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        assertTrue(origResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(fileResc.hasProperty(CdrDeposit.label, "file1"));
 
         // Work should have the MODS
@@ -757,7 +761,8 @@ public class ContentObjectTransformerTest {
         // Verify file properties
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
         assertTrue(fileResc.hasProperty(CdrDeposit.label, "test.txt"));
-        assertTrue(fileResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
     }
 
     @Test
@@ -1046,12 +1051,13 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
+        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));
-        assertFalse(child1Resc.hasProperty(CdrDeposit.mimetype));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
-        assertTrue(child1Resc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
+        assertFalse(origResc.hasProperty(CdrDeposit.mimetype));
+        assertTrue(origResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
     }
 

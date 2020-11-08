@@ -376,16 +376,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
+        Resource originalResc = childResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
 
-        Resource storageResc = childResc.getPropertyResourceValue(CdrDeposit.storageUri);
-        if (storageResc == null) {
+        String storageString = originalResc != null ? getPropertyValue(originalResc, CdrDeposit.storageUri) : null;
+        if (storageString == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
         }
-        URI storageUri = URI.create(storageResc.getURI());
-
-        Resource originalResc = childResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        URI storageUri = URI.create(storageString);
 
         // Pull out file properties if they are present
         String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
@@ -440,15 +439,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
-        if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
+        Resource binResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamFits);
+        if (binResc == null || !binResc.hasProperty(CdrDeposit.storageUri)) {
             failJob("Missing FITs extract", "No storage URI for FITS extract for " + fileObj.getPid().getId());
         }
 
-        URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
+        URI fitsUri = URI.create(binResc.getProperty(CdrDeposit.storageUri).getString());
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        String sha1 = getPropertyValue(binResc, CdrDeposit.sha1sum);
 
         fileObj.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
-                IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+                sha1, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     /**
@@ -789,21 +790,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         return previouslyIngestedSet.contains(path);
     }
 
-    /**
-     * Get the String value of the specified property if present, or return null.
-     *
-     * @param resc
-     * @param property
-     * @return
-     */
-    private String getPropertyValue(Resource resc, Property property) {
-        Statement stmt = resc.getProperty(property);
-        if (stmt == null) {
-            return null;
-        }
-        return stmt.getString();
-    }
-
     private void addAclProperties(Resource dResc, Resource aResc) {
         StmtIterator stmtIt = dResc.listProperties();
 
@@ -831,18 +817,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
-        if (!dResc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
+        Resource historyResc = dResc.getPropertyResourceValue(CdrDeposit.hasDatastreamDescriptiveHistory);
+        if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
             return;
         }
 
         PID modsPid = DatastreamPids.getMdDescriptivePid(obj.getPid());
         PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
-        URI storageUri = URI.create(dResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
+        URI storageUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
+        Statement sha1Stmt = historyResc.getProperty(CdrDeposit.sha1sum);
         repoObjFactory.createOrUpdateBinary(dsHistoryPid,
                 storageUri,
                 null,
                 "text/xml",
-                null,
+                sha1Stmt != null ? sha1Stmt.getString() : null,
                 null,
                 null);
     }

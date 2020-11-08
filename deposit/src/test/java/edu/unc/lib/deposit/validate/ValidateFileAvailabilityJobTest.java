@@ -48,7 +48,6 @@ import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
@@ -201,7 +200,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+        addOriginalDatastreamResource(fileResc, stagingLocation);
 
         parent.add(fileResc);
 

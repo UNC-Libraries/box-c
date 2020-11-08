@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
-import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 
 import java.io.File;
 import java.io.IOException;
@@ -96,7 +95,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
     private void wrapWithWork(Resource parent, Resource fileResc) {
         Model model = parent.getModel();
 
-        URI stagingUri = URI.create(getPropertyValue(fileResc, stagingLocation));
+        URI stagingUri = URI.create(getStagingLocation(fileResc));
         String filename = new File(stagingUri).getName();
 
         PID filePid = PIDs.get(fileResc.getURI());
@@ -172,12 +171,12 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
 
     }
 
-    private String getPropertyValue(Resource resc, Property property) {
-        Statement stmt = resc.getProperty(property);
-        if (stmt == null) {
+    private String getStagingLocation(Resource resc) {
+        Resource origResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        if (origResc == null) {
             return null;
         }
-        return stmt.getString();
+        return origResc.getProperty(CdrDeposit.stagingLocation).getString();
     }
 
     private void addPremisEvent(PID workPid, PID filePid) {

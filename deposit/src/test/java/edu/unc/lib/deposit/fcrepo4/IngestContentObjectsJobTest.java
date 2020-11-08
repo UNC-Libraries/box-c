@@ -91,6 +91,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -764,21 +765,27 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
+        Model model = parent.getModel();
         String stagingPath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
         String storagePath = storageLocPath.resolve(filePid.getId() + ".txt").toUri().toString();
-        Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagingPath);
-        fileResc.addProperty(CdrDeposit.storageUri, storagePath);
         fileResc.addProperty(CdrDeposit.label, stagingLocation);
-        fileResc.addProperty(CdrDeposit.mimetype, mimetype);
+
+        Resource origResc = addOriginalDatastreamResource(fileResc, stagingPath);
+        origResc.addProperty(CdrDeposit.stagingLocation, stagingPath);
+        origResc.addProperty(CdrDeposit.storageUri, storagePath);
+        origResc.addProperty(CdrDeposit.mimetype, mimetype);
 
         parent.add(fileResc);
 
         // Create the accompanying fake FITS report file
+        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(filePid);
         Path fitsPath = job.getTechMdPath(filePid, true);
         Files.createFile(fitsPath);
-        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsPath.toUri().toString());
+        Resource fitsResc = model.getResource(fitsPid.getRepositoryPath());
+        fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
+        fileResc.addProperty(CdrDeposit.hasDatastreamFits, fitsResc);
 
         return filePid;
     }
