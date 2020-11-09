@@ -171,10 +171,11 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
         if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamDescriptiveHistory)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
+            PID historyPid = DatastreamPids.getDatastreamHistoryPid(modsPid);
 
             Path stagingPath = getModsHistoryPath(objPid);
             if (Files.exists(stagingPath)) {
-                transferFile(modsPid, stagingPath.toUri(), transferSession, resc,
+                transferFile(historyPid, stagingPath.toUri(), transferSession, resc,
                         CdrDeposit.hasDatastreamDescriptiveHistory);
                 log.debug("Finished transferring MODS history file {}", modsPid.getQualifiedId());
             }

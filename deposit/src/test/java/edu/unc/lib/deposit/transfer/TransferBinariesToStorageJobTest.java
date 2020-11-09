@@ -263,6 +263,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));
         assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(historyPath.endsWith(DatastreamType.MD_DESCRIPTIVE_HISTORY.getId()));
         assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
