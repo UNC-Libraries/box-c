@@ -44,6 +44,7 @@ import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -157,7 +158,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -181,7 +183,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, null);
+        DepositModelHelpers.addDatastream(childResc);
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -219,7 +221,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
 
         depBag.add(childResc);
 
@@ -257,7 +260,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -278,7 +282,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         objBag.add(childResc);
 
         depBag.add(objBag);
@@ -295,7 +300,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
 
         depBag.add(childResc);
 
@@ -313,7 +319,8 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(childResc, "path");
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
 
         depBag.add(childResc);
 

@@ -66,10 +66,12 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
@@ -256,7 +258,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Model model = job.getReadOnlyModel();
         Resource postWorkResc = model.getResource(workBag.getURI());
 
-        Resource historyResc = postWorkResc.getPropertyResourceValue(CdrDeposit.hasDatastreamDescriptiveHistory);
+        Resource historyResc = DepositModelHelpers.getDatastream(postWorkResc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));
@@ -340,10 +342,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void addManifest(String manifestName, File manifestFile) {
-        PID manifestPid = DatastreamPids.getDepositManifestPid(depositPid, manifestName);
-        Resource manifestResc = depositModel.getResource(manifestPid.getRepositoryPath());
+        Resource manifestResc = DepositModelHelpers.addManifest(depBag, manifestName);
         manifestResc.addLiteral(CdrDeposit.stagingLocation, manifestFile.toPath().toUri().toString());
-        depBag.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc);
     }
 
     private List<URI> listManifestStorageUris(Resource depositResc) {
@@ -367,7 +367,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource fileResc2 = addFileObject(workBag2, FILE_CONTENT2, true);
         workBag2.addProperty(Cdr.primaryObject, fileResc2);
 
-        Resource originalResc2 = fileResc2.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource originalResc2 = DepositModelHelpers.getDatastream(fileResc2);
         String filePath2 = originalResc2.getProperty(CdrDeposit.stagingLocation).getString();
         Path flappingPath = Paths.get(URI.create(filePath2));
         Files.delete(flappingPath);
@@ -439,7 +439,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     public void fileAlreadyTransferredButNotRecorded() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
-        Resource originalResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource originalResc = DepositModelHelpers.getDatastream(fileResc);
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         // Put the file into the storage location beforehand
@@ -499,7 +499,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertOriginalFileTransferred(Resource resc, String expectedContent) throws Exception {
-        Resource dsResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource dsResc = DepositModelHelpers.getDatastream(resc);
         URI storageUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path storagePath = Paths.get(storageUri);
         assertTrue("Binary should exist at storage uri", Files.exists(storagePath));
@@ -509,7 +509,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertFitsFileTransferred(Resource resc) throws Exception {
-        Resource dsResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamFits);
+        Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
         URI fitsUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path fitsPath = Paths.get(fitsUri);
         assertTrue("FITS file should exist at storage uri", Files.exists(fitsPath));

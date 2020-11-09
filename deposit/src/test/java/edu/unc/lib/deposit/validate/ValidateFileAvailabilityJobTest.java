@@ -47,7 +47,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
@@ -200,7 +202,8 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(fileResc, stagingLocation);
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, stagingLocation);
 
         parent.add(fileResc);
 

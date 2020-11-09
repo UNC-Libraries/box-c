@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +40,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -123,9 +125,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         workBag.add(fileResource);
 
         // Add in the original binary resource
-        PID originalPid = DatastreamPids.getOriginalFilePid(pid);
-        Resource originalResc = model.getResource(originalPid.getRepositoryPath());
-        fileResource.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
+        Resource originalResc = DepositModelHelpers.addDatastream(fileResource, ORIGINAL_FILE);
 
         workBag.addProperty(Cdr.primaryObject, fileResource);
         parentBag.add(workBag);

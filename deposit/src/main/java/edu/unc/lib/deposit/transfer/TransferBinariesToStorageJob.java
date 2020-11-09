@@ -54,6 +54,7 @@ import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
@@ -159,7 +160,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         // add storageUri if doesn't already exist. It will exist in a resume scenario.
         if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamOriginal)) {
             PID originalPid = getOriginalFilePid(objPid);
-            Resource originalResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+            Resource originalResc = DepositModelHelpers.getDatastream(resc);
 
             URI stagingUri = URI.create(originalResc.getProperty(CdrDeposit.stagingLocation).getString());
             transferFile(originalPid, stagingUri, transferSession, resc, CdrDeposit.hasDatastreamOriginal);

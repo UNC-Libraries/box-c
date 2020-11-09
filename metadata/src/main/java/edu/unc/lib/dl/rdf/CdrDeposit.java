@@ -92,18 +92,6 @@ public class CdrDeposit {
     public static final Property storageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#storageUri" );
 
-    /** URI of FITS metadata extract file within a storage location. */
-    public static final Property fitsStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#fitsStorageUri" );
-
-    /** URI of descriptive metadata file within a storage location. */
-    public static final Property descriptiveStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#descriptiveStorageUri" );
-
-    /** URI of descriptive history file within a storage location. */
-    public static final Property descriptiveHistoryStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#descriptiveHistoryStorageUri" );
-
     /** Link to original binary resource */
     public static final Property hasDatastreamOriginal = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamOriginal" );
@@ -118,7 +106,4 @@ public class CdrDeposit {
 
     public static final Property hasDatastreamManifest = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamManifest" );
-
-    public static final Property hasSourceMetadata = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasSourceMetadata");
 }

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
@@ -79,6 +80,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -580,7 +582,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertNull(jobStatus.get(JobField.num.name()));
 
             Resource fileResc = job.getWritableModel().getResource(mainPid2.getRepositoryPath());
-            Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+            Resource origResc = DepositModelHelpers.getDatastream(fileResc);
             origResc.removeAll(CdrDeposit.md5sum);
             origResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
             job.closeModel();
@@ -640,7 +642,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Fix the staging location of the second file
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
-        Resource orig2Resc = file2Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource orig2Resc = DepositModelHelpers.getDatastream(file2Resc);
         orig2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                 FILE2_LOC).toUri().toString());
         job.closeModel();
@@ -905,7 +907,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertFalse(logModel.contains(null, RDF.type, Premis.VirusCheck));
 
             Resource fileResc = job.getWritableModel().getResource(file1Pid.getRepositoryPath());
-            Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+            Resource origResc = DepositModelHelpers.getDatastream(fileResc);
             origResc.removeAll(CdrDeposit.md5sum);
             origResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
             job.closeModel();
@@ -1194,9 +1196,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Model model = parent.getModel();
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
-        Resource origResc = model.getResource(origPid.getRepositoryPath());
-        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
+
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
         if (stagingLocation != null) {
             origResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                     stagingLocation).toUri().toString());
@@ -1213,13 +1214,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         parent.add(fileResc);
 
         // Create the accompanying fake premis report file
-        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(filePid);
         Path fitsPath = job.getTechMdPath(filePid, true);
         Files.createFile(fitsPath);
-        Resource fitsResc = model.getResource(fitsPid.getRepositoryPath());
+        Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
         fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
         fitsResc.addLiteral(CdrDeposit.sha1sum, getSha1(fitsPath));
-        fileResc.addProperty(CdrDeposit.hasDatastreamFits, fitsResc);
 
         return filePid;
     }

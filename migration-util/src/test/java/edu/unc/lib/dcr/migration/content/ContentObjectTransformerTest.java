@@ -95,6 +95,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -517,7 +518,7 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(child1Resc);
         assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         // datastreams only have a created time
@@ -613,7 +614,7 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(child1Resc);
         assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "dc-title-label.txt"));
     }
@@ -660,7 +661,7 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(child1Resc);
         assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "label.txt"));
     }
@@ -703,7 +704,7 @@ public class ContentObjectTransformerTest {
 
         // Verify file properties
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
-        Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(fileResc);
         assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue("File should be using the creation time of the datastream",
                 fileResc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
@@ -761,7 +762,7 @@ public class ContentObjectTransformerTest {
         // Verify file properties
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
         assertTrue(fileResc.hasProperty(CdrDeposit.label, "test.txt"));
-        Resource origResc = fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(fileResc);
         assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
     }
 
@@ -1051,7 +1052,7 @@ public class ContentObjectTransformerTest {
         assertEquals(1, bagChildren.size());
         assertTrue(bagChildren.contains(child1Resc));
         assertTrue(child1Resc.hasProperty(RDF.type, Cdr.FileObject));
-        Resource origResc = child1Resc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(child1Resc);
         assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, DATA_FILE_MD5));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(child1Resc.hasLiteral(CdrDeposit.lastModifiedTime, DEFAULT_CREATED_DATE));

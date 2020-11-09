@@ -36,6 +36,7 @@ import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.listDatastr
 import static edu.unc.lib.dcr.migration.paths.PathIndex.OBJECT_TYPE;
 import static edu.unc.lib.dcr.migration.paths.PathIndex.ORIGINAL_TYPE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DC_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
@@ -93,6 +94,7 @@ import edu.unc.lib.dl.fedora.ConflictException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -326,9 +328,7 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         fileResc.addProperty(RDF.type, Cdr.FileObject);
 
-        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
-        Resource origResc = depositModel.getResource(origPid.getURI());
-        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
 
         Statement mimeTypeStmt = bxc3Resc.getProperty(hasSourceMimeType.getProperty());
         if (mimeTypeStmt != null) {

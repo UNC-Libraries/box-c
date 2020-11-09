@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -87,7 +88,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         assertEquals("Label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
         assertTrue("Must have FileObject type", mainResource.hasProperty(RDF.type, Cdr.FileObject));
 
-        Resource originalResc = mainResource.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource originalResc = DepositModelHelpers.getDatastream(mainResource);
         assertEquals(stagingUri.toString(), originalResc.getProperty(CdrDeposit.stagingLocation).getString());
         assertNotNull(originalResc.getProperty(CdrDeposit.size).getLong());
         assertEquals("text/xml", originalResc.getProperty(CdrDeposit.mimetype).getString());

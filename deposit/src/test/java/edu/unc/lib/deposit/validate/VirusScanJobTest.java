@@ -55,7 +55,9 @@ import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.URIUtil;
@@ -125,7 +127,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
         File manifestFile = new File(depositDir, "manifest.txt");
-        addManifestDatastreamResource(depBag, manifestFile.toPath().toUri().toString(), "manifest.txt");
+        Resource manifestResc = DepositModelHelpers.addManifest(depBag, "manifest.txt");
+        manifestResc.addLiteral(CdrDeposit.stagingLocation, manifestFile.toPath().toUri().toString());
 
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
@@ -319,7 +322,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        addOriginalDatastreamResource(fileResc, stagedFile.toPath().toUri().toString());
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, stagedFile.toPath().toUri().toString());
 
         parent.add(fileResc);
 

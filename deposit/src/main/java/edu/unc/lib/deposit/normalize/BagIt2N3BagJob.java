@@ -38,8 +38,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.domain.Bag;
@@ -148,10 +147,8 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             Files.list(bagReader.getRootDir())
                 .filter(Files::isRegularFile)
                 .forEach(path -> {
-                    PID manifestPid = DatastreamPids.getDepositManifestPid(depositPID, path.getFileName().toString());
-                    Resource manifestResc = model.getResource(manifestPid.getRepositoryPath());
+                    Resource manifestResc = DepositModelHelpers.addManifest(depositBag, path.getFileName().toString());
                     manifestResc.addLiteral(CdrDeposit.stagingLocation, path.toUri().toString());
-                    depositBag.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc);
                 });
 
             // Register the bag itself for cleanup

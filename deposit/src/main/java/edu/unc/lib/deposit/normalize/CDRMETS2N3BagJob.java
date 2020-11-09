@@ -55,14 +55,15 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
     public void runJob() {
         validateMETS();
 
+        validateProfile(METSProfile.CDR_SIMPLE);
+
+        interruptJobIfStopped();
+
         Model depModel = getReadOnlyModel();
         Model model = ModelFactory.createDefaultModel().add(depModel);
 
         // Store a reference to the manifest file
         addManifestURI(model);
-        validateProfile(METSProfile.CDR_SIMPLE);
-
-        interruptJobIfStopped();
 
         Document mets = loadMETS();
         // assign any missing PIDs

@@ -108,7 +108,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             addPremisEvents(depositRecord);
 
             // Add manifest files
-            StmtIterator it = deposit.listProperties(CdrDeposit.hasDatastreamManifest);//CdrDeposit.storageUri);
+            StmtIterator it = deposit.listProperties(CdrDeposit.hasDatastreamManifest);
             while (it.hasNext()) {
                 Statement stmt = it.nextStatement();
                 Resource manifestResc = stmt.getResource();

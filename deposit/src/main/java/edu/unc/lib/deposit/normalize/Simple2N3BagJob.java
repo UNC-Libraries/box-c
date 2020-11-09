@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+
 import java.io.File;
 import java.net.URI;
 import java.util.Map;
@@ -29,10 +31,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -116,15 +117,11 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         mainResource.addLiteral(CdrDeposit.label, alabel);
         mainResource.addProperty(RDF.type, Cdr.FileObject);
 
-        PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(mainResource.getURI()));
-        Resource originalResc = mainResource.getModel().getResource(originalPid.getRepositoryPath());
-        mainResource.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
-
+        Resource originalResc = DepositModelHelpers.addDatastream(mainResource, ORIGINAL_FILE);
         originalResc.addLiteral(CdrDeposit.size, Long.toString(contentFile.length()));
         if (mimetype != null) {
             originalResc.addLiteral(CdrDeposit.mimetype, mimetype);
         }
-
         // Reference the content file as the data file
         originalResc.addLiteral(CdrDeposit.stagingLocation, sourceUri.toString());
     }

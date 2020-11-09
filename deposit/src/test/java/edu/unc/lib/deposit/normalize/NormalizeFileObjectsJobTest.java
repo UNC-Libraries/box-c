@@ -52,7 +52,7 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -180,7 +180,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         assertEquals(FILENAME, childResc.getProperty(CdrDeposit.label).getString());
 
         // Other properties still present on file object
-        Resource origResc = childResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource origResc = DepositModelHelpers.getDatastream(childResc);
         assertTrue(origResc.hasProperty(CdrDeposit.stagingLocation));
 
         // Check that premis event was added
@@ -250,10 +250,8 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         childResc.addProperty(CdrDeposit.label, FILENAME);
         URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "path", FILENAME).toUri();
 
-        PID originalPid = DatastreamPids.getOriginalFilePid(childPid);
-        Resource originalResc = model.getResource(originalPid.getRepositoryPath());
-        childResc.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
-        originalResc.addProperty(CdrDeposit.stagingLocation, stagingUri.toString());
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addProperty(CdrDeposit.stagingLocation, stagingUri.toString());
 
         parent.add(childResc);
 

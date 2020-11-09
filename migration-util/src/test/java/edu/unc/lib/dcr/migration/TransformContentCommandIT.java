@@ -61,6 +61,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -207,8 +208,9 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         List<RDFNode> bagChildren = resultWorkBag.iterator().toList();
         Resource resultFileResc = (Resource) bagChildren.get(0);
         assertTrue(resultFileResc.hasProperty(RDF.type, Cdr.FileObject));
-        assertTrue(resultFileResc.hasLiteral(CdrDeposit.md5sum, BINARY_MD5));
-        assertTrue(resultFileResc.hasLiteral(CdrDeposit.stagingLocation, dsPath.toUri().toString()));
+        Resource origResc = DepositModelHelpers.getDatastream(resultFileResc);
+        assertTrue(origResc.hasLiteral(CdrDeposit.md5sum, BINARY_MD5));
+        assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dsPath.toUri().toString()));
 
         assertTrue("Deposit directory must exist", new File(depositBaseDir, depositPid.getId()).exists());
     }

@@ -89,7 +89,9 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -376,7 +378,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
-        Resource originalResc = childResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource originalResc = DepositModelHelpers.getDatastream(childResc);
 
         String storageString = originalResc != null ? getPropertyValue(originalResc, CdrDeposit.storageUri) : null;
         if (storageString == null) {
@@ -439,7 +441,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
-        Resource binResc = resc.getPropertyResourceValue(CdrDeposit.hasDatastreamFits);
+        Resource binResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
         if (binResc == null || !binResc.hasProperty(CdrDeposit.storageUri)) {
             failJob("Missing FITs extract", "No storage URI for FITS extract for " + fileObj.getPid().getId());
         }
@@ -817,7 +819,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
-        Resource historyResc = dResc.getPropertyResourceValue(CdrDeposit.hasDatastreamDescriptiveHistory);
+        Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
             return;
         }

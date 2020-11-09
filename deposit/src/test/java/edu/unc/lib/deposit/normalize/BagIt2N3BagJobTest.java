@@ -46,6 +46,7 @@ import org.mockito.Captor;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -149,7 +150,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         Bag workBag = work.getModel().getBag(work.getURI());
         Resource file = getChildByLabel(workBag, pathParts[pathParts.length - 1]);
-        Resource originalResc = file.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+        Resource originalResc = DepositModelHelpers.getDatastream(file);
 
         assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
         assertEquals("Checksum was not set", md5sum,

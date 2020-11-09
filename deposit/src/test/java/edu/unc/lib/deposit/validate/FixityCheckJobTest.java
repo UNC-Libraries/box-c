@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.addDatastream;
+import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.getDatastream;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -55,7 +58,6 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -113,7 +115,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         job.run();
 
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc = getOriginalDatastreamResource(resultModel, filePid);
+        Resource origResc = getDatastream(resultModel.getResource(filePid.getRepositoryPath()));
         assertTrue(origResc.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
 
         assertChecksumEvent(filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
@@ -135,7 +137,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         job.run();
 
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc = getOriginalDatastreamResource(resultModel, filePid);
+        Resource origResc = getDatastream(resultModel.getResource(filePid.getRepositoryPath()));
         assertTrue(origResc.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
 
         assertChecksumEvent(filePid, DigestAlgorithm.SHA1, CONTENT1_SHA1);
@@ -177,7 +179,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         // Both the provided md5 and the computed sha1 must be present
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc = getOriginalDatastreamResource(resultModel, filePid);
+        Resource origResc = getDatastream(resultModel.getResource(filePid.getRepositoryPath()));
         assertTrue(origResc.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
         assertTrue(origResc.hasProperty(CdrDeposit.md5sum, CONTENT1_MD5));
 
@@ -241,14 +243,14 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         // Both the provided md5 and the computed sha1 must be present
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc1 = getOriginalDatastreamResource(resultModel, filePid1);
+        Resource origResc1 = getDatastream(resultModel.getResource(filePid1.getRepositoryPath()));
         assertTrue(origResc1.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
         assertTrue(origResc1.hasProperty(CdrDeposit.md5sum, CONTENT1_MD5));
 
         assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
         assertChecksumEvent(filePid1, DigestAlgorithm.MD5, CONTENT1_MD5);
 
-        Resource origResc2 = getOriginalDatastreamResource(resultModel, filePid2);
+        Resource origResc2 = getDatastream(resultModel.getResource(filePid2.getRepositoryPath()));
         assertTrue(origResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
         assertTrue(origResc2.hasProperty(CdrDeposit.md5sum, CONTENT2_MD5));
 
@@ -257,12 +259,6 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
-    }
-
-    private Resource getOriginalDatastreamResource(Model model, PID filePid) {
-        Resource fileResc = model.getResource(filePid.getRepositoryPath());
-        PID origPid = DatastreamPids.getOriginalFilePid(filePid);
-        return model.getResource(origPid.getRepositoryPath());
     }
 
     @Test
@@ -294,12 +290,12 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         job.run();
 
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc1 = getOriginalDatastreamResource(resultModel, filePid1);
+        Resource origResc1 = getDatastream(resultModel.getResource(filePid1.getRepositoryPath()));
         assertTrue(origResc1.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
 
         assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
 
-        Resource origResc2 = getOriginalDatastreamResource(resultModel, filePid2);
+        Resource origResc2 = getDatastream(resultModel.getResource(filePid2.getRepositoryPath()));
         assertTrue(origResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
         assertTrue(origResc2.hasProperty(CdrDeposit.md5sum, CONTENT2_MD5));
 
@@ -340,11 +336,11 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         job.run();
 
         Model resultModel = job.getReadOnlyModel();
-        Resource origResc1 = getOriginalDatastreamResource(resultModel, filePid1);
+        Resource origResc1 = getDatastream(resultModel.getResource(filePid1.getRepositoryPath()));
         assertTrue(origResc1.hasProperty(CdrDeposit.sha1sum, CONTENT1_SHA1));
         assertChecksumEvent(filePid1, DigestAlgorithm.SHA1, CONTENT1_SHA1);
 
-        Resource origResc2 = getOriginalDatastreamResource(resultModel, filePid2);
+        Resource origResc2 = getDatastream(resultModel.getResource(filePid2.getRepositoryPath()));
         assertTrue(origResc2.hasProperty(CdrDeposit.sha1sum, CONTENT2_SHA1));
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
 
@@ -413,7 +409,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
 
-        addOriginalDatastreamResource(fileResc, stagingLocation);
+        Resource origResc = addDatastream(fileResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, stagingLocation);
 
         parent.add(fileResc);
 
@@ -432,7 +429,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
     }
 
     private void addDigest(Model model, PID filePid, DigestAlgorithm alg, String digest) {
-        Resource origResc = getOriginalDatastreamResource(model, filePid);
+        Resource origResc = addDatastream(model.getResource(filePid.getRepositoryPath()), ORIGINAL_FILE);
         origResc.addLiteral(alg.getDepositProperty(), digest);
     }
 

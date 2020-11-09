@@ -44,7 +44,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -204,14 +204,12 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
      */
     protected void addManifestURI(Model model) {
         File metsFile = getMETSFile();
-        Resource depositResc = model.getResource(depositUUID);
+        Resource depositResc = model.getResource(depositPID.getURI());
 
         log.debug("Adding manifest URI referencing {}", metsFile);
-        PID manifestPid = DatastreamPids.getDepositManifestPid(depositPID, "mets.xml");
-        Resource manifestResc = model.getResource(manifestPid.getRepositoryPath());
+        Resource manifestResc = DepositModelHelpers.addManifest(depositResc, "mets.xml");
         manifestResc.addLiteral(CdrDeposit.stagingLocation, metsFile.toPath().toUri().toString());
-
-        depositResc.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc);
+        manifestResc.addLiteral(CdrDeposit.mimetype, "text/xml");
     }
 
     protected void validateProfile(METSProfile profile) {

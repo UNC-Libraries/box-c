@@ -60,6 +60,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
@@ -327,8 +328,9 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
                 .getChildText("formatName", PREMIS_V3_NS);
         assertEquals("Format not set in premis report", expectedFormat, formatName);
 
+        Resource origResc = DepositModelHelpers.getDatastream(fileResc);
         assertEquals("Mimetype not set in deposit model", expectedMimetype,
-                fileResc.getProperty(CdrDeposit.mimetype).getString());
+                origResc.getProperty(CdrDeposit.mimetype).getString());
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
@@ -339,12 +341,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc);
+        origResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
         if (mimetype != null) {
-            fileResc.addProperty(CdrDeposit.mimetype, mimetype);
+            origResc.addProperty(CdrDeposit.mimetype, mimetype);
         }
         if (md5sum != null) {
-            fileResc.addProperty(CdrDeposit.md5sum, md5sum);
+            origResc.addProperty(CdrDeposit.md5sum, md5sum);
         }
 
         parent.add(fileResc);

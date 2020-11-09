@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.After;
 import org.junit.Before;
@@ -49,10 +48,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -172,49 +169,5 @@ public class AbstractDepositJobTest {
     protected PID makePid(String qualifier) {
         String uuid = UUID.randomUUID().toString();
         return PIDs.get(qualifier + "/" + uuid);
-    }
-
-    /**
-     * @param fileResc
-     * @param stagingLocation
-     * @return newly added resource representing an original file for the file resource
-     */
-    protected Resource addOriginalDatastreamResource(Resource fileResc, String stagingLocation) {
-        Model model = fileResc.getModel();
-        PID filePid = PIDs.get(fileResc.getURI());
-        PID originalPid = DatastreamPids.getOriginalFilePid(filePid);
-        Resource origResc = model.getResource(originalPid.getRepositoryPath());
-        if (stagingLocation != null) {
-            origResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
-        }
-        fileResc.addProperty(CdrDeposit.hasDatastreamOriginal, origResc);
-        return origResc;
-    }
-
-    /**
-     *
-     * @param parentResc
-     * @param stagingLocation
-     * @param name
-     * @return newly added resource representing a manifest file for the deposit resc
-     */
-    protected Resource addManifestDatastreamResource(Resource parentResc, String stagingLocation, String name) {
-        Model model = parentResc.getModel();
-        PID parentPid = PIDs.get(parentResc.getURI());
-        PID originalPid = DatastreamPids.getDepositManifestPid(parentPid, name);
-        Resource origResc = model.getResource(originalPid.getRepositoryPath());
-        if (stagingLocation != null) {
-            origResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
-        }
-        parentResc.addProperty(CdrDeposit.hasDatastreamManifest, origResc);
-        return origResc;
-    }
-
-    /**
-     * @param fileResc
-     * @return the deposit resource representing the original file resource for the given file resource
-     */
-    protected Resource getOriginalDSResource(Resource fileResc) {
-        return fileResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
     }
 }

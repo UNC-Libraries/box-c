@@ -52,7 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -176,8 +176,7 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         Path manifestPath1 = Paths.get(depositDir.getAbsolutePath(), filename);
         details.uri = manifestPath1.toUri();
         writeStringToFile(manifestPath1.toFile(), content, UTF_8);
-        PID manifestPid1 = DatastreamPids.getDepositManifestPid(depositPid, filename);
-        Resource manifestResc1 = model.getResource(manifestPid1.getRepositoryPath());
+        Resource manifestResc1 = DepositModelHelpers.addManifest(depBag, filename);
         manifestResc1.addLiteral(CdrDeposit.storageUri, manifestPath1.toUri().toString());
         if (withSha1) {
             details.sha1 = getDigest(manifestPath1, "SHA1");
@@ -190,7 +189,6 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         if (mimetype != null) {
             manifestResc1.addLiteral(CdrDeposit.mimetype, mimetype);
         }
-        depBag.addProperty(CdrDeposit.hasDatastreamManifest, manifestResc1);
         return details;
     }
 

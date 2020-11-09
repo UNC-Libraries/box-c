@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
 
@@ -32,8 +33,7 @@ import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -133,9 +133,7 @@ public class METSHelper {
                 href = sourceDir.resolve(href).toUri().toString();
             }
             Resource fileObjResc = m.createResource(pid);
-            PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(pid));
-            Resource originalResc = m.getResource(originalPid.getRepositoryPath());
-            fileObjResc.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
+            Resource originalResc = DepositModelHelpers.addDatastream(fileObjResc, ORIGINAL_FILE);
 
             // record object source data file
             // only supporting one USE in fileSec, i.e. source data

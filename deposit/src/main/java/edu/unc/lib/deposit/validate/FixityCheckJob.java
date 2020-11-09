@@ -39,7 +39,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.MultiDigestInputStreamWrapper;
@@ -83,7 +83,7 @@ public class FixityCheckJob extends AbstractDepositJob {
             URI stagedUri = URI.create(stagedPath);
 
             Resource objResc = model.getResource(rescPid.getRepositoryPath());
-            Resource origResc = objResc.getPropertyResourceValue(CdrDeposit.hasDatastreamOriginal);
+            Resource origResc = DepositModelHelpers.getDatastream(objResc);
 
             try (InputStream fStream = Files.newInputStream(Paths.get(stagedUri))) {
                 log.debug("Calculating digests for {}", stagedUri);
