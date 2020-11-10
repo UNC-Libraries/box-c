@@ -259,7 +259,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         try {
             BinaryTransferOutcome outcome = transferSession.transfer(binPid, stagingUri);
             digest = outcome.getSha1();
-            assertProvidedDigestMatches(digestStmt, digest, binPid, stagingUri);
             storageUri = outcome.getDestinationUri();
         } catch (BinaryAlreadyExistsException e) {
             // Make sure a PID collision with an existing repository object isn't happening

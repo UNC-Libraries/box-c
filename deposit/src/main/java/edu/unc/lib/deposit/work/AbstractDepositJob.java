@@ -309,15 +309,6 @@ public abstract class AbstractDepositJob implements Runnable {
         this.premisLoggerFactory = premisLoggerFactory;
     }
 
-    /**
-     * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
-     *
-     * @return
-     */
-    public List<String> getManifestFileURIs() {
-        return depositStatusFactory.getManifestURIs(getDepositUUID());
-    }
-
     protected PID getDestinationPID() {
         Map<String, String> depositStatus = getDepositStatus();
         String destinationPath = depositStatus.get(DepositField.containerId.name());

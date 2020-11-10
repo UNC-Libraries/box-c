@@ -196,13 +196,13 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     public void depositWithWorkContainingFileAndFitsHistory() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        PID filePid = PIDs.get(fileResc.getURI());
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         String historyContent = "History of fitness";
-        PID pid = PIDs.get(workBag.getURI());
-        Path preHistoryPath = depositDirManager.writeHistoryFile(pid, TECHNICAL_METADATA_HISTORY,
+        Path preHistoryPath = depositDirManager.writeHistoryFile(filePid, TECHNICAL_METADATA_HISTORY,
                 IOUtils.toInputStream(historyContent, UTF_8));
-        Resource preHistoryResc = DepositModelHelpers.addDatastream(workBag, TECHNICAL_METADATA_HISTORY);
+        Resource preHistoryResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA_HISTORY);
         preHistoryResc.addLiteral(CdrDeposit.stagingLocation, preHistoryPath.toUri().toString());
 
         job.closeModel();
@@ -214,6 +214,16 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
+
+        Resource historyResc = DepositModelHelpers.getDatastream(postFileResc, TECHNICAL_METADATA_HISTORY);
+        URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
+        Path historyPath = Paths.get(historyUri);
+        assertTrue("History file should exist at storage uri", Files.exists(historyPath));
+        assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(historyPath.endsWith(TECHNICAL_METADATA_HISTORY.getId()));
+        assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
+
+        assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
