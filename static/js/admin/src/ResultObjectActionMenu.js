@@ -165,13 +165,17 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Export actions
-		items["sepexport"] = "";
-		if (metadata.type !== 'File' ) {
-			items["exportCSV"] = {name : 'Export as CSV'};
+		if (!isContentRoot) {
+			items["sepexport"] = "";
+			if (metadata.type !== 'File' ) {
+				items["exportCSV"] = {name : 'Export as CSV'};
+			}
+
+			if ($.inArray('editDescription', metadata.permissions) != -1) {
+				items["exportXML"] = {name : 'Export MODS'};
+			}
 		}
-		if (!isContentRoot && $.inArray('editDescription', metadata.permissions) != -1) {
-			items["exportXML"] = {name : 'Export MODS'};
-		}
+
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
@@ -220,7 +224,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "viewInDCR" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "record/" + metadata.id,
+							url: (function() {
+								var viewInDCRQualifier = isContentRoot ? "" : "record/"
+								return viewInDCRQualifier + metadata.id
+							})(),
 							newWindow : true,
 							application : "access"
 						});
