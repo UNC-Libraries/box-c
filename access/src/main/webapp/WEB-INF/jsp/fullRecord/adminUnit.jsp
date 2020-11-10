@@ -55,8 +55,9 @@
             <p><strong>Subjects:</strong>
                 <c:choose>
                     <c:when test="${not empty briefObject.subject}">
-                        <c:forEach var="subject" items="${briefObject.subject}">
+                        <c:forEach var="subject" items="${briefObject.subject}" varStatus="subjectStatus">
                             <c:out value="${subject}"/>
+                            <c:if test="${not subjectStatus.last}">, </c:if>
                         </c:forEach>
                     </c:when>
                     <c:otherwise>
