@@ -27,6 +27,7 @@ import static edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship.
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder.DEFAULT_CREATED_DATE;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentBuilder.DEFAULT_LAST_MODIFIED;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.DC_DS;
+import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.FITS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.MODS_DS;
 import static edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers.ORIGINAL_DS;
 import static edu.unc.lib.dcr.migration.premis.Premis2Constants.INITIATOR_ROLE;
@@ -79,7 +80,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
@@ -95,6 +95,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
@@ -104,6 +106,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author bbpennel
@@ -450,7 +453,7 @@ public class ContentObjectTransformerTest {
         Resource resc = depModel.getResource(startingPid.getRepositoryPath());
         assertTrue(resc.hasProperty(RDF.type, Cdr.Work));
 
-        Path historyPath = directoryManager.getDescriptionHistoryDir().resolve(startingPid.getId() + ".xml");
+        Path historyPath = directoryManager.getHistoryFile(startingPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         assertTrue("History did not exist", Files.exists(historyPath));
         Document historyDoc = createSAXBuilder().build(historyPath.toFile());
         List<Element> versionEls = historyDoc.getRootElement()
@@ -487,6 +490,7 @@ public class ContentObjectTransformerTest {
         Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "file1")
                 .relsExtModel(child1Model)
                 .withDatastreamVersion(createDataFileVersion())
+                .withDatastreamVersion(makeFitsDatastream(child1Pid, "2011-01-05T20:00:00.000Z", 0))
                 .build();
         serializeFoxml(objectsPath, child1Pid, foxml1);
 
@@ -527,6 +531,16 @@ public class ContentObjectTransformerTest {
         assertTrue(origResc.hasLiteral(CdrDeposit.size, DATA_FILE_SIZE));
         assertTrue(origResc.hasLiteral(CdrDeposit.stagingLocation, dataFilePath.toUri().toString()));
         assertTrue(child1Resc.hasProperty(CdrDeposit.label, "file1"));
+
+        // Make sure old first got added
+        Path historyPath = directoryManager.getHistoryFile(child1Pid, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        assertTrue("History did not exist", Files.exists(historyPath));
+        Document historyDoc = createSAXBuilder().build(historyPath.toFile());
+        List<Element> versionEls = historyDoc.getRootElement()
+            .getChildren(DatastreamHistoryLog.VERSION_TAG, DCR_PACKAGING_NS);
+
+        Element v1El = versionEls.get(0);
+        assertFitsVersionDetails(v1El, "2011-01-05T20:00:00.000Z");
     }
 
     @Test
@@ -1163,6 +1177,30 @@ public class ContentObjectTransformerTest {
                 created, "100", "text/xml", null);
         modsDs.setBodyEl(doc.getRootElement());
         return modsDs;
+    }
+
+    private DatastreamVersion makeFitsDatastream(PID pid, String created, int versionNum) throws Exception {
+        Document doc = new Document();
+        doc.addContent(new Element("premis", JDOMNamespaceUtil.PREMIS_V3_NS).setText("FITS"));
+        DatastreamVersion fitsDs = new DatastreamVersion(null, FITS_DS, FITS_DS + "." + versionNum,
+                created, "100", "text/xml", null);
+        fitsDs.setBodyEl(doc.getRootElement());
+
+        Path dataFilePath = mockDatastreamFile(pid, FITS_DS, 0);
+        OutputStream outStream = newOutputStream(dataFilePath);
+        new XMLOutputter().output(doc, outStream);
+        return fitsDs;
+    }
+
+    private void assertFitsVersionDetails(Element versionEl, String expectedCreated) {
+        String created = versionEl.getAttributeValue(DatastreamHistoryLog.CREATED_ATTR);
+        assertEquals(expectedCreated, created);
+        String contentType = versionEl.getAttributeValue(DatastreamHistoryLog.CONTENT_TYPE_ATTR);
+        assertEquals("text/xml", contentType);
+
+        String content = versionEl.getChild("premis", JDOMNamespaceUtil.PREMIS_V3_NS)
+                .getText();
+        assertEquals("FITS", content);
     }
 
     private Path serializeFoxml(Path destDir, PID pid, Document doc) throws IOException {

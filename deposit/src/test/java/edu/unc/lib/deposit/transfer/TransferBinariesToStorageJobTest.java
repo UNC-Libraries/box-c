@@ -16,6 +16,8 @@
 package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE_HISTORY;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA_HISTORY;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
@@ -71,6 +73,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
@@ -104,6 +107,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private StorageLocationTestHelper locTestHelper;
 
+    private DepositDirectoryManager depositDirManager;
+
     private Model depositModel;
     private Bag depBag;
 
@@ -128,7 +133,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         storageLoc = locationManager.getStorageLocationById(LOC1_ID);
 
         sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();
-        candidatePath = Files.createDirectories(sourcePath.resolve(depositUUID));
+        depositDirManager = new DepositDirectoryManager(depositPid, depositsDirectory.toPath(), true);
+        candidatePath = depositDirManager.getDepositDir();
         sourceManager = new IngestSourceManagerImpl();
         sourceManager.setConfigPath(createConfigFile(
                 createFilesystemConfig(SOURCE_ID, "Source", sourcePath, asList("*"), false),
@@ -171,6 +177,33 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
         workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+        assertFitsFileTransferred(postFileResc);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test
+    public void depositWithWorkContainingFileAndFitsHistory() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        String historyContent = "History of fitness";
+        PID pid = PIDs.get(workBag.getURI());
+        Path preHistoryPath = depositDirManager.writeHistoryFile(pid, TECHNICAL_METADATA_HISTORY,
+                IOUtils.toInputStream(historyContent, UTF_8));
+        Resource preHistoryResc = DepositModelHelpers.addDatastream(workBag, TECHNICAL_METADATA_HISTORY);
+        preHistoryResc.addLiteral(CdrDeposit.stagingLocation, preHistoryPath.toUri().toString());
 
         job.closeModel();
 
@@ -246,19 +279,22 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     @Test
     public void depositWithFolderWithModsHistory() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
 
         String historyContent = "This is pretty much history";
         PID pid = PIDs.get(workBag.getURI());
-        File historyFile = job.getModsHistoryPath(pid).toFile();
-        FileUtils.writeStringToFile(historyFile, historyContent, UTF_8);
+        Path preHistoryPath = depositDirManager.writeHistoryFile(pid, MD_DESCRIPTIVE_HISTORY,
+                IOUtils.toInputStream(historyContent, UTF_8));
+        Resource preHistoryResc = DepositModelHelpers.addDatastream(workBag, MD_DESCRIPTIVE_HISTORY);
+        preHistoryResc.addLiteral(CdrDeposit.stagingLocation, preHistoryPath.toUri().toString());
+
+        job.closeModel();
 
         job.run();
 
         Model model = job.getReadOnlyModel();
         Resource postWorkResc = model.getResource(workBag.getURI());
 
-        Resource historyResc = DepositModelHelpers.getDatastream(postWorkResc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
+        Resource historyResc = DepositModelHelpers.getDatastream(postWorkResc, MD_DESCRIPTIVE_HISTORY);
         URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));

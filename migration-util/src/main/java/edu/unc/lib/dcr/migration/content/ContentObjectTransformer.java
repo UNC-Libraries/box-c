@@ -79,9 +79,9 @@ import org.jdom2.JDOMException;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dcr.migration.deposit.DepositDirectoryManager;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
+import edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
 import edu.unc.lib.dcr.migration.premis.ContentPremisToRdfTransformer;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -94,6 +94,8 @@ import edu.unc.lib.dl.fedora.ConflictException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.persist.services.versioning.DatastreamHistoryLog;
@@ -105,6 +107,7 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import edu.unc.lib.dl.xml.SecureXMLFactory;
 
 /**
  * Action to transform a content object from bxc3 into a depositable structure
@@ -196,7 +199,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         ACLTransformationHelpers.transformPatronAccess(bxc3Resc, depResc, parentPid);
 
         // copy most recent MODS to deposit directory
-        extractMods();
+        extractMods(depResc);
 
         // Push triples for this object to the shared model for this deposit
         modelManager.addTriples(options.getDepositPid(), depositModel, newPid, parentPid);
@@ -370,6 +373,27 @@ public class ContentObjectTransformer extends RecursiveAction {
         if (isNewWork) {
             addMigrationEvent(getPremisLogger(newPid));
         }
+
+        addFitsHistory(filePid, fileResc);
+    }
+
+    private void addFitsHistory(PID filePid, Resource fileResc) {
+        List<DatastreamVersion> fitsVersions = listDatastreamVersions(foxml, FoxmlDocumentHelpers.FITS_DS);
+        if (fitsVersions != null && fitsVersions.size() > 0) {
+            DatastreamVersion lastV = fitsVersions.get(fitsVersions.size() - 1);
+            Path fitsPath = pathIndex.getPath(originalPid, PathIndex.FITS_TYPE);
+            Document fitsDoc;
+            try {
+                fitsDoc = SecureXMLFactory.createSAXBuilder().build(fitsPath.toFile());
+            } catch (JDOMException | IOException e) {
+                throw new RepositoryException("Failed to create deposit record for " + originalPid, e);
+            }
+            PID fitsPid = DatastreamPids.getTechnicalMetadataPid(filePid);
+            DatastreamHistoryLog dsHistory = new DatastreamHistoryLog(fitsPid);
+
+            addHistoryVersion(dsHistory, lastV, fitsDoc.detachRootElement());
+            writeHistoryFile(fitsPid, fileResc, DatastreamType.TECHNICAL_METADATA_HISTORY, dsHistory);
+        }
     }
 
     private void transformPremis(PID bxc3Pid, PID bxc5Pid) {
@@ -491,7 +515,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         return contained;
     }
 
-    private void extractMods() {
+    private void extractMods(Resource depResc) {
         log.info("Checking for MODS {}", originalPid);
         List<DatastreamVersion> modsVersions = listDatastreamVersions(foxml, MODS_DS);
         if (modsVersions == null || modsVersions.isEmpty()) {
@@ -510,26 +534,35 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // If more than one version, then put all versions but the last one in history
         if (modsVersions.size() > 1) {
-            DatastreamHistoryLog modsHistory = new DatastreamHistoryLog(modsPid);
+            DatastreamHistoryLog dsHistory = new DatastreamHistoryLog(modsPid);
             for (int i = 0; i < modsVersions.size() - 1; i++) {
-                DatastreamVersion modsV = modsVersions.get(i);
-
-                try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                    new XMLOutputter().output(modsV.getBodyEl(), bos);
-                    InputStream modsInputStream = new ByteArrayInputStream(bos.toByteArray());
-                    Date created = DateTimeUtil.parseUTCToDate(modsV.getCreated());
-                    modsHistory.addVersion(modsInputStream, modsV.getMimeType(), created);
-                } catch (IOException e) {
-                    throw new RepositoryException("Failed to add MODS version from " + originalPid, e);
-                }
+                DatastreamVersion dsVersion = modsVersions.get(i);
+                addHistoryVersion(dsHistory, dsVersion, dsVersion.getBodyEl());
             }
+            writeHistoryFile(modsPid, depResc, DatastreamType.MD_DESCRIPTIVE_HISTORY, dsHistory);
+        }
+    }
 
-            try (InputStream historyStream = modsHistory.toInputStream()) {
-                Path historyPath = directoryManager.writeModsHistory(newPid, modsHistory.toInputStream());
-                log.debug("Wrote mods history to {} for {}", historyPath, newPid);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to write MODS history for " + originalPid, e);
-            }
+    private void addHistoryVersion(DatastreamHistoryLog dsHistory, DatastreamVersion versionBody, Element bodyEl) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            new XMLOutputter().output(bodyEl, bos);
+            InputStream bodyInputStream = new ByteArrayInputStream(bos.toByteArray());
+            Date created = DateTimeUtil.parseUTCToDate(versionBody.getCreated());
+            dsHistory.addVersion(bodyInputStream, versionBody.getMimeType(), created);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to add history version", e);
+        }
+    }
+
+    private void writeHistoryFile(PID dsPid, Resource parentResc, DatastreamType type, DatastreamHistoryLog dsHistory) {
+        try (InputStream historyStream = dsHistory.toInputStream()) {
+            Path historyPath = directoryManager.writeHistoryFile(newPid, type, dsHistory.toInputStream());
+            Resource historyResc = DepositModelHelpers.addDatastream(parentResc, type);
+            historyResc.addProperty(CdrDeposit.stagingLocation, historyPath.toUri().toString());
+
+            log.debug("Wrote history to {} for {}", historyPath, newPid);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to write history for " + originalPid, e);
         }
     }
 

@@ -100,6 +100,9 @@ public class CdrDeposit {
     public static final Property hasDatastreamFits = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamFits" );
 
+    public static final Property hasDatastreamFitsHistory = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamFitsHistory" );
+
     /** Link to description history binary resource */
     public static final Property hasDatastreamDescriptiveHistory = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamDescriptiveHistory" );

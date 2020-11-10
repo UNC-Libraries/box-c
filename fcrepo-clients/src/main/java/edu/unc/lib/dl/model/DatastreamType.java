@@ -40,6 +40,7 @@ public enum DatastreamType {
     MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL, viewHidden),
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL, viewOriginal),
     TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL, viewHidden),
+    TECHNICAL_METADATA_HISTORY("techmd_fits_history", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL, viewHidden),
     THUMBNAIL_SMALL("thumbnail_small", "image/png", "png", null, EXTERNAL, viewMetadata),
     THUMBNAIL_LARGE("thumbnail_large", "image/png", "png", null, EXTERNAL, viewMetadata);
 

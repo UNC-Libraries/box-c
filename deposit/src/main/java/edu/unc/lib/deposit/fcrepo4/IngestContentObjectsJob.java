@@ -435,9 +435,28 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Add the FITS report for this file
+        addFitsHistory(fileObj, childResc);
         addFitsReport(fileObj, childResc);
 
         return fileObj;
+    }
+
+    private void addFitsHistory(FileObject fileObj, Resource dResc) {
+        Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
+            return;
+        }
+
+        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObj.getPid());
+        PID dsHistoryPid = getDatastreamHistoryPid(fitsPid);
+        URI storageUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
+        repoObjFactory.createOrUpdateBinary(dsHistoryPid,
+                storageUri,
+                DatastreamType.TECHNICAL_METADATA_HISTORY.getDefaultFilename(),
+                DatastreamType.TECHNICAL_METADATA_HISTORY.getMimetype(),
+                getPropertyValue(historyResc, CdrDeposit.sha1sum),
+                getPropertyValue(historyResc, CdrDeposit.md5sum),
+                null);
     }
 
     private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
@@ -827,13 +846,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         PID modsPid = DatastreamPids.getMdDescriptivePid(obj.getPid());
         PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
         URI storageUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
-        Statement sha1Stmt = historyResc.getProperty(CdrDeposit.sha1sum);
         repoObjFactory.createOrUpdateBinary(dsHistoryPid,
                 storageUri,
-                null,
-                "text/xml",
-                sha1Stmt != null ? sha1Stmt.getString() : null,
-                null,
+                DatastreamType.MD_DESCRIPTIVE_HISTORY.getDefaultFilename(),
+                DatastreamType.MD_DESCRIPTIVE_HISTORY.getMimetype(),
+                getPropertyValue(historyResc, CdrDeposit.sha1sum),
+                getPropertyValue(historyResc, CdrDeposit.md5sum),
                 null);
     }
 

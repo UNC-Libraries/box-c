@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.dl.rdf.CdrDeposit.hasDatastreamDescriptiveHistory;
 import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -50,6 +51,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
@@ -134,6 +136,7 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         if (rescTypes.contains(Cdr.FileObject)) {
             transferOriginalFile(objPid, resc, transferSession);
             transferFitsExtract(objPid, resc, transferSession);
+            transferFitsHistoryFile(objPid, resc, transferSession);
         } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
             transferDepositManifests(objPid, resc, transferSession);
         }
@@ -169,21 +172,32 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     }
 
     private void transferModsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamDescriptiveHistory)) {
+        if (datastreamNotTransferred(resc, hasDatastreamDescriptiveHistory)) {
             PID modsPid = DatastreamPids.getMdDescriptivePid(objPid);
             PID historyPid = DatastreamPids.getDatastreamHistoryPid(modsPid);
 
-            Path stagingPath = getModsHistoryPath(objPid);
-            if (Files.exists(stagingPath)) {
-                transferFile(historyPid, stagingPath.toUri(), transferSession, resc,
-                        CdrDeposit.hasDatastreamDescriptiveHistory);
-                log.debug("Finished transferring MODS history file {}", modsPid.getQualifiedId());
-            }
+            Resource historyResc = DepositModelHelpers.getDatastream(resc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
+
+            URI stagingUri = URI.create(historyResc.getProperty(CdrDeposit.stagingLocation).getString());
+            transferFile(historyPid, stagingUri, transferSession, resc, hasDatastreamDescriptiveHistory);
+            log.debug("Finished transferring MODS history file {}", modsPid.getQualifiedId());
+        }
+    }
+
+    private void transferFitsHistoryFile(PID objPid, Resource resc, BinaryTransferSession transferSession) {
+        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamFitsHistory)) {
+            Resource historyResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA_HISTORY);
+            PID fitsPid = DatastreamPids.getTechnicalMetadataPid(objPid);
+            PID historyPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
+
+            URI stagingUri = URI.create(historyResc.getProperty(CdrDeposit.stagingLocation).getString());
+            transferFile(historyPid, stagingUri, transferSession, resc, CdrDeposit.hasDatastreamFitsHistory);
+            log.debug("Finished transferring FITS history file {}", fitsPid.getQualifiedId());
         }
     }
 
     private void transferFitsExtract(PID objPid, Resource resc, BinaryTransferSession transferSession) {
-        if (datastreamNotTransferred(resc, CdrDeposit.hasDatastreamFits)) {
+        if (datastreamNotPresentOrTransferred(resc, CdrDeposit.hasDatastreamFits)) {
             PID fitsPid = getTechnicalMetadataPid(objPid);
 
             Path fitsPath = getTechMdPath(objPid, false);
@@ -197,8 +211,14 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         }
     }
 
-    private boolean datastreamNotTransferred(Resource resc, Property datastreamProp) {
+    private boolean datastreamNotPresentOrTransferred(Resource resc, Property datastreamProp) {
         return !resc.hasProperty(datastreamProp) ||
+               !resc.getPropertyResourceValue(datastreamProp)
+                        .hasProperty(CdrDeposit.storageUri);
+    }
+
+    private boolean datastreamNotTransferred(Resource resc, Property datastreamProp) {
+        return resc.hasProperty(datastreamProp) &&
                !resc.getPropertyResourceValue(datastreamProp)
                         .hasProperty(CdrDeposit.storageUri);
     }
