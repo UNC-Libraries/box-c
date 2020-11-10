@@ -54,11 +54,16 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
     @Override
     public void runJob() {
         validateMETS();
-        // Store a reference to the manifest file
-        addManifestURI();
+
         validateProfile(METSProfile.CDR_SIMPLE);
 
         interruptJobIfStopped();
+
+        Model depModel = getReadOnlyModel();
+        Model model = ModelFactory.createDefaultModel().add(depModel);
+
+        // Store a reference to the manifest file
+        addManifestURI(model);
 
         Document mets = loadMETS();
         // assign any missing PIDs
@@ -70,8 +75,6 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
         Path sourceDir = Paths.get(sourceUri).getParent();
 
-        Model depModel = getReadOnlyModel();
-        Model model = ModelFactory.createDefaultModel().add(depModel);
         CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
         LOG.info("Extractor initialized");
         extractor.addArrangement(model);

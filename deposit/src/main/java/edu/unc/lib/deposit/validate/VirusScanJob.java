@@ -32,6 +32,7 @@ import com.philvarner.clamavj.ScanResult;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -103,7 +104,9 @@ public class VirusScanJob extends AbstractDepositJob {
                             ((result.getException() == null) ? result.getResult() :
                                     result.getException().getLocalizedMessage()));
                 case PASSED:
-                    PremisLogger premisLogger = getPremisLogger(href.getKey());
+                    PID binPid = href.getKey();
+                    PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
+                    PremisLogger premisLogger = getPremisLogger(parentPid);
                     PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
                     premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))

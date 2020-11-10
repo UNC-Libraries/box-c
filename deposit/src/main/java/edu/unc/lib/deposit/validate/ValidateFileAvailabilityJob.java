@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.validate;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -60,8 +59,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
         Model model = getReadOnlyModel();
         // Construct a map of objects to file paths to verify
-        List<Entry<PID, String>> hrefs = new ArrayList<>();
-        hrefs.addAll(getPropertyPairList(model, CdrDeposit.stagingLocation));
+        List<Entry<PID, String>> hrefs = getPropertyPairList(model, CdrDeposit.stagingLocation);
 
         setTotalClicks(hrefs.size());
 

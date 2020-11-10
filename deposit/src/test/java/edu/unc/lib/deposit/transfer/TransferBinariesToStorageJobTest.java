@@ -16,6 +16,8 @@
 package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE_HISTORY;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA_HISTORY;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
@@ -24,6 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
@@ -60,13 +63,18 @@ import org.slf4j.Logger;
 import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
+import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
@@ -99,6 +107,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private StorageLocationTestHelper locTestHelper;
 
+    private DepositDirectoryManager depositDirManager;
+
     private Model depositModel;
     private Bag depBag;
 
@@ -123,7 +133,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         storageLoc = locationManager.getStorageLocationById(LOC1_ID);
 
         sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();
-        candidatePath = Files.createDirectories(sourcePath.resolve(depositUUID));
+        depositDirManager = new DepositDirectoryManager(depositPid, depositsDirectory.toPath(), true);
+        candidatePath = depositDirManager.getDepositDir();
         sourceManager = new IngestSourceManagerImpl();
         sourceManager.setConfigPath(createConfigFile(
                 createFilesystemConfig(SOURCE_ID, "Source", sourcePath, asList("*"), false),
@@ -181,6 +192,57 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
     }
 
+    @Test
+    public void depositWithWorkContainingFileAndFitsHistory() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        PID filePid = PIDs.get(fileResc.getURI());
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        String historyContent = "History of fitness";
+        Path preHistoryPath = depositDirManager.writeHistoryFile(filePid, TECHNICAL_METADATA_HISTORY,
+                IOUtils.toInputStream(historyContent, UTF_8));
+        Resource preHistoryResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA_HISTORY);
+        preHistoryResc.addLiteral(CdrDeposit.stagingLocation, preHistoryPath.toUri().toString());
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+        assertFitsFileTransferred(postFileResc);
+
+        Resource historyResc = DepositModelHelpers.getDatastream(postFileResc, TECHNICAL_METADATA_HISTORY);
+        URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
+        Path historyPath = Paths.get(historyUri);
+        assertTrue("History file should exist at storage uri", Files.exists(historyPath));
+        assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(historyPath.endsWith(TECHNICAL_METADATA_HISTORY.getId()));
+        assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
+
+        assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test(expected = InvalidChecksumException.class)
+    public void depositFileWithIncorrectDigest() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(fileResc.getURI()));
+        Resource originalResc = depositModel.getResource(originalPid.getRepositoryPath());
+        originalResc.addLiteral(CdrDeposit.sha1sum, "whoasowrong");
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        job.closeModel();
+
+        job.run();
+    }
+
     // Ensure that interruptions come through as JobInterruptedExceptions
     @Test
     public void interruptionTest() throws Exception {
@@ -227,22 +289,28 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     @Test
     public void depositWithFolderWithModsHistory() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
 
         String historyContent = "This is pretty much history";
         PID pid = PIDs.get(workBag.getURI());
-        File historyFile = job.getModsHistoryPath(pid).toFile();
-        FileUtils.writeStringToFile(historyFile, historyContent, UTF_8);
+        Path preHistoryPath = depositDirManager.writeHistoryFile(pid, MD_DESCRIPTIVE_HISTORY,
+                IOUtils.toInputStream(historyContent, UTF_8));
+        Resource preHistoryResc = DepositModelHelpers.addDatastream(workBag, MD_DESCRIPTIVE_HISTORY);
+        preHistoryResc.addLiteral(CdrDeposit.stagingLocation, preHistoryPath.toUri().toString());
+
+        job.closeModel();
 
         job.run();
 
         Model model = job.getReadOnlyModel();
         Resource postWorkResc = model.getResource(workBag.getURI());
 
-        URI historyUri = URI.create(postWorkResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
+        Resource historyResc = DepositModelHelpers.getDatastream(postWorkResc, MD_DESCRIPTIVE_HISTORY);
+        URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));
         assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(historyPath.endsWith(DatastreamType.MD_DESCRIPTIVE_HISTORY.getId()));
+        assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
 
@@ -253,9 +321,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     public void depositWithMultipleFilesResumed() throws Exception {
         String manifest1Name = "manifest1.txt";
         File manifestFile1 = new File(depositDir, manifest1Name);
-
-        when(depositStatusFactory.getManifestURIs(depositUUID)).thenReturn(asList(
-                manifestFile1.toPath().toUri().toString()));
+        FileUtils.writeStringToFile(manifestFile1, FILE_CONTENT1, "UTF-8");
+        addManifest(manifest1Name, manifestFile1);
 
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc1 = addFileObject(workBag, FILE_CONTENT1, true);
@@ -285,6 +352,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertOriginalFileTransferred(postFileResc2, FILE_CONTENT2);
         assertFitsFileTransferred(postFileResc2);
 
+        List<URI> manifestStorageUris = listManifestStorageUris(model.getBag(depBag));
+        assertManifestTranferred(manifestStorageUris, manifest1Name);
+
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(4));
         verify(jobStatusFactory, times(4)).incrCompletion(eq(jobUUID), eq(1));
     }
@@ -298,9 +368,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         File manifestFile2 = new File(depositDir, manifest2Name);
         FileUtils.writeStringToFile(manifestFile2, FILE_CONTENT2, "UTF-8");
 
-        when(depositStatusFactory.getManifestURIs(depositUUID)).thenReturn(asList(
-                manifestFile1.toPath().toUri().toString(),
-                manifestFile2.toPath().toUri().toString()));
+        addManifest(manifest1Name, manifestFile1);
+        addManifest(manifest2Name, manifestFile2);
 
         addContainerObject(depBag, Cdr.Folder);
         job.closeModel();
@@ -310,18 +379,29 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Model model = job.getReadOnlyModel();
         Bag postDepBag = model.getBag(depBag);
 
-        List<URI> manifestStorageUris = new ArrayList<>();
-        StmtIterator it = postDepBag.listProperties(CdrDeposit.storageUri);
-        while (it.hasNext()) {
-            Statement stmt = it.next();
-            manifestStorageUris.add(URI.create(stmt.getString()));
-        }
+        List<URI> manifestStorageUris = listManifestStorageUris(postDepBag);
 
         assertManifestTranferred(manifestStorageUris, manifest1Name);
         assertManifestTranferred(manifestStorageUris, manifest2Name);
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    private void addManifest(String manifestName, File manifestFile) {
+        Resource manifestResc = DepositModelHelpers.addManifest(depBag, manifestName);
+        manifestResc.addLiteral(CdrDeposit.stagingLocation, manifestFile.toPath().toUri().toString());
+    }
+
+    private List<URI> listManifestStorageUris(Resource depositResc) {
+        List<URI> manifestStorageUris = new ArrayList<>();
+        StmtIterator it = depositResc.listProperties(CdrDeposit.hasDatastreamManifest);
+        while (it.hasNext()) {
+            Statement stmt = it.next();
+            Resource manifestResc = stmt.getResource();
+            manifestStorageUris.add(URI.create(manifestResc.getProperty(CdrDeposit.storageUri).getString()));
+        }
+        return manifestStorageUris;
     }
 
     @Test
@@ -334,7 +414,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource fileResc2 = addFileObject(workBag2, FILE_CONTENT2, true);
         workBag2.addProperty(Cdr.primaryObject, fileResc2);
 
-        String filePath2 = fileResc2.getProperty(CdrDeposit.stagingLocation).getString();
+        Resource originalResc2 = DepositModelHelpers.getDatastream(fileResc2);
+        String filePath2 = originalResc2.getProperty(CdrDeposit.stagingLocation).getString();
         Path flappingPath = Paths.get(URI.create(filePath2));
         Files.delete(flappingPath);
 
@@ -405,12 +486,13 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     public void fileAlreadyTransferredButNotRecorded() throws Exception {
         Bag workBag = addContainerObject(depBag, Cdr.Work);
         Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        Resource originalResc = DepositModelHelpers.getDatastream(fileResc);
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         // Put the file into the storage location beforehand
         try (BinaryTransferSession session = transferService.getSession(storageLoc)) {
             PID originalPid = getOriginalFilePid(PIDs.get(fileResc.getURI()));
-            URI fileUri = URI.create(fileResc.getProperty(CdrDeposit.stagingLocation).getString());
+            URI fileUri = URI.create(originalResc.getProperty(CdrDeposit.stagingLocation).getString());
             session.transfer(originalPid, fileUri);
         }
 
@@ -421,7 +503,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Model model = job.getReadOnlyModel();
         Resource postFileResc = model.getResource(fileResc.getURI());
 
-        assertFileTransferred(postFileResc, FILE_CONTENT1);
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
     }
 
     @Test
@@ -444,7 +526,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource postFileResc = model.getResource(fileResc.getURI());
 
         // Expect the full file to be present after running
-        assertFileTransferred(postFileResc, FILE_CONTENT1);
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {
@@ -464,22 +546,22 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertOriginalFileTransferred(Resource resc, String expectedContent) throws Exception {
-        assertFileTransferred(resc, expectedContent);
-    }
-
-    private void assertFileTransferred(Resource resc, String expectedContent) throws Exception {
-        URI storageUri = URI.create(resc.getProperty(CdrDeposit.storageUri).getString());
+        Resource dsResc = DepositModelHelpers.getDatastream(resc);
+        URI storageUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path storagePath = Paths.get(storageUri);
         assertTrue("Binary should exist at storage uri", Files.exists(storagePath));
         assertEquals(expectedContent, FileUtils.readFileToString(storagePath.toFile(), "UTF-8"));
         assertTrue("Transfered file must be in the expected storage location", storageLoc.isValidUri(storageUri));
+        assertNotNull(dsResc.getProperty(CdrDeposit.sha1sum));
     }
 
     private void assertFitsFileTransferred(Resource resc) throws Exception {
-        URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
+        Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
+        URI fitsUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path fitsPath = Paths.get(fitsUri);
         assertTrue("FITS file should exist at storage uri", Files.exists(fitsPath));
         assertTrue("Transfered FITS must be in the expected storage location", storageLoc.isValidUri(fitsUri));
+        assertNotNull(dsResc.getProperty(CdrDeposit.sha1sum));
     }
 
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
@@ -487,9 +569,12 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource objResc = depositModel.getResource(objPid.getRepositoryPath());
         objResc.addProperty(RDF.type, Cdr.FileObject);
 
+        PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
+        Resource originalResc = depositModel.getResource(originalPid.getRepositoryPath());
+        objResc.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
         File originalFile = candidatePath.resolve(objPid.getId() + ".txt").toFile();
         FileUtils.writeStringToFile(originalFile, content, "UTF-8");
-        objResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
+        originalResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
 
         if (withFits) {
             Files.createFile(job.getTechMdPath(objPid, true));

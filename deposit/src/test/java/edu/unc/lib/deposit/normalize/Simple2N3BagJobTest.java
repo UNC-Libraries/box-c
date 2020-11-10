@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -75,6 +77,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         status.put(DepositField.depositSlug.name(), name);
         URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "data", "data_file.xml").toUri();
         status.put(DepositField.sourceUri.name(), stagingUri.toString());
+        status.put(DepositField.fileMimetype.name(), "text/xml");
 
         job.run();
 
@@ -83,8 +86,13 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         Resource mainResource = depositBag.iterator().next().asResource();
 
         assertEquals("Label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
-
         assertTrue("Must have FileObject type", mainResource.hasProperty(RDF.type, Cdr.FileObject));
+
+        Resource originalResc = DepositModelHelpers.getDatastream(mainResource);
+        assertEquals(stagingUri.toString(), originalResc.getProperty(CdrDeposit.stagingLocation).getString());
+        assertNotNull(originalResc.getProperty(CdrDeposit.size).getLong());
+        assertEquals("text/xml", originalResc.getProperty(CdrDeposit.mimetype).getString());
+
     }
 
     @Test(expected = JobFailedException.class)

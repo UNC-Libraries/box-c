@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
-import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +49,9 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -217,7 +218,10 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                     resc.getURI(), parentResc.getURI());
         }
 
-        if (!resc.hasProperty(stagingLocation)) {
+        Resource origResc = DepositModelHelpers.getDatastream(resc);
+        if (origResc == null) {
+            failJob(null, "No original datastream for file object {0}", resc.getURI());
+        } else if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
             failJob(null, "No staging location provided for file ({0})", resc.getURI());
         }
     }

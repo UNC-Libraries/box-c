@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
-import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
@@ -67,6 +66,7 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -128,10 +128,11 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 Document premisDoc = generatePremisReport(objPid, fitsDoc);
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
-                Resource objResc = model.getResource(objPid.getRepositoryPath());
+                PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
+                Resource originalResc = model.getResource(originalPid.getRepositoryPath());
 
                 // Record the format info for this file
-                addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
+                addFileIdentification(originalResc, fitsDoc, premisObjCharsEl);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -218,7 +219,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      * @return
      */
     private List<Entry<PID, String>> generateStagingLocationsToProcess(Model model) {
-        List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
+        List<Entry<PID, String>> stagingList = getOriginalStagingPairList(model);
 
         // If the deposit was not resumed, then return list of all staging locations
         boolean resumed = getDepositStatusFactory().isResumedDeposit(getDepositUUID());

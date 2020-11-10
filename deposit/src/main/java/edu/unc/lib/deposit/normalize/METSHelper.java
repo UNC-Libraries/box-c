@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
 
@@ -32,6 +33,7 @@ import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -130,34 +132,35 @@ public class METSHelper {
             if (!href.contains(":")) {
                 href = sourceDir.resolve(href).toUri().toString();
             }
-            Resource object = m.createResource(pid);
+            Resource fileObjResc = m.createResource(pid);
+            Resource originalResc = DepositModelHelpers.addDatastream(fileObjResc, ORIGINAL_FILE);
 
             // record object source data file
             // only supporting one USE in fileSec, i.e. source data
 
             // record file location
-            m.add(object, CdrDeposit.stagingLocation, href);
+            m.add(originalResc, CdrDeposit.stagingLocation, href);
 
-            m.add(object, RDF.type, Cdr.FileObject);
+            m.add(fileObjResc, RDF.type, Cdr.FileObject);
 
             // record mimetype
             if (fileEl.getAttributeValue("MIMETYPE") != null) {
-                m.add(object, CdrDeposit.mimetype, fileEl.getAttributeValue("MIMETYPE"));
+                m.add(originalResc, CdrDeposit.mimetype, fileEl.getAttributeValue("MIMETYPE"));
             }
 
             // record File checksum if supplied, we only support MD5 in Simple profile
             if (fileEl.getAttributeValue("CHECKSUM") != null) {
-                m.add(object, CdrDeposit.md5sum, fileEl.getAttributeValue("CHECKSUM"));
+                m.add(originalResc, CdrDeposit.md5sum, fileEl.getAttributeValue("CHECKSUM"));
             }
 
             // record SIZE (bytes/octets)
             if (fileEl.getAttributeValue("SIZE") != null) {
-                m.add(object, CdrDeposit.size, fileEl.getAttributeValue("SIZE"));
+                m.add(originalResc, CdrDeposit.size, fileEl.getAttributeValue("SIZE"));
             }
 
             // record CREATED (iso8601)
             if (fileEl.getAttributeValue("CREATED") != null) {
-                m.add(object, CdrDeposit.createTime, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
+                m.add(fileObjResc, CdrDeposit.createTime, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
             }
 
         }

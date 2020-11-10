@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dcr.migration.deposit;
+package edu.unc.lib.dl.persist.services.deposit;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_HISTORY_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.EVENTS_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.HISTORY_DIR;
 import static java.nio.file.Files.newOutputStream;
 
 import java.io.IOException;
@@ -37,6 +37,7 @@ import org.jdom2.output.XMLOutputter;
 
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 
 /**
  * Manages a deposit directory for a single deposit
@@ -47,7 +48,7 @@ public class DepositDirectoryManager {
 
     private Path depositDir;
     private Path descriptionDir;
-    private Path descriptionHistoryDir;
+    private Path historyDir;
     private Path eventsDir;
     private PID depositPid;
     private boolean hashNesting;
@@ -56,7 +57,7 @@ public class DepositDirectoryManager {
         this.depositPid = depositPid;
         this.depositDir = depositBaseDir.resolve(this.depositPid.getId());
         this.descriptionDir = depositDir.resolve(DESCRIPTION_DIR);
-        this.descriptionHistoryDir = depositDir.resolve(DESCRIPTION_HISTORY_DIR);
+        this.historyDir = depositDir.resolve(HISTORY_DIR);
         this.eventsDir = depositDir.resolve(EVENTS_DIR);
         this.hashNesting = hashNesting;
 
@@ -67,7 +68,7 @@ public class DepositDirectoryManager {
         try {
             Files.createDirectories(depositDir);
             Files.createDirectory(descriptionDir);
-            Files.createDirectory(descriptionHistoryDir);
+            Files.createDirectory(historyDir);
             Files.createDirectory(eventsDir);
         } catch (IOException e) {
             throw new RepositoryException("Failed to create deposit directory: " + depositDir, e);
@@ -101,16 +102,20 @@ public class DepositDirectoryManager {
         }
     }
 
-    public Path writeModsHistory(PID pid, InputStream historyStream) {
-        Path modsHistoryPath = makeMetadataFilePath(descriptionHistoryDir, pid, ".xml");
+    public Path writeHistoryFile(PID pid, DatastreamType type, InputStream historyStream) {
+        Path historyPath = makeMetadataFilePath(historyDir, pid, type.getId() + ".xml");
 
         try {
-            Files.copy(historyStream, modsHistoryPath);
+            Files.copy(historyStream, historyPath);
         } catch (IOException e) {
-            throw new RepositoryException("Unable to write MODS history for " + pid.getId(), e);
+            throw new RepositoryException("Unable to write history for " + pid.getId(), e);
         }
 
-        return modsHistoryPath;
+        return historyPath;
+    }
+
+    public Path getHistoryFile(PID pid, DatastreamType type) {
+        return makeMetadataFilePath(historyDir, pid, type.getId() + ".xml");
     }
 
     /**
@@ -145,8 +150,8 @@ public class DepositDirectoryManager {
         return descriptionDir;
     }
 
-    public Path getDescriptionHistoryDir() {
-        return descriptionHistoryDir;
+    public Path getHistoryDir() {
+        return historyDir;
     }
 
     public Path getEventsDir() {

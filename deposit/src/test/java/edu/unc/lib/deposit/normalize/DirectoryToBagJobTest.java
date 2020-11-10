@@ -41,6 +41,7 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.deposit.work.JobInterruptedException;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -127,7 +128,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         Resource file = getChildByLabel(workBag, "lorem.txt");
         assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
-        String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
+        Resource originalResc = DepositModelHelpers.getDatastream(file);
+        String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
     }
 

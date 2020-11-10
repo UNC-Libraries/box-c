@@ -22,7 +22,7 @@ package edu.unc.lib.dl.util;
  */
 public class DepositConstants {
     public static final String DESCRIPTION_DIR = "description";
-    public static final String DESCRIPTION_HISTORY_DIR = "description_history";
+    public static final String HISTORY_DIR = "history";
     public static final String JENA_TDB_DIR = "jena-tdb-model";
     public static final String EVENTS_FILE = "events.xml";
     public static final String EVENTS_DIR = "events";

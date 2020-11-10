@@ -20,7 +20,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -64,21 +63,6 @@ public class DepositStatusFactoryIT {
     @After
     public void cleanup() {
         jedisResource.close();
-    }
-
-    @Test
-    public void testAddThenGetManifest() {
-        final String uuid = UUID.randomUUID().toString();
-        final String filename1 = "bagit.txt";
-        final String filename2 = "manifest-md5.txt";
-
-        factory.addManifest(uuid, filename1);
-        factory.addManifest(uuid,  filename2);
-        List<String> filenames = factory.getManifestURIs(uuid);
-
-        assertEquals(filenames.size(), 2);
-        assertEquals(filename1, filenames.get(0));
-        assertEquals(filename2, filenames.get(1));
     }
 
     @Test

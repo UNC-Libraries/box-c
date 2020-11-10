@@ -89,7 +89,9 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -376,21 +378,27 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
+        Resource originalResc = DepositModelHelpers.getDatastream(childResc);
 
-        String storageString = getPropertyValue(childResc, CdrDeposit.storageUri);
+        String storageString = originalResc != null ? getPropertyValue(originalResc, CdrDeposit.storageUri) : null;
         if (storageString == null) {
             // throw exception, child must be a file with a staging path
             throw new DepositException("No staging location provided for child ("
                     + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
         }
         URI storageUri = URI.create(storageString);
+
         // Pull out file properties if they are present
-        String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
+        String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
 
-        String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
-        String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
+        String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
+        String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
 
-        String label = getPropertyValue(childResc, CdrDeposit.label);
+        // Label comes from file object if not set for binary
+        String label = getPropertyValue(originalResc, CdrDeposit.label);
+        if (label == null) {
+            label = getPropertyValue(childResc, CdrDeposit.label);
+        }
 
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
@@ -427,21 +435,42 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Add the FITS report for this file
+        addFitsHistory(fileObj, childResc);
         addFitsReport(fileObj, childResc);
 
         return fileObj;
     }
 
+    private void addFitsHistory(FileObject fileObj, Resource dResc) {
+        Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
+            return;
+        }
+
+        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObj.getPid());
+        PID dsHistoryPid = getDatastreamHistoryPid(fitsPid);
+        URI storageUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
+        repoObjFactory.createOrUpdateBinary(dsHistoryPid,
+                storageUri,
+                DatastreamType.TECHNICAL_METADATA_HISTORY.getDefaultFilename(),
+                DatastreamType.TECHNICAL_METADATA_HISTORY.getMimetype(),
+                getPropertyValue(historyResc, CdrDeposit.sha1sum),
+                getPropertyValue(historyResc, CdrDeposit.md5sum),
+                null);
+    }
+
     private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
-        if (!resc.hasProperty(CdrDeposit.fitsStorageUri)) {
+        Resource binResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
+        if (binResc == null || !binResc.hasProperty(CdrDeposit.storageUri)) {
             failJob("Missing FITs extract", "No storage URI for FITS extract for " + fileObj.getPid().getId());
         }
 
-        URI fitsUri = URI.create(resc.getProperty(CdrDeposit.fitsStorageUri).getString());
+        URI fitsUri = URI.create(binResc.getProperty(CdrDeposit.storageUri).getString());
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        String sha1 = getPropertyValue(binResc, CdrDeposit.sha1sum);
 
         fileObj.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
-                IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+                sha1, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     /**
@@ -782,21 +811,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         return previouslyIngestedSet.contains(path);
     }
 
-    /**
-     * Get the String value of the specified property if present, or return null.
-     *
-     * @param resc
-     * @param property
-     * @return
-     */
-    private String getPropertyValue(Resource resc, Property property) {
-        Statement stmt = resc.getProperty(property);
-        if (stmt == null) {
-            return null;
-        }
-        return stmt.getString();
-    }
-
     private void addAclProperties(Resource dResc, Resource aResc) {
         StmtIterator stmtIt = dResc.listProperties();
 
@@ -824,19 +838,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     }
 
     private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
-        if (!dResc.hasProperty(CdrDeposit.descriptiveHistoryStorageUri)) {
+        Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
+        if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
             return;
         }
 
         PID modsPid = DatastreamPids.getMdDescriptivePid(obj.getPid());
         PID dsHistoryPid = getDatastreamHistoryPid(modsPid);
-        URI storageUri = URI.create(dResc.getProperty(CdrDeposit.descriptiveHistoryStorageUri).getString());
+        URI storageUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         repoObjFactory.createOrUpdateBinary(dsHistoryPid,
                 storageUri,
-                null,
-                "text/xml",
-                null,
-                null,
+                DatastreamType.MD_DESCRIPTIVE_HISTORY.getDefaultFilename(),
+                DatastreamType.MD_DESCRIPTIVE_HISTORY.getMimetype(),
+                getPropertyValue(historyResc, CdrDeposit.sha1sum),
+                getPropertyValue(historyResc, CdrDeposit.md5sum),
                 null);
     }
 

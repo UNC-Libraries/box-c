@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -52,6 +53,7 @@ import com.google.common.io.Files;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -159,6 +161,11 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
         Model model = job.getReadOnlyModel();
         Bag bag = model.getBag(depositPid.getURI());
+        Resource manifestResc = bag.getPropertyResourceValue(CdrDeposit.hasDatastreamManifest);
+        assertNotNull(manifestResc);
+        assertNotNull(manifestResc.getProperty(CdrDeposit.stagingLocation));
+        assertEquals("text/xml", manifestResc.getProperty(CdrDeposit.mimetype).getString());
+
         NodeIterator childIt = bag.iterator();
         Resource child = (Resource) childIt.next();
         // check that parent is a work and has acl set
@@ -170,11 +177,12 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Bag childBag = model.getBag(child);
         NodeIterator workIt = childBag.iterator();
         Resource workChild = (Resource) workIt.next();
+        Resource originalResc = DepositModelHelpers.getDatastream(workChild);
         assertEquals(stagingBaseUri + "_c19064b2-983f-4b55-90f5-8d4b890055e4",
-                workChild.getProperty(CdrDeposit.stagingLocation).getString());
-        assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
-        assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
-        assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
+                originalResc.getProperty(CdrDeposit.stagingLocation).getString());
+        assertTrue(originalResc.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+        assertTrue(originalResc.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+        assertTrue(originalResc.hasProperty(CdrDeposit.size, "43129"));
 
         assertTrue(child.hasProperty(Cdr.primaryObject, workChild));
     }
@@ -187,12 +195,13 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         Bag bag = model.getBag(depositPid.getURI());
         NodeIterator childIt = bag.iterator();
         Resource res = (Resource) childIt.next();
+        Resource originalResc = DepositModelHelpers.getDatastream(res);
         assertTrue(res.hasProperty(CdrDeposit.label, "David_Romani_response.pdf"));
-        assertTrue(res.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
-        assertTrue(res.hasProperty(CdrDeposit.mimetype, "application/pdf"));
-        assertTrue(res.hasProperty(CdrDeposit.stagingLocation,
+        assertTrue(originalResc.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+        assertTrue(originalResc.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+        assertTrue(originalResc.hasProperty(CdrDeposit.stagingLocation,
                 stagingBaseUri + "_c19064b2-983f-4b55-90f5-8d4b890055e4"));
-        assertTrue(res.hasProperty(CdrDeposit.size, "43129"));
+        assertTrue(originalResc.hasProperty(CdrDeposit.size, "43129"));
     }
 
 }

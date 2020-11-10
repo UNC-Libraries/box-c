@@ -39,4 +39,9 @@ public interface BinaryDetails {
      * @return file size of the binary
      */
     long getSize();
+
+    /**
+     * @return the digest for the binary
+     */
+    String getDigest();
 }

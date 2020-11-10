@@ -89,11 +89,11 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
             String filename = filePath.getFileName().toString();
 
             if (!file.isDirectory()) {
-                Resource fileResource = getFileResource(sourceBag, filePathString);
+                Resource originalResource = getFileResource(sourceBag, filePathString);
 
                 // Find staged path for the file
                 Path storedPath = Paths.get(file.getAbsolutePath());
-                model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
+                model.add(originalResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
             } else {
                 Bag folderBag = getFolderBag(sourceBag, filePathString);
                 model.add(folderBag, CdrDeposit.label, filename);

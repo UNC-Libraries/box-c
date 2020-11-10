@@ -19,7 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_HISTORY_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.HISTORY_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
@@ -65,6 +65,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -242,7 +243,7 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     public File getDescriptionHistoryDir() {
-        return new File(getDepositDirectory(), DESCRIPTION_HISTORY_DIR);
+        return new File(getDepositDirectory(), HISTORY_DIR);
     }
 
     /**
@@ -306,15 +307,6 @@ public abstract class AbstractDepositJob implements Runnable {
 
     public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
         this.premisLoggerFactory = premisLoggerFactory;
-    }
-
-    /**
-     * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
-     *
-     * @return
-     */
-    public List<String> getManifestFileURIs() {
-        return depositStatusFactory.getManifestURIs(getDepositUUID());
     }
 
     protected PID getDestinationPID() {
@@ -486,10 +478,47 @@ public abstract class AbstractDepositJob implements Runnable {
         return results;
     }
 
+    /**
+     * Retrieve a list of FileObject pids with their associated original datastream staging location
+     * @param model
+     * @return
+     */
+    protected List<Entry<PID, String>> getOriginalStagingPairList(Model model) {
+        List<Entry<PID, String>> results = new ArrayList<>();
+
+        Selector stageSelector = new SimpleSelector((Resource) null, CdrDeposit.hasDatastreamOriginal, (RDFNode) null);
+        StmtIterator i = model.listStatements(stageSelector);
+        while (i.hasNext()) {
+            Statement s = i.nextStatement();
+            PID fileObjPid = PIDs.get(s.getSubject().getURI());
+            Resource originalResc = s.getResource();
+            String href = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
+            Entry<PID, String> entry = new SimpleEntry<>(fileObjPid, href);
+            results.add(entry);
+        }
+
+        return results;
+    }
+
     protected BinaryTransferSession getTransferSession(Model depositModel) {
         Bag depositBag = depositModel.getBag(getDepositPID().getRepositoryPath());
         String destLocationId = depositBag.getProperty(Cdr.storageLocation).getString();
         StorageLocation destLocation = locationManager.getStorageLocationById(destLocationId);
         return transferService.getSession(destLocation);
+    }
+
+    /**
+     * Get the String value of the specified property if present, or return null.
+     *
+     * @param resc
+     * @param property
+     * @return
+     */
+    protected String getPropertyValue(Resource resc, Property property) {
+        Statement stmt = resc.getProperty(property);
+        if (stmt == null) {
+            return null;
+        }
+        return stmt.getString();
     }
 }

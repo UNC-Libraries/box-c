@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -31,6 +33,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +43,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
@@ -75,6 +80,9 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -117,6 +125,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE2_LOC = "text.txt";
     private static final String FILE2_MIMETYPE = "text/plain";
     private static final long FILE2_SIZE = 4L;
+    private static final String BLANK_SHA1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
 
     @Autowired
     private AccessControlService aclService;
@@ -135,6 +144,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private VerifyObjectsAreInFedoraService verificationService;
     @Autowired
     private UpdateDescriptionService updateDescService;
+
+    private DepositDirectoryManager depositDirManager;
 
     private DepositRecord depositRecord;
 
@@ -155,6 +166,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         depositStatusFactory.set(depositUUID, DepositField.depositorName, DEPOSITOR_NAME);
+
+        depositDirManager = new DepositDirectoryManager(depositPid, depositsDirectory.toPath(), true);
     }
 
     private void constructJob() {
@@ -304,6 +317,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Verify that the properties of the primary object were added
         FileObject primaryObj = mWork.getPrimaryObject();
         assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(primaryObj.getPid());
+        BinaryObject fitsBin = repoObjLoader.getBinaryObject(fitsPid);
+        assertBinaryProperties(fitsBin, TECHNICAL_METADATA.getDefaultFilename(),
+                TECHNICAL_METADATA.getMimetype(), BLANK_SHA1, null, 0);
 
         // Check the right number of members are present
         List<ContentObject> workMembers = mWork.getMembers();
@@ -445,12 +462,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         depBag.add(workBag);
 
+        Resource historyResc = DepositModelHelpers.addDatastream(workBag, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         Path modsPath = job.getModsPath(workPid, true);
         FileUtils.writeStringToFile(modsPath.toFile(), "Mods content", UTF_8);
-        Path modsHistoryPath = job.getModsHistoryPath(workPid);
+        Path modsHistoryPath = depositDirManager.getHistoryFile(workPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
-        workBag.addProperty(CdrDeposit.descriptiveHistoryStorageUri,
-                modsHistoryPath.toUri().toString());
+        String modsHistorySha1 = getSha1(modsHistoryPath);
+        historyResc.addProperty(CdrDeposit.storageUri, modsHistoryPath.toUri().toString());
+        historyResc.addLiteral(CdrDeposit.sha1sum, modsHistorySha1);
 
         job.closeModel();
 
@@ -470,6 +489,72 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(descBin.getPid());
         BinaryObject historyBin = repoObjLoader.getBinaryObject(historyPid);
         assertEquals("History content", IOUtils.toString(historyBin.getBinaryStream(), UTF_8));
+        assertEquals("urn:sha1:" + modsHistorySha1, historyBin.getSha1Checksum());
+    }
+
+    @Test
+    public void ingestWorkObjectWithFITSHistoryTest() throws Exception {
+        String label = "testwork";
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // Constructing the work in the deposit model with a label
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+
+        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+
+        Resource mainResc = model.getResource(mainPid.getRepositoryPath());
+
+        PID fitsPid = DatastreamPids.getTechnicalMetadataPid(mainPid);
+        PID historyPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
+        Resource historyResc = DepositModelHelpers.addDatastream(mainResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        Path historyPath = depositDirManager.getHistoryFile(fitsPid, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        FileUtils.writeStringToFile(historyPath.toFile(), "History content", UTF_8);
+        String historySha1 = getSha1(historyPath);
+        historyResc.addProperty(CdrDeposit.storageUri, historyPath.toUri().toString());
+        historyResc.addLiteral(CdrDeposit.sha1sum, historySha1);
+
+        depBag.add(workBag);
+
+        workBag.addProperty(Cdr.primaryObject, model.getResource(mainPid.getRepositoryPath()));
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
+        List<ContentObject> destMembers = destObj.getMembers();
+        assertEquals("Incorrect number of children at destination", 1, destMembers.size());
+
+        // Make sure that the work is present and is actually a work
+        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+
+        String title = mWork.getResource().getProperty(DC.title).getString();
+        assertEquals("Work title was not correctly set", label, title);
+
+        // Verify that the properties of the primary object were added
+        FileObject primaryObj = mWork.getPrimaryObject();
+        assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+        BinaryObject fitsBin = repoObjLoader.getBinaryObject(fitsPid);
+        assertBinaryProperties(fitsBin, TECHNICAL_METADATA.getDefaultFilename(),
+                TECHNICAL_METADATA.getMimetype(), BLANK_SHA1, null, 0);
+
+        BinaryObject historyBin = repoObjLoader.getBinaryObject(historyPid);
+        assertEquals("History content", IOUtils.toString(historyBin.getBinaryStream(), UTF_8));
+        assertEquals("urn:sha1:" + historySha1, historyBin.getSha1Checksum());
+        assertEquals("text/xml", historyBin.getMimetype());
+
+        assertClickCount(2);
+        ingestedObjectsCount(2);
+
+        assertLinksToDepositRecord(mWork, primaryObj);
     }
 
     /**
@@ -564,8 +649,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertNull(jobStatus.get(JobField.num.name()));
 
             Resource fileResc = job.getWritableModel().getResource(mainPid2.getRepositoryPath());
-            fileResc.removeAll(CdrDeposit.md5sum);
-            fileResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
+            Resource origResc = DepositModelHelpers.getDatastream(fileResc);
+            origResc.removeAll(CdrDeposit.md5sum);
+            origResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
             job.closeModel();
         }
 
@@ -623,7 +709,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Fix the staging location of the second file
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
-        file2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
+        Resource orig2Resc = DepositModelHelpers.getDatastream(file2Resc);
+        orig2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                 FILE2_LOC).toUri().toString());
         job.closeModel();
 
@@ -887,8 +974,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertFalse(logModel.contains(null, RDF.type, Premis.VirusCheck));
 
             Resource fileResc = job.getWritableModel().getResource(file1Pid.getRepositoryPath());
-            fileResc.removeAll(CdrDeposit.md5sum);
-            fileResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
+            Resource origResc = DepositModelHelpers.getDatastream(fileResc);
+            origResc.removeAll(CdrDeposit.md5sum);
+            origResc.addProperty(CdrDeposit.md5sum, FILE1_MD5);
             job.closeModel();
         }
 
@@ -1142,7 +1230,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
             String sha1, String md5, long size) {
-        BinaryObject binary = fileObj.getOriginalFile();
+        assertBinaryProperties(fileObj.getOriginalFile(), loc, mimetype, sha1, md5, size);
+    }
+    private void assertBinaryProperties(BinaryObject binary, String loc, String mimetype,
+            String sha1, String md5, long size) {
         assertEquals(loc, binary.getFilename());
         if (sha1 != null) {
             assertEquals("urn:sha1:" + sha1, binary.getSha1Checksum());
@@ -1169,19 +1260,22 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 String mimetype, String sha1, String md5) throws Exception {
         PID filePid = pidMinter.mintContentPid();
 
-        Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
+        Model model = parent.getModel();
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
+
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
         if (stagingLocation != null) {
-            fileResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
+            origResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                     stagingLocation).toUri().toString());
             fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
         }
-        fileResc.addProperty(CdrDeposit.mimetype, mimetype);
+        origResc.addProperty(CdrDeposit.mimetype, mimetype);
         if (sha1 != null) {
-            fileResc.addProperty(CdrDeposit.sha1sum, sha1);
+            origResc.addProperty(CdrDeposit.sha1sum, sha1);
         }
         if (md5 != null) {
-            fileResc.addProperty(CdrDeposit.md5sum, md5);
+            origResc.addProperty(CdrDeposit.md5sum, md5);
         }
 
         parent.add(fileResc);
@@ -1189,7 +1283,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Create the accompanying fake premis report file
         Path fitsPath = job.getTechMdPath(filePid, true);
         Files.createFile(fitsPath);
-        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsPath.toUri().toString());
+        Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
+        fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
+        fitsResc.addLiteral(CdrDeposit.sha1sum, getSha1(fitsPath));
 
         return filePid;
     }
@@ -1224,5 +1320,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private void assertStorageLocationPresent(ContentObject contentObj) {
         assertTrue("Storage location property was not set",
                 contentObj.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID));
+    }
+
+    private String getSha1(Path filePath) throws Exception {
+        byte[] result = DigestUtils.digest(MessageDigest.getInstance("SHA1"), filePath.toFile());
+        return Hex.encodeHexString(result);
     }
 }

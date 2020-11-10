@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -28,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Content;
 import org.jdom2.Element;
@@ -41,7 +38,6 @@ import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -72,27 +68,6 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
         assertTrue(fileLabel + " file did not exist", file.exists());
 
         return file;
-    }
-
-    protected void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory,
-            String sourceType, String fileSuffix) {
-
-        assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(Cdr.hasSourceMetadataProfile)
-                .getLiteral().getString());
-
-        // Verify that the metadata source attribute is present and transitively points to the file
-        Resource sourceMDResource = primaryResource.getProperty(CdrDeposit.hasSourceMetadata).getResource();
-        assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
-
-        File sourceMDFile = verifyStagingLocationExists(sourceMDResource, depositDirectory,
-                "Original metadata");
-        assertTrue("Original metadata file did not have the correct suffix, most likely the wrong file", sourceMDFile
-                .getName().endsWith(fileSuffix));
-
-        // Verify that the extra datastream being added is the same as the source metadata
-        String sourceMDDatastream = primaryResource.getProperty(CdrDeposit.hasDatastream).getResource().getURI();
-        assertEquals("Source datastream path did not match the sourceMetadata", sourceMDResource.getURI(),
-                sourceMDDatastream);
     }
 
     protected void copyTestPackage(String filename, AbstractDepositJob job) {

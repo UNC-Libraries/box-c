@@ -17,6 +17,8 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -26,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -95,6 +98,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -323,8 +327,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
 
         verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
-                anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
-                any(Resource.class));
+                anyString(), anyString(), isNull(String.class), isNull(String.class),
+                any(Property.class), eq(DCTerms.conformsTo), any(Resource.class));
 
         // Add work object itself
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
@@ -508,8 +512,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
 
         verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
-                anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
-                any(Resource.class));
+                anyString(), anyString(), isNull(String.class), isNull(String.class),
+                any(Property.class), eq(DCTerms.conformsTo), any(Resource.class));
 
         // Add work object itself
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
@@ -764,21 +768,25 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
+        Model model = parent.getModel();
         String stagingPath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
         String storagePath = storageLocPath.resolve(filePid.getId() + ".txt").toUri().toString();
-        Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.stagingLocation, stagingPath);
-        fileResc.addProperty(CdrDeposit.storageUri, storagePath);
         fileResc.addProperty(CdrDeposit.label, stagingLocation);
-        fileResc.addProperty(CdrDeposit.mimetype, mimetype);
+
+        Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
+        origResc.addProperty(CdrDeposit.stagingLocation, stagingPath);
+        origResc.addProperty(CdrDeposit.storageUri, storagePath);
+        origResc.addProperty(CdrDeposit.mimetype, mimetype);
 
         parent.add(fileResc);
 
         // Create the accompanying fake FITS report file
         Path fitsPath = job.getTechMdPath(filePid, true);
         Files.createFile(fitsPath);
-        fileResc.addProperty(CdrDeposit.fitsStorageUri, fitsPath.toUri().toString());
+        Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
+        fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
 
         return filePid;
     }

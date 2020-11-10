@@ -92,26 +92,21 @@ public class CdrDeposit {
     public static final Property storageUri = createProperty(
             "http://cdr.unc.edu/definitions/deposit#storageUri" );
 
-    /** URI of FITS metadata extract file within a storage location. */
-    public static final Property fitsStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#fitsStorageUri" );
+    /** Link to original binary resource */
+    public static final Property hasDatastreamOriginal = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamOriginal" );
 
-    /** URI of descriptive metadata file within a storage location. */
-    public static final Property descriptiveStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#descriptiveStorageUri" );
+    /** Link to FITS binary resource */
+    public static final Property hasDatastreamFits = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamFits" );
 
-    /** URI of descriptive history file within a storage location. */
-    public static final Property descriptiveHistoryStorageUri = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#descriptiveHistoryStorageUri" );
+    public static final Property hasDatastreamFitsHistory = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamFitsHistory" );
 
-    /** Link to binary objects contained by this object other than the main payload binary. */
-    public static final Property hasDatastream = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasDatastream" );
+    /** Link to description history binary resource */
+    public static final Property hasDatastreamDescriptiveHistory = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamDescriptiveHistory" );
 
-    /** >Link to a manifest file for this deposit. */
-    public static final Property hasManifest = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasManifest" );
-
-    public static final Property hasSourceMetadata = createProperty(
-            "http://cdr.unc.edu/definitions/deposit#hasSourceMetadata");
+    public static final Property hasDatastreamManifest = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamManifest" );
 }
