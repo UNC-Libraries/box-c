@@ -52,10 +52,12 @@ public class ContentObjectTransformerManager {
 
     private BlockingQueue<ContentObjectTransformer> createdTransformers;
     private AtomicInteger totalAdded;
+    private AtomicInteger completed;
 
     public ContentObjectTransformerManager() {
         this.createdTransformers = new LinkedBlockingQueue<>();
         totalAdded = new AtomicInteger();
+        completed = new AtomicInteger();
     }
 
     /**
@@ -91,22 +93,26 @@ public class ContentObjectTransformerManager {
      */
     public int awaitTransformers() {
         int result = 0;
-        long completed = 0;
         do {
             ContentObjectTransformer transformer = createdTransformers.poll();
             try {
-                displayProgress(completed, totalAdded.get());
                 if (transformer == null) {
                     DisplayProgressUtil.finishProgress();
                     return result;
                 }
                 transformer.join();
-                completed++;
             } catch (RuntimeException e) {
                 log.error("Failed to transform {}", transformer.getPid(), e);
                 result = 1;
             }
         } while (true);
+    }
+
+    public void registerCompletion() {
+        synchronized(completed) {
+            int count = completed.incrementAndGet();
+            displayProgress(count, totalAdded.get());
+        }
     }
 
     public PID getTransformedPid(PID originalPid) {

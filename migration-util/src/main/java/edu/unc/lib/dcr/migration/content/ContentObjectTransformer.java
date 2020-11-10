@@ -152,10 +152,19 @@ public class ContentObjectTransformer extends RecursiveAction {
 
     @Override
     protected void compute() {
+        try {
+            transform();
+        } finally {
+            manager.registerCompletion();
+        }
+    }
+
+    private void transform() {
         log.info("Tranforming {}", originalPid.getId());
         Path foxmlPath = pathIndex.getPath(originalPid);
         if (foxmlPath == null) {
             log.warn("Unable to find foxml for {}", originalPid.getId());
+            ContentTransformationReport.missingFoxml.incrementAndGet();
             return;
         }
 
@@ -171,7 +180,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         Resource bxc3Resc = model.getResource(toBxc3Uri(originalPid));
 
         if (isMarkedForDeletion(bxc3Resc)) {
-            log.warn("Skipping transformation of object {}, it is marked for deletion", originalPid);
+            log.info("Skipping transformation of object {}, it is marked for deletion", originalPid);
+            ContentTransformationReport.skippedDeleted.incrementAndGet();
             return;
         }
 
@@ -203,6 +213,8 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // Push triples for this object to the shared model for this deposit
         modelManager.addTriples(options.getDepositPid(), depositModel, newPid, parentPid);
+
+        ContentTransformationReport.recordObjectTransformed(resourceType);
     }
 
     private void populateTimestamps(Resource bxc3Resc, Resource depResc) {
@@ -259,6 +271,7 @@ public class ContentObjectTransformer extends RecursiveAction {
                 } finally {
                     Files.delete(transformedPremisPath);
                 }
+                ContentTransformationReport.generatedDepositRecords.incrementAndGet();
             }
         }
     }
@@ -327,6 +340,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             workBag.addProperty(Cdr.primaryObject, fileResc);
 
             isNewWork = true;
+            ContentTransformationReport.fileToWork.getAndIncrement();
         }
 
         fileResc.addProperty(RDF.type, Cdr.FileObject);
@@ -355,7 +369,8 @@ public class ContentObjectTransformer extends RecursiveAction {
         // Populate the original file path
         Path originalPath = pathIndex.getPath(originalPid, ORIGINAL_TYPE);
         if (originalPath == null) {
-            log.warn("No original file path for {}", originalPid);
+            ContentTransformationReport.noOriginalDatastream.incrementAndGet();
+            log.error("No original file path for {}", originalPid);
         } else {
             origResc.addLiteral(stagingLocation, originalPath.toUri().toString());
         }
@@ -400,6 +415,7 @@ public class ContentObjectTransformer extends RecursiveAction {
         Path originalPremisPath = pathIndex.getPath(bxc3Pid, PathIndex.PREMIS_TYPE);
         if (originalPremisPath == null || !Files.exists(originalPremisPath)) {
             log.info("No premis for {}, skipping transformation", bxc3Pid.getId());
+            ContentTransformationReport.noPremis.incrementAndGet();
             return;
         }
 
@@ -488,6 +504,7 @@ public class ContentObjectTransformer extends RecursiveAction {
             if (Cdr.Collection.equals(parentType)) {
                 log.warn("Parent object is a collection. Transforming current object {} from a collection " +
                                 "into a folder", originalPid);
+                ContentTransformationReport.collectionToFolder.incrementAndGet();
                 return Cdr.Folder;
             } else if (Cdr.AdminUnit.equals(parentType) || !options.isTopLevelAsUnit()) {
                 return Cdr.Collection;
@@ -516,7 +533,7 @@ public class ContentObjectTransformer extends RecursiveAction {
     }
 
     private void extractMods(Resource depResc) {
-        log.info("Checking for MODS {}", originalPid);
+        log.debug("Checking for MODS {}", originalPid);
         List<DatastreamVersion> modsVersions = listDatastreamVersions(foxml, MODS_DS);
         if (modsVersions == null || modsVersions.isEmpty()) {
             log.debug("No MODS for {}" , originalPid);
