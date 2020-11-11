@@ -39,7 +39,15 @@
             </transition>
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
-                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">{{ updated_staff_role.principal }}</td>
+                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}"
+                        @mouseover="hover_row = index" @mouseleave="hover_row = ''">
+                      <div class="text-only">
+                        {{ truncatePermissionText(updated_staff_role.principal) }}
+                      </div>
+                      <div class="tooltip" v-if="hover_row === index">
+                        {{ updated_staff_role.principal }}
+                      </div>
+                    </td>
                     <td class="border select-box size" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
                         <staff-roles-select
                                 :container-type="containerType"
@@ -122,6 +130,7 @@
             return {
                 current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } },
                 deleted_users: [],
+                hover_row: '',
                 is_closing_modal: false,
                 is_error_message: true,
                 selected_role: 'canAccess',
@@ -282,6 +291,14 @@
                 }
             },
 
+            truncatePermissionText(text) {
+              if (text.length > 25) {
+                return text.substr(0, 25) + ' \u2026 ';
+              }
+
+              return text;
+            },
+
             updateErrorMsg(msg) {
                 this.response_message = msg;
             },
@@ -367,6 +384,22 @@
 
         .error {
             color: red;
+        }
+
+        .tooltip {
+            position: absolute;
+            text-align: left;
+            width: auto;
+            height: auto;
+            padding: 5px;
+            color: white;
+            background-color: #3D4D5B;
+            border: 1px solid black;
+            border-radius: 8px;
+            pointer-events: none;
+            max-width: 500px;
+            word-break: break-word;
+            z-index: 100;
         }
     }
 </style>
