@@ -12,8 +12,15 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="inherited_staff_permission in current_staff_roles.inherited.roles">
-                <td>{{ inherited_staff_permission.principal }}</td>
+            <tr v-for="(inherited_staff_permission, index) in current_staff_roles.inherited.roles">
+                <td @mouseover="hover_row_inherited = index" @mouseleave="hover_row_inherited = ''">
+                  <div class="text-only">
+                    {{ truncatePermissionText(inherited_staff_permission.principal) }}
+                  </div>
+                  <div class="tooltip" v-if="hover_row_inherited === index">
+                    {{ inherited_staff_permission.principal }}
+                  </div>
+                </td>
                 <td>{{ inherited_staff_permission.role }}</td>
                 <td>{{ assignedToName(inherited_staff_permission) }}</td>
             </tr>
@@ -131,6 +138,7 @@
                 current_staff_roles: { inherited: { roles: [] }, assigned: { roles: [] } },
                 deleted_users: [],
                 hover_row: '',
+                hover_row_inherited: '',
                 is_closing_modal: false,
                 is_error_message: true,
                 selected_role: 'canAccess',
