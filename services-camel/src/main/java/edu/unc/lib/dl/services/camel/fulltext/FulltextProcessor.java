@@ -105,19 +105,21 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
-        File derivative = derivativePath.toFile();
-        File parentDir = derivative.getParentFile();
+        if (text.length() > 0) {
+            Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
+            File derivative = derivativePath.toFile();
+            File parentDir = derivative.getParentFile();
 
-        // Create missing parent directories if necessary
-        if (parentDir != null) {
-            try {
-                Files.createDirectories(parentDir.toPath());
-            } catch (IOException e) {
-                throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
+            // Create missing parent directories if necessary
+            if (parentDir != null) {
+                try {
+                    Files.createDirectories(parentDir.toPath());
+                } catch (IOException e) {
+                    throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
+                }
+
+                FileUtils.write(derivative, text, UTF_8);
             }
-
-            FileUtils.write(derivative, text, UTF_8);
         }
     }
 
@@ -126,10 +128,16 @@ public class FulltextProcessor implements Processor {
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
+        File fileToExtract = new File(binaryPath);
 
-        try (InputStream stream = new FileInputStream(new File(binaryPath))) {
-            parser.parse(stream, handler, metadata, new ParseContext());
-            return handler.toString();
+        if (fileToExtract.length() > 0) {
+            try (InputStream stream = new FileInputStream(fileToExtract)) {
+                parser.parse(stream, handler, metadata, new ParseContext());
+                return handler.toString();
+            }
+        } else {
+            log.warn("File, {}, does not have any text to extract", binaryPath);
+            return "";
         }
     }
 }
