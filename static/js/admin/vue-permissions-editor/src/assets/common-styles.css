@@ -29,10 +29,15 @@
 #modal-permissions-editor .assigned-permissions td.border {
     border-right: none;
     border-bottom: 1px solid lightgray;
+    max-width: 325px;
 }
 
 #modal-permissions-editor .assigned-permissions td.size {
     max-width: 150px;
+}
+
+#modal-permissions-editor .assigned-permissions td div.text-only {
+    margin-right: 5px;
 }
 
 #modal-permissions-editor .assigned-permissions td.border.select-box {
@@ -104,7 +109,6 @@
 
 #modal-permissions-editor .marked-for-deletion {
     background-color: #f99;
-    opacity: .8;
     text-decoration: line-through;
 }
 
