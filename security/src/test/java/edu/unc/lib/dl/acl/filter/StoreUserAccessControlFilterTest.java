@@ -94,7 +94,7 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user", GroupsThreadStore.getUsername());
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
@@ -112,7 +112,7 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user", GroupsThreadStore.getUsername());
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
@@ -131,7 +131,7 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user", GroupsThreadStore.getUsername());
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));

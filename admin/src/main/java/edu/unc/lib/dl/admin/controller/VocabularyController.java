@@ -76,7 +76,7 @@ public class VocabularyController extends AbstractSearchController {
     }
 
     public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
-        AccessGroupSet groups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet groups = GroupsThreadStore.getPrincipals();
 
         BriefObjectMetadata selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
                 searchRequest.getSearchState(), false, groups);

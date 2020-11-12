@@ -94,7 +94,7 @@ public class XMLExportService {
             searchState.setIgnoreMaxRows(true);
 
             SearchRequest searchRequest = new SearchRequest(searchState,
-                    GroupsThreadStore.getAgentPrincipals().getPrincipals());
+                    GroupsThreadStore.getPrincipals());
             searchRequest.setRootPid(pid);
             searchRequest.setApplyCutoffs(false);
             SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);

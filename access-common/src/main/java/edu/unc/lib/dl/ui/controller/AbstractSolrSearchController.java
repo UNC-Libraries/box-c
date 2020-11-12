@@ -173,7 +173,7 @@ public abstract class AbstractSolrSearchController {
 
     protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
                                              HttpServletRequest request) {
-        AccessGroupSet principals = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet principals = GroupsThreadStore.getPrincipals();
 
         childrenCountService.addChildrenCounts(resp.getResultList(),
                 principals);

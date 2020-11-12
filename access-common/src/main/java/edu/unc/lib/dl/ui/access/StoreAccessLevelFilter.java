@@ -73,7 +73,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                 session.removeAttribute("accessLevel");
                 accessLevel = new AccessLevel(username);
                 session.setAttribute("accessLevel", accessLevel);
-                AccessGroupSet principals = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+                AccessGroupSet principals = GroupsThreadStore.getPrincipals();
                 if (globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
                     Set<UserRole> roles = globalPermissionEvaluator.getGlobalUserRoles(principals);
                     if (roles.contains(UserRole.administrator)) {

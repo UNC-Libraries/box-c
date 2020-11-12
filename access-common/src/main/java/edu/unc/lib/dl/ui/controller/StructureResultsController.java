@@ -109,6 +109,6 @@ public class StructureResultsController extends AbstractStructureResultsControll
                 selectedContainer.getAncestorPathFacet().getSearchKey(),
                 "true".equals(includeFiles), false, false, request);
 
-        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getAgentPrincipals().getPrincipals());
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getPrincipals());
     }
 }

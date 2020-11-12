@@ -131,7 +131,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         childrenCountService.addChildrenCounts(resultResponse.getResultList(),
                 searchRequest.getAccessGroups());
 
-        AccessGroupSet principals = GroupsThreadStore.getAgentPrincipals().getPrincipals();
+        AccessGroupSet principals = GroupsThreadStore.getPrincipals();
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());

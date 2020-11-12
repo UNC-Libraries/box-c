@@ -111,7 +111,7 @@ public abstract class GroupsThreadStore {
     }
 
     /**
-     * Get all principals for the agent on the current thread.
+     * Get the AgentPrincipal object on the current thread
      *
      * @return
      */
@@ -122,6 +122,15 @@ public abstract class GroupsThreadStore {
             agentPrincipals.set(principals);
         }
         return principals;
+    }
+
+    /**
+     * Get all the principals for the agent on the current thread
+     * @return
+     */
+    public static AccessGroupSet getPrincipals() {
+        AgentPrincipals agent = getAgentPrincipals();
+        return agent.getPrincipals();
     }
 
     /**
