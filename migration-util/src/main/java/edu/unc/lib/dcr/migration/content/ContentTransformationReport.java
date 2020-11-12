@@ -37,6 +37,9 @@ public class ContentTransformationReport {
     public static AtomicInteger generatedDepositRecords = new AtomicInteger();
     private static EnumMap<ResourceType, AtomicInteger> typeCounts = new EnumMap<>(ResourceType.class);
 
+    private ContentTransformationReport() {
+    }
+
     /**
      * Record that an object was migrated
      * @param resourceType type of the object recorded

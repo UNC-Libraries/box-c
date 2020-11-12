@@ -149,7 +149,7 @@ public class ACLTransformationHelpers {
                 everyoneRole = mostRestrictiveRole(everyoneRole, pred);
             } else if (BXC3_AUTHENTICATED_GROUP.equals(objectVal)) {
                 authRole = mostRestrictiveRole(authRole, pred);
-            } else if (isPatronRole(pred)){
+            } else if (isPatronRole(pred)) {
                 log.warn("Skipping invalid patron group {} assigned role {} on {}",
                         objectVal, pred.getLocalName(), bxc3Resc.getURI());
                 ACLTransformationReport.hasInvalidPatronGroup.incrementAndGet();

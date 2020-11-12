@@ -109,7 +109,7 @@ public class ContentObjectTransformerManager {
     }
 
     public void registerCompletion() {
-        synchronized(completed) {
+        synchronized (completed) {
             int count = completed.incrementAndGet();
             displayProgress(count, totalAdded.get());
         }

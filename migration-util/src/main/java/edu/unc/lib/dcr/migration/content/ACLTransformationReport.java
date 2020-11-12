@@ -27,6 +27,9 @@ public class ACLTransformationReport {
     public static AtomicInteger isUnpublished = new AtomicInteger();
     public static AtomicInteger hasInvalidPatronGroup = new AtomicInteger();
 
+    private ACLTransformationReport() {
+    }
+
     /**
      * @return formatted report of the results
      */
