@@ -103,7 +103,8 @@ public class FulltextProcessorTest {
                 .thenReturn(originalFile.toPath().toString());
 
         processor.process(exchange);
-        assertFalse(finalDerivativeFile.exists());
+        assertTrue(finalDerivativeFile.exists());
+        assertEquals("", FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
     }
 
     @Test

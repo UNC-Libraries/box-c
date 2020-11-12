@@ -105,21 +105,19 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        if (text.length() > 0) {
-            Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
-            File derivative = derivativePath.toFile();
-            File parentDir = derivative.getParentFile();
+        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath, binaryId + ".txt");
+        File derivative = derivativePath.toFile();
+        File parentDir = derivative.getParentFile();
 
-            // Create missing parent directories if necessary
-            if (parentDir != null) {
-                try {
-                    Files.createDirectories(parentDir.toPath());
-                } catch (IOException e) {
-                    throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
-                }
-
-                FileUtils.write(derivative, text, UTF_8);
+        // Create missing parent directories if necessary
+        if (parentDir != null) {
+            try {
+                Files.createDirectories(parentDir.toPath());
+            } catch (IOException e) {
+                throw new IOException("Failed to create parent directories for " + derivativePath + ".", e);
             }
+
+            FileUtils.write(derivative, text, UTF_8);
         }
     }
 
