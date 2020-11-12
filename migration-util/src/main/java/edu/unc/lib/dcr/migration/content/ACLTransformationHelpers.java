@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -93,6 +94,7 @@ public class ACLTransformationHelpers {
                     CDRProperty.embargoUntil.getProperty()).getString());
             Literal embargoLiteral = ResourceFactory.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
             destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
+            ACLTransformationReport.hasEmbargo.incrementAndGet();
         }
 
         // Calculate the most restrictive roles assigned to each patron group
@@ -127,6 +129,7 @@ public class ACLTransformationHelpers {
     private static Property[] calculatePatronRoles(Resource bxc3Resc) {
         if (bxc3Resc.hasLiteral(CDRProperty.isPublished.getProperty(), "no")
                 || bxc3Resc.hasLiteral(CDRProperty.allowIndexing.getProperty(), "no")) {
+            ACLTransformationReport.isUnpublished.incrementAndGet();
             return new Property[] { CdrAcl.none, CdrAcl.none };
         }
 
@@ -141,10 +144,15 @@ public class ACLTransformationHelpers {
             }
 
             String objectVal = stmt.getObject().asLiteral().getLexicalForm();
+            Property pred = stmt.getPredicate();
             if (BXC3_PUBLIC_GROUP.equals(objectVal)) {
-                everyoneRole = mostRestrictiveRole(everyoneRole, stmt.getPredicate());
+                everyoneRole = mostRestrictiveRole(everyoneRole, pred);
             } else if (BXC3_AUTHENTICATED_GROUP.equals(objectVal)) {
-                authRole = mostRestrictiveRole(authRole, stmt.getPredicate());
+                authRole = mostRestrictiveRole(authRole, pred);
+            } else if (isPatronRole(pred)) {
+                log.warn("Skipping invalid patron group {} assigned role {} on {}",
+                        objectVal, pred.getLocalName(), bxc3Resc.getURI());
+                ACLTransformationReport.hasInvalidPatronGroup.incrementAndGet();
             }
         }
 
@@ -164,6 +172,14 @@ public class ACLTransformationHelpers {
         }
 
         return new Property[] { everyoneRole, authRole };
+    }
+
+    private static Set<String> BXC3_PATRON_ROLES = new HashSet<>(Arrays.asList(
+            Bxc3UserRole.metadataPatron.getProperty().getURI(),
+            Bxc3UserRole.accessCopiesPatron.getProperty().getURI(),
+            Bxc3UserRole.patron.getProperty().getURI()));
+    private static boolean isPatronRole(Property property) {
+        return BXC3_PATRON_ROLES.contains(property.getURI());
     }
 
     private static Property mostRestrictiveRole(Property existingRole, Property bxc3Role) {

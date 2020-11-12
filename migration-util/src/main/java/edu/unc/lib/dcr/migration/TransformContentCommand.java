@@ -24,8 +24,10 @@ import org.slf4j.Logger;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.dcr.migration.content.ACLTransformationReport;
 import edu.unc.lib.dcr.migration.content.ContentObjectTransformerManager;
 import edu.unc.lib.dcr.migration.content.ContentTransformationOptions;
+import edu.unc.lib.dcr.migration.content.ContentTransformationReport;
 import edu.unc.lib.dcr.migration.content.ContentTransformationService;
 import edu.unc.lib.dcr.migration.deposit.PreconstructedDepositSubmissionService;
 import edu.unc.lib.dcr.migration.paths.PathIndex;
@@ -113,6 +115,11 @@ public class TransformContentCommand implements Callable<Integer> {
             int result = transformService.perform();
 
             output.info("Finished transformation in {}ms", System.currentTimeMillis() - start);
+
+            output.info("===========================================");
+            output.info(ContentTransformationReport.report());
+            output.info(ACLTransformationReport.report());
+            output.info("===========================================");
 
             if (options.isDryRun()) {
                 output.info("Dry run, deposit model not saved");

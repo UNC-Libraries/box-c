@@ -25,7 +25,7 @@ import static org.apache.commons.lang3.StringUtils.repeat;
  */
 public class DisplayProgressUtil {
     private static final int PROGRESS_BAR_UNITS = 40;
-    private static final double PROGRESS_BAR_DIVIDOR = 100 / PROGRESS_BAR_UNITS;
+    private static final double PROGRESS_BAR_DIVIDOR = (double) 100 / PROGRESS_BAR_UNITS;
 
     /**
      * Render a progress bar, percent, and total
