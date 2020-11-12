@@ -40,7 +40,7 @@ public class FrontPageController extends AbstractSolrSearchController {
     @RequestMapping(method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
         LOG.debug("In front page controller");
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        AccessGroupSet groups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
 
         // Retrieve collection stats
         model.addAttribute("formatCounts", this.queryLayer.getFormatCounts(groups));

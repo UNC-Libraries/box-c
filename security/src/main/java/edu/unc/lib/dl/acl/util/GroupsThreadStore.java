@@ -119,6 +119,7 @@ public abstract class GroupsThreadStore {
         AgentPrincipals principals = GroupsThreadStore.agentPrincipals.get();
         if (principals == null) {
             principals = new AgentPrincipals(username.get(), groups.get());
+            agentPrincipals.set(principals);
         }
         return principals;
     }

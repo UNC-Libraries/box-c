@@ -74,7 +74,7 @@ public class MODSController extends AbstractSolrSearchController {
     public String editDescription(@PathVariable("pid") String pid, Model model,
             HttpServletRequest request) {
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
         // Retrieve the record for the object being edited
         SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
         BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
@@ -94,7 +94,7 @@ public class MODSController extends AbstractSolrSearchController {
 
         Map<String, Object> results = new LinkedHashMap<>();
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet accessGroups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
 
         // Retrieve the record for the object being edited
         SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
