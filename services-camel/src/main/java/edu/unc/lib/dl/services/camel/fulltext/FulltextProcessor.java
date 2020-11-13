@@ -126,10 +126,16 @@ public class FulltextProcessor implements Processor {
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
+        File fileToExtract = new File(binaryPath);
 
-        try (InputStream stream = new FileInputStream(new File(binaryPath))) {
-            parser.parse(stream, handler, metadata, new ParseContext());
-            return handler.toString();
+        if (fileToExtract.length() > 0) {
+            try (InputStream stream = new FileInputStream(fileToExtract)) {
+                parser.parse(stream, handler, metadata, new ParseContext());
+                return handler.toString();
+            }
+        } else {
+            log.warn("File, {}, does not have any text to extract", binaryPath);
+            return "";
         }
     }
 }

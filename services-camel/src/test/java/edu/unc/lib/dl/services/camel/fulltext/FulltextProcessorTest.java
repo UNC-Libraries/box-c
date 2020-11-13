@@ -95,6 +95,19 @@ public class FulltextProcessorTest {
     }
 
     @Test
+    public void extractFromEmptyFileTest() throws Exception {
+        originalFile = tmpDir.newFile(originalFileName);
+        FileUtils.write(originalFile, "", "UTF-8");
+
+        when(message.getHeader(eq(CdrBinaryPath)))
+                .thenReturn(originalFile.toPath().toString());
+
+        processor.process(exchange);
+        assertTrue(finalDerivativeFile.exists());
+        assertEquals("", FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
+    }
+
+    @Test
     public void extractFromInvalidPdfTest() throws Exception {
         originalFile = tmpDir.newFile("invalid.pdf");
         Files.copy(new File("src/test/resources/datastreams/invalid.pdf"), originalFile);
