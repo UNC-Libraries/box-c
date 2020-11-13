@@ -53,7 +53,7 @@ public class ResultEntryController extends AbstractSearchController {
     public @ResponseBody
     String getResultEntry(@PathVariable("pid") String pid, Model model, HttpServletResponse response) {
         response.setContentType("application/json");
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
 
         SimpleIdRequest entryRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
         BriefObjectMetadataBean entryBean = queryLayer.getObjectById(entryRequest);

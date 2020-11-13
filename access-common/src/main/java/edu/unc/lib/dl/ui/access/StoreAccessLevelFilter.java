@@ -73,9 +73,9 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                 session.removeAttribute("accessLevel");
                 accessLevel = new AccessLevel(username);
                 session.setAttribute("accessLevel", accessLevel);
-                AccessGroupSet groups = GroupsThreadStore.getGroups();
-                if (globalPermissionEvaluator.hasGlobalPrincipal(groups)) {
-                    Set<UserRole> roles = globalPermissionEvaluator.getGlobalUserRoles(groups);
+                AccessGroupSet principals = GroupsThreadStore.getPrincipals();
+                if (globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
+                    Set<UserRole> roles = globalPermissionEvaluator.getGlobalUserRoles(principals);
                     if (roles.contains(UserRole.administrator)) {
                         accessLevel.setHighestRole(UserRole.administrator);
                     } else {
@@ -83,7 +83,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                     }
                 } else {
                     // Check for viewAdmin
-                    boolean viewAdmin = queryLayer.hasAdminViewPermission(groups);
+                    boolean viewAdmin = queryLayer.hasAdminViewPermission(principals);
                     if (viewAdmin) {
                         // See which exact type of admin we're dealing with
                         // Comment out until we start using these

@@ -84,7 +84,9 @@ public class StructureQueryService extends AbstractQueryService {
 
         // Start hierarchy tree at root of the repository
         BriefObjectMetadata contentRootMd = getContentRootMetadata(principals);
-        browseResponse.getResultList().add(contentRootMd);
+        if (contentRootMd != null) {
+            browseResponse.getResultList().add(contentRootMd);
+        }
 
         // Get the path of the root object being requested for iteration
         CutoffFacet path = getObjectPath(browseRequest.getRootPid(), principals);

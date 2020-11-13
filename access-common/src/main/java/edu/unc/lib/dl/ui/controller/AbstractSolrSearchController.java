@@ -26,14 +26,12 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.ui.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -43,7 +41,9 @@ import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
  * Abstract base class for controllers which interact with solr services.
@@ -173,12 +173,12 @@ public abstract class AbstractSolrSearchController {
 
     protected Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
                                              HttpServletRequest request) {
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        AccessGroupSet principals = GroupsThreadStore.getPrincipals();
 
         childrenCountService.addChildrenCounts(resp.getResultList(),
-                groups);
+                principals);
 
-        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
+        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, principals);
         Map<String, Object> results = new HashMap<>();
         results.put("metadata", resultList);
 
@@ -194,7 +194,7 @@ public abstract class AbstractSolrSearchController {
         results.put("email", GroupsThreadStore.getEmail());
 
         if (resp.getSelectedContainer() != null) {
-            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
+            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), principals));
         }
 
         return results;

@@ -283,8 +283,8 @@ public class SolrQueryLayerService extends SolrSearchService {
                         searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
                 contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKeys.CONTENT_TYPE.name()));
 
-                SearchRequest contentTypeRequest =
-                        new SearchRequest(contentTypeSearchState, GroupsThreadStore.getGroups());
+                SearchRequest contentTypeRequest = new SearchRequest(contentTypeSearchState, GroupsThreadStore
+                                .getAgentPrincipals().getPrincipals());
                 SearchResultResponse contentTypeResponse = getSearchResults(contentTypeRequest);
                 if (contentTypeResponse.getResultCount() > 0) {
                     resultResponse.extractCrumbDisplayValueFromRepresentative(

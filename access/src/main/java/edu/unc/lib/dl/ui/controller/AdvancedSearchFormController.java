@@ -77,7 +77,7 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
         //If the user is coming to this servlet without any parameters set then send them to form.
         if (request.getQueryString() == null || request.getQueryString().length() == 0) {
             //Populate the list of collections for the advanced search page drop down
-            AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+            AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
 
             SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
             model.addAttribute("collectionList", collectionResultResponse.getResultList());

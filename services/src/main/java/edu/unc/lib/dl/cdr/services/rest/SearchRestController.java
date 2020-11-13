@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -130,11 +131,12 @@ public class SearchRestController extends AbstractSolrSearchController {
         childrenCountService.addChildrenCounts(resultResponse.getResultList(),
                 searchRequest.getAccessGroups());
 
+        AccessGroupSet principals = GroupsThreadStore.getPrincipals();
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
         for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
-            results.add(SerializationUtil.metadataToMap(metadata, GroupsThreadStore.getGroups()));
+            results.add(SerializationUtil.metadataToMap(metadata, principals));
         }
         response.put("results", results);
 
@@ -153,7 +155,8 @@ public class SearchRestController extends AbstractSolrSearchController {
             HttpServletRequest request, HttpServletResponse response) {
         List<String> resultFields = this.getResultFields(request);
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, getAgentPrincipals().getPrincipals());
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, principals);
         BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             response.setStatus(404);
@@ -164,9 +167,9 @@ public class SearchRestController extends AbstractSolrSearchController {
         // If there's a jsonp callback, do some overzealous cleanup to remove any bad stuff
         if (callback != null) {
             callback = jsonpCleanupPattern.matcher(callback).replaceAll("");
-            return callback + "(" + SerializationUtil.metadataToJSON(briefObject, GroupsThreadStore.getGroups()) + ")";
+            return callback + "(" + SerializationUtil.metadataToJSON(briefObject, principals) + ")";
         }
 
-        return SerializationUtil.metadataToJSON(briefObject, GroupsThreadStore.getGroups());
+        return SerializationUtil.metadataToJSON(briefObject, principals);
     }
 }
