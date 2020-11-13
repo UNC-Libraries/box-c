@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.PrincipalClassifier;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
@@ -46,6 +48,7 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -204,11 +207,18 @@ public class SolrQueryLayerService extends SolrSearchService {
      */
     public boolean hasAdminViewPermission(AccessGroupSet accessGroups) {
         StringBuilder query = new StringBuilder();
-        String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
+        String joinedGroups = accessGroups.stream()
+            .filter(p -> !PrincipalClassifier.isPatronPrincipal(p))
+            .map(p -> p.replaceAll("\\:", "\\\\:"))
+            .collect(Collectors.joining(" OR "));
         query.append("adminGroup:(").append(joinedGroups).append(')');
 
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query.toString());
+        // Only take into account permissions provided from collections and units
+        solrQuery.addFacetQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
+                + ":(" + ResourceType.Collection.name() + " " + ResourceType.AdminUnit.name() + ")");
+
         solrQuery.setRows(0);
 
         try {

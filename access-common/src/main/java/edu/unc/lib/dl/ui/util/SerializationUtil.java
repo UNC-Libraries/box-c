@@ -68,7 +68,9 @@ public class SerializationUtil {
 
     public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
-        result.put("root", structureStep(response.getRootNode(), groups));
+        if (response.getRootNode() != null) {
+            result.put("root", structureStep(response.getRootNode(), groups));
+        }
         return objectToJSON(result);
     }
 

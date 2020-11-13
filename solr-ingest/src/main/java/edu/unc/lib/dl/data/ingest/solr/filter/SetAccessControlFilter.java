@@ -24,9 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
@@ -56,6 +59,12 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
             readPrincipals.add(assignment.getPrincipal());
             staffPrincipals.add(assignment.getPrincipal());
         });
+
+        // Grant visibility to the collections object
+        if (RepositoryPaths.getContentRootPid().equals(dip.getPid())
+                || dip.getContentObject() instanceof AdminUnit) {
+            staffPrincipals.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+        }
 
         List<RoleAssignment> patronAssignments = aclFactory.getPatronAccess(dip.getPid());
         patronAssignments.forEach(assignment -> {

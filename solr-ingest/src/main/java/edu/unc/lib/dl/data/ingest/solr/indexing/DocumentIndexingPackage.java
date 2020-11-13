@@ -34,6 +34,7 @@ public class DocumentIndexingPackage {
     private PID parentPid;
     private Element mods;
     private IndexDocumentBean document;
+    private ContentObject contentObject;
 
     public DocumentIndexingPackage(PID pid, DocumentIndexingPackage parentDip,
             DocumentIndexingPackageDataLoader loader) {
@@ -55,7 +56,10 @@ public class DocumentIndexingPackage {
     }
 
     public ContentObject getContentObject() throws IndexingException {
-        return loader.getContentObject(this);
+        if (contentObject == null) {
+            contentObject = loader.getContentObject(this);
+        }
+        return contentObject;
     }
 
     public IndexDocumentBean getDocument() {
