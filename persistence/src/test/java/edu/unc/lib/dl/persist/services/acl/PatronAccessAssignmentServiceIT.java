@@ -169,6 +169,22 @@ public class PatronAccessAssignmentServiceIT {
         patronService.updatePatronAccess(agent, pid, accessDetails);
     }
 
+    @Test(expected = AccessRestrictionException.class)
+    public void insufficientPermissionsNewFolder() throws Exception {
+        createCollectionInUnit(null);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.ingest));
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setRoles(asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+
+        patronService.updatePatronAccess(agent, pid, accessDetails, true);
+    }
+
     @Test(expected = ServiceException.class)
     public void setStaffRolesFailure() throws Exception {
         createCollectionInUnit(null);
