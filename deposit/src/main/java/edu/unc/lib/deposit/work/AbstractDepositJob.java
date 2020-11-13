@@ -184,7 +184,8 @@ public abstract class AbstractDepositJob implements Runnable {
         if (root == null) {
             root = e;
         }
-        if (root instanceof ClosedByInterruptException || root instanceof ClosedChannelException) {
+        if (root instanceof ClosedByInterruptException || root instanceof ClosedChannelException
+                || root instanceof InterruptedException) {
             throw new JobInterruptedException("Job " + jobUUID
                     + " interrupted during TDB operation in deposit " + depositUUID, e);
         }
