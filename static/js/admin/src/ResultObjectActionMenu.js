@@ -118,7 +118,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 			items["viewFits"] = {name: "View FITS"}
 		}
-    items["viewEventLog"] = {name : "View Event Log"};
+		if ($.inArray('viewHidden', metadata.permissions) != -1) {
+			items["viewEventLog"] = {name : "View Event Log"};
+		}
 		
 		// Modification options
 		items["sepedit"] = "";
@@ -167,7 +169,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Export actions
 		if (!isContentRoot) {
 			items["sepexport"] = "";
-			if (metadata.type !== 'File' ) {
+			if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) != -1) {
 				items["exportCSV"] = {name : 'Export as CSV'};
 			}
 
