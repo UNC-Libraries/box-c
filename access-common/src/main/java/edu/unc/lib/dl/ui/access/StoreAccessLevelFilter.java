@@ -31,6 +31,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
@@ -85,21 +86,22 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                     // Check for viewAdmin
                     boolean viewAdmin = queryLayer.hasAdminViewPermission(principals);
                     if (viewAdmin) {
-                        // See which exact type of admin we're dealing with
-                        // Comment out until we start using these
-                        // if (queryLayer.hasRole(groups, UserRole.curator))
-                        // accessLevel.setHighestRole(UserRole.curator);
-                        // else if (queryLayer.hasRole(groups, UserRole.processor))
-                        // accessLevel.setHighestRole(UserRole.processor);
-                        // else accessLevel.setHighestRole(UserRole.observer);
                         accessLevel.setHighestRole(UserRole.canAccess);
                     }
                 }
             }
         }
 
+        boolean canViewAdmin = accessLevel != null && accessLevel.isViewAdmin();
+        // Add the admin_access group for the current user
+        if (canViewAdmin) {
+            AccessGroupSet groups = GroupsThreadStore.getGroups();
+            groups.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+            GroupsThreadStore.storeGroups(groups);
+        }
+
         // Enforce admin requirement if it is set.
-        if (requireViewAdmin && (accessLevel == null || !accessLevel.isViewAdmin())) {
+        if (requireViewAdmin && !canViewAdmin) {
             response.setStatus(401);
             if (nonAdminRedirectUrl != null) {
                 RequestDispatcher dispatcher = request.getRequestDispatcher(nonAdminRedirectUrl);

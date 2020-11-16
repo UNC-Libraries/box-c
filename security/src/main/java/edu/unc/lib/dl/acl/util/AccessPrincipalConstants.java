@@ -26,5 +26,6 @@ public abstract class AccessPrincipalConstants {
     public final static String PUBLIC_PRINC = "everyone";
     public final static String AUTHENTICATED_PRINC = "authenticated";
     public final static String USER_NAMESPACE = "unc:onyen:";
+    public final static String ADMIN_ACCESS_PRINC = "admin_access";
 
 }

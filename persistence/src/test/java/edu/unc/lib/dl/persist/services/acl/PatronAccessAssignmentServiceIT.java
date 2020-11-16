@@ -595,7 +595,7 @@ public class PatronAccessAssignmentServiceIT {
         assertMessageSent(pid);
     }
 
-    @Test
+    @Test(expected = InvalidAssignmentException.class)
     public void addPatronRoleToStaffPrincipal() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
@@ -603,20 +603,9 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
-                new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
+                new RoleAssignment(GRP_PRINC, canViewMetadata)));
 
         patronService.updatePatronAccess(agent, pid, accessDetails);
-
-        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
-        assertHasAssignment(AUTHENTICATED_PRINC, canViewMetadata, target);
-
-        assertNoEmbargo(target);
-
-        List<String> eventDetails = getEventDetails(target);
-        assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewMetadata.getPropertyString());
-
-        assertMessageSent(pid);
     }
 
     private void createCollectionInUnit(Model collModel) {
