@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -175,12 +176,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         Resource fileResc = folderModel.getResource(toBxc3Uri(filePid));
         folderResc.addProperty(Relationship.contains.getProperty(), fileResc);
 
-        Document foxml1 = new FoxmlDocumentBuilder(bxc3Pid, "folder")
-                .relsExtModel(folderModel)
-                .build();
-        serializeFoxml(bxc3Pid, foxml1);
-
-        addPremisLog(bxc3Pid);
+        serializeBasicObject(bxc3Pid, "folder", folderModel);
 
         indexFiles();
 
@@ -216,15 +212,73 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
     }
 
     @Test
+    public void transformMultipleIds() throws Exception {
+        PID folder1Bxc3Pid = pidMinter.mintContentPid();
+        Model folder1Model = createModelWithTypes(folder1Bxc3Pid, ContentModel.CONTAINER);
+        PID folder2Bxc3Pid = pidMinter.mintContentPid();
+        Model folder2Model = createModelWithTypes(folder2Bxc3Pid, ContentModel.CONTAINER);
+        PID folder2ChildBxc3Pid = pidMinter.mintContentPid();
+        Model folder2ChildModel = createModelWithTypes(folder2ChildBxc3Pid, ContentModel.CONTAINER);
+        PID folder3Bxc3Pid = pidMinter.mintContentPid();
+        Model folder3Model = createModelWithTypes(folder3Bxc3Pid, ContentModel.CONTAINER);
+
+        Resource folder2Resc = folder2Model.getResource(toBxc3Uri(folder2Bxc3Pid));
+        Resource folder2ChildResc = folder2Model.getResource(toBxc3Uri(folder2ChildBxc3Pid));
+        folder2Resc.addProperty(Relationship.contains.getProperty(), folder2ChildResc);
+
+        serializeBasicObject(folder1Bxc3Pid, "folder1", folder1Model);
+        serializeBasicObject(folder2Bxc3Pid, "folder2", folder2Model);
+        serializeBasicObject(folder2ChildBxc3Pid, "folder2c", folder2ChildModel);
+        serializeBasicObject(folder3Bxc3Pid, "folder3", folder3Model);
+
+        indexFiles();
+
+        String[] args = new String[] { "tc", String.join(",",
+                folder1Bxc3Pid.getId(), folder2Bxc3Pid.getId(), folder3Bxc3Pid.getId()) };
+        executeExpectSuccess(args);
+
+        PID depositPid = extractDepositPid(output);
+
+        assertTrue("Expected one transformation successful",
+                output.contains(" 4/4 "));
+        assertTrue("Expected transformation completed message",
+                output.contains("Finished transformation"));
+
+        modelManager = new DepositModelManager(tdbDir.toString());
+        Model depModel = modelManager.getReadModel(depositPid);
+
+        Resource resultFolder1Resc = depModel.getResource(folder1Bxc3Pid.getRepositoryPath());
+        assertTrue(resultFolder1Resc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resultFolder1Resc.hasProperty(CdrDeposit.label, "folder1"));
+        assertTrue(resultFolder1Resc.hasProperty(CdrDeposit.createTime, FoxmlDocumentBuilder.DEFAULT_CREATED_DATE));
+
+        Resource resultFolder2Resc = depModel.getResource(folder2Bxc3Pid.getRepositoryPath());
+        assertTrue(resultFolder2Resc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resultFolder2Resc.hasProperty(CdrDeposit.label, "folder2"));
+        assertTrue(resultFolder2Resc.hasProperty(CdrDeposit.createTime, FoxmlDocumentBuilder.DEFAULT_CREATED_DATE));
+
+        Resource resultFolder2ChildResc = depModel.getResource(folder2ChildBxc3Pid.getRepositoryPath());
+        assertTrue(resultFolder2ChildResc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resultFolder2ChildResc.hasProperty(CdrDeposit.label, "folder2c"));
+        assertTrue(resultFolder2ChildResc.hasProperty(CdrDeposit.createTime, FoxmlDocumentBuilder.DEFAULT_CREATED_DATE));
+
+        Resource resultFolder3Resc = depModel.getResource(folder3Bxc3Pid.getRepositoryPath());
+        assertTrue(resultFolder3Resc.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(resultFolder3Resc.hasProperty(CdrDeposit.label, "folder3"));
+        assertTrue(resultFolder3Resc.hasProperty(CdrDeposit.createTime, FoxmlDocumentBuilder.DEFAULT_CREATED_DATE));
+
+        List<RDFNode> bagChildren = depModel.getBag(resultFolder2Resc).iterator().toList();
+        Resource resultChildResc = (Resource) bagChildren.get(0);
+        assertEquals(resultFolder2ChildResc, resultChildResc);
+
+        assertTrue("Deposit directory must exist", new File(depositBaseDir, depositPid.getId()).exists());
+    }
+
+    @Test
     public void transformDryRun() throws Exception {
         Model folderModel = createModelWithTypes(bxc3Pid, ContentModel.CONTAINER);
 
-        Document foxml1 = new FoxmlDocumentBuilder(bxc3Pid, "folder")
-                .relsExtModel(folderModel)
-                .build();
-        serializeFoxml(bxc3Pid, foxml1);
-
-        addPremisLog(bxc3Pid);
+        serializeBasicObject(bxc3Pid, "folder", folderModel);
 
         indexFiles();
 
@@ -252,10 +306,7 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         Resource folderResc = folderModel.getResource(toBxc3Uri(bxc3Pid));
         folderResc.addProperty(Relationship.originalDeposit.getProperty(),
                 createResource(toBxc3Uri(mysteryDepositPid)));
-        Document foxml1 = new FoxmlDocumentBuilder(bxc3Pid, "folder")
-                .relsExtModel(folderModel)
-                .build();
-        serializeFoxml(bxc3Pid, foxml1);
+        serializeBasicObject(bxc3Pid, "folder", folderModel);
 
         indexFiles();
 
@@ -307,15 +358,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
 
         addPremisLog(bxc3Pid);
 
-        Document foxml1 = new FoxmlDocumentBuilder(bxc3Pid, "folder")
-                .relsExtModel(folderModel)
-                .build();
-        serializeFoxml(bxc3Pid, foxml1);
-
-        Document foxml2 = new FoxmlDocumentBuilder(innerPid, "folder")
-                .relsExtModel(innerFolderModel)
-                .build();
-        serializeFoxml(innerPid, foxml2);
+        serializeBasicObject(bxc3Pid, "folder", folderModel);
+        serializeBasicObject(innerPid, "folder2", innerFolderModel);
 
         indexFiles();
 
@@ -340,6 +384,13 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         assertEquals("No children should have been migrated due to skip-members", 0, bagChildren.size());
 
         assertTrue("Deposit directory must exist", new File(depositBaseDir, depositPid.getId()).exists());
+    }
+
+    private void serializeBasicObject(PID pid, String title, Model model) throws IOException {
+        Document foxml = new FoxmlDocumentBuilder(pid, title)
+                .relsExtModel(model)
+                .build();
+        serializeFoxml(pid, foxml);
     }
 
     private PID extractDepositPid(String output) {
