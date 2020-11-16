@@ -74,6 +74,8 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 public class ExportCsvController extends AbstractSolrSearchController {
     private static final Logger log = LoggerFactory.getLogger(ExportCsvController.class);
 
+    private static final int MAX_PAGE_SIZE = 1000000;
+
     public static final String OBJ_TYPE_HEADER = "Object Type";
     public static final String PID_HEADER = "PID";
     public static final String TITLE_HEADER = "Title";
@@ -134,7 +136,7 @@ public class ExportCsvController extends AbstractSolrSearchController {
                     SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
                     SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
             searchState.setSortType("export");
-            searchState.setRowsPerPage(searchSettings.maxPerPage);
+            searchState.setRowsPerPage(MAX_PAGE_SIZE);
 
             BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
                     searchRequest.getAccessGroups());
