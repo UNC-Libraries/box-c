@@ -47,6 +47,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  *
@@ -127,6 +128,112 @@ public class AddContainerIT extends AbstractAPIIT {
                 .param("staffOnly", staffOnly))
             .andExpect(status().is2xxSuccessful())
             .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(collObj, label, FolderObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(collObj.getPid().getId(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+
+        ContentObject member = getMemberByLabel(collObj, label);
+        assertHasAssignment(PUBLIC_PRINC, none, member);
+        assertHasAssignment(AUTHENTICATED_PRINC, none, member);
+    }
+
+    @Test
+    public void testAddFolderAccess() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
+                .addCanAccess("accessGroup").model);
+        GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "folder_label";
+        String staffOnly = "false";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+                .param("label", label)
+                .param("staffOnly", staffOnly))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+    }
+
+    @Test
+    public void testAddFolderStaffOnlyAccess() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
+                .addCanAccess("accessGroup").model);
+        GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "folder_label";
+        String staffOnly = "true";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+                .param("label", label)
+                .param("staffOnly", staffOnly))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+    }
+
+    @Test
+    public void testAddFolderIngestor() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
+                .addCanIngest("ingestorGroup").model);
+
+        GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "folder_label";
+        String staffOnly = "false";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+                .param("label", label)
+                .param("staffOnly", staffOnly))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(collObj, label, FolderObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(collObj.getPid().getId(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        assertPatronDoesNotHaveNonePermission(collObj, label);
+    }
+
+
+    @Test
+    public void testAddFolderStaffOnlyIngestor() throws Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
+                .addCanIngest("ingestorGroup").model);
+
+        GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
+        contentRoot.addMember(adminUnit);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
+        adminUnit.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "folder_label";
+        String staffOnly = "true";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+                .param("label", label)
+                .param("staffOnly", staffOnly))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
 
         treeIndexer.indexAll(baseAddress);
 

@@ -133,7 +133,7 @@ public class AddContainerService {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
-                patronService.updatePatronAccess(agent, containerPid, accessDetails);
+                patronService.updatePatronAccess(agent, containerPid, accessDetails, true);
             } else if (Cdr.Collection.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, canViewOriginals),

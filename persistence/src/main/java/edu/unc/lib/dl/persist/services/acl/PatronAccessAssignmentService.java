@@ -17,6 +17,7 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
+import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
 import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -43,6 +44,7 @@ import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -88,6 +90,11 @@ public class PatronAccessAssignmentService {
     }
 
     public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
+        return updatePatronAccess(agent, target, accessDetails, false);
+    }
+
+    public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails,
+                                     boolean isFolderCreation) {
         notNull(agent, "Must provide an agent for this operation");
         notNull(target, "Must provide the PID of the object to update");
         notNull(accessDetails, "Must provide patron access details");
@@ -95,8 +102,9 @@ public class PatronAccessAssignmentService {
         FedoraTransaction tx = txManager.startTransaction();
         log.info("Starting update of patron access on {}", target.getId());
         try (Timer.Context context = timer.time()) {
+            Permission permissionToCheck = isFolderCreation ? ingest : changePatronAccess;
             aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + target.getId(),
-                    target, agent.getPrincipals(), changePatronAccess);
+                    target, agent.getPrincipals(), permissionToCheck);
 
             assertAssignmentsComplete(accessDetails);
 
