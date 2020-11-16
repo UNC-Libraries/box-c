@@ -70,7 +70,7 @@
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <quartz.version>2.3.2</quartz.version>
         
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <grizzly.version>2.3.28</grizzly.version>
         <jersey.version>2.24</jersey.version>
         <jersey.spring3.version>2.24</jersey.spring3.version>
