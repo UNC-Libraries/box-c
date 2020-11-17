@@ -17,6 +17,10 @@ package edu.unc.lib.dcr.migration.content;
 
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
@@ -34,14 +38,14 @@ import edu.unc.lib.dl.util.ResourceType;
  */
 public class ContentTransformationService {
 
-    private PID startingPid;
+    private List<PID> startingPids;
     private PID depositPid;
     private ContentObjectTransformerManager transformerManager;
     private DepositModelManager modelManager;
     private RepositoryObjectLoader repoObjLoader;
 
     public ContentTransformationService(PID depositPid, String startingId) {
-        this.startingPid = PIDs.get(startingId);
+        startingPids = Arrays.stream(startingId.split(",")).map(PIDs::get).collect(Collectors.toList());
         this.depositPid = depositPid;
     }
 
@@ -51,9 +55,6 @@ public class ContentTransformationService {
      * @return result code
      */
     public int perform() {
-        // Determine transformed id of starting object
-        PID newPid = transformerManager.getTransformedPid(startingPid);
-
         // Populate the bag for the deposit itself
         Model depositObjModel = createDefaultModel();
         depositObjModel.createBag(depositPid.getRepositoryPath());
@@ -71,8 +72,12 @@ public class ContentTransformationService {
             parentType = rescType.getResource();
         }
 
-        transformerManager.createTransformer(startingPid, newPid, depositPid, parentType)
-                .fork();
+        for (PID startingPid : startingPids) {
+            // Determine transformed id of starting object
+            PID newPid = transformerManager.getTransformedPid(startingPid);
+            transformerManager.createTransformer(startingPid, newPid, depositPid, parentType)
+                    .fork();
+        }
 
         // Wait for all transformers to finish
         return transformerManager.awaitTransformers();
