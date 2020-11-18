@@ -200,6 +200,9 @@ public class DepositSupervisor implements WorkerListener {
 
     private void depositDuration(String depositUUID, Map<String, String> status) {
         String strDepositStartTime = status.get(DepositField.startTime.name());
+        if (strDepositStartTime == null) {
+            return;
+        }
         Long depositStartTime = Long.parseLong(strDepositStartTime);
 
         long depositEndTime = System.currentTimeMillis();
@@ -274,6 +277,7 @@ public class DepositSupervisor implements WorkerListener {
 
         private void performPipelineAction(DepositPipelineAction pipelineAction) {
             DepositPipelineState state = pipelineStatusFactory.getPipelineState();
+            LOG.info("Performing action {} on deposit pipeline in state {}", pipelineAction, state);
 
             switch (pipelineAction) {
             case quiet:
@@ -316,6 +320,8 @@ public class DepositSupervisor implements WorkerListener {
 
             String uuid = fields.get(DepositField.uuid.name());
             DepositAction depositAction = DepositAction.valueOf(requestedActionName);
+
+            LOG.info("Performing action {} on deposit {}", requestedActionName, uuid);
 
             switch (depositAction) {
             case register:
@@ -399,6 +405,7 @@ public class DepositSupervisor implements WorkerListener {
      * Resume the deposit pipeline and all quieted deposits
      */
     protected void unquiet() {
+        LOG.info("Unquieting deposit pipeline");
         // Resume all quieted deposits
         Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
 

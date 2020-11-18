@@ -51,6 +51,7 @@ import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import redis.embedded.RedisServer;
 
 /**
  *
@@ -100,6 +101,8 @@ public abstract class AbstractFedoraDepositJobIT {
     protected PID depositPid;
 
     protected ContentRootObject rootObj;
+
+    protected static RedisServer redisServer;
 
     @Before
     public void initBase() throws Exception {

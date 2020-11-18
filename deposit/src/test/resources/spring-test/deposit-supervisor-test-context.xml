@@ -72,10 +72,4 @@
         <ref bean="depositWorkerPool"/>
         <ref bean="highPriorityDepositWorkerPool"/>
     </util:list>
-    
-    <bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" >
-        <property name="jesqueConfig" ref="jesqueConfig"/>
-        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
-        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
-    </bean>
 </beans>

@@ -17,16 +17,23 @@ package edu.unc.lib.deposit.work;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import java.util.List;
 import java.util.Map;
 
 import org.apache.jena.ext.com.google.common.base.Objects;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
@@ -43,6 +50,7 @@ import edu.unc.lib.dl.persist.services.ingest.AbstractDepositHandler;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -50,7 +58,14 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
+import edu.unc.lib.dl.util.SpringJobFactory;
+import net.greghaines.jesque.Config;
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.worker.WorkerPool;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.embedded.RedisServer;
 
 /**
  * @author bbpennel
@@ -66,7 +81,13 @@ public class DepositSupervisorTest {
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Autowired
+    private Config jesqueConfig;
+
+    @Autowired
     private RepositoryPIDMinter pidMinter;
+
+    @Autowired
+    private JobStatusFactory jobStatusFactory;
 
     @Autowired
     private DepositStatusFactory depositStatusFactory;
@@ -78,7 +99,15 @@ public class DepositSupervisorTest {
     private List<WorkerPool> depositWorkerPools;
 
     @Autowired
+    private QueueInfoDAO queueDAO;
+
     private DepositSupervisor supervisor;
+
+    @Autowired
+    private SpringJobFactory jobFactory;
+
+    @Autowired
+    private JedisPool jedisPool;
 
     private PID depositDestination;
 
@@ -86,16 +115,63 @@ public class DepositSupervisorTest {
 
     private AgentPrincipals agent;
 
+    private static final RedisServer redisServer;
+
+    static {
+        try {
+            redisServer = new RedisServer(46380);
+            redisServer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        redisServer.stop();
+    }
+
     @Before
     public void setup() throws Exception {
+        when(jobFactory.materializeJob(any())).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Job job = invocation.getArgumentAt(0, Job.class);
+                if (job == null) {
+                    return null;
+                }
+                String uuid = (String) job.getArgs()[0];
+                String depositUUID = (String) job.getArgs()[1];
+                return new TestDepositJob(uuid, depositUUID);
+            }
+        });
+
         depositDestination = pidMinter.mintContentPid();
         agent = new AgentPrincipals("user", new AccessGroupSet());
 
-        actionMonitor = supervisor.actionMonitoringTask;
-
         pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+        supervisor = new DepositSupervisor();
+        supervisor.setJesqueConfig(jesqueConfig);
+        supervisor.setDepositStatusFactory(depositStatusFactory);
+        supervisor.setJobStatusFactory(jobStatusFactory);
+        setField(supervisor, "pipelineStatusFactory", pipelineStatusFactory);
+        setField(supervisor, "depositWorkerPools", depositWorkerPools);
+        setField(supervisor, "queueDAO", queueDAO);
+        supervisor.setUnavailableDelaySeconds(60);
+        supervisor.setCleanupDelaySeconds(60);
         // Turn up monitoring speed so tests are shorter
         supervisor.setActionMonitorDelay(25l);
+
+        actionMonitor = supervisor.actionMonitoringTask;
+    }
+
+    @After
+    public void cleanup() throws Exception {
+        supervisor.stop(true);
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.flushDB();
+        }
     }
 
     @Test
@@ -357,6 +433,7 @@ public class DepositSupervisorTest {
 
         assertDepositAction(DepositAction.resume, depositPid);
 
+        // Resumed job goes to queued and then to running
         assertDepositStatus(DepositState.queued, depositPid);
         assertDepositAction(null, depositPid);
     }
@@ -486,5 +563,31 @@ public class DepositSupervisorTest {
         DepositData deposit = new DepositData(null, null, packagingType, null, agent);
         deposit.setPriority(priority);
         return depositHandler.doDeposit(depositDestination, deposit);
+    }
+
+    private static final long JOB_TIMEOUT = 5000l;
+    private class TestDepositJob extends AbstractDepositJob {
+
+        public TestDepositJob(String uuid, String depositUUID) {
+            super(uuid, depositUUID);
+            setDepositStatusFactory(depositStatusFactory);
+            setJobStatusFactory(jobStatusFactory);
+        }
+
+        @Override
+        public void runJob() {
+            long end = System.currentTimeMillis() + JOB_TIMEOUT;
+            while (true) {
+                if (end < System.currentTimeMillis()) {
+                    return;
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                interruptJobIfStopped();
+            }
+        }
     }
 }
