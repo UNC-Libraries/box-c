@@ -334,7 +334,7 @@ public class DepositSupervisor implements WorkerListener {
                         depositStatusFactory.removeSupervisorLock(uuid);
                     }
                 }
-                break;
+                return;
             case resume:
                 LOG.info("Resuming job {}", uuid);
                 if (depositStatusFactory.addSupervisorLock(uuid, id)) {
@@ -344,19 +344,25 @@ public class DepositSupervisor implements WorkerListener {
                         depositStatusFactory.removeSupervisorLock(uuid);
                     }
                 }
-                break;
+                return;
             case pause:
                 LOG.info("Pausing job {}", uuid);
-                depositStatusFactory.setState(uuid, DepositState.paused);
-                break;
+                if (depositStatusFactory.addSupervisorLock(uuid, id)) {
+                    try {
+                        depositStatusFactory.setState(uuid, DepositState.paused);
+                        depositStatusFactory.clearActionRequest(uuid);
+                    } finally {
+                        depositStatusFactory.removeSupervisorLock(uuid);
+                    }
+                }
+                return;
             case cancel:
             case destroy:
             default:
+                depositStatusFactory.clearActionRequest(uuid);
                 LOG.warn("Deposit action {} is not currently supported", requestedActionName);
-                break;
+                return;
             }
-
-            depositStatusFactory.clearActionRequest(uuid);
         }
     }
 
@@ -414,7 +420,7 @@ public class DepositSupervisor implements WorkerListener {
             // If the deposit is quieted and has no queued actions, then request it be resumed
             if (DepositState.quieted.equals(depositState) && !fields.containsKey(DepositField.actionRequest.name())) {
                 String uuid = fields.get(DepositField.uuid.name());
-                depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+                depositStatusFactory.requestAction(uuid, DepositAction.resume);
             }
         }
 
@@ -477,7 +483,7 @@ public class DepositSupervisor implements WorkerListener {
                         LOG.info("Skipping resumption of deposit {} because it already is in the queue", uuid);
                     }
                 } else {
-                    depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+                    depositStatusFactory.requestAction(uuid, DepositAction.resume);
                 }
             }
         }
@@ -500,9 +506,9 @@ public class DepositSupervisor implements WorkerListener {
                     List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
                     if (successfulJobs != null && successfulJobs.size() > 0) {
                         // Queued but had already performed some jobs, so this is a resumption rather than new deposit
-                        depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+                        depositStatusFactory.requestAction(uuid, DepositAction.resume);
                     } else {
-                        depositStatusFactory.setActionRequest(uuid, DepositAction.register);
+                        depositStatusFactory.requestAction(uuid, DepositAction.register);
                     }
                 }
             }

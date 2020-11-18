@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
@@ -74,6 +76,8 @@ import redis.embedded.RedisServer;
 @ContextConfiguration( locations = { "/spring-test/cdr-client-container.xml",
     "/spring-test/deposit-supervisor-test-context.xml"} )
 public class DepositSupervisorTest {
+
+    private static final Logger log = getLogger(DepositSupervisorTest.class);
 
     private final long STATE_POLL_PERIOD = 25l;
 
@@ -402,13 +406,13 @@ public class DepositSupervisorTest {
 
         PID depositPid = queueDeposit();
 
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
 
         requestDepositAction(depositPid, DepositAction.pause);
 
-        assertDepositStatus(DepositState.paused, depositPid);
         assertDepositAction(null, depositPid);
+        assertDepositStatus(DepositState.paused, depositPid);
     }
 
     @DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
@@ -418,9 +422,9 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.resume, depositPid);
+        assertDepositActionOrNull(DepositAction.resume, depositPid);
 
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
     }
 
@@ -431,10 +435,9 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.resume, depositPid);
+        assertDepositActionOrNull(DepositAction.resume, depositPid);
 
-        // Resumed job goes to queued and then to running
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
     }
 
@@ -458,7 +461,7 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.register, depositPid);
+        assertDepositActionOrNull(DepositAction.register, depositPid);
 
         assertDepositStatus(DepositState.queued, depositPid);
         assertDepositAction(null, depositPid);
@@ -495,11 +498,30 @@ public class DepositSupervisorTest {
         fail("Expected deposit status to be " + expectedState + " but state was " + liveState);
     }
 
-    private void assertDepositAction(DepositAction expectedAction, PID depositPid) throws Exception {
-        assertDepositAction(expectedAction, depositPid, 1000l);
+    private void assertDepositQueuedOrRunning(PID depositPid) throws Exception {
+        long timeout = 1000l;
+        long endTime = System.currentTimeMillis() + timeout;
+        DepositState liveState = null;
+        while (endTime >= System.currentTimeMillis()) {
+            liveState = depositStatusFactory.getState(depositPid.getId());
+            if (DepositState.queued.equals(liveState) || DepositState.running.equals(liveState)) {
+                return;
+            }
+            Thread.sleep(STATE_POLL_PERIOD);
+        }
+        fail("Expected deposit status to be queued or running but state was " + liveState);
     }
 
-    private void assertDepositAction(DepositAction expectedAction, PID depositPid, long timeout) throws Exception {
+    private void assertDepositAction(DepositAction expectedAction, PID depositPid) throws Exception {
+        assertDepositAction(expectedAction, depositPid, false, 1000l);
+    }
+
+    private void assertDepositActionOrNull(DepositAction expectedAction, PID depositPid) throws Exception {
+        assertDepositAction(expectedAction, depositPid, true, 1000l);
+    }
+
+    private void assertDepositAction(DepositAction expectedAction, PID depositPid, boolean allowNull, long timeout)
+            throws Exception {
         long endTime = System.currentTimeMillis() + timeout;
 
         DepositAction action = null;
@@ -511,7 +533,7 @@ public class DepositSupervisorTest {
             } else {
                 action = null;
             }
-            if (Objects.equal(expectedAction, action)) {
+            if (Objects.equal(expectedAction, action) || (allowNull && action == null)) {
                 return;
             }
             Thread.sleep(STATE_POLL_PERIOD);
@@ -529,6 +551,8 @@ public class DepositSupervisorTest {
 
     private void requestDepositAction(PID depositPid, DepositAction action) {
         depositStatusFactory.requestAction(depositPid.getId(), action);
+        log.debug("Set deposit action {} for {} to {}",
+                action, depositPid.getId(), depositStatusFactory.get(depositPid.getId()));
     }
 
     private PID queueDeposit() throws DepositException {
