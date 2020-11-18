@@ -86,6 +86,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
             if (isObjectCompleted(objPid)) {
                 scannedObjects += 1;
+                addClicks(1);
                 continue;
             }
 
