@@ -168,7 +168,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.run();
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
         verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
         verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
@@ -308,7 +308,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.run();
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
-        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
         verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
         verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
