@@ -29,7 +29,7 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
@@ -61,9 +61,10 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         });
 
         // Grant visibility to the collections object
-        if (RepositoryPaths.getContentRootPid().equals(dip.getPid())
+        if (dip.getContentObject() instanceof ContentRootObject
                 || dip.getContentObject() instanceof AdminUnit) {
             staffPrincipals.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+            readPrincipals.add(AccessPrincipalConstants.PUBLIC_PRINC);
         }
 
         List<RoleAssignment> patronAssignments = aclFactory.getPatronAccess(dip.getPid());
