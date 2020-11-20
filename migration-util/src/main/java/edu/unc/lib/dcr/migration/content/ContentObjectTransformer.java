@@ -250,6 +250,7 @@ public class ContentObjectTransformer extends RecursiveAction {
                 depRecResc.addProperty(Fcrepo4Repository.created, val, XSDDatatype.XSDdateTime);
                 depRecResc.addLiteral(Cdr.depositMethod, DepositMethod.BXC3_TO_5_MIGRATION_UTIL.getLabel());
                 depRecResc.addLiteral(Cdr.depositPackageType, PackagingType.BXC3_TO_5_MIGRATION.getUri());
+                depRecResc.addLiteral(Cdr.storageLocation, options.getDefaultStorageLocation());
 
                 Path transformedPremisPath = Files.createTempFile("premis", ".xml");
                 try {

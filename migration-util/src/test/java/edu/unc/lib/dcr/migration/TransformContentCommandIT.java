@@ -311,7 +311,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         indexFiles();
 
         String[] args = new String[] { "tc", bxc3Pid.getId(),
-                "--missing-deposit-records"};
+                "--missing-deposit-records",
+                "--default-storage-location", "loc1"};
         executeExpectSuccess(args);
 
         PID depositPid = extractDepositPid(output);
@@ -331,6 +332,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
                 createResource(mysteryDepositPid.getRepositoryPath())));
 
         DepositRecord generatedRec = repoObjLoader.getDepositRecord(mysteryDepositPid);
+        assertTrue(generatedRec.getResource().hasLiteral(Cdr.storageLocation, "loc1"));
+
         assertEquals(DEFAULT_CREATED_DATE, generatedRec.getCreatedDate());
         PremisLogger premisLog = generatedRec.getPremisLog();
         Model eventsModel = premisLog.getEventsModel();
