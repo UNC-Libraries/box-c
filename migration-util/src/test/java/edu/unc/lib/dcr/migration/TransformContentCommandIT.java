@@ -49,6 +49,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dcr.migration.content.ContentTransformationReport;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.ContentModel;
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Relationship;
 import edu.unc.lib.dcr.migration.fcrepo3.DatastreamVersion;
@@ -57,6 +58,7 @@ import edu.unc.lib.dcr.migration.fcrepo3.FoxmlDocumentHelpers;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
@@ -89,6 +91,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private RepositoryPIDMinter pidMinter;
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
 
     private DepositModelManager modelManager;
 
@@ -136,6 +140,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         tcCommand.setApplicationContextPath(contextPath.toUri().toString());
 
         output = null;
+
+        ContentTransformationReport.reset();
     }
 
     @After
@@ -321,6 +327,8 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
                 output.contains(" 1/1 "));
         assertTrue("Expected transformation completed message",
                 output.contains("Finished transformation"));
+        assertTrue("Expected generated deposit records report",
+                output.contains("Generated deposit records: 1"));
 
         modelManager = new DepositModelManager(tdbDir.toString());
         Model depModel = modelManager.getReadModel(depositPid);
@@ -347,6 +355,40 @@ public class TransformContentCommandIT extends AbstractTransformationIT {
         Resource agentResc = ingestEventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
         assertEquals(AgentPids.forSoftware(SoftwareAgent.migrationUtil).getRepositoryPath(),
                 agentResc.getURI());
+    }
+
+    @Test
+    public void transformDryRunMissingDepositRecord() throws Exception {
+        PID mysteryDepositPid = pidMinter.mintDepositRecordPid();
+
+        Model folderModel = createModelWithTypes(bxc3Pid, ContentModel.CONTAINER);
+        Resource folderResc = folderModel.getResource(toBxc3Uri(bxc3Pid));
+        folderResc.addProperty(Relationship.originalDeposit.getProperty(),
+                createResource(toBxc3Uri(mysteryDepositPid)));
+        serializeBasicObject(bxc3Pid, "folder", folderModel);
+
+        indexFiles();
+
+        String[] args = new String[] { "tc", bxc3Pid.getId(),
+                "--missing-deposit-records",
+                "--default-storage-location", "loc1",
+                "--dry-run"};
+        executeExpectSuccess(args);
+
+        PID depositPid = extractDepositPid(output);
+
+        assertTrue("Expected one transformation successful",
+                output.contains(" 1/1 "));
+        assertTrue("Expected transformation completed message",
+                output.contains("Finished transformation"));
+        assertTrue("Expected dry run message",
+                output.contains("Dry run, deposit model not saved"));
+        assertTrue("Expected generated deposit records report",
+                output.contains("Generated deposit records: 1"));
+
+        assertFalse("Deposit directory must not exist", new File(depositBaseDir, depositPid.getId()).exists());
+
+        assertFalse(repoObjFactory.objectExists(mysteryDepositPid.getRepositoryUri()));
     }
 
     @Test
