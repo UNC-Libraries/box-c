@@ -65,7 +65,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct:process.enhancement.thumbnails")
             .routeId("ProcessThumbnails")
             .startupOrder(23)
-            .log(LoggingLevel.INFO, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
+            .log(LoggingLevel.INFO, log, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
             .filter().method(imageDerivProcessor, "allowedImageType")
                 .log(LoggingLevel.INFO, log, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
                         + " of type ${headers[CdrMimeType]}")
@@ -111,7 +111,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")
             .startupOrder(20)
-            .log(LoggingLevel.DEBUG, "Access copy triggered")
+            .log(LoggingLevel.DEBUG, log, "Access copy triggered")
             .filter().method(addAccessCopyProcessor, "needsRun")
             .filter().method(imageDerivProcessor, "allowedImageType")
                 .bean(imageDerivProcessor)

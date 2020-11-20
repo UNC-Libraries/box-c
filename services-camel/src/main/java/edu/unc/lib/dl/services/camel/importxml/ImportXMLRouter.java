@@ -16,9 +16,11 @@
 package edu.unc.lib.dl.services.camel.importxml;
 
 import static org.apache.camel.LoggingLevel.DEBUG;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 /**
  * Route which executes requests to perform bulk xml imports.
@@ -27,6 +29,7 @@ import org.apache.camel.builder.RouteBuilder;
  *
  */
 public class ImportXMLRouter extends RouteBuilder {
+    private static final Logger log = getLogger(ImportXMLRouter.class);
 
     @BeanInject(value = "importXMLProcessor")
     private ImportXMLProcessor importXmlProcessor;
@@ -35,7 +38,7 @@ public class ImportXMLRouter extends RouteBuilder {
     public void configure() throws Exception {
         from("{{cdr.importxml.stream.camel}}")
             .routeId("CdrImportXML")
-            .log(DEBUG, "Received import xml message")
+            .log(DEBUG, log, "Received import xml message")
             .bean(importXmlProcessor);
     }
 }

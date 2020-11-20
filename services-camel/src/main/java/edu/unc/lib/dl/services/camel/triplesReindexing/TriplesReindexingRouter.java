@@ -17,10 +17,12 @@ package edu.unc.lib.dl.services.camel.triplesReindexing;
 
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 /**
  * Route for processing reindexing requests.
@@ -29,6 +31,7 @@ import org.apache.camel.builder.RouteBuilder;
  *
  */
 public class TriplesReindexingRouter extends RouteBuilder {
+    private static final Logger log = getLogger(TriplesReindexingRouter.class);
 
     private static final String LDP_CONTAINS = "<http://www.w3.org/ns/ldp#contains>";
 
@@ -48,14 +51,14 @@ public class TriplesReindexingRouter extends RouteBuilder {
             .routeId("TripleIndexingRoute")
             .startupOrder(2)
             .bean(indexingMessageProcessor)
-            .log(INFO, "Received triple reindexing update message: ${headers[CamelFcrepoUri]}")
+            .log(INFO, log, "Received triple reindexing update message: ${headers[CamelFcrepoUri]}")
             .inOnly("{{reindexing.stream}}?disableTimeToLive=true");
 
         // Route which recursively steps through fedora objects and submits them for indexing
         from("{{reindexing.stream}}?asyncConsumer=true")
             .routeId("FcrepoReindexingTraverse")
             .startupOrder(1)
-            .log(INFO, "Reindexing ${headers[CamelFcrepoUri]}")
+            .log(INFO, log, "Reindexing ${headers[CamelFcrepoUri]}")
             .inOnly("{{triplestore.reindex.stream}}")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=PreferContainment" +
                     "&preferOmit=ServerManaged&accept=application/n-triples")
