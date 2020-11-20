@@ -368,7 +368,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						});
 						break;
 					case "copyid" :
-						window.prompt("Copy PID to clipboard", metadata.id);
+						(async function() {
+							try {
+								await navigator.clipboard.writeText(metadata.id);
+								self.options.alertHandler.alertHandler('success', `Id copied to clipboard: ${metadata.id}`);
+							} catch(err) {
+								self.options.alertHandler.alertHandler('error', 'Unable to copy id to clipboard');
+							}
+						})();
 						break;
 					case "patronPermissions" :
 						perms_editor_data.permissionType = 'Patron';
