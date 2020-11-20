@@ -13,9 +13,12 @@
             </thead>
             <tbody>
             <tr v-for="(inherited_staff_permission, index) in current_staff_roles.inherited.roles">
-                <td @mouseover="hover_row_inherited = index" @mouseleave="hover_row_inherited = ''">
+                <td>
                   <div class="text-only">
-                    {{ truncatePermissionText(inherited_staff_permission.principal) }}
+                    <span @mouseover="hover_row_inherited = index" @mouseleave="hover_row_inherited = ''">
+                          {{ truncatePermissionText(inherited_staff_permission.principal) }}</span>
+                    <span @click="copyPermission(inherited_staff_permission.principal)">
+                          <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
                   </div>
                   <div class="tooltip" v-if="hover_row_inherited === index">
                     {{ inherited_staff_permission.principal }}
@@ -46,10 +49,12 @@
             </transition>
             <table class="assigned-permissions">
                 <tr v-if="updated_staff_roles.length > 0"  v-for="(updated_staff_role, index) in updated_staff_roles" :key="index">
-                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}"
-                        @mouseover="hover_row = index" @mouseleave="hover_row = ''">
+                    <td class="border" :class="{'marked-for-deletion': checkUserRemoved(updated_staff_role)}">
                       <div class="text-only">
-                        {{ truncatePermissionText(updated_staff_role.principal) }}
+                        <span @mouseover="hover_row = index" @mouseleave="hover_row = ''">
+                          {{ truncatePermissionText(updated_staff_role.principal) }}</span>
+                        <span @click="copyPermission(updated_staff_role.principal)">
+                          <i class="fas fa-copy" title="Copy full permission to clipboard"></i></span>
                       </div>
                       <div class="tooltip" v-if="hover_row === index">
                         {{ updated_staff_role.principal }}
@@ -301,10 +306,20 @@
 
             truncatePermissionText(text) {
               if (text.length > 25) {
-                return text.substr(0, 25) + ' \u2026 ';
+                let permissions = text.split(':');
+                return ` \u2026 ${permissions[permissions.length - 1]}`;
               }
 
               return text;
+            },
+
+            async copyPermission(text) {
+              try {
+                await navigator.clipboard.writeText(text);
+                this.alertHandler.alertHandler('success', `Permission copied to clipboard: ${text}`);
+              } catch(err) {
+                this.alertHandler.alertHandler('error', 'Unable to copy permission to clipboard');
+              }
             },
 
             updateErrorMsg(msg) {
@@ -380,6 +395,19 @@
             font-weight: normal;
             margin-bottom: 10px;
             margin-top: 25px;
+        }
+
+        span + span {
+          float: right;
+          padding-right: 5px;
+
+          .fa-copy {
+            color: #4B9CD3;
+
+            &:hover {
+              cursor: pointer;
+            }
+          }
         }
 
         .btn-remove {
