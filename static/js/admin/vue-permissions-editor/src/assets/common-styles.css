@@ -36,6 +36,11 @@
     max-width: 150px;
 }
 
+#modal-permissions-editor .assigned-permissions td.size input[type=text] {
+    height: 32px;
+    width: 230px;
+}
+
 #modal-permissions-editor .assigned-permissions td div.text-only {
     margin-right: 5px;
 }
