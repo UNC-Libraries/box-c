@@ -118,7 +118,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     }
 
     @Test
-    public void createBinaryWithCharsetTest() throws Exception {
+    public void createBinaryWithMultiPartMimeTypeSemicolonTest() throws Exception {
         // create parent for binary
         WorkObject workObj = repoObjFactory.createWorkObject(null);
         String binarySlug = "binary_test";
@@ -132,6 +132,48 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String bodyString = "Test text";
         String filename = "test.txt";
         String mimetype = "text/plain; charset=GB18030";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+
+        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
+                null, null, model);
+
+        try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
+            String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
+                    .collect(Collectors.joining("\n"));
+
+            assertEquals("Binary content did not match submitted value", bodyString, respString);
+        }
+
+        // Verify that triples were added
+        URI metadataUri = URI.create(binaryPath + "/fcr:metadata");
+        try (FcrepoResponse resp = client.get(metadataUri).perform()) {
+            Model respModel = RDFModelUtil.createModel(resp.getBody());
+            Resource respResc = respModel.getResource(binaryPath);
+
+            assertTrue(respResc.hasProperty(RDF.type, Ldp.NonRdfSource));
+            assertTrue(respResc.hasProperty(RDF.type, PcdmUse.OriginalFile));
+            assertTrue(respResc.hasProperty(RDF.type, PcdmModels.File));
+
+            assertEquals(respResc.getProperty(Ebucore.filename).getString(), filename);
+            assertEquals(respResc.getProperty(Ebucore.hasMimeType).getString(), "text/plain");
+        }
+    }
+
+    @Test
+    public void createBinaryWithMultiPartMimeTypeCommaTest() throws Exception {
+        // create parent for binary
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        String binarySlug = "binary_test";
+        URI binaryUri = workObj.getPid().getRepositoryUri();
+        String binaryPath = URIUtil.join(binaryUri, binarySlug);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(binaryPath);
+        resc.addProperty(RDF.type, PcdmUse.OriginalFile);
+
+        String bodyString = "Test text";
+        String filename = "test.txt";
+        String mimetype = "text/plain, charset=GB18030";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
         BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
