@@ -40,6 +40,17 @@ public class ContentTransformationReport {
     private ContentTransformationReport() {
     }
 
+    public static void reset() {
+        noOriginalDatastream.set(0);
+        noPremis.set(0);
+        collectionToFolder.set(0);
+        fileToWork.set(0);
+        missingFoxml.set(0);
+        skippedDeleted.set(0);
+        generatedDepositRecords.set(0);
+        typeCounts.clear();
+    }
+
     /**
      * Record that an object was migrated
      * @param resourceType type of the object recorded

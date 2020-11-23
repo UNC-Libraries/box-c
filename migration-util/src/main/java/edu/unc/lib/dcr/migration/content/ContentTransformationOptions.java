@@ -53,6 +53,11 @@ public class ContentTransformationOptions {
             description = "Submits the transformed content for deposit to the provided container UUID")
     private String depositInto;
 
+    @Option(names = {"--default-storage-location"},
+            defaultValue = "primary_storage",
+            description = "Storage location that objects generated in fedora will stored binaries to")
+    private String defaultStorageLocation;
+
     private PID depositPid;
 
     public boolean isTopLevelAsUnit() {
@@ -117,5 +122,13 @@ public class ContentTransformationOptions {
 
     public void setDepositPid(PID depositPid) {
         this.depositPid = depositPid;
+    }
+
+    public String getDefaultStorageLocation() {
+        return defaultStorageLocation;
+    }
+
+    public void setDefaultStorageLocation(String defaultStorageLocation) {
+        this.defaultStorageLocation = defaultStorageLocation;
     }
 }
