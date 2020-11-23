@@ -28,6 +28,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 	ParentResultObject.prototype.init = function(metadata) {
 		this.metadata = metadata;
 		this.pid = metadata.id;
+		this.isDeleted = $.inArray("Marked For Deletion", this.metadata.status) != -1;
 		this.actionMenuInitialized = false;
 		this.element = this.options.element;
 		this.element.data('resultObject', this);
