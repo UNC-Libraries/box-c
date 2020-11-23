@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -37,9 +38,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
@@ -203,6 +206,30 @@ public class SetAccessControlFilterTest {
                 canViewOriginals.name() + "|" + PUBLIC_PRINC));
         assertTrue(listCaptor.getValue().contains(
                 canManage.name() + "|" + PRINC2));
+    }
+
+    @Test
+    public void testContentRoot() throws Exception {
+        ContentRootObject contentRoot = mock(ContentRootObject.class);
+        when(dip.getContentObject()).thenReturn(contentRoot);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        List<String> adminPrincipals = listCaptor.getValue();
+        assertEquals(1, adminPrincipals.size());
+        assertTrue("Admin access principal must be have admin viewing rights for content root",
+                adminPrincipals.contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC));
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        List<String> patronPrincipals = listCaptor.getValue();
+        assertEquals(1, patronPrincipals.size());
+        assertPrincipalsPresent("Patron principal must have patron viewing rights for content root",
+                listCaptor.getValue(), PUBLIC_PRINC);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue("No role grants should be present for ContentRoot",
+                listCaptor.getValue().isEmpty());
     }
 
     private void assertPrincipalsPresent(String message, List<String> values, String... principals) {
