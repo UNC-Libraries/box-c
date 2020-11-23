@@ -117,13 +117,18 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             interruptJobIfStopped();
 
             PID objPid = stagedPair.getKey();
+
+            if (isObjectCompleted(objPid)) {
+                addClicks(1);
+                continue;
+            }
+
             String stagedPath = stagedPair.getValue();
 
             // Generate the FITS report as a document
             Document fitsDoc = getFitsDocument(objPid, stagedPath);
 
             try {
-
                 // Create the PREMIS report wrapper for the FITS results
                 Document premisDoc = generatePremisReport(objPid, fitsDoc);
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
@@ -141,6 +146,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 // Store the premis report to file
                 writePremisReport(objPid, premisDoc);
                 addClicks(1);
+                markObjectCompleted(objPid);
             } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
