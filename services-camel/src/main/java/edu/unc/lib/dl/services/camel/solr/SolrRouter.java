@@ -16,9 +16,12 @@
 
 package edu.unc.lib.dl.services.camel.solr;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -30,6 +33,8 @@ import edu.unc.lib.dl.fedora.NotFoundException;
  *
  */
 public class SolrRouter extends RouteBuilder {
+    private static final Logger log = getLogger(SolrRouter.class);
+
     @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
@@ -47,7 +52,7 @@ public class SolrRouter extends RouteBuilder {
             .onException(ObjectTombstonedException.class)
                 .retriesExhaustedLogLevel(LoggingLevel.DEBUG)
             .end()
-            .log(LoggingLevel.DEBUG, "Calling solr indexing route for ${headers[org.fcrepo.jms.identifier]}")
+            .log(LoggingLevel.DEBUG, log, "Calling solr indexing route for ${headers[org.fcrepo.jms.identifier]}")
             .bean(solrIngestProcessor);
     }
 }

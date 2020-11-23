@@ -27,12 +27,14 @@ import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RESTORE_FROM_DELETIO
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.SET_AS_PRIMARY_OBJECT;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.UPDATE_DESCRIPTION;
 import static java.util.Arrays.asList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.List;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
 
@@ -43,6 +45,8 @@ import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
  *
  */
 public class CdrEventRouter extends RouteBuilder {
+    private static final Logger log = getLogger(CdrEventRouter.class);
+
     @BeanInject(value = "cdrEventProcessor")
     private CdrEventProcessor cdrEventProcessor;
 
@@ -66,7 +70,7 @@ public class CdrEventRouter extends RouteBuilder {
         from("{{cdr.stream.camel}}")
             .routeId("CdrServiceCdrEvents")
             .startupOrder(2)
-            .log(LoggingLevel.DEBUG, "CDR Event Message received ${headers[" + CdrUpdateAction + "]}")
+            .log(LoggingLevel.DEBUG, log, "CDR Event Message received ${headers[" + CdrUpdateAction + "]}")
             .bean(cdrEventProcessor)
             .filter(simple("${headers[" + CdrUpdateAction + "]} in '" + solrAllowed + "'"))
             .to("direct:solr-update");
@@ -74,7 +78,7 @@ public class CdrEventRouter extends RouteBuilder {
         from("direct:solr-update")
             .routeId("CdrServiceCdrEventToSolrUpdateProcessor")
             .startupOrder(1)
-            .log(LoggingLevel.DEBUG, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
+            .log(LoggingLevel.DEBUG, log, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
             .bean(cdrEventToSolrUpdateProcessor);
     }
 }

@@ -60,7 +60,7 @@ public class SolrUpdateRouter extends RouteBuilder {
             .routeId("CdrServiceSolrUpdate")
             .startupOrder(510)
             .bean(solrUpdatePreprocessor)
-            .log(LoggingLevel.DEBUG, "Received solr update message with action ${header[CdrSolrUpdateAction]}")
+            .log(LoggingLevel.DEBUG, log, "Received solr update message with action ${header[CdrSolrUpdateAction]}")
             .choice()
                 .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
                     .to("{{cdr.solrupdate.large.consumer}}")
