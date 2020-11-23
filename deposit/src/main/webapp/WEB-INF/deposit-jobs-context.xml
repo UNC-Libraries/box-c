@@ -211,10 +211,28 @@
         <property name="modsValidator" ref="modsValidator" />
     </bean>
     
+    <bean id="fitsHttpClientRequestConfigBuilder" class="org.apache.http.client.config.RequestConfig"
+        factory-method="custom">
+        <property name="socketTimeout" value="${fits.http.client.socketTimeout:300000}" />
+    </bean>
+    
+    <bean id="fitsHttpClientRequestConfig" factory-bean="fitsHttpClientRequestConfigBuilder"
+        factory-method="build">
+    </bean>
+    
+    <bean id="fitsPooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
+        <property name="connectionManager" ref="multiThreadedHttpConnectionManager" />
+        <property name="defaultRequestConfig" ref="fitsHttpClientRequestConfig" />
+    </bean>
+    
+    <bean id="fitsPooledHttpClient" class="org.apache.http.impl.client.CloseableHttpClient"
+            factory-bean="fitsPooledHttpClientBuilder" factory-method="build">
+    </bean>
+    
     <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
         scope="prototype">
         <property name="baseFitsUri" value="${fits.baseUri}" />
-        <property name="httpClient" ref="pooledHttpClient" />
+        <property name="httpClient" ref="fitsPooledHttpClient" />
         <property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
     </bean>
     
