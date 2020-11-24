@@ -40,6 +40,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
@@ -109,14 +110,13 @@ public class VirusScanJob extends AbstractDepositJob {
                     continue;
                 }
 
-                URI manifestURI = URI.create(href.getValue());
-
                 Future<?> future = executorService.submit(() -> {
                     if (isInterrupted.get()) {
                         return;
                     }
-                    log.debug("Scanning file {} for object {}", manifestURI, objPid);
+                    log.debug("Scanning file {} for object {}", href.getValue(), objPid);
 
+                    URI manifestURI = URI.create(href.getValue());
                     File file = new File(manifestURI);
 
                     ScanResult result = clamScan.scan(file);
@@ -126,10 +126,10 @@ public class VirusScanJob extends AbstractDepositJob {
                         failures.put(manifestURI.toString(), result.getSignature());
                         break;
                     case ERROR:
-                        throw new Error(
-                                "Virus checks are producing errors: " +
-                                ((result.getException() == null) ? result.getResult() :
-                                        result.getException().getLocalizedMessage()));
+                        Exception ex = result.getException();
+                        String message = "Virus checks are producing errors for file '" + file
+                                + "': " + result.getResult();
+                        throw new RepositoryException(message, ex);
                     case PASSED:
                         PID binPid = href.getKey();
                         PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
@@ -161,8 +161,8 @@ public class VirusScanJob extends AbstractDepositJob {
                     throw new JobInterruptedException("Virus scan interrupted", e);
                 } catch (ExecutionException e) {
                     isInterrupted.set(true);
-                    if (e.getCause() instanceof Error) {
-                        throw (Error) e.getCause();
+                    if (e.getCause() instanceof RepositoryException) {
+                        throw (RepositoryException) e.getCause();
                     }
                     throw new RuntimeException(e.getCause());
                 }

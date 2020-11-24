@@ -55,6 +55,7 @@ import com.philvarner.clamavj.ScanResult.Status;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -275,7 +276,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         try {
             job.run();
             fail();
-        } catch(Error e) {
+        } catch(RepositoryException e) {
             // No files should have completed scanning
             verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
             verify(jobStatusFactory, never()).incrCompletion(anyString(), anyInt());
