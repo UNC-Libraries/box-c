@@ -182,6 +182,7 @@ public class DepositModelManager implements Closeable {
             }
             dataset.begin(ReadWrite.WRITE);
         }
+        log.info("Removing deposit model for {}", uri);
         dataset.removeNamedModel(uri);
         dataset.commit();
     }
