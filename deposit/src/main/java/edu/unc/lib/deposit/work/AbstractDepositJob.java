@@ -60,6 +60,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.api.services.InterruptedLockException;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -186,7 +187,7 @@ public abstract class AbstractDepositJob implements Runnable {
             root = e;
         }
         if (root instanceof ClosedByInterruptException || root instanceof ClosedChannelException
-                || root instanceof InterruptedException) {
+                || root instanceof InterruptedException || root instanceof InterruptedLockException) {
             throw new JobInterruptedException("Job " + jobUUID
                     + " interrupted during TDB operation in deposit " + depositUUID, e);
         }

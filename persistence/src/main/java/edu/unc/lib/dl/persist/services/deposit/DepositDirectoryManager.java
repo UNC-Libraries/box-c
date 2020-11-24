@@ -67,9 +67,9 @@ public class DepositDirectoryManager {
     public void createDepositDirectory() {
         try {
             Files.createDirectories(depositDir);
-            Files.createDirectory(descriptionDir);
-            Files.createDirectory(historyDir);
-            Files.createDirectory(eventsDir);
+            Files.createDirectories(descriptionDir);
+            Files.createDirectories(historyDir);
+            Files.createDirectories(eventsDir);
         } catch (IOException e) {
             throw new RepositoryException("Failed to create deposit directory: " + depositDir, e);
         }
