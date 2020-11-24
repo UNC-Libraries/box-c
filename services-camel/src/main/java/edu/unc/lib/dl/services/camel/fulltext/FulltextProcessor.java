@@ -122,7 +122,8 @@ public class FulltextProcessor implements Processor {
     }
 
     private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
-        BodyContentHandler handler = new BodyContentHandler();
+        int CHAR_LIMIT = -1;
+        BodyContentHandler handler = new BodyContentHandler(CHAR_LIMIT);
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
