@@ -118,4 +118,19 @@ public class FulltextProcessorTest {
         processor.process(exchange);
         assertFalse(finalDerivativeFile.exists());
     }
+
+    @Test
+    public void extractFulltextExceedsCharacterLimit() throws Exception {
+        processor.setCharacterLimit(10);
+
+        originalFile = tmpDir.newFile(originalFileName);
+        FileUtils.write(originalFile, testText, "UTF-8");
+
+        when(message.getHeader(eq(CdrBinaryPath)))
+                .thenReturn(originalFile.toPath().toString());
+
+        processor.process(exchange);
+        assertTrue(finalDerivativeFile.exists());
+        assertEquals(testText.substring(0, 10), FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
+    }
 }
