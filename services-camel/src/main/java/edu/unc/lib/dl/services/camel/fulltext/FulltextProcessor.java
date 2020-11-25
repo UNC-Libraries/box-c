@@ -56,6 +56,10 @@ import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 public class FulltextProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(FulltextProcessor.class);
 
+    private static final int CHAR_LIMIT = 1000000;
+
+    private int characterLimit = CHAR_LIMIT;
+
     private final String derivativeBasePath;
 
     private static final Pattern MIMETYPE_PATTERN = Pattern.compile( "^(text/|application/pdf|application/msword"
@@ -122,8 +126,7 @@ public class FulltextProcessor implements Processor {
     }
 
     private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
-        int CHAR_LIMIT = -1;
-        BodyContentHandler handler = new BodyContentHandler(CHAR_LIMIT);
+        BodyContentHandler handler = new BodyContentHandler(characterLimit);
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
@@ -132,11 +135,23 @@ public class FulltextProcessor implements Processor {
         if (fileToExtract.length() > 0) {
             try (InputStream stream = new FileInputStream(fileToExtract)) {
                 parser.parse(stream, handler, metadata, new ParseContext());
-                return handler.toString();
+            } catch (SAXException e) {
+                // Check for character limit exceeded message, since the exception is private
+                if (e.getMessage().contains("document contained more than")) {
+                    log.warn("File {} contained more than {} characters, extracted text limited to this length",
+                            binaryPath, characterLimit);
+                } else {
+                    throw e;
+                }
             }
+            return handler.toString();
         } else {
             log.warn("File, {}, does not have any text to extract", binaryPath);
             return "";
         }
+    }
+
+    public void setCharacterLimit(int characterLimit) {
+        this.characterLimit = characterLimit;
     }
 }
