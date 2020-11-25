@@ -56,6 +56,8 @@ import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 public class FulltextProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(FulltextProcessor.class);
 
+    private static final int CHAR_LIMIT = 1000000;
+
     private final String derivativeBasePath;
 
     private static final Pattern MIMETYPE_PATTERN = Pattern.compile( "^(text/|application/pdf|application/msword"
@@ -122,7 +124,6 @@ public class FulltextProcessor implements Processor {
     }
 
     private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
-        int CHAR_LIMIT = -1;
         BodyContentHandler handler = new BodyContentHandler(CHAR_LIMIT);
 
         AutoDetectParser parser = new AutoDetectParser();
