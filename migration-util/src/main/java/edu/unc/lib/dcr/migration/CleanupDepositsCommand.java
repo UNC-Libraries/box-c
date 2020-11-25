@@ -66,7 +66,7 @@ public class CleanupDepositsCommand implements Callable<Integer> {
         try (
                 ConfigurableApplicationContext context = new ClassPathXmlApplicationContext(applicationContextPath);
                 DepositModelManager depositModelManager = new DepositModelManager(parentCommand.tdbDir);
-                ){
+                ) {
             DepositStatusFactory depositStatusFactory = context.getBean(DepositStatusFactory.class);
             JobStatusFactory jobStatusFactory = context.getBean(JobStatusFactory.class);
 
