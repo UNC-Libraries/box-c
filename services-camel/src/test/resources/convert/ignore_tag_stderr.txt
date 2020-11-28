@@ -1,0 +1,10 @@
+convert: SamplesPerPixel tag is missing, applying correct SamplesPerPixel value of 3. `TIFFReadDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: Subsampling tag is not set, yet subsampling inside JPEG data [2,1] does not match default values [2,2]; assuming subsampling inside JPEG data is correct. `OJPEGSubsamplingCorrect' @ warning/tiff.c/TIFFWarnings/958.
+convert: Incorrect count for "MakerNote"; tag ignored. `TIFFFetchNormalTag' @ error/tiff.c/TIFFErrors/609.
+convert: Wrong data type 3 for "PixelXDimension"; tag ignored. `TIFFReadCustomDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: Wrong data type 3 for "PixelYDimension"; tag ignored. `TIFFReadCustomDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: Unknown field with tag 40965 (0xa005) encountered. `TIFFReadCustomDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: Photometric tag is missing, assuming data is YCbCr. `TIFFReadDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: SamplesPerPixel tag is missing, applying correct SamplesPerPixel value of 3. `TIFFReadDirectory' @ warning/tiff.c/TIFFWarnings/958.
+convert: Subsampling tag is not set, yet subsampling inside JPEG data [2,1] does not match default values [2,2]; assuming subsampling inside JPEG data is correct. `OJPEGSubsamplingCorrect' @ warning/tiff.c/TIFFWarnings/958.
+convert: Depreciated and troublesome old-style JPEG compression mode, please convert to new-style JPEG compression and notify vendor of writing software. `OJPEGSetupDecode' @ warning/tiff.c/TIFFWarnings/958.
