@@ -29,6 +29,8 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheLoader;
 
@@ -47,6 +49,8 @@ import edu.unc.lib.dl.util.EntityTag;
  */
 public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObject> {
 
+    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectCacheLoader.class);
+
     private static final URI BINARY_TYPE_URI = URI.create(Ldp.NonRdfSource.getURI());
 
     private FcrepoClient client;
@@ -58,18 +62,21 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
     @Override
     public RepositoryObject load(PID pid) {
+        log.debug("Loading repository object {} for cache", pid);
 
+        String etag;
         try (FcrepoResponse response = client.head(pid.getRepositoryUri())
                 .perform()) {
 
             boolean isBinary = response.hasType(BINARY_TYPE_URI);
-            String etag = response.getHeaderValue("ETag");
+            etag = response.getHeaderValue("ETag");
             if (etag != null) {
                 etag = new EntityTag(etag).getValue();
             }
 
             // For binaries, pull out location of content and immediately instantiate binary obj
             if (isBinary) {
+                log.debug("Loading object for binary {}", pid);
                 String contentLoc = response.getHeaderValue("Content-Location");
                 URI contentUri = null;
                 if (contentLoc != null) {
@@ -77,25 +84,30 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 }
                 return instantiateBinaryObject(pid, contentUri, etag);
             }
-
-            // For non-binaries, retrieve the metadata body before instantiation
-            URI metadataUri = pid.getRepositoryUri();
-
-            Model model;
-            try (FcrepoResponse modelResp = client.get(metadataUri)
-                    .accept(TURTLE_MIMETYPE)
-                    .perform()) {
-
-                model = ModelFactory.createDefaultModel();
-                model.read(modelResp.getBody(), null, Lang.TURTLE.getName());
-            }
-
-            return instantiateRepositoryObject(pid, model, etag);
         } catch (IOException e) {
             throw new FedoraException("Failed to read model for " + pid, e);
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+
+        log.debug("Loading object for RDF resource {}", pid);
+        // For non-binaries, retrieve the metadata body before instantiation
+        URI metadataUri = pid.getRepositoryUri();
+
+        Model model;
+        try (FcrepoResponse modelResp = client.get(metadataUri)
+                .accept(TURTLE_MIMETYPE)
+                .perform()) {
+
+            model = ModelFactory.createDefaultModel();
+            model.read(modelResp.getBody(), null, Lang.TURTLE.getName());
+        } catch (IOException e) {
+            throw new FedoraException("Failed to read model for " + pid, e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+
+        return instantiateRepositoryObject(pid, model, etag);
     }
 
     /**
