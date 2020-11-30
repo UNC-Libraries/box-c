@@ -37,6 +37,10 @@ import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
  */
 public class FedoraIdFilters {
     private static final Logger log = getLogger(FedoraIdFilters.class);
+
+    private FedoraIdFilters() {
+    }
+
     /**
      * Filter Fedora messages to exclude any messages that should not be considered for triples indexing
      *
