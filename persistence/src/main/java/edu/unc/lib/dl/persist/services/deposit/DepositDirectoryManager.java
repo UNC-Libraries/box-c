@@ -54,6 +54,10 @@ public class DepositDirectoryManager {
     private boolean hashNesting;
 
     public DepositDirectoryManager(PID depositPid, Path depositBaseDir, boolean hashNesting) {
+        this(depositPid, depositBaseDir, hashNesting, true);
+    }
+
+    public DepositDirectoryManager(PID depositPid, Path depositBaseDir, boolean hashNesting, boolean createDirs) {
         this.depositPid = depositPid;
         this.depositDir = depositBaseDir.resolve(this.depositPid.getId());
         this.descriptionDir = depositDir.resolve(DESCRIPTION_DIR);
@@ -61,7 +65,9 @@ public class DepositDirectoryManager {
         this.eventsDir = depositDir.resolve(EVENTS_DIR);
         this.hashNesting = hashNesting;
 
-        createDepositDirectory();
+        if (createDirs) {
+            createDepositDirectory();
+        }
     }
 
     public void createDepositDirectory() {

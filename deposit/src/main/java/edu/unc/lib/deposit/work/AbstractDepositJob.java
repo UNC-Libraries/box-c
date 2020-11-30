@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.work;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.dl.fedora.PIDConstants.DEPOSITS_QUALIFIER;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.HISTORY_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
@@ -57,7 +58,6 @@ import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.persist.api.services.InterruptedLockException;
@@ -202,7 +202,7 @@ public abstract class AbstractDepositJob implements Runnable {
     public void setDepositUUID(String depositUUID) {
         this.depositUUID = depositUUID;
         if (depositUUID != null) {
-            this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+            this.depositPID = PIDs.get(DEPOSITS_QUALIFIER, depositUUID);
         }
     }
 

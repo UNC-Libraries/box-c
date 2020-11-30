@@ -186,5 +186,9 @@
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>it.ozimov</groupId>
+            <artifactId>embedded-redis</artifactId>
+        </dependency>
     </dependencies>
 </project>
