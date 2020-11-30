@@ -1,0 +1,28 @@
+{
+    "id": "urn:uuid:%1$s",
+    "type": ["Create", "Update"],
+    "name": "create resource, update resource",
+    "published": "%2$s",
+    "actor": [{
+        "type": ["Person"],
+        "id": "info:fedora/local-user#bypassAdmin"
+    }, {
+        "type": ["Application"],
+        "name": "dcr-migration-util"
+    }],
+    "object": {
+        "type": ["http://fedora.info/definitions/v4/repository#Resource"],
+        "id": "%3$s",
+        "isPartOf": "%4$s"
+    },
+    "@context": ["https://www.w3.org/ns/activitystreams", {
+        "prov": "http://www.w3.org/ns/prov#",
+        "dcterms": "http://purl.org/dc/terms/",
+        "type": "@type",
+        "id": "@id",
+        "isPartOf": {
+            "@id": "dcterms:isPartOf",
+            "@type": "@id"
+        }
+    }]
+}
