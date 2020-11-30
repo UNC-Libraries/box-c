@@ -178,7 +178,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartPremisBinary() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 

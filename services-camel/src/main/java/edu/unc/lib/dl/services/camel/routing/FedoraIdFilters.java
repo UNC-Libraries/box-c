@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.regex.Pattern;
@@ -97,6 +96,6 @@ public class FedoraIdFilters {
             return false;
         }
 
-        return ORIGINAL_FILE.getId().equals(afterContainer);
+        return true;
     }
 }
