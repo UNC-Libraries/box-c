@@ -19,6 +19,7 @@ import static edu.unc.lib.dcr.migration.MigrationConstants.OUTPUT_LOGGER;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -30,6 +31,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
@@ -81,10 +83,19 @@ public class SendMessageCommand {
             @Option(names = {"--recursive"},
                     defaultValue = "false",
                     description = "If provided, will send messages for contained objects recursively")
-            boolean recursive) {
+            boolean recursive,
+            @Option(names = {"--from-file", "-f"},
+            defaultValue = "false",
+            description = "First parameter will be read as a file containing a list of ids to process")
+    boolean fromFile) throws IOException {
         long start = System.currentTimeMillis();
 
-        String[] ids = idsParam.split(",");
+        String[] ids;
+        if (fromFile) {
+            ids = FileUtils.readFileToString(new File(idsParam), UTF_8).split("\\r?\\n");
+        } else {
+            ids = idsParam.split(",");
+        }
 
         output.info("Sending messages for {} objects", ids.length);
         output.info(BannerUtility.getBanner());
@@ -107,7 +118,7 @@ public class SendMessageCommand {
     private void sendFedoraMessage(String id, String messageTemplate, boolean recursive) {
         PID pid = PIDs.get(id);
 
-        output.info("Indexing {}", id);
+        output.info("Sending message for {}", id);
 
         String msgId = UUID.randomUUID().toString();
         String timestamp = Instant.now().toString();
