@@ -134,16 +134,17 @@ public class SendMessageCommand {
                 throw new RepositoryException(e);
             }
 
+            Model model;
             try (FcrepoResponse resp = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
-                Model model = RDFModelUtil.createModel(resp.getBody());
-                NodeIterator it = model.listObjectsOfProperty(Ldp.contains);
-                while (it.hasNext()) {
-                    RDFNode contained = it.next();
-                    String containedUri = contained.asResource().getURI();
-                    sendFedoraMessage(containedUri, messageTemplate, recursive);
-                }
+                model = RDFModelUtil.createModel(resp.getBody());
             } catch (IOException | FcrepoOperationFailedException e) {
                 throw new RepositoryException(e);
+            }
+            NodeIterator it = model.listObjectsOfProperty(Ldp.contains);
+            while (it.hasNext()) {
+                RDFNode contained = it.next();
+                String containedUri = contained.asResource().getURI();
+                sendFedoraMessage(containedUri, messageTemplate, recursive);
             }
         }
     }
