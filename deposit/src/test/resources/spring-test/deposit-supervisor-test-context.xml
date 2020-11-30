@@ -67,10 +67,26 @@
         </constructor-arg>
         <constructor-arg name="numWorkers" value="2" />
     </bean>
+
+    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_MIGRATION</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="2" />
+    </bean>
     
     <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
         <ref bean="depositWorkerPool"/>
         <ref bean="highPriorityDepositWorkerPool"/>
+        <ref bean="migrationDepositWorkPool"/>
     </util:list>
     
     <bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" >
