@@ -146,6 +146,21 @@ public class PIDsTest {
     }
 
     @Test
+    public void getPidWithContainer() {
+        String component = RepositoryPathConstants.DATA_FILE_FILESET;
+        String expectedPath = fakeRepositoryPath(CONTENT_BASE, component);
+
+        PID pid = PIDs.get(expectedPath);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
+        assertEquals("Incorrect qualifier", CONTENT_BASE, pid.getQualifier());
+        assertEquals("Component path should match fileset",
+                RepositoryPathConstants.DATA_FILE_FILESET, pid.getComponentPath());
+    }
+
+    @Test
     public void getReservedPidFromIdentifierTest() {
         String qualified = CONTENT_BASE + "/" + CONTENT_ROOT_ID;
         String expectedPath = FEDORA_BASE + qualified;

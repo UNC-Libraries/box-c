@@ -50,7 +50,9 @@ public class MetaServicesRouter extends RouteBuilder {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .startupOrder(3)
+            .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
             .to("direct-vm:index.start")
+            .filter().method(FedoraIdFilters.class, "allowedForEnhancements")
             .wireTap("direct:process.enhancement");
 
         from("direct:process.enhancement")
