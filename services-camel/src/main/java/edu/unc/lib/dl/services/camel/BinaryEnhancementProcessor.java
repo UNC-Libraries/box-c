@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -64,7 +63,7 @@ public class BinaryEnhancementProcessor implements Processor {
 
                     log.info("Adding enhancement headers for " + pidValue);
                     in.setHeader(FCREPO_URI, pidValue);
-                    in.setHeader(FCREPO_RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
+                    in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
                     if (forceText != null) {

@@ -18,7 +18,7 @@ package edu.unc.lib.dl.services.camel.solr;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -218,7 +218,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         indexObjectsInTripleStore();
 
         setMessageTarget(binObj);
-        when(message.getHeader(FCREPO_RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
         processor.process(exchange);
         server.commit();
 

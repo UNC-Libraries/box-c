@@ -17,9 +17,10 @@ package edu.unc.lib.dl.services.camel.routing;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.BASE_URL;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
 
@@ -156,6 +157,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, EVENT_CREATE);
         headers.put(IDENTIFIER, identifier);
+        headers.put(BASE_URL, baseUri);
         headers.put(RESOURCE_TYPE, String.join(",", type));
 
         return headers;
