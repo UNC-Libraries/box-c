@@ -37,9 +37,6 @@ public class ImageDerivativeProcessor implements Processor {
 
     private static final Pattern DISALLOWED_PATTERN = Pattern.compile(".*(vnd\\.fpx).*");
 
-    private static final Pattern RESTRICT_TO_FIRST_ENTRY_PATTERN =
-            Pattern.compile("^(image|application).*?(photoshop|psd)$");
-
     /**
      * Returns true if the subject of the exchange is a binary which
      * is eligible for having image derivatives generated from it.
@@ -72,12 +69,7 @@ public class ImageDerivativeProcessor implements Processor {
         String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
 
         String binPath = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryPath);
-        if (RESTRICT_TO_FIRST_ENTRY_PATTERN.matcher(mimetype).matches()) {
-            log.debug("Adjusting image path to {} for type {}", binPath + "[0]", mimetype);
-            in.setHeader(CdrFcrepoHeaders.CdrImagePath, binPath + "[0]");
-        } else {
-            log.debug("Keeping existing image path as {} for type {}", binPath, mimetype);
-            in.setHeader(CdrFcrepoHeaders.CdrImagePath, binPath);
-        }
+        log.debug("Keeping existing image path as {} for type {}", binPath, mimetype);
+        in.setHeader(CdrFcrepoHeaders.CdrImagePath, binPath);
     }
 }
