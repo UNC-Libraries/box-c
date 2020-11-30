@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -53,6 +55,9 @@ public class AddDerivativeProcessor implements Processor {
     private final String fileExtension;
     private final String derivativeBasePath;
 
+    private final static Pattern ERROR_PATTERN = Pattern.compile("^(.+ @ error/.+)$", Pattern.MULTILINE);
+    private final static String IGNORE_ERROR = "; tag ignored.";
+
     public AddDerivativeProcessor(String fileExtension, String derivativeBasePath) {
         this.fileExtension = fileExtension;
         this.derivativeBasePath = derivativeBasePath;
@@ -69,16 +74,26 @@ public class AddDerivativeProcessor implements Processor {
         final ExecResult result = (ExecResult) in.getBody();
 
         try {
+            String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
             // Prevent further processing if the execution failed
             if (result.getExitValue() != 0) {
-                String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
                 String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
-                log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
-                return;
+                Matcher errorMatcher = ERROR_PATTERN.matcher(stderr);
+                while (errorMatcher.find()) {
+                    String errorString = errorMatcher.group(1);
+                    if (errorString.contains(IGNORE_ERROR)) {
+                        log.debug("Ignoring error message for {}: {}", binaryId, errorString);
+                    } else {
+                        log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
+                        return;
+                    }
+                }
+                log.debug("Result returned error code {} for {} but no errors were present in the output,"
+                        + " derivative will be added: {}", result.getExitValue(), binaryId, stderr);
             }
 
             // Read command result as path to derived file, and trim off trailing whitespace
-            String derivativeTmpPath = IOUtils.toString(result.getStdout(), UTF_8).trim();
+            String derivativeTmpPath = stdout.trim();
             derivativeTmpPath += "." + fileExtension;
 
             moveFile(derivativeTmpPath, derivativeFinalPath);

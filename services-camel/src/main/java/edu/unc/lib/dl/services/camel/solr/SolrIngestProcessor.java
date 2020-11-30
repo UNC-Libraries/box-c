@@ -70,6 +70,8 @@ public class SolrIngestProcessor implements Processor {
         final Message in = exchange.getIn();
         String fcrepoUri = (String) in.getHeader(FCREPO_URI);
 
+        log.debug("Processing solr request for {}", fcrepoUri);
+
         List<PID> targetPids = new ArrayList<>();
         PID targetPid = PIDs.get(fcrepoUri);
         String resourceTypes = (String) in.getHeader(FCREPO_RESOURCE_TYPE);
