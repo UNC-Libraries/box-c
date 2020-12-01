@@ -110,7 +110,7 @@ public class DepositSupervisorTest {
 
     @Test
     public void queueNewMigrationDepositRequested() throws Exception {
-        PID depositPid = queueDeposit(PackagingType.BXC3_TO_5_MIGRATION, Priority.normal);
+        PID depositPid = queueDeposit(PackagingType.BXC3_TO_5_MIGRATION, Priority.low);
 
         assertDepositStatus(DepositState.unregistered, depositPid);
         assertDepositAction(DepositAction.register, depositPid);

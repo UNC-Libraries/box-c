@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.dl.util.PackagingType.BXC3_TO_5_MIGRATION;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -885,11 +884,10 @@ public class DepositSupervisor implements WorkerListener {
                     c.enqueue(Queue.CDRMETSCONVERT.name(), job);
                 } else {
                     String priority = fields.get(DepositField.priority.name());
-                    String packageType = fields.get(DepositField.packagingType.name());
 
                     if (Priority.high.name().equals(priority)) {
                         c.enqueue(Queue.PREPARE_HIGH_PRIORITY.name(), job);
-                    } else if (packageType.equals(BXC3_TO_5_MIGRATION.toString())) {
+                    } else if (Priority.low.name().equals(priority)) {
                         c.enqueue(Queue.PREPARE_MIGRATION.name(), job);
                     } else {
                         c.enqueue(Queue.PREPARE.name(), job);

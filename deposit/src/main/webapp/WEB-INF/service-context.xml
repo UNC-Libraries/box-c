@@ -123,7 +123,7 @@
                 <constructor-arg ref="jobFactory" />
             </bean>
         </constructor-arg>
-        <constructor-arg name="numWorkers" value="${workers.high.num:4}" />
+        <constructor-arg name="numWorkers" value="${workers.migration.num:2}" />
     </bean>
     
     <bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
