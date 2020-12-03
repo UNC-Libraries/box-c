@@ -16,11 +16,13 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentBase;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getDepositRecordBase;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.net.URI;
@@ -122,6 +124,8 @@ public class PIDs {
             return RepositoryPaths.getRootPid();
         } else if (getContentBase().equals(uri)) {
             return RepositoryPaths.getContentBasePid();
+        } else if (getDepositRecordBase().equals(uri)) {
+            return RepositoryPaths.getDepositRecordRootPid();
         }
 
         return null;
@@ -192,6 +196,8 @@ public class PIDs {
             }
         } else if (CONTENT_BASE.equals(id)) {
             return RepositoryPaths.getContentBasePid();
+        } else if (DEPOSIT_RECORD_BASE.equals(id)) {
+            return RepositoryPaths.getDepositRecordRootPid();
         }
 
         return null;

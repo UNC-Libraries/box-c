@@ -54,6 +54,7 @@ public class RepositoryPathConstants {
 
     public static final String FCR_METADATA = "fcr:metadata";
     public static final String FCR_TOMBSTONE = "fcr:tombstone";
+    public static final String FCR_VERSIONS = "fcr:versions";
 
     // Base path generation and decomposition values
 

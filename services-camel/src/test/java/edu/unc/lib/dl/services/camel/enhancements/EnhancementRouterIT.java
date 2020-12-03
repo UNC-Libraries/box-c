@@ -21,9 +21,9 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -75,7 +75,6 @@ import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
-import edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor;
 import edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -127,9 +126,6 @@ public class EnhancementRouterIT {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor binaryMetadataProcessor;
 
-    @BeanInject(value = "registerLongleafProcessor")
-    private RegisterToLongleafProcessor registerLongleafProcessor;
-
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
@@ -149,7 +145,6 @@ public class EnhancementRouterIT {
         reset(addSmallThumbnailProcessor);
         reset(addLargeThumbnailProcessor);
         reset(addAccessCopyProcessor);
-        reset(registerLongleafProcessor);
 
         when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
@@ -214,7 +209,7 @@ public class EnhancementRouterIT {
 
         // Separate exchanges when multicasting
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(13)
+                .whenCompleted(12)
                 .create();
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
@@ -225,7 +220,6 @@ public class EnhancementRouterIT {
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(registerLongleafProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 
     @Test
@@ -254,7 +248,6 @@ public class EnhancementRouterIT {
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
-        verify(registerLongleafProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -327,7 +320,6 @@ public class EnhancementRouterIT {
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
-        verify(registerLongleafProcessor, never()).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {
