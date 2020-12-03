@@ -1,12 +1,10 @@
 <template>
     <div id="patron-roles">
-        <h1>Set Patron Access</h1>
-        <h3 v-if="hasParentRole || hasObjectRole">Current Settings</h3>
+        <h3>Patron Access Preview</h3>
 
         <table v-if="hasParentRole || hasObjectRole" class="border inherited-permissions">
             <thead>
             <tr>
-                <th></th>
                 <th class="access-display">Who can access</th>
                 <th>What can be viewed</th>
             </tr>
@@ -32,7 +30,13 @@
         </table>
         <p v-else>There are no current permissions assigned</p>
 
+        <h3 class="update-roles">Set Patron Access</h3>
         <ul class="set-patron-roles">
+            <li v-if="!isCollection">
+                <span @click="updateRoleList" id="parent">
+                    <input type="radio" @click="updateRoleList" v-model="user_type" value="parent" :disabled="isDeleted"> Inherit from parent
+                </span>
+            </li>
             <li>
                 <span @click="updateRoleList" id="patron">
                     <input type="radio" @click="updateRoleList" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
@@ -96,7 +100,7 @@
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
 
-    const STAFF_ONLY_ROLE_TEXT = '\u2014';
+    const STAFF_ONLY_ROLE_TEXT = 'N/A';
     let staffOnlyRoles = () => {
         return [
             { principal: 'everyone', role: 'none', principal_display: 'staff' },
@@ -135,6 +139,7 @@
                 authenticated_role: 'none',
                 everyone_role: 'none',
                 history_set: false,
+                last_clicked_access: '',
                 response_message: '',
                 unsaved_changes: false,
                 user_type: ''
@@ -205,7 +210,7 @@
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === '';
+                return this.user_type === 'staff' || this.user_type === '' || this.user_type === 'parent';
             },
 
             embargoed() {
@@ -375,7 +380,7 @@
              * @return
              */
             _getPermissions(type) {
-                let permissions =  this.display_roles[type].roles.map(d => d.role);
+                let permissions = this.display_roles[type].roles.map(d => d.role);
                 return [...new Set(permissions)].length;
             },
 
@@ -459,16 +464,19 @@
 
                 this.user_type = type;
 
-                if (type === 'staff') {
-                    this.setRoleHistory();
+                if (type === 'staff' || type === 'parent') {
+                    if (this.last_clicked_access === 'patron') {
+                      this.setRoleHistory();
+                    }
+
                     this.history_set = true;
                     this.everyone_role = 'none';
                     this.authenticated_role = 'none';
                 } else if (type === 'patron') {
                     this.loadPreviousRole();
-                    this.history_set = false;
                 }
 
+                this.last_clicked_access = type;
                 this.updateDisplayRoles(type);
                 this.updateSubmitRoles();
                 this.setUnsavedChanges();
@@ -556,6 +564,7 @@
                         patron: this.everyone_role,
                         authenticated: this.authenticated_role
                     };
+                    this.history_set = true;
                 }
             },
 
@@ -563,6 +572,7 @@
                 if (!isEmpty(this.role_history)) {
                     this.everyone_role = this.role_history.patron;
                     this.authenticated_role = this.role_history.authenticated;
+                    this.history_set = false;
                 }
             },
 
@@ -669,6 +679,15 @@
             cursor: default;
         }
 
+        h3 {
+            color: black;
+            padding-top: 25px;
+
+            &:first-child {
+                padding-top: 0;
+            }
+        }
+
         select {
             margin-left: 5px;
             padding: 5px;
@@ -680,23 +699,31 @@
         }
 
         .inherited-permissions, p {
-            margin-bottom: 25px;
+            margin-top: 15px;
+        }
+
+        .update-roles {
+            border-top: 1px dashed gray;
         }
 
         .set-patron-roles {
-            border-top: 1px dashed gray;
             list-style-type: none;
-            padding-top: 25px;
             text-align: left;
 
             li {
+                display: block;
+                margin-left: 15px;
+
+                &:first-child {
+                    margin-bottom: 15px;
+                }
+
                 ul {
                     border-top: none;
                     margin: 10px 27px;
                     text-align: left;
 
                     li {
-                        margin-left: 15px;
                         display: inline-flex;
 
                         p {
@@ -731,6 +758,14 @@
 
         p.error {
             color: red;
+        }
+    }
+
+    #modal-permissions-editor {
+        ul {
+            border-top: none;
+            margin-top: 15px;
+            padding-top: 0;
         }
     }
 </style>
