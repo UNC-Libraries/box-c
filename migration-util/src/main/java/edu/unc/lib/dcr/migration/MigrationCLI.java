@@ -44,7 +44,8 @@ import picocli.CommandLine.Option;
         RecalculateDigestsCommand.class,
         VerifyPremisLogsCommand.class,
         CleanupDepositsCommand.class,
-        SendMessageCommand.class
+        SendMessageCommand.class,
+        RequeueDLQCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);

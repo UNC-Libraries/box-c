@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="config.properties.uri" />
+    </bean>
+    
+    <bean id="serverProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <ref bean="propertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+
+    <bean id="activemqConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>${jms.broker.uri}</value>
+                </property>
+                <property name="trustedPackages">
+                    <util:list>
+                        <value>java.util</value>
+                    </util:list>
+                </property>
+            </bean>
+        </property>
+        <property name="maxConnections" value="5" />
+    </bean>
+</beans>
