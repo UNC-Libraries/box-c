@@ -75,11 +75,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartContainer() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Binary.getURI()));
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
 
         assertMockEndpointsSatisfied();
     }
@@ -87,6 +88,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartTimemap() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -100,6 +102,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartDatafs() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -113,6 +116,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartDepositRecord() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -126,6 +130,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartNotAPid() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -139,6 +144,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartCollections() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -152,6 +158,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartBinaryMetadata() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -165,6 +172,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartOriginalBinary() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
@@ -178,7 +186,8 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartPremisBinary() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
 

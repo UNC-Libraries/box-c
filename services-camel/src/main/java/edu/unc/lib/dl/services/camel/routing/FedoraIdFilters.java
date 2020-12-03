@@ -27,6 +27,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
 
 /**
@@ -96,6 +97,6 @@ public class FedoraIdFilters {
             return false;
         }
 
-        return true;
+        return DatastreamType.ORIGINAL_FILE.getId().equals(afterContainer);
     }
 }

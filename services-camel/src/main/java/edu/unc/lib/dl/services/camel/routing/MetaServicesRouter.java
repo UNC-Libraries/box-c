@@ -52,6 +52,9 @@ public class MetaServicesRouter extends RouteBuilder {
             .startupOrder(3)
             .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
             .to("direct-vm:index.start")
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+                .wireTap("direct-vm:filter.longleaf")
+            .end().end() // ending the filter and the wiretap
             .filter().method(FedoraIdFilters.class, "allowedForEnhancements")
             .wireTap("direct:process.enhancement");
 

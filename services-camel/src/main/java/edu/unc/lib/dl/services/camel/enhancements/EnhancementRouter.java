@@ -72,7 +72,7 @@ public class EnhancementRouter extends RouteBuilder {
                 // Process binary enhancement requests
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
                     .log(INFO, log, "Processing binary ${headers[CamelFcrepoUri]}")
-                    .to("direct:process.binary")
+                    .to("direct:process.original")
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
@@ -85,13 +85,6 @@ public class EnhancementRouter extends RouteBuilder {
                     .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
                     .to("{{cdr.enhancement.perform.camel}}")
             .end();
-
-        // Route which processes fedora binary objects
-        from("direct:process.binary")
-            .routeId("ProcessBinary")
-            .startupOrder(109)
-            .multicast()
-            .to("direct-vm:filter.longleaf", "direct:process.original");
 
         // Route to perform enhancements IF a binary is an original file
         from("direct:process.original")
