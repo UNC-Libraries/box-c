@@ -1,6 +1,5 @@
 <template>
     <tr :class="{onyen: this.user.principal === 'everyone'}">
-        <td>{{ fromText }}</td>
         <td class="access-display">
             {{ formattedPrincipal(user.principal_display) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal_display)}">
@@ -17,7 +16,7 @@
             </span>
         </td>
         <td>
-            {{ displayRole(user.role) }}
+            {{ displayRole(user.role) }} {{ fromText }}
             <span class="permission-icons">
                 <i class="far fa-times-circle" title="object deleted" :class="{hidden: !hasAction.deleted}"></i>
                 <div class="circle" title="object embargoed" :class="{hidden: !hasAction.embargo > 0}">
@@ -50,18 +49,8 @@
                 return this.displayRoles[this.type];
             },
 
-            authenticatedUser() {
-                return this.user.principal_display === 'authenticated'
-            },
-
             fromText() {
-                if (this.authenticatedUser) {
-                    return '';
-                } else if (this.type === 'assigned') {
-                    return 'From Object';
-                } else {
-                    return 'From Parent';
-                }
+                return (this.type !== 'assigned') ? '(from parent)' : '';
             }
         },
 

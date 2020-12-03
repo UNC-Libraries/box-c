@@ -1,5 +1,6 @@
 <template>
     <div id="set-embargo">
+        <h3>Set Embargo</h3>
         <div class="embargo-details">
             <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
             <p v-else>No embargo set for this object</p>
@@ -7,7 +8,6 @@
 
             <button id="show-form" v-if="!has_embargo && !show_form" @click="showForm">Add embargo</button>
             <div class="form" v-if="has_embargo || show_form">
-                <h3>Set Embargo</h3>
                 <form>
                     <fieldset :disabled="isDeleted">
                         <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
@@ -149,6 +149,11 @@
     #set-embargo {
         border-top: 1px solid gray;
         margin: 25px -25px 0 -25px;
+
+        h3 {
+            color: black;
+            margin: 15px auto auto 25px;
+        }
 
         .embargo-details {
             margin: 15px 25px;
