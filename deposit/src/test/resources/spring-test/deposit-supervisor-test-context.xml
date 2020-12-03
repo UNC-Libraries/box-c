@@ -74,7 +74,7 @@
                 <constructor-arg name="config" ref="jesqueConfig" />
                 <constructor-arg name="queues">
                     <util:list>
-                        <value>PREPARE_MIGRATION</value>
+                        <value>PREPARE_LOW_PRIORITY</value>
                     </util:list>
                 </constructor-arg>
                 <constructor-arg ref="jobFactory" />
