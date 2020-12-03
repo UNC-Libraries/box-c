@@ -1,28 +1,23 @@
 <template>
     <tr :class="{onyen: this.user.principal === 'everyone'}">
         <td class="access-display">
-            {{ formattedPrincipal(user.principal_display) }}
-            <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal_display)}">
-                <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal_display)}"></i>
-                <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal_display)}"></div>
+            {{ formattedPrincipal(user.principal) }}
+            <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
+                <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
+                <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
                 <div class="browse-tip">
                     <p><strong>Public Users:</strong> Applies to unauthenticated users.</p>
                     <p><strong>Patrons:</strong> Applies to all patron users, whether authenticated or unauthenticated.</p>
                 </div>
             </div>
-
-            <span class="permission-icons">
-                <i class="far fa-check-circle" title="effective permission" v-if="mostRestrictive(user.principal) === type"></i>
-            </span>
         </td>
         <td>
-            {{ displayRole(user.role) }} {{ fromText }}
+            {{ user.role }} {{ fromText(user.type) }}
             <span class="permission-icons">
-                <i class="far fa-times-circle" title="object deleted" :class="{hidden: !hasAction.deleted}"></i>
-                <div class="circle" title="object embargoed" :class="{hidden: !hasAction.embargo > 0}">
+                <i class="far fa-times-circle" title="object deleted" :class="{hidden: !user.deleted}"></i>
+                <div class="circle" title="object embargoed" :class="{hidden: !user.embargo}">
                     <div>e</div>
                 </div>
-                <i class="far fa-check-circle" title="effective permission" v-if="mostRestrictive(user.principal) === type"></i>
             </span>
         </td>
     </tr>
@@ -38,23 +33,14 @@
 
         props: {
             containerType: String,
-            displayRoles: Object,
-            possibleRoles: Array,
-            type: String,
             user: Object,
         },
 
-        computed: {
-            hasAction() {
-                return this.displayRoles[this.type];
+        methods: {
+            fromText(type) {
+                return (type !== 'assigned') ? '(from parent)' : '';
             },
 
-            fromText() {
-                return (this.type !== 'assigned') ? '(from parent)' : '';
-            }
-        },
-
-        methods: {
             formattedPrincipal(user) {
                 if (user === 'everyone') {
                     user = 'Public Users';
@@ -65,82 +51,6 @@
 
             nonPublicRole(text) {
                 return text !== 'everyone' && text !== 'patron';
-            },
-
-            currentUserRoles(user = 'staff') {
-                // Since we only care about the returned role, checking for 'everyone' if user is 'patron'
-                // is fine since 'everyone' and 'authenticated' will have the same role
-                if (user === 'patron') {
-                    user = 'everyone';
-                }
-
-                let inherited = this.displayRoles.inherited.roles.find((u) => u.principal === user);
-                let assigned = this.displayRoles.assigned.roles.find((u) => u.principal === user);
-                let inherited_staff = this.displayRoles.inherited.roles.find((u) => u.principal === 'staff');
-                let assigned_staff = this.displayRoles.assigned.roles.find((u) => u.principal === 'staff');
-
-                return {
-                    inherited: inherited,
-                    assigned: assigned,
-                    inherited_staff: inherited_staff,
-                    assigned_staff: assigned_staff
-                };
-            },
-
-            displayRole(role) {
-                if (this.user.principal_display === 'staff') {
-                    return this.possibleRoles[0].text;
-                }
-                let selected_role = this.possibleRoles.find((r) => r.role === role);
-                return selected_role.text;
-            },
-
-            /**
-             * Compares inherited and current object permissions for a user to determine which is more restrictive
-             * @param current_users
-             * @returns {string}
-             */
-            hasMultipleRoles(current_users) {
-                let inherited_role = this.possibleRoles.findIndex((r) => r.role === current_users.inherited.role);
-                let assigned_role = this.possibleRoles.findIndex((r) => r.role === current_users.assigned.role);
-
-                if (assigned_role !== -1 && assigned_role < inherited_role) {
-                    return 'assigned';
-                } else {
-                    return 'inherited';
-                }
-            },
-
-            /**
-             * Determines which permission for a given user is the 'effective' one
-             * @param user
-             * @returns {string|*|string}
-             */
-            hasRolesPriority(user) {
-                let current_users = this.currentUserRoles(user);
-
-                if (this.containerType === 'Collection') {
-                    return 'assigned';
-                } else if (current_users.inherited_staff !== undefined) {
-                    return 'inherited';
-                } else if (current_users.assigned_staff !== undefined) {
-                    return 'assigned';
-                } else if (current_users.assigned === undefined) {
-                    return 'inherited';
-                } else if (current_users.inherited === undefined) {
-                    return 'assigned';
-                } else {
-                    return this.hasMultipleRoles(current_users);
-                }
-            },
-
-            /**
-             * Determines most restrictive permissions for icon display
-             * @param user
-             * @returns {*|string}
-             */
-            mostRestrictive(user) {
-                return this.hasRolesPriority(user);
             },
 
             alignTooltip(text) {
