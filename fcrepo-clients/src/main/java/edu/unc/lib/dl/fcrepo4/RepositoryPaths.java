@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
+import static edu.unc.lib.dl.fedora.PIDConstants.DEPOSITS_QUALIFIER;
 
 import java.net.URI;
 
@@ -37,6 +38,7 @@ public class RepositoryPaths {
     private static String policiesBase;
     private static String vocabulariesBase;
     private static String depositRecordBase;
+    private static PID depositRecordRootPid;
     private static String contentBase;
     private static String agentsBase;
     private static String serverUri;
@@ -126,6 +128,13 @@ public class RepositoryPaths {
         return depositRecordBase;
     }
 
+    /**
+     * @return PID of the root object for the deposit tree
+     */
+    public static PID getDepositRecordRootPid() {
+        return depositRecordRootPid;
+    }
+
     public static String getAgentsBase() {
         return agentsBase;
     }
@@ -185,5 +194,7 @@ public class RepositoryPaths {
         contentBasePid = new FedoraPID(CONTENT_BASE, REPOSITORY_ROOT_ID, null, URI.create(contentBase));
         contentRootPid = PIDs.get(URIUtil.join(contentBase, CONTENT_ROOT_ID));
         depositRecordBase = URIUtil.join(baseUri, DEPOSIT_RECORD_BASE);
+        depositRecordRootPid = new FedoraPID(DEPOSITS_QUALIFIER, REPOSITORY_ROOT_ID, null,
+                URI.create(depositRecordBase));
     }
 }

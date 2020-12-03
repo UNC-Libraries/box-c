@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
+import static edu.unc.lib.dl.fedora.PIDConstants.DEPOSITS_QUALIFIER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -250,6 +251,31 @@ public class PIDsTest {
         assertEquals(path, pid.getRepositoryPath());
         assertEquals(CONTENT_BASE, pid.getId());
         assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+    }
+
+    @Test
+    public void getPidFromDepositBaseUri() {
+        String path = RepositoryPaths.getDepositRecordBase();
+
+        PID pid = PIDs.get(path);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
+        assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
+        assertEquals("Incorrect qualifier", REPOSITORY_ROOT_ID, pid.getQualifier());
+        assertNull("Component path should not be set", pid.getComponentPath());
+    }
+
+    @Test
+    public void getPidFromDepositBaseId() {
+        PID pid = PIDs.get(DEPOSITS_QUALIFIER);
+
+        assertNotNull(pid);
+        assertEquals("Identifer did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
+        assertEquals("Repository path was incorrect",
+                RepositoryPaths.getDepositRecordBase(), pid.getRepositoryUri().toString());
+        assertEquals("Incorrect qualifier", REPOSITORY_ROOT_ID, pid.getQualifier());
+        assertNull("Component path should not be set", pid.getComponentPath());
     }
 
     @Test
