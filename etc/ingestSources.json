@@ -1,1 +1,0 @@
-[{"id":"test","name":"Test","base":"${vagrant.cwd}/data/ingestSource","patterns":["*"],"containers":["cdr:collections"]}]
