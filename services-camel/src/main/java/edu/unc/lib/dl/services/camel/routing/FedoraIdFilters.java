@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.regex.Pattern;
@@ -29,6 +30,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
+import edu.unc.lib.dl.services.camel.util.EventTypes;
 
 /**
  * Filters for Fedora message routing
@@ -56,6 +58,23 @@ public class FedoraIdFilters {
                 || fcrepoId.endsWith(RepositoryPathConstants.FCR_TOMBSTONE));
     }
 
+    /**
+     * Filter Fedora messages to exclude any messages that should not be considered for longleaf registration
+     *
+     * @param exchange
+     * @return
+     */
+    public static boolean allowedForLongleaf(Exchange exchange) {
+        Message in = exchange.getIn();
+        String resourceType = (String) in.getHeader(FcrepoJmsConstants.RESOURCE_TYPE);
+        if (!resourceType.contains(Binary.getURI())) {
+            return false;
+        }
+        String eventType = (String) in.getHeader(FcrepoJmsConstants.EVENT_TYPE);
+        return eventType != null && (eventType.contains(EventTypes.EVENT_CREATE)
+                || eventType.contains(EventTypes.EVENT_UPDATE));
+    }
+
     private static final Pattern IGNORE_SUFFIX = Pattern.compile(".*fcr:.+");
 
     /**
@@ -66,6 +85,11 @@ public class FedoraIdFilters {
      */
     public static boolean allowedForEnhancements(Exchange exchange) {
         Message in = exchange.getIn();
+        String eventType = (String) in.getHeader(FcrepoJmsConstants.EVENT_TYPE);
+        if (eventType == null || !eventType.contains(EventTypes.EVENT_CREATE)) {
+            return false;
+        }
+
         String fcrepoId = (String) in.getHeader(FcrepoJmsConstants.IDENTIFIER);
         String fcrepoBaseUrl = (String) in.getHeader(FcrepoJmsConstants.BASE_URL);
         PID pid;

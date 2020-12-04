@@ -45,7 +45,6 @@
     </bean>
 
     <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
     <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
