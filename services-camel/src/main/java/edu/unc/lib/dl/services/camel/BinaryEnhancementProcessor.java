@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
@@ -39,6 +41,8 @@ import edu.unc.lib.dl.services.camel.util.MessageUtil;
  */
 public class BinaryEnhancementProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(BinaryEnhancementProcessor.class);
+
+    private RepositoryObjectLoader repoObjLoader;
 
     @Override
     public void process(final Exchange exchange) throws Exception {
@@ -55,8 +59,11 @@ public class BinaryEnhancementProcessor implements Processor {
                 PID objPid = PIDs.get(pidValue);
 
                 try {
+                    RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
+
                     log.info("Adding enhancement headers for " + pidValue);
                     in.setHeader(FCREPO_URI, pidValue);
+                    in.setHeader(FcrepoJmsConstants.RESOURCE_TYPE, String.join(",", repoObj.getTypes()));
 
                     Element forceText = enhancementsEl.getChild("force", CDR_MESSAGE_NS);
                     if (forceText != null) {
@@ -69,5 +76,12 @@ public class BinaryEnhancementProcessor implements Processor {
                 }
             }
         }
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }

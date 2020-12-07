@@ -17,10 +17,12 @@ package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +42,8 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -63,6 +67,8 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private Message message;
     @Mock
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
     private RepositoryObject repoObj;
     @Mock
     private CollectionObject collObj;
@@ -74,9 +80,11 @@ public class BinaryEnhancementProcessorTest {
         TestHelper.setContentBase(FEDORA_BASE);
 
         processor = new BinaryEnhancementProcessor();
+        processor.setRepositoryObjectLoader(repoObjLoader);
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
         when(repoObj.getTypes()).thenReturn(Collections.singletonList(Binary.getURI()));
     }
 
@@ -87,6 +95,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
     }
 
     @Test
@@ -96,6 +105,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
     }
 
@@ -106,6 +116,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "true");
     }
 
@@ -116,6 +127,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
     }
 
@@ -127,17 +139,20 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
+        verify(message, never()).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message, never()).setHeader("force", "false");
     }
 
     @Test
     public void testNonBinary() throws Exception {
+        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(collObj);
         when(collObj.getTypes()).thenReturn(Collections.singletonList(Collection.getURI()));
         setMessageBody("image/*", true, false);
 
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
+        verify(message).setHeader(RESOURCE_TYPE, Collection.getURI());
         verify(message).setHeader("force", "false");
     }
 
