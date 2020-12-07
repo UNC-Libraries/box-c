@@ -88,6 +88,16 @@ public class RequeueDLQCommand {
         return 0;
     }
 
+    @Command(name = "requeue_longleaf",
+            description = "Requeue longleaf register messages")
+    public int requeueLongleaf() throws Exception {
+        moveMessages("longleaf.dlq",
+                "register.longleaf",
+                "CamelFailureRouteId = 'direct-vm://filter.longleaf'",
+                null);
+        return 0;
+    }
+
     private void moveMessages(String dlqName, String destName, String filter, Predicate<Message> filterPred)
             throws Exception {
         if (dryRun) {
