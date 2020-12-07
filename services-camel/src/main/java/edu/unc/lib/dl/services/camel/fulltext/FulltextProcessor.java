@@ -56,7 +56,7 @@ import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 public class FulltextProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(FulltextProcessor.class);
 
-    private static final int CHAR_LIMIT = 200000;
+    private static final int CHAR_LIMIT = 100000;
 
     private int characterLimit = CHAR_LIMIT;
 
