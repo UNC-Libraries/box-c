@@ -97,12 +97,13 @@ public class FulltextProcessor implements Processor {
 
         String fedoraUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
+        String mimetype = (String) in.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType);
         String binaryId = PIDs.get(fedoraUri).getId();
         String binarySubPath = idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         String text;
 
         try {
-            text = extractText(binaryPath);
+            text = extractText(binaryPath, mimetype);
         } catch (TikaException e) {
             // Parsing issues aren't going to succeed on retry, so fail gently
             log.error("Failed to extract text for {} due to parsing error", fedoraUri, e);
@@ -125,14 +126,14 @@ public class FulltextProcessor implements Processor {
         }
     }
 
-    private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
+    private String extractText(String binaryPath, String mimetype) throws IOException, SAXException, TikaException {
         BodyContentHandler handler = new BodyContentHandler(characterLimit);
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
         File fileToExtract = new File(binaryPath);
 
-        if (fileToExtract.length() > 0) {
+        if (!mimetype.equals("application/json") && fileToExtract.length() > 0) {
             try (InputStream stream = new FileInputStream(fileToExtract)) {
                 parser.parse(stream, handler, metadata, new ParseContext());
             } catch (SAXException e) {

@@ -38,6 +38,7 @@ import org.mockito.Mock;
 
 import com.google.common.io.Files;
 
+import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 import edu.unc.lib.dl.test.TestHelper;
 
 public class FulltextProcessorTest {
@@ -75,6 +76,8 @@ public class FulltextProcessorTest {
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI))).thenReturn(RESC_ID);
+        when(message.getHeader(eq(CdrFcrepoHeaders.CdrBinaryMimeType)))
+                .thenReturn("text/plain");
 
         finalDerivativeFile = new File(derivPath + "/" + derivativeFinalPath + ".txt");
         // Ensure that final path does not carry over between tests.
@@ -132,5 +135,21 @@ public class FulltextProcessorTest {
         processor.process(exchange);
         assertTrue(finalDerivativeFile.exists());
         assertEquals(testText.substring(0, 10), FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
+    }
+
+    @Test
+    public void extractFulltextJsonFile() throws Exception {
+        originalFile = tmpDir.newFile(originalFileName);
+        FileUtils.write(originalFile, testText, "UTF-8");
+
+        when(message.getHeader(eq(CdrBinaryPath)))
+                .thenReturn(originalFile.toPath().toString());
+
+        when(message.getHeader(eq(CdrFcrepoHeaders.CdrBinaryMimeType)))
+                .thenReturn("application/json");
+
+        processor.process(exchange);
+        assertTrue(finalDerivativeFile.exists());
+        assertEquals("", FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
     }
 }
