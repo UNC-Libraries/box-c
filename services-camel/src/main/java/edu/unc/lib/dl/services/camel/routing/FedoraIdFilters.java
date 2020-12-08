@@ -30,11 +30,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.model.DatastreamType;
-<<<<<<< Updated upstream
-import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
 import edu.unc.lib.dl.services.camel.util.EventTypes;
-=======
->>>>>>> Stashed changes
 
 /**
  * Filters for Fedora message routing
