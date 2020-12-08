@@ -119,9 +119,20 @@ public class AddDerivativeProcessor implements Processor {
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryId = PIDs.get(binaryUri).getId();
         Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
-        String force = (String) in.getHeader("force");
+        if (Files.notExists(derivativeFinalPath)) {
+            log.debug("Derivative run needed, no existing derivative for {} in {}", binaryId, derivativeBasePath);
+            return true;
+        }
 
-        return (Files.notExists(derivativeFinalPath) || Boolean.parseBoolean(force));
+        String force = (String) in.getHeader("force");
+        if (Boolean.parseBoolean(force)) {
+            log.debug("Force flag was provided, forcing run of already existing derivative for {} in {}",
+                    binaryId, derivativeBasePath);
+            return true;
+        } else {
+            log.debug("Derivative already exists for {} in {}, run not needed", binaryId, derivativeBasePath);
+            return false;
+        }
     }
 
     /**

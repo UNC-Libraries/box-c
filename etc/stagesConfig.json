@@ -1,7 +1,0 @@
-[
-	{
-		"path":"${vagrant.cwd}",
-		"name":"Vagrant Shared",
-		"cleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
-	}
-]
