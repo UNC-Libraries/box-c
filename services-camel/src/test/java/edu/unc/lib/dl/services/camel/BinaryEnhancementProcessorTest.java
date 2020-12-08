@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;

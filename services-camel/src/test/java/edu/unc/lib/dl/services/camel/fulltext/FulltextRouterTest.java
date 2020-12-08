@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.services.camel.fulltext;
 
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;

@@ -24,13 +24,17 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
 
+import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.model.DatastreamType;
+<<<<<<< Updated upstream
 import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
 import edu.unc.lib.dl.services.camel.util.EventTypes;
+=======
+>>>>>>> Stashed changes
 
 /**
  * Filters for Fedora message routing
