@@ -32,7 +32,6 @@
         mixins: [patronHelpers],
 
         props: {
-            containerType: String,
             user: Object,
         },
 
@@ -42,11 +41,7 @@
             },
 
             formattedPrincipal(user) {
-                if (user === 'everyone') {
-                    user = 'Public Users';
-                }
-
-                return user;
+                return (user === 'everyone') ? 'Public Users' : user;
             },
 
             nonPublicRole(text) {
