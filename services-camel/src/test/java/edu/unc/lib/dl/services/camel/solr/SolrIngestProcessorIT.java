@@ -16,9 +16,9 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.services.camel.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
