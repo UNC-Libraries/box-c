@@ -15,58 +15,58 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.UUID;
 
-import org.junit.Assert;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.util.DerivativeService;
 
 /**
  * @author harring
  */
-public class SetFullTextFilterTest extends Assert {
+public class SetFullTextFilterTest {
+
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
+
+    private File derivativeDir;
 
     @Mock
     private DocumentIndexingPackageDataLoader loader;
-    @Mock
     private DocumentIndexingPackage dip;
-    @Mock
-    private IndexDocumentBean idb;
-    @Mock
-    private PID pid;
+    private PID filePid;
+    private PID workPid;
     @Mock
     private WorkObject workObj;
     @Mock
     private FileObject fileObj;
-    @Mock
-    private BinaryObject binObj;
-    @Captor
-    private ArgumentCaptor<String> stringCaptor;
 
-    private InputStream stream;
-    private String fullText = "some text";
+    private DerivativeService derivativeService;
+
+    private final static String EXAMPLE_TEXT = "some text";
 
     private DocumentIndexingPackageFactory factory;
 
@@ -76,59 +76,78 @@ public class SetFullTextFilterTest extends Assert {
     public void setup() throws Exception {
         initMocks(this);
 
+        derivativeDir = tempDir.newFolder();
+
         factory = new DocumentIndexingPackageFactory();
         factory.setDataLoader(loader);
-        stream = new ByteArrayInputStream(fullText.getBytes("UTF-8"));
 
-        when(dip.getDocument()).thenReturn(idb);
-        when(dip.getPid()).thenReturn(pid);
-        when(pid.getId()).thenReturn("id");
-        when(fileObj.getOriginalFile()).thenReturn(binObj);
-        when(binObj.getMimetype()).thenReturn("text/plain");
-        when(binObj.getBinaryStream()).thenReturn(stream);
+        derivativeService = new DerivativeService();
+        derivativeService.setDerivativeDir(derivativeDir.getAbsolutePath());
+
+        filePid = PIDs.get(UUID.randomUUID().toString());
+        workPid = PIDs.get(UUID.randomUUID().toString());
+
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(workObj.getPid()).thenReturn(workPid);
 
         filter = new SetFullTextFilter();
+        filter.setDerivativeService(derivativeService);
     }
 
     @Test
     public void testFullTextWithWorkObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(workObj);
+        dip = factory.createDip(workPid);
+
+        createFullTextDerivative(filePid, EXAMPLE_TEXT);
+
+        when(loader.getContentObject(dip)).thenReturn(workObj);
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
 
         filter.filter(dip);
 
-        verify(idb).setFullText(stringCaptor.capture());
-        assertEquals(fullText, stringCaptor.getValue());
-
+        assertEquals(EXAMPLE_TEXT, dip.getDocument().getFullText());
     }
 
     @Test
     public void testFullTextWithFileObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
+        dip = factory.createDip(filePid);
+        createFullTextDerivative(filePid, EXAMPLE_TEXT);
+
+        when(loader.getContentObject(dip)).thenReturn(fileObj);
 
         filter.filter(dip);
 
-        verify(idb).setFullText(stringCaptor.capture());
-        assertEquals(fullText, stringCaptor.getValue());
+        assertEquals(EXAMPLE_TEXT, dip.getDocument().getFullText());
     }
 
     @Test
     public void testNoFullText() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(binObj.getMimetype()).thenReturn("application/json");
+        dip = factory.createDip(filePid);
+
+        when(loader.getContentObject(dip)).thenReturn(fileObj);
 
         filter.filter(dip);
 
-        verify(idb, never()).setFullText(anyString());
+        assertNull(dip.getDocument().getFullText());
     }
 
-    @Test (expected = IndexingException.class)
-    public void testBadInputStream() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
+    @Test
+    public void testNotWorkOrFile() throws Exception {
+        FolderObject folder = mock(FolderObject.class);
+        when(folder.getPid()).thenReturn(workPid);
 
-        doThrow(new FedoraException("Mocking error getting binary stream")).when(binObj).getBinaryStream();
+        dip = factory.createDip(workPid);
+        createFullTextDerivative(workPid, EXAMPLE_TEXT);
+
+        when(loader.getContentObject(dip)).thenReturn(folder);
 
         filter.filter(dip);
+
+        assertNull(dip.getDocument().getFullText());
     }
 
+    private void createFullTextDerivative(PID pid, String text) throws Exception {
+        Path path = derivativeService.getDerivativePath(pid, DatastreamType.FULLTEXT_EXTRACTION);
+        FileUtils.writeStringToFile(path.toFile(), text, UTF_8);
+    }
 }

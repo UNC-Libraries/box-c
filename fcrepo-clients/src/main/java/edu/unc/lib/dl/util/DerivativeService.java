@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.model.StoragePolicy.EXTERNAL;
 import static org.springframework.util.Assert.notNull;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -57,22 +58,32 @@ public class DerivativeService {
      *         derivative does not exist.
      */
     public Derivative getDerivative(PID pid, DatastreamType dsType) {
-        notNull(pid);
-        notNull(dsType);
+        Path derivPath = getDerivativePath(pid, dsType);
+
+        // If the derivative file does not exist, then return no result
+        if (Files.notExists(derivPath)) {
+            return null;
+        }
+
+        return new Derivative(dsType, derivPath.toFile());
+    }
+
+    /**
+     * Gets the path where the specified derivative should be stored
+     *
+     * @param pid pid of the object. Required.
+     * @param dsType type of the derivative to retrieve.
+     * @return path where the derivative should be stored
+     */
+    public Path getDerivativePath(PID pid, DatastreamType dsType) {
+        notNull(pid, "Must provide a pid");
+        notNull(dsType, "Must specify a datastream type");
 
         String id = pid.getId();
         String hashedPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
         // Construct the full path of the derivative
-        Path derivPath = Paths.get(derivativeDir, dsType.getId(), hashedPath, id + "." + dsType.getExtension());
-        File derivFile = derivPath.toFile();
-
-        // If the derivative file does not exist, then return no result
-        if (!derivFile.exists()) {
-            return null;
-        }
-
-        return new Derivative(dsType, derivFile);
+        return Paths.get(derivativeDir, dsType.getId(), hashedPath, id + "." + dsType.getExtension());
     }
 
     /**
@@ -83,7 +94,7 @@ public class DerivativeService {
      * @return list of derivatives for pid
      */
     public List<Derivative> getDerivatives(PID pid) {
-        notNull(pid);
+        notNull(pid, "Must provide a pid");
 
         return listDerivativeTypes().stream()
             .map(derivType -> getDerivative(pid, derivType))
