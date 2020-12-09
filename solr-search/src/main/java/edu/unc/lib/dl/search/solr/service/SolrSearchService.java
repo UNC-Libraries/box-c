@@ -102,12 +102,7 @@ public class SolrSearchService extends AbstractQueryService {
             return null;
         }
 
-        // Restrict the result fields if set
-        if (idRequest.getResultFields() != null) {
-            for (String field : idRequest.getResultFields()) {
-                solrQuery.addField(solrSettings.getFieldName(field));
-            }
-        }
+        addResultFields(idRequest.getResultFields(), solrQuery);
 
         solrQuery.setQuery(query.toString());
         solrQuery.setRows(1);
@@ -157,12 +152,7 @@ public class SolrSearchService extends AbstractQueryService {
 
         query.append(")");
 
-        // Restrict the result fields if set
-        if (listRequest.getResultFields() != null) {
-            for (String field : listRequest.getResultFields()) {
-                solrQuery.addField(solrSettings.getFieldName(field));
-            }
-        }
+        addResultFields(listRequest.getResultFields(), solrQuery);
 
         solrQuery.setQuery(query.toString());
         solrQuery.setRows(listRequest.getIds().size());
@@ -333,14 +323,7 @@ public class SolrSearchService extends AbstractQueryService {
         // Add query
         solrQuery.setQuery(query.toString());
 
-        if (searchState.getResultFields() != null) {
-            for (String field : searchState.getResultFields()) {
-                String solrFieldName = solrSettings.getFieldName(field);
-                if (solrFieldName != null) {
-                    solrQuery.addField(solrFieldName);
-                }
-            }
-        }
+        addResultFields(searchState.getResultFields(), solrQuery);
 
         if (searchState.getRollup() != null && searchState.getRollup()) {
             solrQuery.set(GroupParams.GROUP, true);

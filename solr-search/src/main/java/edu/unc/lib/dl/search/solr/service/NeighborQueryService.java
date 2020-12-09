@@ -85,7 +85,7 @@ public class NeighborQueryService extends AbstractQueryService {
 
         // Query for a window of results to either side of the target
         solrQuery.setRows(windowSize - 1);
-        solrQuery.setFields(new String[0]);
+        addResultFields(null, solrQuery);
 
         // Clone base query for reuse in getting succeeding neighbors
         SolrQuery succeedingQuery = solrQuery.getCopy();
