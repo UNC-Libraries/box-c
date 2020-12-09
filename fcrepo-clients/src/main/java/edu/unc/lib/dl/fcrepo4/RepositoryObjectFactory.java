@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_METADATA;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.dl.util.MimetypeHelpers.formatMimetype;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
@@ -691,10 +692,6 @@ public class RepositoryObjectFactory {
 
     private void persistTripleToFedora(URI subject, String sparqlUpdate) {
         sparqlUpdateService.executeUpdate(subject.toString(), sparqlUpdate);
-    }
-
-    private String formatMimetype(String mimetype) {
-        return (mimetype != null) ? mimetype.trim().split("[;,]")[0] : null;
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
