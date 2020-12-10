@@ -38,6 +38,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -47,6 +49,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.jgroups.util.UUID;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -83,6 +86,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
     private File stagingDir;
 
+    private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
+
     @Before
     public void setup() throws Exception {
         pidMinter = new RepositoryPIDMinter();
@@ -90,17 +95,29 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         premisLoggerFactory = new PremisLoggerFactory();
         premisLoggerFactory.setPidMinter(pidMinter);
 
+        initializeJob();
+
+        depositJobId = depositUUID + ":" + job.getClass().getName();
+
+        stagingDir = tmpFolder.newFolder("staged");
+    }
+
+    private void initializeJob() {
         job = new FixityCheckJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "premisLoggerFactory", premisLoggerFactory);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
+        job.setExecutorService(executorService);
+        job.setFlushRate(100);
+        job.setMaxQueuedJobs(2);
         job.init();
+    }
 
-        depositJobId = depositUUID + ":" + job.getClass().getName();
-
-        stagingDir = tmpFolder.newFolder("staged");
+    @AfterClass
+    public static void afterTestClass() {
+        executorService.shutdown();
     }
 
     @Test
@@ -287,6 +304,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         // Write the file back into place
         FileUtils.write(flappingPath.toFile(), CONTENT2, UTF_8);
 
+        initializeJob();
         job.run();
 
         Model resultModel = job.getReadOnlyModel();

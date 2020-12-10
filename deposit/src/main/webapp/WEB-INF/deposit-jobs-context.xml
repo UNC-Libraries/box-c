@@ -192,6 +192,11 @@
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
         <constructor-arg value="${job.fileValidation.workers:1}"/>
     </bean>
+    
+    <bean id="fixityCheckExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.fileValidation.workers:1}"/>
+    </bean>
 
     <bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
             scope="prototype">
@@ -201,6 +206,9 @@
     
     <bean id="FixityCheckJob" class="edu.unc.lib.deposit.validate.FixityCheckJob"
         scope="prototype">
+        <property name="executorService" ref="fixityCheckExecutor" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.workers:5}" />
+        <property name="flushRate" value="${job.fixityCheck.flushRate:2000}" />
     </bean>
     
     <bean id="ValidateDestinationJob" class="edu.unc.lib.deposit.validate.ValidateDestinationJob"
