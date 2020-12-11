@@ -23,17 +23,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,16 +84,16 @@ public class FixityCheckJob extends AbstractDepositJob {
     // Should be higher than the number of workers
     private int maxQueuedJobs = 10;
 
-    private Deque<Future<?>> fixityFutures;
-    private BlockingDeque<FixityCheckResult> fixityResults;
+    private Queue<Future<?>> fixityFutures;
+    private BlockingQueue<FixityCheckResult> fixityResults;
 
     public FixityCheckJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
         this.rollbackDatasetOnFailure = false;
         donePerformingChecks = new AtomicBoolean(false);
         isInterrupted = new AtomicBoolean(false);
-        fixityResults = new LinkedBlockingDeque<>();
-        fixityFutures = new ConcurrentLinkedDeque<>();
+        fixityResults = new LinkedBlockingQueue<>();
+        fixityFutures = new LinkedList<>();
     }
 
     @Override
@@ -117,9 +118,7 @@ public class FixityCheckJob extends AbstractDepositJob {
                 interruptJobIfStopped();
 
                 // Wait for some of the jobs to finish before queuing more to avoid blocking all other deposits
-                while (fixityFutures.size() > maxQueuedJobs) {
-                    fixityFutures.pop().get();
-                }
+                waitForQueueCapacity();
 
                 log.debug("Queuing fixity check for {}", rescPid.getId());
 
@@ -131,13 +130,14 @@ public class FixityCheckJob extends AbstractDepositJob {
 
                 Map<DigestAlgorithm, String> existingDigests = getDigestsForResource(origResc);
 
-                Future<?> future = executorService.submit(new FixityCheckRunnable(rescPid, stagedUri, origResc, existingDigests));
-                fixityFutures.offer(future);
+                Future<?> future = executorService.submit(
+                        new FixityCheckRunnable(rescPid, stagedUri, origResc, existingDigests));
+                fixityFutures.add(future);
             }
 
             // Wait for the remaining jobs
             while (!fixityFutures.isEmpty()) {
-                fixityFutures.pop().get();
+                fixityFutures.poll().get();
             }
 
             // Wait for results
@@ -161,6 +161,20 @@ public class FixityCheckJob extends AbstractDepositJob {
         synchronized (flushingLock) {
         }
         log.debug("Completed FixityCheckJob {} in deposit {}", jobUUID, depositUUID);
+    }
+
+    private void waitForQueueCapacity() throws InterruptedException, ExecutionException {
+        while (fixityFutures.size() >= maxQueuedJobs) {
+            Iterator<Future<?>> it = fixityFutures.iterator();
+            while (it.hasNext()) {
+                Future<?> fixityFuture = it.next();
+                if (fixityFuture.isDone()) {
+                    it.remove();
+                    return;
+                }
+            }
+            Thread.sleep(10l);
+        }
     }
 
     private Map<DigestAlgorithm, String> getDigestsForResource(Resource resc) {

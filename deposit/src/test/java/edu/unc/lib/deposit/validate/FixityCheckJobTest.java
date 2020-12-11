@@ -47,6 +47,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.jgroups.util.UUID;
 import org.junit.AfterClass;
@@ -276,6 +277,30 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test
+    public void depositLotsWithNoDigests() throws Exception {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        for (int i = 0; i < 100; i++) {
+            String stagingPath1 = stageFile(CONTENT1);
+            addFileObject(depBag, stagingPath1);
+            String stagingPath2 = stageFile(CONTENT2);
+            addFileObject(depBag, stagingPath2);
+        }
+        job.closeModel();
+
+        long start = System.nanoTime();
+        job.run();
+
+        Model resultModel = job.getReadOnlyModel();
+
+        List<Statement> sha1s = resultModel.listStatements(null, CdrDeposit.sha1sum, (String) null).toList();
+        assertEquals(200, sha1s.size());
+
+        log.info("Finished in {}", ((System.nanoTime() - start)/1000000));
     }
 
     @Test
