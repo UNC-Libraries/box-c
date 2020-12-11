@@ -206,23 +206,32 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("does not set default inherited display roles for collections and sets assigned permissions to 'none'" +
-        "if no assigned permissions are returned", (done) => {
+    it("does not set default inherited display roles for collections and sets assigned permissions to returned roles", (done) => {
         wrapper.setProps({
             containerType: 'Collection'
         });
 
-        stubDataLoad(empty_response);
+        const assigned_roles =  [
+            { principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID },
+            { principal: 'authenticated', role: 'canViewOriginals', assignedTo: UUID }
+        ];
+        const response = {
+            inherited: { roles: null, deleted: false, embargo: null },
+            assigned: { roles: assigned_roles, deleted: false, embargo: null }
+        };
+
+        stubDataLoad(response);
 
         moxios.wait(() => {
             expect(wrapper.vm.display_roles.inherited.roles).toEqual([]);
             expect(wrapper.vm.display_roles.assigned.roles).toEqual([
-                {principal: 'everyone', role: 'none'},
-                {principal: 'authenticated', role: 'none'}
+                { principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID },
+                { principal: 'authenticated', role: 'canViewOriginals', assignedTo: UUID }
             ]);
-            expect(wrapper.vm.submit_roles.roles).toEqual([]);
+            expect(wrapper.vm.submit_roles.roles).toEqual(assigned_roles);
             expect(wrapper.vm.dedupedRoles).toEqual([
-                { principal: 'staff', role: 'none', type: 'assigned', deleted: false, embargo: false },
+                { principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID, type: 'assigned', deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewOriginals', assignedTo: UUID,type: 'assigned', deleted: false, embargo: false }
             ]);
             done();
         })
