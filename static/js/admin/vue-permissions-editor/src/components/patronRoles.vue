@@ -261,14 +261,12 @@
                 return assigned;
             },
 
+            // Note: Collections always have roles
             _setInitialForm(noAssigned) {
-                if (this.isCollection) {
-                    this.authenticated_role = 'none';
-                    this.everyone_role = 'none';
-                } else if (!this.isCollection && noAssigned === 0) {
-                    this.user_type = 'parent';
+                if (!this.isCollection && noAssigned === 0) {
                     this.authenticated_role = 'canViewOriginals';
                     this.everyone_role = 'canViewOriginals';
+                    this.user_type = 'parent';
                 } else {
                     this.authenticated_role = this.display_roles.assigned.roles[this.userIndex('authenticated')].role;
                     this.everyone_role = this.display_roles.assigned.roles[this.userIndex('everyone')].role;
