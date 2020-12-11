@@ -11,9 +11,7 @@
             </thead>
             <tbody>
             <template v-for="user in dedupedRoles">
-                <patron-display-row
-                        :container-type="containerType"
-                        :user="user"></patron-display-row>
+                <patron-display-row :user="user"></patron-display-row>
             </template>
             </tbody>
         </table>
@@ -219,12 +217,11 @@
             getRoles() {
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     // Set display roles
-                    const inherited = this._setInitialInherited(response.data.inherited);
-                    this.display_roles.inherited = inherited;
+                    this.display_roles.inherited = this._setInitialInherited(response.data.inherited);
                     this.display_roles.assigned = this._setInitialAssigned(response.data.assigned);
                     // Set roles from server
                     this.patron_roles = {
-                        inherited: cloneDeep(inherited), // Pick up default roles for comparing roles
+                        inherited: cloneDeep(response.data.inherited), // Pick up default roles for comparing roles
                         assigned: cloneDeep(response.data.assigned)
                     };
                     // Set submit roles
