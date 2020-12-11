@@ -276,6 +276,19 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     @Test
+    public void preferFitsMimetypeOverProvidedTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, "image/ofsomekind", IMAGE_MD5);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
+
+    @Test
     public void addMissingMimetypeTest() throws Exception {
         respondWithFile("/fitsReports/imageReport.xml");
 

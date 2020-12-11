@@ -369,7 +369,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             return;
         }
 
-        if (fitsRank > providedRank) {
+        if (fitsRank >= providedRank) {
             commit(() -> {
                 if (providedMimetype != null) {
                     objResc.removeAll(mimetype);
