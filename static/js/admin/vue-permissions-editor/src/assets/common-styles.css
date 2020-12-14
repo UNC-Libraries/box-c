@@ -9,13 +9,12 @@
 }
 
 #modal-permissions-editor .border th {
-    background-color: #E8E8E8;
+    background-color: #DFEBEF;
     border: none;
     border-bottom: 1px solid lightgray;
 }
 
 #modal-permissions-editor .inherited-permissions td {
-    background-color: #DFEBEF;
     border: none;
     border-bottom: 1px solid lightgray;
 }
