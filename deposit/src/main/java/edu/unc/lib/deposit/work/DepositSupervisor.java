@@ -187,7 +187,7 @@ public class DepositSupervisor implements WorkerListener {
     }
 
     private static enum Queue {
-        PREPARE, DELAYED_PREPARE, CDRMETSCONVERT, PREPARE_HIGH_PRIORITY;
+        PREPARE, DELAYED_PREPARE, CDRMETSCONVERT, PREPARE_HIGH_PRIORITY, PREPARE_LOW_PRIORITY
     }
 
     @PostConstruct
@@ -897,8 +897,11 @@ public class DepositSupervisor implements WorkerListener {
                     c.enqueue(Queue.CDRMETSCONVERT.name(), job);
                 } else {
                     String priority = fields.get(DepositField.priority.name());
+
                     if (Priority.high.name().equals(priority)) {
                         c.enqueue(Queue.PREPARE_HIGH_PRIORITY.name(), job);
+                    } else if (Priority.low.name().equals(priority)) {
+                        c.enqueue(Queue.PREPARE_LOW_PRIORITY.name(), job);
                     } else {
                         c.enqueue(Queue.PREPARE.name(), job);
                     }

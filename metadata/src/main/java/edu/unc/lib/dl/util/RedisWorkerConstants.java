@@ -55,7 +55,7 @@ public class RedisWorkerConstants {
     }
 
     public static enum Priority {
-        normal, high
+        low, normal, high
     }
 
     /**

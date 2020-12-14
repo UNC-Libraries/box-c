@@ -110,6 +110,21 @@
         </constructor-arg>
         <constructor-arg name="numWorkers" value="${workers.high.num:4}" />
     </bean>
+
+    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_LOW_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="${workers.low.num:2}" />
+    </bean>
     
     <bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
         <constructor-arg name="workerFactory">
@@ -129,6 +144,7 @@
     <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
         <ref bean="depositWorkerPool"/>
         <ref bean="highPriorityDepositWorkerPool"/>
+        <ref bean="migrationDepositWorkPool"/>
         <ref bean="cdrMetsDepositWorkerPool"/>
     </util:list>
 

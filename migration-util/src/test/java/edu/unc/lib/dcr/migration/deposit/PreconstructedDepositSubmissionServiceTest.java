@@ -103,7 +103,7 @@ public class PreconstructedDepositSubmissionServiceTest {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR + EMAIL_SUFFIX, status.get(DepositField.depositorEmail.name()));
         assertEquals(destinationPid.getId(), status.get(DepositField.containerId.name()));
-        assertEquals(Priority.normal.name(), status.get(DepositField.priority.name()));
+        assertEquals(Priority.low.name(), status.get(DepositField.priority.name()));
         assertEquals(true, Boolean.parseBoolean(status.get(DepositField.overrideTimestamps.name())));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));

@@ -29,6 +29,7 @@ import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.PreconstructedDepositHandler;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -73,6 +74,7 @@ public class PreconstructedDepositSubmissionService implements Closeable {
                 BXC3_TO_5_MIGRATION_UTIL.getLabel(), principals);
         depositData.setDepositorEmail(depositorName + EMAIL_SUFFIX);
         depositData.setOverrideTimestamps(true);
+        depositData.setPriority(Priority.low);
 
         PreconstructedDepositHandler depositHandler = new PreconstructedDepositHandler(depositPid);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
