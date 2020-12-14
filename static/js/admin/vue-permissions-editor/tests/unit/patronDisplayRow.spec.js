@@ -9,6 +9,7 @@ describe('patronRoles.vue', () => {
         wrapper = shallowMount(patronDisplayRow, {
             localVue,
             propsData: {
+                containerType: 'Folder',
                 user: { principal: 'everyone', role: 'canViewOriginals', type: 'assigned', deleted: false, embargo: false }
             }
         });
@@ -18,9 +19,43 @@ describe('patronRoles.vue', () => {
         role = columns.at(1);
     });
 
-    it("displays public assigned patron roles",  () => {
+    it("displays patron roles", () => {
+        wrapper = shallowMount(patronDisplayRow, {
+            localVue,
+            propsData: {
+                containerType: 'Folder',
+                user: { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', deleted: false, embargo: false }
+            }
+        });
+
+        columns = wrapper.findAll('td');
+        principal = columns.at(0);
+        role = columns.at(1);
+
+        expect(principal.text()).toMatch(/^authenticated/);
+        expect(role.text()).toMatch(/^Metadata.Only/);
+    });
+
+    it("displays public assigned patron roles", () => {
         expect(principal.text()).toMatch(/^Public.Users/);
-        expect(role.text()).toMatch(/^canViewOriginals/);
+        expect(role.text()).toMatch(/^All.of.this.Folder/);
+    });
+
+    it("displays staff roles", () => {
+        wrapper = shallowMount(patronDisplayRow, {
+            localVue,
+            propsData: {
+                containerType: 'Folder',
+                user: { principal: 'staff', role: 'none', type: 'assigned', deleted: false, embargo: false }
+            }
+        });
+
+        columns = wrapper.findAll('td');
+        principal = columns.at(0);
+        role = columns.at(1);
+
+        expect(principal.text()).toMatch(/^staff/);
+        expect(role.text()).toMatch(/^N\/A/);
     });
 
     it("display a 'more info' icon for 'Public Users' users", () => {

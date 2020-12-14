@@ -11,7 +11,7 @@
             </thead>
             <tbody>
             <template v-for="user in dedupedRoles">
-                <patron-display-row :user="user"></patron-display-row>
+                <patron-display-row :user="user" :container-type="containerType"></patron-display-row>
             </template>
             </tbody>
         </table>
@@ -87,7 +87,6 @@
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
 
-    const STAFF_ONLY_ROLE_TEXT = 'N/A';
     const METADATA_ONLY_ROLES = [
         { principal: 'everyone', role: 'canViewMetadata' },
         { principal: 'authenticated', role: 'canViewMetadata' }
@@ -141,15 +140,7 @@
 
         computed: {
             possibleRoles() {
-                let container = this.containerType.toLowerCase();
-
-                return [
-                    { text: STAFF_ONLY_ROLE_TEXT , role: STAFF_ONLY_ROLE_TEXT }, // Only used by the display tables
-                    { text: 'No Access', role: 'none' },
-                    { text: 'Metadata Only', role: 'canViewMetadata' },
-                    { text: 'Access Copies', role: 'canViewAccessCopies' },
-                    { text: `All of this ${container}`, role: 'canViewOriginals' }
-                ]
+                return this.possibleRoleList(this.containerType);
             },
 
             hasParentRole() {

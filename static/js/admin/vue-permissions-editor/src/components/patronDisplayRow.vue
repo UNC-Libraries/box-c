@@ -1,5 +1,5 @@
 <template>
-    <tr :class="{onyen: this.user.principal === 'everyone'}">
+    <tr :class="{onyen: user.principal === 'everyone'}">
         <td class="access-display">
             {{ formattedPrincipal(user.principal) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
@@ -12,7 +12,7 @@
             </div>
         </td>
         <td>
-            {{ user.role }} {{ fromText(user.type) }}
+            {{ formattedRole(user.role) }} {{ fromText(user.type) }}
             <span class="permission-icons">
                 <i class="far fa-times-circle" title="object deleted" :class="{hidden: !user.deleted}"></i>
                 <div class="circle" title="object embargoed" :class="{hidden: !user.embargo}">
@@ -32,6 +32,7 @@
         mixins: [patronHelpers],
 
         props: {
+            containerType: String,
             user: Object,
         },
 
@@ -42,6 +43,16 @@
 
             formattedPrincipal(user) {
                 return (user === 'everyone') ? 'Public Users' : user;
+            },
+
+            formattedRole(role) {
+                if (this.user.principal === 'staff') {
+                    return 'N/A';
+                }
+
+                let roleList = this.possibleRoleList(this.containerType);
+                let roleText = roleList.find((d) => d.role === role)
+                return roleText.text;
             },
 
             nonPublicRole(text) {
