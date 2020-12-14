@@ -148,7 +148,7 @@ public class TransformContentCommand implements Callable<Integer> {
                     output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
 
                     result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                            depositPid, destinationPid);
+                            depositPid, destinationPid, parentCommand.displayLabel);
 
                     output.info("Deposit submitted");
                 }

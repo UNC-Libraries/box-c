@@ -65,7 +65,7 @@ public class SubmitDepositCommand implements Callable<Integer> {
             output.info("Submitting {} for deposit to {}", depositPid.getQualifiedId(), destinationPid.getId());
 
             int result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                    depositPid, destinationPid);
+                    depositPid, destinationPid, parentCommand.displayLabel);
 
             output.info("Deposit submitted");
 

@@ -85,6 +85,11 @@ public class MigrationCLI implements Callable<Integer> {
             description = "Port for redis. Default 6379.")
     protected int redisPort;
 
+    @Option(names = {"--display-label"},
+            defaultValue = "",
+            description = "Text of display label to use, instead of the UUID, for info display.")
+    protected String displayLabel;
+
     protected MigrationCLI() {
     }
 
