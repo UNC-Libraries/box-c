@@ -32,7 +32,7 @@
 	<c:set var="currentUrl" value="${currentUrl}?${pageContext.request.queryString}"/>
 </c:if>
 <c:set var="currentRelativeUrl" scope="request" value="${currentUrl}"/>
-<c:set var="currentAbsoluteUrl" scope="request" value="${pageContext.request.scheme}://${pageContext.request.serverName}${currentRelativeUrl}"/>
+<c:set var="currentAbsoluteUrl" scope="request" value="${accessBaseUrl}${currentRelativeUrl}"/>
 <c:choose>
 	<c:when test="${template =='json'}">
 		<c:import url="/jsp/template/jsonTemplate.jsp" />
