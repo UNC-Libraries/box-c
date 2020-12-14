@@ -68,7 +68,11 @@ public class FedoraTransaction {
     }
 
     public void cancelAndIgnore() {
-        cancelTx();
+        try {
+            cancelTx();
+        } catch (TransactionCancelledException e) {
+            // ignore
+        }
     }
 
     public void cancel(Throwable t) {
