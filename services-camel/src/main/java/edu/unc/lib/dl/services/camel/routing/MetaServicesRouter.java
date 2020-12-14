@@ -15,10 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
-import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
-
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
@@ -49,24 +45,18 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
-            .startupOrder(3)
+            .startupOrder(9)
+            .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
             .to("direct-vm:index.start")
+            .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
+                .wireTap("direct-vm:filter.longleaf")
+            .end().end() // ending the filter and the wiretap
+            .filter().method(FedoraIdFilters.class, "allowedForEnhancements")
             .wireTap("direct:process.enhancement");
 
         from("direct:process.enhancement")
             .routeId("ProcessEnhancement")
-            .startupOrder(2)
-            .choice()
-                .when(simple("${headers[org.fcrepo.jms.eventType]} contains '" + EVENT_CREATE + "'"))
-                    .to("direct-vm:process.creation")
-                .when(simple("${headers[org.fcrepo.jms.eventType]} contains '" + EVENT_UPDATE + "'"
-                        + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-                    .to("direct-vm:filter.longleaf")
-            .end();
-
-        from("direct-vm:process.creation")
-            .routeId("ProcessCreation")
-            .startupOrder(1)
+            .startupOrder(5)
             .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
             .removeHeaders("CamelHttp*")
             .to("{{cdr.enhancement.stream.camel}}");

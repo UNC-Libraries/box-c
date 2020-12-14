@@ -25,6 +25,8 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -51,6 +53,9 @@ import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.embedded.RedisServer;
 
 /**
  *
@@ -92,6 +97,8 @@ public abstract class AbstractFedoraDepositJobIT {
     protected RepositoryInitializer repositoryInitializer;
     @Autowired
     protected RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private JedisPool jedisPool;
 
     protected File depositsDirectory;
     protected File depositDir;
@@ -100,6 +107,23 @@ public abstract class AbstractFedoraDepositJobIT {
     protected PID depositPid;
 
     protected ContentRootObject rootObj;
+
+    private static final RedisServer redisServer;
+
+    static {
+        try {
+            redisServer = new RedisServer(46380);
+            redisServer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        redisServer.stop();
+    }
 
     @Before
     public void initBase() throws Exception {
@@ -118,6 +142,13 @@ public abstract class AbstractFedoraDepositJobIT {
 
         repositoryInitializer.initializeRepository();
         rootObj = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
+    }
+
+    @After
+    public void cleanupRedis() throws Exception {
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.flushDB();
+        }
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

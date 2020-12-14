@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,6 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.springframework.util.MimeTypeUtils;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.dl.event.PremisEventBuilder;
@@ -227,6 +229,58 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         // Providing octet stream mimetype to be overrridden
         PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
+
+    @Test
+    public void ignoreInvalidProvidedTest() throws Exception {
+        respondWithFile("/fitsReports/unknownReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, UNKNOWN_FILEPATH, "notvalid", null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, APPLICATION_OCTET_STREAM_VALUE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
+    }
+
+    @Test
+    public void retainMoreMeaningfulProvidedMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/textReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, "/path/text.txt", "application/json", null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, "application/json", "Text", IMAGE_MD5, "/path/text.txt", 1);
+    }
+
+    @Test
+    public void overrideProvidedTextPlainWithMoreMeaningful() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, MimeTypeUtils.TEXT_PLAIN_VALUE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
+
+    @Test
+    public void preferFitsMimetypeOverProvidedTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, "image/ofsomekind", IMAGE_MD5);
         job.closeModel();
 
         job.run();

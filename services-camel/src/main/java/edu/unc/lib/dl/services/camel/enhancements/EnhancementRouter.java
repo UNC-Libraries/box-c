@@ -70,9 +70,10 @@ public class EnhancementRouter extends RouteBuilder {
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Tombstone.getURI() + "'"))
                     .log(DEBUG, log, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
                 // Process binary enhancement requests
-                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-                    .log(INFO, log, "Processing binary ${headers[CamelFcrepoUri]}")
-                    .to("direct:process.binary")
+                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"
+                        + " && ${headers[CamelFcrepoUri]} ends with '/original_file'"))
+                    .log(INFO, log, "Processing original binary ${headers[CamelFcrepoUri]}")
+                    .to("direct:process.original")
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
@@ -84,24 +85,18 @@ public class EnhancementRouter extends RouteBuilder {
                     .process(nbProcessor)
                     .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
                     .to("{{cdr.enhancement.perform.camel}}")
+                .otherwise()
+                    .log(DEBUG, log, "Ignoring resource ${headers[CamelFcrepoUri]}")
             .end();
 
-        // Route which processes fedora binary objects
-        from("direct:process.binary")
-            .routeId("ProcessBinary")
-            .startupOrder(109)
-            .multicast()
-            .to("direct-vm:filter.longleaf", "direct:process.original");
-
-        // Route to perform enhancements IF a binary is an original file
+        // Route to perform enhancements on original file
         from("direct:process.original")
             .routeId("ProcessOriginalBinary")
             .startupOrder(108)
-            .filter(simple("${headers[CamelFcrepoUri]} ends with '/original_file'"))
-                .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
-                .process(mdProcessor)
-                .filter(header(CdrBinaryPath).isNotNull())
-                    .to("{{cdr.enhancement.perform.camel}}");
+            .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
+            .process(mdProcessor)
+            .filter(header(CdrBinaryPath).isNotNull())
+                .to("{{cdr.enhancement.perform.camel}}");
 
         // Queue for executing enhancnement operations
         from("{{cdr.enhancement.perform.camel}}")

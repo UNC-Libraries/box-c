@@ -16,7 +16,7 @@
 
 package edu.unc.lib.dl.services.camel.solr;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
@@ -70,9 +70,11 @@ public class SolrIngestProcessor implements Processor {
         final Message in = exchange.getIn();
         String fcrepoUri = (String) in.getHeader(FCREPO_URI);
 
+        log.debug("Processing solr request for {}", fcrepoUri);
+
         List<PID> targetPids = new ArrayList<>();
         PID targetPid = PIDs.get(fcrepoUri);
-        String resourceTypes = (String) in.getHeader(FCREPO_RESOURCE_TYPE);
+        String resourceTypes = (String) in.getHeader(RESOURCE_TYPE);
 
         // for binaries, need to index the file and work objects which contain it
         if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {

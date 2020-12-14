@@ -119,6 +119,9 @@ public class AddDerivativeProcessorTest {
     @Test
     public void executionFailedTest() throws Exception {
         when(result.getExitValue()).thenReturn(1);
+        String stderr = "convert: no images defined `/tmp/testtxt-large.png'"
+                + " @ error/convert.c/ConvertImageCommand/3235.";
+        when(result.getStderr()).thenReturn(new ByteArrayInputStream(stderr.getBytes()));
 
         mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
         processor.process(exchange);
@@ -131,5 +134,16 @@ public class AddDerivativeProcessorTest {
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(".png".getBytes()));
 
         processor.process(exchange);
+    }
+
+    @Test
+    public void executionExit1TagIgnoredErrorTest() throws Exception {
+        when(result.getExitValue()).thenReturn(1);
+        when(result.getStderr()).thenReturn(getClass().getResourceAsStream("/convert/ignore_tag_stderr.txt"));
+
+        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
+        processor.process(exchange);
+
+        assertTrue(mvFile.exists());
     }
 }

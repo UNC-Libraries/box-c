@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel.solr;
 
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;

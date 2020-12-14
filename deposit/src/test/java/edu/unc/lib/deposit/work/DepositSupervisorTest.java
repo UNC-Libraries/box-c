@@ -16,15 +16,26 @@
 package edu.unc.lib.deposit.work;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.ext.com.google.common.base.Objects;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
@@ -41,6 +52,7 @@ import edu.unc.lib.dl.persist.services.ingest.AbstractDepositHandler;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -48,7 +60,14 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
+import edu.unc.lib.dl.util.SpringJobFactory;
+import net.greghaines.jesque.Config;
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.worker.WorkerPool;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.embedded.RedisServer;
 
 /**
  * @author bbpennel
@@ -58,11 +77,21 @@ import net.greghaines.jesque.worker.WorkerPool;
     "/spring-test/deposit-supervisor-test-context.xml"} )
 public class DepositSupervisorTest {
 
+    private static final Logger log = getLogger(DepositSupervisorTest.class);
+
+    private final long STATE_POLL_PERIOD = 25l;
+
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Autowired
+    private Config jesqueConfig;
+
+    @Autowired
     private RepositoryPIDMinter pidMinter;
+
+    @Autowired
+    private JobStatusFactory jobStatusFactory;
 
     @Autowired
     private DepositStatusFactory depositStatusFactory;
@@ -74,7 +103,15 @@ public class DepositSupervisorTest {
     private List<WorkerPool> depositWorkerPools;
 
     @Autowired
+    private QueueInfoDAO queueDAO;
+
     private DepositSupervisor supervisor;
+
+    @Autowired
+    private SpringJobFactory jobFactory;
+
+    @Autowired
+    private JedisPool jedisPool;
 
     private PID depositDestination;
 
@@ -82,16 +119,63 @@ public class DepositSupervisorTest {
 
     private AgentPrincipals agent;
 
+    private static final RedisServer redisServer;
+
+    static {
+        try {
+            redisServer = new RedisServer(46380);
+            redisServer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        redisServer.stop();
+    }
+
     @Before
     public void setup() throws Exception {
+        when(jobFactory.materializeJob(any())).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Job job = invocation.getArgumentAt(0, Job.class);
+                if (job == null) {
+                    return null;
+                }
+                String uuid = (String) job.getArgs()[0];
+                String depositUUID = (String) job.getArgs()[1];
+                return new TestDepositJob(uuid, depositUUID);
+            }
+        });
+
         depositDestination = pidMinter.mintContentPid();
         agent = new AgentPrincipals("user", new AccessGroupSet());
 
-        actionMonitor = supervisor.actionMonitoringTask;
-
         pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
+        supervisor = new DepositSupervisor();
+        supervisor.setJesqueConfig(jesqueConfig);
+        supervisor.setDepositStatusFactory(depositStatusFactory);
+        supervisor.setJobStatusFactory(jobStatusFactory);
+        setField(supervisor, "pipelineStatusFactory", pipelineStatusFactory);
+        setField(supervisor, "depositWorkerPools", depositWorkerPools);
+        setField(supervisor, "queueDAO", queueDAO);
+        supervisor.setUnavailableDelaySeconds(60);
+        supervisor.setCleanupDelaySeconds(60);
         // Turn up monitoring speed so tests are shorter
         supervisor.setActionMonitorDelay(25l);
+
+        actionMonitor = supervisor.actionMonitoringTask;
+    }
+
+    @After
+    public void cleanup() throws Exception {
+        supervisor.stop(true);
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.flushDB();
+        }
     }
 
     @Test
@@ -145,9 +229,6 @@ public class DepositSupervisorTest {
         requestDepositAction(depositPid, DepositAction.resume);
 
         actionMonitor.run();
-
-        // Allow time for redis to sync up
-        Thread.sleep(10);
 
         assertDepositStatus(DepositState.queued, depositPid);
     }
@@ -339,17 +420,13 @@ public class DepositSupervisorTest {
 
         PID depositPid = queueDeposit();
 
-        Thread.sleep(50l);
-
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
 
         requestDepositAction(depositPid, DepositAction.pause);
 
-        Thread.sleep(50l);
-
-        assertDepositStatus(DepositState.paused, depositPid);
         assertDepositAction(null, depositPid);
+        assertDepositStatus(DepositState.paused, depositPid);
     }
 
     @DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
@@ -359,11 +436,9 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.resume, depositPid);
+        assertDepositActionOrNull(DepositAction.resume, depositPid);
 
-        Thread.sleep(50l);
-
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
     }
 
@@ -374,11 +449,9 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.resume, depositPid);
+        assertDepositActionOrNull(DepositAction.resume, depositPid);
 
-        Thread.sleep(50l);
-
-        assertDepositStatus(DepositState.queued, depositPid);
+        assertDepositQueuedOrRunning(depositPid);
         assertDepositAction(null, depositPid);
     }
 
@@ -391,8 +464,6 @@ public class DepositSupervisorTest {
 
         assertDepositAction(null, depositPid);
 
-        Thread.sleep(50l);
-
         assertDepositStatus(DepositState.paused, depositPid);
         assertDepositAction(null, depositPid);
     }
@@ -404,25 +475,11 @@ public class DepositSupervisorTest {
 
         supervisor.start();
 
-        assertDepositAction(DepositAction.register, depositPid);
-
-        Thread.sleep(50l);
+        assertDepositActionOrNull(DepositAction.register, depositPid);
 
         assertDepositStatus(DepositState.queued, depositPid);
         assertDepositAction(null, depositPid);
     }
-
-    /*
-     * TODO tests for the following:
-     * * queue different priorities
-     * * next jobs come back in expected orders
-     * * normalization jobs selected correctly
-     * * handles case of no matching normalization job
-     * * job started event processing
-     * * job success event processing
-     * * job failure event tests
-     * * deposit completion
-     */
 
     private void assertWorkersPaused(boolean expectedValue) {
         for (WorkerPool workerPool : depositWorkerPools) {
@@ -438,19 +495,64 @@ public class DepositSupervisorTest {
         }
     }
 
-    private void assertDepositStatus(DepositState expectedState, PID depositPid) {
-        assertEquals(expectedState, depositStatusFactory.getState(depositPid.getId()));
+    private void assertDepositStatus(DepositState expectedState, PID depositPid) throws Exception {
+        assertDepositStatus(expectedState, depositPid, 1000l);
     }
 
-    private void assertDepositAction(DepositAction expectedAction, PID depositPid) {
-        Map<String, String> status = depositStatusFactory.get(depositPid.getId());
-        DepositAction action;
-        if (status.containsKey(DepositField.actionRequest.name())) {
-            action = DepositAction.valueOf(status.get(DepositField.actionRequest.name()));
-        } else {
-            action = null;
+    private void assertDepositStatus(DepositState expectedState, PID depositPid, long timeout) throws Exception {
+        long endTime = System.currentTimeMillis() + timeout;
+        DepositState liveState = null;
+        while (endTime >= System.currentTimeMillis()) {
+            liveState = depositStatusFactory.getState(depositPid.getId());
+            if (expectedState.equals(liveState)) {
+                return;
+            }
+            Thread.sleep(STATE_POLL_PERIOD);
         }
-        assertEquals(expectedAction, action);
+        fail("Expected deposit status to be " + expectedState + " but state was " + liveState);
+    }
+
+    private void assertDepositQueuedOrRunning(PID depositPid) throws Exception {
+        long timeout = 1000l;
+        long endTime = System.currentTimeMillis() + timeout;
+        DepositState liveState = null;
+        while (endTime >= System.currentTimeMillis()) {
+            liveState = depositStatusFactory.getState(depositPid.getId());
+            if (DepositState.queued.equals(liveState) || DepositState.running.equals(liveState)) {
+                return;
+            }
+            Thread.sleep(STATE_POLL_PERIOD);
+        }
+        fail("Expected deposit status to be queued or running but state was " + liveState);
+    }
+
+    private void assertDepositAction(DepositAction expectedAction, PID depositPid) throws Exception {
+        assertDepositAction(expectedAction, depositPid, false, 1000l);
+    }
+
+    private void assertDepositActionOrNull(DepositAction expectedAction, PID depositPid) throws Exception {
+        assertDepositAction(expectedAction, depositPid, true, 1000l);
+    }
+
+    private void assertDepositAction(DepositAction expectedAction, PID depositPid, boolean allowNull, long timeout)
+            throws Exception {
+        long endTime = System.currentTimeMillis() + timeout;
+
+        DepositAction action = null;
+        while (endTime >= System.currentTimeMillis()) {
+            Map<String, String> status = depositStatusFactory.get(depositPid.getId());
+
+            if (status.containsKey(DepositField.actionRequest.name())) {
+                action = DepositAction.valueOf(status.get(DepositField.actionRequest.name()));
+            } else {
+                action = null;
+            }
+            if (Objects.equal(expectedAction, action) || (allowNull && action == null)) {
+                return;
+            }
+            Thread.sleep(STATE_POLL_PERIOD);
+        }
+        fail("Expected deposit action to be " + expectedAction + " but action was " + action);
     }
 
     private void assertPipelineStatus(DepositPipelineState expectedState) {
@@ -463,6 +565,8 @@ public class DepositSupervisorTest {
 
     private void requestDepositAction(PID depositPid, DepositAction action) {
         depositStatusFactory.requestAction(depositPid.getId(), action);
+        log.debug("Set deposit action {} for {} to {}",
+                action, depositPid.getId(), depositStatusFactory.get(depositPid.getId()));
     }
 
     private PID queueDeposit() throws DepositException {
@@ -497,5 +601,31 @@ public class DepositSupervisorTest {
         DepositData deposit = new DepositData(null, null, packagingType, null, agent);
         deposit.setPriority(priority);
         return depositHandler.doDeposit(depositDestination, deposit);
+    }
+
+    private static final long JOB_TIMEOUT = 5000l;
+    private class TestDepositJob extends AbstractDepositJob {
+
+        public TestDepositJob(String uuid, String depositUUID) {
+            super(uuid, depositUUID);
+            setDepositStatusFactory(depositStatusFactory);
+            setJobStatusFactory(jobStatusFactory);
+        }
+
+        @Override
+        public void runJob() {
+            long end = System.currentTimeMillis() + JOB_TIMEOUT;
+            while (true) {
+                if (end < System.currentTimeMillis()) {
+                    return;
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                interruptJobIfStopped();
+            }
+        }
     }
 }

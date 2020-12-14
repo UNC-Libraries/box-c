@@ -46,17 +46,17 @@ public class FulltextRouter extends RouteBuilder {
         from("direct:process.enhancement.extractFulltext")
             .routeId("CdrServiceFulltextExtraction")
             .startupOrder(31)
-            .log(LoggingLevel.DEBUG, log, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
+            .log(LoggingLevel.DEBUG, log, "Calling text extraction route for ${headers[CamelFcrepoUri]}")
             .filter().method(adProcessor, "needsRun")
             .filter().method(FulltextProcessor.class, "allowedTextType")
-            .log(LoggingLevel.INFO, log, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
+            .log(LoggingLevel.INFO, log, "Extracting text from ${headers[CamelFcrepoUri]}"
                     + " of type ${headers[CdrMimeType]}")
             .to("direct:fulltext.extraction");
 
         from("direct:fulltext.extraction")
             .routeId("ExtractingText")
             .startupOrder(30)
-            .log(LoggingLevel.INFO, log, "Extracting full text for ${headers[binaryPath]}")
+            .log(LoggingLevel.DEBUG, log, "Extracting full text for ${headers[CdrBinaryPath]}")
             .bean(ftProcessor);
     }
 }

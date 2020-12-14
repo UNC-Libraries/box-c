@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newBufferedWriter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,6 +37,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -60,6 +62,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.MimeTypeUtils;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -67,6 +70,7 @@ import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.util.MimetypeHelpers;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -327,41 +331,69 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      * generated value is preferred.
      *
      * @param objResc
-     * @param fitsMimetype
+     * @param fitsExtractMimetype
      */
-    private void overrideDepositMimetype(Resource objResc, String fitsMimetype) {
+    private void overrideDepositMimetype(Resource objResc, String fitsExtractMimetype) {
+        String rescId = objResc.getURI();
+        // normalize fits mimetype
+        final String fitsMimetype = MimetypeHelpers.formatMimetype(fitsExtractMimetype);
+
         // If the file was provided with a meaningful mimetype, continue using that
         Statement mimetypeStmt = objResc.getProperty(mimetype);
+        final String providedMimetype;
         if (mimetypeStmt != null) {
-            String providedMimetype = mimetypeStmt.getString();
-            if (isMimetypeMeaningful(providedMimetype)) {
-                log.debug("Provided mimetype {} used for {}", providedMimetype, objResc.getURI());
-                return;
-            }
+            providedMimetype = MimetypeHelpers.formatMimetype(mimetypeStmt.getString());
+        } else {
+            providedMimetype = null;
         }
 
-        commit(() -> {
-            // Not using a provided mimetype, so use the FITS mimetype
-            if (isMimetypeMeaningful(fitsMimetype)) {
-                objResc.removeAll(mimetype)
-                        .addProperty(mimetype, fitsMimetype);
-            } else {
-                objResc.removeAll(mimetype)
-                        .addProperty(mimetype, "application/octet-stream");
-            }
-        });
+        if (fitsMimetype != null && Objects.equals(providedMimetype, fitsMimetype)) {
+            log.debug("FITS mimetype and provided mimetype {} agree for {}, skipping override",
+                    providedMimetype, rescId);
+            return;
+        }
+
+        int fitsRank = rankMimetype(fitsMimetype);
+        int providedRank = rankMimetype(providedMimetype);
+
+        // No meaningful mimetypes, so remove provided and replace with default
+        if (providedRank < 0 && fitsRank < 0) {
+            commit(() -> {
+                if (providedMimetype != null) {
+                    objResc.removeAll(mimetype);
+                }
+                objResc.addProperty(mimetype, APPLICATION_OCTET_STREAM_VALUE);
+            });
+            log.warn("No meaningful mimetype for {}, removed provided value '{}' and added default",
+                    rescId, providedMimetype);
+            return;
+        }
+
+        if (fitsRank >= providedRank) {
+            commit(() -> {
+                if (providedMimetype != null) {
+                    objResc.removeAll(mimetype);
+                }
+                objResc.addProperty(mimetype, fitsMimetype);
+            });
+            log.debug("Overrode provided mimetype {} for {} with extracted mimetype {}",
+                    providedMimetype, rescId, fitsMimetype);
+        } else {
+            log.debug("Retaining provided mimetype {} for {}", providedMimetype, objResc.getURI());
+        }
     }
 
-    /**
-     * Determines if the given mimetype is a meaningful value, meaning not empty
-     * or generic
-     *
-     * @param mimetype
-     * @return
-     */
-    private boolean isMimetypeMeaningful(String mimetype) {
-        return mimetype != null && mimetype.trim().length() > 0
-                && !mimetype.contains("octet-stream");
+    private int rankMimetype(String mimetype) {
+        if (!MimetypeHelpers.isValidMimetype(mimetype)) {
+            return -1;
+        }
+        if (mimetype.equals(APPLICATION_OCTET_STREAM_VALUE)) {
+            return  0;
+        }
+        if (mimetype.equals(MimeTypeUtils.TEXT_PLAIN_VALUE)) {
+            return  1;
+        }
+        return 2;
     }
 
     private Element getObjectCharacteristics(Document premisDoc) {

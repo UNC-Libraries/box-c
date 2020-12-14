@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.rdf.Cdr.Collection;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.FCREPO_RESOURCE_TYPE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
@@ -95,7 +95,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
     }
 
@@ -116,7 +116,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "true");
     }
 
@@ -127,7 +127,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+        verify(message).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message).setHeader("force", "false");
     }
 
@@ -139,7 +139,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message, never()).setHeader(FCREPO_URI, RESC_URI);
-        verify(message, never()).setHeader(FCREPO_RESOURCE_TYPE, Binary.getURI());
+        verify(message, never()).setHeader(RESOURCE_TYPE, Binary.getURI());
         verify(message, never()).setHeader("force", "false");
     }
 
@@ -152,7 +152,7 @@ public class BinaryEnhancementProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(FCREPO_URI, RESC_URI);
-        verify(message).setHeader(FCREPO_RESOURCE_TYPE, Collection.getURI());
+        verify(message).setHeader(RESOURCE_TYPE, Collection.getURI());
         verify(message).setHeader("force", "false");
     }
 

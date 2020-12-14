@@ -275,45 +275,6 @@
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <webResources>
-            <resource>
-                <filtering>true</filtering>
-                <directory>../etc</directory>
-                <includes>
-                    <include>services-camel.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <filtering>true</filtering>
-                <directory>../etc/bin</directory>
-            </resource>
-          </webResources>
-        </configuration>
-    </plugin>
-    <plugin>
-         <groupId>org.eclipse.jetty</groupId>
-         <artifactId>jetty-maven-plugin</artifactId>
-         <configuration>
-             <webApp>
-                 <contextPath>/</contextPath>
-                 <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                 <webInfIncludeJarPattern>none</webInfIncludeJarPattern>
-             </webApp>
-             <httpConnector>
-                 <port>8192</port>
-             </httpConnector>
-             <systemProperties>
-                 <systemProperty>
-                     <name>fcrepo.baseUri</name>
-                     <value>http://localhost:8080/fcrepo/rest/</value>
-                 </systemProperty>
-                 <systemProperty>
-                     <name>config.properties.uri</name>
-                     <value>file:${project.basedir}/target/${project.build.finalName}/services-camel.properties</value>
-                 </systemProperty>
-             </systemProperties>
-         </configuration>
     </plugin>
     </plugins>
     </build>

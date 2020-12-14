@@ -151,12 +151,6 @@ public class DepositStatusFactory {
         }
     }
 
-    public void setActionRequest(String depositUUID, DepositAction action) {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(), action.name());
-        }
-    }
-
     public void incrIngestedObjects(String depositUUID, int amount) {
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.hincrBy(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.ingestedObjects.name(), amount);
@@ -183,6 +177,7 @@ public class DepositStatusFactory {
     }
 
     public void requestAction(String depositUUID, DepositAction action) {
+        log.debug("Setting action request for {} to {}", depositUUID, action);
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(),
                     action.name());
@@ -190,6 +185,7 @@ public class DepositStatusFactory {
     }
 
     public void clearActionRequest(String depositUUID) {
+        log.debug("Clearing action request for {}", depositUUID);
         try (Jedis jedis = getJedisPool().getResource()) {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name());
         }

@@ -50,9 +50,9 @@
                 <constructor-arg ref="jobFactory" />
             </bean>
         </constructor-arg>
-        <constructor-arg name="numWorkers" value="2" />
+        <constructor-arg name="numWorkers" value="1" />
     </bean>
-    
+
     <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
         <constructor-arg name="workerFactory">
             <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
@@ -88,10 +88,4 @@
         <ref bean="highPriorityDepositWorkerPool"/>
         <ref bean="migrationDepositWorkPool"/>
     </util:list>
-    
-    <bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor" >
-        <property name="jesqueConfig" ref="jesqueConfig"/>
-        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
-        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
-    </bean>
 </beans>

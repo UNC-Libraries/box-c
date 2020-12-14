@@ -15,11 +15,13 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.BASE_URL;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_VERSIONS;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
-import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
 
@@ -33,9 +35,14 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -45,12 +52,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
-    private static final String FILE_ID = "/file1/original_file";
     private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
+    private static final String FILE_ID = CONTAINER_ID + "/file1/original_file";
+    private static final String DEPOSIT_ID = "/deposit/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
 
     private static final String META_ROUTE = "CdrMetaServicesRouter";
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
-    private static final String PROCESS_CREATION_ROUTE = "ProcessCreation";
 
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
@@ -66,14 +73,132 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
     }
 
+    @Before
+    public void setup() {
+        TestHelper.setContentBase("http://example.com/rest/");
+    }
+
     @Test
     public void testRouteStartContainer() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Binary.getURI()));
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartTimemap() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/" + FCR_VERSIONS,
+                Fcrepo4Repository.Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartDatafs() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs",
+                Fcrepo4Repository.Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartDepositRecord() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(DEPOSIT_ID,
+                Fcrepo4Repository.Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartNotAPid() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent("what/is/going/on",
+                Fcrepo4Repository.Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartCollections() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent("/content/" + RepositoryPathConstants.CONTENT_ROOT_ID,
+                Fcrepo4Repository.Container.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartBinaryMetadata() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs/original_file/fcr:metadata",
+                Fcrepo4Repository.NonRdfSourceDescription.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartOriginalBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs/original_file",
+                Fcrepo4Repository.Binary.getURI()));
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testRouteStartPremisBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+
+        createContext(META_ROUTE);
+
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/md/event_log",
+                Fcrepo4Repository.Binary.getURI()));
 
         assertMockEndpointsSatisfied();
     }
@@ -94,22 +219,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilterValid() throws Exception {
-        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        createContext(META_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
-        assertMockEndpointsSatisfied();
-    }
-
-    @Test
-    public void testUpdateBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
-
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
-        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
-        headers.put(EVENT_TYPE, EVENT_UPDATE);
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
@@ -132,7 +245,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testCreationRoute() throws Exception {
         getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(1);
 
-        createContext(PROCESS_CREATION_ROUTE);
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -156,6 +269,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, EVENT_CREATE);
         headers.put(IDENTIFIER, identifier);
+        headers.put(BASE_URL, baseUri);
         headers.put(RESOURCE_TYPE, String.join(",", type));
 
         return headers;
