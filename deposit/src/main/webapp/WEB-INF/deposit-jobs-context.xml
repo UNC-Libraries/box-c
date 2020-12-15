@@ -258,8 +258,15 @@
         scope="prototype">
     </bean>
     
+    <bean id="transferBinariesExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.transferBinaries.workers:5}"/>
+    </bean>
+    
     <bean id="transferBinariesToStorageJob" class="edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob"
         scope="prototype">
+        <property name="executorService" ref="transferBinariesExecutor" />
+        <property name="flushRate" value="${job.transferBinaries.flushRate:2000}" />
     </bean>
     
     <bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"

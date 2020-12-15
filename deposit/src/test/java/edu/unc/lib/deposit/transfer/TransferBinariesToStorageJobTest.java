@@ -44,6 +44,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,10 +53,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -117,6 +121,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     private Path sourcePath;
     private Path candidatePath;
 
+    private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
+
     @Mock
     private RepositoryObjectFactory repoObjFactory;
 
@@ -147,6 +153,14 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         transferService = new BinaryTransferServiceImpl();
         transferService.setIngestSourceManager(sourceManager);
 
+        initializeJob();
+
+        depositModel = job.getWritableModel();
+        depBag = depositModel.createBag(depositPid.getRepositoryPath());
+        depBag.addProperty(Cdr.storageLocation, LOC1_ID);
+    }
+
+    private void initializeJob() {
         job = new TransferBinariesToStorageJob(jobUUID, depositUUID);
         setField(job, "locationManager", locationManager);
         setField(job, "transferService", transferService);
@@ -155,11 +169,14 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "repoObjFactory", repoObjFactory);
+        setField(job, "executorService", executorService);
+        job.setFlushRate(100);
         job.init();
+    }
 
-        depositModel = job.getWritableModel();
-        depBag = depositModel.createBag(depositPid.getRepositoryPath());
-        depBag.addProperty(Cdr.storageLocation, LOC1_ID);
+    @AfterClass
+    public static void afterTestClass() {
+        executorService.shutdown();
     }
 
     @Test
@@ -433,6 +450,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         // Resume the job
         reset(jobStatusFactory);
+        initializeJob();
         job.run();
 
         Model model = job.getReadOnlyModel();
@@ -527,6 +545,26 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         // Expect the full file to be present after running
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+    }
+
+    @Test
+    public void depositLotsOfFiles() throws Exception {
+        int numFileObjs = 100;
+
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        for (int i = 0; i < numFileObjs; i++) {
+            addFileObject(workBag, FILE_CONTENT1, true);
+        }
+
+        job.closeModel();
+
+        long start = System.currentTimeMillis();
+        job.run();
+        log.debug("Finished execution in {}ms", (System.currentTimeMillis() - start));
+
+        Model model = job.getReadOnlyModel();
+        List<Statement> storageUriStmts = model.listStatements(null, CdrDeposit.storageUri, (RDFNode) null).toList();
+        assertEquals(numFileObjs * 2, storageUriStmts.size());
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {

@@ -136,7 +136,7 @@ public abstract class AbstractDepositJob implements Runnable {
     protected boolean rollbackDatasetOnFailure = true;
 
     @Autowired
-    private DepositModelManager depositModelManager;
+    protected DepositModelManager depositModelManager;
 
     public AbstractDepositJob() {
     }
