@@ -306,7 +306,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                             Element urlType = (Element) url;
                             String displayLabel = urlType.getAttributeValue("displayLabel");
 
-                            if (displayLabel.toLowerCase().equals("link to finding aid")) {
+                            if (displayLabel != null && displayLabel.toLowerCase().equals("link to finding aid")) {
                                 findingAids.add(urlType.getValue());
                             }
                         }
