@@ -337,7 +337,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
         private void transferFitsHistoryFile() {
             if (datastreamNotTransferred(CdrDeposit.hasDatastreamFitsHistory)) {
-                Resource historyResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA_HISTORY);
+                Resource historyResc = DepositModelHelpers.getDatastream(
+                        resc, DatastreamType.TECHNICAL_METADATA_HISTORY);
                 PID fitsPid = DatastreamPids.getTechnicalMetadataPid(objPid);
                 PID historyPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
 
