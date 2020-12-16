@@ -35,6 +35,15 @@
       <pattern>%msg%n</pattern>
     </encoder>
   </appender>
+  <appender name="MIGRATION_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/logs/dcr-migration-util/current.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>/logs/dcr-migration-util/archive-%d{yyyy-MM-dd}.log</fileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%d %-5level [%thread] %logger{35} - %msg%n</pattern>
+    </encoder>
+  </appender>
   <appender name="APP_LOG" class="ch.qos.logback.core.FileAppender">
       <file>target/current.log</file>
       <append>true</append>
@@ -48,5 +57,6 @@
   </logger>
   <root level="INFO">
     <appender-ref ref="APP_LOG"/>
+    <appender-ref ref="MIGRATION_LOG"/>
   </root>
 </configuration>
