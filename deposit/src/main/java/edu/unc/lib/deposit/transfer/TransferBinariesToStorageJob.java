@@ -475,4 +475,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     public void setFlushRate(int flushRate) {
         this.flushRate = flushRate;
     }
+
+    public void setMaxQueuedJobs(int maxQueuedJobs) {
+        this.maxQueuedJobs = maxQueuedJobs;
+    }
 }

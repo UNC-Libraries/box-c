@@ -264,9 +264,10 @@
     </bean>
     
     <bean id="transferBinariesToStorageJob" class="edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob"
-        scope="prototype">
+            scope="prototype">
         <property name="executorService" ref="transferBinariesExecutor" />
         <property name="flushRate" value="${job.transferBinaries.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.transferBinaries.maxQueuedJobs:6}" />
     </bean>
     
     <bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"
