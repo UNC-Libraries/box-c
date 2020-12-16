@@ -357,6 +357,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         job.closeModel();
 
+        initializeJob();
         reset(jobStatusFactory);
         job.run();
 
