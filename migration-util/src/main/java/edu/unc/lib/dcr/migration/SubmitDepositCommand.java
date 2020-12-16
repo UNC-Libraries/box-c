@@ -27,6 +27,7 @@ import edu.unc.lib.dcr.migration.deposit.PreconstructedDepositSubmissionService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
@@ -52,6 +53,11 @@ public class SubmitDepositCommand implements Callable<Integer> {
             description = "UUID of the container into which the deposit will be ingest")
     private String destinationId;
 
+    @Option(names = {"--display-label"},
+            defaultValue = "",
+            description = "Text of display label to use, instead of the UUID, for info display.")
+    private String displayLabel;
+
     @Override
     public Integer call() throws Exception {
         output.info(BannerUtility.getBanner());
@@ -65,7 +71,7 @@ public class SubmitDepositCommand implements Callable<Integer> {
             output.info("Submitting {} for deposit to {}", depositPid.getQualifiedId(), destinationPid.getId());
 
             int result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                    depositPid, destinationPid, parentCommand.displayLabel);
+                    depositPid, destinationPid, displayLabel);
 
             output.info("Deposit submitted");
 

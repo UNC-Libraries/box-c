@@ -41,6 +41,7 @@ import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
@@ -61,6 +62,11 @@ public class TransformContentCommand implements Callable<Integer> {
     @Parameters(index = "0",
             description = "UUID of the content object from which to start the transformation")
     private String startingId;
+
+    @Option(names = {"--display-label"},
+            defaultValue = "",
+            description = "Text of display label to use, instead of the UUID, for info display.")
+    private String displayLabel;
 
     @Mixin
     private ContentTransformationOptions options;
@@ -148,7 +154,7 @@ public class TransformContentCommand implements Callable<Integer> {
                     output.info("Submitting {} for deposit to {}", depositPid.getId(), destinationPid.getId());
 
                     result = depositService.submitDeposit(parentCommand.username, parentCommand.groups,
-                            depositPid, destinationPid, parentCommand.displayLabel);
+                            depositPid, destinationPid, displayLabel);
 
                     output.info("Deposit submitted");
                 }
