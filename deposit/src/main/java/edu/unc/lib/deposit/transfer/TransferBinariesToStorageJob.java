@@ -147,8 +147,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                 transferFutures.poll().get();
             }
 
-            doneTransfers.set(true);
-
             // Wait for results
             while (!resultsQueue.isEmpty()) {
                 TimeUnit.MILLISECONDS.sleep(10l);
@@ -157,6 +155,8 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
             // Wait if a flush of registrations is still active
             synchronized (flushingLock) {
             }
+
+            doneTransfers.set(true);
         } catch (InterruptedException e) {
             isInterrupted.set(true);
             throw new JobInterruptedException("Binary Transfer job interrupted", e);
