@@ -65,9 +65,11 @@ public class PreconstructedDepositSubmissionService implements Closeable {
      * @param depositorGroup Group(s) the user belongs to
      * @param depositPid pid of the deposit to submit
      * @param destination pid of the destination object
+     * @param displayLabel deposit label that will be used by the status monitor
      * @return result code
      */
-    public int submitDeposit(String depositorName, String depositorGroup, PID depositPid, PID destination) {
+    public int submitDeposit(String depositorName, String depositorGroup, PID depositPid, PID destination,
+                             String displayLabel) {
         AgentPrincipals principals = new AgentPrincipals(depositorName, new AccessGroupSet(depositorGroup));
 
         DepositData depositData = new DepositData(null, null, BAG_WITH_N3,
@@ -75,6 +77,9 @@ public class PreconstructedDepositSubmissionService implements Closeable {
         depositData.setDepositorEmail(depositorName + EMAIL_SUFFIX);
         depositData.setOverrideTimestamps(true);
         depositData.setPriority(Priority.low);
+        if (!displayLabel.equals("")) {
+            depositData.setSlug(displayLabel);
+        }
 
         PreconstructedDepositHandler depositHandler = new PreconstructedDepositHandler(depositPid);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
