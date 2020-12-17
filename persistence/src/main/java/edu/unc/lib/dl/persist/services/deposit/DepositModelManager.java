@@ -293,7 +293,7 @@ public class DepositModelManager implements Closeable {
      */
     public void commit(Runnable actions, boolean inTx) {
         try {
-            if (inTx) {
+            if (inTx && dataset.isInTransaction()) {
                 dataset.end();
             }
             dataset.begin(ReadWrite.WRITE);
@@ -336,7 +336,9 @@ public class DepositModelManager implements Closeable {
      * End a transaction on the dataset
      */
     public void end() {
-        dataset.end();
+        if (dataset.isInTransaction()) {
+            dataset.end();
+        }
     }
 
     public void setDepositsPath(Path depositsPath) {
