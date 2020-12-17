@@ -31,17 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -54,10 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.deposit.work.JobInterruptedException;
+import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -78,7 +67,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  * @author bbpennel
  *
  */
-public class TransferBinariesToStorageJob extends AbstractDepositJob {
+public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(TransferBinariesToStorageJob.class);
 
@@ -89,18 +78,6 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
     private RepositoryObjectFactory repoObjFactory;
 
     private Model model;
-
-    private ExecutorService executorService;
-
-    private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-    private AtomicBoolean doneTransfers = new AtomicBoolean(false);
-    private Object flushingLock = new Object();
-
-    private int flushRate = 5000;
-    private int maxQueuedJobs = 10;
-
-    private Queue<Future<?>> transferFutures = new LinkedBlockingQueue<>();
-    private BlockingQueue<TransferBinariesResult> resultsQueue = new LinkedBlockingQueue<>();
 
     /**
      *
@@ -137,36 +114,10 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
 
                 waitForQueueCapacity();
 
-                Future<?> future = executorService.submit(
-                        new TransferBinariesRunnable(resc.getURI(), transferSession));
-                transferFutures.add(future);
+                submitTask(new TransferBinariesRunnable(resc.getURI(), transferSession));
             }
 
-            // Wait for the remaining jobs
-            while (!transferFutures.isEmpty()) {
-                transferFutures.poll().get();
-            }
-
-            // Wait for results
-            while (!resultsQueue.isEmpty()) {
-                TimeUnit.MILLISECONDS.sleep(10l);
-            }
-
-            // Wait if a flush of registrations is still active
-            synchronized (flushingLock) {
-            }
-
-            doneTransfers.set(true);
-        } catch (InterruptedException e) {
-            isInterrupted.set(true);
-            throw new JobInterruptedException("Binary Transfer job interrupted", e);
-        } catch (ExecutionException e) {
-            isInterrupted.set(true);
-            if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-            } else {
-                throw new RuntimeException(e.getCause());
-            }
+            waitForCompletion();
         }
     }
 
@@ -185,75 +136,18 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
         setTotalClicks(i);
     }
 
-    /**
-     * Registers results transfer jobs to the jena model periodically until
-     * there are no more jobs left or the job is interrupted
-     *
-     * @throws InterruptedException
-     */
-    private void startResultRegistrar() {
-        Thread flushThread = new Thread(() -> {
-            try {
-                while (!isInterrupted.get()) {
-                    registerResults();
-                    if (doneTransfers.get() && resultsQueue.isEmpty()) {
-                        return;
-                    }
-                    TimeUnit.MILLISECONDS.sleep(flushRate);
-                }
-            } catch (InterruptedException e) {
-                throw new JobInterruptedException("Interrupted transfer result registrar", e);
-            }
-        });
-        // Allow exceptions from the registrar thread to make it to the main thread
-        flushThread.setUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread th, Throwable ex) {
-                isInterrupted.set(true);
-                if (ex instanceof RuntimeException) {
-                    throw (RuntimeException) ex;
-                } else {
-                    new RepositoryException(ex);
-                }
-            }
-        });
-        flushThread.start();
-    }
-
-    private void registerResults() throws InterruptedException {
-        if (resultsQueue.isEmpty()) {
-            return;
-        }
-        // Start a flush lock so that the job will not end until it finishes
-        synchronized (flushingLock) {
-            List<TransferBinariesResult> results = new ArrayList<>();
-            resultsQueue.drainTo(results);
-            log.debug("Registering batch of {} transfer results", results.size());
-            commit(() -> {
-                results.forEach(result -> {
-                    model.add(result.statements);
-                    addClicks(1);
-                });
+    @Override
+    protected void registrationAction() {
+        List<Object> results = new ArrayList<>();
+        resultsQueue.drainTo(results);
+        log.debug("Registering batch of {} transfer results", results.size());
+        commit(() -> {
+            results.forEach(resultObj -> {
+                TransferBinariesResult result = (TransferBinariesResult) resultObj;
+                model.add(result.statements);
+                addClicks(1);
             });
-        }
-    }
-
-    private void waitForQueueCapacity() throws InterruptedException, ExecutionException {
-        while (transferFutures.size() >= maxQueuedJobs) {
-            Iterator<Future<?>> it = transferFutures.iterator();
-            while (it.hasNext()) {
-                Future<?> transferFuture = it.next();
-                if (transferFuture.isDone()) {
-                    it.remove();
-                    return;
-                }
-            }
-            Thread.sleep(10l);
-        }
-    }
-
-    private void receiveResult(TransferBinariesResult result) {
-        resultsQueue.add(result);
+        });
     }
 
     private class TransferBinariesRunnable implements Runnable {
@@ -467,17 +361,5 @@ public class TransferBinariesToStorageJob extends AbstractDepositJob {
                         + provided + ", calculated " + generatedDigest);
             }
         }
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public void setFlushRate(int flushRate) {
-        this.flushRate = flushRate;
-    }
-
-    public void setMaxQueuedJobs(int maxQueuedJobs) {
-        this.maxQueuedJobs = maxQueuedJobs;
     }
 }

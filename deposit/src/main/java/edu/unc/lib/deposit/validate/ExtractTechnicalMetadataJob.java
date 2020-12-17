@@ -39,14 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
@@ -73,10 +65,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -90,7 +81,7 @@ import edu.unc.lib.dl.util.URIUtil;
  * @author bbpennel
  *
  */
-public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
+public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
@@ -104,17 +95,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     private URI fitsExamineUri;
 
     private boolean processFilesLocally;
-
-    private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-    private AtomicBoolean doneExtracts = new AtomicBoolean(false);
-    private Object flushingLock = new Object();
-
-    private int flushRate = 5000;
-    private int maxQueuedJobs = 10;
-
-    private ExecutorService executorService;
-    private Queue<Future<?>> extractFutures = new LinkedBlockingQueue<>();
-    private BlockingQueue<ExtractTechnicalMetadataResult> resultsQueue = new LinkedBlockingQueue<>();
 
     private Model model;
 
@@ -154,38 +134,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
             final String providedMimetype = getProvidedMimetype(originalPid, model);
 
-            Future<?> future = executorService.submit(
-                    new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
-            extractFutures.add(future);
+            submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
         }
 
-        try {
-            // Wait for the remaining jobs
-            while (!extractFutures.isEmpty()) {
-                extractFutures.poll().get();
-            }
-
-            // Wait for results
-            while (!resultsQueue.isEmpty()) {
-                TimeUnit.MILLISECONDS.sleep(10l);
-            }
-
-            // Wait if a flush of registrations is still active
-            synchronized (flushingLock) {
-            }
-
-            doneExtracts.set(true);
-        } catch (InterruptedException e) {
-            isInterrupted.set(true);
-            throw new JobInterruptedException("Extract technical metadata interrupted", e);
-        } catch (ExecutionException e) {
-            isInterrupted.set(true);
-            if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-            } else {
-                throw new RuntimeException(e.getCause());
-            }
-        }
+        waitForCompletion();
     }
 
     private String getProvidedMimetype(PID originalPid, Model model) {
@@ -198,87 +150,25 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         }
     }
 
-    private void waitForQueueCapacity() {
-        while (extractFutures.size() >= maxQueuedJobs) {
-            Iterator<Future<?>> it = extractFutures.iterator();
-            while (it.hasNext()) {
-                Future<?> extractFuture = it.next();
-                if (extractFuture.isDone()) {
-                    it.remove();
-                    return;
-                }
-            }
-            try {
-                Thread.sleep(10l);
-            } catch (InterruptedException e) {
-                isInterrupted.set(true);
-                throw new JobInterruptedException("Interrupted while waiting for queue capacity");
-            }
-        }
-    }
-
-    /**
-     * Registers results transfer jobs to the jena model periodically until
-     * there are no more jobs left or the job is interrupted
-     *
-     * @throws InterruptedException
-     */
-    private void startResultRegistrar() {
-        Thread flushThread = new Thread(() -> {
-            try {
-                while (!isInterrupted.get()) {
-                    registerResults();
-                    if (doneExtracts.get() && resultsQueue.isEmpty()) {
-                        return;
+    @Override
+    protected void registrationAction() {
+        List<Object> results = new ArrayList<>();
+        resultsQueue.drainTo(results);
+        log.debug("Registering batch of {} transfer results", results.size());
+        commit(() -> {
+            results.forEach(resultObj -> {
+                ExtractTechnicalMetadataResult result = (ExtractTechnicalMetadataResult) resultObj;
+                Resource originalResc = model.getResource(result.originalPid.getRepositoryPath());
+                if (result.mimetype != null) {
+                    if (result.hasProvidedMimetype) {
+                        originalResc.removeAll(mimetype);
                     }
-                    TimeUnit.MILLISECONDS.sleep(flushRate);
+                    originalResc.addProperty(mimetype, result.mimetype);
                 }
-            } catch (InterruptedException e) {
-                throw new JobInterruptedException("Interrupted transfer result registrar", e);
-            }
-        });
-        // Allow exceptions from the registrar thread to make it to the main thread
-        flushThread.setUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread th, Throwable ex) {
-                isInterrupted.set(true);
-                if (ex instanceof RuntimeException) {
-                    throw (RuntimeException) ex;
-                } else {
-                    new RepositoryException(ex);
-                }
-            }
-        });
-        flushThread.start();
-    }
-
-    private void registerResults() {
-        if (resultsQueue.isEmpty()) {
-            return;
-        }
-        // Start a flush lock so that the job will not end until it finishes
-        synchronized (flushingLock) {
-            List<ExtractTechnicalMetadataResult> results = new ArrayList<>();
-            resultsQueue.drainTo(results);
-            log.debug("Registering batch of {} transfer results", results.size());
-            commit(() -> {
-                results.forEach(result -> {
-                    Resource originalResc = model.getResource(result.originalPid.getRepositoryPath());
-                    if (result.mimetype != null) {
-                        if (result.hasProvidedMimetype) {
-                            originalResc.removeAll(mimetype);
-                        }
-                        originalResc.addProperty(mimetype, result.mimetype);
-                    }
-                    addClicks(1);
-                    markObjectCompleted(result.objPid);
-                });
+                addClicks(1);
+                markObjectCompleted(result.objPid);
             });
-        }
-    }
-
-    private void receiveResult(ExtractTechnicalMetadataResult result) {
-        resultsQueue.add(result);
+        });
     }
 
     private class ExtractTechnicalMetadataResult {
@@ -643,17 +533,5 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     public void setProcessFilesLocally(boolean processFilesLocally) {
         this.processFilesLocally = processFilesLocally;
-    }
-
-    public void setExecutorService(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
-    public void setFlushRate(int flushRate) {
-        this.flushRate = flushRate;
-    }
-
-    public void setMaxQueuedJobs(int maxQueuedJobs) {
-        this.maxQueuedJobs = maxQueuedJobs;
     }
 }
