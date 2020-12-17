@@ -54,6 +54,10 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
         super(uuid, depositUUID);
     }
 
+    /**
+     * Wait for all queued or executing tasks to complete and for all of the results
+     * from these tasks to be registered
+     */
     protected void waitForCompletion() {
         try {
             // Wait for the remaining jobs
@@ -94,7 +98,7 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
     }
 
     /**
-     * Wait for the
+     * Wait for the queue of task futures to drop below the max number of allowed queued jobs
      */
     protected void waitForQueueCapacity() {
         while (futuresQueue.size() >= maxQueuedJobs) {
@@ -131,7 +135,7 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
                     TimeUnit.MILLISECONDS.sleep(flushRate);
                 }
             } catch (InterruptedException e) {
-                throw new JobInterruptedException("Interrupted transfer result registrar", e);
+                throw new JobInterruptedException("Interrupted result registrar", e);
             }
         });
         // Allow exceptions from the registrar thread to make it to the main thread
@@ -159,6 +163,9 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
         }
     }
 
+    /**
+     * The action that takes place when registering a batch of results from completed tasks
+     */
     protected abstract void registrationAction();
 
     /**
