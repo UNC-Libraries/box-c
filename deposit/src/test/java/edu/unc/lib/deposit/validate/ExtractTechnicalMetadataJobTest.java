@@ -35,6 +35,8 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
@@ -50,6 +52,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -115,6 +118,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     private File techmdDir;
 
+    private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
+
     @Before
     public void init() throws Exception {
         job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
@@ -135,6 +140,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
+        setField(job, "executorService", executorService);
+        job.setFlushRate(100);
         job.initJob();
 
         model = job.getWritableModel();
@@ -146,6 +153,11 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
+    }
+
+    @AfterClass
+    public static void afterTestClass() {
+        executorService.shutdown();
     }
 
     private void respondWithFile(String path) throws Exception {

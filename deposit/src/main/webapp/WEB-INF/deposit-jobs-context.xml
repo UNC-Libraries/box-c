@@ -190,24 +190,20 @@
     
     <bean id="fileValidationExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
-        <constructor-arg value="${job.fileValidation.workers:1}"/>
-    </bean>
-    
-    <bean id="fixityCheckExecutor" class="java.util.concurrent.Executors"
-            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
-        <constructor-arg value="${job.fileValidation.workers:1}"/>
+        <constructor-arg value="${job.fileValidation.workers:4}"/>
     </bean>
 
     <bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
             scope="prototype">
         <property name="clamScan" ref="clamScan" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="executorService" ref="fileValidationExecutor" />
     </bean>
     
     <bean id="FixityCheckJob" class="edu.unc.lib.deposit.validate.FixityCheckJob"
         scope="prototype">
-        <property name="executorService" ref="fixityCheckExecutor" />
-        <property name="maxQueuedJobs" value="${job.fileValidation.workers:5}" />
+        <property name="executorService" ref="fileValidationExecutor" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="flushRate" value="${job.fixityCheck.flushRate:2000}" />
     </bean>
     
@@ -243,11 +239,19 @@
             factory-bean="fitsPooledHttpClientBuilder" factory-method="build">
     </bean>
     
+    <bean id="extractTechnicalMetadataExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.extractTechnicalMetadata.workers:5}"/>
+    </bean>
+    
     <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
         scope="prototype">
         <property name="baseFitsUri" value="${fits.baseUri}" />
         <property name="httpClient" ref="fitsPooledHttpClient" />
         <property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
+        <property name="executorService" ref="extractTechnicalMetadataExecutor" />
+        <property name="flushRate" value="${job.extractTechnicalMetadata.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
     </bean>
     
     <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
