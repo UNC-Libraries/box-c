@@ -34,10 +34,19 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 
@@ -67,6 +76,7 @@ import org.springframework.util.MimeTypeUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
@@ -95,7 +105,18 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     private boolean processFilesLocally;
 
-    private XMLOutputter xmlOutputter;
+    private AtomicBoolean isInterrupted = new AtomicBoolean(false);
+    private AtomicBoolean doneExtracts = new AtomicBoolean(false);
+    private Object flushingLock = new Object();
+
+    private int flushRate = 5000;
+    private int maxQueuedJobs = 10;
+
+    private ExecutorService executorService;
+    private Queue<Future<?>> extractFutures = new LinkedBlockingQueue<>();
+    private BlockingQueue<ExtractTechnicalMetadataResult> resultsQueue = new LinkedBlockingQueue<>();
+
+    private Model model;
 
     public ExtractTechnicalMetadataJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
@@ -105,17 +126,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     public void initJob() {
         init();
         fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
-
-        xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
     }
 
     @Override
     public void runJob() {
-        Model model = getReadOnlyModel();
+        model = getReadOnlyModel();
 
         // Get the list of files that need processing
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
         setTotalClicks(stagingList.size());
+
+        startResultRegistrar();
 
         for (Entry<PID, String> stagedPair : stagingList) {
             interruptJobIfStopped();
@@ -127,7 +148,171 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 continue;
             }
 
+            waitForQueueCapacity();
+
             String stagedPath = stagedPair.getValue();
+            PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
+            final String providedMimetype = getProvidedMimetype(originalPid, model);
+
+            Future<?> future = executorService.submit(
+                    new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
+            extractFutures.add(future);
+        }
+
+        try {
+            // Wait for the remaining jobs
+            while (!extractFutures.isEmpty()) {
+                extractFutures.poll().get();
+            }
+
+            // Wait for results
+            while (!resultsQueue.isEmpty()) {
+                TimeUnit.MILLISECONDS.sleep(10l);
+            }
+
+            // Wait if a flush of registrations is still active
+            synchronized (flushingLock) {
+            }
+
+            doneExtracts.set(true);
+        } catch (InterruptedException e) {
+            isInterrupted.set(true);
+            throw new JobInterruptedException("Extract technical metadata interrupted", e);
+        } catch (ExecutionException e) {
+            isInterrupted.set(true);
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException(e.getCause());
+            }
+        }
+    }
+
+    private String getProvidedMimetype(PID originalPid, Model model) {
+        Resource originalResc = model.getResource(originalPid.getRepositoryPath());
+        Statement mimetypeStmt = originalResc.getProperty(mimetype);
+        if (mimetypeStmt != null) {
+            return MimetypeHelpers.formatMimetype(mimetypeStmt.getString());
+        } else {
+            return null;
+        }
+    }
+
+    private void waitForQueueCapacity() {
+        while (extractFutures.size() >= maxQueuedJobs) {
+            Iterator<Future<?>> it = extractFutures.iterator();
+            while (it.hasNext()) {
+                Future<?> extractFuture = it.next();
+                if (extractFuture.isDone()) {
+                    it.remove();
+                    return;
+                }
+            }
+            try {
+                Thread.sleep(10l);
+            } catch (InterruptedException e) {
+                isInterrupted.set(true);
+                throw new JobInterruptedException("Interrupted while waiting for queue capacity");
+            }
+        }
+    }
+
+    /**
+     * Registers results transfer jobs to the jena model periodically until
+     * there are no more jobs left or the job is interrupted
+     *
+     * @throws InterruptedException
+     */
+    private void startResultRegistrar() {
+        Thread flushThread = new Thread(() -> {
+            try {
+                while (!isInterrupted.get()) {
+                    registerResults();
+                    if (doneExtracts.get() && resultsQueue.isEmpty()) {
+                        return;
+                    }
+                    TimeUnit.MILLISECONDS.sleep(flushRate);
+                }
+            } catch (InterruptedException e) {
+                throw new JobInterruptedException("Interrupted transfer result registrar", e);
+            }
+        });
+        // Allow exceptions from the registrar thread to make it to the main thread
+        flushThread.setUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread th, Throwable ex) {
+                isInterrupted.set(true);
+                if (ex instanceof RuntimeException) {
+                    throw (RuntimeException) ex;
+                } else {
+                    new RepositoryException(ex);
+                }
+            }
+        });
+        flushThread.start();
+    }
+
+    private void registerResults() {
+        if (resultsQueue.isEmpty()) {
+            return;
+        }
+        // Start a flush lock so that the job will not end until it finishes
+        synchronized (flushingLock) {
+            List<ExtractTechnicalMetadataResult> results = new ArrayList<>();
+            resultsQueue.drainTo(results);
+            log.debug("Registering batch of {} transfer results", results.size());
+            commit(() -> {
+                results.forEach(result -> {
+                    Resource originalResc = model.getResource(result.originalPid.getRepositoryPath());
+                    if (result.mimetype != null) {
+                        if (result.hasProvidedMimetype) {
+                            originalResc.removeAll(mimetype);
+                        }
+                        originalResc.addProperty(mimetype, result.mimetype);
+                    }
+                    addClicks(1);
+                    markObjectCompleted(result.objPid);
+                });
+            });
+        }
+    }
+
+    private void receiveResult(ExtractTechnicalMetadataResult result) {
+        resultsQueue.add(result);
+    }
+
+    private class ExtractTechnicalMetadataResult {
+        private PID objPid;
+        private PID originalPid;
+        private boolean hasProvidedMimetype;
+        private String mimetype;
+    }
+
+    private class ExtractTechnicalMetadataRunnable implements Runnable {
+        private PID objPid;
+        private PID originalPid;
+        private String stagedPath;
+        private String providedMimetype;
+        private ExtractTechnicalMetadataResult result = new ExtractTechnicalMetadataResult();
+
+        public ExtractTechnicalMetadataRunnable(PID objPid, PID originalPid, String stagedPath,
+                String providedMimetype) {
+            this.objPid = objPid;
+            this.originalPid = originalPid;
+            this.stagedPath = stagedPath;
+            this.providedMimetype = providedMimetype;
+            result.objPid = objPid;
+            result.originalPid = originalPid;
+            result.hasProvidedMimetype = providedMimetype != null;
+        }
+
+        @Override
+        public void run() {
+            if (isInterrupted.get()) {
+                return;
+            }
+
+            interruptJobIfStopped();
 
             // Generate the FITS report as a document
             Document fitsDoc = getFitsDocument(objPid, stagedPath);
@@ -137,11 +322,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 Document premisDoc = generatePremisReport(objPid, fitsDoc);
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
-                PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
-                Resource originalResc = model.getResource(originalPid.getRepositoryPath());
-
                 // Record the format info for this file
-                addFileIdentification(originalResc, fitsDoc, premisObjCharsEl);
+                addFileIdentification(fitsDoc, premisObjCharsEl);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -149,13 +331,83 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
                 // Store the premis report to file
                 writePremisReport(objPid, premisDoc);
-                addClicks(1);
-                markObjectCompleted(objPid);
+
+                receiveResult(result);
             } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
                 failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
-                        objPid, xmlOutputter.outputString(fitsDoc));
+                        objPid, getXMLOutputter().outputString(fitsDoc));
+            }
+        }
+
+        /**
+         * Adds format and mimetype information for the give object, to both the
+         * PREMIS report and the deposit model to be included as part of the ingest.
+         *
+         * @param fitsDoc
+         * @param premisObjCharsEl
+         */
+        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl) {
+            // Retrieve the FITS generate mimetype if available
+            Element identity = getFitsIdentificationInformation(fitsDoc);
+
+            String fitsMimetype = null;
+            String format;
+            if (identity != null) {
+                fitsMimetype = identity.getAttributeValue("mimetype");
+                format = identity.getAttributeValue("format");
+            } else {
+                format = "Unknown";
+                log.warn("FITS unable to conclusively identify file: {}", originalPid);
+            }
+
+            // Add format to the premis report
+            premisObjCharsEl.addContent(
+                    new Element("format", PREMIS_V3_NS)
+                        .addContent(new Element("formatDesignation", PREMIS_V3_NS)
+                        .addContent(new Element("formatName", PREMIS_V3_NS)
+                        .setText(format))));
+
+            // Replace the mimetype registered for this item in the deposit if necessary
+            overrideDepositMimetype(fitsMimetype);
+        }
+
+        /**
+         * Overrides the mimetype for this object in the deposit model when the FITS
+         * generated value is preferred.
+         *
+         * @param objResc
+         * @param fitsExtractMimetype
+         */
+        private void overrideDepositMimetype(String fitsExtractMimetype) {
+            String rescId = originalPid.getRepositoryPath();
+            // normalize fits mimetype
+            final String fitsMimetype = MimetypeHelpers.formatMimetype(fitsExtractMimetype);
+
+            if (fitsMimetype != null && Objects.equals(providedMimetype, fitsMimetype)) {
+                log.debug("FITS mimetype and provided mimetype {} agree for {}, skipping override",
+                        providedMimetype, rescId);
+                return;
+            }
+
+            int fitsRank = rankMimetype(fitsMimetype);
+            int providedRank = rankMimetype(providedMimetype);
+
+            // No meaningful mimetypes, so remove provided and replace with default
+            if (providedRank < 0 && fitsRank < 0) {
+                result.mimetype = APPLICATION_OCTET_STREAM_VALUE;
+                log.warn("No meaningful mimetype for {}, removed provided value '{}' and added default",
+                        rescId, providedMimetype);
+                return;
+            }
+
+            if (fitsRank >= providedRank) {
+                result.mimetype = fitsMimetype;
+                log.debug("Overrode provided mimetype {} for {} with extracted mimetype {}",
+                        providedMimetype, rescId, fitsMimetype);
+            } else {
+                log.debug("Retaining provided mimetype {} for {}", providedMimetype, originalPid);
             }
         }
     }
@@ -261,39 +513,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     }
 
     /**
-     * Adds format and mimetype information for the give object, to both the
-     * PREMIS report and the deposit model to be included as part of the ingest.
-     *
-     * @param objResc
-     * @param fitsDoc
-     * @param premisObjCharsEl
-     */
-    private void addFileIdentification(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
-        // Retrieve the FITS generate mimetype if available
-        Element identity = getFitsIdentificationInformation(fitsDoc);
-
-        String fitsMimetype = null;
-        String format;
-        if (identity != null) {
-            fitsMimetype = identity.getAttributeValue("mimetype");
-            format = identity.getAttributeValue("format");
-        } else {
-            format = "Unknown";
-            log.warn("FITS unable to conclusively identify file: {}", objResc.getURI());
-        }
-
-        // Add format to the premis report
-        premisObjCharsEl.addContent(
-                new Element("format", PREMIS_V3_NS)
-                    .addContent(new Element("formatDesignation", PREMIS_V3_NS)
-                    .addContent(new Element("formatName", PREMIS_V3_NS)
-                    .setText(format))));
-
-        // Replace the mimetype registered for this item in the deposit if necessary
-        overrideDepositMimetype(objResc, fitsMimetype);
-    }
-
-    /**
      * Retrieves the file identification information from the FITS report,
      * resolving conflicts when necessary
      *
@@ -324,63 +543,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         }
 
         return null;
-    }
-
-    /**
-     * Overrides the mimetype for this object in the deposit model when the FITS
-     * generated value is preferred.
-     *
-     * @param objResc
-     * @param fitsExtractMimetype
-     */
-    private void overrideDepositMimetype(Resource objResc, String fitsExtractMimetype) {
-        String rescId = objResc.getURI();
-        // normalize fits mimetype
-        final String fitsMimetype = MimetypeHelpers.formatMimetype(fitsExtractMimetype);
-
-        // If the file was provided with a meaningful mimetype, continue using that
-        Statement mimetypeStmt = objResc.getProperty(mimetype);
-        final String providedMimetype;
-        if (mimetypeStmt != null) {
-            providedMimetype = MimetypeHelpers.formatMimetype(mimetypeStmt.getString());
-        } else {
-            providedMimetype = null;
-        }
-
-        if (fitsMimetype != null && Objects.equals(providedMimetype, fitsMimetype)) {
-            log.debug("FITS mimetype and provided mimetype {} agree for {}, skipping override",
-                    providedMimetype, rescId);
-            return;
-        }
-
-        int fitsRank = rankMimetype(fitsMimetype);
-        int providedRank = rankMimetype(providedMimetype);
-
-        // No meaningful mimetypes, so remove provided and replace with default
-        if (providedRank < 0 && fitsRank < 0) {
-            commit(() -> {
-                if (providedMimetype != null) {
-                    objResc.removeAll(mimetype);
-                }
-                objResc.addProperty(mimetype, APPLICATION_OCTET_STREAM_VALUE);
-            });
-            log.warn("No meaningful mimetype for {}, removed provided value '{}' and added default",
-                    rescId, providedMimetype);
-            return;
-        }
-
-        if (fitsRank >= providedRank) {
-            commit(() -> {
-                if (providedMimetype != null) {
-                    objResc.removeAll(mimetype);
-                }
-                objResc.addProperty(mimetype, fitsMimetype);
-            });
-            log.debug("Overrode provided mimetype {} for {} with extracted mimetype {}",
-                    providedMimetype, rescId, fitsMimetype);
-        } else {
-            log.debug("Retaining provided mimetype {} for {}", providedMimetype, objResc.getURI());
-        }
     }
 
     private int rankMimetype(String mimetype) {
@@ -461,10 +623,14 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         Path reportFile = getTechMdPath(objPid, true);
 
         try (BufferedWriter writer = newBufferedWriter(reportFile)) {
-            xmlOutputter.output(premisDoc, writer);
+            getXMLOutputter().output(premisDoc, writer);
         } catch (IOException e) {
             failJob(e, "Failed to persist premis report for object {0} to path {1}", objPid, reportFile);
         }
+    }
+
+    private XMLOutputter getXMLOutputter() {
+        return new XMLOutputter(Format.getPrettyFormat());
     }
 
     public void setHttpClient(CloseableHttpClient httpClient) {
@@ -477,5 +643,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     public void setProcessFilesLocally(boolean processFilesLocally) {
         this.processFilesLocally = processFilesLocally;
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    public void setFlushRate(int flushRate) {
+        this.flushRate = flushRate;
+    }
+
+    public void setMaxQueuedJobs(int maxQueuedJobs) {
+        this.maxQueuedJobs = maxQueuedJobs;
     }
 }
