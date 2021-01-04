@@ -15,12 +15,15 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.net.URI;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -31,6 +34,7 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryInitializer {
+    private static final Logger log = getLogger(RepositoryInitializer.class);
 
     private RepositoryObjectFactory objFactory;
 
@@ -59,6 +63,8 @@ public class RepositoryInitializer {
             return containerUri;
         }
 
+        log.warn("Initializing object '{}' with id {}", title, id);
+
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.createResource(containerString);
         resc.addProperty(DC.title, title);
@@ -77,6 +83,8 @@ public class RepositoryInitializer {
         if (objFactory.objectExists(contentRootUri)) {
             return contentRootUri;
         }
+
+        log.warn("Initializing content root object {}", contentRootUri);
 
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.createResource(contentRootString);
