@@ -3,4 +3,4 @@
 	path = clamavj
 [submodule "fcrepo"]
 	path = fcrepo
-	url = git@github.com:fcrepo/fcrepo.git
+	url = https://github.com/fcrepo/fcrepo.git
