@@ -1,3 +1,6 @@
 [submodule "clamavj"]
 	url = https://github.com/UNC-Libraries/clamavj.git
 	path = clamavj
+[submodule "fcrepo"]
+	path = fcrepo
+	url = git@github.com:fcrepo/fcrepo.git

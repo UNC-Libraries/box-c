@@ -186,6 +186,7 @@
         <module>access-common</module>
         <module>deposit</module>
         <module>clamavj</module>
+        <module>fcrepo</module>
         <module>spoof</module>
         
         <module>migration-util</module>
@@ -324,6 +325,7 @@
                     </includes>
                     <excludes>
                         <exclude>clamavj/**</exclude>
+                        <exclude>fcrepo/**</exclude>
                         <exclude>**/*.properties</exclude>
                     </excludes>
                     <properties>
