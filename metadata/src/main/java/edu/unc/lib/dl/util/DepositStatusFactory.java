@@ -21,6 +21,8 @@ import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,39 +30,38 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 /**
  * Deposit/redis interactions
  * @author bbpennel
  *
  */
-public class DepositStatusFactory {
+public class DepositStatusFactory extends AbstractJedisFactory {
     private static final Logger log = LoggerFactory
             .getLogger(DepositStatusFactory.class);
-
-    JedisPool jedisPool;
 
     public DepositStatusFactory() {
     }
 
+
     public Map<String, String> get(String depositUUID) {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            return jedis.hgetAll(DEPOSIT_STATUS_PREFIX + depositUUID);
-        }
+        AtomicReference<Map<String, String>> result = new AtomicReference<>();
+        connectWithRetries((jedis) -> {
+            result.set(jedis.hgetAll(DEPOSIT_STATUS_PREFIX + depositUUID));
+        });
+        return result.get();
     }
 
     public Set<Map<String, String>> getAll() {
         Set<Map<String, String>> result = new HashSet<>();
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             Set<String> keys = jedis.keys(DEPOSIT_STATUS_PREFIX + "*");
             if (keys != null) {
                 for (String key : keys) {
                     result.add(jedis.hgetAll(key));
                 }
             }
-        }
+        });
         return result;
     }
 
@@ -71,9 +72,9 @@ public class DepositStatusFactory {
      * @param status
      */
     public void save(String depositUUID, Map<String, String> status) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hmset(DEPOSIT_STATUS_PREFIX + depositUUID, status);
-        }
+        });
     }
 
     /**
@@ -84,9 +85,9 @@ public class DepositStatusFactory {
      * @param value
      */
     public void set(String depositUUID, DepositField field, String value) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, field.name(), value);
-        }
+        });
     }
 
     /**
@@ -100,11 +101,13 @@ public class DepositStatusFactory {
      * @return true if lock acquired
      */
     public boolean addSupervisorLock(String depositUUID, String owner) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        final AtomicBoolean acquired = new AtomicBoolean(false);
+        connectWithRetries((jedis) -> {
             Long result = jedis.hsetnx(DEPOSIT_STATUS_PREFIX + depositUUID,
                     DepositField.lock.name(), owner);
-            return result == 1;
-        }
+            acquired.set(result == 1);
+        });
+        return acquired.get();
     }
 
     /**
@@ -113,57 +116,61 @@ public class DepositStatusFactory {
      * @param depositUUID
      */
     public void removeSupervisorLock(String depositUUID) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.lock.name());
-        }
+        });
     }
 
     public DepositState getState(String depositUUID) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        final AtomicReference<DepositState> result = new AtomicReference<>();
+        connectWithRetries((jedis) -> {
             String state = jedis.hget(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name());
             if (state == null) {
                 log.debug("No state was found for deposit {}", depositUUID);
-                return null;
+                return;
             }
-            return DepositState.valueOf(state);
-        }
+            result.set(DepositState.valueOf(state));
+        });
+        return result.get();
     }
 
     public boolean isResumedDeposit(String depositUUID) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        final AtomicBoolean result = new AtomicBoolean(false);
+        connectWithRetries((jedis) -> {
             String value = jedis.hget(DEPOSIT_STATUS_PREFIX + depositUUID,
                     DepositField.ingestInprogress.name());
-            return Boolean.parseBoolean(value);
-        }
+            result.set(Boolean.parseBoolean(value));
+        });
+        return result.get();
     }
 
     public void setIngestInprogress(String depositUUID, boolean value) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID,
                     DepositField.ingestInprogress.name(), Boolean.toString(value));
-        }
+        });
     }
 
     public void setState(String depositUUID, DepositState state) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
                     state.name());
-        }
+        });
     }
 
     public void incrIngestedObjects(String depositUUID, int amount) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hincrBy(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.ingestedObjects.name(), amount);
-        }
+        });
     }
 
     public void fail(String depositUUID, String message) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(), DepositState.failed.name());
             if (message != null) {
                 jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.errorMessage.name(), message);
             }
-        }
+        });
     }
 
     public void fail(String depositUUID) {
@@ -171,24 +178,24 @@ public class DepositStatusFactory {
     }
 
     public void deleteField(String depositUUID, DepositField field) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, field.name());
-        }
+        });
     }
 
     public void requestAction(String depositUUID, DepositAction action) {
         log.debug("Setting action request for {} to {}", depositUUID, action);
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(),
                     action.name());
-        }
+        });
     }
 
     public void clearActionRequest(String depositUUID) {
         log.debug("Clearing action request for {}", depositUUID);
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name());
-        }
+        });
     }
 
     /**
@@ -196,14 +203,14 @@ public class DepositStatusFactory {
      */
     public void clearEmptyWorkers() {
         String workers = "resque:workers";
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             Set<String> members = jedis.smembers(workers);
             for (String member : members) {
                 if (jedis.get(member) == null) {
                     jedis.srem(workers, member);
                 }
             }
-        }
+        });
     }
 
     /**
@@ -214,17 +221,9 @@ public class DepositStatusFactory {
      *            time until expire
      */
     public void expireKeys(String depositUUID, int seconds) {
-        try (Jedis jedis = getJedisPool().getResource()) {
+        connectWithRetries((jedis) -> {
             jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
             jedis.expire(DEPOSIT_MANIFEST_PREFIX + depositUUID, seconds);
-        }
-    }
-
-    public void setJedisPool(JedisPool jedisPool) {
-        this.jedisPool = jedisPool;
-    }
-
-    private JedisPool getJedisPool() {
-        return jedisPool;
+        });
     }
 }
