@@ -16,7 +16,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	
 	ResultObjectActionMenu.prototype.create = function() {
 		var self = this;
-		
+
 		if (this.options.multipleSelectionEnabled) {
 			this.batchActions = {};
 			var actionClasses = [];
@@ -106,6 +106,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		
 		var items = {};
 		var isContainerFlag = false;
+		var datastreams = metadata.datastream;
+		var viewHidden = $.inArray('viewHidden', metadata.permissions) !== -1;
+
 		if (resultObject.isContainer) {
 			isContainerFlag = true;
 			items["openContainer"] = {name : "Open"};
@@ -115,11 +118,30 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			var originalFile = resultObject.getDatastream("original_file");
 			items["viewFile"] = {name : "View File"
 				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
-
-			items["viewFits"] = {name: "View FITS"}
 		}
-		if ($.inArray('viewHidden', metadata.permissions) != -1) {
-			items["viewEventLog"] = {name : "View Event Log"};
+
+		if (viewHidden || isFile || /md_descriptive|tech_md/ig.test(datastreams)) {
+			items["metadata"] = {name: "View metadata", items: {}}
+
+			if (/md_descriptive/ig.test(datastreams)) {
+				items['metadata']['items']["viewMods"] = {name: "View MODS"};
+			}
+
+			if (/md_descriptive_history/ig.test(datastreams)) {
+				items['metadata']['items']["viewModsHistory"] = {name: "View MODS History"};
+			}
+
+			if (isFile) {
+				items['metadata']['items']["viewFits"] = {name: "View FITS"}
+
+				if (/techmd_fits_history/ig.test(datastreams)) {
+					items['metadata']['items']["viewFitsHistory"] = {name: "View FITS History"}
+				}
+			}
+
+			if (viewHidden) {
+				items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
+			}
 		}
 		
 		// Modification options
@@ -245,10 +267,34 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							});
 						}
 						break;
+					case "viewMods":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/md_descriptive",
+							newWindow: true,
+							application: "services"
+						});
+						break;
+					case "viewModsHistory":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/md_descriptive_history",
+							newWindow: true,
+							application: "services"
+						});
+						break;
 					case "viewFits":
 						self.actionHandler.addEvent({
 							action: "ChangeLocation",
 							url: "api/file/" + metadata.id + "/techmd_fits",
+							newWindow: true,
+							application: "services"
+						});
+						break;
+					case "viewFitsHistory":
+						self.actionHandler.addEvent({
+							action: "ChangeLocation",
+							url: "api/file/" + metadata.id + "/techmd_fits_history",
 							newWindow: true,
 							application: "services"
 						});
