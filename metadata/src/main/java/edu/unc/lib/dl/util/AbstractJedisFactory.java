@@ -28,6 +28,8 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
+ * Abstract client for interacting with redis data.
+ *
  * @author bbpennel
  */
 public class AbstractJedisFactory {
@@ -37,6 +39,12 @@ public class AbstractJedisFactory {
     private int socketTimeoutRetries = 5;
     private long socketTimeoutDelay = 15000l;
 
+    /**
+     * Connect to redis and perform the provided block of code. If the connection
+     * is interrupted, the block will be retried.
+     *
+     * @param block
+     */
     protected void connectWithRetries(Consumer<Jedis> block) {
         int socketTimeoutRetriesRemaining = socketTimeoutRetries;
         while (true) {
@@ -66,5 +74,13 @@ public class AbstractJedisFactory {
 
     private JedisPool getJedisPool() {
         return jedisPool;
+    }
+
+    public void setSocketTimeoutRetries(int socketTimeoutRetries) {
+        this.socketTimeoutRetries = socketTimeoutRetries;
+    }
+
+    public void setSocketTimeoutDelay(long socketTimeoutDelay) {
+        this.socketTimeoutDelay = socketTimeoutDelay;
     }
 }
