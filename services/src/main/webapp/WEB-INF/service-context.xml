@@ -360,11 +360,6 @@
       <property name="jmsTemplate" ref="importXmlJmsTemplate"/>
   </bean>
   
-  <bean id="modsRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.MODSRetrievalService">
-      <property name="aclService" ref="aclService" />
-      <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-  </bean>
-  
     <bean id="fromAddress" class="java.lang.String">
         <constructor-arg value="${repository.from.email}" />
     </bean>
