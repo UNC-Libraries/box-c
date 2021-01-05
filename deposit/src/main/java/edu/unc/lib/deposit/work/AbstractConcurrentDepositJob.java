@@ -101,20 +101,28 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
      * Wait for the queue of task futures to drop below the max number of allowed queued jobs
      */
     protected void waitForQueueCapacity() {
-        while (futuresQueue.size() >= maxQueuedJobs) {
-            Iterator<Future<?>> it = futuresQueue.iterator();
-            while (it.hasNext()) {
-                Future<?> future = it.next();
-                if (future.isDone()) {
-                    it.remove();
-                    return;
+        try {
+            while (futuresQueue.size() >= maxQueuedJobs) {
+                Iterator<Future<?>> it = futuresQueue.iterator();
+                while (it.hasNext()) {
+                    Future<?> future = it.next();
+                    if (future.isDone()) {
+                        future.get();
+                        it.remove();
+                        return;
+                    }
                 }
-            }
-            try {
                 Thread.sleep(10l);
-            } catch (InterruptedException e) {
-                isInterrupted.set(true);
-                throw new JobInterruptedException("Interrupted while waiting for queue capacity");
+            }
+        } catch (InterruptedException e) {
+            isInterrupted.set(true);
+            throw new JobInterruptedException("Interrupted while waiting for queue capacity");
+        } catch (ExecutionException e) {
+            isInterrupted.set(true);
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException(e.getCause());
             }
         }
     }

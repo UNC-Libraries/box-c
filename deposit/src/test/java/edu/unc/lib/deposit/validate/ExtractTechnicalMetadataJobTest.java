@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -28,13 +29,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,6 +52,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -57,12 +62,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
 import org.springframework.util.MimeTypeUtils;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
@@ -77,6 +86,7 @@ import edu.unc.lib.dl.util.DepositConstants;
  *
  */
 public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
+    private static final Logger log = getLogger(ExtractTechnicalMetadataJobTest.class);
 
     private final static String FITS_BASE_URI = "http://example.com/fits";
 
@@ -161,8 +171,12 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     private void respondWithFile(String path) throws Exception {
-        when(respEntity.getContent()).thenReturn(
-                ExtractTechnicalMetadataJobTest.class.getResourceAsStream(path));
+        when(respEntity.getContent()).thenAnswer(new Answer<InputStream>() {
+            @Override
+            public InputStream answer(InvocationOnMock invocation) throws Throwable {
+                return ExtractTechnicalMetadataJobTest.class.getResourceAsStream(path);
+            }
+        });
     }
 
     @Test
@@ -344,6 +358,52 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.run();
 
         verifyFileResults(filePid, OCTET_MIMETYPE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
+    }
+
+    @Test
+    public void depositLotsMissingMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+        for (int i = 0; i < 100; i++) {
+            addFileObject(depositBag, IMAGE_FILEPATH, null, null);
+        }
+        job.closeModel();
+
+        long start = System.nanoTime();
+        job.run();
+
+        Model resultModel = job.getReadOnlyModel();
+
+        List<Statement> typesAdded = resultModel.listStatements(null, CdrDeposit.mimetype, IMAGE_MIMETYPE).toList();
+        assertEquals(100, typesAdded.size());
+
+        log.info("Finished in {}", ((System.nanoTime() - start)/1000000));
+    }
+
+    // Verify that job fails when know task fails in the middle of the list of jobs
+    @Test
+    public void depositLotsWithFailureTest() throws Exception {
+        when(respEntity.getContent()).thenAnswer(new Answer<InputStream>() {
+            private int count = 0;
+            @Override
+            public InputStream answer(InvocationOnMock invocation) throws Throwable {
+                count++;
+                if (count != 10) {
+                    return ExtractTechnicalMetadataJobTest.class.getResourceAsStream("/fitsReports/imageReport.xml");
+                }
+                throw new RepositoryException("Boom");
+            }
+        });
+        for (int i = 0; i < 20; i++) {
+            addFileObject(depositBag, IMAGE_FILEPATH, null, null);
+        }
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Expected job to fail");
+        } catch (RepositoryException e) {
+            assertEquals("Expect failure with message", "Boom", e.getMessage());
+        }
     }
 
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
