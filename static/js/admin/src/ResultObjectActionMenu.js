@@ -107,7 +107,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var items = {};
 		var isContainerFlag = false;
 		var datastreams = metadata.datastream;
-		var viewHidden = $.inArray('viewHidden', metadata.permissions) !== -1;
 
 		if (resultObject.isContainer) {
 			isContainerFlag = true;
@@ -120,7 +119,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				+ " ("+ StringUtilities.readableFileSize(originalFile['fileSize']) + ")"};
 		}
 
-		if (viewHidden || isFile || /md_descriptive|tech_md/ig.test(datastreams)) {
+		if ($.inArray('viewHidden', metadata.permissions) !== -1) {
 			items["metadata"] = {name: "View metadata", items: {}}
 
 			if (/md_descriptive/ig.test(datastreams)) {
@@ -139,9 +138,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				}
 			}
 
-			if (viewHidden) {
-				items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
-			}
+			items['metadata']['items']["viewEventLog"] = {name : "View Event Log"};
 		}
 		
 		// Modification options
