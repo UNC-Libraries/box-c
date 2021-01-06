@@ -90,12 +90,14 @@ public class ExportCsvController extends AbstractSolrSearchController {
     public static final String FILE_SIZE_HEADER = "File Size (bytes)";
     public static final String NUM_CHILDREN_HEADER = "Number of Children";
     public static final String DESCRIBED_HEADER = "Description";
+    public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
+    public static final String EMBARGO_HEADER = "Embargoed";
 
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER, LABEL_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER};
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
 
     @Autowired
     private ChildrenCountService childrenCountService;
@@ -173,14 +175,47 @@ public class ExportCsvController extends AbstractSolrSearchController {
         return null;
     }
 
+    private String computePatronPermissions(List<String> roles) {
+        String permission = "Restricted";
+
+        if (roles == null) {
+            return permission;
+        }
+
+        Map<String, String> roleList = new HashMap<>();
+        for (String role : roles) {
+            String[] principalRole = role.split("\\|");
+            roleList.put(principalRole[1], principalRole[0]);
+        }
+
+        String everyoneRole = roleList.get("everyone");
+        String authenticatedRole = roleList.get("authenticated");
+
+        if (canViewOriginals(everyoneRole)) {
+            permission = "Public";
+        } else if (canViewOriginals(authenticatedRole) && hasNoAccess(everyoneRole)) {
+            permission = "Authenticated";
+        } else if (hasNoAccess(everyoneRole) && hasNoAccess(authenticatedRole)) {
+            permission = "Staff-only";
+        }
+
+        return permission;
+    }
+
+    private boolean canViewOriginals(String role) {
+        return role != null && role.equals("canViewOriginals");
+    }
+
+    private boolean hasNoAccess(String role) {
+        return role == null || role.equals("none");
+    }
+
     private CSVPrinter getPrinter(Writer writer) throws IOException {
         return CSVFormat.EXCEL.withHeader(CSV_HEADERS).print(writer);
     }
 
     private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
-
         // Vitals: object type, pid, title, path, label, depth
-
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
@@ -254,13 +289,21 @@ public class ExportCsvController extends AbstractSolrSearchController {
 
         // Description: does object have a MODS description?
         List<String> contentStatus = object.getContentStatus();
-        if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED) ) {
+        if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED)) {
             printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
         } else if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             printer.print(FacetConstants.CONTENT_DESCRIBED);
         } else {
             printer.print("");
         }
+
+        // Patron permissions
+        String computedPermissions = computePatronPermissions(object.getRoleGroup());
+        printer.print(computedPermissions);
+
+        // Is object embargoed
+        List<String> objStatus = object.getStatus();
+        printer.print(objStatus != null && objStatus.contains(FacetConstants.EMBARGOED));
 
         printer.println();
     }
