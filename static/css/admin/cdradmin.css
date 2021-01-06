@@ -526,6 +526,10 @@ div.in-admin-iframe,
 	text-indent: 0;
 }
 
+.context-menu-submenu .context-menu-list li {
+	margin-top: 0;
+}
+
 .update_button {
 	color: white;
 }
