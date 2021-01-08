@@ -82,6 +82,7 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
             // Skip already checked files
             if (isObjectCompleted(rescPid)) {
                 log.debug("Skipping over already completed fixity check for {}", rescPid.getId());
+                addClicks(1);
                 continue;
             }
 
