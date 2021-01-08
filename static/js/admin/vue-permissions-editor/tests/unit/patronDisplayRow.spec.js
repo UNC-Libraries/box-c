@@ -10,6 +10,7 @@ describe('patronRoles.vue', () => {
             localVue,
             propsData: {
                 containerType: 'Folder',
+                userType: 'patron',
                 user: { principal: 'everyone', role: 'canViewOriginals', type: 'assigned', deleted: false, embargo: false }
             }
         });
@@ -24,6 +25,7 @@ describe('patronRoles.vue', () => {
             localVue,
             propsData: {
                 containerType: 'Folder',
+                userType: 'patron',
                 user: { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', deleted: false, embargo: false }
             }
         });
@@ -33,6 +35,62 @@ describe('patronRoles.vue', () => {
         role = columns.at(1);
 
         expect(principal.text()).toMatch(/^authenticated/);
+        expect(role.text()).toMatch(/^Metadata.Only/);
+    });
+
+    it("displays an override note", () => {
+        wrapper = shallowMount(patronDisplayRow, {
+            localVue,
+            propsData: {
+                containerType: 'Folder',
+                userType: 'patron',
+                user: { principal: 'authenticated', role: 'canViewMetadata', type: 'inherited', deleted: false, embargo: false }
+            }
+        });
+
+        columns = wrapper.findAll('td');
+        principal = columns.at(0);
+        role = columns.at(1);
+
+        expect(principal.text()).toMatch(/^authenticated/);
+        expect(role.text()).toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
+    });
+
+    it("does not display an override note if patron access is set to 'inherit from parent'", () => {
+        wrapper = shallowMount(patronDisplayRow, {
+            localVue,
+            propsData: {
+                containerType: 'Folder',
+                userType: 'parent',
+                user: { principal: 'authenticated', role: 'canViewMetadata', type: 'inherited', deleted: false, embargo: false }
+            }
+        });
+
+        columns = wrapper.findAll('td');
+        principal = columns.at(0);
+        role = columns.at(1);
+
+        expect(principal.text()).toMatch(/^authenticated/);
+        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
+        expect(role.text()).toMatch(/^Metadata.Only/);
+    });
+
+    it("does not display an override note for assigned permissions", () => {
+        wrapper = shallowMount(patronDisplayRow, {
+            localVue,
+            propsData: {
+                containerType: 'Folder',
+                userType: 'patron',
+                user: { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', deleted: false, embargo: false }
+            }
+        });
+
+        columns = wrapper.findAll('td');
+        principal = columns.at(0);
+        role = columns.at(1);
+
+        expect(principal.text()).toMatch(/^authenticated/);
+        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
         expect(role.text()).toMatch(/^Metadata.Only/);
     });
 
@@ -46,6 +104,7 @@ describe('patronRoles.vue', () => {
             localVue,
             propsData: {
                 containerType: 'Folder',
+                userType: 'staff',
                 user: { principal: 'staff', role: 'none', type: 'assigned', deleted: false, embargo: false }
             }
         });
@@ -54,7 +113,7 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^staff/);
+        expect(principal.text()).toMatch(/^No.Patron.Access/);
         expect(role.text()).toMatch(/^N\/A/);
     });
 
