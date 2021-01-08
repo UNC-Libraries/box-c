@@ -17,6 +17,8 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
@@ -176,10 +178,8 @@ public class ExportCsvController extends AbstractSolrSearchController {
     }
 
     private String computePatronPermissions(List<String> roles) {
-        String permission = "Restricted";
-
         if (roles == null) {
-            return permission;
+            return "Staff-only";
         }
 
         Map<String, String> roleList = new HashMap<>();
@@ -190,6 +190,7 @@ public class ExportCsvController extends AbstractSolrSearchController {
 
         String everyoneRole = roleList.get("everyone");
         String authenticatedRole = roleList.get("authenticated");
+        String permission;
 
         if (canViewOriginals(everyoneRole)) {
             permission = "Public";
@@ -197,17 +198,19 @@ public class ExportCsvController extends AbstractSolrSearchController {
             permission = "Authenticated";
         } else if (hasNoAccess(everyoneRole) && hasNoAccess(authenticatedRole)) {
             permission = "Staff-only";
+        } else {
+            permission = "Restricted";
         }
 
         return permission;
     }
 
     private boolean canViewOriginals(String role) {
-        return role != null && role.equals("canViewOriginals");
+        return role != null && role.equals(canViewOriginals.getPredicate());
     }
 
     private boolean hasNoAccess(String role) {
-        return role == null || role.equals("none");
+        return role == null || role.equals(none.getPredicate());
     }
 
     private CSVPrinter getPrinter(Writer writer) throws IOException {

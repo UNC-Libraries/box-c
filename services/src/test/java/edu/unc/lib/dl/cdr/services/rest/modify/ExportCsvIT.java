@@ -169,7 +169,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertContainerRecord(csvList, ResourceType.Collection, collObj.getPid(), "Collection",
                 COLLECTION_PATH, 2, false, 1, false, "Authenticated", false);
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
-                FOLDER_PATH, 3, false, null, false, "Restricted", false);
+                FOLDER_PATH, 3, false, null, false, "Staff-only", false);
     }
 
     @Test
@@ -200,12 +200,12 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
-                1, false, "Restricted", false);
+                1, false, "Staff-only", false);
 
         String pathToFile = pathToWork + "/" + pidList.get("filePid").getId();
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Restricted", false);
+                null, false, "Staff-only", false);
     }
 
     @Test
@@ -241,12 +241,12 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = pathToFolder + "/Work Test";
         assertCsvRecord(csvList, ResourceType.Work, workPid, "Work Test",
                 pathToWork, 4, false, null, null, null,
-                1, true, "Restricted", false);
+                1, true, "Staff-only", false);
 
         String pathToFile = pathToWork + "/" + filePid.getId();
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Restricted", false);
+                null, false, "Staff-only", false);
     }
 
     @Test
@@ -278,12 +278,12 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWorkDeleted",
                 pathToWork, 4, true, null, null, null,
-                1, false, "Restricted", false);
+                1, false, "Staff-only", false);
 
         String pathToFile = pathToWork + "/" + filePid.getId();
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, true, "text/plain", null, (long) 7,
-                null, false, "Restricted", false);
+                null, false, "Staff-only", false);
     }
 
     @Test
