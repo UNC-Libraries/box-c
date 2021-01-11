@@ -194,7 +194,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			this.$resultArea = $('.result_area', this.element);
 			
 			var container = this.resultData.container;
-		
+
 			if (!this.searchMenu) {
 				// Keep result area the right size when the menu is resized
 				this.searchMenu = $(".search_menu", this.element).searchMenu({
@@ -213,7 +213,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			}
 		
 			if (container) {
-				var containerObject = new ParentResultObject({metadata : container, 
+				new ParentResultObject({metadata : this.setChildCounts(container),
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {
@@ -241,6 +241,21 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		
 			this.resizeResults();
 			this.$window.resize($.proxy(this.resizeResults, this));
+		},
+
+		// Set count of descendants
+		setChildCounts: function(container) {
+			let descendantsCount = [];
+			this.resultData.metadata.forEach((d) => descendantsCount.push(d.counts.child));
+			let descendants = descendantsCount.reduce((counts, currentValue) => {
+				return counts + currentValue;
+			}, 0);
+
+			container.counts = {
+				child: descendants
+			}
+
+			return container;
 		},
 		
 		resizeResults : function() {
