@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
@@ -188,8 +190,8 @@ public class ExportCsvController extends AbstractSolrSearchController {
             roleList.put(principalRole[1], principalRole[0]);
         }
 
-        String everyoneRole = roleList.get("everyone");
-        String authenticatedRole = roleList.get("authenticated");
+        String everyoneRole = roleList.get(PUBLIC_PRINC);
+        String authenticatedRole = roleList.get(AUTHENTICATED_PRINC);
         String permission;
 
         if (canViewOriginals(everyoneRole)) {
