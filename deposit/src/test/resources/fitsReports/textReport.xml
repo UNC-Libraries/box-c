@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.0.5" timestamp="2/19/17 11:29 AM">
+  <identification>
+    <identity format="Text" mimetype="text/plain" toolname="FITS" toolversion="1.0.5">
+      <tool toolname="Jhove" toolversion="1.11" />
+      <tool toolname="file utility" toolversion="5.04" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.11">308910</size>
+    <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/path/text.txt</filepath>
+    <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">text.txt</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">2b8dac0b2c0ca845dc8d517a2792dcf4</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1474571269000</fslastmodified>
+  </fileinfo>
+</fits>

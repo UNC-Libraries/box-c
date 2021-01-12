@@ -268,6 +268,7 @@
     </bean>
     
     <bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+        <property name="derivativeService" ref="derivativeService" />
     </bean>
     
     <bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">

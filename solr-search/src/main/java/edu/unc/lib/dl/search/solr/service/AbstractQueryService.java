@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.search.solr.service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,6 +38,47 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  *
  */
 public abstract class AbstractQueryService {
+    private final static List<String> DEFAULT_RESULT_FIELDS = Arrays.asList(
+            SearchFieldKeys.ABSTRACT.name(),
+            SearchFieldKeys.ADMIN_GROUP.name(),
+            SearchFieldKeys.ANCESTOR_IDS.name(),
+            SearchFieldKeys.ANCESTOR_PATH.name(),
+            SearchFieldKeys.CITATION.name(),
+            SearchFieldKeys.COLLECTION_ID.name(),
+            SearchFieldKeys.CONTENT_STATUS.name(),
+            SearchFieldKeys.CONTENT_TYPE.name(),
+            SearchFieldKeys.CONTRIBUTOR.name(),
+            SearchFieldKeys.CREATOR.name(),
+            SearchFieldKeys.DATASTREAM.name(),
+            SearchFieldKeys.DATE_ADDED.name(),
+            SearchFieldKeys.DATE_CREATED.name(),
+            SearchFieldKeys.DATE_UPDATED.name(),
+            SearchFieldKeys.DEPARTMENT.name(),
+            SearchFieldKeys.FILESIZE.name(),
+            SearchFieldKeys.FILESIZE_TOTAL.name(),
+            SearchFieldKeys.FINDING_AID_LINK.name(),
+            SearchFieldKeys.ID.name(),
+            SearchFieldKeys.IDENTIFIER.name(),
+            SearchFieldKeys.IS_PART.name(),
+            SearchFieldKeys.KEYWORD.name(),
+            SearchFieldKeys.LABEL.name(),
+            SearchFieldKeys.LANGUAGE.name(),
+            SearchFieldKeys.LAST_INDEXED.name(),
+            SearchFieldKeys.OTHER_TITLES.name(),
+            SearchFieldKeys.PARENT_COLLECTION.name(),
+            SearchFieldKeys.PARENT_UNIT.name(),
+            SearchFieldKeys.READ_GROUP.name(),
+            SearchFieldKeys.RELATIONS.name(),
+            SearchFieldKeys.RESOURCE_TYPE.name(),
+            SearchFieldKeys.ROLE_GROUP.name(),
+            SearchFieldKeys.ROLLUP_ID.name(),
+            SearchFieldKeys.STATUS.name(),
+            SearchFieldKeys.STATUS_TAGS.name(),
+            SearchFieldKeys.SUBJECT.name(),
+            SearchFieldKeys.TIMESTAMP.name(),
+            SearchFieldKeys.TITLE.name(),
+            SearchFieldKeys.VERSION.name());
+
     @Autowired
     protected SearchSettings searchSettings;
     @Autowired
@@ -109,6 +151,24 @@ public abstract class AbstractQueryService {
                     sortOrder = sortOrder.reverse();
                 }
                 solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+            }
+        }
+    }
+
+    /**
+     * Adds the specified result fields to the solrQuery, or if no resultFields
+     * are provided, then the default result fields are added.
+     * @param resultFields
+     * @param solrQuery
+     */
+    protected void addResultFields(List<String> resultFields, SolrQuery solrQuery) {
+        if (resultFields == null) {
+            resultFields = DEFAULT_RESULT_FIELDS;
+        }
+        for (String field : resultFields) {
+            String solrFieldName = solrSettings.getFieldName(field);
+            if (solrFieldName != null) {
+                solrQuery.addField(solrFieldName);
             }
         }
     }

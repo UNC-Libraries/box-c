@@ -15,17 +15,20 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.model.DatastreamType.FULLTEXT_EXTRACTION;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.util.DerivativeService;
+import edu.unc.lib.dl.util.DerivativeService.Derivative;
 
 /**
  * Retrieves full text data for object being indexed and stores it to the indexing document
@@ -35,40 +38,44 @@ import edu.unc.lib.dl.fedora.FedoraException;
  */
 public class SetFullTextFilter implements IndexDocumentFilter {
 
+    private DerivativeService derivativeService;
+
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-
-        ContentObject contentObj = dip.getContentObject();
-        // object being indexed must be a work or a file object
-        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
-            return;
-        }
         FileObject fileObj = getFileObject(dip);
         if (fileObj == null) {
             return;
         }
-        BinaryObject binObj;
-        binObj = fileObj.getOriginalFile();
-        if (!binObj.getMimetype().contains("text")) {
+
+        Derivative textDeriv = derivativeService.getDerivative(fileObj.getPid(), FULLTEXT_EXTRACTION);
+        if (textDeriv == null) {
             return;
         }
-
         try {
-            String fullText = IOUtils.toString(binObj.getBinaryStream(), "UTF-8");
+            String fullText = FileUtils.readFileToString(textDeriv.getFile(), UTF_8);
             dip.getDocument().setFullText(fullText);
-        } catch (FedoraException | IOException e) {
+        } catch (IOException e) {
             throw new IndexingException("Failed to retrieve full text datastream for {}" + dip.getPid(), e);
         }
     }
 
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
-        ContentObject obj = dip.getContentObject();
-        FileObject fileObj;
-        if (obj instanceof WorkObject) {
-            fileObj = ((WorkObject) obj).getPrimaryObject();
-        } else {
-            fileObj = (FileObject) obj;
+        ContentObject contentObj = dip.getContentObject();
+        // object being indexed must be a work or a file object
+        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+            return null;
         }
-        return fileObj;
+        if (contentObj instanceof WorkObject) {
+            return ((WorkObject) contentObj).getPrimaryObject();
+        } else {
+            return (FileObject) contentObj;
+        }
+    }
+
+    /**
+     * @param derivativeService the derivativeService to set
+     */
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }

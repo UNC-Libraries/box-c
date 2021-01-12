@@ -190,17 +190,21 @@
     
     <bean id="fileValidationExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
-        <constructor-arg value="${job.fileValidation.workers:1}"/>
+        <constructor-arg value="${job.fileValidation.workers:4}"/>
     </bean>
 
     <bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
             scope="prototype">
         <property name="clamScan" ref="clamScan" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="executorService" ref="fileValidationExecutor" />
     </bean>
     
     <bean id="FixityCheckJob" class="edu.unc.lib.deposit.validate.FixityCheckJob"
         scope="prototype">
+        <property name="executorService" ref="fileValidationExecutor" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
+        <property name="flushRate" value="${job.fixityCheck.flushRate:2000}" />
     </bean>
     
     <bean id="ValidateDestinationJob" class="edu.unc.lib.deposit.validate.ValidateDestinationJob"
@@ -222,12 +226,18 @@
         <property name="socketTimeout" value="${fits.http.client.socketTimeout:300000}" />
     </bean>
     
+    <bean id="fitsHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+        <property name="defaultMaxPerRoute" value="${job.extractTechnicalMetadata.workers:5}" />
+        <property name="maxTotal" value="${job.extractTechnicalMetadata.workers:5}" />
+    </bean>
+    
     <bean id="fitsHttpClientRequestConfig" factory-bean="fitsHttpClientRequestConfigBuilder"
         factory-method="build">
     </bean>
     
     <bean id="fitsPooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
-        <property name="connectionManager" ref="multiThreadedHttpConnectionManager" />
+        <property name="connectionManager" ref="fitsHttpConnectionManager" />
         <property name="defaultRequestConfig" ref="fitsHttpClientRequestConfig" />
     </bean>
     
@@ -235,11 +245,19 @@
             factory-bean="fitsPooledHttpClientBuilder" factory-method="build">
     </bean>
     
+    <bean id="extractTechnicalMetadataExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.extractTechnicalMetadata.workers:5}"/>
+    </bean>
+    
     <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
         scope="prototype">
         <property name="baseFitsUri" value="${fits.baseUri}" />
         <property name="httpClient" ref="fitsPooledHttpClient" />
         <property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
+        <property name="executorService" ref="extractTechnicalMetadataExecutor" />
+        <property name="flushRate" value="${job.extractTechnicalMetadata.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
     </bean>
     
     <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
@@ -250,8 +268,16 @@
         scope="prototype">
     </bean>
     
+    <bean id="transferBinariesExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.transferBinaries.workers:5}"/>
+    </bean>
+    
     <bean id="transferBinariesToStorageJob" class="edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob"
-        scope="prototype">
+            scope="prototype">
+        <property name="executorService" ref="transferBinariesExecutor" />
+        <property name="flushRate" value="${job.transferBinaries.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.transferBinaries.maxQueuedJobs:6}" />
     </bean>
     
     <bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"

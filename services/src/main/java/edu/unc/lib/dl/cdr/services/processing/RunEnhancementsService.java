@@ -18,6 +18,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.services.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.jdom2.Document;
@@ -54,6 +55,10 @@ public class RunEnhancementsService {
     private static final Logger LOG = LoggerFactory.getLogger(RunEnhancementsService.class);
     private static final Timer timer = TimerFactory.createTimerForClass(RunEnhancementsService.class);
 
+    private final List<String> resultsFieldList = Arrays.asList(
+            SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ID.name(),
+            SearchFieldKeys.RESOURCE_TYPE.name());
+
     private AccessControlService aclService;
 
     private MessageSender messageSender;
@@ -83,6 +88,7 @@ public class RunEnhancementsService {
                 if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
                     searchState.getFacets().put(SearchFieldKeys.RESOURCE_TYPE.name(), ResourceType.File.name());
+                    searchState.setResultFields(resultsFieldList);
 
                     SearchRequest searchRequest = new SearchRequest();
                     searchRequest.setAccessGroups(agent.getPrincipals());

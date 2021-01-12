@@ -1,6 +1,6 @@
 <template>
     <div id="patron-roles">
-        <h3>Patron Access Preview</h3>
+        <h3>Effective Patron Access</h3>
 
         <table v-if="hasParentRole || hasObjectRole" class="border inherited-permissions">
             <thead>
@@ -11,7 +11,7 @@
             </thead>
             <tbody>
             <template v-for="user in dedupedRoles">
-                <patron-display-row :user="user" :container-type="containerType"></patron-display-row>
+                <patron-display-row :user="user" :user-type="user_type" :container-type="containerType"></patron-display-row>
             </template>
             </tbody>
         </table>

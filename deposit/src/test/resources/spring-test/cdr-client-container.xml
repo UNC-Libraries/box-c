@@ -155,10 +155,6 @@
             factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
-    <bean id="redisServer" class="redis.embedded.RedisServer" init-method="start" destroy-method="stop">
-        <constructor-arg value="46380" />
-    </bean>
-    
     <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
         destroy-method="destroy">
         <constructor-arg ref="poolConfig"/>

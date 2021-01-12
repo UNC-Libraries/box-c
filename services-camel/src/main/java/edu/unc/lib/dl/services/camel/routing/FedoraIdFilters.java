@@ -24,12 +24,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
 
+import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.model.DatastreamType;
-import edu.unc.lib.dl.services.camel.FcrepoJmsConstants;
 import edu.unc.lib.dl.services.camel.util.EventTypes;
 
 /**
@@ -55,7 +55,8 @@ public class FedoraIdFilters {
         // Exclude fcr:versions, audit path
         return !(fcrepoId.contains(RepositoryPathConstants.FCR_VERSIONS)
                 || fcrepoId.endsWith("/audit")
-                || fcrepoId.endsWith(RepositoryPathConstants.FCR_TOMBSTONE));
+                || fcrepoId.endsWith(RepositoryPathConstants.FCR_TOMBSTONE)
+                || fcrepoId.endsWith("/fedora:timemap"));
     }
 
     /**
@@ -75,7 +76,7 @@ public class FedoraIdFilters {
                 || eventType.contains(EventTypes.EVENT_UPDATE));
     }
 
-    private static final Pattern IGNORE_SUFFIX = Pattern.compile(".*fcr:.+");
+    private static final Pattern IGNORE_SUFFIX = Pattern.compile(".*(fcr|fedora):.+");
 
     /**
      * Filter Fedora messages to exclude any messages that should not undergoing enhancement processing
@@ -99,12 +100,17 @@ public class FedoraIdFilters {
             log.debug("Failed to parse fcrepo id {} as PID while filtering: {}", fcrepoId, e.getMessage());
             return false;
         }
+        if (pid == null) {
+            log.error("Received null PID for object with fcrepo URI {}", fcrepoBaseUrl + fcrepoId);
+            return false;
+        }
         // Filter out non-content objects
         if (!PIDConstants.CONTENT_QUALIFIER.equals(pid.getQualifier())) {
             return false;
         }
+        // Allow for content root object to be indexed
         if (RepositoryPathConstants.CONTENT_ROOT_ID.equals(pid.getId())) {
-            return false;
+            return true;
         }
         String componentPath = pid.getComponentPath();
         // No component path, is a full content object

@@ -82,7 +82,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		
 		var modsRetrievalPath;
 		if ($.inArray('Described', resultObject.contentStatus) != -1) {
-			modsRetrievalPath = "/services/api/description/" + pid;
+			modsRetrievalPath = "/services/api/file/" + pid + '/md_descriptive';
 		}
 		
 		var editorOptions = {

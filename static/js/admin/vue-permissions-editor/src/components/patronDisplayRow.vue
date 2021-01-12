@@ -34,15 +34,26 @@
         props: {
             containerType: String,
             user: Object,
+            userType: String
         },
 
         methods: {
             fromText(type) {
-                return (type !== 'assigned') ? '(from parent)' : '';
+                if (this.userType === 'parent' || type === 'assigned') {
+                    return '';
+                }
+
+                return '(Overridden by parent)';
             },
 
             formattedPrincipal(user) {
-                return (user === 'everyone') ? 'Public Users' : user;
+                if (user === 'everyone') {
+                    return "Public Users"
+                } else if (user === 'staff') {
+                    return 'No Patron Access';
+                } else {
+                    return user;
+                }
             },
 
             formattedRole(role) {

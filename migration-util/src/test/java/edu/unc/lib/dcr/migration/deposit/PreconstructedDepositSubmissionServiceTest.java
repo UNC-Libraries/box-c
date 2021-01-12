@@ -53,6 +53,7 @@ public class PreconstructedDepositSubmissionServiceTest {
 
     private static final String DEPOSITOR = "testUser";
     private static final String DEPOSITOR_GROUPS = "somegroup";
+    private static final String DISPLAY_LABEL = "My deposit";
 
     @Captor
     private ArgumentCaptor<Map<String, String>> statusCaptor;
@@ -84,7 +85,7 @@ public class PreconstructedDepositSubmissionServiceTest {
         PID depositPid = pidMinter.mintDepositRecordPid();
         PID destinationPid = pidMinter.mintContentPid();
 
-        int result = service.submitDeposit(DEPOSITOR, DEPOSITOR_GROUPS, depositPid, destinationPid);
+        int result = service.submitDeposit(DEPOSITOR, DEPOSITOR_GROUPS, depositPid, destinationPid, DISPLAY_LABEL);
 
         assertEquals(0, result);
 
@@ -103,8 +104,9 @@ public class PreconstructedDepositSubmissionServiceTest {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR + EMAIL_SUFFIX, status.get(DepositField.depositorEmail.name()));
         assertEquals(destinationPid.getId(), status.get(DepositField.containerId.name()));
-        assertEquals(Priority.normal.name(), status.get(DepositField.priority.name()));
+        assertEquals(Priority.low.name(), status.get(DepositField.priority.name()));
         assertEquals(true, Boolean.parseBoolean(status.get(DepositField.overrideTimestamps.name())));
+        assertEquals(DISPLAY_LABEL, status.get(DepositField.depositSlug.name()));
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
         assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));

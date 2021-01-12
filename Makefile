@@ -108,17 +108,11 @@ ifeq ($(DEPLOY_TYPE), prod)
 endif
 SUSPEND = "n"
 
-run-access:
-	cd access && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48008,server=y,suspend=$(SUSPEND)"; mvn jetty:run
+build-bxc:
+	mvn clean install -DskipTests -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server,migration-util
 
-run-admin:
-	cd admin && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48009,server=y,suspend=$(SUSPEND)"; mvn jetty:run
-	
-run-deposit:
-	cd deposit && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48010,server=y,suspend=$(SUSPEND)"; mvn jetty:run
-	
-run-services-camel:
-	cd services-camel && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48011,server=y,suspend=$(SUSPEND)"; mvn jetty:run
+verify-bxc:
+	mvn verify -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server,migration-util
 
 ifneq ($(VERSION), "")
 	for i in static/js/public/*.js; do \

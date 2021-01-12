@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newBufferedWriter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -33,9 +34,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
@@ -60,13 +63,15 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.MimeTypeUtils;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.dl.util.MimetypeHelpers;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -76,7 +81,7 @@ import edu.unc.lib.dl.util.URIUtil;
  * @author bbpennel
  *
  */
-public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
+public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
@@ -91,7 +96,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     private boolean processFilesLocally;
 
-    private XMLOutputter xmlOutputter;
+    private Model model;
 
     public ExtractTechnicalMetadataJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
@@ -101,17 +106,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     public void initJob() {
         init();
         fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
-
-        xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
     }
 
     @Override
     public void runJob() {
-        Model model = getReadOnlyModel();
+        model = getReadOnlyModel();
 
         // Get the list of files that need processing
         List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
         setTotalClicks(stagingList.size());
+
+        startResultRegistrar();
 
         for (Entry<PID, String> stagedPair : stagingList) {
             interruptJobIfStopped();
@@ -123,7 +128,81 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 continue;
             }
 
+            waitForQueueCapacity();
+
             String stagedPath = stagedPair.getValue();
+            PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
+            final String providedMimetype = getProvidedMimetype(originalPid, model);
+
+            submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
+        }
+
+        waitForCompletion();
+    }
+
+    private String getProvidedMimetype(PID originalPid, Model model) {
+        Resource originalResc = model.getResource(originalPid.getRepositoryPath());
+        Statement mimetypeStmt = originalResc.getProperty(mimetype);
+        if (mimetypeStmt != null) {
+            return MimetypeHelpers.formatMimetype(mimetypeStmt.getString());
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    protected void registrationAction() {
+        List<Object> results = new ArrayList<>();
+        resultsQueue.drainTo(results);
+        log.debug("Registering batch of {} transfer results", results.size());
+        commit(() -> {
+            results.forEach(resultObj -> {
+                ExtractTechnicalMetadataResult result = (ExtractTechnicalMetadataResult) resultObj;
+                Resource originalResc = model.getResource(result.originalPid.getRepositoryPath());
+                if (result.mimetype != null) {
+                    if (result.hasProvidedMimetype) {
+                        originalResc.removeAll(mimetype);
+                    }
+                    originalResc.addProperty(mimetype, result.mimetype);
+                }
+                addClicks(1);
+                markObjectCompleted(result.objPid);
+            });
+        });
+    }
+
+    private class ExtractTechnicalMetadataResult {
+        private PID objPid;
+        private PID originalPid;
+        private boolean hasProvidedMimetype;
+        private String mimetype;
+    }
+
+    private class ExtractTechnicalMetadataRunnable implements Runnable {
+        private PID objPid;
+        private PID originalPid;
+        private String stagedPath;
+        private String providedMimetype;
+        private ExtractTechnicalMetadataResult result = new ExtractTechnicalMetadataResult();
+
+        public ExtractTechnicalMetadataRunnable(PID objPid, PID originalPid, String stagedPath,
+                String providedMimetype) {
+            this.objPid = objPid;
+            this.originalPid = originalPid;
+            this.stagedPath = stagedPath;
+            this.providedMimetype = providedMimetype;
+            result.objPid = objPid;
+            result.originalPid = originalPid;
+            result.hasProvidedMimetype = providedMimetype != null;
+        }
+
+        @Override
+        public void run() {
+            if (isInterrupted.get()) {
+                return;
+            }
+
+            interruptJobIfStopped();
 
             // Generate the FITS report as a document
             Document fitsDoc = getFitsDocument(objPid, stagedPath);
@@ -133,11 +212,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
                 Document premisDoc = generatePremisReport(objPid, fitsDoc);
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
-                PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
-                Resource originalResc = model.getResource(originalPid.getRepositoryPath());
-
                 // Record the format info for this file
-                addFileIdentification(originalResc, fitsDoc, premisObjCharsEl);
+                addFileIdentification(fitsDoc, premisObjCharsEl);
 
                 addFileinfoToReport(fitsDoc, premisObjCharsEl);
 
@@ -145,13 +221,83 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
                 // Store the premis report to file
                 writePremisReport(objPid, premisDoc);
-                addClicks(1);
-                markObjectCompleted(objPid);
+
+                receiveResult(result);
             } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
                 failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
-                        objPid, xmlOutputter.outputString(fitsDoc));
+                        objPid, getXMLOutputter().outputString(fitsDoc));
+            }
+        }
+
+        /**
+         * Adds format and mimetype information for the give object, to both the
+         * PREMIS report and the deposit model to be included as part of the ingest.
+         *
+         * @param fitsDoc
+         * @param premisObjCharsEl
+         */
+        private void addFileIdentification(Document fitsDoc, Element premisObjCharsEl) {
+            // Retrieve the FITS generate mimetype if available
+            Element identity = getFitsIdentificationInformation(fitsDoc);
+
+            String fitsMimetype = null;
+            String format;
+            if (identity != null) {
+                fitsMimetype = identity.getAttributeValue("mimetype");
+                format = identity.getAttributeValue("format");
+            } else {
+                format = "Unknown";
+                log.warn("FITS unable to conclusively identify file: {}", originalPid);
+            }
+
+            // Add format to the premis report
+            premisObjCharsEl.addContent(
+                    new Element("format", PREMIS_V3_NS)
+                        .addContent(new Element("formatDesignation", PREMIS_V3_NS)
+                        .addContent(new Element("formatName", PREMIS_V3_NS)
+                        .setText(format))));
+
+            // Replace the mimetype registered for this item in the deposit if necessary
+            overrideDepositMimetype(fitsMimetype);
+        }
+
+        /**
+         * Overrides the mimetype for this object in the deposit model when the FITS
+         * generated value is preferred.
+         *
+         * @param objResc
+         * @param fitsExtractMimetype
+         */
+        private void overrideDepositMimetype(String fitsExtractMimetype) {
+            String rescId = originalPid.getRepositoryPath();
+            // normalize fits mimetype
+            final String fitsMimetype = MimetypeHelpers.formatMimetype(fitsExtractMimetype);
+
+            if (fitsMimetype != null && Objects.equals(providedMimetype, fitsMimetype)) {
+                log.debug("FITS mimetype and provided mimetype {} agree for {}, skipping override",
+                        providedMimetype, rescId);
+                return;
+            }
+
+            int fitsRank = rankMimetype(fitsMimetype);
+            int providedRank = rankMimetype(providedMimetype);
+
+            // No meaningful mimetypes, so remove provided and replace with default
+            if (providedRank < 0 && fitsRank < 0) {
+                result.mimetype = APPLICATION_OCTET_STREAM_VALUE;
+                log.warn("No meaningful mimetype for {}, removed provided value '{}' and added default",
+                        rescId, providedMimetype);
+                return;
+            }
+
+            if (fitsRank >= providedRank) {
+                result.mimetype = fitsMimetype;
+                log.debug("Overrode provided mimetype {} for {} with extracted mimetype {}",
+                        providedMimetype, rescId, fitsMimetype);
+            } else {
+                log.debug("Retaining provided mimetype {} for {}", providedMimetype, originalPid);
             }
         }
     }
@@ -257,39 +403,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     }
 
     /**
-     * Adds format and mimetype information for the give object, to both the
-     * PREMIS report and the deposit model to be included as part of the ingest.
-     *
-     * @param objResc
-     * @param fitsDoc
-     * @param premisObjCharsEl
-     */
-    private void addFileIdentification(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
-        // Retrieve the FITS generate mimetype if available
-        Element identity = getFitsIdentificationInformation(fitsDoc);
-
-        String fitsMimetype = null;
-        String format;
-        if (identity != null) {
-            fitsMimetype = identity.getAttributeValue("mimetype");
-            format = identity.getAttributeValue("format");
-        } else {
-            format = "Unknown";
-            log.warn("FITS unable to conclusively identify file: {}", objResc.getURI());
-        }
-
-        // Add format to the premis report
-        premisObjCharsEl.addContent(
-                new Element("format", PREMIS_V3_NS)
-                    .addContent(new Element("formatDesignation", PREMIS_V3_NS)
-                    .addContent(new Element("formatName", PREMIS_V3_NS)
-                    .setText(format))));
-
-        // Replace the mimetype registered for this item in the deposit if necessary
-        overrideDepositMimetype(objResc, fitsMimetype);
-    }
-
-    /**
      * Retrieves the file identification information from the FITS report,
      * resolving conflicts when necessary
      *
@@ -322,46 +435,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         return null;
     }
 
-    /**
-     * Overrides the mimetype for this object in the deposit model when the FITS
-     * generated value is preferred.
-     *
-     * @param objResc
-     * @param fitsMimetype
-     */
-    private void overrideDepositMimetype(Resource objResc, String fitsMimetype) {
-        // If the file was provided with a meaningful mimetype, continue using that
-        Statement mimetypeStmt = objResc.getProperty(mimetype);
-        if (mimetypeStmt != null) {
-            String providedMimetype = mimetypeStmt.getString();
-            if (isMimetypeMeaningful(providedMimetype)) {
-                log.debug("Provided mimetype {} used for {}", providedMimetype, objResc.getURI());
-                return;
-            }
+    private int rankMimetype(String mimetype) {
+        if (!MimetypeHelpers.isValidMimetype(mimetype)) {
+            return -1;
         }
-
-        commit(() -> {
-            // Not using a provided mimetype, so use the FITS mimetype
-            if (isMimetypeMeaningful(fitsMimetype)) {
-                objResc.removeAll(mimetype)
-                        .addProperty(mimetype, fitsMimetype);
-            } else {
-                objResc.removeAll(mimetype)
-                        .addProperty(mimetype, "application/octet-stream");
-            }
-        });
-    }
-
-    /**
-     * Determines if the given mimetype is a meaningful value, meaning not empty
-     * or generic
-     *
-     * @param mimetype
-     * @return
-     */
-    private boolean isMimetypeMeaningful(String mimetype) {
-        return mimetype != null && mimetype.trim().length() > 0
-                && !mimetype.contains("octet-stream");
+        if (mimetype.equals(APPLICATION_OCTET_STREAM_VALUE)) {
+            return  0;
+        }
+        if (mimetype.equals(MimeTypeUtils.TEXT_PLAIN_VALUE)) {
+            return  1;
+        }
+        return 2;
     }
 
     private Element getObjectCharacteristics(Document premisDoc) {
@@ -429,10 +513,14 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         Path reportFile = getTechMdPath(objPid, true);
 
         try (BufferedWriter writer = newBufferedWriter(reportFile)) {
-            xmlOutputter.output(premisDoc, writer);
+            getXMLOutputter().output(premisDoc, writer);
         } catch (IOException e) {
             failJob(e, "Failed to persist premis report for object {0} to path {1}", objPid, reportFile);
         }
+    }
+
+    private XMLOutputter getXMLOutputter() {
+        return new XMLOutputter(Format.getPrettyFormat());
     }
 
     public void setHttpClient(CloseableHttpClient httpClient) {
