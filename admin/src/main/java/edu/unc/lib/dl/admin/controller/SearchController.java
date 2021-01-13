@@ -18,6 +18,7 @@ package edu.unc.lib.dl.admin.controller;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,8 +59,6 @@ public class SearchController extends AbstractSearchController {
      * @param container
      * @param searchWithin
      * @param searchType
-     * @param model
-     * @param request
      * @return
      */
     @RequestMapping(value = "doSearch", produces = "text/html")
@@ -173,6 +172,8 @@ public class SearchController extends AbstractSearchController {
     public @ResponseBody Map<String, Object> listJSON(@PathVariable("pid") String pid, HttpServletRequest request,
             HttpServletResponse response) {
         SearchResultResponse resultResponse = getSearchResults(getListRequest(pid, request));
+        childrenCountService.addChildrenCounts(Collections.singletonList(resultResponse.getSelectedContainer()),
+                getSearchRequest(pid, request).getAccessGroups());
         return getResults(resultResponse, "list", request);
     }
 

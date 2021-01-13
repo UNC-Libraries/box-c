@@ -213,7 +213,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			}
 		
 			if (container) {
-				new ParentResultObject({metadata : this.setChildCounts(container),
+				new ParentResultObject({metadata : container,
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {
@@ -241,21 +241,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		
 			this.resizeResults();
 			this.$window.resize($.proxy(this.resizeResults, this));
-		},
-
-		// Set count of descendants
-		setChildCounts: function(container) {
-			let descendantsCount = [];
-			this.resultData.metadata.forEach((d) => descendantsCount.push(d.counts.child));
-			let descendants = descendantsCount.reduce((counts, currentValue) => {
-				return counts + currentValue;
-			}, 0);
-
-			container.counts = {
-				child: descendants
-			}
-
-			return container;
 		},
 		
 		resizeResults : function() {
