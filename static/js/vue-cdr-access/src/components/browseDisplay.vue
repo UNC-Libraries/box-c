@@ -102,7 +102,9 @@
         }
 
         li {
+            margin: 0 auto;
             position: relative;
+            text-align: center;
             text-indent: 0;
         }
 
@@ -115,9 +117,12 @@
         }
 
         .record-title {
+            -ms-hyphens: auto;
+            -webkit-hyphens: auto;
+            hyphens: auto;
             line-height: 1.2;
             margin-top: 25px;
-            word-break: break-all;
+            overflow-wrap: break-word;
         }
 
         .thumbnail + .record-title {
@@ -143,6 +148,10 @@
                 font-size: 2rem;
                 margin: 12px 8px;
             }
+        }
+
+        .thumbnail-size-large {
+            width: 100%;
         }
     }
 </style>
