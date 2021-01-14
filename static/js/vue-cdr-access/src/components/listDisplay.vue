@@ -162,9 +162,13 @@
         }
 
         .result-title {
+            -ms-hyphens: auto;
+            -webkit-hyphens: auto;
+            hyphens: auto;
             line-height: 1.2;
             margin-bottom: 15px;
-            word-break: break-all;
+            overflow-wrap: break-word;
+            padding-right: 25px;
         }
 
         i {
