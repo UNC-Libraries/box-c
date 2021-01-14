@@ -959,6 +959,14 @@ p.no-search-results {
   }
 }
 
+.item-title {
+  -ms-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
 .onecol, .content-wrap.full_record {
   width: 100%;
 
@@ -1017,9 +1025,7 @@ p.no-search-results {
 
   .browse-header {
     h2.item-title {
-      line-height: 1.2;
       padding-left: 15px;
-      word-break: break-all;
     }
   }
 
@@ -1053,8 +1059,6 @@ p.no-search-results {
 
 .item-title {
   font-size: 36px;
-  line-height: 1.2;
-  word-break: break-all;
 }
 
 .item-actions {
