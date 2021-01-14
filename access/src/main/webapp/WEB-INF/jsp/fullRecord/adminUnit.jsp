@@ -74,9 +74,6 @@
                             <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" /></p>
                             <p><a id="show-abstract" href="#">Read more</a></p>
                         </c:when>
-                        <c:when test="${fn:length(briefObject.abstractText) > 250}">
-                            <p><c:out value="${briefObject.abstractText}" /></p>
-                        </c:when>
                         <c:otherwise>
                             <p><c:out value="${briefObject.abstractText}" /></p>
                         </c:otherwise>
