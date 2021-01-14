@@ -102,9 +102,6 @@
         }
 
         li {
-            margin: 0 auto;
-            position: relative;
-            text-align: center;
             text-indent: 0;
         }
 
@@ -148,10 +145,6 @@
                 font-size: 2rem;
                 margin: 12px 8px;
             }
-        }
-
-        .thumbnail-size-large {
-            width: 100%;
         }
     }
 </style>
