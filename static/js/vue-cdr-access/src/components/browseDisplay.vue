@@ -102,7 +102,6 @@
         }
 
         li {
-            position: relative;
             text-indent: 0;
         }
 
@@ -115,9 +114,12 @@
         }
 
         .record-title {
+            -ms-hyphens: auto;
+            -webkit-hyphens: auto;
+            hyphens: auto;
             line-height: 1.2;
             margin-top: 25px;
-            word-break: break-all;
+            overflow-wrap: break-word;
         }
 
         .thumbnail + .record-title {
