@@ -169,7 +169,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertContainerRecord(csvList, ResourceType.Collection, collObj.getPid(), "Collection",
                 COLLECTION_PATH, 2, false, 1, false, "Authenticated", false);
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
-                FOLDER_PATH, 3, false, null, false, "Staff-only", false);
+                FOLDER_PATH, 3, false, null, false, "Authenticated", false);
     }
 
     @Test
@@ -200,12 +200,12 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
-                1, false, "Staff-only", false);
+                1, false, "Authenticated", false);
 
         String pathToFile = pathToWork + "/" + pidList.get("filePid").getId();
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Staff-only", false);
+                null, false, "Authenticated", false);
     }
 
     @Test
@@ -241,12 +241,12 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = pathToFolder + "/Work Test";
         assertCsvRecord(csvList, ResourceType.Work, workPid, "Work Test",
                 pathToWork, 4, false, null, null, null,
-                1, true, "Staff-only", false);
+                1, true, "Authenticated", false);
 
         String pathToFile = pathToWork + "/" + filePid.getId();
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Staff-only", false);
+                null, false, "Authenticated", false);
     }
 
     @Test
@@ -434,6 +434,70 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertEquals("Unexpected number of results", 1, csvList.size());
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, null, false, "Staff-only", false);
+    }
+
+    @Test
+    public void moreRestrictiveChildPermission() throws Exception {
+        PID folderPid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
+                .addCanViewMetadata(PUBLIC_PRINC).model);
+
+        PID collPid = pidMinter.mintContentPid();
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
+                new AclModelBuilder("Collection").addCanViewOriginals(PUBLIC_PRINC).model);
+
+        collObj.addMember(folder);
+        unitObj.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
+
+        String id = collPid.getId();
+        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertValidFileInfo(response, id);
+
+        List<CSVRecord> csvList = parseCsvResponse(response);
+        assertEquals("Unexpected number of results", 2, csvList.size());
+        assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
+                COLLECTION_PATH, 2, false, 1, false, "Public", false);
+        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
+                FOLDER_PATH, 3, false, null, false, "Restricted", false);
+    }
+
+    @Test
+    public void childInheritsParentPermission() throws Exception {
+        PID folderPid = pidMinter.mintContentPid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
+                .addCanViewOriginals(PUBLIC_PRINC).model);
+
+        PID collPid = pidMinter.mintContentPid();
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
+                new AclModelBuilder("Collection").addNoneRole(PUBLIC_PRINC).model);
+
+        collObj.addMember(folder);
+        unitObj.addMember(collObj);
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
+
+        String id = collPid.getId();
+        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertValidFileInfo(response, id);
+
+        List<CSVRecord> csvList = parseCsvResponse(response);
+        assertEquals("Unexpected number of results", 2, csvList.size());
+        assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
+                COLLECTION_PATH, 2, false, 1, false, "Staff-only", false);
+        assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
+                FOLDER_PATH, 3, false, null, false, "Staff-only", false);
     }
 
     @Test

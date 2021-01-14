@@ -140,7 +140,8 @@ public class ExportCsvController extends AbstractSolrSearchController {
                     SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
                     SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
                     SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-                    SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
+                    SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name(),
+                    SearchFieldKeys.ROLE_GROUP.name()));
             searchState.setSortType("export");
             searchState.setRowsPerPage(MAX_PAGE_SIZE);
 
