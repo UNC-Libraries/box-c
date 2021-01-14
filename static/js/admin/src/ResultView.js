@@ -194,7 +194,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			this.$resultArea = $('.result_area', this.element);
 			
 			var container = this.resultData.container;
-		
+
 			if (!this.searchMenu) {
 				// Keep result area the right size when the menu is resized
 				this.searchMenu = $(".search_menu", this.element).searchMenu({
@@ -213,7 +213,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			}
 		
 			if (container) {
-				var containerObject = new ParentResultObject({metadata : container, 
+				new ParentResultObject({metadata : container,
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {

@@ -12,7 +12,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		this.options = $.extend({}, defaultOptions, options);
 		this.actionHandler = this.options.actionHandler;
 		this.create();
-	};
+	}
 	
 	ResultObjectActionMenu.prototype.create = function() {
 		var self = this;
@@ -188,7 +188,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Export actions
 		if (!isContentRoot) {
 			items["sepexport"] = "";
-			if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) != -1) {
+			if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) != -1 && metadata.counts.child <= 50000) {
 				items["exportCSV"] = {name : 'Export as CSV'};
 			}
 
