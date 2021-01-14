@@ -220,14 +220,15 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		}
 
 		function bytesToSize(bytes) {
-			if (bytes === 0) {
+			var fileBytes = parseInt(bytes);
+			if (isNaN(fileBytes) || fileBytes === 0) {
 				return '0 B';
 			}
 
 			var k = 1024;
 			var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-			var i = Math.floor(Math.log(bytes) / Math.log(k));
-			var val = (bytes / Math.pow(k, i)).toFixed(1);
+			var i = Math.floor(Math.log(fileBytes) / Math.log(k));
+			var val = (fileBytes / Math.pow(k, i)).toFixed(1);
 			var floored_val = Math.floor(val);
 
 			if (val - floored_val === 0) {
