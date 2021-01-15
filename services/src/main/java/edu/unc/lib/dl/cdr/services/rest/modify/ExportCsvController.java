@@ -15,8 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
@@ -90,12 +94,14 @@ public class ExportCsvController extends AbstractSolrSearchController {
     public static final String FILE_SIZE_HEADER = "File Size (bytes)";
     public static final String NUM_CHILDREN_HEADER = "Number of Children";
     public static final String DESCRIBED_HEADER = "Description";
+    public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
+    public static final String EMBARGO_HEADER = "Embargoed";
 
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER, LABEL_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER};
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
 
     @Autowired
     private ChildrenCountService childrenCountService;
@@ -134,7 +140,8 @@ public class ExportCsvController extends AbstractSolrSearchController {
                     SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
                     SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
                     SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-                    SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
+                    SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name(),
+                    SearchFieldKeys.ROLE_GROUP.name()));
             searchState.setSortType("export");
             searchState.setRowsPerPage(MAX_PAGE_SIZE);
 
@@ -173,14 +180,48 @@ public class ExportCsvController extends AbstractSolrSearchController {
         return null;
     }
 
+    private String computePatronPermissions(List<String> roles) {
+        if (roles == null) {
+            return "Staff-only";
+        }
+
+        Map<String, String> roleList = new HashMap<>();
+        for (String role : roles) {
+            String[] principalRole = role.split("\\|");
+            roleList.put(principalRole[1], principalRole[0]);
+        }
+
+        String everyoneRole = roleList.get(PUBLIC_PRINC);
+        String authenticatedRole = roleList.get(AUTHENTICATED_PRINC);
+        String permission;
+
+        if (canViewOriginals(everyoneRole)) {
+            permission = "Public";
+        } else if (canViewOriginals(authenticatedRole) && hasNoAccess(everyoneRole)) {
+            permission = "Authenticated";
+        } else if (hasNoAccess(everyoneRole) && hasNoAccess(authenticatedRole)) {
+            permission = "Staff-only";
+        } else {
+            permission = "Restricted";
+        }
+
+        return permission;
+    }
+
+    private boolean canViewOriginals(String role) {
+        return role != null && role.equals(canViewOriginals.getPredicate());
+    }
+
+    private boolean hasNoAccess(String role) {
+        return role == null || role.equals(none.getPredicate());
+    }
+
     private CSVPrinter getPrinter(Writer writer) throws IOException {
         return CSVFormat.EXCEL.withHeader(CSV_HEADERS).print(writer);
     }
 
     private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
-
         // Vitals: object type, pid, title, path, label, depth
-
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
@@ -254,13 +295,21 @@ public class ExportCsvController extends AbstractSolrSearchController {
 
         // Description: does object have a MODS description?
         List<String> contentStatus = object.getContentStatus();
-        if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED) ) {
+        if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED)) {
             printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
         } else if (contentStatus != null && contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             printer.print(FacetConstants.CONTENT_DESCRIBED);
         } else {
             printer.print("");
         }
+
+        // Patron permissions
+        String computedPermissions = computePatronPermissions(object.getRoleGroup());
+        printer.print(computedPermissions);
+
+        // Is object embargoed
+        List<String> objStatus = object.getStatus();
+        printer.print(objStatus != null && objStatus.contains(FacetConstants.EMBARGOED));
 
         printer.println();
     }
