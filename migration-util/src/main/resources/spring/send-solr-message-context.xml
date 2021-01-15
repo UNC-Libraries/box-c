@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <context:annotation-config />
+    
+    <import resource="service-context.xml" />
+    
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>${jms.broker.uri}</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="activemq:queue:repository.solrupdate" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender">
+        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+    </bean>
+</beans>

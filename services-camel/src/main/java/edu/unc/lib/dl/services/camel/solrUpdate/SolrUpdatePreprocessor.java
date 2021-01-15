@@ -21,11 +21,7 @@ import static edu.unc.lib.dl.util.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TI
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_DATASTREAMS;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_DESCRIPTION;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_PATH;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import java.util.EnumSet;
@@ -85,8 +81,14 @@ public class SolrUpdatePreprocessor implements Processor {
     }
 
     private static final Set<IndexingActionType> SMALL_ACTIONS =
-            EnumSet.of(IndexingActionType.ADD, UPDATE_DESCRIPTION, UPDATE_ACCESS, UPDATE_PATH,
-                    UPDATE_DATASTREAMS, IndexingActionType.COMMIT, IndexingActionType.DELETE);
+            EnumSet.of(IndexingActionType.ADD,
+                    IndexingActionType.UPDATE_DESCRIPTION,
+                    IndexingActionType.UPDATE_ACCESS,
+                    IndexingActionType.UPDATE_PATH,
+                    IndexingActionType.UPDATE_DATASTREAMS,
+                    IndexingActionType.UPDATE_FULL_TEXT,
+                    IndexingActionType.COMMIT,
+                    IndexingActionType.DELETE);
 
     /**
      * @param action
