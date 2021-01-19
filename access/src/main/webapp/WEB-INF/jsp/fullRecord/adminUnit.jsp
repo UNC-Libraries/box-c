@@ -66,27 +66,19 @@
                 </c:choose>
             </p>
             <div class="column">
-                <c:choose>
-                    <c:when test="${not empty briefObject.abstractText}">
-                        <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
-                        <c:choose>
-                            <c:when test="${fn:length(briefObject.abstractText) > 250}">
-                                <p id="truncated-abstract"><c:out value="${truncatedAbstract}" />...</p>
-                                <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" /></p>
-                                <p><a id="show-abstract" href="#">Read more</a></p>
-                            </c:when>
-                            <c:when test="${fn:length(briefObject.abstractText) > 250}">
-                                <p><c:out value="${briefObject.abstractText}" /></p>
-                            </c:when>
-                            <c:otherwise>
-                                <p><c:out value="${briefObject.abstractText}" /></p>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:when>
-                    <c:otherwise>
-                        <p>There is no description available for this record.</p>
-                    </c:otherwise>
-                </c:choose>
+                <c:if test="${not empty briefObject.abstractText}">
+                    <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 250)}"/>
+                    <c:choose>
+                        <c:when test="${fn:length(briefObject.abstractText) > 250}">
+                            <p id="truncated-abstract"><c:out value="${truncatedAbstract}" />...</p>
+                            <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}" /></p>
+                            <p><a id="show-abstract" href="#">Read more</a></p>
+                        </c:when>
+                        <c:otherwise>
+                            <p><c:out value="${briefObject.abstractText}" /></p>
+                        </c:otherwise>
+                    </c:choose>
+                </c:if>
                 <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>
             </div>
         </div>
