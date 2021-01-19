@@ -119,6 +119,7 @@
             hyphens: auto;
             line-height: 1.2;
             margin-top: 25px;
+            max-width: 250px;
             overflow-wrap: break-word;
         }
 
