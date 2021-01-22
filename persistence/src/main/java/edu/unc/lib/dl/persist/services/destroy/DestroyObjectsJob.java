@@ -15,22 +15,15 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
-import static edu.unc.lib.dl.services.DestroyObjectsMessageHelpers.makeDestroyOperationBody;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -41,44 +34,26 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
-import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
-import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.services.MessageSender;
-import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
@@ -88,35 +63,18 @@ import io.dropwizard.metrics5.Timer;
  * @author harring
  *
  */
-public class DestroyObjectsJob implements Runnable {
+public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     private static final Logger log = LoggerFactory.getLogger(DestroyObjectsJob.class);
 
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
-    private List<PID> objsToDestroy;
     private List<String> deletedObjIds = new ArrayList<>();
-    private AgentPrincipals agent;
 
-    private MultiDestinationTransferSession transferSession;
-
-    private List<URI> cleanupBinaryUris;
-
-    private RepositoryObjectFactory repoObjFactory;
-    private RepositoryObjectLoader repoObjLoader;
-    private TransactionManager txManager;
     private ObjectPathFactory pathFactory;
-    private FcrepoClient fcrepoClient;
     private InheritedAclFactory inheritedAclFactory;
-    private AccessControlService aclService;
-    private StorageLocationManager locManager;
-    private BinaryTransferService transferService;
-    private IndexingMessageSender indexingMessageSender;
-    private MessageSender binaryDestroyedMessageSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
-        this.objsToDestroy = stream(request.getIds()).map(PIDs::get).collect(toList());
-        this.agent = request.getAgent();
-        this.cleanupBinaryUris = new ArrayList<>();
+        super(request);
     }
 
     @Override
@@ -164,36 +122,7 @@ public class DestroyObjectsJob implements Runnable {
         destroyBinaries();
     }
 
-    private void sendDestroyDerivativesMsg(RepositoryObject repoObj) {
-        Map<String, String> metadata = new HashMap<>();
-        PID pid;
-        URI objUri;
 
-        if (repoObj instanceof FileObject) {
-            FileObject fileObj = (FileObject) repoObj;
-            BinaryObject binaryObj = fileObj.getOriginalFile();
-            String mimetype = binaryObj.getMimetype();
-            metadata.put("mimeType", mimetype);
-            pid = binaryObj.getPid();
-            objUri = fileObj.getOriginalFile().getContentUri();
-        } else {
-            pid = repoObj.getPid();
-            objUri = repoObj.getUri();
-        }
-
-        setCommonMetadata(metadata, repoObj, pid);
-
-        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), objUri, metadata);
-        binaryDestroyedMessageSender.sendMessage(destroyMsg);
-    }
-
-    private Map<String, String> setCommonMetadata(Map<String, String> metadata, RepositoryObject repoObj, PID pid) {
-        String objType = ResourceType.getResourceTypeForUris(repoObj.getTypes()).getUri();
-        metadata.put("objType", objType);
-        metadata.put("pid", pid.getQualifiedId());
-
-        return metadata;
-    }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
@@ -259,27 +188,6 @@ public class DestroyObjectsJob implements Runnable {
         }
     }
 
-    private void destroyBinaries() {
-        if (cleanupBinaryUris.isEmpty()) {
-            return;
-        }
-
-        if (transferSession == null) {
-            transferSession = transferService.getSession();
-        }
-        cleanupBinaryUris.forEach(contentUri -> {
-            try {
-                log.debug("Deleting destroyed binary {}", contentUri);
-                StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
-                transferSession.forDestination(storageLoc)
-                        .delete(contentUri);
-            } catch (BinaryTransferException e) {
-                String message = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
-                log.error("Failed to cleanup binary {} for destroyed object: {}", contentUri, message);
-            }
-        });
-    }
-
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource();
@@ -318,64 +226,19 @@ public class DestroyObjectsJob implements Runnable {
             String objUri = obj.asResource().getURI();
             // do not delete Premis events and metadata container
             if (!(objUri.endsWith("/" + MD_EVENTS.getId()) || objUri.endsWith("/" + METADATA_CONTAINER))) {
-                log.debug("Deleting object {} from fedora", objUri);
-                try (FcrepoResponse resp = fcrepoClient.delete(URI.create(objUri)).perform()) {
-                } catch (FcrepoOperationFailedException | IOException e) {
-                    throw new ServiceException("Unable to clean up child object " + objUri, e);
-                }
-
-                URI tombstoneUri = URI.create(objUri + "/" + FCR_TOMBSTONE);
-                try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
-                } catch (FcrepoOperationFailedException | IOException e) {
-                    throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
-                }
+                purgeObject(objUri);
             } else {
                 log.debug("Skipping destroy on {}", objUri);
             }
         }
     }
 
-    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
-        this.repoObjFactory = repoObjFactory;
-    }
-
-    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
-    }
-
-    public void setTransactionManager(TransactionManager txManager) {
-        this.txManager = txManager;
-    }
-
     public void setPathFactory(ObjectPathFactory pathFactory) {
         this.pathFactory = pathFactory;
-    }
-
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
-    }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
     }
 
     public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
         this.inheritedAclFactory = inheritedAclFactory;
     }
 
-    public void setStorageLocationManager(StorageLocationManager locManager) {
-        this.locManager = locManager;
-    }
-
-    public void setBinaryTransferService(BinaryTransferService transferService) {
-        this.transferService = transferService;
-    }
-
-    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
-        this.indexingMessageSender = indexingMessageSender;
-    }
-
-    public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
-        this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
-    }
 }
