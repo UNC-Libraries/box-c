@@ -17,9 +17,18 @@ package edu.unc.lib.dl.persist.services.destroy;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
+import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
@@ -27,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
@@ -34,11 +45,15 @@ import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -50,6 +65,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -72,6 +88,8 @@ import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * @author bbpennel
@@ -115,6 +133,9 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Autowired
     private EditTitleService editTitleService;
+
+    @Captor
+    private ArgumentCaptor<Document> docCaptor;
 
     private AgentPrincipals agent;
 
@@ -193,6 +214,10 @@ public class DestroyObjectsCompletelyJobIT {
             assertTrue(e.getMessage().contains("Refusing to destroy object"));
         }
         assertTrue(originalFile.exists());
+
+        verify(indexingMessageSender, never()).sendIndexingOperation(anyString(),
+                any(PID.class), any(IndexingActionType.class));
+        verify(binaryDestroyedMessageSender, never()).sendMessage(any(Document.class));
     }
 
     @Test
@@ -204,7 +229,8 @@ public class DestroyObjectsCompletelyJobIT {
         editTitleService.editTitle(agent, work.getPid(), "second title");
 
         FileObject file = addFileToWork(work);
-        File originalFile = new File(file.getOriginalFile().getContentUri());
+        BinaryObject originalObj = file.getOriginalFile();
+        File originalFile = new File(originalObj.getContentUri());
 
         treeIndexer.indexAll(baseAddress);
 
@@ -227,6 +253,14 @@ public class DestroyObjectsCompletelyJobIT {
         assertFalse(originalFile.exists());
         assertFalse(modsFile.exists());
         assertFalse(historyFile.exists());
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(work.getPid()), eq(DELETE_SOLR_TREE));
+
+        verify(binaryDestroyedMessageSender, times(2)).sendMessage(docCaptor.capture());
+        List<Document> binMsgs = docCaptor.getAllValues();
+        assertMessagePresent(binMsgs, work.getPid(), ResourceType.Work, null, modsFile, historyFile);
+        assertMessagePresent(binMsgs, originalObj.getPid(), ResourceType.File, "text/plain", originalFile);
+
     }
 
     // Ensure that an invalid membership relation can't result in destroying admin units
@@ -254,6 +288,10 @@ public class DestroyObjectsCompletelyJobIT {
         }
         assertTrue(repoObjFactory.objectExists(adminUnit.getUri()));
         assertTrue(repoObjFactory.objectExists(folder.getUri()));
+
+        verify(indexingMessageSender, never()).sendIndexingOperation(anyString(),
+                any(PID.class), any(IndexingActionType.class));
+        verify(binaryDestroyedMessageSender, never()).sendMessage(any(Document.class));
     }
 
     @Test
@@ -269,6 +307,10 @@ public class DestroyObjectsCompletelyJobIT {
             assertTrue(e.getMessage().contains("Refusing to destroy object"));
         }
         assertTrue(repoObjFactory.objectExists(contentRoot.getUri()));
+
+        verify(indexingMessageSender, never()).sendIndexingOperation(anyString(),
+                any(PID.class), any(IndexingActionType.class));
+        verify(binaryDestroyedMessageSender, never()).sendMessage(any(Document.class));
     }
 
     @Test
@@ -283,7 +325,8 @@ public class DestroyObjectsCompletelyJobIT {
         folder2.addMember(work);
 
         FileObject file = addFileToWork(work);
-        File originalFile = new File(file.getOriginalFile().getContentUri());
+        BinaryObject originalObj = file.getOriginalFile();
+        File originalFile = new File(originalObj.getContentUri());
 
         treeIndexer.indexAll(baseAddress);
 
@@ -301,6 +344,16 @@ public class DestroyObjectsCompletelyJobIT {
         assertObjectRemoved(work);
         assertObjectRemoved(file);
         assertFalse(originalFile.exists());
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folder.getPid()), eq(DELETE_SOLR_TREE));
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(folder2.getPid()), eq(DELETE_SOLR_TREE));
+
+        verify(binaryDestroyedMessageSender, times(4)).sendMessage(docCaptor.capture());
+        List<Document> binMsgs = docCaptor.getAllValues();
+        assertMessagePresent(binMsgs, work.getPid(), ResourceType.Work, null);
+        assertMessagePresent(binMsgs, folder.getPid(), ResourceType.Folder, null);
+        assertMessagePresent(binMsgs, folder2.getPid(), ResourceType.Folder, null);
+        assertMessagePresent(binMsgs, originalObj.getPid(), ResourceType.File, "text/plain", originalFile);
     }
 
     @Test
@@ -322,6 +375,10 @@ public class DestroyObjectsCompletelyJobIT {
             // expected
         }
         assertTrue(repoObjFactory.objectExists(work.getUri()));
+
+        verify(indexingMessageSender, never()).sendIndexingOperation(anyString(),
+                any(PID.class), any(IndexingActionType.class));
+        verify(binaryDestroyedMessageSender, never()).sendMessage(any(Document.class));
     }
 
     private FileObject addFileToWork(WorkObject work) throws Exception {
@@ -345,5 +402,33 @@ public class DestroyObjectsCompletelyJobIT {
                 throw e;
             }
         }
+    }
+
+    private void assertMessagePresent(List<Document> returnedDocs, PID pid, ResourceType rescType,
+            String mimetype, File... contentFiles) {
+
+        for (Document returnedDoc : returnedDocs) {
+            Element root = returnedDoc.getRootElement();
+            Element info = root.getChild("objToDestroy", CDR_MESSAGE_NS);
+            String pidId = info.getChildTextTrim("pidId", CDR_MESSAGE_NS);
+            if (!pid.getQualifiedId().equals(pidId)) {
+                continue;
+            }
+
+            String msgObjType = info.getChildTextTrim("objType", CDR_MESSAGE_NS);
+            assertEquals(rescType.getUri(), msgObjType);
+            assertEquals(mimetype, info.getChildTextTrim("mimeType", CDR_MESSAGE_NS));
+
+            if (contentFiles != null) {
+                List<String> msgContentUris = info.getChildren("contentUri", CDR_MESSAGE_NS)
+                        .stream().map(Element::getTextTrim).collect(Collectors.toList());
+                List<String> expectedUris = Arrays.stream(contentFiles).map(f -> f.toURI().toString())
+                        .collect(Collectors.toList());
+                assertEquals(expectedUris.size(), msgContentUris.size());
+                assertTrue("Did not contain all expected URIS", msgContentUris.containsAll(expectedUris));
+            }
+            return;
+        }
+        fail("Destroy message not present for " + pid + " of type " + rescType);
     }
 }

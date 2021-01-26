@@ -32,6 +32,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.services.destroy.AbstractDestroyObjectsJob;
+import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsCompletelyJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -68,24 +70,38 @@ public class DestroyObjectsProcessor implements Processor {
         final Message in = exchange.getIn();
 
         DestroyObjectsRequest request = MAPPER.readValue((String) in.getBody());
-        DestroyObjectsJob job = createJob(request);
+        AbstractDestroyObjectsJob job = createJob(request);
         job.run();
     }
 
-    private DestroyObjectsJob createJob(DestroyObjectsRequest request) {
-        DestroyObjectsJob job = new DestroyObjectsJob(request);
-        job.setFcrepoClient(fcrepoClient);
-        job.setPathFactory(pathFactory);
-        job.setRepoObjFactory(repoObjFactory);
-        job.setRepoObjLoader(repoObjLoader);
-        job.setTransactionManager(txManager);
-        job.setAclService(aclService);
-        job.setInheritedAclFactory(inheritedAclFactory);
-        job.setBinaryTransferService(transferService);
-        job.setStorageLocationManager(locManager);
-        job.setIndexingMessageSender(indexingMessageSender);
-        job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
-        return job;
+    private AbstractDestroyObjectsJob createJob(DestroyObjectsRequest request) {
+        if (request.isDestroyCompletely()) {
+            DestroyObjectsCompletelyJob job = new DestroyObjectsCompletelyJob(request);
+            job.setFcrepoClient(fcrepoClient);
+            job.setRepoObjFactory(repoObjFactory);
+            job.setRepoObjLoader(repoObjLoader);
+            job.setTransactionManager(txManager);
+            job.setAclService(aclService);
+            job.setBinaryTransferService(transferService);
+            job.setStorageLocationManager(locManager);
+            job.setIndexingMessageSender(indexingMessageSender);
+            job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+            return job;
+        } else {
+            DestroyObjectsJob job = new DestroyObjectsJob(request);
+            job.setFcrepoClient(fcrepoClient);
+            job.setPathFactory(pathFactory);
+            job.setRepoObjFactory(repoObjFactory);
+            job.setRepoObjLoader(repoObjLoader);
+            job.setTransactionManager(txManager);
+            job.setAclService(aclService);
+            job.setInheritedAclFactory(inheritedAclFactory);
+            job.setBinaryTransferService(transferService);
+            job.setStorageLocationManager(locManager);
+            job.setIndexingMessageSender(indexingMessageSender);
+            job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+            return job;
+        }
     }
 
     public void setAclService(AccessControlService aclService) {

@@ -22,6 +22,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_LOCATION;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -93,14 +94,16 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
             }
         }
 
-        addBinariesForCleanup(rootOfTree.getModel());
+        List<URI> binaryUris = new ArrayList<>();
+        addBinariesForCleanup(rootOfTree.getModel(), binaryUris);
+        cleanupBinaryUris.addAll(binaryUris);
 
-        sendDestroyDerivativesMsg(rootOfTree);
+        sendBinariesDestroyedMsg(rootOfTree, binaryUris);
 
         purgeObject(rootOfTree.getPid().getRepositoryPath());
     }
 
-    private void addBinariesForCleanup(Model model) {
+    private void addBinariesForCleanup(Model model, List<URI> uris) {
         NodeIterator iter = model.listObjectsOfProperty(Ldp.contains);
         while (iter.hasNext()) {
             RDFNode obj = iter.next();
@@ -110,7 +113,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
             try (FcrepoResponse resp = fcrepoClient.head(objUri).perform()) {
                 if (resp.hasType(BINARY_TYPE_URI)) {
                     String contentLoc = resp.getHeaderValue(CONTENT_LOCATION);
-                    cleanupBinaryUris.add(URI.create(contentLoc));
+                    uris.add(URI.create(contentLoc));
                     continue;
                 }
             } catch (IOException e) {
@@ -125,7 +128,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
 
                 Model childModel = ModelFactory.createDefaultModel();
                 childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
-                addBinariesForCleanup(childModel);
+                addBinariesForCleanup(childModel, uris);
             } catch (IOException e) {
                 throw new FedoraException("Failed to read model for " + objUri, e);
             } catch (FcrepoOperationFailedException e) {

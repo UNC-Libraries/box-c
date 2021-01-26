@@ -22,7 +22,9 @@ import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.is
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
@@ -142,12 +144,13 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
         Resource rootResc = rootOfTree.getResource();
         Model rootModel = rootResc.getModel();
+        List<URI> binaryUris = null;
         if (rootOfTree instanceof FileObject) {
             FileObject fileObj = (FileObject) rootOfTree;
-            destroyFile(fileObj, rootResc);
+            binaryUris = destroyFile(fileObj, rootResc);
         }
 
-        sendDestroyDerivativesMsg(rootOfTree);
+        sendBinariesDestroyedMsg(rootOfTree, binaryUris);
 
         boolean hasLdpContains = rootModel.contains(rootResc, Ldp.contains);
         if (hasLdpContains) {
@@ -180,12 +183,15 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         return stoneModel;
     }
 
-    private void destroyFile(FileObject fileObj, Resource resc) {
+    private List<URI> destroyFile(FileObject fileObj, Resource resc) {
         BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
-            cleanupBinaryUris.add(origFile.getContentUri());
+            URI uri = origFile.getContentUri();
+            cleanupBinaryUris.add(uri);
+            return Collections.singletonList(uri);
         }
+        return null;
     }
 
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {

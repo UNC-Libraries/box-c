@@ -24,7 +24,7 @@
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:repository.solrupdate" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     

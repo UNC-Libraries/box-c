@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <context:annotation-config />
+    
+    <import resource="service-context.xml" />
+    
+    <bean name="aclPropertiesURI" class="java.lang.System"
+            factory-method="getProperty">
+        <constructor-arg index="0" value="acl.properties.uri" />
+    </bean>
+    
+    <bean id="aclProperties"
+        class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <ref bean="aclPropertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+    
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+        <constructor-arg ref="aclProperties" />
+    </bean>
+    
+    <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+    </bean>
+    
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>${jms.broker.uri}</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="destroyObjectsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.destroy.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="destroyObjectsService"
+        class="edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="jmsTemplate" ref="destroyObjectsJmsTemplate" />
+    </bean>
+</beans>

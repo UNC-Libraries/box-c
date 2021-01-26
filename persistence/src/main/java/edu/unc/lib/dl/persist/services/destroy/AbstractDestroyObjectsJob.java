@@ -53,6 +53,7 @@ import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.util.ResourceType;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * @author bbpennel
@@ -85,10 +86,9 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         this.cleanupBinaryUris = new ArrayList<>();
     }
 
-    protected void sendDestroyDerivativesMsg(RepositoryObject repoObj) {
+    protected void sendBinariesDestroyedMsg(RepositoryObject repoObj, List<URI> binaryUris) {
         Map<String, String> metadata = new HashMap<>();
         PID pid;
-        URI objUri;
 
         if (repoObj instanceof FileObject) {
             FileObject fileObj = (FileObject) repoObj;
@@ -96,15 +96,13 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
             String mimetype = binaryObj.getMimetype();
             metadata.put("mimeType", mimetype);
             pid = binaryObj.getPid();
-            objUri = fileObj.getOriginalFile().getContentUri();
         } else {
             pid = repoObj.getPid();
-            objUri = repoObj.getUri();
         }
 
         setCommonMetadata(metadata, repoObj, pid);
 
-        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), objUri, metadata);
+        Document destroyMsg = makeDestroyOperationBody(agent.getUsername(), binaryUris, metadata);
         binaryDestroyedMessageSender.sendMessage(destroyMsg);
     }
 
@@ -148,7 +146,7 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
             throw new ServiceException("Unable to clean up child object " + objUri, e);
         }
 
-        URI tombstoneUri = URI.create(objUri + "/" + FCR_TOMBSTONE);
+        URI tombstoneUri = URI.create(URIUtil.join(objUri, FCR_TOMBSTONE));
         try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
         } catch (FcrepoOperationFailedException | IOException e) {
             throw new ServiceException("Unable to clean up child tombstone object " + objUri, e);
