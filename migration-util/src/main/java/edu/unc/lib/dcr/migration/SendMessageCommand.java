@@ -35,6 +35,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -86,6 +87,11 @@ public class SendMessageCommand {
             defaultValue = "false",
             description = "If provided, will send messages for primary objects of Works")
     private boolean followPrimary;
+
+    @Option(names = {"--skip-missing"},
+            defaultValue = "false",
+            description = "If provided, ignore ids which do not exist")
+    private boolean skipMissing;
 
     private JmsTemplate jmsTemplate;
 
@@ -150,7 +156,14 @@ public class SendMessageCommand {
         List<URI> rdfTypes;
         try (FcrepoResponse resp = fcrepoClient.head(pid.getRepositoryUri()).perform()) {
             rdfTypes = resp.getLinkHeaders(TYPE_REL);
-        } catch (IOException | FcrepoOperationFailedException e) {
+        } catch (IOException e) {
+            throw new RepositoryException(e);
+        } catch (FcrepoOperationFailedException e) {
+            if (skipMissing && (HttpStatus.SC_NOT_FOUND == e.getStatusCode() ||
+                    HttpStatus.SC_GONE == e.getStatusCode())) {
+                output.warn("Skipping id {}, resource not found", id);
+                return;
+            }
             throw new RepositoryException(e);
         }
         boolean isBinary = rdfTypes.contains(BINARY_TYPE_URI);

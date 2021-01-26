@@ -45,6 +45,7 @@ import picocli.CommandLine.Option;
         VerifyPremisLogsCommand.class,
         CleanupDepositsCommand.class,
         SendMessageCommand.class,
+        SendSolrMessageCommand.class,
         RequeueDLQCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
