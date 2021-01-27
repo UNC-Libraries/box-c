@@ -42,7 +42,8 @@ public class DestroyObjectsMessageHelpers {
      * @param metadata metadata for object removed
      * @return id of operation message
      */
-    public static Document makeDestroyOperationBody(String userid, List<URI> contentUris, Map<String, String> metadata) {
+    public static Document makeDestroyOperationBody(String userid, List<URI> contentUris,
+            Map<String, String> metadata) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
 
