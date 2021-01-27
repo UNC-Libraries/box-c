@@ -84,7 +84,9 @@ public class DestroyedMsgProcessor implements Processor {
 
         if (mimeType == null) {
             mimeType = "";
-            log.info("No mimeType given for {} of object type {}", pidId, objType);
+            if (objType.equals(Cdr.FileObject.getURI())) {
+                log.warn("No mimeType given for {} of object type {}", pidId, objType);
+            }
         }
 
         in.setHeader(CdrBinaryMimeType, mimeType);

@@ -24,7 +24,7 @@
     
     <bean id="fedoraJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="fedora" />
+        <property name="defaultDestinationName" value="${fcrepo.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
 </beans>

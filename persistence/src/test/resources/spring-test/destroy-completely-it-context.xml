@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="validate" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+    </bean>
+    
+    <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
+        <property name="aclService" ref="aclService" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+    </bean>
+</beans>

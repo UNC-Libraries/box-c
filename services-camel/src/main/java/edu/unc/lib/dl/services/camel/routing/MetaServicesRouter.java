@@ -15,10 +15,17 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import org.apache.camel.BeanInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Processor;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.http.HttpStatus;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.slf4j.Logger;
 
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 
@@ -29,6 +36,8 @@ import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
  *
  */
 public class MetaServicesRouter extends RouteBuilder {
+    private static final Logger log = getLogger(MetaServicesRouter.class);
+
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
@@ -47,7 +56,25 @@ public class MetaServicesRouter extends RouteBuilder {
             .routeId("CdrMetaServicesRouter")
             .startupOrder(9)
             .filter().method(FedoraIdFilters.class, "allowedForTripleIndex")
-            .to("direct-vm:index.start")
+            .doTry()
+                .to("direct-vm:index.start")
+            .endDoTry()
+            .doCatch(FcrepoOperationFailedException.class)
+                .process(new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        FcrepoOperationFailedException ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT,
+                                FcrepoOperationFailedException.class);
+                        if (ex.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                            log.warn("Ignoring exception {} for {}", ex.getStatusText(),
+                                    exchange.getIn().getHeader("org.fcrepo.jms.identifier"));
+                            exchange.setProperty(Exchange.ROUTE_STOP, Boolean.TRUE);
+                        } else {
+                            throw ex;
+                        }
+                    }
+                })
+            .end()
             .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
                 .wireTap("direct-vm:filter.longleaf")
             .end().end() // ending the filter and the wiretap

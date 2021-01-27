@@ -32,6 +32,7 @@ public class DestroyObjectsRequest {
     private String[] ids;
     private String username;
     private AccessGroupSet principals;
+    private boolean completely;
 
     public DestroyObjectsRequest() {
     }
@@ -78,5 +79,13 @@ public class DestroyObjectsRequest {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public boolean isDestroyCompletely() {
+        return completely;
+    }
+
+    public void setDestroyCompletely(boolean completely) {
+        this.completely = completely;
     }
 }

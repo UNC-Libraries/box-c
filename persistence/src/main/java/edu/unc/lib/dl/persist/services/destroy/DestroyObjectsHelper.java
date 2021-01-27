@@ -20,11 +20,13 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 
 /**
@@ -52,6 +54,8 @@ public class DestroyObjectsHelper {
         if (repoObj instanceof AdminUnit) {
             aclService.assertHasAccess("User does not have permission to destroy admin unit", repoObj.getPid(),
                     agent.getPrincipals(), Permission.destroyUnit);
+        } else if (repoObj instanceof ContentRootObject) {
+            throw new AccessRestrictionException("Cannot destroy content root object");
         } else {
             aclService.assertHasAccess("User does not have permission to destroy this object", repoObj.getPid(),
                     agent.getPrincipals(), Permission.destroy);

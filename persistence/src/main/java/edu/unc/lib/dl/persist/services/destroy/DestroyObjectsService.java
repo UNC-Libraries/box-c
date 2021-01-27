@@ -44,15 +44,20 @@ public class DestroyObjectsService extends MessageSender {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
 
+    public String destroyObjects(AgentPrincipals agent, String... ids) {
+        return destroyObjects(agent, false, ids);
+    }
+
     /**
      * Checks whether the active user has permissions to destroy the listed objects,
      * and then kicks off a job to destroy the permitted ones asynchronously
      *
      * @param agent security principals of the agent making request
+     * @param completely if true, the objects will be completely cleaned up
      * @param ids list of objects to destroy
      * @return the id of the destroy job created
      */
-    public String destroyObjects(AgentPrincipals agent, String... ids) {
+    public String destroyObjects(AgentPrincipals agent, boolean completely, String... ids) {
         if (ids.length == 0) {
             throw new IllegalArgumentException("Must provide ids for one or more objects to destroy");
         }
@@ -64,6 +69,7 @@ public class DestroyObjectsService extends MessageSender {
         }
         String jobId = UUID.randomUUID().toString();
         DestroyObjectsRequest request = new DestroyObjectsRequest(jobId, agent, ids);
+        request.setDestroyCompletely(completely);
         sendMessage(serializeDestroyRequest(request));
 
         log.info("Destroy job for {} objects started by {}", ids.length, agent.getUsernameUri());

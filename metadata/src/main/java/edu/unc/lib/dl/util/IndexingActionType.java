@@ -37,10 +37,8 @@ public enum IndexingActionType {
     RECURSIVE_REINDEX("In-place Reindex",
             "Performs a recursive reindex of this object and all its children "
             + "Updates this pid based off the originating structure, then cleans up any stale records."),
-    RECURSIVE_DELETE("Delete Path from Index",
-            "Recursively deletes from the index an object and all of its children, based on the original structure"),
     DELETE_SOLR_TREE("Delete Tree from Index",
-            "Deletes an object and all children that contained the object in their collection path"),
+            "Deletes an object and all children that contained by it based on ancestorPath"),
     CLEAN_REINDEX("Clean Reindex", "Cleans out the path starting at the object specified and then reindexes it"),
     DELETE_CHILDREN_PRIOR_TO_TIMESTAMP("Cleanup Outdated Records",
             "Deletes the trees of all children of the starting node"
