@@ -681,6 +681,9 @@ p.no-search-results {
   line-height: 22px;
   margin-left: 25px;
 }
+.browse-header .read-more {
+  margin-left: 155px;
+}
 
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
@@ -700,6 +703,10 @@ p.no-search-results {
 }
 
 /* Full record page */
+.abstract-text {
+  margin-left: 5px;
+}
+
 .columns {
   width: 100%;
 }
@@ -1126,6 +1133,11 @@ table.dataTable tbody tr.odd {
     width: 100%;
   }
 }
+@media screen and (max-width: 1172px) {
+  .browse-header .read-more {
+    margin-left: 25px;
+  }
+}
 @media screen and (max-width: 1024px) {
   .bottomline {
     display: block;
@@ -1242,6 +1254,11 @@ table.dataTable tbody tr.odd {
   }
   .contentarea h2 .fa {
     display: none;
+  }
+
+  .content-wrap.full_record h2 {
+    display: inline-block;
+    margin-left: 20px;
   }
 
   .file_record .columns-resize .is-10 ul {
