@@ -121,6 +121,7 @@
             margin-top: 25px;
             max-width: 250px;
             overflow-wrap: break-word;
+            width: 95%;
         }
 
         .thumbnail + .record-title {
