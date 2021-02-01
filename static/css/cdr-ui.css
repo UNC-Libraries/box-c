@@ -703,6 +703,10 @@ p.no-search-results {
 }
 
 /* Full record page */
+.abstract-text {
+  margin-left: 5px;
+}
+
 .columns {
   width: 100%;
 }
@@ -1254,6 +1258,7 @@ table.dataTable tbody tr.odd {
 
   .content-wrap.full_record h2 {
     display: inline-block;
+    margin-left: 20px;
   }
 
   .file_record .columns-resize .is-10 ul {

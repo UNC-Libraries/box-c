@@ -322,8 +322,6 @@ p.no-search-results {
   }
 }
 
-
-
 .browse-header.browse-header-bottom {
   padding-bottom: 25px;
 }
@@ -345,6 +343,10 @@ p.no-search-results {
 }
 
 /* Full record page */
+.abstract-text {
+  margin-left: 5px;
+}
+
 .columns {
   width: 100%;
 }

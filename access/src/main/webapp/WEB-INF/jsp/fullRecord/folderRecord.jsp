@@ -73,9 +73,8 @@
                 <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 350)}"/>
                 <c:choose>
                     <c:when test="${fn:length(briefObject.abstractText) > 350}">
-                        <p id="truncated-abstract"><c:out value="${truncatedAbstract}"/>...</p>
-                        <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}"/></p>
-                        <p class="read-more"><a id="show-abstract" href="#">Read more</a></p>
+                        <p id="truncated-abstract"><c:out value="${truncatedAbstract}"/>... <a class="abstract-text" id="show-abstract" href="#">Read more</a></p>
+                        <p id="full-abstract" class="hidden"><c:out value="${briefObject.abstractText}"/> <a class="abstract-text" id="hide-abstract" href="#">Read less</a></p>
                     </c:when>
                     <c:otherwise>
                         <p><c:out value="${briefObject.abstractText}"/></p>
