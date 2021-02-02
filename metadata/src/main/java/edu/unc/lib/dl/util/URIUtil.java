@@ -66,7 +66,7 @@ public class URIUtil {
         int i = 0;
         for (String segment : segments) {
             i++;
-            if (segments[i - 1] == null) {
+            if (segments[i - 1] == null || segment.equals("")) {
                 continue;
             }
             if (segment.charAt(0) != '/' && pathBuilder.length() > 0) {
