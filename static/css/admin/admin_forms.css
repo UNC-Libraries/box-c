@@ -1,7 +1,7 @@
 .edit_form {
 	float: none;
 	font-size: 13px;
-	background-color: fff;
+	background-color: #fff;
 	font-family: Verdana,Arial,sans-serif;
 }
 
@@ -45,6 +45,11 @@
 	border: 1px solid #C8D8E0;
 	color: #666666;
 	padding: 2px;
+}
+
+.edit_form input[type="submit"] {
+	color: #eee;
+	padding: 3px;
 }
 
 .edit_form input[type="file"] {
@@ -239,13 +244,12 @@
 }
 
 .ui-dialog.template-form .ui-button {
-	margin: 0;
-	background: transparent linear-gradient(to bottom, rgb(114, 170, 195), rgb(62, 141, 176)) repeat scroll 0% 0%;
+	margin: 0 6px 0 0;
+	background: transparent linear-gradient(to bottom, rgb(114, 170, 195), rgb(62, 141, 176)) repeat scroll 0 0;
 	border: medium none #3E8DB0;
 	color: white;
 	padding: 4px 8px;
 	border-radius: 0;
-	margin-right: 6px;
 	font-size: 14px;
 }
 
@@ -293,7 +297,6 @@
 
 .selectable_multi li {
 	font-size: 14px;
-	text-decoration: line-through;
 	text-decoration: none;
 	padding: 5px 8px;
 	margin: 0;
