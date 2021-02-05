@@ -52,6 +52,10 @@ public class URIUtilTest {
         
         assertEquals("http://example.com/base/path/to/stuff",
                 URIUtil.join(URI.create("http://example.com/base"), "path", (String) null, "to", "stuff"));
+
+        assertEquals("http://example.com/base/path/to/stuff?sort=dateAdded%2Freverse,",
+                URIUtil.join(URI.create("http://example.com/base"), "path", "to",
+                        "stuff?sort=dateAdded%2Freverse,", ""));
     }
     
     
