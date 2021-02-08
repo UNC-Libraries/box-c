@@ -300,7 +300,7 @@ public class EnhancementRouterIT {
     public void testDepositManifestFileMetadata() throws Exception {
         DepositRecord recObj = repoObjectFactory.createDepositRecord(null);
         Path manifestPath = Files.createTempFile("manifest", ".txt");
-        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "text/plain");
+        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
 
         String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);

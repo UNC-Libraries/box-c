@@ -47,19 +47,6 @@ public class DepositRecord extends RepositoryObject {
     }
 
     /**
-     *  Adds the given file as a manifest for this deposit.
-     *
-     * @param manifestUri URI of the binary content for this manifest
-     * @param mimetype mimetype string of the manifest file
-     * @return BinaryObject representing the newly created manifest object
-     * @throws FedoraException
-     */
-    public BinaryObject addManifest(URI manifestUri, String mimetype)
-            throws FedoraException {
-        return addManifest(manifestUri, null, mimetype, null, null);
-    }
-
-    /**
      * Adds the given inputstream as the content of a manifest for this deposit.
      *
      * @param manifestUri URI of the binary content for this manifest
