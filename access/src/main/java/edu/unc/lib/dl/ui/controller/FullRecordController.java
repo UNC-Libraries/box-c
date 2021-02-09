@@ -74,7 +74,6 @@ import edu.unc.lib.dl.ui.view.XSLViewResolver;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/record")
 public class FullRecordController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
 
@@ -90,17 +89,22 @@ public class FullRecordController extends AbstractSolrSearchController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/record/{pid}", method = RequestMethod.GET)
     public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
         return getFullRecord(pid, model, request);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/record", method = RequestMethod.GET)
     public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
         return getFullRecord(id, model, request);
     }
 
-    @RequestMapping(value = "/{pid}/metadataView", method = RequestMethod.GET)
+    @RequestMapping(value = "/list/{pid}", method = RequestMethod.GET)
+    public String redirect(@PathVariable("pid") String pid) {
+        return "redirect:/record/{pid}";
+    }
+
+    @RequestMapping(value = "/record/{pid}/metadataView", method = RequestMethod.GET)
     @ResponseBody
     public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
                                           HttpServletResponse response) {
