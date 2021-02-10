@@ -95,7 +95,7 @@ public class DestroyDerivativesRouterIT {
     private String baseAddress;
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private TransactionManager txManager;

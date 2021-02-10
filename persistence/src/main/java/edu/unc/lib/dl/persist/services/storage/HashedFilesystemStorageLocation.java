@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 
 import java.net.URI;
+import java.util.List;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
@@ -115,6 +116,12 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
     public URI getCurrentStorageUri(PID pid) {
         String path = getBaseStoragePath(pid);
         return FileSystemTransferHelpers.getMostRecentStorageUri(URI.create(path));
+    }
+
+    @Override
+    public List<URI> getAllStorageUris(PID pid) {
+        String path = getBaseStoragePath(pid);
+        return FileSystemTransferHelpers.getAllStorageUris(URI.create(path));
     }
 
     @Override

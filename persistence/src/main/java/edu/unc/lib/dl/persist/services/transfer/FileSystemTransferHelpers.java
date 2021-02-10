@@ -25,9 +25,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -114,6 +117,27 @@ public class FileSystemTransferHelpers {
             return null;
         } catch (IOException e) {
             throw new BinaryTransferException("Failed to retrieve most recent URI for " + baseUri, e);
+        }
+    }
+
+    /**
+     * @param baseUri Base URI of the file, without version suffixes
+     * @return Stream of all binary URIs that share the given base URI, or an empty stream.
+     */
+    public static List<URI> getAllStorageUris(URI baseUri) {
+        Path basePath = Paths.get(baseUri);
+        Path dirPath = basePath.getParent();
+        String namePrefix = basePath.getFileName().toString();
+        try (Stream<Path> stream = Files.list(dirPath)) {
+            return stream
+                    .filter(path -> !Files.isDirectory(path))
+                    .filter(path -> path.getFileName().toString().startsWith(namePrefix))
+                    .map(path -> path.toFile().toURI().normalize())
+                    .collect(Collectors.toList());
+        } catch (NoSuchFileException | NoSuchElementException e) {
+            return Collections.emptyList();
+        } catch (IOException e) {
+            throw new BinaryTransferException("Failed to retrieve binary URIs for " + baseUri, e);
         }
     }
 

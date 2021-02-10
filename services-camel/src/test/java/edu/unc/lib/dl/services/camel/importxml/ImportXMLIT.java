@@ -88,7 +88,7 @@ public class ImportXMLIT {
 
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjectLoader;
 
     @Autowired

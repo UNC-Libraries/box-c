@@ -27,6 +27,8 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -172,6 +174,28 @@ public class HashedFilesystemStorageLocationTest {
         URI expectedUri = createNewStorageUri(pid);
 
         assertEquals(expectedUri, loc.getCurrentStorageUri(pid));
+    }
+
+    @Test
+    public void getAllStorageUrisExisting() throws Exception {
+        PID pid = PIDs.get(TEST_UUID);
+        List<URI> expected = Arrays.asList(
+                createNewStorageUri(pid),
+                createNewStorageUri(pid),
+                createNewStorageUri(pid),
+                createNewStorageUri(pid));
+
+        List<URI> uris = loc.getAllStorageUris(pid);
+        assertEquals(expected.size(), uris.size());
+        assertTrue(uris.containsAll(expected));
+    }
+
+    @Test
+    public void getAllStorageUrisNoneExisting() throws Exception {
+        PID pid = PIDs.get(TEST_UUID);
+
+        List<URI> uris = loc.getAllStorageUris(pid);
+        assertEquals(0, uris.size());
     }
 
     private URI createNewStorageUri(PID pid) throws IOException {

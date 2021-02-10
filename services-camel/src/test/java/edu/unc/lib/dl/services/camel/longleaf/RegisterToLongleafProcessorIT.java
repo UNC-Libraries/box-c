@@ -89,7 +89,7 @@ public class RegisterToLongleafProcessorIT {
     private String baseAddress;
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private RepositoryPIDMinter pidMinter;

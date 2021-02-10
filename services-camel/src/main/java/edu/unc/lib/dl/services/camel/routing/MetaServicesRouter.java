@@ -77,6 +77,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .end()
             .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
                 .wireTap("direct-vm:filter.longleaf")
+                .to("{{cdr.binaryCleanup.camel}}")
             .end().end() // ending the filter and the wiretap
             .filter().method(FedoraIdFilters.class, "allowedForEnhancements")
             .wireTap("direct:process.enhancement");

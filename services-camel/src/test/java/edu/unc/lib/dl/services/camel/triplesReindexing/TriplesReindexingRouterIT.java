@@ -96,7 +96,7 @@ public class TriplesReindexingRouterIT {
     @Autowired
     private String fusekiPort;
 
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;

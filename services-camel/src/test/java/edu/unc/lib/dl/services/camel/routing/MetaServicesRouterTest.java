@@ -24,6 +24,7 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,6 +85,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartContainer() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
@@ -99,6 +101,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartTimemap() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(0);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -115,6 +118,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartDatafs() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -131,6 +135,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartDepositRecord() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -147,6 +152,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartNotAPid() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -163,6 +169,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartCollections() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -179,13 +186,18 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartBinaryMetadata() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
         NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
-        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs/original_file/fcr:metadata",
-                Fcrepo4Repository.NonRdfSourceDescription.getURI()));
+        // fcr:metadata nodes come through as Binaries with an internal modeshape path as the identifier
+        Map<String, Object> eventMap = createEvent(CONTAINER_ID + "/datafs/original_file/fcr:metadata",
+                Fcrepo4Repository.Binary.getURI());
+        eventMap.put(IDENTIFIER, CONTAINER_ID + "/datafs/original_file/fedora:metadata");
+        template.sendBodyAndHeaders("", eventMap);
+
         notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
@@ -195,6 +207,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartOriginalBinary() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
@@ -211,6 +224,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     public void testRouteStartPremisBinary() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:binaryCleanup").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
 
         createContext(META_ROUTE);
@@ -298,6 +312,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static Map<String, Object> createEvent(final String identifier, final String... type) {
 
         final Map<String, Object> headers = new HashMap<>();
+        headers.put(FCREPO_URI, identifier);
         headers.put(EVENT_TYPE, EVENT_CREATE);
         headers.put(IDENTIFIER, identifier);
         headers.put(BASE_URL, baseUri);

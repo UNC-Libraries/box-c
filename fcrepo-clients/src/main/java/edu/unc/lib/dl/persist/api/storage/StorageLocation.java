@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.api.storage;
 
 import java.net.URI;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -69,6 +70,13 @@ public interface StorageLocation {
      * @return existing current storage URI for the given PID, or null it it does not exist
      */
     URI getCurrentStorageUri(PID pid);
+
+    /**
+     * Get a list containing all binary storage URIs for the resource with the given PID
+     * @param pid
+     * @return List of binary URIs
+     */
+    List<URI> getAllStorageUris(PID pid);
 
     /**
      * Returns true if the provided URI is a valid within this storage location.

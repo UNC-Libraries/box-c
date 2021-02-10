@@ -27,6 +27,7 @@
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
@@ -59,6 +60,12 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
+    </bean>
+    
+    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" value="0" />
+        <property name="cacheMaxSize" value="0" />
     </bean>
     
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
