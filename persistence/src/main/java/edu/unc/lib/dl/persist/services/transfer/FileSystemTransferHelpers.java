@@ -151,13 +151,20 @@ public class FileSystemTransferHelpers {
         if (Files.notExists(dirPath)) {
             return false;
         }
-        String filename = filePath.getFileName().toString();
-        String namePrefix = StringUtils.substringBefore(filename, ".");
+        String namePrefix = getBaseBinaryPath(filePath.getFileName());
         try (Stream<Path> stream = Files.list(dirPath)) {
             return stream.filter(path -> !Files.isDirectory(path))
                     .anyMatch(path -> path.getFileName().toString().startsWith(namePrefix));
         } catch (IOException e) {
             throw new BinaryTransferException("Failed to check for storage URI " + filePath, e);
         }
+    }
+
+    /**
+     * @param filePath
+     * @return the base form of the provided path, as a string
+     */
+    public static String getBaseBinaryPath(Path filePath) {
+        return StringUtils.substringBeforeLast(filePath.toString(), ".");
     }
 }

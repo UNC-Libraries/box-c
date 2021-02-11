@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +60,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -234,13 +236,15 @@ public class RegisterToLongleafProcessorIT {
         int algIndex = output.indexOf(alg + ":");
         assertNotEquals("Expected digest algorithm " + alg + " not found in manifest", -1, algIndex);
 
-        String expectedPath = Paths.get(storageUri).toString();
+        Path storagePath = Paths.get(storageUri);
+        String expectedBase = FileSystemTransferHelpers.getBaseBinaryPath(storagePath);
+        String expectedPath = storagePath.toString();
         for (int i = algIndex + 1; i < output.size(); i++) {
             String line = output.get(i);
             if (line.matches("\\S+:")) {
                 break;
             }
-            if (line.matches(expectedDigest + " +" + expectedPath)) {
+            if (line.matches(expectedDigest + " +" + expectedBase + " +" + expectedPath)) {
                 return;
             }
         }

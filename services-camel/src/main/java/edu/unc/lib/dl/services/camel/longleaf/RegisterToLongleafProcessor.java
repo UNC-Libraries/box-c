@@ -21,6 +21,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;
 
@@ -166,9 +168,13 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
             sb.append(digestGroup.getKey()).append(":\n");
 
             digestEntries.forEach(manifestEntry -> {
+                Path filePath = Paths.get(manifestEntry.storageUri);
+                String basePath = FileSystemTransferHelpers.getBaseBinaryPath(filePath);
                 sb.append(manifestEntry.digest)
                     .append(' ')
-                    .append(Paths.get(manifestEntry.storageUri).toString())
+                    .append(basePath)
+                    .append(' ')
+                    .append(filePath)
                     .append('\n');
                 cnt.increment();
             });
