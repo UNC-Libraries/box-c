@@ -75,6 +75,11 @@ public class SearchActionController extends AbstractSolrSearchController {
         return searchJsonRequest(request, facets, pid);
     }
 
+    @RequestMapping(value = "/list/{pid}", method = RequestMethod.GET)
+    public String listRedirect(@PathVariable("pid") String pid) {
+        return "redirect:/record/{pid}";
+    }
+
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request,
