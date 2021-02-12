@@ -35,6 +35,7 @@ import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
 /**
@@ -56,6 +57,7 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
     private StorageLocation storageLoc2;
     @Mock
     private StorageLocationManager storageLocationManager;
+    private BinaryTransferService bts;
 
     private PID binPid;
     private Path binDestPath;
@@ -75,12 +77,14 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getNewStorageUri(binPid)).thenReturn(binDestPath.toUri());
         when(storageLoc.getId()).thenReturn("loc1");
+
+        bts = new BinaryTransferServiceImpl();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void noDestination() throws Exception {
         try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
-                sourceManager, storageLocationManager)) {
+                sourceManager, storageLocationManager, bts)) {
             session.forDestination(null);
         }
     }
@@ -96,7 +100,7 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         Path sourceFile2 = createSourceFile("another.txt", "stuff");
 
         try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
-                sourceManager, storageLocationManager)) {
+                sourceManager, storageLocationManager, bts)) {
             BinaryTransferSession destSession = session.forDestination(storageLoc);
             BinaryTransferOutcome result1 = destSession.transfer(binPid, sourceFile.toUri());
             BinaryTransferOutcome result2 = destSession.transfer(binPid2, sourceFile2.toUri());
@@ -124,7 +128,7 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         Path sourceFile2 = createSourceFile("another.txt", "stuff");
 
         try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
-                sourceManager, storageLocationManager)) {
+                sourceManager, storageLocationManager, bts)) {
             BinaryTransferOutcome result1 = session
                     .forDestination(storageLoc).transfer(binPid, sourceFile.toUri());
             BinaryTransferOutcome result2 = session

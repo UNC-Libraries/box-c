@@ -54,6 +54,10 @@ public class FedoraTransaction {
         return rootTxThread.get() != null;
     }
 
+    public static FedoraTransaction getActiveTx() {
+        return rootTxThread.get();
+    }
+
     public URI getTxUri() {
         return txUri;
     }

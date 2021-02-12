@@ -58,9 +58,14 @@ public interface BinaryTransferService {
     void rollbackTransaction(URI txUri);
 
     /**
+     * Commits the binary transfers associated with the provided transaction
+     * @param txUri URI of the repository transaction committed
+     */
+    void commitTransaction(URI txUri);
+
+    /**
      * Register the outcome of a transfer
-     * @param txUri URI of the repository transaction the transfer was a part of, or null if not in one.
      * @param outcome results of the transfer
      */
-    void registerOutcome(URI txUri, BinaryTransferOutcome outcome);
+    BinaryTransferOutcome registerOutcome(BinaryTransferOutcome outcome);
 }

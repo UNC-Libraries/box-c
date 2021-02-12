@@ -33,6 +33,7 @@ import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.StreamTransferClient;
 
@@ -48,16 +49,19 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
     private StorageLocation storageLocation;
     private Map<String, BinaryTransferClient> clientCache;
     private StreamTransferClient streamClient;
+    private BinaryTransferService binaryTransferService;
 
     /**
      * Constructor for session for a single destination
      *
      * @param storageLocation
      */
-    public BinaryTransferSessionImpl(IngestSourceManager sourceManager, StorageLocation storageLocation) {
+    public BinaryTransferSessionImpl(IngestSourceManager sourceManager, StorageLocation storageLocation,
+            BinaryTransferService binaryTransferService) {
         notNull(storageLocation, "Must provide a storage location");
         this.sourceManager = sourceManager;
         this.storageLocation = storageLocation;
+        this.binaryTransferService = binaryTransferService;
     }
 
     @Override
@@ -74,21 +78,24 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
     public BinaryTransferOutcome transfer(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
-        return client.transfer(binPid, sourceFileUri);
+        return binaryTransferService.registerOutcome(
+                client.transfer(binPid, sourceFileUri));
     }
 
     @Override
     public BinaryTransferOutcome transferReplaceExisting(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
-        return client.transferReplaceExisting(binPid, sourceFileUri);
+        return binaryTransferService.registerOutcome(
+                client.transferReplaceExisting(binPid, sourceFileUri));
     }
 
     @Override
     public BinaryTransferOutcome transferVersion(PID binPid, URI sourceFileUri) {
         IngestSource source = sourceManager.getIngestSourceForUri(sourceFileUri);
         BinaryTransferClient client = getTransferClient(source);
-        return client.transferVersion(binPid, sourceFileUri);
+        return binaryTransferService.registerOutcome(
+                client.transferVersion(binPid, sourceFileUri));
     }
 
     private BinaryTransferClient getTransferClient(IngestSource source) {
@@ -117,17 +124,20 @@ public class BinaryTransferSessionImpl implements BinaryTransferSession {
 
     @Override
     public BinaryTransferOutcome transfer(PID binPid, InputStream sourceStream) {
-        return getStreamClient().transfer(binPid, sourceStream);
+        return binaryTransferService.registerOutcome(
+                getStreamClient().transfer(binPid, sourceStream));
     }
 
     @Override
     public BinaryTransferOutcome transferReplaceExisting(PID binPid, InputStream sourceStream) {
-        return getStreamClient().transferReplaceExisting(binPid, sourceStream);
+        return binaryTransferService.registerOutcome(
+                getStreamClient().transferReplaceExisting(binPid, sourceStream));
     }
 
     @Override
     public BinaryTransferOutcome transferVersion(PID binPid, InputStream sourceStream) {
-        return getStreamClient().transferVersion(binPid, sourceStream);
+        return binaryTransferService.registerOutcome(
+                getStreamClient().transferVersion(binPid, sourceStream));
     }
 
     private StreamTransferClient getStreamClient() {

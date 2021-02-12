@@ -75,6 +75,7 @@ public class TransactionManager {
             binaryTransferService.rollbackTransaction(txUri);
             throw new FedoraException("Unable to commit transaction", e);
         }
+        binaryTransferService.commitTransaction(txUri);
     }
 
     protected void keepTransactionAlive(URI txUri) {

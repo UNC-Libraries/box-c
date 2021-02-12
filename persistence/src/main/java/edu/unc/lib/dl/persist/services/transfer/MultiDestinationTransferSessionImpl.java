@@ -24,6 +24,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 
@@ -38,6 +39,7 @@ public class MultiDestinationTransferSessionImpl implements MultiDestinationTran
     private StorageLocationManager storageLocationManager;
     private IngestSourceManager sourceManager;
     private Map<String, BinaryTransferSession> sessionMap;
+    private BinaryTransferService binaryTransferService;
 
     /**
      *
@@ -45,10 +47,11 @@ public class MultiDestinationTransferSessionImpl implements MultiDestinationTran
      * @param storageLocationManager
      */
     public MultiDestinationTransferSessionImpl(IngestSourceManager sourceManager,
-            StorageLocationManager storageLocationManager) {
+            StorageLocationManager storageLocationManager, BinaryTransferService binaryTransferService) {
         sessionMap = new HashMap<>();
         this.sourceManager = sourceManager;
         this.storageLocationManager = storageLocationManager;
+        this.binaryTransferService = binaryTransferService;
     }
 
     @Override
@@ -61,7 +64,7 @@ public class MultiDestinationTransferSessionImpl implements MultiDestinationTran
         notNull(dest, "Must provide a destination location");
         BinaryTransferSession session = sessionMap.get(dest.getId());
         if (session == null) {
-            session = new BinaryTransferSessionImpl(sourceManager, dest);
+            session = new BinaryTransferSessionImpl(sourceManager, dest, binaryTransferService);
             sessionMap.put(dest.getId(), session);
         }
         return session;

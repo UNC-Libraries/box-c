@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -55,12 +56,12 @@ public class BinaryTransferServiceImpl implements BinaryTransferService {
 
     @Override
     public MultiDestinationTransferSession getSession() {
-        return new MultiDestinationTransferSessionImpl(sourceManager, storageLocationManager);
+        return new MultiDestinationTransferSessionImpl(sourceManager, storageLocationManager, this);
     }
 
     @Override
     public BinaryTransferSession getSession(StorageLocation destination) {
-        return new BinaryTransferSessionImpl(sourceManager, destination);
+        return new BinaryTransferSessionImpl(sourceManager, destination, this);
     }
 
     @Override
@@ -93,13 +94,20 @@ public class BinaryTransferServiceImpl implements BinaryTransferService {
     }
 
     @Override
-    public void registerOutcome(URI txUri, BinaryTransferOutcome outcome) {
-        if (txUri == null) {
-            return;
+    public void commitTransaction(URI txUri) {
+        txTransferCache.remove(txUri.toString());
+    }
+
+    @Override
+    public BinaryTransferOutcome registerOutcome(BinaryTransferOutcome outcome) {
+        FedoraTransaction tx = FedoraTransaction.getActiveTx();
+        if (tx == null) {
+            return outcome;
         }
-        String txId = txUri.toString();
+        String txId = tx.getTxUri().toString();
         txTransferCache.computeIfAbsent(txId, k -> new ConcurrentLinkedQueue<TransferCacheEntry>())
                 .add(new TransferCacheEntry(outcome));
+        return outcome;
     }
 
     /**
