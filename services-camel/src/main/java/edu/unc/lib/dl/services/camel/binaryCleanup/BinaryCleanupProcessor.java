@@ -15,24 +15,25 @@
  */
 package edu.unc.lib.dl.services.camel.binaryCleanup;
 
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 
 /**
  * Processor which cleans up old binaries leftover from transfers
@@ -44,28 +45,40 @@ public class BinaryCleanupProcessor implements Processor {
 
     private StorageLocationManager storageLocationManager;
     private BinaryTransferService binaryTransferService;
-    private RepositoryObjectLoader repositoryObjectLoaderNoCache;
 
+    @SuppressWarnings("unchecked")
     @Override
     public void process(Exchange exchange) throws Exception {
-        String fcrepoUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+        Message aggrMsg = exchange.getIn();
+        Map<String, String> messages = aggrMsg.getBody(Map.class);
+        try (MultiDestinationTransferSession mSession = binaryTransferService.getSession()) {
+            for (Entry<String, String> entry : messages.entrySet()) {
+                try {
+                    cleanupForBinary(entry.getKey(), entry.getValue(), mSession);
+                } catch (Exception e) {
+                    log.error("Failed to cleanup old binaries for {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void cleanupForBinary(String fcrepoUri, String contentUriString,
+            MultiDestinationTransferSession mSession) {
+        URI contentUri = URI.create(contentUriString);
         PID dsPid = PIDs.get(fcrepoUri);
-        BinaryObject binObj = repositoryObjectLoaderNoCache.getBinaryObject(dsPid);
-        URI currentContentUri = binObj.getContentUri();
-        String currentContentString = currentContentUri.toString();
         log.debug("Performing cleanup of out of date binaries for {}, retaining current: {}",
-                fcrepoUri, currentContentString);
-        StorageLocation storageLoc = storageLocationManager.getStorageLocation(binObj);
-        // Delete all content files which are older than the current content file
+                fcrepoUri, contentUriString);
+        StorageLocation storageLoc = storageLocationManager.getStorageLocationForUri(contentUri);
+
         try (BinaryTransferSession session = binaryTransferService.getSession(storageLoc)) {
             List<URI> uris = storageLoc.getAllStorageUris(dsPid);
-            if (!uris.contains(currentContentUri)) {
+            if (!uris.contains(contentUri)) {
                 log.error("Expected binary {} to have head content file {}, but file was not found",
-                        dsPid, currentContentString);
+                        dsPid, contentUriString);
                 return;
             }
             uris.stream()
-                .filter(storageUri -> storageUri.toString().compareTo(currentContentString) < 0)
+                .filter(storageUri -> storageUri.toString().compareTo(contentUriString) < 0)
                 .forEach(storageUri -> {
                     log.debug("Cleaning up out of date binary URI {}", storageUri);
                     session.delete(storageUri);
@@ -79,9 +92,5 @@ public class BinaryCleanupProcessor implements Processor {
 
     public void setBinaryTransferService(BinaryTransferService binaryTransferService) {
         this.binaryTransferService = binaryTransferService;
-    }
-
-    public void setRepositoryObjectLoaderNoCache(RepositoryObjectLoader repositoryObjectLoader) {
-        this.repositoryObjectLoaderNoCache = repositoryObjectLoader;
     }
 }

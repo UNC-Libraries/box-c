@@ -403,9 +403,10 @@
     </bean>
     
     <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
+        <property name="registrationSuccessfulEndpoint" value="${cdr.registration.successful.dest}" />
     </bean>
     
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -433,7 +434,6 @@
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
-        <property name="repositoryObjectLoaderNoCache" ref="repositoryObjectLoaderNoCache" />
     </bean>
 
     <!-- Camel contexts -->

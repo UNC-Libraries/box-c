@@ -86,6 +86,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @EndpointInject(uri = "mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;
 
+    @EndpointInject(uri = "mock:direct:registrationSuccessful")
+    private MockEndpoint mockSuccess;
+
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
     @Autowired
@@ -123,6 +126,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void registerSingleFileWithSha1() throws Exception {
         mockDlq.expectedMessageCount(0);
+        mockSuccess.expectedMessageCount(1);
 
         FileObject fileObj = repoObjFactory.createFileObject(null);
         BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
@@ -138,6 +142,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
+        mockSuccess.assertIsSatisfied(1000);
 
         assertSubmittedPaths(2000, contentUri.toString());
     }
@@ -145,6 +150,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void registerBinaryNotFound() throws Exception {
         mockDlq.expectedMessageCount(0);
+        mockSuccess.expectedMessageCount(0);
 
         FileObject fileObj = repoObjFactory.createFileObject(null);
         PID binPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
@@ -159,6 +165,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
+        mockSuccess.assertIsSatisfied();
 
         assertNoSubmittedPaths();
     }
@@ -166,6 +173,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void registerExecuteFails() throws Exception {
         mockDlq.expectedMessageCount(1);
+        mockSuccess.expectedMessageCount(0);
 
         FileUtils.writeStringToFile(new File(longleafScript), "exit 1", UTF_8);
 
@@ -182,6 +190,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
+        mockSuccess.assertIsSatisfied();
 
         assertNoSubmittedPaths();
     }
@@ -190,6 +199,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void registerPartiallySucceeds() throws Exception {
         mockDlq.expectedMessageCount(1);
+        mockSuccess.expectedMessageCount(1);
 
         FileObject fileObj1 = repoObjFactory.createFileObject(null);
         BinaryObject origBin1 = createOriginalBinary(fileObj1, TEXT1_BODY, TEXT1_SHA1, null);
@@ -217,6 +227,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         assertSubmittedPaths(2000, contentUri1.toString(), contentUri2.toString());
 
+        mockSuccess.assertIsSatisfied(1000);
         mockDlq.assertIsSatisfied(1000);
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
 
@@ -232,6 +243,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void registerCommandError() throws Exception {
         mockDlq.expectedMessageCount(1);
+        mockSuccess.expectedMessageCount(0);
 
         FileUtils.writeStringToFile(new File(longleafScript),
                 "\necho 'ERROR: \"longleaf register\" was called with arguments [\"--ohno\"]'",
@@ -250,6 +262,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
+        mockSuccess.assertIsSatisfied();
 
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
         assertEquals(1, dlqExchanges.size());

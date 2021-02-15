@@ -24,10 +24,12 @@
         <property name="location" value="classpath:binary-cleanup-it-config.properties"/>
     </bean>
     
+    <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
+    </bean>
+    
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
-        <property name="repositoryObjectLoaderNoCache" ref="repositoryObjectLoaderNoCache" />
     </bean>
 
     <!-- Force the camel context to shutdown before activemq broker -->

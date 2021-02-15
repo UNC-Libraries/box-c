@@ -30,8 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
@@ -259,6 +261,10 @@ public class RegisterToLongleafProcessorIT {
     private Exchange createBatchExchange(RepositoryObject... objects) {
         Exchange exchange = mock(Exchange.class);
         Message msg = mock(Message.class);
+        CamelContext context = mock(CamelContext.class);
+        when(exchange.getContext()).thenReturn(context);
+        ProducerTemplate template = mock(ProducerTemplate.class);
+        when(context.createProducerTemplate()).thenReturn(template);
         when(exchange.getIn()).thenReturn(msg);
         when(msg.getBody(List.class)).thenReturn(Arrays.stream(objects)
                 .map(ro -> ro.getPid().getRepositoryPath())

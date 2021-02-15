@@ -30,6 +30,7 @@
     <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="registrationSuccessfulEndpoint" value="mock:direct:registrationSuccessful" />
     </bean>
     
     <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">

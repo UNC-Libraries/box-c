@@ -15,11 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.binaryCleanup;
 
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,18 +23,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,25 +38,25 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.google.common.collect.ImmutableMap;
+
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -86,6 +77,8 @@ public class BinaryCleanupRouterIT {
     @Autowired
     private RepositoryInitializer repositoryInitializer;
     @Autowired
+    private RepositoryPIDMinter pidMinter;
+    @Autowired
     private RepositoryObjectFactory repoObjectFactory;
     @javax.annotation.Resource(name = "repositoryObjectLoaderNoCache")
     private RepositoryObjectLoader repoObjectLoader;
@@ -94,7 +87,7 @@ public class BinaryCleanupRouterIT {
     @Autowired
     private TransactionManager txManager;
 
-    @Produce(uri = "{{cdr.binaryCleanup.camel}}")
+    @Produce(uri = "{{cdr.registration.successful.dest}}")
     private ProducerTemplate template;
 
     @Autowired
@@ -121,15 +114,15 @@ public class BinaryCleanupRouterIT {
     }
 
     @Test
-    public void nonBinaryObjectTest() throws Exception {
-        FolderObject folder = repoObjectFactory.createFolderObject(null);
+    public void noBinariesTest() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+        PID dsPid = DatastreamPids.getMdDescriptivePid(pid);
 
         NotifyBuilder notify = new NotifyBuilder(cdrBinaryCleanup)
                 .whenCompleted(1)
                 .create();
 
-        Map<String, Object> headers = createEvent(folder.getPid(), Cdr.Folder);
-        template.sendBodyAndHeaders("", headers);
+        template.sendBody(ImmutableMap.of(dsPid.getRepositoryPath(), "file:///path/to/something.txt"));
 
         assertTrue("Route not satisfied", notify.matches(5l, TimeUnit.SECONDS));
     }
@@ -144,15 +137,16 @@ public class BinaryCleanupRouterIT {
 
         PID mdEventsPid = DatastreamPids.getMdEventsPid(folder.getPid());
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
-        File headContentFile = new File(mdEventsObj.getContentUri());
+        URI mdEventsUri = mdEventsObj.getContentUri();
+        File headContentFile = new File(mdEventsUri);
         assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
-
-        Map<String, Object> headers = createEvent(mdEventsPid, Fcrepo4Repository.Binary);
-        template.sendBodyAndHeaders("", headers);
 
         NotifyBuilder notify = new NotifyBuilder(cdrBinaryCleanup)
                 .whenCompleted(1)
                 .create();
+
+        template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), mdEventsUri.toString()));
+
         assertTrue("Route not satisfied", notify.matches(5l, TimeUnit.SECONDS));
 
         assertTrue("Binary must exist after cleanup", headContentFile.exists());
@@ -185,12 +179,12 @@ public class BinaryCleanupRouterIT {
         List<URI> startingUris = storageLoc.getAllStorageUris(mdEventsPid);
         assertEquals(3, startingUris.size());
 
-        Map<String, Object> headers = createEvent(mdEventsPid, Fcrepo4Repository.Binary);
-        template.sendBodyAndHeaders("", headers);
-
         NotifyBuilder notify1 = new NotifyBuilder(cdrBinaryCleanup)
                 .whenCompleted(1)
                 .create();
+
+        template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), headContentUri.toString()));
+
         assertTrue("Route not satisfied", notify1.matches(5l, TimeUnit.SECONDS));
 
         assertTrue("Head binary must exist after cleanup", headContentFile.exists());
@@ -226,12 +220,12 @@ public class BinaryCleanupRouterIT {
             List<URI> startingUris = storageLoc.getAllStorageUris(mdEventsPid);
             assertEquals(2, startingUris.size());
 
-            Map<String, Object> headers = createEvent(mdEventsPid, Fcrepo4Repository.Binary);
-            template.sendBodyAndHeaders("", headers);
-
             NotifyBuilder notify1 = new NotifyBuilder(cdrBinaryCleanup)
                     .whenCompleted(1)
                     .create();
+
+            template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), headContentUri.toString()));
+
             assertTrue("Route not satisfied", notify1.matches(5l, TimeUnit.SECONDS));
 
             // Both the head version and the uncommitted tx version should exist
@@ -252,8 +246,7 @@ public class BinaryCleanupRouterIT {
                 .whenCompleted(1)
                 .create();
 
-        Map<String, Object> headers = createEvent(mdEventsPid, Fcrepo4Repository.Binary);
-        template.sendBodyAndHeaders("", headers);
+        template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), afterContentUri.toString()));
 
         assertTrue("Route not satisfied", notify2.matches(5l, TimeUnit.SECONDS));
 
@@ -262,15 +255,5 @@ public class BinaryCleanupRouterIT {
         assertEquals(1, afterUris.size());
         assertTrue(afterUris.contains(afterContentUri));
         assertTrue(afterUris.stream().allMatch(uri -> new File(uri).exists()));
-    }
-
-    private Map<String, Object> createEvent(PID pid, Resource... types) {
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(IDENTIFIER, pid.getRepositoryPath());
-        headers.put(EVENT_TYPE, FcrepoJmsConstants.EVENT_MODIFY);
-        headers.put(FCREPO_URI, pid.getRepositoryPath());
-        headers.put(RESOURCE_TYPE, Arrays.stream(types).map(Resource::getURI).collect(Collectors.joining(",")));
-
-        return headers;
     }
 }

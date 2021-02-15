@@ -107,8 +107,10 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
 
     @Override
     public URI getNewStorageUri(PID pid) {
-        String path = getBaseStoragePath(pid);
-        path += "." + System.nanoTime();
+        String base = getBaseStoragePath(pid);
+        // Add timestamp to base path, combining wall time millisecond with relative nanotime
+        long nano = System.nanoTime() % 1000000;
+        String path = base + "." + System.currentTimeMillis() + Long.toString(nano);
         return URI.create(path).normalize();
     }
 

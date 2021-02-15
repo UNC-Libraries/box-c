@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.binaryCleanup;
 
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static org.slf4j.LoggerFactory.getLogger;
 
-import org.apache.camel.PropertyInject;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -27,20 +27,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author bbpennel
  */
 public class BinaryCleanupRouter extends RouteBuilder {
-    @PropertyInject(value = "cdr.binaryCleanup.delay")
-    private Long cleanup_delay;
-
+    private final Logger log = getLogger(BinaryCleanupRouter.class);
     @Autowired
     private BinaryCleanupProcessor binaryCleanupProcessor;
 
     @Override
     public void configure() throws Exception {
-        // Queue which interprets fedora messages into enhancement requests
-        from("{{cdr.binaryCleanup.camel}}")
-            .routeId("CleanupOldBinaryCopies")
-            .startupOrder(120)
-            .filter(simple("${headers[" + RESOURCE_TYPE + "]} contains '" + Binary.getURI() + "'"))
-            .delay(cleanup_delay)
+        from("{{cdr.registration.successful.dest}}")
+            .routeId("CleanupOldBinaryBatch")
+            .log(LoggingLevel.DEBUG, log, "Cleaning up old binaries")
+            .startupOrder(119)
             .process(binaryCleanupProcessor);
     }
 }
