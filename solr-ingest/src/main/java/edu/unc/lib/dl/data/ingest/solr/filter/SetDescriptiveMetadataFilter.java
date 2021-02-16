@@ -85,15 +85,12 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractIdentifiers(mods, idb);
             this.extractCitation(mods, idb);
             this.extractKeywords(mods, idb);
-
-        } else {
-            // TODO basic DC mappings
         }
 
-        if (dip.getDocument().getTitle() == null) {
+        if (idb.getTitle() == null) {
             idb.setTitle(getAlternativeTitle(dip));
         }
-        if (dip.getDocument().getDateCreated() == null) {
+        if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
         }
         idb.getKeyword().add(dip.getPid().getId());
@@ -124,11 +121,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractTitles(Element mods, IndexDocumentBean idb) {
-        List<?> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
         String mainTitle = null;
         List<String> otherTitles = new ArrayList<>();
-        for (Object titleInfoObj : titles) {
-            Element titleInfoEl = (Element) titleInfoObj;
+        for (Element titleInfoEl : titles) {
             for (Object titleObj : titleInfoEl.getChildren()) {
                 Element titleEl = (Element) titleObj;
                 if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName())) {
@@ -151,20 +147,18 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
-        List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
 
-        Element nameEl;
-        for (Object nameObj : names) {
-            nameEl = (Element) nameObj;
+        for (Element nameEl : names) {
             // First see if there is a display form
             String nameValue = nameEl.getChildText("displayForm", JDOMNamespaceUtil.MODS_V3_NS);
             if (nameValue == null) {
                 // If there was no displayForm, then try to get the name parts.
-                List<?> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
+                List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
                 if (nameParts.size() == 1) {
-                    nameValue = ((Element) nameParts.get(0)).getValue();
+                    nameValue = nameParts.get(0).getValue();
                 } else if (nameParts.size() > 1) {
                     Element genericPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
                     if (genericPart != null) {
@@ -187,7 +181,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                             nameValue = nameBuilder.toString();
                         } else {
                             // Non-sensical name, just use the first available value.
-                            nameValue = ((Element) nameParts.get(0)).getValue();
+                            nameValue = nameParts.get(0).getValue();
                         }
                     }
                 }
@@ -195,20 +189,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             if (nameValue != null) {
                 contributors.add(nameValue);
 
-
-                List<?> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
+                List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
                 // Person is automatically a creator if no role is provided.
                 boolean isCreator = roles.size() == 0;
                 if (!isCreator) {
                     // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
-                    for (Object role: roles) {
-                        List<?> roleTerms = ((Element)role).getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
-                        for (Object roleTerm: roleTerms) {
-                            if ("creator".equalsIgnoreCase(((Element)roleTerm).getValue())) {
+                    for (Element role: roles) {
+                        List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
+                        for (Element roleTerm: roleTerms) {
+                            if ("creator".equalsIgnoreCase(roleTerm.getValue())) {
                                 isCreator = true;
                                 break;
                             }
-                            if ("author".equalsIgnoreCase(((Element)roleTerm).getValue())) {
+                            if ("author".equalsIgnoreCase(roleTerm.getValue())) {
                                 isCreator = true;
                                 break;
                             }
@@ -267,12 +260,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractCollectionId(Element mods, IndexDocumentBean idb) {
-        List<?> identifiers = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> identifiers = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
         String collectionId = null;
 
-        if (identifiers != null && identifiers.size() > 0) {
-            for (Object id: identifiers) {
-                Element aid = (Element) id;
+        if (!identifiers.isEmpty()) {
+            for (Element aid: identifiers) {
                 Attribute type = aid.getAttribute("type");
                 Attribute collection = aid.getAttribute("displayLabel");
 
@@ -291,19 +283,15 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractFindingAidLink(Element mods, IndexDocumentBean idb) {
-        List<?> findingAidLinkEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> findingAidLinkEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> findingAids = new ArrayList<>();
 
-        if (findingAidLinkEls != null && findingAidLinkEls.size() > 0) {
-            for (Object findingAidObj: findingAidLinkEls) {
-                List<?> findingAidParts = ((Element)findingAidObj).getChildren();
-                for (Object findingAid: findingAidParts) {
-                    Element aid = (Element) findingAid;
-
+        if (!findingAidLinkEls.isEmpty()) {
+            for (Element findingAidObj: findingAidLinkEls) {
+                for (Element aid: findingAidObj.getChildren()) {
                     if (aid.getName().equals("location")) {
-                        List<?> urls = aid.getChildren();
-                        for (Object url : urls) {
-                            Element urlType = (Element) url;
+                        List<Element> urls = aid.getChildren();
+                        for (Element urlType : urls) {
                             String displayLabel = urlType.getAttributeValue("displayLabel");
 
                             if (displayLabel != null && displayLabel.toLowerCase().equals("link to finding aid")) {
@@ -323,13 +311,12 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractSubjects(Element mods, IndexDocumentBean idb) {
-        List<?> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> subjects = new ArrayList<>();
         if (subjectEls.size() > 0) {
-            for (Object subjectObj: subjectEls) {
-                List<?> subjectParts = ((Element)subjectObj).getChildren();
-                for (Object subjectPart: subjectParts) {
-                    Element subjectEl = (Element)subjectPart;
+            for (Element subjectObj: subjectEls) {
+                List<Element> subjectParts = subjectObj.getChildren();
+                for (Element subjectEl: subjectParts) {
                     if (subjectEl.getChildren().size() == 0) {
                         subjects.add(subjectEl.getValue());
                     }
@@ -345,13 +332,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractLanguages(Element mods, IndexDocumentBean idb) {
-        List<?> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> languages = new ArrayList<>();
         if (languageEls.size() > 0) {
             String languageTerm = null;
-            for (Object languageObj: languageEls) {
+            for (Element languageObj: languageEls) {
                 // Our schema only allows for iso639-2b languages at this point.
-                languageTerm = ((Element)languageObj).getChildText("languageTerm", JDOMNamespaceUtil.MODS_V3_NS);
+                languageTerm = languageObj.getChildText("languageTerm", JDOMNamespaceUtil.MODS_V3_NS);
                 if (languageTerm != null) {
                     languageTerm = languageCodeMap.getProperty(languageTerm.trim());
                     if (languageTerm != null) {
@@ -376,13 +363,12 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
      * @param idb
      */
     private void extractDateCreated(Element mods, IndexDocumentBean idb) {
-        List<?> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
         Date dateCreated = null;
         Date dateIssued = null;
         Date dateCaptured = null;
         if (originInfoEls.size() > 0) {
-            for (Object originInfoObj: originInfoEls) {
-                Element originInfoEl = (Element) originInfoObj;
+            for (Element originInfoEl: originInfoEls) {
                 dateCreated = JDOMQueryUtil
                         .parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
                 if (dateCreated != null) {
@@ -394,7 +380,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                             .parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
                 }
 
-                if (dateIssued == null && dateCaptured == null) {
+                if (dateCaptured == null) {
                     dateCaptured = JDOMQueryUtil
                             .parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
                 }
@@ -411,11 +397,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractIdentifiers(Element mods, IndexDocumentBean idb) {
-        List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> identifiers = new ArrayList<>();
-        for (Object identifierObj: identifierEls) {
+        for (Element identifierEl: identifierEls) {
             StringBuilder identifierBuilder = new StringBuilder();
-            Element identifierEl = (Element) identifierObj;
             String idType = identifierEl.getAttributeValue("type");
             if (idType != null) {
                 if (idType.equalsIgnoreCase("uri")) {
@@ -441,26 +426,26 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         this.addValuesToList(idb.getKeyword(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
         this.addValuesToList(idb.getKeyword(), mods.getChildren("typeOfResource", JDOMNamespaceUtil.MODS_V3_NS));
         this.addValuesToList(idb.getKeyword(), mods.getChildren("note", JDOMNamespaceUtil.MODS_V3_NS));
-        List<?> physicalDescription = mods.getChildren("physicalDescription", JDOMNamespaceUtil.MODS_V3_NS);
-        for (Object childObj: physicalDescription) {
-            this.addValuesToList(idb.getKeyword(), ((Element)childObj).getChildren(
+        List<Element> physicalDescription = mods.getChildren("physicalDescription", JDOMNamespaceUtil.MODS_V3_NS);
+        for (Element childObj: physicalDescription) {
+            this.addValuesToList(idb.getKeyword(), childObj.getChildren(
                     "note", JDOMNamespaceUtil.MODS_V3_NS));
         }
-        List<?> relatedItemEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
-        for (Object childObj: relatedItemEls) {
-            List<?> childChildren = ((Element)childObj).getChildren();
-            for (Object childChildObj: childChildren) {
-                this.addValuesToList(idb.getKeyword(), ((Element)childChildObj).getChildren());
+        List<Element> relatedItemEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+        for (Element childObj: relatedItemEls) {
+            List<Element> childChildren = childObj.getChildren();
+            for (Element childChildObj: childChildren) {
+                this.addValuesToList(idb.getKeyword(), childChildObj.getChildren());
             }
         }
     }
 
-    private void addValuesToList(List<String> values, List<?> elements) {
+    private void addValuesToList(List<String> values, List<Element> elements) {
         if (elements == null) {
             return;
         }
-        for (Object elementObj: elements) {
-            String value = ((Element)elementObj).getValue();
+        for (Element elementObj: elements) {
+            String value = elementObj.getValue();
             if (value != null) {
                 values.add(value);
             }

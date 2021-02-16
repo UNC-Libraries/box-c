@@ -29,6 +29,7 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
+ * Indexing filter for adding RLA specific fields
  *
  * @author bbpennel
  *
@@ -69,15 +70,13 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
     }
 
     private void extractValues(Element mods, IndexDocumentBean idb) throws JDOMException {
-        List<?> elements = mods.getChildren();
+        List<Element> elements = mods.getChildren();
 
         if (elements == null) {
             return;
         }
 
-        for (Object elementObject : elements) {
-            Element element = (Element) elementObject;
-
+        for (Element element : elements) {
             if (FILENAME_ID.equalsIgnoreCase(element.getAttributeValue("ID"))
                     || FILENAME_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
                 idb.setIdentifierSort(element.getTextTrim());
