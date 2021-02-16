@@ -43,9 +43,6 @@ import edu.unc.lib.dl.util.ResourceType;
 public class SetPathFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
-    private static final int COLLECTION_DEPTH = 2;
-    private static final int UNIT_DEPTH = 1;
-
     private ContentPathFactory pathFactory;
 
     @Override
@@ -79,12 +76,12 @@ public class SetPathFilter implements IndexDocumentFilter {
         }
         idb.setAncestorIds(ancestorIds);
 
-        if (pids.size() > COLLECTION_DEPTH) {
-            idb.setParentCollection(pids.get(COLLECTION_DEPTH).getId());
+        if (pids.size() > ContentPathFactory.COLLECTION_DEPTH) {
+            idb.setParentCollection(pids.get(ContentPathFactory.COLLECTION_DEPTH).getId());
         }
 
-        if (pids.size() > UNIT_DEPTH) {
-            idb.setParentUnit(pids.get(UNIT_DEPTH).getId());
+        if (pids.size() > ContentPathFactory.UNIT_DEPTH) {
+            idb.setParentUnit(pids.get(ContentPathFactory.UNIT_DEPTH).getId());
         }
 
         ContentObject contentObject = dip.getContentObject();

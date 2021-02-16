@@ -70,7 +70,6 @@
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
-                <ref bean="setRelationsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -192,6 +191,7 @@
     
     <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
         <property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+        <property name="pathFactory" ref="contentPathFactory" />
     </bean>
     
     <bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">

@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -28,15 +29,18 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fedora.ContentPathFactory;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class SetCollectionSupplementalInformationFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetCollectionSupplementalInformationFilter.class);
 
+    private ContentPathFactory pathFactory;
     // Map of filters for specific collections.  Key is the pid of the parent collection
     private Map<String, IndexDocumentFilter> collectionFilters;
 
@@ -47,7 +51,12 @@ public class SetCollectionSupplementalInformationFilter implements IndexDocument
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         String parentCollection = dip.getDocument().getParentCollection();
         if (parentCollection == null) {
-            return;
+            List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
+            if (pids.size() > ContentPathFactory.COLLECTION_DEPTH) {
+                parentCollection = pids.get(ContentPathFactory.COLLECTION_DEPTH).getId();
+            } else {
+                return;
+            }
         }
 
         IndexDocumentFilter collectionFilter = collectionFilters.get(parentCollection);
@@ -74,5 +83,8 @@ public class SetCollectionSupplementalInformationFilter implements IndexDocument
         } catch (Exception e) {
             log.error("Failed to load collection filters properties file " + collectionFiltersPath, e);
         }
+    }
+    public void setPathFactory(ContentPathFactory pathFactory) {
+        this.pathFactory = pathFactory;
     }
 }
