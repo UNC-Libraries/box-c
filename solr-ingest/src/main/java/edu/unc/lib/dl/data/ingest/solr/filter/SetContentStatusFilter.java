@@ -59,10 +59,6 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             status.add(FacetConstants.CONTENT_NOT_DESCRIBED);
         }
 
-        if (resc.hasProperty(Cdr.invalidTerm)) {
-            status.add(FacetConstants.INVALID_VOCAB_TERM);
-        }
-
         if (obj instanceof WorkObject) {
             if (resc.hasProperty(Cdr.primaryObject)) {
                 status.add(FacetConstants.HAS_PRIMARY_OBJECT);
