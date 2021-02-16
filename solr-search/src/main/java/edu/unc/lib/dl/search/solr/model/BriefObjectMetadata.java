@@ -137,10 +137,6 @@ public interface BriefObjectMetadata {
 
     public String getFullText();
 
-    public List<Tag> getTags();
-
-    public void addTag(Tag t);
-
     public Map<String,Object> getDynamicFields();
 
     public Date getActiveEmbargo();

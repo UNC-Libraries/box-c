@@ -73,7 +73,6 @@ public abstract class AbstractQueryService {
             SearchFieldKeys.ROLE_GROUP.name(),
             SearchFieldKeys.ROLLUP_ID.name(),
             SearchFieldKeys.STATUS.name(),
-            SearchFieldKeys.STATUS_TAGS.name(),
             SearchFieldKeys.SUBJECT.name(),
             SearchFieldKeys.TIMESTAMP.name(),
             SearchFieldKeys.TITLE.name(),

@@ -25,11 +25,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for
@@ -52,7 +52,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         IndexDocumentBean idb = dip.getDocument();
         List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
 
-        if (pids.size() == 0 && !ResourceType.ContentRoot.equals(idb.getResourceType())) {
+        if (pids.size() == 0 && !(dip.getContentObject() instanceof ContentRootObject)) {
             throw new IndexingException("Object " + dip.getPid() + " has no known ancestors");
         }
 
@@ -71,7 +71,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         String ancestorIds = "/" + pids.stream()
                 .map(pid -> pid.getId())
                 .collect(Collectors.joining("/"));
-        if (!ResourceType.File.equals(idb.getResourceType())) {
+        if (!(dip.getContentObject() instanceof FileObject)) {
             ancestorIds += "/" + dip.getPid().getId();
         }
         idb.setAncestorIds(ancestorIds);

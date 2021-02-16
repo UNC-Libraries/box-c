@@ -332,16 +332,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     }
 
     @Override
-    public List<Tag> getTags() {
-        return this.representative.getTags();
-    }
-
-    @Override
-    public void addTag(Tag t) {
-        this.representative.addTag(t);
-    }
-
-    @Override
     public Map<String, Object> getDynamicFields() {
         return this.representative.getDynamicFields();
     }

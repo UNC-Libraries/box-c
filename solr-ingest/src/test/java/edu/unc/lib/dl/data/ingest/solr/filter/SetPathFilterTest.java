@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,8 +42,10 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -153,7 +156,9 @@ public class SetPathFilterTest {
     @Test
     public void testContentRootPath() throws Exception {
         when(pathFactory.getAncestorPids(pid)).thenReturn(emptyList());
-        when(idb.getResourceType()).thenReturn(ResourceType.ContentRoot.name());
+        ContentRootObject mockRoot = mock(ContentRootObject.class);
+        when(mockRoot.getPid()).thenReturn(RepositoryPaths.getContentRootPid());
+        when(dip.getContentObject()).thenReturn(mockRoot);
 
         filter.filter(dip);
 

@@ -68,7 +68,6 @@
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
                 <ref bean="setRelationsFilter" />
-                <ref bean="setStatusTagsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -82,7 +81,6 @@
                 <ref bean="setAccessControlFilter" />
                 <ref bean="setAccessStatusFilter" />
                 <ref bean="setRelationsFilter" />
-                <ref bean="setStatusTagsFilter" />
             </list>
         </property>
     </bean>
@@ -104,10 +102,10 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
+                <ref bean="setAccessStatusFilter" />
                 <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
-                <ref bean="setStatusTagsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -286,9 +284,6 @@
     
     <bean id="setRelationsFilter"
         class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
-    </bean>
-    
-    <bean id="setStatusTagsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusTagsFilter">
     </bean>
     
     <!-- Ingest Actions -->

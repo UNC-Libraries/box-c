@@ -17,7 +17,6 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -267,22 +266,6 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     @Override
     public void setCountMap(Map<String, Long> countMap) {
         this.countMap = countMap;
-    }
-
-    @Override
-    public List<Tag> getTags() {
-        if (this.tags == null) {
-            return null;
-        }
-        return Collections.unmodifiableList(this.tags);
-    }
-
-    @Override
-    public void addTag(Tag t) {
-        if (this.tags == null) {
-            this.tags = new ArrayList<>();
-        }
-        this.tags.add(t);
     }
 
     @Override
