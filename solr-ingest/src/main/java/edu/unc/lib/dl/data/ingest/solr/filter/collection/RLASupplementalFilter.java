@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter.collection;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,7 +29,7 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -57,7 +56,6 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
         IndexDocumentBean idb = dip.getDocument();
         Element mods = dip.getMods();
 
-        idb.setKeyword(new ArrayList<String>());
         if (mods != null) {
             if (idb.getDynamicFields() == null) {
                 idb.setDynamicFields(new HashMap<String, Object>());
