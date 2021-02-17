@@ -1,3 +1,5 @@
+![Build](https://github.com/UNC-Libraries/Carolina-Digital-Repository/workflows/DcrBuild/badge.svg)
+
 Building the project
 ---------------------
 ```
