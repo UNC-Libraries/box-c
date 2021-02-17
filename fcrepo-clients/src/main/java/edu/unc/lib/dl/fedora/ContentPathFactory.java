@@ -55,6 +55,8 @@ public class ContentPathFactory {
     private static final Logger log = getLogger(ContentPathFactory.class);
 
     private static int MAX_NESTING = 256;
+    public static final int COLLECTION_DEPTH = 2;
+    public static final int UNIT_DEPTH = 1;
 
     private LoadingCache<PID, PID> childToParentCache;
     private long cacheTimeToLive;

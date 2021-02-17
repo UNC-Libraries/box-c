@@ -27,12 +27,14 @@ import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Before;
@@ -86,7 +88,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -99,8 +103,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/" + FCR_VERSIONS,
                 Fcrepo4Repository.Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -113,8 +119,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs",
                 Fcrepo4Repository.Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -127,8 +135,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(DEPOSIT_ID,
                 Fcrepo4Repository.Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -141,8 +151,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent("what/is/going/on",
                 Fcrepo4Repository.Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -155,8 +167,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent("/content/" + RepositoryPathConstants.CONTENT_ROOT_ID,
                 Fcrepo4Repository.Container.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -169,8 +183,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs/original_file/fcr:metadata",
                 Fcrepo4Repository.NonRdfSourceDescription.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -183,8 +199,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/datafs/original_file",
                 Fcrepo4Repository.Binary.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -197,8 +215,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(META_ROUTE);
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID + "/md/event_log",
                 Fcrepo4Repository.Binary.getURI()));
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -212,7 +232,9 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         headers.put(EVENT_TYPE, "ResourceDeletion");
 
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", headers);
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -222,8 +244,11 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
+
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -236,7 +261,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent("/not/binary", Container.getURI());
         headers.put(EVENT_TYPE, EVENT_UPDATE);
+
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", headers);
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }
@@ -247,7 +275,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+
+        NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
         template.sendBodyAndHeaders("", headers);
+        notify.matches(1l, TimeUnit.SECONDS);
 
         assertMockEndpointsSatisfied();
     }

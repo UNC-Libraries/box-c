@@ -114,15 +114,4 @@ public class SetRelationsFilterTest {
         verify(idb).setRelations(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains("http://cdr.unc.edu/definitions/model#primaryObject|" + primObjPid));
     }
-
-    @Test
-    public void setInvalidTermsTest() throws Exception {
-        when(dip.getContentObject()).thenReturn(workObj);
-
-        filter.filter(dip);
-
-        verify(idb).setRelations(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("http://cdr.unc.edu/definitions/model#invalidTerm|" + INVALID_TERM));
-    }
-
 }

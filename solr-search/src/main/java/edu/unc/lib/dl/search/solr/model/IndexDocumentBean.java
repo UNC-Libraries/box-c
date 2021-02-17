@@ -55,7 +55,6 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE_SORT
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLE_GROUP;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLLUP_ID;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.STATUS;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.STATUS_TAGS;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.SUBJECT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TIMESTAMP;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE;
@@ -324,15 +323,6 @@ public class IndexDocumentBean {
 
     public List<String> getContentStatus() {
         return (List<String>) fields.get(CONTENT_STATUS.getSolrField());
-    }
-
-    @Field
-    public void setStatusTags(List<String> statusTags) {
-        fields.put(STATUS_TAGS.getSolrField(), statusTags);
-    }
-
-    public List<String> getStatusTags() {
-        return (List<String>) fields.get(STATUS_TAGS.getSolrField());
     }
 
     @Field

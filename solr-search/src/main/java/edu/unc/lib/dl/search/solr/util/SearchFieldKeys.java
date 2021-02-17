@@ -65,7 +65,6 @@ public enum SearchFieldKeys {
     ROLE_GROUP("roleGroup"),
     ROLLUP_ID("rollup"),
     STATUS("status"),
-    STATUS_TAGS("statustags"),
     SUBJECT("subject"),
     SUBJECT_INDEX("subjectIndex"),
     TIMESTAMP("timestamp"),

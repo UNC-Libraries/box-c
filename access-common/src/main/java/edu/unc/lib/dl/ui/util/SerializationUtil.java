@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -188,10 +187,6 @@ public class SerializationUtil {
             result.put("ancestorNames", metadata.getAncestorNames());
         }
 
-        if (metadata.getTags() != null) {
-            result.put("tags", metadata.getTags());
-        }
-
         if (metadata.getIsPart() != null) {
             result.put("isPart", metadata.getIsPart());
         }
@@ -257,8 +252,6 @@ public class SerializationUtil {
             return jsonMapper.writeValueAsString(metadataToMap(metadata, groups));
         } catch (JsonProcessingException e) {
             log.error("Unable to serialize object " + metadata.getId() + " to json", e);
-        }  catch (IOException e) {
-            log.error("Unable to serialize object " + metadata.getId() + " to json", e);
         }
         return null;
     }
@@ -267,8 +260,6 @@ public class SerializationUtil {
         try {
             return jsonMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);
-        } catch (IOException e) {
             log.error("Unable to serialize object of type " + object.getClass().getName() + " to json", e);
         }
         return "";

@@ -153,18 +153,6 @@ public class SetContentStatusFilterTest {
     }
 
     @Test
-    public void testWorkWithInvalidTerm() throws Exception {
-        when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
-        when(resc.hasProperty(Cdr.invalidTerm)).thenReturn(true);
-
-        filter.filter(dip);
-
-        verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INVALID_VOCAB_TERM));
-    }
-
-    @Test
     public void testUnpublishedFileObject() throws Exception {
         when(workObj.getResource()).thenReturn(resc);
 
