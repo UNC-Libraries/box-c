@@ -1,7 +1,7 @@
 <template>
     <div class="browse-sort select is-medium">
         <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">
-            <option value="default,normal">Sort by...</option>
+            <option value="default,normal">Relevance</option>
             <option value="title,normal">Title A-Z</option>
             <option value="title,reverse">Title Z-A</option>
             <option value="dateAdded,normal">Date Created (newest)</option>

@@ -29,7 +29,7 @@ export default {
                 defaults = {
                     rows: this.rows_per_page,
                     start: 0,
-                    sort: 'title,normal',
+                    sort: 'default,normal',
                     browse_type: 'list-display',
                     works_only: false
                 };
