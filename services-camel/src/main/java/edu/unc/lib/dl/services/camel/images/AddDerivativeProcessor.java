@@ -100,8 +100,9 @@ public class AddDerivativeProcessor implements Processor {
             moveFile(derivativeTmpPath, derivativeFinalPath);
             log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
         } catch (FileAlreadyExistsException e) {
-            log.warn("A derivative already exists for {} at {}. Regenerating without the force flag.",
+            log.warn("A derivative already exists for {} at {}. Attempting regeneration without the force flag.",
                     binaryUri, derivativeFinalPath);
+            throw e;
         } catch (IOException e) {
             String stderr = "";
             if (result != null && result.getStderr() != null) {
