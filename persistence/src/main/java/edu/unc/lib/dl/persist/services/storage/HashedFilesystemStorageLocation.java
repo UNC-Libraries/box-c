@@ -21,6 +21,8 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import java.net.URI;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -109,8 +111,8 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
     public URI getNewStorageUri(PID pid) {
         String base = getBaseStoragePath(pid);
         // Add timestamp to base path, combining wall time millisecond with relative nanotime
-        long nano = System.nanoTime() % 1000000;
-        String path = base + "." + System.currentTimeMillis() + Long.toString(nano);
+        String nano = StringUtils.right(Long.toString(System.nanoTime()), 6);
+        String path = base + "." + System.currentTimeMillis() + nano;
         return URI.create(path).normalize();
     }
 
