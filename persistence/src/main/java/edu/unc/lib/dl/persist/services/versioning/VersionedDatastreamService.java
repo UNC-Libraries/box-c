@@ -97,10 +97,10 @@ public class VersionedDatastreamService {
             }
             throw e;
         } finally {
-            dsLock.unlock();
             if (tx != null) {
                 tx.close();
             }
+            dsLock.unlock();
             // Only close the transfer session if it was created within this method call
             if (session != null && newVersion.getTransferSession() == null) {
                 session.close();
