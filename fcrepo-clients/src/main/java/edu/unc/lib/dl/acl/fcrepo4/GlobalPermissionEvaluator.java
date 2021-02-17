@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,9 @@ public class GlobalPermissionEvaluator {
         // A principal cannot be assigned to more than one global role
         globalPrincipalToPermissions = properties.entrySet().stream()
                 .filter(p -> p.getKey().toString().startsWith(GLOBAL_PROP_PREFIX))
-                .map(p -> new SimpleEntry<>((String) p.getValue(), (String) p.getKey()))
+                // Split comma separated principals and add entry to stream for each
+                .flatMap(e -> Arrays.stream(((String) e.getValue()).split(","))
+                        .map(p -> new SimpleEntry<>(p, (String) e.getKey())))
                 // Transform into map of principal to permissions
                 .collect(Collectors.toMap(SimpleEntry::getKey, p -> {
                     String roleString = p.getValue().substring(GLOBAL_PROP_PREFIX.length());

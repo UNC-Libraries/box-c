@@ -141,6 +141,25 @@ public class GlobalPermissionEvaluatorTest {
     }
 
     @Test
+    public void multiplePrincipalsSameRoleTest() {
+        addGlobalAssignment(UserRole.canDescribe, PRINC_GRP1 + "," + PRINC_GRP2);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        assertTrue(evaluator.hasGlobalPermission(principals, Permission.editDescription));
+        assertFalse(evaluator.hasGlobalPermission(principals, Permission.markForDeletion));
+
+        Set<String> principals2 = new HashSet<>(Arrays.asList(PRINC_GRP2));
+        assertTrue(evaluator.hasGlobalPermission(principals2, Permission.editDescription));
+        assertFalse(evaluator.hasGlobalPermission(principals2, Permission.markForDeletion));
+
+        // Check that if multiple globals present the higher one wins
+        Set<String> principalsCombined = new HashSet<>(Arrays.asList(PRINC_GRP2, PRINC_GRP1));
+        assertTrue(evaluator.hasGlobalPermission(principalsCombined, Permission.editDescription));
+        assertFalse(evaluator.hasGlobalPermission(principalsCombined, Permission.markForDeletion));
+    }
+
+    @Test
     public void hasGlobalPrincipalTest() {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
 
