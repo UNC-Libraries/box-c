@@ -1260,6 +1260,13 @@ table.dataTable {
   color: white;
 }
 
+/* UV image viewer */
+.uv {
+  .title {
+    font-size: inherit;
+  }
+}
+
 /* MODs display for work and file pages, plus modalMetadata.vue component */
 #mods_data_display {
   margin: auto;

@@ -19,8 +19,16 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.digitalcollections.iiif.model.image.ImageApiProfile;
+import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
+import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
+import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
+import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -139,6 +147,23 @@ public class LorisContentService {
         } finally {
             method.releaseConnection();
         }
+    }
+
+    public String getManifest(String id, String datastream, HttpServletRequest request) throws JsonProcessingException {
+        String[] url = request.getRequestURL().toString().split("\\/");
+        String urlBase = "https://" + url[2];
+        String manifestBase = urlBase + "/" + id;
+        ObjectMapper iiifMapper = new IiifObjectMapper();
+
+        Manifest manifest = new Manifest(manifestBase + "/manifest");
+
+        Canvas canvas = new Canvas(manifestBase);
+        canvas.addIIIFImage(urlBase + "/jp2Proxy/" + id + "/" + datastream, ImageApiProfile.LEVEL_TWO);
+
+        Sequence seq = new Sequence(manifestBase + "/sequence/normal");
+        seq.addCanvas(canvas);
+
+        return iiifMapper.writerWithDefaultPrettyPrinter().writeValueAsString(manifest.addSequence(seq));
     }
 
     public void setLorisPath(String fullPath) {

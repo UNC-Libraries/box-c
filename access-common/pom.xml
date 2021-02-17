@@ -81,6 +81,13 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
         </dependency>
+
+        <!-- IIIF -->
+        <dependency>
+            <groupId>de.digitalcollections.iiif</groupId>
+            <artifactId>iiif-apis</artifactId>
+            <version>0.3.8</version>
+        </dependency>
         
         <!-- Test -->
         

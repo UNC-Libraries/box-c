@@ -128,8 +128,7 @@
 				<c:choose>
 					<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
 						<div class="clear_space"></div>
-						<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
-						<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
+						<link rel="stylesheet" href="/static/plugins/uv/uv.css">
 						<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${jp2Id}"></div>
 					</c:when>
 					<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">

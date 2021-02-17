@@ -1,0 +1,10 @@
+{
+  "options": {
+    "headerPanelEnabled": false,
+    "limitLocales": true,
+    "rightPanelEnabled": false
+  },
+  "modules": {
+
+  }
+}

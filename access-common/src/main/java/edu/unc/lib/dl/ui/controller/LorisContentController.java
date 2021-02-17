@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -77,12 +79,15 @@ public class LorisContentController extends AbstractSolrSearchController {
 
     /**
      * Handles requests for individual region tiles.
-     *
-     * @param model
-     * @param request
+     * @param id
+     * @param datastream
+     * @param region
+     * @param size
+     * @param rotation
+     * @param qualityFormat
      * @param response
      */
-    @GetMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
+    @GetMapping("/jp2Proxy/{id}/{datastream}/info.json/{region}/{size}/{rotation}/{qualityFormat:.+}")
     public void getRegion(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, @PathVariable("region") String region,
             @PathVariable("size") String size, @PathVariable("rotation") String rotation,
@@ -111,14 +116,13 @@ public class LorisContentController extends AbstractSolrSearchController {
     /**
      * Handles requests for jp2 metadata
      *
-     * @param model
-     * @param request
+     * @param id
+     * @param datastream
      * @param response
      */
-    @GetMapping("/jp2Proxy/{id}/{datastream}")
+    @GetMapping("/jp2Proxy/{id}/{datastream}/info.json")
     public void getMetadata(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, HttpServletResponse response) {
-
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
         if (this.hasAccess(pid, datastream)) {
@@ -128,8 +132,35 @@ public class LorisContentController extends AbstractSolrSearchController {
                 LOG.error("Error retrieving JP2 metadata content for {}", id, e);
             }
         } else {
-            LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
+            LOG.debug("Image access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             response.setStatus(HttpStatus.FORBIDDEN.value());
         }
+    }
+
+    /**
+     * Handles requests for IIIF manifests
+     * @param id
+     * @param datastream
+     * @param response
+     * @return
+     */
+    @GetMapping("/jp2Proxy/{id}/{datastream}/manifest")
+    @ResponseBody
+    public String getManifest(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
+                            HttpServletRequest request, HttpServletResponse response) {
+        PID pid = PIDs.get(id);
+        // Check if the user is allowed to view this object's manifest
+        if (this.hasAccess(pid, datastream)) {
+            try {
+                return lorisContentService.getManifest(id, datastream, request);
+            } catch (IOException e) {
+                LOG.error("Error retrieving manifest content for {}", id, e);
+            }
+        } else {
+            LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+        }
+
+        return "";
     }
 }
