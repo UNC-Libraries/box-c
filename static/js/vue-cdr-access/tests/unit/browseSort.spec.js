@@ -38,7 +38,7 @@ describe('browseSort.vue', () => {
         });
     });
 
-    it("shows the default option when mounted with no sort specified", () => {
+    it("shows the default, 'Relevance', option when mounted with no sort specified", () => {
         expect(wrapper.vm.sort_order).toEqual('default,normal');
     });
 
@@ -46,16 +46,6 @@ describe('browseSort.vue', () => {
         wrapper.findAll('option').at(2).setSelected();
         expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
         expect(wrapper.vm.sort_order).toEqual('title,reverse');
-    });
-
-    it("uses the default sort if a user sorts and then specifies no sort order", () => {
-        wrapper.findAll('option').at(2).setSelected();
-        expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
-        expect(wrapper.vm.sort_order).toEqual('title,reverse');
-
-        wrapper.findAll('option').at(0).setSelected();
-        expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('default,normal');
-        expect(wrapper.vm.sort_order).toEqual('default,normal');
     });
 
     it("updates the url when the dropdown changes for a search", () => {

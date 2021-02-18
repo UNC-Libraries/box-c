@@ -23,7 +23,7 @@ describe('routeUtils', () => {
         const defaults = {
             rows: 20,
             start: 0,
-            sort: 'title,normal',
+            sort: 'default,normal',
             browse_type: list_display,
             works_only: false
         };
@@ -57,7 +57,7 @@ describe('routeUtils', () => {
         let defaults = {
             rows: 20,
             start: 0,
-            sort: 'title,normal',
+            sort: 'default,normal',
             browse_type: list_display,
             works_only: false
         };
