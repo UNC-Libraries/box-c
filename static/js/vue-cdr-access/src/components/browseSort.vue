@@ -65,6 +65,12 @@
         top: 60% !important;
     }
 
+    .select {
+        select {
+            font-size: initial;
+        }
+    }
+
     .browse-sort {
         float: right;
         margin-top: 15px;
