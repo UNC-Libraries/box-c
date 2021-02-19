@@ -60,6 +60,7 @@ import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
+import edu.unc.lib.dl.search.solr.service.GetCollectionIdService;
 import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
@@ -84,6 +85,8 @@ public class FullRecordController extends AbstractSolrSearchController {
     private ChildrenCountService childrenCountService;
     @Autowired
     private NeighborQueryService neighborService;
+    @Autowired
+    private GetCollectionIdService collectionIdService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -217,14 +220,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (resourceType.equals(searchSettings.resourceTypeFolder) ||
                 resourceType.equals(searchSettings.resourceTypeFile) ||
                 resourceType.equals(searchSettings.resourceTypeAggregate)) {
-            String parentCollection = briefObject.getParentCollection();
-            SimpleIdRequest parentIdRequest = new SimpleIdRequest(parentCollection, principals);
-            BriefObjectMetadataBean parentBriefObject = queryLayer.getObjectById(parentIdRequest);
-            if (parentBriefObject == null) {
-                throw new InvalidRecordRequestException();
-            }
-
-            model.addAttribute("parentBriefObject", parentBriefObject);
+            model.addAttribute("collectionId", collectionIdService.getCollectionId(briefObject));
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
