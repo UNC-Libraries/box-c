@@ -19,9 +19,11 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
@@ -39,6 +41,10 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class HashedFilesystemStorageLocation implements StorageLocation {
     public static final String TYPE_NAME = "hashed_fs";
+
+    private static final DateTimeFormatter TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.from(ZoneOffset.UTC));
 
     private String id;
     private String name;
@@ -111,8 +117,9 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
     public URI getNewStorageUri(PID pid) {
         String base = getBaseStoragePath(pid);
         // Add timestamp to base path, combining wall time millisecond with relative nanotime
-        String nano = StringUtils.right(Long.toString(System.nanoTime()), 6);
-        String path = base + "." + System.currentTimeMillis() + nano;
+
+        String timestamp = TIME_FORMATTER.format(Instant.now());
+        String path = base + "." + timestamp + System.nanoTime();
         return URI.create(path).normalize();
     }
 
