@@ -50,6 +50,7 @@ public class BinaryCleanupProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         Message aggrMsg = exchange.getIn();
+        // Keys of the map are PIDs of updated binaries, values of content URIs
         Map<String, String> messages = aggrMsg.getBody(Map.class);
         try (MultiDestinationTransferSession mSession = binaryTransferService.getSession()) {
             for (Entry<String, String> entry : messages.entrySet()) {

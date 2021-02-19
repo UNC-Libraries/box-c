@@ -37,16 +37,12 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
@@ -75,11 +71,6 @@ public class StreamToFSTransferClientTest {
 
     protected PID binPid;
 
-    @Mock
-    private TransactionManager txManager;
-    private FedoraTransaction fedoraTransaction;
-    private final static URI TX_URI = URI.create("http://example.com/tx");
-
     @Before
     public void setup() throws Exception {
         initMocks(this);
@@ -95,13 +86,6 @@ public class StreamToFSTransferClientTest {
         client = new StreamToFSTransferClient(storageLoc);
 
         binPid = getOriginalFilePid(PIDs.get(TEST_UUID));
-    }
-
-    @After
-    public void teardown() throws Exception {
-        if (fedoraTransaction != null) {
-            fedoraTransaction.close();
-        }
     }
 
     @Test
@@ -144,7 +128,6 @@ public class StreamToFSTransferClientTest {
 
     @Test
     public void transferReplaceExisting_ExistingFile() throws Exception {
-        fedoraTransaction = new FedoraTransaction(TX_URI, txManager);
         // Create existing file content
         createFile();
 

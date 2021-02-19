@@ -228,13 +228,8 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     private void sendSuccessMessage(Map<String, String> successful, Exchange exchange) {
-        try {
         ProducerTemplate template = exchange.getContext().createProducerTemplate();
         template.sendBody(registrationSuccessfulEndpoint, successful);
-        } catch (Exception e) {
-            log.error("wtf", e);
-            throw e;
-        }
     }
 
     private DigestEntry findDigestEntry(String seekPath, Map<String, List<DigestEntry>> digestsMap) {

@@ -58,8 +58,4 @@ public class BinaryTransferOutcomeImpl implements BinaryTransferOutcome {
     public String getDestinationId() {
         return destinationId;
     }
-
-    public static enum BinaryTransferActionTaken {
-        Created, Replaced, VersionAdded;
-    }
 }
