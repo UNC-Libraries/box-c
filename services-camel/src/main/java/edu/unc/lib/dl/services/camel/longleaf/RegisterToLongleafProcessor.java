@@ -228,6 +228,9 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     }
 
     private void sendSuccessMessage(Map<String, String> successful, Exchange exchange) {
+        if (successful.size() == 0) {
+            return;
+        }
         ProducerTemplate template = exchange.getContext().createProducerTemplate();
         template.sendBody(registrationSuccessfulEndpoint, successful);
     }
