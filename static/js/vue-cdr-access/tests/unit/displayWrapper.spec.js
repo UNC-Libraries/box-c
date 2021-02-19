@@ -76,7 +76,7 @@ describe('displayWrapper.vue', () => {
 
     it("retrieves data", (done) => {
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=title%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder`, {
+        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder`, {
             status: 200,
             response: JSON.stringify(response)
         });
