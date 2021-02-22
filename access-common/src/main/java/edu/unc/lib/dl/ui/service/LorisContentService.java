@@ -36,6 +36,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.nio.entity.NStringEntity;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,7 @@ public class LorisContentService {
     private HttpClientConnectionManager httpClientConnectionManager;
 
     private String lorisPath;
+    private String basePath;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
         this.httpClientConnectionManager = manager;
@@ -85,6 +88,10 @@ public class LorisContentService {
                 if (response != null) {
                     response.setHeader("Content-Type", "application/json");
                     response.setHeader("content-disposition", "inline");
+
+                    String updatedRespBody = EntityUtils.toString(httpResp.getEntity())
+                            .replaceAll("http://localhost.*?jp2", "/jp2Proxy/" + simplepid + "/jp2");
+                    httpResp.setEntity(new NStringEntity(updatedRespBody));
 
                     FileIOUtil.stream(outStream, httpResp);
                 }
@@ -158,7 +165,9 @@ public class LorisContentService {
         Manifest manifest = new Manifest(manifestBase + "/manifest");
 
         Canvas canvas = new Canvas(manifestBase);
-        canvas.addIIIFImage(urlBase + "/jp2Proxy/" + id + "/" + datastream, ImageApiProfile.LEVEL_TWO);
+        String path = urlBase + "/jp2Proxy/" +
+                id + "/" + datastream;
+        canvas.addIIIFImage(path, ImageApiProfile.LEVEL_TWO);
 
         Sequence seq = new Sequence(manifestBase + "/sequence/normal");
         seq.addCanvas(canvas);
@@ -172,5 +181,13 @@ public class LorisContentService {
 
     public String getLorisPath() {
         return lorisPath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public String getBasePath() {
+        return basePath;
     }
 }

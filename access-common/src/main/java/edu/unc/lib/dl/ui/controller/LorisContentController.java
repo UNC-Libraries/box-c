@@ -87,7 +87,7 @@ public class LorisContentController extends AbstractSolrSearchController {
      * @param qualityFormat
      * @param response
      */
-    @GetMapping("/jp2Proxy/{id}/{datastream}/info.json/{region}/{size}/{rotation}/{qualityFormat:.+}")
+    @GetMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
     public void getRegion(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, @PathVariable("region") String region,
             @PathVariable("size") String size, @PathVariable("rotation") String rotation,
