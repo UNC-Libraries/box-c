@@ -60,10 +60,8 @@
             </c:if>
             <p><strong>Finding Aid: </strong>
                 <c:choose>
-                    <c:when test="${not empty collectionId}">
-                        <c:forEach var="findingAid" items="${briefObject.findingAidLink}" varStatus="findingAidStatus">
-                            <a href="<c:out value="${findingAid}"/>"><c:out value="${findingAid}"/></a><c:if test="${!findingAidStatus.last }">, </c:if>
-                        </c:forEach>
+                    <c:when test="${not empty findingAidUrl}">
+                        <a href="<c:out value="${findingAidUrl}"/>"><c:out value="${findingAidUrl}"/></a>
                     </c:when>
                     <c:otherwise>Doesn’t have a finding aid</c:otherwise>
                 </c:choose>

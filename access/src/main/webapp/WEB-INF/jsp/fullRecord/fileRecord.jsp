@@ -75,18 +75,16 @@
                             <a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
                         </li>
                     </c:if>
-                    <c:if test="${not empty parentBriefObject.collectionId}">
+                    <c:if test="${not empty collectionId}">
                         <li>
                             <span class="has-text-weight-bold">Collection Number: </span>
-                            <c:out value="${parentBriefObject.collectionId}"></c:out>
+                            <c:out value="${collectionId}"></c:out>
                         </li>
                     </c:if>
                     <li><span class="has-text-weight-bold">Finding Aid: </span>
                         <c:choose>
-                            <c:when test="${not empty briefObject.findingAidLink}">
-                                <c:forEach var="findingAid" items="${briefObject.findingAidLink}" varStatus="findingAidStatus">
-                                    <a href="<c:out value="${findingAid}"/>"><c:out value="${findingAid}"/></a><c:if test="${!findingAidStatus.last }">, </c:if>
-                                </c:forEach>
+                            <c:when test="${not empty findingAidUrl}">
+                                <a href="<c:out value="${findingAidUrl}"/>"><c:out value="${findingAidUrl}"/></a>
                             </c:when>
                             <c:otherwise>Doesn’t have a finding aid</c:otherwise>
                         </c:choose>

@@ -65,6 +65,7 @@ import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
+import edu.unc.lib.dl.ui.service.FindingAidUrlService;
 import edu.unc.lib.dl.ui.util.ModsUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 
@@ -87,6 +88,8 @@ public class FullRecordController extends AbstractSolrSearchController {
     private NeighborQueryService neighborService;
     @Autowired
     private GetCollectionIdService collectionIdService;
+    @Autowired
+    private FindingAidUrlService findingAidUrlService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -219,8 +222,12 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         if (resourceType.equals(searchSettings.resourceTypeFolder) ||
                 resourceType.equals(searchSettings.resourceTypeFile) ||
-                resourceType.equals(searchSettings.resourceTypeAggregate)) {
-            model.addAttribute("collectionId", collectionIdService.getCollectionId(briefObject));
+                resourceType.equals(searchSettings.resourceTypeAggregate) ||
+                resourceType.equals(searchSettings.resourceTypeCollection)) {
+            String collectionId = collectionIdService.getCollectionId(briefObject);
+            String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
+            model.addAttribute("collectionId", collectionId);
+            model.addAttribute("findingAidUrl", faUrl);
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
