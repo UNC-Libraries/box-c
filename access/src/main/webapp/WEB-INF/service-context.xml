@@ -88,6 +88,7 @@
         <property name="findingAidBaseUrl" value="${findingaids.base.url}" />
         <property name="maxCacheSize" value="${findingaids.maxCacheSize:1024}" />
         <property name="expireCacheSeconds" value="${findingaids.expireCacheSeconds:300}" />
+        <property name="checkTimeoutSeconds" value="${findingaids.checkTimeoutSeconds:5}" />
     </bean>
 
     <!-- Import controllers -->
