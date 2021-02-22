@@ -56,8 +56,8 @@ public class GetCollectionIdService extends AbstractQueryService {
         try {
             return findFirstCollectionId(mdObj);
         } finally {
-            log.warn("Finished retrieving collection id for {} with {} ancestors in {}ns",
-                    mdObj.getId(), mdObj.getAncestorPath().size(), (System.nanoTime() - start));
+            log.debug("Finished retrieving collection id for {} with {} ancestors in {}ns",
+                    mdObj.getId(), mdObj.getAncestorPath().size(), (System.nanoTime() - start) / 1e6);
         }
     }
 

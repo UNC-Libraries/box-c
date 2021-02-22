@@ -97,7 +97,7 @@ public class FindingAidUrlService {
             log.error("Failed to get finding aid link for {}", collectionId, e);
             return null;
         } finally {
-            log.error("Retrieved finding aid URL in {}ms", (System.nanoTime() - start) / 1e6);
+            log.debug("Retrieved finding aid URL in {}ms", (System.nanoTime() - start) / 1e6);
         }
     }
 
