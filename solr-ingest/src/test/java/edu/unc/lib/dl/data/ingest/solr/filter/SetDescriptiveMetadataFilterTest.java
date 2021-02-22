@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.dl.rdf.Ebucore;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
@@ -51,6 +50,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoade
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 
@@ -135,8 +135,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals("Abstract text", idb.getAbstractText());
 
         assertEquals("40148", idb.getCollectionId());
-
-        assertTrue(idb.getFindingAidLink().contains("https://finding-aids.lib.unc.edu/1234"));
 
         assertTrue(idb.getSubject().contains("Test resource"));
 
