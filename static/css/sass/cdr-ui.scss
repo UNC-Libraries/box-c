@@ -886,8 +886,8 @@ p.no-search-results {
 /* Work page */
 
 .jp2_imageviewer_window {
-  margin: 15px;
-  width: auto;
+  margin: 15px auto;
+  max-width: 90%;
 }
 
 
@@ -1262,8 +1262,16 @@ table.dataTable {
 
 /* UV image viewer */
 .uv {
+  .tabs {
+    margin-bottom: 0;
+  }
+
   .title {
     font-size: inherit;
+  }
+
+  li {
+    text-indent: 0;
   }
 }
 
