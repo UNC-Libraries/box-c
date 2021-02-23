@@ -152,7 +152,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
             try {
-                return lorisContentService.getManifest(id, datastream, request);
+                return lorisContentService.getManifest(request);
             } catch (IOException e) {
                 LOG.error("Error retrieving manifest content for {}", id, e);
             }

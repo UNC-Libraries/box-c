@@ -86,9 +86,8 @@
         <dependency>
             <groupId>de.digitalcollections.iiif</groupId>
             <artifactId>iiif-apis</artifactId>
-            <version>0.3.8</version>
         </dependency>
-        
+
         <!-- Test -->
         
         <dependency>
@@ -130,11 +129,5 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>fcrepo-clients</artifactId>
         </dependency>
-      <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore-osgi</artifactId>
-          <version>4.4.13</version>
-          <scope>compile</scope>
-      </dependency>
   </dependencies>
 </project>
