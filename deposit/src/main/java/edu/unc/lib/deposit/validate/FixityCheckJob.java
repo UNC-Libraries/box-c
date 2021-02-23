@@ -77,35 +77,39 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
 
         startResultRegistrar();
 
-        for (Entry<PID, String> stagingEntry : stagingList) {
-            PID rescPid = stagingEntry.getKey();
-            // Skip already checked files
-            if (isObjectCompleted(rescPid)) {
-                log.debug("Skipping over already completed fixity check for {}", rescPid.getId());
-                addClicks(1);
-                continue;
+        try {
+            for (Entry<PID, String> stagingEntry : stagingList) {
+                PID rescPid = stagingEntry.getKey();
+                // Skip already checked files
+                if (isObjectCompleted(rescPid)) {
+                    log.debug("Skipping over already completed fixity check for {}", rescPid.getId());
+                    addClicks(1);
+                    continue;
+                }
+
+                interruptJobIfStopped();
+
+                // Wait for some of the jobs to finish before queuing more to avoid blocking all other deposits
+                waitForQueueCapacity();
+
+                log.debug("Queuing fixity check for {}", rescPid.getId());
+
+                String stagedPath = stagingEntry.getValue();
+                URI stagedUri = URI.create(stagedPath);
+
+                Resource objResc = model.getResource(rescPid.getRepositoryPath());
+                Resource origResc = DepositModelHelpers.getDatastream(objResc);
+
+                Map<DigestAlgorithm, String> existingDigests = getDigestsForResource(origResc);
+
+                submitTask(new FixityCheckRunnable(rescPid, stagedUri, origResc, existingDigests));
             }
 
-            interruptJobIfStopped();
-
-            // Wait for some of the jobs to finish before queuing more to avoid blocking all other deposits
-            waitForQueueCapacity();
-
-            log.debug("Queuing fixity check for {}", rescPid.getId());
-
-            String stagedPath = stagingEntry.getValue();
-            URI stagedUri = URI.create(stagedPath);
-
-            Resource objResc = model.getResource(rescPid.getRepositoryPath());
-            Resource origResc = DepositModelHelpers.getDatastream(objResc);
-
-            Map<DigestAlgorithm, String> existingDigests = getDigestsForResource(origResc);
-
-            submitTask(new FixityCheckRunnable(rescPid, stagedUri, origResc, existingDigests));
+            waitForCompletion();
+            log.debug("Completed FixityCheckJob {} in deposit {}", jobUUID, depositUUID);
+        } finally {
+            awaitRegistrarShutdown();
         }
-
-        waitForCompletion();
-        log.debug("Completed FixityCheckJob {} in deposit {}", jobUUID, depositUUID);
     }
 
     private Map<DigestAlgorithm, String> getDigestsForResource(Resource resc) {

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -328,7 +329,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
             // expected
         }
 
-        Thread.sleep(FLUSH_RATE * 2);
+        reset(jobStatusFactory);
 
         // Write the file back into place
         FileUtils.write(flappingPath.toFile(), CONTENT2, UTF_8);
@@ -349,7 +350,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         assertChecksumEvent(filePid2, DigestAlgorithm.SHA1, CONTENT2_SHA1);
         assertChecksumEvent(filePid2, DigestAlgorithm.MD5, CONTENT2_MD5);
 
-        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
@@ -375,13 +376,12 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         } catch (JobInterruptedException e) {
             // expected
         }
-
-        Thread.sleep(FLUSH_RATE * 2);
-
         // Resume the job
         when(depositStatusFactory.getState(depositUUID))
                 .thenReturn(DepositState.running);
 
+        reset(jobStatusFactory);
+        initializeJob();
         job.run();
 
         Model resultModel = job.getReadOnlyModel();
@@ -396,7 +396,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid1.getQualifiedId());
         verify(jobStatusFactory).addObjectCompleted(depositJobId, filePid2.getQualifiedId());
 
-        verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
@@ -486,7 +486,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         Model eventsModel = job.getPremisLogger(pid).getEventsModel();
         List<Resource> events = eventsModel.listResourcesWithProperty(
                 RDF.type, Premis.MessageDigestCalculation).toList();
-        assertEquals("Unexpected number of premis events", 1, events.size());
+        // There can be more than one event in the case of interruption
+        assertTrue("Expected at least one premis event", 1 <= events.size());
         Resource eventResc = events.get(0);
         eventResc.hasProperty(Premis.note, alg.getName().toUpperCase() + " checksum calculated: " + digest);
     }
