@@ -41,6 +41,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -59,6 +60,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,6 +95,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTest {
 
     private static final Logger log = getLogger(TransferBinariesToStorageJobTest.class);
+
+    private final static int FLUSH_RATE = 100;
 
     private final static String LOC1_ID = "loc1";
     private final static String LOC2_ID = "loc2";
@@ -171,7 +175,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "executorService", executorService);
-        job.setFlushRate(100);
+        job.setFlushRate(FLUSH_RATE);
         job.init();
     }
 
@@ -451,6 +455,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
             // expected
         }
 
+        // Wait to allow unflushed registrations to go through
+        Thread.sleep(FLUSH_RATE * 2);
+
         // Restore the contents
         FileUtils.writeStringToFile(flappingPath.toFile(), FILE_CONTENT2, "UTF-8");
 
@@ -570,7 +577,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         Model model = job.getReadOnlyModel();
         List<Statement> storageUriStmts = model.listStatements(null, CdrDeposit.storageUri, (RDFNode) null).toList();
-        assertEquals(numFileObjs * 2, storageUriStmts.size());
+        Awaitility.await().atMost(Duration.ofSeconds(2))
+                .until(() -> numFileObjs * 2 == storageUriStmts.size());
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {
