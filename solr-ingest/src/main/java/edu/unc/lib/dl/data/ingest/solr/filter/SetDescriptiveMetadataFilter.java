@@ -78,7 +78,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractNamesAndAffiliations(mods, idb, true);
             this.extractAbstract(mods, idb);
             this.extractCollectionId(mods, idb);
-            this.extractFindingAidLink(mods, idb);
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
             this.extractDateCreated(mods, idb);
@@ -280,34 +279,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
 
         idb.setCollectionId(collectionId);
-    }
-
-    private void extractFindingAidLink(Element mods, IndexDocumentBean idb) {
-        List<Element> findingAidLinkEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> findingAids = new ArrayList<>();
-
-        if (!findingAidLinkEls.isEmpty()) {
-            for (Element findingAidObj: findingAidLinkEls) {
-                for (Element aid: findingAidObj.getChildren()) {
-                    if (aid.getName().equals("location")) {
-                        List<Element> urls = aid.getChildren();
-                        for (Element urlType : urls) {
-                            String displayLabel = urlType.getAttributeValue("displayLabel");
-
-                            if (displayLabel != null && displayLabel.toLowerCase().equals("link to finding aid")) {
-                                findingAids.add(urlType.getValue());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (findingAids.size() > 0) {
-            idb.setFindingAidLink(findingAids);
-        } else {
-            idb.setFindingAidLink(null);
-        }
     }
 
     private void extractSubjects(Element mods, IndexDocumentBean idb) {

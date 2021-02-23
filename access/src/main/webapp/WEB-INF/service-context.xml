@@ -81,6 +81,15 @@
         <property name="lorisPath" value="${loris.base.url}"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
+    
+    <bean id="findingAidUrlService" class="edu.unc.lib.dl.ui.service.FindingAidUrlService"
+            init-method="init">
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+        <property name="findingAidBaseUrl" value="${findingaids.base.url}" />
+        <property name="maxCacheSize" value="${findingaids.maxCacheSize:1024}" />
+        <property name="expireCacheSeconds" value="${findingaids.expireCacheSeconds:300}" />
+        <property name="checkTimeoutSeconds" value="${findingaids.checkTimeoutSeconds:5}" />
+    </bean>
 
     <!-- Import controllers -->
     <bean

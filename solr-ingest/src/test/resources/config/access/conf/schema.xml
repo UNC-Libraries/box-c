@@ -228,8 +228,7 @@
     <field name="otherTitle" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Abstract for this item, for display purposes only -->
     <field name="abstract" type="string" indexed="false" stored="true"/>
-    <!-- Finding aid for this item, for display purposes only -->
-    <field name="findingAidLink" type="string" indexed="false" stored="true" multiValued="true"/>
+    <!-- Collection number -->
     <field name="collectionId" type="string" indexed="true" stored="true"/>
     <!-- Other keywords, for use in copy indexes -->
     <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>

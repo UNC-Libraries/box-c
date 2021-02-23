@@ -73,6 +73,8 @@ public class TestCorpus {
     public PID privateWorkPid;
     public PID privateWorkFile1Pid;
 
+    public static final String TEST_COLL_ID = "10478";
+
     public TestCorpus() {
         // Initialize all pids
         Field[] fields = getClass().getFields();
@@ -104,6 +106,7 @@ public class TestCorpus {
         newDoc = makeContainerDocument(coll1Pid, "Collection 1", ResourceType.Collection,
                 rootPid, unitPid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
+        newDoc.addField("collectionId", TEST_COLL_ID);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(folder1Pid, "Folder 1", ResourceType.Folder,
