@@ -74,6 +74,8 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 public class FixityCheckJobTest extends AbstractDepositJobTest {
     private static final Logger log = getLogger(FixityCheckJobTest.class);
 
+    private final static int FLUSH_RATE = 100;
+
     private static final String CONTENT1 = "Something to digest";
     private static final String CONTENT1_MD5 = "7afbf05666feeebe7fbbf1c9071584e6";
     private static final String CONTENT1_SHA1 = "23d51c61a578a8cb00c5eec6b29c12b7da15c8de";
@@ -111,7 +113,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         job.setExecutorService(executorService);
-        job.setFlushRate(100);
+        job.setFlushRate(FLUSH_RATE);
         job.setMaxQueuedJobs(2);
         job.init();
     }
@@ -326,6 +328,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
             // expected
         }
 
+        Thread.sleep(FLUSH_RATE * 2);
+
         // Write the file back into place
         FileUtils.write(flappingPath.toFile(), CONTENT2, UTF_8);
 
@@ -371,6 +375,8 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         } catch (JobInterruptedException e) {
             // expected
         }
+
+        Thread.sleep(FLUSH_RATE * 2);
 
         // Resume the job
         when(depositStatusFactory.getState(depositUUID))
