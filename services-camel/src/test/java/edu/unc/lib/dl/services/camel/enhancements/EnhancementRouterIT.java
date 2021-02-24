@@ -204,13 +204,13 @@ public class EnhancementRouterIT {
         BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
-        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
         // Separate exchanges when multicasting
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(12)
                 .create();
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
         assertTrue("Enhancement route not satisfied", result1);
@@ -233,12 +233,12 @@ public class EnhancementRouterIT {
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);
 
-        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)
                 .create();
+
+        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
@@ -259,12 +259,12 @@ public class EnhancementRouterIT {
         BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
-        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)
                 .create();
+
+        final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
@@ -281,13 +281,13 @@ public class EnhancementRouterIT {
         BinaryObject descObj = updateDescriptionService.updateDescription(mock(AgentPrincipals.class),
                 fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes()));
 
-        Map<String, Object> headers = createEvent(descObj.getPid(),
-                Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
-        template.sendBodyAndHeaders("", headers);
-
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)
                 .create();
+
+        Map<String, Object> headers = createEvent(descObj.getPid(),
+                Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
@@ -305,12 +305,12 @@ public class EnhancementRouterIT {
         String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);
 
-        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)
                 .create();
+
+        final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
