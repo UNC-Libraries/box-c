@@ -44,8 +44,8 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'uvOffline', 'uvHelpers', 'uv'],
 			var uvRoot = '/static/plugins/uv';
 
 			try {
-                createUV('#jp2_viewer', {
-                	root: uvRoot,
+				createUV('#jp2_viewer', {
+					root: uvRoot,
 					iiifResourceUri: 'jp2Proxy/' + this.options.url + '/jp2/manifest',
 					configUri: uvRoot + '/unc-uv-config.json',
 					collectionIndex: Number(urlDataProvider.get('c', 0)),
@@ -57,16 +57,16 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'uvOffline', 'uvHelpers', 'uv'],
 					xywh: urlDataProvider.get('xywh', ''),
 					embedded: true,
 					locales: [{ name: "en-GB" }]
-                }, urlDataProvider);
+				}, urlDataProvider);
 
-                _.defer(function() {
-                    self.element.removeClass("not_loaded");
-                });
-            } catch (e) {
-                self.element.removeClass("not_loaded").height("30px")
-                    .html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
-                $(document.body).removeClass("full_screen");
-            }
+				_.defer(function() {
+					self.element.removeClass("not_loaded");
+				});
+			} catch (e) {
+				self.element.removeClass("not_loaded").height("30px")
+					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
+				$(document.body).removeClass("full_screen");
+			}
 		}
 	});
 });
