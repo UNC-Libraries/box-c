@@ -39,6 +39,7 @@ import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 
 /**
  * @author bbpennel
@@ -48,6 +49,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     private BinaryTransferSessionImpl session;
 
+    private BinaryTransferService bts;
     @Mock
     private IngestSourceManager sourceManager;
     @Mock
@@ -69,8 +71,10 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(sourceManager.getIngestSourceForUri(any(URI.class))).thenReturn(ingestSource);
         when(ingestSource.getId()).thenReturn("source1");
 
-        when(storageLoc.getStorageUri(binPid)).thenReturn(binDestPath.toUri());
+        when(storageLoc.getNewStorageUri(binPid)).thenReturn(binDestPath.toUri());
         when(storageLoc.getId()).thenReturn("loc1");
+
+        bts = new BinaryTransferServiceImpl();
     }
 
     @Test
@@ -78,7 +82,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             Path sourceFile = createSourceFile();
 
             session.transfer(binPid, sourceFile.toUri());
@@ -89,7 +93,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void transferNoDestination() throws Exception {
-        session = new BinaryTransferSessionImpl(sourceManager, null);
+        session = new BinaryTransferSessionImpl(sourceManager, null, bts);
     }
 
     @Test(expected = NotImplementedException.class)
@@ -97,7 +101,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
         when(storageLoc.getStorageType()).thenReturn(null);
 
-        session = new BinaryTransferSessionImpl(sourceManager, storageLoc);
+        session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts);
 
         Path sourceFile = createSourceFile();
 
@@ -111,13 +115,13 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
         PID binPid2 = makeBinPid();
         Path binDestPath2 = storagePath.resolve(binPid2.getComponentId());
-        when(storageLoc.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
+        when(storageLoc.getNewStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
 
         Path sourceFile = createSourceFile();
         Path sourceFile2 = createSourceFile("another.txt", "stuff");
 
         // Initialize session with the destination
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             BinaryTransferOutcome outcome1 = session.transfer(binPid, sourceFile.toUri());
             BinaryTransferOutcome outcome2 = session.transfer(binPid2, sourceFile2.toUri());
 
@@ -139,7 +143,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
         PID binPid2 = makeBinPid();
         Path binDestPath2 = storagePath.resolve(binPid2.getComponentId());
-        when(storageLoc.getStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
+        when(storageLoc.getNewStorageUri(binPid2)).thenReturn(binDestPath2.toUri());
 
         // Create second ingest source, which is not read only
         IngestSource source2 = mock(IngestSource.class);
@@ -150,7 +154,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         // Make first ingest source read only, so it will be different from the second
         when(ingestSource.isReadOnly()).thenReturn(true);
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             BinaryTransferOutcome outcome1 = session.transfer(binPid, sourceFile.toUri());
             BinaryTransferOutcome outcome2 = session.transfer(binPid2, sourceFile2.toUri());
 
@@ -173,7 +177,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         createFile(binDestPath, "some stuff");
         Path sourceFile = createSourceFile();
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             session.transferReplaceExisting(binPid, sourceFile.toUri());
 
             assertIsSourceFile(binDestPath);
@@ -187,7 +191,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
         Path sourceFile = createSourceFile();
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             session.transferVersion(binPid, sourceFile.toUri());
         }
     }
@@ -201,7 +205,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         createFile(binDestPath, "some stuff");
         Path sourceFile = createSourceFile();
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc)) {
+        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             session.delete(sourceFile.toUri());
         }
         assertFalse("File must be deleted", Files.exists(sourceFile));

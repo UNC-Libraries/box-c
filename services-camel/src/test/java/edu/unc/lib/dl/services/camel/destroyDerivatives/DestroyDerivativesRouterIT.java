@@ -95,7 +95,7 @@ public class DestroyDerivativesRouterIT {
     private String baseAddress;
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private TransactionManager txManager;
@@ -302,7 +302,7 @@ public class DestroyDerivativesRouterIT {
         collection.addMember(work);
 
         String bodyString = "Content";
-        Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getStorageUri(work.getPid()));
+        Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getNewStorageUri(work.getPid()));
         Files.createDirectories(storagePath);
         File contentFile = Files.createTempFile(storagePath, "file", ".txt").toFile();
         String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";

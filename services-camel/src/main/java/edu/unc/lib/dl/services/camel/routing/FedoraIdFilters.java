@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.routing;
 
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.regex.Pattern;
@@ -68,7 +69,8 @@ public class FedoraIdFilters {
     public static boolean allowedForLongleaf(Exchange exchange) {
         Message in = exchange.getIn();
         String resourceType = (String) in.getHeader(FcrepoJmsConstants.RESOURCE_TYPE);
-        if (!resourceType.contains(Binary.getURI())) {
+        String fcrepoUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+        if (!resourceType.contains(Binary.getURI()) || fcrepoUri.endsWith(RepositoryPathConstants.FCR_METADATA)) {
             return false;
         }
         String eventType = (String) in.getHeader(FcrepoJmsConstants.EVENT_TYPE);

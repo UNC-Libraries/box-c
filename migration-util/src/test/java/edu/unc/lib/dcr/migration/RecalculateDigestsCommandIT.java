@@ -174,7 +174,7 @@ public class RecalculateDigestsCommandIT {
 
         PID manifestPid = DatastreamPids.getDepositManifestPid(depRec.getPid(), "manifest0");
         BinaryTransferOutcome manifestOut = transferContent(manifestPid, "manifested");
-        depRec.addManifest(manifestOut.getDestinationUri(), "text/plain");
+        depRec.addManifest(manifestOut.getDestinationUri(), "manifest0", "text/plain", null, null);
 
         treeIndexer.indexAll(baseAddress);
 

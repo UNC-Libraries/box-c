@@ -78,7 +78,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private DocumentIndexingPipeline solrFullUpdatePipeline;
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private DerivativeService derivativeService;

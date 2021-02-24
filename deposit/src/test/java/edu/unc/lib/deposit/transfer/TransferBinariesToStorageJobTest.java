@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
@@ -237,13 +238,17 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));
         assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
-        assertTrue(historyPath.endsWith(TECHNICAL_METADATA_HISTORY.getId()));
+        assertPathIsDatastream(historyPath, TECHNICAL_METADATA_HISTORY);
         assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    private void assertPathIsDatastream(Path path, DatastreamType dsType) {
+        assertTrue(path.toString().matches(".+" + dsType.getId() + "\\.[^/]+"));
     }
 
     @Test(expected = InvalidChecksumException.class)
@@ -326,7 +331,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Path historyPath = Paths.get(historyUri);
         assertTrue("History file should exist at storage uri", Files.exists(historyPath));
         assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
-        assertTrue(historyPath.endsWith(DatastreamType.MD_DESCRIPTIVE_HISTORY.getId()));
+        assertPathIsDatastream(historyPath, MD_DESCRIPTIVE_HISTORY);
         assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
         assertEquals(historyContent, FileUtils.readFileToString(historyPath.toFile(), UTF_8));
@@ -569,7 +574,10 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {
-        URI manifestUri = manifestUris.stream().filter(m -> m.toString().endsWith(name)).findFirst().orElseGet(null);
+        URI manifestUri = manifestUris.stream()
+                .filter(m -> StringUtils.substringAfterLast(m.toString(), "/")
+                        .contains(name))
+                .findFirst().orElseGet(null);
 
         assertTrue(Paths.get(manifestUri).toFile().exists());
         assertTrue(storageLoc.isValidUri(manifestUri));

@@ -88,7 +88,7 @@ public abstract class AbstractSolrProcessorIT {
 
     @Autowired
     protected Model queryModel;
-    @Autowired
+    @javax.annotation.Resource(name = "repositoryObjectLoader")
     protected RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     protected RepositoryObjectFactory repositoryObjectFactory;

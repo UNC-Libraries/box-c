@@ -101,9 +101,10 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         String bodyString2 = "Second manifest";
         String mimetype2 = "text/plain";
+        String filename2 = "manifest2";
         Path manifestPath2 = createTempFile("manifest", ".txt");
         writeStringToFile(manifestPath2.toFile(), bodyString2, UTF_8);
-        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), mimetype2);
+        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2, null, null);
 
         assertNotNull(manifest2);
 

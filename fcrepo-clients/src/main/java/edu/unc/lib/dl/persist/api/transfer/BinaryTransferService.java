@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.persist.api.transfer;
 
+import java.net.URI;
+
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
@@ -48,4 +50,22 @@ public interface BinaryTransferService {
      * @return new binary transfer session
      */
     BinaryTransferSession getSession(RepositoryObject repoObj);
+
+    /**
+     * Rolls back the binary transfers associated with the provided repository transaction
+     * @param txUri URI of the repository transaction to roll back
+     */
+    void rollbackTransaction(URI txUri);
+
+    /**
+     * Commits the binary transfers associated with the provided transaction
+     * @param txUri URI of the repository transaction committed
+     */
+    void commitTransaction(URI txUri);
+
+    /**
+     * Register the outcome of a transfer
+     * @param outcome results of the transfer
+     */
+    BinaryTransferOutcome registerOutcome(BinaryTransferOutcome outcome);
 }
