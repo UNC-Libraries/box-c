@@ -11,9 +11,5 @@
   <mods:relatedItem type="original">
     <mods:identifier displayLabel="Source Media Identifier" />
   </mods:relatedItem>
-  <mods:relatedItem type="isReferencedBy">
-    <mods:location>
-      <mods:url displayLabel="Link to finding aid" />
-    </mods:location>
-  </mods:relatedItem>
+  <mods:identifier displayLabel="Collection Number" type="local" />
 </mods:mods>
