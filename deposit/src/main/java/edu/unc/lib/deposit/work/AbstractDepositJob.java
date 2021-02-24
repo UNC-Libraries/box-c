@@ -167,10 +167,13 @@ public abstract class AbstractDepositJob implements Runnable {
 
                 runJob();
                 depositModelManager.commit();
+            } catch (JobPausedException e) {
+                depositModelManager.commit();
+                Thread.interrupted();
+                throw e;
             } catch (Exception e) {
                 // Clear the interrupted flag before attempting to interact with the dataset, or we may lose progress
                 Thread.interrupted();
-
                 depositModelManager.commitOrAbort(rollbackDatasetOnFailure);
                 throw e;
             }
@@ -353,8 +356,12 @@ public abstract class AbstractDepositJob implements Runnable {
 
         // Only throw error if state is changed and it's not in a finished state
         if (!DepositState.running.equals(state) && !DepositState.finished.equals(state)) {
-            throw new JobInterruptedException("State for deposit " + depositId + " changed from 'running' to '"
-                    + state.name() + "', interrupting job " + jobName);
+            if (DepositState.paused.equals(state)) {
+                throw new JobPausedException("Deposit " + depositId + " was paused, interrupting job " + jobName);
+            } else {
+                throw new JobInterruptedException("State for deposit " + depositId + " changed from 'running' to '"
+                        + state.name() + "', interrupting job " + jobName);
+            }
         }
     }
 

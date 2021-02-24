@@ -118,26 +118,30 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
         startResultRegistrar();
 
-        for (Entry<PID, String> stagedPair : stagingList) {
-            interruptJobIfStopped();
+        try {
+            for (Entry<PID, String> stagedPair : stagingList) {
+                interruptJobIfStopped();
 
-            PID objPid = stagedPair.getKey();
+                PID objPid = stagedPair.getKey();
 
-            if (isObjectCompleted(objPid)) {
-                addClicks(1);
-                continue;
+                if (isObjectCompleted(objPid)) {
+                    addClicks(1);
+                    continue;
+                }
+
+                waitForQueueCapacity();
+
+                String stagedPath = stagedPair.getValue();
+                PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
+                final String providedMimetype = getProvidedMimetype(originalPid, model);
+
+                submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
             }
 
-            waitForQueueCapacity();
-
-            String stagedPath = stagedPair.getValue();
-            PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
-            final String providedMimetype = getProvidedMimetype(originalPid, model);
-
-            submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
+            waitForCompletion();
+        } finally {
+            awaitRegistrarShutdown();
         }
-
-        waitForCompletion();
     }
 
     private String getProvidedMimetype(PID originalPid, Model model) {
