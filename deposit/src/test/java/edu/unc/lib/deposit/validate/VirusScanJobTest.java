@@ -88,21 +88,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
     @Before
     public void init() throws Exception {
 
-        job = new VirusScanJob();
-        job.setJobUUID(jobUUID);
-        job.setDepositUUID(depositUUID);
-        job.setDepositDirectory(depositDir);
-        setField(job, "pidMinter", pidMinter);
-        job.setClamScan(clamScan);
-        job.setPremisLoggerFactory(premisLoggerFactory);
-        setField(job, "depositModelManager", depositModelManager);
-        setField(job, "depositsDirectory", depositsDirectory);
-        setField(job, "depositStatusFactory", depositStatusFactory);
-        setField(job, "jobStatusFactory", jobStatusFactory);
-        depositJobId = depositUUID + ":" + this.getClass().getName();
-        setField(job, "depositJobId", depositJobId);
-        job.setExecutorService(executorService);
-        job.init();
+        initializeJob();
 
         when(depositStatusFactory.getState(anyString()))
                 .thenReturn(DepositState.running);
@@ -125,6 +111,24 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         FileUtils.copyDirectory(examplesFile, depositDir);
 
         when(premisEventBuilder.addOutcome(anyBoolean())).thenReturn(premisEventBuilder);
+    }
+
+    private void initializeJob() {
+        job = new VirusScanJob();
+        job.setJobUUID(jobUUID);
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        setField(job, "pidMinter", pidMinter);
+        job.setClamScan(clamScan);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+        setField(job, "depositModelManager", depositModelManager);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
+        depositJobId = depositUUID + ":" + this.getClass().getName();
+        setField(job, "depositJobId", depositJobId);
+        job.setExecutorService(executorService);
+        job.init();
     }
 
     @AfterClass
@@ -317,6 +321,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         when(depositStatusFactory.getState(depositUUID))
                 .thenReturn(DepositState.running);
 
+        initializeJob();
         job.run();
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
