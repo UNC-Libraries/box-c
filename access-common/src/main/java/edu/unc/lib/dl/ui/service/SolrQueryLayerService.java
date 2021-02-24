@@ -70,12 +70,14 @@ public class SolrQueryLayerService extends SolrSearchService {
      * @return
      */
     public SearchResultResponse getCollectionList(AccessGroupSet accessGroups) {
+        int MAX_COLLECTIONS_TO_RETRIEVE = 350;
+
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setAccessGroups(accessGroups);
 
         SearchState searchState = searchStateFactory.createSearchState();
         searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-        searchState.setRowsPerPage(250);
+        searchState.setRowsPerPage(MAX_COLLECTIONS_TO_RETRIEVE);
         searchState.setFacetsToRetrieve(null);
         List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
