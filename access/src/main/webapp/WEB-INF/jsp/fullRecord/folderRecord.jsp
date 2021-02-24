@@ -55,15 +55,13 @@
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
             </c:if>
             <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollection}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
-            <c:if test="${not empty parentBriefObject.collectionId}">
-                <p><strong>Collection Number: </strong><c:out value="${parentBriefObject.collectionId}"></c:out></p>
+            <c:if test="${not empty collectionId}">
+                <p><strong>Collection Number: </strong><c:out value="${collectionId}"></c:out></p>
             </c:if>
             <p><strong>Finding Aid: </strong>
                 <c:choose>
-                    <c:when test="${not empty briefObject.findingAidLink}">
-                        <c:forEach var="findingAid" items="${briefObject.findingAidLink}" varStatus="findingAidStatus">
-                            <a href="<c:out value="${findingAid}"/>"><c:out value="${findingAid}"/></a><c:if test="${!findingAidStatus.last }">, </c:if>
-                        </c:forEach>
+                    <c:when test="${not empty findingAidUrl}">
+                        <a href="<c:out value="${findingAidUrl}"/>"><c:out value="${findingAidUrl}"/></a>
                     </c:when>
                     <c:otherwise>Doesn’t have a finding aid</c:otherwise>
                 </c:choose>

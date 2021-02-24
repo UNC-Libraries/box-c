@@ -24,6 +24,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -38,8 +39,13 @@ public class TransactionManager {
     private static final String COMMIT_TX = "fcr:tx/fcr:commit";
     private static final String ROLLBACK_TX = "fcr:tx/fcr:rollback";
     private FcrepoClient client;
+    private BinaryTransferService binaryTransferService;
 
     public FedoraTransaction startTransaction() throws FedoraException {
+        if (FedoraTransaction.isStillAlive()) {
+            FedoraTransaction rootTx = FedoraTransaction.rootTxThread.get();
+            return new FedoraTransaction(rootTx.getTxUri(), this);
+        }
         URI repoBase = URI.create(RepositoryPaths.getBaseUri());
         // appends suffix for creating transaction
         URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
@@ -65,9 +71,11 @@ public class TransactionManager {
                 throw new FcrepoOperationFailedException(txUri, statusCode,
                         response.getHeaderValues("Status").toString());
             }
-        } catch (IOException | FcrepoOperationFailedException e) {
+        } catch (Exception e) {
+            binaryTransferService.rollbackTransaction(txUri);
             throw new FedoraException("Unable to commit transaction", e);
         }
+        binaryTransferService.commitTransaction(txUri);
     }
 
     protected void keepTransactionAlive(URI txUri) {
@@ -95,6 +103,8 @@ public class TransactionManager {
             }
         } catch (IOException | FcrepoOperationFailedException e) {
             throw new FedoraException("Unable to cancel transaction", e);
+        } finally {
+            binaryTransferService.rollbackTransaction(txUri);
         }
     }
 
@@ -106,4 +116,7 @@ public class TransactionManager {
         return client;
     }
 
+    public void setBinaryTransferService(BinaryTransferService binaryTransferService) {
+        this.binaryTransferService = binaryTransferService;
+    }
 }

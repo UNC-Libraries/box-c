@@ -31,6 +31,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentPathConstants;
 
 /**
  *
@@ -52,8 +53,8 @@ public class SetCollectionSupplementalInformationFilter implements IndexDocument
         String parentCollection = dip.getDocument().getParentCollection();
         if (parentCollection == null) {
             List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
-            if (pids.size() > ContentPathFactory.COLLECTION_DEPTH) {
-                parentCollection = pids.get(ContentPathFactory.COLLECTION_DEPTH).getId();
+            if (pids.size() > ContentPathConstants.COLLECTION_DEPTH) {
+                parentCollection = pids.get(ContentPathConstants.COLLECTION_DEPTH).getId();
             } else {
                 return;
             }

@@ -27,6 +27,7 @@
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
@@ -61,6 +62,12 @@
         <property name="cacheMaxSize" ref="cacheMaxSize" />
     </bean>
     
+    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" value="0" />
+        <property name="cacheMaxSize" value="0" />
+    </bean>
+    
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -89,6 +96,7 @@
     
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -108,6 +116,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
+        <property name="transactionManager" ref="txManager" />
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">

@@ -19,11 +19,17 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageType;
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -35,6 +41,10 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class HashedFilesystemStorageLocation implements StorageLocation {
     public static final String TYPE_NAME = "hashed_fs";
+
+    private static final DateTimeFormatter TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+                .withZone(ZoneId.from(ZoneOffset.UTC));
 
     private String id;
     private String name;
@@ -91,19 +101,38 @@ public class HashedFilesystemStorageLocation implements StorageLocation {
         this.name = name;
     }
 
-    @Override
-    public URI getStorageUri(PID pid) {
+    private String getBaseStoragePath(PID pid) {
         String objId = pid.getId();
         String derivativePath = RepositoryPaths
                 .idToPath(objId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
-        URI storageUri;
         if (pid.getComponentPath() != null) {
-            storageUri = URI.create(URIUtil.join(baseUri, derivativePath, objId, pid.getComponentPath()));
+            return URIUtil.join(baseUri, derivativePath, objId, pid.getComponentPath());
         } else {
-            storageUri = URI.create(URIUtil.join(baseUri, derivativePath, objId));
+            return URIUtil.join(baseUri, derivativePath, objId);
         }
-        return storageUri.normalize();
+    }
+
+    @Override
+    public URI getNewStorageUri(PID pid) {
+        String base = getBaseStoragePath(pid);
+        // Add timestamp to base path, combining wall time millisecond with relative nanotime
+
+        String timestamp = TIME_FORMATTER.format(Instant.now());
+        String path = base + "." + timestamp + System.nanoTime();
+        return URI.create(path).normalize();
+    }
+
+    @Override
+    public URI getCurrentStorageUri(PID pid) {
+        String path = getBaseStoragePath(pid);
+        return FileSystemTransferHelpers.getMostRecentStorageUri(URI.create(path));
+    }
+
+    @Override
+    public List<URI> getAllStorageUris(PID pid) {
+        String path = getBaseStoragePath(pid);
+        return FileSystemTransferHelpers.getAllStorageUris(URI.create(path));
     }
 
     @Override

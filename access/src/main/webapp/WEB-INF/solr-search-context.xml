@@ -112,6 +112,12 @@
         <property name="facetFieldUtil" ref="facetFieldUtil" />
     </bean>
     
+    <bean id="getCollectionIdService" class="edu.unc.lib.dl.search.solr.service.GetCollectionIdService"
+        init-method="initializeSolrServer">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
         init-method="initializeSolrServer">
         <property name="solrSettings" ref="solrSettings" />

@@ -58,11 +58,11 @@
     </bean>
 
     <bean id="cacheTimeToLive" class="java.lang.Long">
-        <constructor-arg value="5" />
+        <constructor-arg value="0" />
     </bean>
     
     <bean id="cacheMaxSize" class="java.lang.Long">
-        <constructor-arg value="5" />
+        <constructor-arg value="0" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
@@ -94,6 +94,7 @@
     
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
     <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">

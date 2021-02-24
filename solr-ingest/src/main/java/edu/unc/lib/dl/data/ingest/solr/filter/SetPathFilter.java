@@ -30,6 +30,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.ContentPathConstants;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for
@@ -76,12 +77,12 @@ public class SetPathFilter implements IndexDocumentFilter {
         }
         idb.setAncestorIds(ancestorIds);
 
-        if (pids.size() > ContentPathFactory.COLLECTION_DEPTH) {
-            idb.setParentCollection(pids.get(ContentPathFactory.COLLECTION_DEPTH).getId());
+        if (pids.size() > ContentPathConstants.COLLECTION_DEPTH) {
+            idb.setParentCollection(pids.get(ContentPathConstants.COLLECTION_DEPTH).getId());
         }
 
-        if (pids.size() > ContentPathFactory.UNIT_DEPTH) {
-            idb.setParentUnit(pids.get(ContentPathFactory.UNIT_DEPTH).getId());
+        if (pids.size() > ContentPathConstants.UNIT_DEPTH) {
+            idb.setParentUnit(pids.get(ContentPathConstants.UNIT_DEPTH).getId());
         }
 
         ContentObject contentObject = dip.getContentObject();

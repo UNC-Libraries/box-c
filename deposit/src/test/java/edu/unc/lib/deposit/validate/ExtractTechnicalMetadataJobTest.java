@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.validate;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +39,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -344,6 +346,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
+        await().atMost(Duration.ofSeconds(2))
+            .until(() -> techmdDir.list().length == 2);
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 2);
     }
 

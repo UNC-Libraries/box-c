@@ -21,6 +21,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Optional;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.fcrepo.client.FcrepoClient;
@@ -51,6 +53,7 @@ import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;
 
@@ -78,6 +81,8 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
     private RepositoryObjectLoader repoObjLoader;
 
     private FcrepoClient fcrepoClient;
+
+    private String registrationSuccessfulEndpoint;
 
     /**
      * The exchange here is expected to be a batch message containing a List
@@ -125,7 +130,7 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         }
 
         try (Timer.Context context = timer.time()) {
-            registerFiles(messages, digestsMap);
+            registerFiles(messages, digestsMap, exchange);
         }
     }
 
@@ -152,8 +157,9 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
      *
      * @param messages list of fcrepoUris from the exchange
      * @param digestsMap mapping of digest algorithms to paths plus digest values
+     * @param exchange the current camel exchange
      */
-    private void registerFiles(List<String> messages, Map<String, List<DigestEntry>> digestsMap) {
+    private void registerFiles(List<String> messages, Map<String, List<DigestEntry>> digestsMap, Exchange exchange) {
         long start = System.currentTimeMillis();
 
         StringBuilder sb = new StringBuilder();
@@ -166,9 +172,13 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
             sb.append(digestGroup.getKey()).append(":\n");
 
             digestEntries.forEach(manifestEntry -> {
+                Path filePath = Paths.get(manifestEntry.storageUri);
+                String basePath = FileSystemTransferHelpers.getBaseBinaryPath(filePath);
                 sb.append(manifestEntry.digest)
                     .append(' ')
-                    .append(Paths.get(manifestEntry.storageUri).toString())
+                    .append(basePath)
+                    .append(' ')
+                    .append(filePath)
                     .append('\n');
                 cnt.increment();
             });
@@ -185,15 +195,25 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
         ExecuteResult result = executeCommand("register --force -m @-", sb.toString());
 
+        Map<String, String> successful = new HashMap<>();
         if (result.exitVal == 0) {
             log.info("Successfully registered {} entries to longleaf", entryCount);
+
+            digestsMap.values().stream().flatMap(values -> values.stream())
+                      .forEach(d -> successful.put(d.fcrepoUri, d.storageUri.toString()));
+            sendSuccessMessage(successful, exchange);
         } else {
             // trim successfully registered files out of the message before failing
             if (!result.completed.isEmpty()) {
                 result.completed.stream()
-                    .map(completedPath -> findFcrepoUri(completedPath, digestsMap))
-                    .filter(fcrepoUri -> fcrepoUri != null)
-                    .forEach(messages::remove);
+                    .map(completedPath -> findDigestEntry(completedPath, digestsMap))
+                    .filter(digestEntry -> digestEntry != null)
+                    .forEach(digestEntry -> {
+                        messages.remove(digestEntry.fcrepoUri);
+                        successful.put(digestEntry.fcrepoUri, digestEntry.storageUri.toString());
+                    });
+
+                sendSuccessMessage(successful, exchange);
             }
             if (messages.isEmpty()) {
                 log.error("Result from longleaf indicates registration failed, but there are "
@@ -207,13 +227,21 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
         log.info("Longleaf registration completed in: {} ms", (System.currentTimeMillis() - start));
     }
 
-    private String findFcrepoUri(String seekPath, Map<String, List<DigestEntry>> digestsMap) {
+    private void sendSuccessMessage(Map<String, String> successful, Exchange exchange) {
+        if (successful.size() == 0) {
+            return;
+        }
+        ProducerTemplate template = exchange.getContext().createProducerTemplate();
+        template.sendBody(registrationSuccessfulEndpoint, successful);
+    }
+
+    private DigestEntry findDigestEntry(String seekPath, Map<String, List<DigestEntry>> digestsMap) {
         URI seekUri = Paths.get(seekPath).toUri();
         Optional<DigestEntry> entry = digestsMap.values().stream().flatMap(List::stream)
             .filter(de -> de.storageUri.equals(seekUri))
             .findFirst();
         if (entry.isPresent()) {
-            return entry.get().fcrepoUri;
+            return entry.get();
         } else {
             return null;
         }
@@ -244,6 +272,10 @@ public class RegisterToLongleafProcessor extends AbstractLongleafProcessor {
 
     public void setFcrepoClient(FcrepoClient fcrepoClient) {
         this.fcrepoClient = fcrepoClient;
+    }
+
+    public void setRegistrationSuccessfulEndpoint(String registrationSuccessfulEndpoint) {
+        this.registrationSuccessfulEndpoint = registrationSuccessfulEndpoint;
     }
 
     /**
