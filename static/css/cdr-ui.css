@@ -782,8 +782,8 @@ p.no-search-results {
 
 /* Work page */
 .jp2_imageviewer_window {
-  margin: 15px;
-  width: auto;
+  margin: 15px auto;
+  max-width: 90%;
 }
 
 /* DataTables  */
@@ -1076,6 +1076,24 @@ table.dataTable tbody tr.odd {
 .button.is-focused,
 .button:focus {
   color: white;
+}
+
+/* UV image viewer */
+.uv .footer {
+  background-color: white;
+  padding: 0;
+}
+.uv .tabs {
+  margin-bottom: 0;
+}
+.uv .tabs .tab.on {
+  display: inherit !important;
+}
+.uv .title {
+  font-size: inherit;
+}
+.uv li {
+  text-indent: 0;
 }
 
 /* MODs display for work and file pages, plus modalMetadata.vue component */

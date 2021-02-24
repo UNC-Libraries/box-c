@@ -79,6 +79,7 @@
 
     <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
         <property name="lorisPath" value="${loris.base.url}"/>
+        <property name="basePath" value="${access.base.url}"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     

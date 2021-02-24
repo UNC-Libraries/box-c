@@ -14,9 +14,9 @@ require.config({
 		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
 		'dataTables': '/static/plugins/DataTables/datatables.min',
-		'leaflet': '/static/plugins/leaflet/leaflet',
-		'leafletFullscreen': '/static/plugins/Leaflet-fullscreen/dist/Leaflet.fullscreen',
-		'leaflet-IIIF' : '/static/plugins/Leaflet-IIIF/leaflet-iiif',
+		'uvOffline': '/static/plugins/uv/lib/offline',
+		'uvHelpers': '/static/plugins/uv/helpers',
+		'uv': '/static/plugins/uv/uv',
 		'audiojs' : '/static/plugins/audiojs/audio',
 		'promise': 'lib/promise-polyfill.min',
 		'fetch' : 'lib/fetch-polyfill.min'
@@ -38,22 +38,22 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		$structureView = $(".structure.aggregate"),
 		$childFilesTable = $("#child-files"),
 		$modsDisplay = $("#mods_data_display");
-	
+
 	function loadViewer($viewer, widgetName) {
 		$viewer[widgetName].call($viewer, {
 			show : true,
 			url : $viewer.attr("data-url")
 		});
 	}
-	
+
 	if ($jp2Window.length > 0) {
 		loadViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"));
 	}
-	
+
 	if ($audioPlayer.length > 0) {
 		loadViewer($audioPlayer, 'audioPlayer');
 	}
-	
+
 	if ($structureView.length > 0) {
 		$.ajax({
 			url: "/structure/" + $structureView.attr('data-pid') + "/json?files=true",

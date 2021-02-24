@@ -81,7 +81,13 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
         </dependency>
-        
+
+        <!-- IIIF -->
+        <dependency>
+            <groupId>de.digitalcollections.iiif</groupId>
+            <artifactId>iiif-apis</artifactId>
+        </dependency>
+
         <!-- Test -->
         
         <dependency>
@@ -123,5 +129,5 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>fcrepo-clients</artifactId>
         </dependency>
-    </dependencies>
+  </dependencies>
 </project>

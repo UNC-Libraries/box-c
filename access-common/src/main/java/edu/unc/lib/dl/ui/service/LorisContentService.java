@@ -18,14 +18,27 @@ package edu.unc.lib.dl.ui.service;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
+import java.net.URI;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.digitalcollections.iiif.model.image.ImageApiProfile;
+import de.digitalcollections.iiif.model.image.ImageService;
+import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
+import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
+import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
+import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -33,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Generates request, connects to, and streams the output from loris.  Sets pertinent headers.
@@ -45,6 +59,7 @@ public class LorisContentService {
     private HttpClientConnectionManager httpClientConnectionManager;
 
     private String lorisPath;
+    private String basePath;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
         this.httpClientConnectionManager = manager;
@@ -77,6 +92,17 @@ public class LorisContentService {
                 if (response != null) {
                     response.setHeader("Content-Type", "application/json");
                     response.setHeader("content-disposition", "inline");
+
+                    ObjectMapper iiifMapper = new IiifObjectMapper();
+
+                    ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
+                            ImageService.class);
+                    respData.setIdentifier(new URI(URIUtil.join(basePath, "jp2Proxy", simplepid, "jp2")));
+
+                    HttpEntity updatedRespData = EntityBuilder.create()
+                            .setText(iiifMapper.writeValueAsString(respData))
+                            .setContentType(ContentType.APPLICATION_JSON).build();
+                    httpResp.setEntity(updatedRespData);
 
                     FileIOUtil.stream(outStream, httpResp);
                 }
@@ -141,11 +167,38 @@ public class LorisContentService {
         }
     }
 
+    public String getManifest(HttpServletRequest request) throws JsonProcessingException {
+        String[] url = request.getRequestURL().toString().split("\\/");
+        String uuid = url[4];
+        String datastream = url[5];
+        String manifestBase = URIUtil.join(basePath, uuid);
+
+        Canvas canvas = new Canvas(manifestBase);
+        String path = URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
+        canvas.addIIIFImage(path, ImageApiProfile.LEVEL_TWO);
+
+        Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
+        seq.addCanvas(canvas);
+
+        ObjectMapper iiifMapper = new IiifObjectMapper();
+        Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"));
+
+        return iiifMapper.writeValueAsString(manifest.addSequence(seq));
+    }
+
     public void setLorisPath(String fullPath) {
         this.lorisPath = fullPath;
     }
 
     public String getLorisPath() {
         return lorisPath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public String getBasePath() {
+        return basePath;
     }
 }

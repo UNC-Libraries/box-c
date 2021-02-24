@@ -71,6 +71,12 @@ else
 	npm --prefix static/js/vue-cdr-access run build-dev
 endif
 
+	# Build Universal Viewer
+	npm --prefix static/plugins/uv install
+	cp -R static/plugins/uv/node_modules/universalviewer/dist/* static/plugins/uv/
+	# Custom uv file, a work around to fix issue with jQuery.
+	cp static/plugins/uv/offline.js static/plugins/uv/lib/
+
 	# Make sure files are empty
 	cat /dev/null > static/js/vue-access.js
 	cat /dev/null > static/css/sass/cdr-ui.scss

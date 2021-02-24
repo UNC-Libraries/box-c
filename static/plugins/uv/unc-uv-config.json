@@ -1,0 +1,16 @@
+{
+  "options": {
+    "headerPanelEnabled": false,
+    "limitLocales": true,
+    "rightPanelEnabled": false,
+    "useArrowKeysToNavigate": true
+  },
+  "modules": {
+    "footerPanel": {
+      "options": {
+        "downloadEnabled": false,
+        "moreInfoEnabled": false
+      }
+    }
+  }
+}
