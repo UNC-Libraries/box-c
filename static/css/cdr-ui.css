@@ -1079,8 +1079,15 @@ table.dataTable tbody tr.odd {
 }
 
 /* UV image viewer */
+.uv .footer {
+  background-color: white;
+  padding: 0;
+}
 .uv .tabs {
   margin-bottom: 0;
+}
+.uv .tabs .tab.on {
+  display: inherit !important;
 }
 .uv .title {
   font-size: inherit;

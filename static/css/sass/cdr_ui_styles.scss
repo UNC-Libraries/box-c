@@ -812,9 +812,19 @@ table.dataTable {
 
 /* UV image viewer */
 .uv {
+  .footer {
+    background-color: white;
+    padding: 0;
+  }
+
   .tabs {
     margin-bottom: 0;
+
+    .tab.on {
+      display: inherit !important;
+    }
   }
+
 
   .title {
     font-size: inherit;
