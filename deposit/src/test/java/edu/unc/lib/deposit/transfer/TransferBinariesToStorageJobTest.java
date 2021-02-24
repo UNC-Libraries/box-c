@@ -455,9 +455,6 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
             // expected
         }
 
-        // Wait to allow unflushed registrations to go through
-        Thread.sleep(FLUSH_RATE * 2);
-
         // Restore the contents
         FileUtils.writeStringToFile(flappingPath.toFile(), FILE_CONTENT2, "UTF-8");
 

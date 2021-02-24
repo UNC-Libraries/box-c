@@ -118,6 +118,8 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
             }
 
             waitForCompletion();
+        } finally {
+            awaitRegistrarShutdown();
         }
     }
 

@@ -49,7 +49,7 @@ public abstract class AbstractConcurrentDepositJob extends AbstractDepositJob {
     protected Queue<Future<?>> futuresQueue = new LinkedBlockingQueue<>();
     protected BlockingQueue<Object> resultsQueue = new LinkedBlockingQueue<>();
 
-    private long MAX_REGISTRAR_SHUTDOWN_MS = 1000 * 5;
+    private long MAX_REGISTRAR_SHUTDOWN_MS = 1000 * 10;
     private int flushRate = 5000;
     // Should be higher than the number of workers
     private int maxQueuedJobs = 10;
