@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.ui.util.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,8 +72,6 @@ public class SolrQueryLayerService extends SolrSearchService {
      * @return
      */
     public SearchResultResponse getCollectionList(AccessGroupSet accessGroups) {
-        int MAX_COLLECTIONS_TO_RETRIEVE = 350;
-
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setAccessGroups(accessGroups);
 
