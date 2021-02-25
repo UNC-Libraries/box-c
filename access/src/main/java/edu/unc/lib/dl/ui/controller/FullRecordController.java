@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -121,8 +122,13 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        aclService.assertHasAccess("Insufficient permissions to access full record",
-                pid, principals, Permission.viewMetadata);
+        try {
+            aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
+                    pid, principals, Permission.viewMetadata);
+        } catch (AccessRestrictionException e) {
+            LOG.info("{}", e.getMessage());
+            throw new InvalidRecordRequestException();
+        }
 
         SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
 
@@ -162,8 +168,13 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        aclService.assertHasAccess("Insufficient permissions to access full record",
-                pid, principals, Permission.viewMetadata);
+        try {
+            aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
+                    pid, principals, Permission.viewMetadata);
+        } catch (AccessRestrictionException e) {
+            LOG.info("{}", e.getMessage());
+            throw new InvalidRecordRequestException();
+        }
 
         // Retrieve the objects record from Solr
         SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
