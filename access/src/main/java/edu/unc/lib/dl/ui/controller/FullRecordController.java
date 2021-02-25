@@ -123,7 +123,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
         try {
-            aclService.assertHasAccess("Insufficient permissions to access full record",
+            aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
                     pid, principals, Permission.viewMetadata);
         } catch (AccessRestrictionException e) {
             LOG.info("{}", e.getMessage());
@@ -168,9 +168,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        String errorMsg = "Insufficient permissions to access full record";
         try {
-            aclService.assertHasAccess("Insufficient permissions to access full record",
+            aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
                     pid, principals, Permission.viewMetadata);
         } catch (AccessRestrictionException e) {
             LOG.info("{}", e.getMessage());
