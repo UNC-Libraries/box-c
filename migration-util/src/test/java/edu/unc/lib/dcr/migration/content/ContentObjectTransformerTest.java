@@ -202,7 +202,6 @@ public class ContentObjectTransformerTest {
     public void transformFolderWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid);
         addPatronAccess(model, startingPid);
-        addStaffRoles(model, startingPid);
         addOriginalDeposit(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "folder")
@@ -221,8 +220,6 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.label, "folder"));
 
         assertHasPatronAccess(resc);
-        // Cannot assign staff roles to folders
-        assertNoStaffRoles(resc);
 
         assertOriginalDepositLink(resc);
     }
@@ -385,7 +382,6 @@ public class ContentObjectTransformerTest {
     public void transformWorkWithNoChildren() throws Exception {
         Model model = createContainerModel(startingPid, AGGREGATE_WORK);
         addPatronAccess(model, startingPid);
-        addStaffRoles(model, startingPid);
         addOriginalDeposit(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "work")
@@ -404,7 +400,6 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.label, "work"));
 
         assertHasPatronAccess(resc);
-        assertNoStaffRoles(resc);
 
         assertOriginalDepositLink(resc);
     }
@@ -779,49 +774,6 @@ public class ContentObjectTransformerTest {
     }
 
     @Test
-    public void transformNestedCollection() throws Exception {
-        // Create the children objects' foxml
-        PID child1Pid = makePid();
-        Document foxml1 = new FoxmlDocumentBuilder(child1Pid, "collection")
-                .relsExtModel(createContainerModel(child1Pid, ContentModel.COLLECTION))
-                .build();
-        serializeFoxml(objectsPath, child1Pid, foxml1);
-
-        // Create the parent's foxml
-        Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
-        addContains(model, startingPid, child1Pid);
-        addPatronAccess(model, startingPid);
-        addStaffRoles(model, startingPid);
-        Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
-                .relsExtModel(model)
-                .build();
-        serializeFoxml(objectsPath, startingPid, foxml);
-
-        service.perform();
-
-        Model depModel = modelManager.getReadModel(depositPid);
-        Resource unitResc = depModel.getResource(startingPid.getRepositoryPath());
-
-        assertTrue(unitResc.hasProperty(RDF.type, Cdr.AdminUnit));
-        assertTrue(unitResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
-        assertTrue(unitResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
-        assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
-        // patron ACLs should have migrated from unit to collection
-        assertNoPatronAccess(unitResc);
-        assertHasStaffRoles(unitResc);
-
-        Resource collResc = depModel.getResource(child1Pid.getRepositoryPath());
-
-        assertTrue(collResc.hasProperty(RDF.type, Cdr.Collection));
-        assertTrue(collResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
-        assertTrue(collResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
-        assertTrue(collResc.hasProperty(CdrDeposit.label, "collection"));
-        // Coll should now have the ACLs from the unit
-        assertHasPatronAccess(collResc);
-        assertNoStaffRoles(collResc);
-    }
-
-    @Test
     public void transformCollectionInCollection() throws Exception {
         PID collChildPid = makePid();
         Model collChild = createContainerModel(collChildPid, ContentModel.COLLECTION);
@@ -843,7 +795,6 @@ public class ContentObjectTransformerTest {
         Model transformToAdminUnitModel = createContainerModel(startingPid, ContentModel.COLLECTION);
         addContains(transformToAdminUnitModel, startingPid, collPid);
         addPatronAccess(transformToAdminUnitModel, startingPid);
-        addStaffRoles(transformToAdminUnitModel, startingPid);
         Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
                 .relsExtModel(transformToAdminUnitModel)
                 .build();
@@ -858,9 +809,8 @@ public class ContentObjectTransformerTest {
         assertTrue(unitResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(unitResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
-        // patron ACLs should have migrated from unit to collection
+        // Ignoring patron permissions on unit
         assertNoPatronAccess(unitResc);
-        assertHasStaffRoles(unitResc);
 
         Resource collResc = depModel.getResource(collPid.getRepositoryPath());
 
@@ -868,9 +818,9 @@ public class ContentObjectTransformerTest {
         assertTrue(collResc.hasProperty(CdrDeposit.lastModifiedTime, DEFAULT_LAST_MODIFIED));
         assertTrue(collResc.hasProperty(CdrDeposit.createTime, DEFAULT_CREATED_DATE));
         assertTrue(collResc.hasProperty(CdrDeposit.label, "collection"));
-        // Coll should now have the ACLs from the unit
-        assertHasPatronAccess(collResc);
-        assertNoStaffRoles(collResc);
+        // Coll gets default permissions
+        assertTrue(collResc.hasLiteral(CdrAcl.canViewOriginals, AccessPrincipalConstants.PUBLIC_PRINC));
+        assertTrue(collResc.hasLiteral(CdrAcl.canViewOriginals, AccessPrincipalConstants.AUTHENTICATED_PRINC));
 
         // Nested collection transformed to a folder
         Resource collChildResc = depModel.getResource(collChildPid.getRepositoryPath());
@@ -887,7 +837,6 @@ public class ContentObjectTransformerTest {
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
         when(repoObj.getResourceType()).thenReturn(ResourceType.ContentRoot);
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
-        addStaffRoles(model, startingPid);
         addPatronAccess(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "aspiring unit")
@@ -906,7 +855,6 @@ public class ContentObjectTransformerTest {
         assertTrue(unitResc.hasProperty(CdrDeposit.label, "aspiring unit"));
         // patron ACLs should have migrated from unit to collection
         assertNoPatronAccess(unitResc);
-        assertHasStaffRoles(unitResc);
     }
 
     @Test
@@ -914,7 +862,6 @@ public class ContentObjectTransformerTest {
         options.setTopLevelAsUnit(false);
 
         Model model = createContainerModel(startingPid, ContentModel.COLLECTION);
-        addStaffRoles(model, startingPid);
         addPatronAccess(model, startingPid);
 
         Document foxml = new FoxmlDocumentBuilder(startingPid, "top collection")
@@ -933,7 +880,6 @@ public class ContentObjectTransformerTest {
         assertTrue(resc.hasProperty(CdrDeposit.label, "top collection"));
 
         assertHasPatronAccess(resc);
-        assertHasStaffRoles(resc);
     }
 
     @Test
@@ -1275,26 +1221,6 @@ public class ContentObjectTransformerTest {
         List<Statement> authRoles = bxc5Resc.getModel().listStatements(
                 bxc5Resc, null, AccessPrincipalConstants.AUTHENTICATED_PRINC).toList();
         assertTrue("Expected no roles for authenticated group on " + bxc5Resc.getURI(), authRoles.isEmpty());
-    }
-
-    private void addStaffRoles(Model bxc3Model, PID startingPid) {
-        Resource bxc3Resc = bxc3Model.getResource(toBxc3Uri(startingPid));
-        bxc3Resc.addLiteral(Bxc3UserRole.curator.getProperty(), "admin_grp");
-        bxc3Resc.addLiteral(Bxc3UserRole.observer.getProperty(), "viewer_grp");
-    }
-
-    private void assertHasStaffRoles(Resource bxc5Resc) {
-        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canManage, "admin_grp"));
-        assertTrue(bxc5Resc.hasLiteral(CdrAcl.canAccess, "viewer_grp"));
-    }
-
-    private void assertNoStaffRoles(Resource bxc5Resc) {
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.canAccess));
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.canIngest));
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.canDescribe));
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.canManage));
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.canProcess));
-        assertFalse(bxc5Resc.hasProperty(CdrAcl.unitOwner));
     }
 
     private void addOriginalDeposit(Model bxc3Model, PID bxc3Pid) {

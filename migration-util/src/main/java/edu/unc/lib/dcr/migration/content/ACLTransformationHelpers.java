@@ -21,9 +21,7 @@ import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -36,7 +34,6 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.solr.common.StringUtils;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dcr.migration.fcrepo3.ContentModelHelper.Bxc3UserRole;
@@ -59,31 +56,23 @@ public class ACLTransformationHelpers {
     public final static String BXC3_PUBLIC_GROUP = "public";
     public final static String BXC3_AUTHENTICATED_GROUP = "authenticated";
 
-    private static final Map<PID, Model> unitPatronAccessCache = new HashMap<>();
-
     private ACLTransformationHelpers() {
     }
 
     /**
      * Transforms the bxc3 patron access control settings into bxc5
      *
-     * Patron access settings found on an admin unit will be applied to its children
-     * collections instead, but only if the children do not have locally defined
-     * settings for the same groups.
-     *
      * @param bxc3Resc
      * @param bxc5Resc
      * @param parentPid bxc5 PID of the parent
      */
     public static void transformPatronAccess(Resource bxc3Resc, Resource bxc5Resc, PID parentPid) {
-        // For admin units, cache patron access settings so they can be used for children instead
-
         Resource destResc;
         if (bxc5Resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
+            // Ignoring permissions from unit
             Model unitModel = createDefaultModel();
             PID unitPid = PIDs.get(bxc5Resc.getURI());
             destResc = unitModel.getResource(unitPid.getRepositoryPath());
-            unitPatronAccessCache.put(unitPid, unitModel);
         } else {
             destResc = bxc5Resc;
         }
@@ -109,9 +98,6 @@ public class ACLTransformationHelpers {
         if (authRole != null) {
             destResc.addLiteral(authRole, AUTHENTICATED_PRINC);
         }
-
-        // Merge in access settings from parent if present in the cache
-        mergeParentPatronAcls(parentPid, destResc, everyoneRole, authRole);
 
         // For collections if no roles specified or inherited, default to open permissions
         // as they would normally inherit from the root in bxc3.
@@ -211,95 +197,6 @@ public class ACLTransformationHelpers {
         return existingRole;
     }
 
-    private static void mergeParentPatronAcls(PID parentPid, Resource destResc, Property everyoneRole,
-            Property authRole) {
-        // Merge in access settings from parent if present in the cache
-        Model parentUnitModel = unitPatronAccessCache.get(parentPid);
-        if (parentUnitModel != null) {
-            Resource parentUnitResc = parentUnitModel.getResource(parentPid.getRepositoryPath());
-            if (!destResc.hasProperty(CdrAcl.embargoUntil) && parentUnitResc.hasProperty(CdrAcl.embargoUntil)) {
-                String embargoDate = parentUnitResc.getProperty(
-                        CdrAcl.embargoUntil).getLiteral().getString();
-                Literal embargoLiteral = parentUnitModel.createTypedLiteral(embargoDate, XSDDatatype.XSDdateTime);
-                destResc.addLiteral(CdrAcl.embargoUntil, embargoLiteral);
-            }
-            if (everyoneRole == null) {
-                StmtIterator it = parentUnitModel.listStatements(parentUnitResc, null, PUBLIC_PRINC);
-                if (it.hasNext()) {
-                    Statement roleStmt = it.next();
-                    destResc.addLiteral(roleStmt.getPredicate(), PUBLIC_PRINC);
-                    it.close();
-                }
-            }
-            if (authRole == null) {
-                StmtIterator it = parentUnitModel.listStatements(parentUnitResc, null, AUTHENTICATED_PRINC);
-                if (it.hasNext()) {
-                    Statement roleStmt = it.next();
-                    destResc.addLiteral(roleStmt.getPredicate(), AUTHENTICATED_PRINC);
-                    it.close();
-                }
-            }
-        }
-    }
-
-    /**
-     * Transforms BXC3 staff role assignments to BXC5 staff role assignments
-     *
-     * @param bxc3Resc
-     * @param bxc5Resc
-     */
-    public static void transformStaffRoles(Resource bxc3Resc, Resource bxc5Resc) {
-        Set<String> principalsAssigned = new HashSet<>();
-        // Order matters here, as a principal can only be assigned a single role, so we
-        // prioritize the higher permission granting role first.
-        mapStaffRole(Bxc3UserRole.curator, CdrAcl.canManage, bxc3Resc, bxc5Resc, principalsAssigned);
-        mapStaffRole(Bxc3UserRole.processor, CdrAcl.canProcess, bxc3Resc, bxc5Resc, principalsAssigned);
-        mapStaffRole(Bxc3UserRole.metadataEditor, CdrAcl.canDescribe, bxc3Resc, bxc5Resc, principalsAssigned);
-        mapStaffRole(Bxc3UserRole.ingester, CdrAcl.canIngest, bxc3Resc, bxc5Resc, principalsAssigned);
-        mapStaffRole(Bxc3UserRole.observer, CdrAcl.canAccess, bxc3Resc, bxc5Resc, principalsAssigned);
-    }
-
-    /**
-     * Map all values of bxc3 user role to a bxc5 role, unless the principal is invalid
-     *
-     * @param bxc3Role bxc3 role to transform if present
-     * @param bxc5Role bxc5 role which will be generated if the bxc3 role is found
-     * @param bxc3Resc bxc3 resource
-     * @param bxc5Resc bxc5 resource
-     * @param principalsAssigned principals which have had roles assigned so far
-     */
-    private static void mapStaffRole(Bxc3UserRole bxc3Role, Property bxc5Role,
-            Resource bxc3Resc, Resource bxc5Resc, Set<String> principalsAssigned) {
-        if (bxc3Resc.hasProperty(bxc3Role.getProperty())) {
-            StmtIterator stmtIt = bxc3Resc.listProperties(bxc3Role.getProperty());
-
-            while (stmtIt.hasNext()) {
-                Statement stmt = stmtIt.next();
-
-                String principal = stmt.getString().trim();
-                if (StringUtils.isEmpty(principal)) {
-                    log.warn("Ignoring role {} with empty principal on {}",
-                            bxc3Role.name(), bxc3Resc.getURI());
-                    continue;
-                }
-                if (isPatronPrincipal(principal)) {
-                    log.warn("Ignoring patron principal {} assigned staff role {} on {}",
-                            principal, bxc3Role.name(), bxc3Resc.getURI());
-                    continue;
-                }
-                // Cannot assign the same principal multiple roles
-                if (principalsAssigned.contains(principal)) {
-                    log.warn("Ignoring extra role assignment {} for principal {} on {}",
-                            bxc3Role.name(), principal, bxc3Resc.getURI());
-                    continue;
-                }
-
-                principalsAssigned.add(principal);
-                bxc5Resc.addLiteral(bxc5Role, principal);
-            }
-        }
-    }
-
     private static String formatEmbargoDate(String embargoDate) {
         String regex = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"; // ISO date without milliseconds
         Pattern pattern = Pattern.compile(regex);
@@ -309,10 +206,5 @@ public class ACLTransformationHelpers {
         }
 
         return embargoDate;
-    }
-
-    private static boolean isPatronPrincipal(String principal) {
-        return BXC3_PUBLIC_GROUP.equalsIgnoreCase(principal)
-                || BXC3_AUTHENTICATED_GROUP.equalsIgnoreCase(principal);
     }
 }

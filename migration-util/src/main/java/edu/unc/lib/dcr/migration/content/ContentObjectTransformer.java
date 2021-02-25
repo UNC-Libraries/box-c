@@ -319,11 +319,6 @@ public class ContentObjectTransformer extends RecursiveAction {
 
         // transform PREMIS and copy to deposit directory
         transformPremis(originalPid, newPid);
-
-        // set staff access if a unit or collection
-        if (Cdr.AdminUnit.equals(resourceType) || Cdr.Collection.equals(resourceType)) {
-            ACLTransformationHelpers.transformStaffRoles(bxc3Resc, containerBag);
-        }
     }
 
     private void populateFileObject(Resource bxc3Resc, Model depositModel) {
