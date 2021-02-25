@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.ui.util.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -75,7 +77,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         SearchState searchState = searchStateFactory.createSearchState();
         searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-        searchState.setRowsPerPage(250);
+        searchState.setRowsPerPage(MAX_COLLECTIONS_TO_RETRIEVE);
         searchState.setFacetsToRetrieve(null);
         List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
