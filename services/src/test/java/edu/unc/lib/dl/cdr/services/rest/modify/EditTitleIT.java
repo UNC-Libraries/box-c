@@ -84,6 +84,24 @@ public class EditTitleIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testSpecialCharactersTitle() throws Exception {
+        PID pid = makePid();
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
+        String title = "work_title!*'();:@&=+$,/?%#[]special@charcters";
+
+        MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
+                .param("title", title))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(pid.getUUID(), respMap.get("pid"));
+        assertEquals("editTitle", respMap.get("action"));
+        hasTitleValue(getUpdatedDescriptionDocument(work.getDescription()), title);
+    }
+
+    @Test
     public void testReplaceTitle() throws Exception {
         PID pid = makePid();
         String oldTitle = "old_work_title";
