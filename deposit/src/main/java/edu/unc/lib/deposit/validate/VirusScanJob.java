@@ -16,6 +16,8 @@
 package edu.unc.lib.deposit.validate;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -27,9 +29,6 @@ import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.philvarner.clamavj.ClamScan;
-import com.philvarner.clamavj.ScanResult;
-
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -40,6 +39,8 @@ import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import fi.solita.clamav.ClamAVClient;
+import fi.solita.clamav.ScanResult;
 
 /**
  * Scans all staged files registered in the deposit for viruses.
@@ -51,18 +52,14 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory
             .getLogger(VirusScanJob.class);
 
-    private ClamScan clamScan;
+    private ClamAVClient clamClient;
 
     public VirusScanJob() {
         super();
     }
 
-    public ClamScan getClamScan() {
-        return clamScan;
-    }
-
-    public void setClamScan(ClamScan clamScan) {
-        this.clamScan = clamScan;
+    public void setClamClient(ClamAVClient clamClient) {
+        this.clamClient = clamClient;
     }
 
     public VirusScanJob(String uuid, String depositUUID) {
@@ -104,7 +101,12 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                 URI manifestURI = URI.create(href.getValue());
                 File file = new File(manifestURI);
 
-                ScanResult result = clamScan.scan(file);
+                ScanResult result;
+                try {
+                    result = clamClient.scanWithResult(new FileInputStream(file));
+                } catch (IOException e) {
+                    result = new ScanResult(e);
+                }
 
                 switch (result.getStatus()) {
                 case FAILED:
