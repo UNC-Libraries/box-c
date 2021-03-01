@@ -18,6 +18,8 @@ package edu.unc.lib.dl.ui.controller;
 import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +40,11 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.LorisContentService;
 
 /**
@@ -152,7 +159,8 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
             try {
-                return lorisContentService.getManifest(request);
+                List<BriefObjectMetadata> briefObjs = getDataStreams(id, request);
+                return lorisContentService.getManifest(request, briefObjs);
             } catch (IOException e) {
                 LOG.error("Error retrieving manifest content for {}", id, e);
             }
@@ -162,5 +170,29 @@ public class LorisContentController extends AbstractSolrSearchController {
         }
 
         return "";
+    }
+
+    private List<BriefObjectMetadata> getDataStreams(String id, HttpServletRequest request) {
+        PID pid = PIDs.get(id);
+        SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
+
+        SearchState searchState = searchRequest.getSearchState();
+        searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+                SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTRIBUTOR.name(),
+                SearchFieldKeys.CREATOR.name(), SearchFieldKeys.SUBJECT.name(),
+                SearchFieldKeys.ABSTRACT.name(), SearchFieldKeys.STATUS.name(),
+                SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.CONTENT_MODEL.name(),
+                SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
+                SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
+
+        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+                searchRequest.getAccessGroups());
+        SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+        List<BriefObjectMetadata> objects = resultResponse.getResultList();
+        objects.add(0, container);
+
+        return resultResponse.getResultList();
     }
 }

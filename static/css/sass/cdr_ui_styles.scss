@@ -817,6 +817,12 @@ table.dataTable {
     padding: 0;
   }
 
+  .search {
+    a {
+      margin-left: 0;
+    }
+  }
+
   .tabs {
     margin-bottom: 0;
 
@@ -825,8 +831,8 @@ table.dataTable {
     }
   }
 
-
   .title {
+    color: white;
     font-size: inherit;
   }
 

@@ -19,12 +19,15 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.digitalcollections.iiif.model.ImageContent;
 import de.digitalcollections.iiif.model.image.ImageApiProfile;
 import de.digitalcollections.iiif.model.image.ImageService;
 import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
@@ -44,6 +47,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 import edu.unc.lib.dl.util.URIUtil;
@@ -167,23 +172,89 @@ public class LorisContentService {
         }
     }
 
-    public String getManifest(HttpServletRequest request) throws JsonProcessingException {
+    public String getManifest(HttpServletRequest request, List<BriefObjectMetadata> briefObjs)
+            throws JsonProcessingException {
         String[] url = request.getRequestURL().toString().split("\\/");
         String uuid = url[4];
         String datastream = url[5];
         String manifestBase = URIUtil.join(basePath, uuid);
-
-        Canvas canvas = new Canvas(manifestBase);
-        String path = URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
-        canvas.addIIIFImage(path, ImageApiProfile.LEVEL_TWO);
-
-        Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
-        seq.addCanvas(canvas);
+        BriefObjectMetadata rootObj = briefObjs.get(0);
 
         ObjectMapper iiifMapper = new IiifObjectMapper();
-        Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"));
+
+        String title = rootObj.getTitle();
+        title = (title != null) ? title : "";
+
+        Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"), title);
+
+        String abstractText = rootObj.getAbstractText();
+        String label = rootObj.getLabel();
+        List<String> creators = rootObj.getCreator();
+        List<String> keywords = rootObj.getKeyword();
+        List<String> subjects = rootObj.getSubject();
+        List<String> language = rootObj.getLanguage();
+
+        if (abstractText != null) {
+            manifest.addDescription(abstractText);
+        }
+
+        if (label != null) {
+            manifest.addLabel(label);
+        }
+
+        setMedataField(manifest, "Creators", creators);
+        setMedataField(manifest, "Keywords", keywords);
+        setMedataField(manifest, "Subjects", subjects);
+        setMedataField(manifest, "Languages", language);
+
+        Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
+
+        List<String> uuidList = new ArrayList<String>();
+        for (BriefObjectMetadata briefObj : briefObjs) {
+            String datastreamUuid = Jp2Pid(briefObj.getDatastreamObjects());
+
+            // Don't add rootObj twice
+            if (!datastreamUuid.equals("")) {
+                if (uuidList.contains(datastreamUuid)) {
+                    continue;
+                }
+
+                Canvas canvas = new Canvas(manifestBase);
+                String path = URIUtil.join(basePath, "jp2Proxy", datastreamUuid, datastream);
+                canvas.addIIIFImage(path, ImageApiProfile.LEVEL_TWO);
+                ImageContent thumb = new ImageContent(URIUtil.join(basePath,
+                        "services", "api", "thumb", datastreamUuid, "large"));
+                canvas.addImage(thumb);
+                seq.addCanvas(canvas);
+            }
+
+            uuidList.add(datastreamUuid);
+        }
 
         return iiifMapper.writeValueAsString(manifest.addSequence(seq));
+    }
+
+    private String Jp2Pid(List<Datastream> datastream) {
+        if (datastream != null) {
+            for (Datastream stream : datastream) {
+                String streamValues = stream.toString();
+                if (streamValues.trim().startsWith("jp2")) {
+                    String[] uuid_parts = streamValues.split("\\|");
+                    if (uuid_parts.length == 7) {
+                        return uuid_parts[6];
+                    }
+                    return uuid_parts[2].split("\\.")[0];
+                }
+            }
+        }
+
+        return "";
+    }
+
+    private void setMedataField(Manifest manifest, String fieldName, List<String> field) {
+        if (field != null && field.size() != 0) {
+            manifest.addMetadata(fieldName, String.join(", ", field));
+        }
     }
 
     public void setLorisPath(String fullPath) {
