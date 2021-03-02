@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -61,6 +62,7 @@ public class ResultEntryController extends AbstractSearchController {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }
 
+        childrenCountService.addChildrenCounts(Collections.singletonList(entryBean), accessGroups);
         return SerializationUtil.metadataToJSON(entryBean, accessGroups);
     }
 }
