@@ -46,7 +46,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
@@ -202,16 +204,16 @@ public class LorisContentService {
             manifest.addLabel(label);
         }
 
-        setMedataField(manifest, "Creators", creators);
-        setMedataField(manifest, "Keywords", keywords);
-        setMedataField(manifest, "Subjects", subjects);
-        setMedataField(manifest, "Languages", language);
+        setMetadataField(manifest, "Creators", creators);
+        setMetadataField(manifest, "Keywords", keywords);
+        setMetadataField(manifest, "Subjects", subjects);
+        setMetadataField(manifest, "Languages", language);
 
         Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
 
-        List<String> uuidList = new ArrayList<String>();
+        List<String> uuidList = new ArrayList<>();
         for (BriefObjectMetadata briefObj : briefObjs) {
-            String datastreamUuid = Jp2Pid(briefObj.getDatastreamObjects());
+            String datastreamUuid = jp2Pid(briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()));
 
             // Don't add rootObj twice
             if (!datastreamUuid.equals("")) {
@@ -234,25 +236,24 @@ public class LorisContentService {
         return iiifMapper.writeValueAsString(manifest.addSequence(seq));
     }
 
-    private String Jp2Pid(List<Datastream> datastream) {
+    private String jp2Pid(Datastream datastream) {
         if (datastream != null) {
-            for (Datastream stream : datastream) {
-                String streamValues = stream.toString();
-                if (streamValues.trim().startsWith("jp2")) {
-                    String[] uuid_parts = streamValues.split("\\|");
-                    if (uuid_parts.length == 7) {
-                        return uuid_parts[6];
-                    }
-                    return uuid_parts[2].split("\\.")[0];
+            String streamValues = datastream.toString();
+
+            if (streamValues.trim().startsWith("jp2")) {
+                String[] uuid_parts = streamValues.split("\\|");
+                if (uuid_parts.length == 7) {
+                    return uuid_parts[6];
                 }
+                return uuid_parts[2].split("\\.")[0];
             }
         }
 
         return "";
     }
 
-    private void setMedataField(Manifest manifest, String fieldName, List<String> field) {
-        if (field != null && field.size() != 0) {
+    private void setMetadataField(Manifest manifest, String fieldName, List<String> field) {
+        if (!CollectionUtils.isEmpty(field)) {
             manifest.addMetadata(fieldName, String.join(", ", field));
         }
     }

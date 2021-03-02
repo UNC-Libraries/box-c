@@ -191,9 +191,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("embargoDate", embargoUntil);
         }
 
-        // Get pid of JP2 if there is one
-        model.addAttribute("jp2Id", briefObject.getId());
-
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
         boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
