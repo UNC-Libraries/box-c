@@ -19,7 +19,7 @@ define('EditTitleForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
             var newTitle = $("input[name='title']", this.$form).val();
             var pid = resultObject.metadata.id;
 
-            this.action_url = "/services/api/edit/title/" + pid + "?title=" + newTitle;
+            this.action_url = "/services/api/edit/title/" + pid + "?title=" + encodeURIComponent(newTitle);
         };
 
         EditTitleForm.prototype.validationErrors = function() {
