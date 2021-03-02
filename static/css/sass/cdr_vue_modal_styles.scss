@@ -17,6 +17,8 @@
 }
 
 .modal-container {
+  height: 90vh;
+  overflow-y: auto;
   width: auto;
   margin: 0 auto;
   max-width: 720px;
@@ -84,6 +86,8 @@
 }
 
 .meta-modal {
+  overflow-y: initial;
+
   button {
     color: white;
     background-color: #007FAE;
