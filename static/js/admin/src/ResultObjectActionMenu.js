@@ -1,4 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm', 'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm',
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
 		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm) {
 
 	var defaultOptions = {
@@ -420,11 +421,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							}
 						})();
 						break;
-					case "patronPermissions" :
+					case "patronPermissions":
 						perms_editor_data.permissionType = 'Patron';
 						perms_editor_data.metadata = metadata;
 						perms_editor_data.showModal = true;
 						perms_editor_data.alertHandler = self.options.alertHandler;
+						perms_editor_data.actionHandler = self.actionHandler;
+						perms_editor_data.resultObject = resultObject;
 						break;
 					case "staffPermissions":
 						perms_editor_data.permissionType = 'Staff';

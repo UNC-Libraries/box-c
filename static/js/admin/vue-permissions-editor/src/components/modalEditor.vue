@@ -23,9 +23,11 @@
                                 </div>
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"
+                                                  :action-handler="actionHandler"
                                                   :alert-handler="alertHandler"
                                                   :changes-check="checkForUnsavedChanges"
                                                   :container-type="metadata.type"
+                                                  :result-object="resultObject"
                                                   :title="metadata.title"
                                                   :uuid="metadata.id"
                                                   @reset-changes-check="resetChangesCheck"
@@ -61,10 +63,12 @@
 
         data() {
             return {
+                actionHandler: {},
                 alertHandler: {},
                 checkForUnsavedChanges: false,
                 metadata: {},
                 permissionType: '',
+                resultObject: {},
                 showModal: false,
             };
         },

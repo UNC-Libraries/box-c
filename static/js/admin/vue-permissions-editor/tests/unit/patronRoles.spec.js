@@ -71,6 +71,9 @@ describe('patronRoles.vue', () => {
         wrapper = shallowMount(patronRoles, {
             localVue,
             propsData: {
+                actionHandler: {
+                    actionHandler: jest.fn() // This method lives outside of the Vue app
+                },
                 alertHandler: {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
@@ -88,6 +91,9 @@ describe('patronRoles.vue', () => {
         wrapper = shallowMount(patronRoles, {
             localVue,
             propsData: {
+                actionHandler: {
+                    actionHandler: jest.fn() // This method lives outside of the Vue app
+                },
                 alertHandler: {
                     alertHandler: jest.fn() // This method lives outside of the Vue app
                 },
