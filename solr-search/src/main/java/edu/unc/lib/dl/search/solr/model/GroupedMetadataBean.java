@@ -355,4 +355,9 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     public String getAncestorIds() {
         return representative.getAncestorIds();
     }
+
+    @Override
+    public String getIdentifierSort() {
+        return representative.getIdentifierSort();
+    }
 }

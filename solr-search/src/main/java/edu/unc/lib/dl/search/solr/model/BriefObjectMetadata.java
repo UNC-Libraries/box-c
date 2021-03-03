@@ -107,6 +107,8 @@ public interface BriefObjectMetadata {
 
     public List<String> getIdentifier();
 
+    public String getIdentifierSort();
+
     public String getLabel();
 
     public String getTitle();

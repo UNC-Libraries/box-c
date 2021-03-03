@@ -112,6 +112,18 @@ public class SolrUpdateDriver {
                 // Allowing values and explicitly nulled fields through
                 updateField(sid, fieldName, value);
             }
+            // Index dynamic fields if present
+            Map<String, Object> dynamics = idb.getDynamicFields();
+            if (dynamics != null) {
+                for (Entry<String, Object> field : dynamics.entrySet()) {
+                    String fieldName = field.getKey();
+                    Object value = field.getValue();
+
+                    // Allowing values and explicitly nulled fields through
+                    updateField(sid, fieldName, value);
+                }
+
+            }
 
             // Set timestamp to now, auto population not working with atomic update #SOLR-8966
             updateField(sid, UPDATE_TIMESTAMP, new Date());
