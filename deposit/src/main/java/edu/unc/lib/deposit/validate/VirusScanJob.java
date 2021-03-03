@@ -109,7 +109,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                 }
 
                 switch (result.getStatus()) {
-                case FAILED:
+                case FOUND:
                     failures.put(manifestURI.toString(), result.getSignature());
                     break;
                 case ERROR:

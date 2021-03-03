@@ -197,7 +197,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         // Fail the text scan, but not the pdf
         when(scanResult.getStatus()).thenReturn(Status.PASSED);
         ScanResult result2 = mock(ScanResult.class);
-        when(result2.getStatus()).thenReturn(Status.FAILED);
+        when(result2.getStatus()).thenReturn(Status.FOUND);
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
         when(clamClient.scanWithResult(any(InputStream.class)))
@@ -232,7 +232,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
     @Test
     public void failAndRescanTest() throws Exception {
-        when(scanResult.getStatus()).thenReturn(Status.FAILED)
+        when(scanResult.getStatus()).thenReturn(Status.FOUND)
                 .thenReturn(Status.PASSED);
         File textFile = new File(depositDir, "text.txt");
         doReturn(scanResult).when(clamClient).scanWithResult(any(InputStream.class));
