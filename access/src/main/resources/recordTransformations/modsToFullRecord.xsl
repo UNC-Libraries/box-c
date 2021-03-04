@@ -69,10 +69,15 @@
 
 		<xsl:variable name="description" select="*[local-name() = 'description']"/>
 		<xsl:if test="boolean($description)">
-			<xsl:text>Description:  </xsl:text><xsl:value-of select="$description"/><br/><xsl:value-of select="$newline"/>
+			<span>
+			    <xsl:text>Description:  </xsl:text>
+				<xsl:for-each select="*[local-name() = 'description']">
+					<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+				</xsl:for-each>
+			</span>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template name="formatName">
 		<xsl:param name="nameField"/>
 		
