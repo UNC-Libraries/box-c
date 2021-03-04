@@ -70,8 +70,8 @@
 		<xsl:variable name="description" select="*[local-name() = 'description']"/>
 		<xsl:if test="boolean($description)">
 			<span>
-			    <xsl:text>Description:  </xsl:text>
-				<xsl:for-each select="*[local-name() = 'description']">
+				<xsl:text>Description:  </xsl:text>
+				<xsl:for-each select="$description">
 					<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
 				</xsl:for-each>
 			</span>
