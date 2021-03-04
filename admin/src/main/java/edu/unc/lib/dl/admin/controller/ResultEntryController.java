@@ -62,7 +62,9 @@ public class ResultEntryController extends AbstractSearchController {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }
 
-        childrenCountService.addChildrenCounts(Collections.singletonList(entryBean), accessGroups);
+        if (!entryBean.getResourceType().equals(searchSettings.resourceTypeFile)) {
+            childrenCountService.addChildrenCounts(Collections.singletonList(entryBean), accessGroups);
+        }
         return SerializationUtil.metadataToJSON(entryBean, accessGroups);
     }
 }
