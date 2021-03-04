@@ -50,17 +50,19 @@ public class SetCollectionSupplementalInformationFilter implements IndexDocument
     }
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        String parentCollection = dip.getDocument().getParentCollection();
-        if (parentCollection == null) {
+        String collection = dip.getDocument().getParentCollection();
+        if (collection == null) {
             List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
             if (pids.size() > ContentPathConstants.COLLECTION_DEPTH) {
-                parentCollection = pids.get(ContentPathConstants.COLLECTION_DEPTH).getId();
+                collection = pids.get(ContentPathConstants.COLLECTION_DEPTH).getId();
+            } else if (pids.size() == ContentPathConstants.COLLECTION_DEPTH) {
+                collection = dip.getPid().getId();
             } else {
                 return;
             }
         }
 
-        IndexDocumentFilter collectionFilter = collectionFilters.get(parentCollection);
+        IndexDocumentFilter collectionFilter = collectionFilters.get(collection);
         if (collectionFilter == null) {
             return;
         }

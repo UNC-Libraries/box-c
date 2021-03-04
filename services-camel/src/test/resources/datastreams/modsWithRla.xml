@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <titleInfo>
+    <title>RLA Item</title>
+  </titleInfo>
+    <subject displayLabel="RLA Site Code" xlink:href="https://example.com/rla/stuff">
+    <geographic>BoXC 5</geographic>
+  </subject>
+  <subject displayLabel="RLA Site Name">
+    <geographic>Boxc Ferry</geographic>
+  </subject>
+  <identifier displayLabel="Digital Image Number" type="local">DBoxc</identifier>
+  <identifier displayLabel="RLA Filename" type="local">DBoxc.jpg</identifier>
+  <identifier displayLabel="RLA Catalog Number" type="local">12345</identifier>
+</mods>

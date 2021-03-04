@@ -32,8 +32,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -41,10 +44,16 @@ import javax.annotation.Resource;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -54,13 +63,15 @@ import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
+import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
+import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
 import edu.unc.lib.dl.test.TestHelper;
@@ -79,6 +90,9 @@ import edu.unc.lib.dl.util.ResourceType;
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     private SolrUpdateProcessor processor;
 
     @Autowired
@@ -87,6 +101,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     private UpdateDescriptionService updateDescriptionService;
     @Mock
     private AgentPrincipals agent;
+    @Autowired
+    private SetCollectionSupplementalInformationFilter setCollectionSupplementalInformationFilter;
+    @Autowired
+    private SolrClient solrClient;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -265,15 +283,70 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertNull("Collection record must be removed", getSolrMetadata(collObj));
     }
 
+    @Test
+    public void testUpdateDescriptionWithCollectionFilter() throws Exception {
+        collectionFilterTest(IndexingActionType.UPDATE_DESCRIPTION);
+    }
+
+    @Test
+    public void testAddWithCollectionFilter() throws Exception {
+        collectionFilterTest(IndexingActionType.ADD);
+    }
+
+    public void collectionFilterTest(IndexingActionType indexingType) throws Exception {
+        // Configure collection filter to apply to the item being updated
+        tmpFolder.create();
+        File file = tmpFolder.newFile("collConfig.properties");
+        FileUtils.writeStringToFile(file,
+                collObj.getPid().getId() + "=" + RLASupplementalFilter.class.getName(),
+                StandardCharsets.UTF_8);
+        setCollectionSupplementalInformationFilter.setCollectionFilters(file.getAbsolutePath());
+
+        InputStream modsStream = streamResource("/datastreams/modsWithRla.xml");
+        updateDescriptionService.updateDescription(agent, collObj.getPid(), modsStream);
+
+        indexObjectsInTripleStore();
+
+        indexDummyDocument(collObj);
+
+        makeIndexingMessage(collObj, null, indexingType);
+
+        processor.process(exchange);
+        server.commit();
+
+        BriefObjectMetadata collMd = getSolrMetadata(collObj);
+
+        assertEquals("RLA Item", collMd.getTitle());
+        assertTrue(collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
+
+        assertEquals("DBoxc.jpg", collMd.getIdentifierSort());
+        Map<String, Object> dynamics = collMd.getDynamicFields();
+        assertEquals(2, dynamics.size());
+        assertEquals("BoXC 5", dynamics.get(RLASupplementalFilter.SITE_CODE_FIELD));
+        assertEquals("12345", dynamics.get(RLASupplementalFilter.CATALOG_FIELD));
+    }
+
     private void makeIndexingMessage(RepositoryObject targetObj, Collection<PID> children, IndexingActionType action) {
         setMessageTarget(targetObj);
         Document messageBody = makeIndexingOperationBody("user", targetObj.getPid(), children, action);
         when(message.getBody()).thenReturn(messageBody);
     }
 
-    private BriefObjectMetadata getSolrMetadata(RepositoryObject obj) {
-        SimpleIdRequest idRequest = new SimpleIdRequest(obj.getPid().getId(), accessGroups);
-        return solrSearchService.getObjectById(idRequest);
+    private BriefObjectMetadata getSolrMetadata(RepositoryObject obj) throws Exception {
+        SolrQuery solrQuery = new SolrQuery();
+        StringBuilder query = new StringBuilder();
+        query.append("id:").append(obj.getPid().getId());
+
+        solrQuery.setQuery(query.toString());
+        solrQuery.setRows(1);
+
+        QueryResponse resp = solrClient.query(solrQuery);
+
+        List<BriefObjectMetadataBean> results = resp.getBeans(BriefObjectMetadataBean.class);
+        if (results != null && results.size() > 0) {
+            return results.get(0);
+        }
+        return null;
     }
 
     private void indexDummyDocument(RepositoryObject obj) throws Exception {

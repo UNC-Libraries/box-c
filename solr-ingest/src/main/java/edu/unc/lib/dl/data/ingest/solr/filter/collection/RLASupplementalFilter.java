@@ -42,15 +42,15 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 
     private static final String CATALOG_ID = "rla_catalog_number";
     private static final String CATALOG_LABEL = "RLA Catalog Number";
-    private static final String CATALOG_FIELD = "rla_catalog_number_d";
+    public static final String CATALOG_FIELD = "rla_catalog_number_d";
 
     private static final String SITE_CODE_ID = "rla_site_code";
     private static final String SITE_CODE_LABEL = "RLA Site Code";
-    private static final String SITE_CODE_FIELD = "rla_site_code_d";
+    public static final String SITE_CODE_FIELD = "rla_site_code_d";
 
     private static final String CONTEXT_1_ID = "rla_context_1";
     private static final String CONTEXT_1_LABEL = "Context";
-    private static final String CONTEXT_1_FIELD = "rla_context_1_d";
+    public static final String CONTEXT_1_FIELD = "rla_context_1_d";
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
