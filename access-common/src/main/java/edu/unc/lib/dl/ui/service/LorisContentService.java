@@ -19,7 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -192,7 +192,6 @@ public class LorisContentService {
         String abstractText = rootObj.getAbstractText();
         String label = rootObj.getLabel();
         List<String> creators = rootObj.getCreator();
-        List<String> keywords = rootObj.getKeyword();
         List<String> subjects = rootObj.getSubject();
         List<String> language = rootObj.getLanguage();
 
@@ -205,18 +204,17 @@ public class LorisContentService {
         }
 
         setMetadataField(manifest, "Creators", creators);
-        setMetadataField(manifest, "Keywords", keywords);
         setMetadataField(manifest, "Subjects", subjects);
         setMetadataField(manifest, "Languages", language);
 
         Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
 
-        List<String> uuidList = new ArrayList<>();
+        HashSet<String> uuidList = new HashSet<>();
         for (BriefObjectMetadata briefObj : briefObjs) {
             String datastreamUuid = jp2Pid(briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()));
 
-            // Don't add rootObj twice
             if (!datastreamUuid.equals("")) {
+                // Don't add rootObj twice
                 if (uuidList.contains(datastreamUuid)) {
                     continue;
                 }
@@ -237,16 +235,12 @@ public class LorisContentService {
     }
 
     private String jp2Pid(Datastream datastream) {
-        if (datastream != null) {
-            String streamValues = datastream.toString();
-
-            if (streamValues.trim().startsWith("jp2")) {
-                String[] uuid_parts = streamValues.split("\\|");
-                if (uuid_parts.length == 7) {
-                    return uuid_parts[6];
-                }
-                return uuid_parts[2].split("\\.")[0];
+        if (datastream != null && datastream.getMimetype().equals("image/jp2")) {
+            String id = datastream.getDatastreamIdentifier();
+            if (id.startsWith("/")) {
+                id = datastream.getFilename();
             }
+            return id.replaceAll("(\\.|\\/)jp2$", "");
         }
 
         return "";
