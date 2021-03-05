@@ -43,9 +43,11 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.LorisContentService;
 
@@ -160,7 +162,10 @@ public class LorisContentController extends AbstractSolrSearchController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
-            return lorisContentService.getCanvas(request, id);
+            SimpleIdRequest idRequest = new SimpleIdRequest(id, GroupsThreadStore
+                    .getAgentPrincipals().getPrincipals());
+            BriefObjectMetadataBean briefObj = queryLayer.getObjectById(idRequest);
+            return lorisContentService.getCanvas(request, id, briefObj);
         } else {
             LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             response.setStatus(HttpStatus.FORBIDDEN.value());

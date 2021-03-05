@@ -180,8 +180,7 @@ public class LorisContentService {
         String manifestBase = getRecordPath(request);
         BriefObjectMetadata rootObj = briefObjs.get(0);
 
-        String title = rootObj.getTitle();
-        title = (title != null) ? title : "";
+        String title = setTitle(rootObj);
 
         Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"), title);
 
@@ -199,9 +198,19 @@ public class LorisContentService {
             manifest.addLabel(label);
         }
 
+        manifest.addLogo(new ImageContent(URIUtil.join(basePath, "static", "images", "unc-icon.png")));
+
         setMetadataField(manifest, "Creators", creators);
         setMetadataField(manifest, "Subjects", subjects);
         setMetadataField(manifest, "Languages", language);
+        manifest.addMetadata("", "<a href=\"" +
+                URIUtil.join(basePath, "record", rootObj.getId()) + "\">View full record</a>");
+        String attribution = "University of North Carolina Libraries, Digital Collections Repository";
+        String collection = rootObj.getParentCollectionName();
+        if (collection != null) {
+            attribution += " - Part of " + collection;
+        }
+        manifest.addMetadata("Attribution", attribution);
 
         Sequence seq = createSequence(manifestBase, briefObjs);
 
@@ -214,9 +223,10 @@ public class LorisContentService {
         return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
     }
 
-    public String getCanvas(HttpServletRequest request, String uuid) throws JsonProcessingException {
+    public String getCanvas(HttpServletRequest request, String uuid, BriefObjectMetadata briefObj)
+            throws JsonProcessingException {
         String path = getRecordPath(request);
-        return iiifMapper.writeValueAsString(createCanvas(path, uuid));
+        return iiifMapper.writeValueAsString(createCanvas(path, uuid, briefObj));
     }
 
     private Sequence createSequence(String seqPath, List<BriefObjectMetadata> briefObjs) {
@@ -232,7 +242,7 @@ public class LorisContentService {
                     continue;
                 }
 
-                Canvas canvas = createCanvas(seqPath, datastreamUuid);
+                Canvas canvas = createCanvas(seqPath, datastreamUuid, briefObj);
                 seq.addCanvas(canvas);
             }
 
@@ -242,13 +252,19 @@ public class LorisContentService {
         return seq;
     }
 
-    private Canvas createCanvas(String path, String uuid) {
-        Canvas canvas = new Canvas(path);
+    private Canvas createCanvas(String path, String uuid, BriefObjectMetadata briefObj) {
+        String title = setTitle(briefObj);
+        Canvas canvas = new Canvas(path, title);
         String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
         canvas.addIIIFImage(canvasPath, ImageApiProfile.LEVEL_TWO);
         ImageContent thumb = new ImageContent(URIUtil.join(basePath,
                 "services", "api", "thumb", uuid, "large"));
         canvas.addImage(thumb);
+
+        String label = briefObj.getLabel();
+        if (label != null) {
+            canvas.addLabel(label);
+        }
 
         return canvas;
     }
@@ -276,6 +292,11 @@ public class LorisContentService {
         if (!CollectionUtils.isEmpty(field)) {
             manifest.addMetadata(fieldName, String.join(", ", field));
         }
+    }
+
+    private String setTitle(BriefObjectMetadata briefObj) {
+        String title = briefObj.getTitle();
+        return (title != null) ? title : "";
     }
 
     public void setLorisPath(String fullPath) {
