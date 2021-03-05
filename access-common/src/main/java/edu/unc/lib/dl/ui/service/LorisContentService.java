@@ -67,6 +67,7 @@ public class LorisContentService {
 
     private String lorisPath;
     private String basePath;
+    private ObjectMapper iiifMapper = new IiifObjectMapper();
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
         this.httpClientConnectionManager = manager;
@@ -176,13 +177,8 @@ public class LorisContentService {
 
     public String getManifest(HttpServletRequest request, List<BriefObjectMetadata> briefObjs)
             throws JsonProcessingException {
-        String[] url = request.getRequestURL().toString().split("\\/");
-        String uuid = url[4];
-        String datastream = url[5];
-        String manifestBase = URIUtil.join(basePath, uuid);
+        String manifestBase = getRecordPath(request);
         BriefObjectMetadata rootObj = briefObjs.get(0);
-
-        ObjectMapper iiifMapper = new IiifObjectMapper();
 
         String title = rootObj.getTitle();
         title = (title != null) ? title : "";
@@ -207,7 +203,24 @@ public class LorisContentService {
         setMetadataField(manifest, "Subjects", subjects);
         setMetadataField(manifest, "Languages", language);
 
-        Sequence seq = new Sequence(URIUtil.join(manifestBase, "sequence", "normal"));
+        Sequence seq = createSequence(manifestBase, briefObjs);
+
+        return iiifMapper.writeValueAsString(manifest.addSequence(seq));
+    }
+
+    public String getSequence(HttpServletRequest request, List<BriefObjectMetadata> briefObjs)
+            throws JsonProcessingException {
+        String path = getRecordPath(request);
+        return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
+    }
+
+    public String getCanvas(HttpServletRequest request, String uuid) throws JsonProcessingException {
+        String path = getRecordPath(request);
+        return iiifMapper.writeValueAsString(createCanvas(path, uuid));
+    }
+
+    private Sequence createSequence(String seqPath, List<BriefObjectMetadata> briefObjs) {
+        Sequence seq = new Sequence(URIUtil.join(seqPath, "sequence", "normal"));
 
         HashSet<String> uuidList = new HashSet<>();
         for (BriefObjectMetadata briefObj : briefObjs) {
@@ -219,19 +232,32 @@ public class LorisContentService {
                     continue;
                 }
 
-                Canvas canvas = new Canvas(manifestBase);
-                String path = URIUtil.join(basePath, "jp2Proxy", datastreamUuid, datastream);
-                canvas.addIIIFImage(path, ImageApiProfile.LEVEL_TWO);
-                ImageContent thumb = new ImageContent(URIUtil.join(basePath,
-                        "services", "api", "thumb", datastreamUuid, "large"));
-                canvas.addImage(thumb);
+                Canvas canvas = createCanvas(seqPath, datastreamUuid);
                 seq.addCanvas(canvas);
             }
 
             uuidList.add(datastreamUuid);
         }
 
-        return iiifMapper.writeValueAsString(manifest.addSequence(seq));
+        return seq;
+    }
+
+    private Canvas createCanvas(String path, String uuid) {
+        Canvas canvas = new Canvas(path);
+        String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
+        canvas.addIIIFImage(canvasPath, ImageApiProfile.LEVEL_TWO);
+        ImageContent thumb = new ImageContent(URIUtil.join(basePath,
+                "services", "api", "thumb", uuid, "large"));
+        canvas.addImage(thumb);
+
+        return canvas;
+    }
+
+    private String getRecordPath(HttpServletRequest request) {
+        String[] url = request.getRequestURL().toString().split("\\/");
+        String uuid = url[4];
+        String datastream = url[5];
+        return URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
     }
 
     private String jp2Pid(Datastream datastream) {

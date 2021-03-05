@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,13 +147,60 @@ public class LorisContentController extends AbstractSolrSearchController {
     }
 
     /**
+     * Handles requests for IIIF canvases
+     * @param id
+     * @param datastream
+     * @param response
+     * @return
+     */
+    @GetMapping(value = "/jp2Proxy/{id}/{datastream}", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String getCanvas(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
+                              HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        PID pid = PIDs.get(id);
+        // Check if the user is allowed to view this object's manifest
+        if (this.hasAccess(pid, datastream)) {
+            return lorisContentService.getCanvas(request, id);
+        } else {
+            LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+        }
+
+        return "";
+    }
+
+    /**
+     * Handles requests for IIIF sequences
+     * @param id
+     * @param datastream
+     * @param response
+     * @return
+     */
+    @GetMapping(value = "/jp2Proxy/{id}/{datastream}/sequence/normal", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public String getSequence(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
+                              HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+        PID pid = PIDs.get(id);
+        // Check if the user is allowed to view this object's manifest
+        if (this.hasAccess(pid, datastream)) {
+            List<BriefObjectMetadata> briefObjs = getDataStreams(id, request);
+            return lorisContentService.getSequence(request, briefObjs);
+        } else {
+            LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+        }
+
+        return "";
+    }
+
+    /**
      * Handles requests for IIIF manifests
      * @param id
      * @param datastream
      * @param response
      * @return
      */
-    @GetMapping("/jp2Proxy/{id}/{datastream}/manifest")
+    @GetMapping(value = "/jp2Proxy/{id}/{datastream}/manifest", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public String getManifest(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
                             HttpServletRequest request, HttpServletResponse response) {
