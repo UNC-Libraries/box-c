@@ -72,7 +72,7 @@ else
 endif
 
 	# Build Universal Viewer
-	npm --prefix static/plugins/uv install
+	npm --prefix static/plugins/uv ci
 	cp -R static/plugins/uv/node_modules/universalviewer/dist/* static/plugins/uv/
 	# Custom uv file, a work around to fix issue with jQuery.
 	cp static/plugins/uv/offline.js static/plugins/uv/lib/

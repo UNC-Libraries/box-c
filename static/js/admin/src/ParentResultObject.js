@@ -33,6 +33,7 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		this.element = this.options.element;
 		this.element.data('resultObject', this);
 		this.links = [];
+		$(".container_title span", this.element).text(this.metadata.title)
 	};
 	
 	return ParentResultObject;

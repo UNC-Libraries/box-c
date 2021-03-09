@@ -109,9 +109,11 @@
         mixins: [displayModal, patronHelpers],
 
         props: {
+            actionHandler: Object,
             alertHandler: Object,
             changesCheck: Boolean,
             containerType: String,
+            resultObject: Object,
             title: String,
             uuid: String
         },
@@ -282,6 +284,13 @@
                     this.is_submitting = false;
                     this.response_message = '';
                     this.patron_roles.assigned = cloneDeep(this.submit_roles);
+
+                    // Update entry in results table
+                    this.actionHandler.addEvent({
+                        action : 'RefreshResult',
+                        target : this.resultObject,
+                        waitForUpdate : true
+                    });
                 }).catch((error) => {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
                     this.is_submitting = false;
