@@ -79,8 +79,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
         status.put(DepositField.sourceUri.name(), sourceUri.toString());
         status.put(DepositField.fileName.name(), "Test File");
-        status.put(DepositField.accessionNumber.name(), "123456");
-        status.put(DepositField.mediaId.name(), "789");
 
         job.run();
 

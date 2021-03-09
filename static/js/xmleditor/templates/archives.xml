@@ -3,9 +3,13 @@
   <mods:titleInfo>
     <mods:title />
   </mods:titleInfo>
+  <mods:identifier displayLabel="Accession Number" type="local" />
   <mods:identifier displayLabel="Digital Folder Number" type="local" />
   <mods:originInfo>
     <mods:dateCreated encoding="edtf" />
   </mods:originInfo>
+  <mods:relatedItem type="original">
+    <mods:identifier displayLabel="Source Media Identifier" />
+  </mods:relatedItem>
   <mods:identifier displayLabel="Collection Number" type="local" />
 </mods:mods>
