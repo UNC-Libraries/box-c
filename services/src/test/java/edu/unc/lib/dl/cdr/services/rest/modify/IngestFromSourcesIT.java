@@ -89,8 +89,6 @@ import edu.unc.lib.dl.util.ZipFileUtil;
 public class IngestFromSourcesIT extends AbstractAPIIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
-    private static final String ACCESSION_NUM = "052451";
-    private static final String MEDIA_ID = "A59154";
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -271,7 +269,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource", candPath1.getFileName().toString(), BAGIT,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -292,7 +290,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", candPath1.getFileName().toString(), BAGIT,
-                        "candidate", ACCESSION_NUM, MEDIA_ID, false));
+                        "candidate", false));
 
         MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -305,8 +303,6 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
-        assertEquals(ACCESSION_NUM, candStatus1.get(DepositField.accessionNumber.name()));
-        assertEquals(MEDIA_ID, candStatus1.get(DepositField.mediaId.name()));
         assertEquals("candidate", candStatus1.get(DepositField.depositSlug.name()));
         assertDepositorDetailsStored(candStatus1);
     }
@@ -323,7 +319,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", candPath1.getFileName().toString(), null,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -342,7 +338,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", null, BAGIT,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -364,7 +360,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", candPath1.getFileName().toString(), BAGIT,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -387,7 +383,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", candPath1.getFileName().toString(), BAGIT,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -408,7 +404,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("sourceWHOA", candPath1.getFileName().toString(), BAGIT,
-                        null, null, null, false));
+                        null, false));
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -433,9 +429,9 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource1", candPath1.getFileName().toString(), BAGIT,
-                        null, null, null, true),
+                        null, true),
                 new IngestPackageDetails("testsource2", candPath2.getFileName().toString(), DIRECTORY,
-                        null, null, null, false));
+                        null, false));
 
         MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -481,7 +477,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
                 new IngestPackageDetails(candidate.getSourceId(),
                         candidate.getPatternMatched(),
                         candidate.getPackagingType(),
-                        null, null, null, false));
+                        null, false));
 
         MvcResult ingestResult = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
