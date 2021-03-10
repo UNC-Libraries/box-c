@@ -256,6 +256,15 @@ public class LorisContentService {
         String title = setTitle(briefObj);
         Canvas canvas = new Canvas(path, title);
         String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
+
+        Datastream fileDs = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        String extent = fileDs.getExtent();
+        if (extent != null) {
+            String[] imgDimensions = extent.split("x");
+            canvas.setHeight(Integer.parseInt(imgDimensions[0]));
+            canvas.setWidth(Integer.parseInt(imgDimensions[1]));
+        }
+
         canvas.addIIIFImage(canvasPath, ImageApiProfile.LEVEL_TWO);
         ImageContent thumb = new ImageContent(URIUtil.join(basePath,
                 "services", "api", "thumb", uuid, "large"));

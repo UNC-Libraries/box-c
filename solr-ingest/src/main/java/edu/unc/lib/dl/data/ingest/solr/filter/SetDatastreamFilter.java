@@ -16,8 +16,12 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +29,10 @@ import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,6 +107,48 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
     }
 
+    private String setExtent(List<BinaryObject> binList) {
+        List<BinaryObject> fitsFile = binList.stream()
+                .filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits"))
+                .collect(Collectors.toList());
+
+        if (fitsFile.size() != 0) {
+            BinaryObject fits = fitsFile.get(0);
+            InputStream fitsData = fits.getBinaryStream();
+            String fitsId = fits.getPid().getId();
+            String extent = null;
+
+            try {
+                SAXBuilder builder = new SAXBuilder();
+                Document doc = builder.build(fitsData);
+                Element fitsMd = doc.getRootElement().getChild("object", PREMIS_V3_NS)
+                        .getChild("objectCharacteristics", PREMIS_V3_NS)
+                        .getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
+                        .getChild("fits", FITS_NS)
+                        .getChild("metadata", FITS_NS);
+
+                if (fitsMd != null) {
+                    Element imgMd = fitsMd.getChild("image", FITS_NS);
+
+                    if (imgMd != null) {
+                        String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
+                        String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
+                        extent = imgHeight + "x" + imgWidth;
+                    }
+                }
+                return extent;
+            } catch (JDOMException e) {
+                log.warn("Unable to parse FITS for {}", fitsId);
+                return null;
+            } catch (IOException e) {
+                log.warn("Unable to open FITS file for {}", fitsId);
+                return null;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Adds a list of Datastream objects from the provided list of binaries.
      * If the datastreams are being recorded on an object  other than their owning
@@ -108,6 +158,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param ownedByOtherObject
      */
     private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
+        String extent = setExtent(binList);
+
         binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
@@ -128,7 +180,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum));
+                String setExtent = (mimetype != null && mimetype.startsWith("image")) ? extent : null;
+                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum, setExtent));
             });
     }
 
@@ -187,7 +240,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 Long filesize = derivFile.length();
                 String filename = derivFile.getName();
 
-                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, null));
+                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, null, null));
             });
     }
 

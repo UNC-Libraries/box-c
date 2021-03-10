@@ -28,9 +28,10 @@ public class Datastream {
     private String filename;
     private String extension;
     private String checksum;
+    private String extent;
 
     public Datastream(String owner, String name, Long filesize, String mimetype, String filename, String extension,
-            String checksum) {
+            String checksum, String extent) {
         this.owner = owner;
         this.name = name;
         this.filesize = filesize;
@@ -38,6 +39,7 @@ public class Datastream {
         this.filename = filename;
         this.extension = extension;
         this.checksum = checksum;
+        this.extent = extent;
     }
 
     public Datastream(String datastream) {
@@ -46,8 +48,8 @@ public class Datastream {
         }
 
         String[] dsParts = datastream.split("\\|", -1);
-        if (dsParts.length < 6) {
-            throw new IllegalArgumentException("Invalid datastream string, requires 6 parameters, only included "
+        if (dsParts.length < 7) {
+            throw new IllegalArgumentException("Invalid datastream string, requires 7 parameters, only included "
                     + dsParts.length);
         }
 
@@ -63,11 +65,12 @@ public class Datastream {
         }
         this.checksum = dsParts[5];
         this.owner = dsParts[6];
+        this.extent = dsParts[7];
     }
 
     @Override
     public String toString() {
-        //DS name|mimetype|extension|filesize|checksum|owner
+        //DS name|mimetype|extension|filesize|checksum|owner|extent
         StringBuilder sb = new StringBuilder();
         if (name != null) {
             sb.append(name);
@@ -95,6 +98,10 @@ public class Datastream {
         sb.append('|');
         if (owner != null) {
             sb.append(owner);
+        }
+        sb.append('|');
+        if (extent != null) {
+            sb.append(extent);
         }
         return sb.toString();
     }
@@ -169,6 +176,10 @@ public class Datastream {
         return filename;
     }
 
+    public String getExtent() {
+        return extent;
+    }
+
     public void setFilename(String filename) {
         this.filename = filename;
     }
@@ -191,5 +202,9 @@ public class Datastream {
 
     public void setFilesize(Long filesize) {
         this.filesize = filesize;
+    }
+
+    public void getExtent(String extent) {
+        this.extent = extent;
     }
 }
