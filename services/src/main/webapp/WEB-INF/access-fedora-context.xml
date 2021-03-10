@@ -139,4 +139,14 @@
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
+    
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+            value="edu.unc.lib.dl.ui.util.DatastreamUtil.setDatastreamEndpoint" />
+        <property name="arguments">
+            <list>
+                <value>${services.api.url}</value>
+            </list>
+        </property>
+    </bean>
 </beans>
