@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -104,7 +105,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             }
         });
 
-        when(clamClient.scanWithResult(any(InputStream.class))).thenReturn(scanResult);
+        when(clamClient.scanWithResult(any(Path.class))).thenReturn(scanResult);
 
         File examplesFile = new File("src/test/resources/examples");
         FileUtils.copyDirectory(examplesFile, depositDir);
@@ -200,7 +201,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         when(result2.getStatus()).thenReturn(Status.FOUND);
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
-        when(clamClient.scanWithResult(any(InputStream.class)))
+        when(clamClient.scanWithResult(any(Path.class)))
                 .thenReturn(scanResult)
                 .thenReturn(result2);
 
@@ -232,6 +233,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
     @Test
     public void failAndRescanTest() throws Exception {
+        when(scanResult.getSignature()).thenReturn("Badness");
         when(scanResult.getStatus()).thenReturn(Status.FOUND)
                 .thenReturn(Status.PASSED);
         File textFile = new File(depositDir, "text.txt");
@@ -255,6 +257,30 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.run();
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(filePid), any(File.class));
+        verify(premisEventBuilder).addOutcome(true);
+    }
+
+    @Test
+    public void foundUnidentifiedRecoveryTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.FOUND)
+                .thenReturn(Status.PASSED);
+        File textFile = new File(depositDir, "text.txt");
+        doReturn(scanResult).when(clamClient).scanWithResult(any(InputStream.class));
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID filePid = addFileObject(depBag, textFile);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
         verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
