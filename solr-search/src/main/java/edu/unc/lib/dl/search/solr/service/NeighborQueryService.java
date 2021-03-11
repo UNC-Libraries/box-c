@@ -63,12 +63,10 @@ public class NeighborQueryService extends AbstractQueryService {
     public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
             AccessGroupSet principals) {
 
-        // Get the common access restriction clause (starts with "AND ...")
-        StringBuilder accessRestrictionClause = new StringBuilder();
-        restrictionUtil.add(accessRestrictionClause, principals);
-
         // Restrict query to files/aggregates and objects within the same parent
         SolrQuery solrQuery = new SolrQuery();
+        // Get the common access restriction clause
+        restrictionUtil.add(solrQuery, principals);
 
         solrQuery.setFacet(true);
 
@@ -105,7 +103,7 @@ public class NeighborQueryService extends AbstractQueryService {
                 solrField(TITLE_LC), sanitize(metadata.getTitle().toLowerCase()),
                 solrField(SearchFieldKeys.ID), metadata.getId());
         // Get set of preceding neighbors
-        precedingQuery.setQuery(pItemsQuery + accessRestrictionClause);
+        precedingQuery.setQuery(pItemsQuery);
 
         // Sort neighbors using reverse title sort in order to get items closest to target
         addSort(precedingQuery, "title", false);
@@ -127,7 +125,7 @@ public class NeighborQueryService extends AbstractQueryService {
                 solrField(TITLE_LC), sanitize(metadata.getTitle().toLowerCase()),
                 solrField(SearchFieldKeys.ID), metadata.getId());
         // Get set of succeeding neighbors
-        succeedingQuery.setQuery(sItemsQuery + accessRestrictionClause);
+        succeedingQuery.setQuery(sItemsQuery);
 
         // Sort neighbors using the title sort
         addSort(succeedingQuery, "title", true);

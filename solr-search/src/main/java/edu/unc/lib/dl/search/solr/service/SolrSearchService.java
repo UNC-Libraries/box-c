@@ -18,13 +18,13 @@ package edu.unc.lib.dl.search.solr.service;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -40,8 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -96,7 +94,7 @@ public class SolrSearchService extends AbstractQueryService {
                 .append(SolrSettings.sanitize(idRequest.getId()));
         try {
             // Add access restrictions to query
-            addAccessRestrictions(query, idRequest.getAccessGroups());
+            addAccessRestrictions(solrQuery, idRequest.getAccessGroups());
             /*
              * if (idRequest.getAccessTypeFilter() != null) { addAccessRestrictions(query, idRequest.getAccessGroups(),
              * idRequest.getAccessTypeFilter()); }
@@ -135,7 +133,7 @@ public class SolrSearchService extends AbstractQueryService {
 
         try {
             // Add access restrictions to query
-            addAccessRestrictions(query, listRequest.getAccessGroups());
+            addAccessRestrictions(solrQuery, listRequest.getAccessGroups());
         } catch (AccessRestrictionException e) {
             // If the user doesn't have any access groups, they don't have access to anything, return null.
             LOG.error("Error while attempting to add access restrictions to object " + listRequest.getId(), e);
@@ -232,7 +230,7 @@ public class SolrSearchService extends AbstractQueryService {
      * no permissions. If the user is an admin, then do not restrict access
      *
      * @param query
-     *            string buffer containing the query to append access groups to.
+     *            SolrQuery containing the query to add access groups to.
      * @param accessGroups
      *            set of access groups to append to the query
      * @return The original query restricted to results available to the
@@ -240,7 +238,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @throws AccessRestrictionException
      *             thrown if no groups are provided.
      */
-    public StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
+    public SolrQuery addAccessRestrictions(SolrQuery query, AccessGroupSet accessGroups)
             throws AccessRestrictionException {
         restrictionUtil.add(query, accessGroups);
         return query;
@@ -302,23 +300,17 @@ public class SolrSearchService extends AbstractQueryService {
         // Generate search term query string
         addSearchFields(searchState, termQuery);
 
-        // Add role group limits based on the request's groups
-        addPermissionLimits(searchState, searchRequest.getAccessGroups(), termQuery);
-
         // Add range Fields to the query
-        addRangeFields(searchState, termQuery);
+        addRangeFields(searchState, solrQuery);
 
         // No query terms given, make it an everything query
-        StringBuilder query = new StringBuilder();
         if (termQuery.length() == 0) {
-            query.append("*:* ");
-        } else {
-            query.append('(').append(termQuery).append(')');
+            termQuery.append("*:* ");
         }
 
         // Add access restrictions to query
         try {
-            addAccessRestrictions(query, searchRequest.getAccessGroups());
+            addAccessRestrictions(solrQuery, searchRequest.getAccessGroups());
         } catch (AccessRestrictionException e) {
             // If the user doesn't have any access groups, they don't have access to anything, return null.
             LOG.debug("User had no access groups", e);
@@ -326,7 +318,7 @@ public class SolrSearchService extends AbstractQueryService {
         }
 
         // Add query
-        solrQuery.setQuery(query.toString());
+        solrQuery.setQuery(termQuery.toString());
 
         solrQuery.set("defType", "edismax");
         solrQuery.set("qf", DEFAULT_RELEVANCY_BOOSTS);
@@ -489,98 +481,40 @@ public class SolrSearchService extends AbstractQueryService {
         }
     }
 
-    /**
-     * Limit the given query to only return results which have all of the
-     * specified permissions for the given set of groups
-     *
-     * @param searchState
-     * @param groups
-     * @param termQuery
-     */
-    private void addPermissionLimits(SearchState searchState, AccessGroupSet groups, StringBuilder termQuery) {
-
-        Collection<Permission> permissions = searchState.getPermissionLimits();
-        if (permissions != null && permissions.size() > 0) {
-            // Determine the set of roles that match all of the permissions needed
-            Set<UserRole> roles = UserRole.getUserRoles(permissions);
-            if (roles.size() == 0) {
-                return;
-            }
-
-            if (termQuery.length() > 0) {
-                termQuery.append(" AND ");
-            }
-
-            boolean first = true;
-            termQuery.append(solrSettings.getFieldName(SearchFieldKeys.ROLE_GROUP.name())).append(':').append('(');
-            for (String group : groups) {
-                String saneGroup = SolrSettings.sanitize(group);
-
-                for (UserRole role : roles) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        termQuery.append(" OR ");
-                    }
-
-                    termQuery.append(role.getPredicate()).append('|').append(saneGroup);
-                }
-            }
-
-            termQuery.append(')');
-        }
-    }
-
-    private void addRangeFields(SearchState searchState, StringBuilder termQuery) {
+    private void addRangeFields(SearchState searchState, SolrQuery query) {
         Map<String, SearchState.RangePair> rangeFields = searchState.getRangeFields();
         if (rangeFields != null) {
             Iterator<Map.Entry<String, SearchState.RangePair>> rangeTermIt = rangeFields.entrySet().iterator();
             while (rangeTermIt.hasNext()) {
                 Map.Entry<String, SearchState.RangePair> rangeTerm = rangeTermIt.next();
-                if (rangeTerm != null
-                        && !(rangeTerm.getValue().getLeftHand() == null
-                        && rangeTerm.getValue().getRightHand() == null)) {
-
-                    if (termQuery.length() > 0) {
-                        termQuery.append(" AND ");
-                    }
-
-                    termQuery.append(solrSettings.getFieldName(rangeTerm.getKey())).append(":[");
-
-                    if (rangeTerm.getValue().getLeftHand() == null
-                            || rangeTerm.getValue().getLeftHand().length() == 0) {
-                        termQuery.append('*');
-                    } else {
-                        if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())) {
-                            try {
-                                termQuery.append(DateFormatUtil.getFormattedDate(
-                                        rangeTerm.getValue().getLeftHand(), true, false));
-                            } catch (NumberFormatException e) {
-                                termQuery.append('*');
-                            }
-                        } else {
-                            termQuery.append(SolrSettings.sanitize(rangeTerm.getValue().getLeftHand()));
-                        }
-                    }
-                    termQuery.append(" TO ");
-                    if (rangeTerm.getValue().getRightHand() == null
-                            || rangeTerm.getValue().getRightHand().length() == 0) {
-                        termQuery.append('*');
-                    } else {
-                        if (searchSettings.dateSearchableFields.contains(rangeTerm.getKey())) {
-                            try {
-                                termQuery.append(DateFormatUtil.getFormattedDate(
-                                        rangeTerm.getValue().getRightHand(), true, true));
-                            } catch (NumberFormatException e) {
-                                termQuery.append('*');
-                            }
-                        } else {
-                            termQuery.append(SolrSettings.sanitize(rangeTerm.getValue().getRightHand()));
-                        }
-                    }
-                    termQuery.append("] ");
+                if (rangeTerm == null) {
+                    continue;
                 }
+                String key = rangeTerm.getKey();
+                String left = getRangeValue(key, rangeTerm.getValue().getLeftHand());
+                String right = getRangeValue(key, rangeTerm.getValue().getRightHand());
+                if (left.equals("*") && right.equals("*")) {
+                    continue;
+                }
+
+                query.addFilterQuery(String.format("%s:[%s TO %s]",
+                        solrSettings.getFieldName(key), left, right));
             }
+        }
+    }
+
+    private String getRangeValue(String key, String value) {
+        if (StringUtils.isBlank(value)) {
+            return "*";
+        }
+        if (searchSettings.dateSearchableFields.contains(key)) {
+            try {
+                return DateFormatUtil.getFormattedDate(value, true, true);
+            } catch (NumberFormatException e) {
+                return "*";
+            }
+        } else {
+            return SolrSettings.sanitize(value);
         }
     }
 
@@ -688,7 +622,7 @@ public class SolrSearchService extends AbstractQueryService {
             AccessGroupSet accessGroups) throws AccessRestrictionException, SolrServerException {
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder("*:*");
-        addAccessRestrictions(query, accessGroups);
+        addAccessRestrictions(solrQuery, accessGroups);
         solrQuery.setQuery(query.toString());
         solrQuery.setFacet(true);
         for (String facetField : fields) {

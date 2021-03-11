@@ -141,7 +141,7 @@ public class ChildrenCountService extends AbstractQueryService {
 
             // Add access restrictions to query
             StringBuilder query = new StringBuilder("*:*");
-            restrictionUtil.add(query, principals);
+            restrictionUtil.add(solrQuery, principals);
             solrQuery.setQuery(query.toString());
 
             if (!Work.equals(container.getResourceType())) {
