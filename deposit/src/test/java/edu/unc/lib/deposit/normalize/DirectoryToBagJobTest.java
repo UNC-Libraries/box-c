@@ -91,8 +91,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     public void testConversion() throws Exception {
         status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
         status.put(DepositField.fileName.name(), "Test File");
-        status.put(DepositField.mediaId.name(), "789");
-        status.put(DepositField.accessionNumber.name(), "123456");
 
         job.run();
 
@@ -137,8 +135,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     public void interruptionTest() throws Exception {
         status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
         status.put(DepositField.fileName.name(), "Test File");
-        status.put(DepositField.mediaId.name(), "789");
-        status.put(DepositField.accessionNumber.name(), "123456");
 
         AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
         AtomicReference<Exception> otherException = new AtomicReference<>();

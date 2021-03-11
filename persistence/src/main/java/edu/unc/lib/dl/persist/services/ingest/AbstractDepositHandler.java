@@ -129,8 +129,6 @@ public abstract class AbstractDepositHandler implements DepositHandler {
         status.put(DepositField.depositMethod.name(), deposit.getDepositMethod());
         status.put(DepositField.packagingType.name(), deposit.getPackagingType().getUri());
         status.put(DepositField.depositMd5.name(), deposit.getMd5());
-        status.put(DepositField.accessionNumber.name(), deposit.getAccessionNumber());
-        status.put(DepositField.mediaId.name(), deposit.getMediaId());
         status.put(DepositField.staffOnly.name(), String.valueOf(deposit.getStaffOnly()));
         status.put(DepositField.overrideTimestamps.name(), String.valueOf(deposit.getOverrideTimestamps()));
 

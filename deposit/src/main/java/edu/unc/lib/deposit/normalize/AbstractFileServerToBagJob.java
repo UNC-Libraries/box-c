@@ -92,8 +92,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         // Cache the source bag folder
         pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
 
-        // Add extra descriptive information
-        addDescription(containerPID, status);
+        addTitle(containerPID, label);
 
         return bagFolder;
     }
@@ -215,45 +214,27 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     }
 
     /**
-     * Adds additional metadata fields for the root bag container if they are provided
+     * Set title from provided label
      *
      * @param containerPID
-     * @param status
+     * @param label
      */
-    public void addDescription(PID containerPID, Map<String, String> status) {
+    public void addTitle(PID containerPID, String label) {
         Document doc = new Document();
         Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
         doc.addContent(mods);
 
-        if (status.containsKey(DepositField.accessionNumber.name())) {
-            String accessionNumber = status.get(DepositField.accessionNumber.name());
+        Element titleInfo = new Element("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
+        Element title = new Element("title", JDOMNamespaceUtil.MODS_V3_NS);
+        title.setText(label);
+        titleInfo.addContent(title);
+        mods.addContent(titleInfo);
 
-            Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-            identifier.setText(accessionNumber);
-            identifier.setAttribute("type", "local");
-            identifier.setAttribute("displayLabel", "Accession Identifier");
-            mods.addContent(identifier);
-        }
-
-        if (status.containsKey(DepositField.mediaId.name())) {
-            String mediaId = status.get(DepositField.mediaId.name());
-
-            Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-            identifier.setText(mediaId);
-            identifier.setAttribute("type", "local");
-            identifier.setAttribute("displayLabel", "Source Identifier");
-            mods.addContent(identifier);
-        }
-
-        // Persist the MODS file to disk if there were any fields added
-        if (!mods.getChildren().isEmpty()) {
-            File modsFile = getModsPath(containerPID, true).toFile();
-            try (FileOutputStream fos = new FileOutputStream(modsFile)) {
-                new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
-            } catch (IOException e) {
-                failJob(e, "Unable to write descriptive metadata for bag deposit {0}", getDepositPID());
-            }
-
+        File modsFile = getModsPath(containerPID, true).toFile();
+        try (FileOutputStream fos = new FileOutputStream(modsFile)) {
+            new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
+        } catch (IOException e) {
+            failJob(e, "Unable to write title metadata for bag deposit {0}", getDepositPID());
         }
     }
 }
