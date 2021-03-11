@@ -70,6 +70,11 @@ public class SolrSearchService extends AbstractQueryService {
     protected FacetFieldFactory facetFieldFactory;
     protected FacetFieldUtil facetFieldUtil;
 
+    protected static final String DEFAULT_RELEVANCY_BOOSTS =
+            "titleIndex^50 subjectIndex^10 contributorIndex^30 text^1 keywordIndex^2";
+    protected static final String DEFAULT_SEARCHABLE_FIELDS =
+            "text,titleIndex,contributorIndex,subjectIndex,keywordIndex";
+
     public SolrSearchService() {
     }
 
@@ -323,6 +328,10 @@ public class SolrSearchService extends AbstractQueryService {
         // Add query
         solrQuery.setQuery(query.toString());
 
+        solrQuery.set("defType", "edismax");
+        solrQuery.set("qf", DEFAULT_RELEVANCY_BOOSTS);
+        solrQuery.set("uf", DEFAULT_SEARCHABLE_FIELDS);
+
         addResultFields(searchState.getResultFields(), solrQuery);
 
         if (searchState.getRollup() != null && searchState.getRollup()) {
@@ -460,7 +469,11 @@ public class SolrSearchService extends AbstractQueryService {
                         termQuery.append(" AND ");
                     }
                     LOG.debug("{} : {}", searchType, searchFragments);
-                    termQuery.append(solrSettings.getFieldName(searchType)).append(':').append('(');
+                    // Search all fields when text field specified
+                    if ("text".equalsIgnoreCase(searchType)) {
+                        termQuery.append(solrSettings.getFieldName(searchType)).append(':');
+                    }
+                    termQuery.append('(');
                     boolean firstTerm = true;
                     for (String searchFragment : searchFragments) {
                         if (firstTerm) {
