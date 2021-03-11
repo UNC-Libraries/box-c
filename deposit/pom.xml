@@ -108,8 +108,8 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>clamavj</artifactId>
+            <groupId>fi.solita.clamav</groupId>
+            <artifactId>clamav-client</artifactId>
         </dependency>
         <dependency>
             <groupId>com.samskivert</groupId>

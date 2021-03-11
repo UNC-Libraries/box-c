@@ -15,20 +15,19 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.philvarner.clamavj.ClamScan;
-import com.philvarner.clamavj.ScanResult;
 
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
@@ -40,6 +39,8 @@ import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import fi.solita.clamav.ClamAVClient;
+import fi.solita.clamav.ScanResult;
 
 /**
  * Scans all staged files registered in the deposit for viruses.
@@ -51,18 +52,16 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory
             .getLogger(VirusScanJob.class);
 
-    private ClamScan clamScan;
+    private static final int MAX_RETRIES = 5;
+
+    private ClamAVClient clamClient;
 
     public VirusScanJob() {
         super();
     }
 
-    public ClamScan getClamScan() {
-        return clamScan;
-    }
-
-    public void setClamScan(ClamScan clamScan) {
-        this.clamScan = clamScan;
+    public void setClamClient(ClamAVClient clamClient) {
+        this.clamClient = clamClient;
     }
 
     public VirusScanJob(String uuid, String depositUUID) {
@@ -96,42 +95,58 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
             waitForQueueCapacity();
 
             submitTask(() -> {
-                if (isInterrupted.get()) {
-                    return;
-                }
+                long start = System.nanoTime();
                 log.debug("Scanning file {} for object {}", href.getValue(), objPid);
 
-                URI manifestURI = URI.create(href.getValue());
-                File file = new File(manifestURI);
+                int retries = MAX_RETRIES;
+                while (true) {
+                    if (isInterrupted.get()) {
+                        return;
+                    }
 
-                ScanResult result = clamScan.scan(file);
+                    URI fileURI = URI.create(href.getValue());
+                    Path file = Paths.get(fileURI);
 
-                switch (result.getStatus()) {
-                case FAILED:
-                    failures.put(manifestURI.toString(), result.getSignature());
-                    break;
-                case ERROR:
-                    Exception ex = result.getException();
-                    String message = "Virus checks are producing errors for file '" + file
-                            + "': " + result.getResult();
-                    throw new RepositoryException(message, ex);
-                case PASSED:
-                    PID binPid = href.getKey();
-                    PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
-                    PremisLogger premisLogger = getPremisLogger(parentPid);
-                    PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+                    ScanResult result = clamClient.scanWithResult(file);
 
-                    premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
-                            .addEventDetail("File passed pre-ingest scan for viruses")
-                            .addOutcome(true)
-                            .write();
+                    switch (result.getStatus()) {
+                    case FOUND:
+                        if (StringUtils.isBlank(result.getSignature()) && --retries > 0) {
+                            log.warn("Scan of {} indicated an unidentified problem was found, retrying",
+                                    href.getValue());
+                            break;
+                        } else {
+                            failures.put(fileURI.toString(), result.getSignature());
+                            log.debug("Scanning of file {} failed in {}s", href.getValue(),
+                                    (System.nanoTime() - start) / 1e9);
+                            return;
+                        }
+                    case ERROR:
+                        Exception ex = result.getException();
+                        String message = "Virus checks are producing errors for file '" + file
+                                + "': " + result.getResult();
+                        throw new RepositoryException(message, ex);
+                    case PASSED:
+                        PID binPid = href.getKey();
+                        PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
+                        PremisLogger premisLogger = getPremisLogger(parentPid);
+                        PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
-                    scannedObjects.incrementAndGet();
+                        premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                                .addEventDetail("File passed pre-ingest scan for viruses")
+                                .addOutcome(true)
+                                .write();
 
-                    addClicks(1);
-                    markObjectCompleted(objPid);
+                        scannedObjects.incrementAndGet();
 
-                    break;
+                        addClicks(1);
+                        markObjectCompleted(objPid);
+
+                        log.debug("Scanning of file {} passed in {}s", href.getValue(),
+                                (System.nanoTime() - start) / 1e9);
+
+                        return;
+                    }
                 }
             });
         }

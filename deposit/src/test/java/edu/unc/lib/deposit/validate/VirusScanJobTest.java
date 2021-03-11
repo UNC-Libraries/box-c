@@ -21,7 +21,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -31,6 +30,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -42,15 +43,11 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import com.philvarner.clamavj.ClamScan;
-import com.philvarner.clamavj.ScanResult;
-import com.philvarner.clamavj.ScanResult.Status;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -65,6 +62,9 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.URIUtil;
+import fi.solita.clamav.ClamAVClient;
+import fi.solita.clamav.ScanResult;
+import fi.solita.clamav.ScanResult.Status;
 
 /**
  *
@@ -78,7 +78,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
     private VirusScanJob job;
 
     @Mock
-    private ClamScan clamScan;
+    private ClamAVClient clamClient;
 
     @Mock
     private ScanResult scanResult;
@@ -105,7 +105,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             }
         });
 
-        when(clamScan.scan(any(File.class))).thenReturn(scanResult);
+        when(clamClient.scanWithResult(any(Path.class))).thenReturn(scanResult);
 
         File examplesFile = new File("src/test/resources/examples");
         FileUtils.copyDirectory(examplesFile, depositDir);
@@ -119,7 +119,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
-        job.setClamScan(clamScan);
+        job.setClamClient(clamClient);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
@@ -143,6 +143,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
         File manifestFile = new File(depositDir, "manifest.txt");
+        manifestFile.createNewFile();
         Resource manifestResc = DepositModelHelpers.addManifest(depBag, "manifest.txt");
         manifestResc.addLiteral(CdrDeposit.stagingLocation, manifestFile.toPath().toUri().toString());
 
@@ -197,11 +198,12 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         // Fail the text scan, but not the pdf
         when(scanResult.getStatus()).thenReturn(Status.PASSED);
         ScanResult result2 = mock(ScanResult.class);
-        when(result2.getStatus()).thenReturn(Status.FAILED);
+        when(result2.getStatus()).thenReturn(Status.FOUND);
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
-        doReturn(scanResult).when(clamScan).scan(argThat(new FileArgumentMatcher(pdfFile)));
-        doReturn(result2).when(clamScan).scan(argThat(new FileArgumentMatcher(textFile)));
+        when(clamClient.scanWithResult(any(Path.class)))
+                .thenReturn(scanResult)
+                .thenReturn(result2);
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
@@ -231,10 +233,11 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
     @Test
     public void failAndRescanTest() throws Exception {
-        when(scanResult.getStatus()).thenReturn(Status.FAILED)
+        when(scanResult.getSignature()).thenReturn("Badness");
+        when(scanResult.getStatus()).thenReturn(Status.FOUND)
                 .thenReturn(Status.PASSED);
         File textFile = new File(depositDir, "text.txt");
-        doReturn(scanResult).when(clamScan).scan(argThat(new FileArgumentMatcher(textFile)));
+        doReturn(scanResult).when(clamClient).scanWithResult(any(InputStream.class));
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
@@ -254,6 +257,30 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.run();
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(filePid), any(File.class));
+        verify(premisEventBuilder).addOutcome(true);
+    }
+
+    @Test
+    public void foundUnidentifiedRecoveryTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.FOUND)
+                .thenReturn(Status.PASSED);
+        File textFile = new File(depositDir, "text.txt");
+        doReturn(scanResult).when(clamClient).scanWithResult(any(InputStream.class));
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID filePid = addFileObject(depBag, textFile);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
         verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
@@ -345,20 +372,5 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         parent.add(fileResc);
 
         return filePid;
-    }
-
-    private class FileArgumentMatcher extends ArgumentMatcher<File> {
-        private File file;
-
-        public FileArgumentMatcher(File file) {
-            this.file = file;
-        }
-
-        @Override
-        public boolean matches(Object argument) {
-            File compareFile = (File) argument;
-            return file.getAbsolutePath().equals(compareFile.getAbsolutePath());
-        }
-
     }
 }
