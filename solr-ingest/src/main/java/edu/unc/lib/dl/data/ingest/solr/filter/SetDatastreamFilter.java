@@ -106,14 +106,17 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             return null;
         }
     }
+    
+    private BinaryObject getFits(List<BinaryObject> binList) {
+        return binList.stream()
+                .filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits")).findFirst()
+                .orElse(null);
+    }
 
     private String setExtent(List<BinaryObject> binList) {
-        List<BinaryObject> fitsFile = binList.stream()
-                .filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits"))
-                .collect(Collectors.toList());
+        BinaryObject fits = getFits(binList);
 
-        if (fitsFile.size() != 0) {
-            BinaryObject fits = fitsFile.get(0);
+        if (fits != null) {
             InputStream fitsData = fits.getBinaryStream();
             String fitsId = fits.getPid().getId();
             String extent = null;

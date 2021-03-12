@@ -20,6 +20,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +43,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -66,6 +68,14 @@ public class LorisContentController extends AbstractSolrSearchController {
 
     @Autowired
     private AccessControlService accessControlService;
+
+    static final List<String> SEARCH_KEYS = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTRIBUTOR.name(),
+            SearchFieldKeys.CREATOR.name(), SearchFieldKeys.SUBJECT.name(),
+            SearchFieldKeys.ABSTRACT.name(), SearchFieldKeys.STATUS.name(),
+            SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.CONTENT_MODEL.name(),
+            SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
+            SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name());
 
     /**
      * Determines if the user is allowed to access a specific datastream on the selected object.
@@ -165,7 +175,7 @@ public class LorisContentController extends AbstractSolrSearchController {
             SimpleIdRequest idRequest = new SimpleIdRequest(id, GroupsThreadStore
                     .getAgentPrincipals().getPrincipals());
             BriefObjectMetadataBean briefObj = queryLayer.getObjectById(idRequest);
-            return lorisContentService.getCanvas(request, id, briefObj);
+            return lorisContentService.getCanvas(request, briefObj);
         } else {
             LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             response.setStatus(HttpStatus.FORBIDDEN.value());
@@ -188,7 +198,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
-            List<BriefObjectMetadata> briefObjs = getDataStreams(id, request);
+            List<BriefObjectMetadata> briefObjs = getDataStreams(pid, request);
             return lorisContentService.getSequence(request, briefObjs);
         } else {
             LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
@@ -213,7 +223,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
             try {
-                List<BriefObjectMetadata> briefObjs = getDataStreams(id, request);
+                List<BriefObjectMetadata> briefObjs = getDataStreams(pid, request);
                 return lorisContentService.getManifest(request, briefObjs);
             } catch (IOException e) {
                 LOG.error("Error retrieving manifest content for {}", id, e);
@@ -226,27 +236,28 @@ public class LorisContentController extends AbstractSolrSearchController {
         return "";
     }
 
-    private List<BriefObjectMetadata> getDataStreams(String id, HttpServletRequest request) {
-        PID pid = PIDs.get(id);
+    private List<BriefObjectMetadata> getDataStreams(PID pid, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
-
         SearchState searchState = searchRequest.getSearchState();
-        searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-                SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTRIBUTOR.name(),
-                SearchFieldKeys.CREATOR.name(), SearchFieldKeys.SUBJECT.name(),
-                SearchFieldKeys.ABSTRACT.name(), SearchFieldKeys.STATUS.name(),
-                SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-                SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-                SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
+        searchState.setResultFields(SEARCH_KEYS);
+        searchState.setIgnoreMaxRows(true);
+        searchState.setRowsPerPage(250);
 
         BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
                 searchRequest.getAccessGroups());
-        SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-        List<BriefObjectMetadata> objects = resultResponse.getResultList();
-        objects.add(0, container);
+        String objType = container.getResourceType();
 
-        return resultResponse.getResultList();
+        if (objType.equals(Cdr.FileObject.getLocalName())) {
+            return Collections.singletonList(container);
+        } else if (objType.equals(Cdr.Work.getLocalName())) {
+            SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+            List<BriefObjectMetadata> objects = resultResponse.getResultList();
+            objects.add(0, container);
+            return resultResponse.getResultList();
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

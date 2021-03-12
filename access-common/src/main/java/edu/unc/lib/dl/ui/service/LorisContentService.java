@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -180,7 +181,7 @@ public class LorisContentService {
         String manifestBase = getRecordPath(request);
         BriefObjectMetadata rootObj = briefObjs.get(0);
 
-        String title = setTitle(rootObj);
+        String title = getTitle(rootObj);
 
         Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"), title);
 
@@ -223,18 +224,18 @@ public class LorisContentService {
         return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
     }
 
-    public String getCanvas(HttpServletRequest request, String uuid, BriefObjectMetadata briefObj)
+    public String getCanvas(HttpServletRequest request, BriefObjectMetadata briefObj)
             throws JsonProcessingException {
         String path = getRecordPath(request);
-        return iiifMapper.writeValueAsString(createCanvas(path, uuid, briefObj));
+        return iiifMapper.writeValueAsString(createCanvas(path, briefObj));
     }
 
     private Sequence createSequence(String seqPath, List<BriefObjectMetadata> briefObjs) {
         Sequence seq = new Sequence(URIUtil.join(seqPath, "sequence", "normal"));
 
-        HashSet<String> uuidList = new HashSet<>();
+        Set<String> uuidList = new HashSet<>();
         for (BriefObjectMetadata briefObj : briefObjs) {
-            String datastreamUuid = jp2Pid(briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()));
+            String datastreamUuid = jp2Pid(briefObj);
 
             if (!datastreamUuid.equals("")) {
                 // Don't add rootObj twice
@@ -242,7 +243,7 @@ public class LorisContentService {
                     continue;
                 }
 
-                Canvas canvas = createCanvas(seqPath, datastreamUuid, briefObj);
+                Canvas canvas = createCanvas(seqPath, briefObj);
                 seq.addCanvas(canvas);
             }
 
@@ -252,8 +253,9 @@ public class LorisContentService {
         return seq;
     }
 
-    private Canvas createCanvas(String path, String uuid, BriefObjectMetadata briefObj) {
-        String title = setTitle(briefObj);
+    private Canvas createCanvas(String path, BriefObjectMetadata briefObj) {
+        String title = getTitle(briefObj);
+        String uuid = jp2Pid(briefObj);
         Canvas canvas = new Canvas(path, title);
         String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
 
@@ -285,13 +287,15 @@ public class LorisContentService {
         return URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
     }
 
-    private String jp2Pid(Datastream datastream) {
-        if (datastream != null && datastream.getMimetype().equals("image/jp2")) {
-            String id = datastream.getDatastreamIdentifier();
-            if (id.startsWith("/")) {
-                id = datastream.getFilename();
+    private String jp2Pid(BriefObjectMetadata briefObj) {
+        Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        if (datastream != null) {
+            String id = datastream.getOwner();
+            if (id.equals("")) {
+                // Only the primary file has an owner
+                return datastream.getFilename().replaceAll("(\\.)jp2$", "");
             }
-            return id.replaceAll("(\\.|\\/)jp2$", "");
+            return id;
         }
 
         return "";
@@ -303,7 +307,7 @@ public class LorisContentService {
         }
     }
 
-    private String setTitle(BriefObjectMetadata briefObj) {
+    private String getTitle(BriefObjectMetadata briefObj) {
         String title = briefObj.getTitle();
         return (title != null) ? title : "";
     }

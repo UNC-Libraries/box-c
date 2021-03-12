@@ -48,8 +48,8 @@ public class Datastream {
         }
 
         String[] dsParts = datastream.split("\\|", -1);
-        if (dsParts.length < 7) {
-            throw new IllegalArgumentException("Invalid datastream string, requires 7 parameters, only included "
+        if (dsParts.length < 6) {
+            throw new IllegalArgumentException("Invalid datastream string, requires 6 or 7 parameters, only included "
                     + dsParts.length);
         }
 
@@ -65,7 +65,12 @@ public class Datastream {
         }
         this.checksum = dsParts[5];
         this.owner = dsParts[6];
-        this.extent = dsParts[7];
+        try {
+            this.extent = dsParts[7];
+        } catch (IndexOutOfBoundsException e) {
+            // Ignore missing extent
+        }
+
     }
 
     @Override
