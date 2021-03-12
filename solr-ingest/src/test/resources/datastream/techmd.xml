@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+  <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+    <premis3:objectCharacteristics>
+      <premis3:compositionLevel>0</premis3:compositionLevel>
+      <premis3:format>
+        <premis3:formatDesignation>
+          <premis3:formatName>Portable Network Graphics</premis3:formatName>
+        </premis3:formatDesignation>
+      </premis3:format>
+      <premis3:size>5062</premis3:size>
+      <premis3:objectCharacteristicsExtension>
+        <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.5.0" timestamp="3/12/21 10:24 AM">
+          <identification>
+            <identity format="Portable Network Graphics" mimetype="image/png" toolname="FITS" toolversion="1.5.0">
+              <tool toolname="Droid" toolversion="6.4" />
+              <tool toolname="Exiftool" toolversion="11.54" />
+              <tool toolname="Tika" toolversion="1.21" />
+              <version toolname="Droid" toolversion="6.4">1.0</version>
+              <externalIdentifier toolname="Droid" toolversion="6.4" type="puid">fmt/11</externalIdentifier>
+            </identity>
+          </identification>
+          <fileinfo>
+            <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/path/to/image.png</filepath>
+            <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">image.png</filename>
+            <size toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">5062</size>
+            <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">c4dba0336aee71cdb706f70ec161d5b7</md5checksum>
+            <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1615562630000</fslastmodified>
+          </fileinfo>
+          <filestatus />
+          <metadata>
+            <image>
+              <compressionScheme toolname="Exiftool" toolversion="11.54" status="CONFLICT">Deflate/Inflate</compressionScheme>
+              <compressionScheme toolname="Tika" toolversion="1.21" status="CONFLICT">Deflate</compressionScheme>
+              <imageWidth toolname="Exiftool" toolversion="11.54">250</imageWidth>
+              <imageHeight toolname="Exiftool" toolversion="11.54">375</imageHeight>
+              <orientation toolname="Tika" toolversion="1.21" status="SINGLE_RESULT">normal*</orientation>
+              <standard>
+                <mix:mix xmlns:mix="http://www.loc.gov/mix/v20">
+                  <mix:BasicDigitalObjectInformation>
+                    <mix:Compression>
+                      <mix:compressionScheme>Deflate/Inflate</mix:compressionScheme>
+                    </mix:Compression>
+                  </mix:BasicDigitalObjectInformation>
+                  <mix:BasicImageInformation>
+                    <mix:BasicImageCharacteristics>
+                      <mix:imageWidth>250</mix:imageWidth>
+                      <mix:imageHeight>375</mix:imageHeight>
+                      <mix:PhotometricInterpretation />
+                    </mix:BasicImageCharacteristics>
+                  </mix:BasicImageInformation>
+                  <mix:ImageCaptureMetadata>
+                    <mix:GeneralCaptureInformation />
+                    <mix:orientation>normal*</mix:orientation>
+                  </mix:ImageCaptureMetadata>
+                  <mix:ImageAssessmentMetadata>
+                    <mix:SpatialMetrics />
+                    <mix:ImageColorEncoding />
+                  </mix:ImageAssessmentMetadata>
+                </mix:mix>
+              </standard>
+            </image>
+          </metadata>
+        </fits>
+      </premis3:objectCharacteristicsExtension>
+    </premis3:objectCharacteristics>
+    <premis3:objectIdentifier>
+      <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+      <premis3:objectIdentifierValue>http://example.com/object</premis3:objectIdentifierValue>
+    </premis3:objectIdentifier>
+  </premis3:object>
+</premis3:premis>
+
