@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.dl.model.DatastreamPids;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -74,6 +75,7 @@ public class SetDatastreamFilterTest {
     private static final String BASE_URI = "http://example.com/rest/";
 
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+    private static final String PID_STRING2 = "uuid:07d9594f-310d-4095-ab67-79a1056e2141";
 
     private static final String FILE_MIMETYPE = "text/plain";
     private static final String FILE_NAME = "test.txt";
@@ -89,6 +91,7 @@ public class SetDatastreamFilterTest {
     private static final String FILE3_NAME = "image.png";
     private static final String FILE3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1740";
     private static final long FILE3_SIZE = 17136l;
+    private static final String FILE3_EXTENT = "250x375";
 
     private static final String MODS_MIMETYPE = "text/xml";
     private static final String MODS_NAME = "mods.xml";
@@ -106,11 +109,14 @@ public class SetDatastreamFilterTest {
     @Mock
     private DocumentIndexingPackage dip;
     private PID pid;
+    private PID fitsPid;
 
     @Mock
     private FileObject fileObj;
     @Mock
     private BinaryObject binObj;
+    @Mock
+    private BinaryObject fitsObj;
 
     @Mock
     private IndexDocumentBean idb;
@@ -127,17 +133,21 @@ public class SetDatastreamFilterTest {
         initMocks(this);
 
         pid = PIDs.get(PID_STRING);
+        fitsPid = PIDs.get(PID_STRING2);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
-
-//        when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(binObj.getPid()).thenReturn(pid);
+        when(fitsObj.getPid()).thenReturn(fitsPid);
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, fitsObj));
+        // when(pid.getQualifiedId()).thenReturn("original_file");
+        // when(fitsPid.getQualifiedId()).thenReturn("/qualified/techmd_fits");
+
 
         filter = new SetDatastreamFilter();
         filter.setDerivativeService(derivativeService);
 
-        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));
     }
@@ -150,7 +160,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE));
@@ -173,11 +183,11 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), TECHNICAL_METADATA.getId(),
-                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null);
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_LARGE.getId(),
-                FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null);
+                FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null, FILE3_EXTENT);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + FILE3_SIZE));
@@ -203,7 +213,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsMetadataDatastreams(listCaptor.getValue());
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
@@ -228,7 +238,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
         assertContainsMetadataDatastreams(listCaptor.getValue());
 
         // Sort size is based off primary object's size
@@ -282,9 +292,9 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_SMALL.getId(),
-                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null);
+                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + derivSize));
@@ -301,7 +311,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
 
-        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "||||||"));
+        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "|||||||"));
         verify(idb).setFilesizeSort(eq(0l));
         verify(idb).setFilesizeTotal(eq(0l));
     }
@@ -317,10 +327,11 @@ public class SetDatastreamFilterTest {
         return resc;
     }
 
-    private void assertContainsDatastream(List<String> values, String name, long filesize, String mimetype, String filename, String digest, String owner) {
+    private void assertContainsDatastream(List<String> values, String name, long filesize, String mimetype,
+                                          String filename, String digest, String owner, String extent) {
         String extension = filename.substring(filename.lastIndexOf('.') + 1);
         List<Object> components = Arrays.asList(
-                name, mimetype, filename, extension, filesize, digest, owner);
+                name, mimetype, filename, extension, filesize, digest, owner, extent);
         String joined = components.stream()
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
@@ -343,8 +354,8 @@ public class SetDatastreamFilterTest {
 
     private void assertContainsMetadataDatastreams(List<String> values) {
         assertContainsDatastream(values, DatastreamType.MD_DESCRIPTIVE.getId(),
-                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null);
+                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null, null);
         assertContainsDatastream(values, DatastreamType.MD_EVENTS.getId(),
-                PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null);
+                PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null, null);
     }
 }
