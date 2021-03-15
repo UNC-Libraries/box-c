@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
@@ -106,49 +107,46 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             return null;
         }
     }
-    
+
     private BinaryObject getFits(List<BinaryObject> binList) {
-        return binList.stream().filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits")).findFirst()
-                .orElse(null);
+        return binList.stream().filter(obj -> obj.getPid().getQualifiedId().endsWith(TECHNICAL_METADATA.getId()))
+                .findFirst().orElse(null);
     }
 
-    private String setExtent(List<BinaryObject> binList) {
+    private String getExtent(List<BinaryObject> binList) {
         BinaryObject fits = getFits(binList);
 
-        if (fits != null) {
-            InputStream fitsData = fits.getBinaryStream();
-            String fitsId = fits.getPid().getId();
-            String extent = null;
-
-            try {
-                SAXBuilder builder = new SAXBuilder();
-                Document doc = builder.build(fitsData);
-                Element fitsMd = doc.getRootElement().getChild("object", PREMIS_V3_NS)
-                        .getChild("objectCharacteristics", PREMIS_V3_NS)
-                        .getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
-                        .getChild("fits", FITS_NS)
-                        .getChild("metadata", FITS_NS);
-
-                if (fitsMd != null) {
-                    Element imgMd = fitsMd.getChild("image", FITS_NS);
-
-                    if (imgMd != null) {
-                        String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
-                        String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
-                        extent = imgHeight + "x" + imgWidth;
-                    }
-                }
-                return extent;
-            } catch (JDOMException e) {
-                log.warn("Unable to parse FITS for {}", fitsId);
-                return null;
-            } catch (IOException e) {
-                log.warn("Unable to open FITS file for {}", fitsId);
-                return null;
-            }
+        if (fits == null) {
+            return null;
         }
 
-        return null;
+        InputStream fitsData = fits.getBinaryStream();
+        String fitsId = fits.getPid().getId();
+        String extent = null;
+
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document doc = builder.build(fitsData);
+            Element fitsMd = doc.getRootElement().getChild("object", PREMIS_V3_NS)
+                    .getChild("objectCharacteristics", PREMIS_V3_NS)
+                    .getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
+                    .getChild("fits", FITS_NS)
+                    .getChild("metadata", FITS_NS);
+
+            if (fitsMd != null) {
+                Element imgMd = fitsMd.getChild("image", FITS_NS);
+
+                if (imgMd != null) {
+                    String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
+                    String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
+                    extent = imgHeight + "x" + imgWidth;
+                }
+            }
+            return extent;
+        } catch (JDOMException | IOException e) {
+            log.warn("Unable to parse FITS for {}", fitsId, e);
+            return null;
+        }
     }
 
     /**
@@ -160,8 +158,6 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param ownedByOtherObject
      */
     private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
-        String extent = setExtent(binList);
-
         binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
@@ -182,8 +178,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                String extentValue = (name.equals("original_file") &&
-                        mimetype != null && mimetype.startsWith("image")) ? extent : null;
+                String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
+                        mimetype != null && mimetype.startsWith("image")) ? getExtent(binList) : null;
                 dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum, extentValue));
             });
     }

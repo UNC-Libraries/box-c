@@ -255,7 +255,7 @@ public class LorisContentController extends AbstractSolrSearchController {
             SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
             List<BriefObjectMetadata> objects = resultResponse.getResultList();
             objects.add(0, container);
-            return resultResponse.getResultList();
+            return objects;
         } else {
             return Collections.emptyList();
         }
