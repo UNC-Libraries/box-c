@@ -108,8 +108,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
     
     private BinaryObject getFits(List<BinaryObject> binList) {
-        return binList.stream()
-                .filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits")).findFirst()
+        return binList.stream().filter(obj -> obj.getPid().getQualifiedId().endsWith("techmd_fits")).findFirst()
                 .orElse(null);
     }
 
@@ -183,8 +182,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                String setExtent = (mimetype != null && mimetype.startsWith("image")) ? extent : null;
-                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum, setExtent));
+                String extentValue = (name.equals("original_file") &&
+                        mimetype != null && mimetype.startsWith("image")) ? extent : null;
+                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum, extentValue));
             });
     }
 

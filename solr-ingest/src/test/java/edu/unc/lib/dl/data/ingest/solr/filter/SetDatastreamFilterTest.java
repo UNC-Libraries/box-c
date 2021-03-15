@@ -115,9 +115,6 @@ public class SetDatastreamFilterTest {
     @Mock
     private BinaryObject binObj;
     @Mock
-    private BinaryObject fitsObj;
-
-    @Mock
     private IndexDocumentBean idb;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
@@ -226,7 +223,8 @@ public class SetDatastreamFilterTest {
                 FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
-        verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + FILE3_SIZE));
+        // JP2 and thumbnail set to same size
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + (FILE3_SIZE * 2)));
     }
 
     @Test(expected = IndexingException.class)
@@ -253,7 +251,7 @@ public class SetDatastreamFilterTest {
         assertContainsMetadataDatastreams(listCaptor.getValue());
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
-        verify(idb).setFilesizeTotal(eq(FILE_SIZE + MODS_SIZE + PREMIS_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + MODS_SIZE + PREMIS_SIZE));
     }
 
     @Test
@@ -280,7 +278,7 @@ public class SetDatastreamFilterTest {
         // Sort size is based off primary object's size
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         // Work has no datastreams of its own
-        verify(idb).setFilesizeTotal(eq(MODS_SIZE + PREMIS_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE));
     }
 
     @Test
@@ -308,7 +306,7 @@ public class SetDatastreamFilterTest {
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsMetadataDatastreams(listCaptor.getValue());
         verify(idb, never()).setFilesizeSort(anyLong());
-        verify(idb).setFilesizeTotal(MODS_SIZE + PREMIS_SIZE);
+        verify(idb).setFilesizeTotal(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE);
     }
 
     @Test
@@ -377,6 +375,12 @@ public class SetDatastreamFilterTest {
     }
 
     private void addMetadataDatastreams(ContentObject obj) throws Exception {
+        BinaryObject fitsBin = mock(BinaryObject.class);
+        when(fitsBin.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(fitsBin.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(fitsBin.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
+
         BinaryObject modsBin = mock(BinaryObject.class);
         when(modsBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_DESCRIPTIVE.getId(),
@@ -385,7 +389,7 @@ public class SetDatastreamFilterTest {
         when(premisBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_EVENTS.getId(),
                         PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST));
-        List<BinaryObject> mdBins = Arrays.asList(premisBin, modsBin);
+        List<BinaryObject> mdBins = Arrays.asList(fitsBin, premisBin, modsBin);
 
         when(obj.listMetadata()).thenReturn(mdBins);
     }
