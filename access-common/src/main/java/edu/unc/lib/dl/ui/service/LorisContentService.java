@@ -35,6 +35,7 @@ import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
 import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
 import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
 import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -186,17 +187,12 @@ public class LorisContentService {
         Manifest manifest = new Manifest(URIUtil.join(manifestBase, "manifest"), title);
 
         String abstractText = rootObj.getAbstractText();
-        String label = rootObj.getLabel();
         List<String> creators = rootObj.getCreator();
         List<String> subjects = rootObj.getSubject();
         List<String> language = rootObj.getLanguage();
 
         if (abstractText != null) {
             manifest.addDescription(abstractText);
-        }
-
-        if (label != null) {
-            manifest.addLabel(label);
         }
 
         manifest.addLogo(new ImageContent(URIUtil.join(basePath, "static", "images", "unc-icon.png")));
@@ -237,7 +233,7 @@ public class LorisContentService {
         for (BriefObjectMetadata briefObj : briefObjs) {
             String datastreamUuid = jp2Pid(briefObj);
 
-            if (!datastreamUuid.equals("")) {
+            if (!StringUtils.isEmpty(datastreamUuid)) {
                 // Don't add rootObj twice
                 if (uuidList.contains(datastreamUuid)) {
                     continue;
@@ -256,7 +252,13 @@ public class LorisContentService {
     private Canvas createCanvas(String path, BriefObjectMetadata briefObj) {
         String title = getTitle(briefObj);
         String uuid = jp2Pid(briefObj);
+
         Canvas canvas = new Canvas(path, title);
+        if (StringUtils.isEmpty(uuid)) {
+            LOG.warn("No jp2 id was found for {}. IIIF canvas is empty.", briefObj.getId());
+            return canvas;
+        }
+
         String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
 
         Datastream fileDs = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
@@ -271,11 +273,6 @@ public class LorisContentService {
         ImageContent thumb = new ImageContent(URIUtil.join(basePath,
                 "services", "api", "thumb", uuid, "large"));
         canvas.addImage(thumb);
-
-        String label = briefObj.getLabel();
-        if (label != null) {
-            canvas.addLabel(label);
-        }
 
         return canvas;
     }
@@ -292,13 +289,12 @@ public class LorisContentService {
         if (datastream != null) {
             String id = datastream.getOwner();
             if (id.equals("")) {
-                // Only the primary file has an owner
-                return datastream.getFilename().replaceAll("(\\.)jp2$", "");
+                return briefObj.getId();
             }
             return id;
         }
 
-        return "";
+        return null;
     }
 
     private void setMetadataField(Manifest manifest, String fieldName, List<String> field) {
