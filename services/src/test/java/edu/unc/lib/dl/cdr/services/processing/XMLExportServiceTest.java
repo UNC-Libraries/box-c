@@ -190,6 +190,8 @@ public class XMLExportServiceTest {
         ContentObject contentObj = (ContentObject) repoObjLoader.getRepositoryObject(pid1);
 
         BinaryObject modsObj = mock(BinaryObject.class);
+        Date lastModified = new Date();
+        when(modsObj.getLastModified()).thenReturn(lastModified);
         InputStream modsIs = new FileInputStream(new File(
                 "src/test/resources/mods/valid-mods.xml"));
         when(modsObj.getBinaryStream()).thenReturn(modsIs);
@@ -208,6 +210,7 @@ public class XMLExportServiceTest {
         Element updateEl = objEl.getChild("update");
         assertEquals("MODS", updateEl.getAttributeValue("type"));
         assertNotNull(updateEl.getAttributeValue("lastModified"));
+        assertEquals(lastModified.toString(), updateEl.getAttributeValue("lastModified"));
 
         Element modsEl = updateEl.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
         assertNotNull(modsEl);
