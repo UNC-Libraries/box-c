@@ -249,7 +249,7 @@ public class LorisContentController extends AbstractSolrSearchController {
                 searchRequest.getAccessGroups());
         String objType = container.getResourceType();
 
-        if (objType.equals(Cdr.FileObject.getLocalName())) {
+        if (objType.equals("File")) {
             return Collections.singletonList(container);
         } else if (objType.equals(Cdr.Work.getLocalName())) {
             SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
