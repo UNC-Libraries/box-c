@@ -156,11 +156,11 @@ public class LorisContentIT {
         assertHasImageManifest(fileObj.getPid(), fileObj.getPid(), "file", "file");
         assertHasImageManifest(workObj.getPid(), fileObj.getPid(), "Work", "file");
 
-        // Currently the primary object will take on the title of the work
+        // Should produce the same result with a primary object
         workObj.setPrimaryObject(fileObj.getPid());
         treeIndexer.indexAll(workObj.getPid().getRepositoryPath());
         solrIndexer.index(workObj.getPid(), fileObj.getPid());
-        assertHasImageManifest(workObj.getPid(), fileObj.getPid(), "Work", "Work");
+        assertHasImageManifest(workObj.getPid(), fileObj.getPid(), "Work", "file");
     }
 
     @Test

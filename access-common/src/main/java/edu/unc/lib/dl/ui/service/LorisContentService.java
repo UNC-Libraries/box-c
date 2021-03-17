@@ -19,9 +19,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,6 +54,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -230,21 +229,27 @@ public class LorisContentService {
     private Sequence createSequence(String seqPath, List<BriefObjectMetadata> briefObjs) {
         Sequence seq = new Sequence(URIUtil.join(seqPath, "sequence", "normal"));
 
-        Set<String> uuidList = new HashSet<>();
+        BriefObjectMetadata rootObj = briefObjs.get(0);
+        if (rootObj.getResourceType().equals(ResourceType.Work.name())) {
+            String rootJp2Id = jp2Pid(rootObj);
+            briefObjs.remove(0);
+            // Move the primary object to the beginning of the sequence
+            if (rootJp2Id != null && !rootJp2Id.equals(rootObj.getId())) {
+                for (BriefObjectMetadata briefObj : briefObjs) {
+                    if (briefObj.getId().equals(rootJp2Id)) {
+                        briefObjs.set(0, briefObj);
+                        break;
+                    }
+                }
+            }
+        }
+
         for (BriefObjectMetadata briefObj : briefObjs) {
             String datastreamUuid = jp2Pid(briefObj);
-
             if (!StringUtils.isEmpty(datastreamUuid)) {
-                // Don't add rootObj twice
-                if (uuidList.contains(datastreamUuid)) {
-                    continue;
-                }
-
                 Canvas canvas = createCanvas(seqPath, briefObj);
                 seq.addCanvas(canvas);
             }
-
-            uuidList.add(datastreamUuid);
         }
 
         return seq;
