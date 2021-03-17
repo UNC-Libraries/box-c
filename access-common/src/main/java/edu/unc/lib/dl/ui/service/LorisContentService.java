@@ -26,15 +26,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.digitalcollections.iiif.model.ImageContent;
-import de.digitalcollections.iiif.model.image.ImageApiProfile;
-import de.digitalcollections.iiif.model.image.ImageService;
-import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
-import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
-import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
-import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -50,6 +41,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.digitalcollections.iiif.model.ImageContent;
+import de.digitalcollections.iiif.model.image.ImageApiProfile;
+import de.digitalcollections.iiif.model.image.ImageService;
+import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
+import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
+import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
+import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;

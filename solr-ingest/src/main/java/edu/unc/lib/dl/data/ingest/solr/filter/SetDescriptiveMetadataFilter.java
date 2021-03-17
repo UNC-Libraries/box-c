@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Ebucore;
@@ -99,6 +100,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Resource resc = dip.getContentObject().getResource();
         String dcTitle = titleText(resc, DcElements.title);
         String ebucoreTitle = titleText(resc, Ebucore.filename);
+        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObject) {
+            ebucoreTitle = ((FileObject) dip.getContentObject()).getOriginalFile().getFilename();
+        }
 
         // Use dc:title as a default
         if (!isBlank(dcTitle)) {
