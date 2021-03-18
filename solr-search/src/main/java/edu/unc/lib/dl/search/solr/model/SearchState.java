@@ -111,6 +111,9 @@ public class SearchState implements Serializable, Cloneable {
         if (searchState.getFacetsToRetrieve() != null) {
             this.facetsToRetrieve = new ArrayList<String>(searchState.getFacetsToRetrieve());
         }
+        if (searchState.getPermissionLimits() != null) {
+            permissionLimits = new ArrayList<Permission>(searchState.getPermissionLimits());
+        }
 
         baseFacetLimit = searchState.getBaseFacetLimit();
         startRow = searchState.getStartRow();

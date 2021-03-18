@@ -18,6 +18,7 @@ package edu.unc.lib.dl.search.solr.service;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -300,6 +303,9 @@ public class SolrSearchService extends AbstractQueryService {
         // Generate search term query string
         addSearchFields(searchState, termQuery);
 
+        // Add role group limits based on the request's groups
+        addPermissionLimits(searchState, searchRequest.getAccessGroups(), solrQuery);
+
         // Add range Fields to the query
         addRangeFields(searchState, solrQuery);
 
@@ -478,6 +484,46 @@ public class SolrSearchService extends AbstractQueryService {
                     termQuery.append(')');
                 }
             }
+        }
+    }
+
+    /**
+     * Limit the given query to only return results which have all of the
+     * specified permissions for the given set of groups
+     *
+     * @param searchState
+     * @param groups
+     * @param termQuery
+     */
+    private void addPermissionLimits(SearchState searchState, AccessGroupSet groups, SolrQuery query) {
+
+        Collection<Permission> permissions = searchState.getPermissionLimits();
+        if (permissions != null && permissions.size() > 0) {
+            // Determine the set of roles that match all of the permissions needed
+            Set<UserRole> roles = UserRole.getUserRoles(permissions);
+            if (roles.size() == 0) {
+                return;
+            }
+
+            boolean first = true;
+            StringBuilder filter = new StringBuilder(solrSettings.getFieldName(SearchFieldKeys.ROLE_GROUP.name()));
+            filter.append(':').append('(');
+            for (String group : groups) {
+                String saneGroup = SolrSettings.sanitize(group);
+
+                for (UserRole role : roles) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        filter.append(" OR ");
+                    }
+
+                    filter.append(role.getPredicate()).append('|').append(saneGroup);
+                }
+            }
+
+            filter.append(')');
+            query.addFilterQuery(filter.toString());
         }
     }
 
