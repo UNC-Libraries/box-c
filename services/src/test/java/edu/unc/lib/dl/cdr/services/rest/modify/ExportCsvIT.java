@@ -202,7 +202,7 @@ public class ExportCsvIT extends AbstractAPIIT {
                 pathToWork, 4, false, null, null, null,
                 1, false, "Authenticated", false);
 
-        String pathToFile = pathToWork + "/" + pidList.get("filePid").getId();
+        String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
                 null, false, "Authenticated", false);
@@ -243,7 +243,7 @@ public class ExportCsvIT extends AbstractAPIIT {
                 pathToWork, 4, false, null, null, null,
                 1, true, "Authenticated", false);
 
-        String pathToFile = pathToWork + "/" + filePid.getId();
+        String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
                 null, false, "Authenticated", false);
@@ -280,7 +280,7 @@ public class ExportCsvIT extends AbstractAPIIT {
                 pathToWork, 4, true, null, null, null,
                 1, false, "Staff-only", false);
 
-        String pathToFile = pathToWork + "/" + filePid.getId();
+        String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, true, "text/plain", null, (long) 7,
                 null, false, "Staff-only", false);
@@ -307,7 +307,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals("Unexpected number of results", 1, csvList.size());
 
-        String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/" + id;
+        String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
                 null, false, "Authenticated", false);

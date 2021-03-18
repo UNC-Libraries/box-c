@@ -66,6 +66,7 @@ import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
+import edu.unc.lib.dl.ui.service.AccessCopiesService;
 import edu.unc.lib.dl.ui.service.FindingAidUrlService;
 import edu.unc.lib.dl.ui.util.ModsUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
@@ -91,6 +92,8 @@ public class FullRecordController extends AbstractSolrSearchController {
     private GetCollectionIdService collectionIdService;
     @Autowired
     private FindingAidUrlService findingAidUrlService;
+    @Autowired
+    private AccessCopiesService accessCopiesService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -191,10 +194,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("embargoDate", embargoUntil);
         }
 
-        // Get pid of JP2 if there is one
-        String jp2Id = Jp2Pid(briefObject.getDatastream());
-        model.addAttribute("jp2Id", jp2Id);
-
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
         boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
@@ -248,6 +247,10 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("neighborList", neighbors);
         }
 
+        if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+            model.addAttribute("viewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
+        }
+
         List<String> objectStatus = briefObject.getStatus();
         boolean isMarkedForDeletion = false;
 
@@ -258,21 +261,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
-    }
-
-    private String Jp2Pid(List<String> datastream) {
-        if (datastream != null) {
-            for (String stream : datastream) {
-                if (stream.trim().startsWith("jp2")) {
-                    String[] uuid_parts = stream.split("\\|");
-                    if (uuid_parts.length == 7) {
-                        return uuid_parts[6];
-                    }
-                }
-            }
-        }
-
-        return "";
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)

@@ -136,10 +136,10 @@
 
             <div class="clear">
                 <c:choose>
-                    <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
+                    <c:when test="${viewerNeeded}">
                         <div class="clear_space"></div>
                         <link rel="stylesheet" href="/static/plugins/uv/uv.css">
-                        <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${jp2Id}"></div>
+                        <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
                     </c:when>
                     <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
                         <c:choose>

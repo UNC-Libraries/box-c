@@ -1088,6 +1088,9 @@ table.dataTable tbody tr.odd {
   background-color: white;
   padding: 0;
 }
+.uv .search a {
+  margin-left: 0;
+}
 .uv .tabs {
   margin-bottom: 0;
 }
@@ -1095,6 +1098,7 @@ table.dataTable tbody tr.odd {
   display: inherit !important;
 }
 .uv .title {
+  color: white;
   font-size: inherit;
 }
 .uv li {

@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
@@ -57,6 +58,7 @@ import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
@@ -89,6 +91,7 @@ public class SetDatastreamFilterTest {
     private static final String FILE3_NAME = "image.png";
     private static final String FILE3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1740";
     private static final long FILE3_SIZE = 17136l;
+    private static final String FILE3_EXTENT = "375x250";
 
     private static final String MODS_MIMETYPE = "text/xml";
     private static final String MODS_NAME = "mods.xml";
@@ -111,7 +114,6 @@ public class SetDatastreamFilterTest {
     private FileObject fileObj;
     @Mock
     private BinaryObject binObj;
-
     @Mock
     private IndexDocumentBean idb;
     @Captor
@@ -130,14 +132,13 @@ public class SetDatastreamFilterTest {
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
-
-//        when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(binObj.getPid()).thenReturn(DatastreamPids.getOriginalFilePid(pid));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
 
         filter = new SetDatastreamFilter();
         filter.setDerivativeService(derivativeService);
 
-        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));
     }
@@ -150,7 +151,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE));
@@ -159,10 +160,13 @@ public class SetDatastreamFilterTest {
     @Test
     public void fileObjectMultipleBinariesTest() throws Exception {
         BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
         when(binObj2.getResource()).thenReturn(
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
 
         BinaryObject binObj3 = mock(BinaryObject.class);
+        when(binObj3.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + THUMBNAIL_LARGE.getId()));
         when(binObj3.getResource()).thenReturn(
                 fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
 
@@ -173,14 +177,54 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), TECHNICAL_METADATA.getId(),
-                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null);
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_LARGE.getId(),
-                FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null);
+                FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + FILE3_SIZE));
+    }
+
+    @Test
+    public void fileObjectImageBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
+
+        BinaryObject binObj3 = mock(BinaryObject.class);
+        when(binObj3.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + JP2_ACCESS_COPY.getId()));
+        when(binObj3.getResource()).thenReturn(
+                fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, JP2_ACCESS_COPY.getMimetype(),
+                        JP2_ACCESS_COPY.getDefaultFilename(), FILE3_DIGEST));
+
+        BinaryObject binObj4 = mock(BinaryObject.class);
+        when(binObj4.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + THUMBNAIL_LARGE.getId()));
+        when(binObj4.getResource()).thenReturn(
+                fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2, binObj3, binObj4));
+        when(dip.getContentObject()).thenReturn(fileObj);
+
+        filter.filter(dip);
+
+        verify(idb).setDatastream(listCaptor.capture());
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST, null, FILE3_EXTENT);
+        assertContainsDatastream(listCaptor.getValue(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+        assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_LARGE.getId(),
+                FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null, null);
+
+        verify(idb).setFilesizeSort(eq(FILE_SIZE));
+        // JP2 and thumbnail set to same size
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + (FILE3_SIZE * 2)));
     }
 
     @Test(expected = IndexingException.class)
@@ -203,11 +247,11 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsMetadataDatastreams(listCaptor.getValue());
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
-        verify(idb).setFilesizeTotal(eq(FILE_SIZE + MODS_SIZE + PREMIS_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + FILE2_SIZE + MODS_SIZE + PREMIS_SIZE));
     }
 
     @Test
@@ -228,13 +272,13 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
         assertContainsMetadataDatastreams(listCaptor.getValue());
 
         // Sort size is based off primary object's size
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         // Work has no datastreams of its own
-        verify(idb).setFilesizeTotal(eq(MODS_SIZE + PREMIS_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE));
     }
 
     @Test
@@ -262,7 +306,7 @@ public class SetDatastreamFilterTest {
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsMetadataDatastreams(listCaptor.getValue());
         verify(idb, never()).setFilesizeSort(anyLong());
-        verify(idb).setFilesizeTotal(MODS_SIZE + PREMIS_SIZE);
+        verify(idb).setFilesizeTotal(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE);
     }
 
     @Test
@@ -282,9 +326,9 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
-                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
         assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_SMALL.getId(),
-                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null);
+                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         verify(idb).setFilesizeTotal(eq(FILE_SIZE + derivSize));
@@ -301,7 +345,7 @@ public class SetDatastreamFilterTest {
 
         verify(idb).setDatastream(listCaptor.capture());
 
-        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "||||||"));
+        assertTrue("Did not contain datastream", listCaptor.getValue().contains(ORIGINAL_FILE.getId() + "|||||||"));
         verify(idb).setFilesizeSort(eq(0l));
         verify(idb).setFilesizeTotal(eq(0l));
     }
@@ -317,17 +361,26 @@ public class SetDatastreamFilterTest {
         return resc;
     }
 
-    private void assertContainsDatastream(List<String> values, String name, long filesize, String mimetype, String filename, String digest, String owner) {
+    private void assertContainsDatastream(List<String> values, String name, long filesize, String mimetype,
+                                          String filename, String digest, String owner, String extent) {
         String extension = filename.substring(filename.lastIndexOf('.') + 1);
         List<Object> components = Arrays.asList(
-                name, mimetype, filename, extension, filesize, digest, owner);
+                name, mimetype, filename, extension, filesize, digest, owner, extent);
         String joined = components.stream()
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
+        System.out.println("Values: " + values);
+        System.out.println("Seeking: " + joined);
         assertTrue("Did not contain datastream " + name, values.contains(joined));
     }
 
     private void addMetadataDatastreams(ContentObject obj) throws Exception {
+        BinaryObject fitsBin = mock(BinaryObject.class);
+        when(fitsBin.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(fitsBin.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(fitsBin.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
+
         BinaryObject modsBin = mock(BinaryObject.class);
         when(modsBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_DESCRIPTIVE.getId(),
@@ -336,15 +389,15 @@ public class SetDatastreamFilterTest {
         when(premisBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_EVENTS.getId(),
                         PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST));
-        List<BinaryObject> mdBins = Arrays.asList(premisBin, modsBin);
+        List<BinaryObject> mdBins = Arrays.asList(fitsBin, premisBin, modsBin);
 
         when(obj.listMetadata()).thenReturn(mdBins);
     }
 
     private void assertContainsMetadataDatastreams(List<String> values) {
         assertContainsDatastream(values, DatastreamType.MD_DESCRIPTIVE.getId(),
-                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null);
+                        MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null, null);
         assertContainsDatastream(values, DatastreamType.MD_EVENTS.getId(),
-                PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null);
+                PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null, null);
     }
 }

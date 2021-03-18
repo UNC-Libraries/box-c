@@ -69,7 +69,8 @@ public class SolrUpdateDriver {
 
         for (String field : solrSettings.getRequiredFields()) {
             if (!fields.containsKey(field)) {
-                throw new IndexingException("Required indexing field {" + field + "} was not present");
+                throw new IndexingException("Required indexing field {" + field + "} was not present for "
+                        + idb.getId());
             }
         }
 
