@@ -707,6 +707,11 @@ p.no-search-results {
   margin-left: 5px;
 }
 
+.abstracts {
+  margin-left: 0;
+  text-indent: 0;
+}
+
 .columns {
   width: 100%;
 }
