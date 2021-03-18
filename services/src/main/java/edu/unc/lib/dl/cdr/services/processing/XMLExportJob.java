@@ -136,7 +136,7 @@ public class XMLExportJob implements Runnable {
 
                 Element modsUpdateEl = new Element("update");
                 modsUpdateEl.setAttribute("type", "MODS");
-                modsUpdateEl.setAttribute("lastModified", obj.getLastModified().toString());
+                modsUpdateEl.setAttribute("lastModified", mods.getLastModified().toString());
                 modsUpdateEl.addContent(SEPERATOR);
                 modsUpdateEl.addContent(dsDoc.detachRootElement());
                 modsUpdateEl.addContent(SEPERATOR);
