@@ -104,6 +104,7 @@ public class AccessCopiesService extends SolrSearchService {
         }
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
+        searchState.setSortType("default");
 
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
         SolrQuery query = generateSearch(searchRequest);
