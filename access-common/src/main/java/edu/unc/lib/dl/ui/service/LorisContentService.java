@@ -235,9 +235,13 @@ public class LorisContentService {
             briefObjs.remove(0);
             // Move the primary object to the beginning of the sequence
             if (rootJp2Id != null && !rootJp2Id.equals(rootObj.getId())) {
-                for (BriefObjectMetadata briefObj : briefObjs) {
+                for (int i = 0; i < briefObjs.size(); i++) {
+                    BriefObjectMetadata briefObj = briefObjs.get(i);
                     if (briefObj.getId().equals(rootJp2Id)) {
-                        briefObjs.set(0, briefObj);
+                        if (i != 0) {
+                            briefObjs.remove(i);
+                            briefObjs.add(0, briefObj);
+                        }
                         break;
                     }
                 }
