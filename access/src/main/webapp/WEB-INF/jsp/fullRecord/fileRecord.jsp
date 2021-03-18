@@ -101,6 +101,18 @@
                     <c:if test="${briefObject.filesizeSort != -1}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
                     <c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
                     <c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
+                    <c:if test="${not empty briefObject.abstractText}">
+                        <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 350)}"/>
+                        <c:choose>
+                            <c:when test="${fn:length(briefObject.abstractText) > 350}">
+                                <li id="truncated-abstract" class="abstracts"><c:out value="${truncatedAbstract}"/>... <a class="abstract-text" id="show-abstract" href="#">Read more</a></li>
+                                <li id="full-abstract" class="hidden abstracts"><c:out value="${briefObject.abstractText}"/> <a class="abstract-text" id="hide-abstract" href="#">Read less</a></li>
+                            </c:when>
+                            <c:otherwise>
+                                <li class="abstracts"><c:out value="${briefObject.abstractText}"/></li>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:if>
                 </ul>
             </div>
         </div>
@@ -124,13 +136,6 @@
 </div>
 <div class="onecol shadowtop">
 	<div class="contentarea">
-		<c:if test="${briefObject['abstractText'] != null}">
-			<div class="description">
-				<p>
-					<c:out value="${briefObject['abstractText']}" />
-				</p>
-			</div>
-		</c:if>
 		<div class="metadata">
 			${fullObjectView}
 		</div>
@@ -141,3 +146,4 @@
     <div id="mods_data_display" data-pid="${briefObject.id}"></div>
 </c:if>
 <c:import url="fullRecord/neighborList.jsp" />
+<script type="text/javascript" src="/static/js/public/abstractDisplay"></script>
