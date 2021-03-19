@@ -124,6 +124,7 @@ public class XMLExportJob implements Runnable {
             Document objectDoc = new Document();
             Element objectEl = new Element("object");
             objectEl.setAttribute("pid", pid.getQualifiedId());
+            objectEl.setAttribute("type", obj.getResourceType().toString());
             objectDoc.addContent(objectEl);
 
             if (mods != null) {
