@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
 
@@ -35,6 +33,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.PatronPrincipalProvider;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 /**
@@ -50,6 +49,8 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     protected static String FORWARDING_ROLE = "group-forwarding";
 
     private boolean retainGroupsThreadStore;
+
+    private PatronPrincipalProvider patronPrincipalProvider;
 
     @Override
     public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException,
@@ -129,10 +130,8 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             accessGroups = new AccessGroupSet(shibGroups);
         }
 
-        accessGroups.addAccessGroup(PUBLIC_PRINC);
-        if (userName != null && userName.length() > 0) {
-            accessGroups.addAccessGroup(AUTHENTICATED_PRINC);
-        }
+        // Add all patron principals to group set
+        accessGroups.addAll(patronPrincipalProvider.getPrincipals(request));
 
         return accessGroups;
     }
@@ -155,5 +154,9 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
      */
     public void setRetainGroupsThreadStore(boolean retainGroupsThreadStore) {
         this.retainGroupsThreadStore = retainGroupsThreadStore;
+    }
+
+    public void setPatronPrincipalProvider(PatronPrincipalProvider patronPrincipalProvider) {
+        this.patronPrincipalProvider = patronPrincipalProvider;
     }
 }

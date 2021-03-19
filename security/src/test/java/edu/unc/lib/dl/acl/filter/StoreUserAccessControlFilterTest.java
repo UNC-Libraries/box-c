@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.filter;
 
 import static edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter.FORWARDING_ROLE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_GROUPS_HEADER;
 import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
@@ -29,17 +30,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.PatronPrincipalProvider;
 import edu.unc.lib.dl.acl.util.RemoteUserUtil;
 
 /**
@@ -58,11 +66,31 @@ public class StoreUserAccessControlFilterTest {
     @Mock
     private FilterChain filterChain;
 
+    private static final String TEST_IP = "192.168.150.16";
+    private static final String TEST_IP_PRINC = IP_PRINC_NAMESPACE + "test_grp";
+    private static final String CONFIG = "[{ \"id\" : \"" + TEST_IP_PRINC
+            + "\", \"name\" : \"Test Group\", \"ipInclude\" : \"" + TEST_IP + "\"}]";
+
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    private File configFile;
+    private PatronPrincipalProvider patronProvider;
+
+
     @Before
-    public void init() {
+    public void init() throws Exception {
         initMocks(this);
+        tmpFolder.create();
+        configFile = tmpFolder.newFile("patronConfig.json");
+        FileUtils.writeStringToFile(configFile, CONFIG, StandardCharsets.US_ASCII);
+
+        patronProvider = new PatronPrincipalProvider();
+        patronProvider.setPatronGroupConfigPath(configFile.getAbsolutePath());
+        patronProvider.init();
+
         filter = new StoreUserAccessControlFilter();
         filter.setRetainGroupsThreadStore(true);
+        filter.setPatronPrincipalProvider(patronProvider);
 
         when(request.getServletPath()).thenReturn("/path/to/resource");
     }
@@ -118,6 +146,23 @@ public class StoreUserAccessControlFilterTest {
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
         assertTrue("Authenticated must be assigned", accessGroups.contains(AUTHENTICATED_PRINC));
         assertTrue("User principal must be assigned", accessGroups.contains("unc:onyen:user"));
+    }
+
+    @Test
+    public void testIpGroupUser() throws Exception {
+        when(request.getHeader(PatronPrincipalProvider.FORWARDED_FOR_HEADER)).thenReturn(TEST_IP);
+
+        filter.doFilter(request, response, filterChain);
+
+        assertEquals("", GroupsThreadStore.getUsername());
+        assertNull(GroupsThreadStore.getEmail());
+
+        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
+        verify(request).setAttribute("accessGroupSet", accessGroups);
+
+        assertEquals(2, accessGroups.size());
+        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
+        assertTrue("Authenticated must be assigned", accessGroups.contains(TEST_IP_PRINC));
     }
 
     @Test

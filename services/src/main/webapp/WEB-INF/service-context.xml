@@ -196,6 +196,15 @@
     
     <!-- Access related beans -->
     
+    <bean name="patronPrincipalProvider" class="edu.unc.lib.dl.acl.util.PatronPrincipalProvider"
+            init-method="init">
+        <property name="patronGroupConfigPath" value="${acl.patronPrincipalConfig.path}" />
+    </bean>
+    
+    <bean name="storeUserAccessControlFilter" class="edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter">
+        <property name="patronPrincipalProvider" ref="patronPrincipalProvider" />
+    </bean>
+    
     <bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
         <property name="queryLayer" ref="queryLayer" />
         <property name="requireViewAdmin" value="true" />

@@ -113,11 +113,11 @@
     </filter-mapping>
     
     <filter>
-        <filter-name>StoreUserAccessControlFilter</filter-name>
-        <filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
+        <filter-name>storeUserAccessControlFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>StoreUserAccessControlFilter</filter-name>
+        <filter-name>storeUserAccessControlFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
     

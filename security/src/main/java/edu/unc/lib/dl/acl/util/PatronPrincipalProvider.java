@@ -18,6 +18,7 @@ package edu.unc.lib.dl.acl.util;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +31,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +42,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author bbpennel
  */
 public class PatronPrincipalProvider {
+    private static final Logger log = getLogger(PatronPrincipalProvider.class);
+
     public static final String FORWARDED_FOR_HEADER = "X-FORWARDED-FOR";
 
     private String patronGroupConfigPath;
@@ -61,13 +65,19 @@ public class PatronPrincipalProvider {
         String remoteAddr = request.getHeader(FORWARDED_FOR_HEADER);
         if (StringUtils.isBlank(remoteAddr)) {
             remoteAddr = request.getRemoteAddr();
+            if (StringUtils.isBlank(remoteAddr)) {
+                return princs;
+            }
         }
+        log.error("Getting patron principals for user {} from address {}", username, remoteAddr);
 
         BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(remoteAddr);
         patronPrincConfigs.stream()
                 .filter(config -> config.inRange(ipInteger))
                 .map(IPAddressPatronPrincipalConfig::getId)
                 .forEach(princs::add);
+
+        log.error("Returning patron principals {}", princs);
 
         return princs;
     }
