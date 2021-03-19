@@ -28,6 +28,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 
@@ -82,6 +83,13 @@ public class GlobalPermissionEvaluatorTest {
         evaluator = new GlobalPermissionEvaluator(configProperties);
 
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.destroy));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void illegalPatronPrincipalTest() {
+        addGlobalAssignment(UserRole.canAccess, AccessPrincipalConstants.AUTHENTICATED_PRINC);
+
+        new GlobalPermissionEvaluator(configProperties);
     }
 
     @Test

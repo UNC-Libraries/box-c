@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.exceptions.OrphanedObjectException;
@@ -133,6 +134,7 @@ public class InheritedPermissionEvaluator {
         // Determine which roles would grant the sought after permission
         Set<String> rolesWithPermission = getRolesWithPermission(permission);
         Set<String> activePatronPrincipals = null;
+        Set<String> specialPatronGroups = null;
 
         // Ignore embargoes if the agent is requesting metadata
         boolean ignoreEmbargoes = Permission.viewMetadata.equals(permission);
@@ -156,16 +158,25 @@ public class InheritedPermissionEvaluator {
                 if (activePatronPrincipals.isEmpty()) {
                     return false;
                 }
+
+                specialPatronGroups = getSpecialPatronGroups(activePatronPrincipals);
             }
 
             // Remove any active patron principals that do not grant the permission
-            revokePatronPermissions(princRoles, activePatronPrincipals, rolesWithPermission);
+            revokePatronPermissions(princRoles, activePatronPrincipals, rolesWithPermission, specialPatronGroups);
 
             if (activePatronPrincipals.isEmpty()) {
                 return false;
             }
         }
         return true;
+    }
+
+    private Set<String> getSpecialPatronGroups(Set<String> patronPrincipals) {
+        Set<String> princs = new HashSet<>(patronPrincipals);
+        princs.remove(AccessPrincipalConstants.PUBLIC_PRINC);
+        princs.remove(AccessPrincipalConstants.AUTHENTICATED_PRINC);
+        return princs;
     }
 
     /**
@@ -175,9 +186,22 @@ public class InheritedPermissionEvaluator {
      * @param princRoles
      * @param activePrincipals
      * @param rolesWithPermission
+     * @param specialPatronPrincs
      */
     private void revokePatronPermissions(Map<String, Set<String>> princRoles, Set<String> activePrincipals,
-            Set<String> rolesWithPermission) {
+            Set<String> rolesWithPermission, Set<String> specialPatronPrincs) {
+
+        // If both regular patron groups explicitly None, deactivate special groups unless directly added
+        if (specialPatronPrincs.size() > 0) {
+            boolean publicNone = isAssignedNone(AccessPrincipalConstants.PUBLIC_PRINC, princRoles);
+            boolean authNone = isAssignedNone(AccessPrincipalConstants.AUTHENTICATED_PRINC, princRoles);
+            if (publicNone && authNone) {
+                specialPatronPrincs.stream()
+                        .filter(princ -> !princRoles.containsKey(princ))
+                        .forEach(activePrincipals::remove);
+            }
+        }
+
         Iterator<String> activeIt = activePrincipals.iterator();
         while (activeIt.hasNext()) {
             String princ = activeIt.next();
@@ -192,6 +216,14 @@ public class InheritedPermissionEvaluator {
                 activeIt.remove();
             }
         }
+    }
+
+    private boolean isAssignedNone(String principal, Map<String, Set<String>> principalRoles) {
+        Set<String> roles = principalRoles.get(principal);
+        if (roles == null) {
+            return false;
+        }
+        return roles.contains(UserRole.none.getPropertyString());
     }
 
     /**

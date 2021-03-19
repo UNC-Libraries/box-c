@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canIngest;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
@@ -59,6 +60,7 @@ public class InheritedPermissionEvaluatorTest {
 
     private static final String PATRON_PRINC = "everyone";
     private static final String STAFF_PRINC = "adminGrp";
+    private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 
     private static final Set<String> PATRON_PRINCIPLES = new HashSet<>(
             asList(PUBLIC_PRINC));
@@ -66,6 +68,8 @@ public class InheritedPermissionEvaluatorTest {
             asList(PUBLIC_PRINC, AUTHENTICATED_PRINC));
     private static final Set<String> STAFF_PRINCIPLES = new HashSet<>(
             asList(PUBLIC_PRINC, AUTHENTICATED_PRINC, STAFF_PRINC));
+    private static final Set<String> PATRON_GROUP_PRINCIPLES = new HashSet<>(
+            asList(PUBLIC_PRINC, PATRON_GROUP));
 
     @Mock
     private ContentPathFactory pathFactory;
@@ -157,6 +161,17 @@ public class InheritedPermissionEvaluatorTest {
         assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
         assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewOriginal));
         assertTrue(evaluator.hasPermission(pid, AUTH_PRINCIPLES, Permission.viewOriginal));
+    }
+
+    @Test
+    public void collectionPatronGroupHasPermissions() {
+        // Add unit pid into ancestors
+        addPidToAncestors();
+
+        mockFactoryPrincipalRoles(pid, PATRON_PRINC, canViewMetadata);
+        mockFactoryPrincipalRoles(pid, PATRON_GROUP, canViewOriginals);
+
+        assertTrue(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewOriginal));
     }
 
     @Test
@@ -331,6 +346,17 @@ public class InheritedPermissionEvaluatorTest {
     }
 
     @Test
+    public void contentNoCollectionPatronsAddInPatronGroupNoPermission() {
+
+        addPidToAncestors();
+        addPidToAncestors();
+
+        mockFactoryPrincipalRoles(pid, PATRON_GROUP, canViewMetadata);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
     public void contentRemovePatronAccess() {
         addPidToAncestors();
         PID collectionPid = addPidToAncestors();
@@ -339,6 +365,58 @@ public class InheritedPermissionEvaluatorTest {
         mockFactoryPrincipalRoles(pid, PATRON_PRINC, UserRole.none);
 
         assertFalse(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentRemovePatronGroupAccess() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PATRON_GROUP, canViewMetadata);
+        mockFactoryPrincipalRoles(pid, PATRON_GROUP, UserRole.none);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentRegularPatronsNoneGroupInherited() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PUBLIC_PRINC, canViewMetadata);
+        mockFactoryPrincipalRoles(collectionPid, AUTHENTICATED_PRINC, canViewOriginals);
+        mockFactoryPrincipalRoles(collectionPid, PATRON_GROUP, canViewOriginals);
+        mockFactoryPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        mockFactoryPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+
+        assertFalse(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewMetadata));
+    }
+
+    @Test
+    public void contentRegularPatronsNoneGroupReUpped() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PUBLIC_PRINC, canViewMetadata);
+        mockFactoryPrincipalRoles(collectionPid, AUTHENTICATED_PRINC, canViewOriginals);
+        mockFactoryPrincipalRoles(collectionPid, PATRON_GROUP, canViewOriginals);
+        mockFactoryPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        mockFactoryPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        mockFactoryPrincipalRoles(pid, PATRON_GROUP, canViewOriginals);
+
+        assertTrue(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewOriginal));
+    }
+
+    @Test
+    public void contentPatronGroupDowngraded() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PATRON_GROUP, canViewOriginals);
+        mockFactoryPrincipalRoles(pid, PATRON_GROUP, canViewMetadata);
+
+        assertTrue(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewMetadata));
+        assertFalse(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewOriginal));
     }
 
     @Test

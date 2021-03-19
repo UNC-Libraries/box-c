@@ -15,8 +15,9 @@
  */
 package edu.unc.lib.dl.acl.util;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_PRINC_PATTERN;
+
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -29,9 +30,6 @@ public class PrincipalClassifier {
 
     private PrincipalClassifier() {
     }
-
-    private static final Pattern PATRON_PRINC_PATTERN
-            = Pattern.compile("(everyone|authenticated)");
 
     public static boolean isPatronPrincipal(String principal) {
         return PATRON_PRINC_PATTERN.matcher(principal).matches();

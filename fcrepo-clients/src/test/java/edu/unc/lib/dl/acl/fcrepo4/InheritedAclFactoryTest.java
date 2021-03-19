@@ -16,9 +16,11 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewAccessCopies;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
@@ -60,6 +62,7 @@ public class InheritedAclFactoryTest {
 
     private static final String MANAGE_PRINC = "manageGrp";
     private static final String OWNER_PRINC = "owner";
+    private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 
     @Mock
     private ContentPathFactory pathFactory;
@@ -246,6 +249,51 @@ public class InheritedAclFactoryTest {
         assertEquals("Only owner should be returned for content object", 1, princRoles.size());
         assertPrincipalHasRoles("Owner principal role not set correctly",
                 princRoles, OWNER_PRINC, unitOwner);
+    }
+
+    @Test
+    public void contentInheritedPatronGroup() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Incorrect number of principal assignments on content",
+                1, princRoles.size());
+        assertPrincipalHasRoles("Incorrect inherited patron roles for the patron group",
+                princRoles, PATRON_GROUP, canViewOriginals);
+    }
+
+    @Test
+    public void contentDowngradedPatronGroup() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+        addPrincipalRoles(pid, PATRON_GROUP, canViewMetadata);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Incorrect number of principal assignments on content",
+                1, princRoles.size());
+        assertPrincipalHasRoles("Incorrect inherited patron roles for the patron group",
+                princRoles, PATRON_GROUP, canViewMetadata);
+    }
+
+    @Test
+    public void contentRevokedPatronGroup() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+        addPrincipalRoles(pid, PATRON_GROUP, UserRole.none);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Incorrect number of principal assignments on content",
+                0, princRoles.size());
     }
 
     @Test
@@ -545,6 +593,152 @@ public class InheritedAclFactoryTest {
 
         List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
         assertEquals(0, assignments.size());
+    }
+
+    @Test
+    public void patronAccessGroupInheritedFromCollection() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PUBLIC_PRINC, canViewMetadata);
+        addPrincipalRoles(collPid, AUTHENTICATED_PRINC, canViewAccessCopies);
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+        addPrincipalRoles(collPid, PATRON_NAMESPACE + "second", canViewAccessCopies);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(4, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPrincipal(assignments, PUBLIC_PRINC);
+        assertEquals(canViewMetadata, assignment1.getRole());
+        RoleAssignment assignment2 = getAssignmentByPrincipal(assignments, AUTHENTICATED_PRINC);
+        assertEquals(canViewAccessCopies, assignment2.getRole());
+        RoleAssignment assignment3 = getAssignmentByPrincipal(assignments, PATRON_GROUP);
+        assertEquals(canViewOriginals, assignment3.getRole());
+        RoleAssignment assignment4 = getAssignmentByPrincipal(assignments, PATRON_NAMESPACE + "second");
+        assertEquals(canViewAccessCopies, assignment4.getRole());
+    }
+
+    @Test
+    public void patronAccessOnlyGroupOnCollection() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = assignments.get(0);
+        assertEquals(canViewOriginals, assignment.getRole());
+        assertEquals(PATRON_GROUP, assignment.getPrincipal());
+    }
+
+    @Test
+    public void patronAccessGroupDowngraded() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+        PID parentPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+        addPrincipalRoles(parentPid, PATRON_GROUP, canViewMetadata);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = assignments.get(0);
+        assertEquals(canViewMetadata, assignment.getRole());
+        assertEquals(PATRON_GROUP, assignment.getPrincipal());
+    }
+
+    @Test
+    public void patronAccessGroupFromCollectionStaffOnlyOnChild() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PUBLIC_PRINC, canViewMetadata);
+        addPrincipalRoles(collPid, AUTHENTICATED_PRINC, canViewAccessCopies);
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(0, assignments.size());
+    }
+
+    @Test
+    public void patronAccessGroupRegrantedOnStaffOnlyChild() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PUBLIC_PRINC, canViewMetadata);
+        addPrincipalRoles(collPid, AUTHENTICATED_PRINC, canViewAccessCopies);
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+        addPrincipalRoles(collPid, PATRON_NAMESPACE + "notreupped", canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        addPrincipalRoles(pid, PATRON_GROUP, canViewOriginals);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = assignments.get(0);
+        assertEquals(canViewOriginals, assignment.getRole());
+        assertEquals(PATRON_GROUP, assignment.getPrincipal());
+    }
+
+    @Test
+    public void patronAccessGroupOnlyOnChild() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PUBLIC_PRINC, canViewMetadata);
+        addPrincipalRoles(collPid, AUTHENTICATED_PRINC, canViewAccessCopies);
+
+        addPrincipalRoles(pid, PATRON_GROUP, canViewOriginals);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(2, assignments.size());
+
+        RoleAssignment assignment1 = getAssignmentByPrincipal(assignments, PUBLIC_PRINC);
+        assertEquals(canViewMetadata, assignment1.getRole());
+        RoleAssignment assignment2 = getAssignmentByPrincipal(assignments, AUTHENTICATED_PRINC);
+        assertEquals(canViewAccessCopies, assignment2.getRole());
+    }
+
+    @Test
+    public void patronAccessGroupInheritedDelete() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+        PID parentPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PUBLIC_PRINC, canViewOriginals);
+        addPrincipalRoles(collPid, AUTHENTICATED_PRINC, canViewOriginals);
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+
+        when(objectAclFactory.isMarkedForDeletion(parentPid)).thenReturn(true);
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(0, assignments.size());
+    }
+
+    @Test
+    public void patronAccessGroupEmbargoed() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+        PID parentPid = addPidToAncestors();
+
+        addPrincipalRoles(collPid, PATRON_GROUP, canViewOriginals);
+
+        when(objectAclFactory.getEmbargoUntil(parentPid)).thenReturn(getNextYear());
+
+        List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
+        assertEquals(1, assignments.size());
+
+        RoleAssignment assignment = assignments.get(0);
+        assertEquals(canViewMetadata, assignment.getRole());
+        assertEquals(PATRON_GROUP, assignment.getPrincipal());
     }
 
     @Test
