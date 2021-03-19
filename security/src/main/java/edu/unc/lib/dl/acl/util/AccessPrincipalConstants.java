@@ -30,6 +30,7 @@ public class AccessPrincipalConstants {
     public final static String USER_NAMESPACE = "unc:onyen:";
     // Namespace prefix for special patron groups
     public final static String PATRON_NAMESPACE = "unc:patron:";
+    public final static String IP_PRINC_NAMESPACE = PATRON_NAMESPACE + "ipp:";
     public final static String ADMIN_ACCESS_PRINC = "admin_access";
 
     public final static Pattern PATRON_PRINC_PATTERN =
