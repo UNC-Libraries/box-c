@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.util.ResourceType.Work;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -138,6 +139,7 @@ public class XMLExportServiceTest {
         when(obj.getPid()).thenReturn(pid);
         when(obj.getLastModified()).thenReturn(new Date());
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(obj);
+        when(obj.getResourceType()).thenReturn(Work);
 
         return pid;
     }
@@ -206,6 +208,7 @@ public class XMLExportServiceTest {
         Element objEl = rootEl.getChild("object");
 
         assertEquals(pid1.getQualifiedId(), objEl.getAttributeValue("pid"));
+        assertEquals(contentObj.getResourceType().toString(), objEl.getAttributeValue("type"));
 
         Element updateEl = objEl.getChild("update");
         assertEquals("MODS", updateEl.getAttributeValue("type"));
