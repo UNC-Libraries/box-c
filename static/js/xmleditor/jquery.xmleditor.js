@@ -385,7 +385,7 @@ $.widget( "xml.xmlEditor", {
 			}
 		}
 	},
-	
+
 	// Load the XML document for editing
 	loadDocument: function(ajaxOptions, localXMLContent) {
 		var self = this;
@@ -402,7 +402,7 @@ $.widget( "xml.xmlEditor", {
 						self._documentReady(data);
 					} else if (self.options.templateOptions.templatePath) {
 						// Document path didn't retrieve anything
-						self._templating();
+						self._templating(false);
 					} else {
 						console.error("Could not specified document and no fallback provided, cannot start.");
 					}
@@ -413,7 +413,7 @@ $.widget( "xml.xmlEditor", {
 			this._documentReady(localXMLContent);
 		} else if (this.options.templateOptions.templatePath) {
 			// Fall back to templating if it was specified
-			this._templating();
+			this._templating(false);
 		} else {
 			console.error("No starting document");
 		}
@@ -450,11 +450,9 @@ $.widget( "xml.xmlEditor", {
 		});
 	},
 
-	_templating : function() {
-		var dialog;
+	_templating : function(overrideExistingMods) {
 		var self = this;
-		self.template = new XMLTemplates(self);
-
+		self.template = new XMLTemplates(self, overrideExistingMods);
 		self.template.createChooseTemplate();
 	},
 
@@ -1105,6 +1103,11 @@ $.widget( "xml.xmlEditor", {
 			
 			if (e.which == 'E'.charCodeAt(0)) {
 				this.exportXML();
+				return false;
+			}
+
+			if (e.which == 'N'.charCodeAt(0)) {
+				this._templating(true);
 				return false;
 			}
 			
@@ -2498,7 +2501,14 @@ function MenuBar(editor) {
 				enabled : (typeof(Blob) !== undefined),
 				binding : "ctrl+alt+e",
 				action : $.proxy(self.editor.exportXML, self.editor)
-			} ]
+			}, {
+				label: 'New from Template',
+				enabled: true,
+				binding: "ctrl+alt+n",
+				action: function () {
+					self.editor._templating(true);
+				}
+		} ]
 	}, {
 		label : 'Edit',
 		enabled : true,
@@ -2870,7 +2880,6 @@ MenuBar.prototype.addEntry = function(entry) {
 		currentTier.push(entry);
 	}
 };
-
 
 MenuBar.prototype.checkEntry = function(menuItem, checked) {
 	var menuItem = $(menuItem);
@@ -5000,13 +5009,15 @@ XMLElementStub.prototype.focus = function() {
 /**
  * Create class to focus, select and load default XML templates
  * @param init_object
+ * @param overrideExistingMods
  * @constructor
  */
 
-function XMLTemplates(init_object) {
+function XMLTemplates(init_object, overrideExistingMods) {
     this.template_path = init_object.options.templateOptions.templatePath;
     this.templates = init_object.options.templateOptions.templates;
     this.editor = init_object;
+    this.overrideExistingMods = overrideExistingMods;
     this.extension_regx = /\.\w{3,}$/;
 }
 
@@ -5098,9 +5109,9 @@ XMLTemplates.prototype.processForm = function() {
 };
 
 /**
- * Load selected template.
+ * Load selected template
  * @param selection
- * @param self
+ * @param overrideExisting
  */
 XMLTemplates.prototype.loadSelectedTemplate = function(selection) {
     var self = this;
@@ -5110,7 +5121,14 @@ XMLTemplates.prototype.loadSelectedTemplate = function(selection) {
         dataType: "xml"
     }).done(function(data) {
         var xml_string = self.editor.xml2Str(data);
-        self.editor._documentReady(xml_string);
+        if (self.overrideExistingMods) {
+        	self.editor.xmlState = null; // Remove old state for garbage collection
+			self.editor.xmlState = new DocumentState(xml_string, self.editor);
+			self.editor.xmlState.extractNamespacePrefixes();
+			self.editor.refreshDisplay();
+		} else {
+			self.editor._documentReady(xml_string);
+		}
     }).fail(function(jqXHR, textStatus) {
         alert("Unable to load the requested template: " + textStatus);
     });
