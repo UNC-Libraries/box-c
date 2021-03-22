@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ui.controller;
+package edu.unc.lib.dl.ui.controller.structure;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
@@ -33,6 +33,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.ui.controller.AbstractStructureResultsController;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
