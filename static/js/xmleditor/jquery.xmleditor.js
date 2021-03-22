@@ -402,7 +402,7 @@ $.widget( "xml.xmlEditor", {
 						self._documentReady(data);
 					} else if (self.options.templateOptions.templatePath) {
 						// Document path didn't retrieve anything
-						self._templating(false);
+						self._templating();
 					} else {
 						console.error("Could not specified document and no fallback provided, cannot start.");
 					}
@@ -413,7 +413,7 @@ $.widget( "xml.xmlEditor", {
 			this._documentReady(localXMLContent);
 		} else if (this.options.templateOptions.templatePath) {
 			// Fall back to templating if it was specified
-			this._templating(false);
+			this._templating();
 		} else {
 			console.error("No starting document");
 		}
@@ -450,9 +450,9 @@ $.widget( "xml.xmlEditor", {
 		});
 	},
 
-	_templating : function(overrideExistingMods) {
+	_templating : function() {
 		var self = this;
-		self.template = new XMLTemplates(self, overrideExistingMods);
+		self.template = new XMLTemplates(self);
 		self.template.createChooseTemplate();
 	},
 
@@ -1107,7 +1107,7 @@ $.widget( "xml.xmlEditor", {
 			}
 
 			if (self.options.templateOptions.templatePath && e.which === 'N'.charCodeAt(0)) {
-				this._templating(true);
+				this._templating();
 				return false;
 			}
 			
@@ -2780,12 +2780,12 @@ function MenuBar(editor) {
 
 	// Add overriding current MODS from a template
 	if (this.options.templateOptions.templatePath) {
-		this.headerMenu[0].items.push({
+		this.headerMenuData[0].items.push({
 			label: 'New from Template',
 			enabled: true,
 			binding: "ctrl+alt+n",
 			action: function () {
-				self.editor._templating(true);
+				self.editor._templating();
 			}
 		});
 	}
@@ -5014,15 +5014,13 @@ XMLElementStub.prototype.focus = function() {
 /**
  * Create class to focus, select and load default XML templates
  * @param init_object
- * @param overrideExistingMods
  * @constructor
  */
 
-function XMLTemplates(init_object, overrideExistingMods) {
+function XMLTemplates(init_object) {
 	this.template_path = init_object.options.templateOptions.templatePath;
 	this.templates = init_object.options.templateOptions.templates;
 	this.editor = init_object;
-	this.overrideExistingMods = overrideExistingMods;
 	this.extension_regx = /\.\w{3,}$/;
 }
 
@@ -5123,7 +5121,7 @@ XMLTemplates.prototype.loadSelectedTemplate = function(selection) {
 		dataType: "xml"
 	}).done(function(data) {
 		var xml_string = self.editor.xml2Str(data);
-		if (self.overrideExistingMods) {
+		if (self.editor.xmlState !== null) {
 			self.editor.xmlState = null; // Remove old state for garbage collection
 			self.editor.xmlState = new DocumentState(xml_string, self.editor);
 			self.editor.xmlState.extractNamespacePrefixes();
