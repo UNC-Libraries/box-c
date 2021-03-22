@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
+import org.apache.solr.client.solrj.SolrQuery;
+
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -34,21 +36,37 @@ public class AccessRestrictionUtil {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     /**
-     * Adds access restrictions to the provided query string builder.
+     * Adds access restrictions to the provided SolrQuery.
      *
      * If there are no access groups in the provided group set, then an
      * AccessRestrictionException is thrown as it is invalid for a user to have
      * no permissions. If the user is an admin, then do not restrict access
      *
-     * @param query query StringBuilder to add restriction to.
+     * @param query Solr query to add restriction to.
      * @param principals set of access principals for constructing restriction.
      * @throws AccessRestrictionException thrown if no groups are provided.
      */
-    public void add(StringBuilder query, AccessGroupSet principals)
+    public void add(SolrQuery query, AccessGroupSet principals)
             throws AccessRestrictionException {
+        String restrictions = getRestrictions(principals);
+        if (restrictions != null) {
+            query.addFilterQuery(restrictions);
+        }
+    }
+
+    /**
+     * Compute access restrictions query filter.
+     *
+     * If there are no access groups in the provided group set, then an
+     * AccessRestrictionException is thrown as it is invalid for a user to have
+     * no permissions. If the user is an admin, then null is returned.
+     * @param principals
+     * @return
+     */
+    public String getRestrictions(AccessGroupSet principals) {
         // Skip adding permission filters if disabled
         if (disablePermissionFiltering) {
-            return;
+            return null;
         }
 
         // Agent must provide principals
@@ -58,17 +76,19 @@ public class AccessRestrictionUtil {
 
         // If the agent has any global permissions then no filtering is necessary.
         if (globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
-            return;
+            return null;
         }
 
         boolean allowPatronAccess = searchSettings.getAllowPatronAccess();
         String joinedGroups = principals.joinAccessGroups(" OR ", null, true);
+        StringBuilder sb = new StringBuilder();
         if (allowPatronAccess) {
-            query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
-                    .append(" OR adminGroup:(").append(joinedGroups).append("))");
+            sb.append("readGroup:(").append(joinedGroups).append(')')
+                    .append(" OR adminGroup:(").append(joinedGroups).append(')');
         } else {
-            query.append(" AND adminGroup:(").append(joinedGroups).append(')');
+            sb.append("adminGroup:(").append(joinedGroups).append(')');
         }
+        return sb.toString();
     }
 
     /**

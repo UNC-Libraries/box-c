@@ -63,8 +63,6 @@ public class SolrQueryLayerService extends SolrSearchService {
     protected SearchStateFactory searchStateFactory;
     protected ObjectPathFactory pathFactory;
 
-    private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
-
     /**
      * Returns a list of collections
      *
@@ -338,11 +336,10 @@ public class SolrQueryLayerService extends SolrSearchService {
         Map<String, Long> counts = new HashMap<>();
 
         try {
-            StringBuilder queryBuilder = new StringBuilder("*:*");
-            addAccessRestrictions(queryBuilder, accessGroups);
-
             SolrQuery query = new SolrQuery();
-            query.setQuery(queryBuilder.toString());
+
+            query.setQuery("*:*");
+            addAccessRestrictions(query, accessGroups);
             query.setRows(0);
             query.addFacetField("contentType");
             query.setFacetLimit(-1);

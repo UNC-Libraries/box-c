@@ -20,6 +20,7 @@ import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -62,17 +63,17 @@ public class AccessRestrictionUtilTest {
     public void addAccessDisabledTest() {
         restrictionUtil.setDisablePermissionFiltering(true);
 
-        StringBuilder query = new StringBuilder(BASE_QUERY);
+        SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);
 
-        assertEquals(BASE_QUERY, query.toString());
+        assertEquals("q=" + BASE_QUERY, query.toString());
     }
 
     @Test(expected = AccessRestrictionException.class)
     public void addAccessNoGroupsTest() {
         accessGroups = new AccessGroupSet();
 
-        StringBuilder query = new StringBuilder(BASE_QUERY);
+        SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);
     }
 
@@ -80,30 +81,32 @@ public class AccessRestrictionUtilTest {
     public void addAccessGlobalPermissionsTest() {
         when(globalPermissionEvaluator.hasGlobalPrincipal(anySetOf(String.class))).thenReturn(true);
 
-        StringBuilder query = new StringBuilder(BASE_QUERY);
+        SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);
 
-        assertEquals(BASE_QUERY, query.toString());
+        assertEquals("q=" + BASE_QUERY, query.toString());
     }
 
     @Test
     public void addAccessAllowPatronAccessTest() {
         when(searchSettings.getAllowPatronAccess()).thenReturn(true);
 
-        StringBuilder query = new StringBuilder(BASE_QUERY);
+        SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);
 
-        assertEquals(BASE_QUERY + " AND (readGroup:(" + ACCESS_GROUP
-                + ") OR adminGroup:(" + ACCESS_GROUP + "))", query.toString());
+        assertEquals(BASE_QUERY, query.getQuery());
+        assertEquals("readGroup:(" + ACCESS_GROUP + ") OR adminGroup:(" + ACCESS_GROUP + ")",
+                query.getFilterQueries()[0]);
     }
 
     @Test
     public void addAccessAdminOnlyTest() {
         when(searchSettings.getAllowPatronAccess()).thenReturn(false);
 
-        StringBuilder query = new StringBuilder(BASE_QUERY);
+        SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);
 
-        assertEquals(BASE_QUERY + " AND adminGroup:(" + ACCESS_GROUP + ")", query.toString());
+        assertEquals(BASE_QUERY, query.getQuery());
+        assertEquals("adminGroup:(" + ACCESS_GROUP + ")", query.getFilterQueries()[0]);
     }
 }
