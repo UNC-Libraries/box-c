@@ -1106,7 +1106,7 @@ $.widget( "xml.xmlEditor", {
 				return false;
 			}
 
-			if (e.which == 'N'.charCodeAt(0)) {
+			if (self.options.templateOptions.templatePath && e.which === 'N'.charCodeAt(0)) {
 				this._templating(true);
 				return false;
 			}
@@ -2501,14 +2501,7 @@ function MenuBar(editor) {
 				enabled : (typeof(Blob) !== undefined),
 				binding : "ctrl+alt+e",
 				action : $.proxy(self.editor.exportXML, self.editor)
-			}, {
-				label: 'New from Template',
-				enabled: true,
-				binding: "ctrl+alt+n",
-				action: function () {
-					self.editor._templating(true);
-				}
-		} ]
+			} ]
 	}, {
 		label : 'Edit',
 		enabled : true,
@@ -2784,6 +2777,18 @@ function MenuBar(editor) {
 			self.editor.modeChange(1);
 		}
 	} ];
+
+	// Add overriding current MODS from a template
+	if (this.options.templateOptions.templatePath) {
+		this.headerMenu[0].items.push({
+			label: 'New from Template',
+			enabled: true,
+			binding: "ctrl+alt+n",
+			action: function () {
+				self.editor._templating(true);
+			}
+		});
+	}
 }
 
 // Causes the targeted menu to be displayed, as well as triggering update functions
@@ -5097,8 +5102,6 @@ XMLTemplates.prototype.templateForm = function() {
 
 /**
  * Select a template from the form
- * @param dialog
- * @param self
  */
 XMLTemplates.prototype.processForm = function() {
 	// Split on mdash if description present
@@ -5111,7 +5114,6 @@ XMLTemplates.prototype.processForm = function() {
 /**
  * Load selected template
  * @param selection
- * @param overrideExisting
  */
 XMLTemplates.prototype.loadSelectedTemplate = function(selection) {
 	var self = this;
@@ -5137,7 +5139,6 @@ XMLTemplates.prototype.loadSelectedTemplate = function(selection) {
 /**
  * Highlight and focus currently selected template
  * If enter hit go ahead and load focused template
- * @param dialog
  */
 XMLTemplates.prototype.focusTemplate = function() {
 	var self = this;
