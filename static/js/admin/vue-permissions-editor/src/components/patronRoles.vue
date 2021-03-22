@@ -49,6 +49,30 @@
                             </select>
                         </div>
                     </li>
+                    <li>
+                        <div v-for="(other_patron_princ, index) in otherAssignedPrincipals" :key="index" class="other-patron-assigned">
+                            <p>{{ otherPrincipalName(other_patron_princ) }}</p>
+                            <select @change="updateRole('other')" v-model="other_patron_princ.role" :disabled="shouldDisable">
+                                <template v-for="(role, index) in possibleRoles">
+                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
+                                </template>
+                            </select>
+                        </div>
+                        <div id="add-new-patron-principal" :class="{'hidden': shouldShowAddOtherPrincipals}">
+                            <select id="add-new-patron-principal-id" @change="updateRole('other')" v-model="add_new_princ_id" :disabled="shouldDisable">
+                                <template v-for="(princ, index) in allowedOtherPrincipals">
+                                    <option v-if="index > 0" :value="princ.id">{{ princ.name }}</option>
+                                </template>
+                            </select>
+                            <select id="add-new-patron-principal-role" @change="updateRole('other')" v-model="add_new_princ_role" :disabled="shouldDisable">
+                                <template v-for="(role, index) in possibleRoles">
+                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
+                                </template>
+                            </select>
+                        </div>
+                        
+                        <button @click="addOtherPrincipal" id="add-other-principal" :disabled="shouldDisable">Add Other Group</button>
+                    </li>
                 </ul>
             </li>
             <li>
@@ -128,15 +152,19 @@
                     inherited: initialRoles(),
                     assigned: initialRoles()
                 },
+                allowedOtherPrincipals: [],
                 submit_roles: initialRoles(),
                 role_history: {},
                 authenticated_role: 'none',
                 everyone_role: 'none',
+                add_new_princ_role: 'none',
+                add_new_princ_id: '',
                 history_set: false,
                 last_clicked_access: '',
                 response_message: '',
                 unsaved_changes: false,
-                user_type: ''
+                user_type: '',
+                shouldShowAddOtherPrincipals: false
             }
         },
 
@@ -195,6 +223,12 @@
 
             isCollection() {
                 return this.containerType.toLowerCase() === 'collection';
+            },
+            
+            otherAssignedPrincipals() {
+                let otherPrincipals = this.patron_roles.assigned.roles
+                    .filter(p => p.principal !== 'everyone' && p.principal !== 'authenticated');
+                return otherPrincipals;
             }
         },
 
@@ -212,6 +246,7 @@
                     // Set display roles
                     this.display_roles.inherited = this._setInitialInherited(response.data.inherited);
                     this.display_roles.assigned = this._setInitialAssigned(response.data.assigned);
+                    this.allowedOtherPrincipals = response.data.allowedPrincipals;
                     // Set roles from server
                     this.patron_roles = {
                         inherited: cloneDeep(response.data.inherited), // Pick up default roles for comparing roles
@@ -530,6 +565,24 @@
              */
             showModal() {
                 this.displayModal();
+            },
+            
+            addOtherPrincipal() {
+                if (!this.shouldShowAddOtherPrincipals) {
+                  this.shouldShowAddOtherPrincipals = true;
+                } else if (this.add_new_princ_id !== '') {
+                  this.patron_roles.assigned.roles[this.add_new_princ_id] = this.add_new_princ_role;
+                  this.add_new_princ_id = '';
+                  this.add_new_princ_role = 'none';
+                }
+            },
+
+            otherPrincipalName(princ_role) {
+              let mapping = this.allowedOtherPrincipals.find(e => e.id === princ_role.principal);
+              if (mapping === null) {
+                return '';
+              }
+              return mapping.name;
             }
         },
 

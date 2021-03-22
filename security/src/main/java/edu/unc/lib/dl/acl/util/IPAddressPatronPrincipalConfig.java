@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.InetAddresses;
 
 /**
@@ -42,6 +44,7 @@ public class IPAddressPatronPrincipalConfig {
         return name;
     }
 
+    @JsonProperty(required = true)
     public void setName(String name) {
         this.name = name;
     }
@@ -50,14 +53,17 @@ public class IPAddressPatronPrincipalConfig {
         return id;
     }
 
+    @JsonProperty(required = true)
     public void setId(String id) {
         this.id = id;
     }
 
+    @JsonIgnore
     public String getIpInclude() {
         return ipInclude;
     }
 
+    @JsonProperty(required = true)
     public void setIpInclude(String ipInclude) {
         this.ipInclude = ipInclude;
 
