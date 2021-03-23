@@ -126,6 +126,10 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 					}
 				],
 				cancelFunction: function() {
+					if (this.editor.xmlState !== null) {
+						this.form.dialog("close");
+						return false;
+					}
 					var parentId = "";
 					if (resultObject.ancestorPath) {
 						parentId = resultObject.ancestorPath[resultObject.ancestorPath.length - 1];
