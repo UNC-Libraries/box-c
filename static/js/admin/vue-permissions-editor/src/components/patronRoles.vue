@@ -49,8 +49,9 @@
                             </select>
                         </div>
                     </li>
-                    <li>
-                        <div v-for="(other_patron_princ, index) in otherAssignedPrincipals" :key="index" class="other-patron-assigned">
+                    <li id="other_assigned_principals_editor">
+                        {{ otherAssignedPrincipals }}
+                        <div v-for="(other_patron_princ, index) in otherAssignedPrincipals" v-bind:key="index" class="other-patron-assigned">
                             <p>{{ otherPrincipalName(other_patron_princ) }}</p>
                             <select @change="updateRole('other')" v-model="other_patron_princ.role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
@@ -58,16 +59,12 @@
                                 </template>
                             </select>
                         </div>
-                        <div id="add-new-patron-principal" :class="{'hidden': shouldShowAddOtherPrincipals}">
-                            <select id="add-new-patron-principal-id" @change="updateRole('other')" v-model="add_new_princ_id" :disabled="shouldDisable">
-                                <template v-for="(princ, index) in allowedOtherPrincipals">
-                                    <option v-if="index > 0" :value="princ.id">{{ princ.name }}</option>
-                                </template>
+                        <div id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
+                            <select id="add-new-patron-principal-id" v-model="add_new_princ_id" :disabled="shouldDisable">
+                                <option v-for="princ in allowed_other_principals" :value="princ.id">{{ princ.name }}</option>
                             </select>
-                            <select id="add-new-patron-principal-role" @change="updateRole('other')" v-model="add_new_princ_role" :disabled="shouldDisable">
-                                <template v-for="(role, index) in possibleRoles">
-                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
-                                </template>
+                            <select id="add-new-patron-principal-role" v-model="add_new_princ_role" :disabled="shouldDisable">
+                                <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
                             </select>
                         </div>
                         
@@ -152,7 +149,7 @@
                     inherited: initialRoles(),
                     assigned: initialRoles()
                 },
-                allowedOtherPrincipals: [],
+                allowed_other_principals: [],
                 submit_roles: initialRoles(),
                 role_history: {},
                 authenticated_role: 'none',
@@ -224,12 +221,11 @@
             isCollection() {
                 return this.containerType.toLowerCase() === 'collection';
             },
-            
+
             otherAssignedPrincipals() {
-                let otherPrincipals = this.patron_roles.assigned.roles
+                return this.patron_roles.assigned.roles
                     .filter(p => p.principal !== 'everyone' && p.principal !== 'authenticated');
-                return otherPrincipals;
-            }
+            },
         },
 
         methods: {
@@ -246,7 +242,7 @@
                     // Set display roles
                     this.display_roles.inherited = this._setInitialInherited(response.data.inherited);
                     this.display_roles.assigned = this._setInitialAssigned(response.data.assigned);
-                    this.allowedOtherPrincipals = response.data.allowedPrincipals;
+                    this.allowed_other_principals = response.data.allowedPrincipals;
                     // Set roles from server
                     this.patron_roles = {
                         inherited: cloneDeep(response.data.inherited), // Pick up default roles for comparing roles
@@ -569,16 +565,20 @@
             
             addOtherPrincipal() {
                 if (!this.shouldShowAddOtherPrincipals) {
-                  this.shouldShowAddOtherPrincipals = true;
-                } else if (this.add_new_princ_id !== '') {
-                  this.patron_roles.assigned.roles[this.add_new_princ_id] = this.add_new_princ_role;
-                  this.add_new_princ_id = '';
-                  this.add_new_princ_role = 'none';
+                    this.shouldShowAddOtherPrincipals = true;
+                    return false;
+                }
+                if (this.add_new_princ_id !== '') {
+                    this.patron_roles.assigned.roles.push({
+                        principal: this.add_new_princ_id,
+                        role: this.add_new_princ_role,
+                        assignedTo: this.uuid
+                    });
                 }
             },
 
             otherPrincipalName(princ_role) {
-              let mapping = this.allowedOtherPrincipals.find(e => e.id === princ_role.principal);
+              let mapping = this.allowed_other_principals.find(e => e.id === princ_role.principal);
               if (mapping === null) {
                 return '';
               }

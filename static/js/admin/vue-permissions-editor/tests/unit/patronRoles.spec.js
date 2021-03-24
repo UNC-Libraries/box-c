@@ -227,29 +227,31 @@ describe('patronRoles.vue', () => {
         };
         stubDataLoad(resp_with_allowed_patrons);
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(2);
             expect(wrapper.vm.patron_roles.assigned).toEqual(resp_with_allowed_patrons.assigned);
             expect(wrapper.vm.otherAssignedPrincipals).toEqual([]);
 
             wrapper.find('#add-other-principal').trigger('click');
-            wrapper.find('#add-new-patron-principal option').at(0).setSelected();
-            wrapper.find('#add-new-patron-role option').at(1).setSelected();
+            wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
             wrapper.find('#add-other-principal').trigger('click');
 
             expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
             const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
                 { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
-                { principal: 'my:special:group', role: 'canViewAccessCopies', assignedTo: UUID  }];
+                { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
 
-            expect(wrapper.vm.patron_roles.assigned).toEqual(assigned_other_roles);
+            expect(wrapper.vm.patron_roles.assigned.roles).toEqual(assigned_other_roles);
 
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2]]);
+            expect(wrapper.vm.otherAssignedPrincipals[0]).toEqual(assigned_other_roles[2]);
+            
+            await wrapper.vm.$nextTick();
 
             let other_entries = wrapper.findAll('.other-patron-assigned');
             expect(other_entries.length).toEqual(1);
             expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             done();
         });
