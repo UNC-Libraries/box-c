@@ -172,19 +172,14 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("retrieves extra patron roles from the server", (done) => {
+    it("renders extra patron roles from the server", (done) => {
         const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
             { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
             { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [
-                {
-                    id: "my:special:group",
-                    name: "Special Group"
-                }
-            ]
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
         };
         const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
         delete resp_without_extras['allowedPrincipals'];
@@ -195,14 +190,11 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.display_roles).toEqual(resp_without_extras);
             expect(wrapper.vm.patron_roles).toEqual(resp_without_extras);
             expect(wrapper.vm.submit_roles).toEqual(resp_with_allowed_patrons.assigned);
-            expect(wrapper.vm.dedupedRoles).toEqual([{
-                principal: 'patron',
-                role: 'canViewAccessCopies',
-                type: 'assigned',
-                assignedTo: UUID,
-                deleted: false,
-                embargo: false
-            }]);
+            expect(wrapper.vm.dedupedRoles).toEqual([
+                { principal: 'everyone', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
+            ]);
 
             expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2]]);
 
@@ -232,27 +224,130 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.patron_roles.assigned).toEqual(resp_with_allowed_patrons.assigned);
             expect(wrapper.vm.otherAssignedPrincipals).toEqual([]);
 
+            // Click to show the add other principal inputs
             wrapper.find('#add-other-principal').trigger('click');
+            // Select values for new patron role and then click the add button again
             wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
             wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
             wrapper.find('#add-other-principal').trigger('click');
 
+            // Model should have updated by adding the new role to the list of assigned roles
             expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
             const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
                 { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
                 { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
-
             expect(wrapper.vm.patron_roles.assigned.roles).toEqual(assigned_other_roles);
-
             expect(wrapper.vm.otherAssignedPrincipals[0]).toEqual(assigned_other_roles[2]);
-            
-            await wrapper.vm.$nextTick();
 
+            // Once the UI has refreshed it should now show added entry
+            await wrapper.vm.$nextTick();
             let other_entries = wrapper.findAll('.other-patron-assigned');
             expect(other_entries.length).toEqual(1);
             expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
             expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
+            // The new entry inputs should be cleared
+            expect(wrapper.vm.add_new_princ_id).toEqual('');
+            expect(wrapper.vm.add_new_princ_role).toEqual('none');
+
+            done();
+        });
+    });
+
+    it("can only add non-duplicate principals", (done) => {
+        const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
+        const resp_with_allowed_patrons = {
+            inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
+            assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [
+                {
+                    id: "my:special:group",
+                    name: "Special Group"
+                },
+                {
+                    id: "the:extra:special:group",
+                    name: "Extra Special Group"
+                },
+            ]
+        };
+        const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
+        delete resp_without_extras['allowedPrincipals'];
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
+            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2]]);
+
+            // Click to show the add other principal inputs
+            wrapper.find('#add-other-principal').trigger('click');
+            // Select the existing patron principal to add
+            wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option').at(3).setSelected();
+            wrapper.find('#add-other-principal').trigger('click');
+
+            expect(wrapper.emitted()['error-msg'][0]).toEqual(['Principal has already been assigned a role']);
+
+            // Try adding principal that has not already been assigned
+            wrapper.findAll('#add-new-patron-principal-id option').at(1).setSelected();
+            wrapper.find('#add-other-principal').trigger('click');
+
+            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2],
+                { principal: 'the:extra:special:group', role: 'canViewAccessCopies', assignedTo: UUID }]);
+
+            await wrapper.vm.$nextTick();
+            let other_entries = wrapper.findAll('.other-patron-assigned');
+            expect(other_entries.length).toEqual(2);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Extra Special Group');
+            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            done();
+        });
+    });
+
+    it("removes other patron principals", (done) => {
+        const assigned_other_roles = [{ principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID  },
+            { principal: 'authenticated', role: 'canViewMetadata', assignedTo: UUID  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  },
+            { principal: 'less:special:group', role: 'canViewAccessCopies', assignedTo: UUID  }];
+        const resp_with_allowed_patrons = {
+            inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
+            assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
+                { id: "less:special:group", name: "Another Group" }]
+        };
+        const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
+        delete resp_without_extras['allowedPrincipals'];
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(4);
+            expect(wrapper.vm.submit_roles).toEqual(resp_with_allowed_patrons.assigned);
+            expect(wrapper.vm.dedupedRoles).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
+            ]);
+            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2], assigned_other_roles[3]]);
+
+            // Click the remove button for the first principal assignment
+            wrapper.findAll("#other_assigned_principals_editor .btn-remove").at(0).trigger('click');
+
+            await wrapper.vm.$nextTick();
+            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
+
+            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[3]]);
+
+            let other_entries = wrapper.findAll('.other-patron-assigned');
+            expect(other_entries.length).toEqual(1);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Another Group');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+
+            expect(wrapper.vm.submit_roles.roles).toEqual([assigned_other_roles[0],
+                assigned_other_roles[1], assigned_other_roles[3]]);
             done();
         });
     });

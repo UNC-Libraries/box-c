@@ -58,6 +58,7 @@
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
                             </select>
+                            <button class="btn-remove" @click="removeOtherAssignedPrincipal(other_patron_princ.principal)">Remove</button>
                         </div>
                         <div id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
                             <select id="add-new-patron-principal-id" v-model="add_new_princ_id" :disabled="shouldDisable">
@@ -467,22 +468,29 @@
              * @returns {array}
              */
             winningRoleList(allRoles) {
-                let everyone = allRoles.filter((d) => d.principal === 'everyone');
-                let authenticated = allRoles.filter((d) => d.principal === 'authenticated');
-
-                let everyoneRole = this.winningRole(everyone);
-                let authenticatedRole = this.winningRole(authenticated);
-
-                // Compact roles if they have the same role and are of the same type
-                if (everyoneRole.role === authenticatedRole.role) {
-                    if ((everyoneRole.type === 'inherited' && authenticatedRole.type === 'inherited') ||
-                        (everyoneRole.type === 'assigned' && authenticatedRole.type === 'assigned')) {
-                        everyoneRole.principal = everyoneRole.role  === 'none' ? 'staff' : 'patron';
-                        return [everyoneRole];
+                let principalsPresent = Array.from(new Set(allRoles.map(r => r.principal)));
+                let winningRoles = principalsPresent.map(p => allRoles.filter(r => r.principal === p))
+                                                    .map(roles => this.winningRole(roles));
+                let firstRole = winningRoles[0];
+                let allSame = false;
+                for (let i = 1; i < winningRoles.length; i++) {
+                    let current = winningRoles[i];
+                    if (current.role === firstRole.role &&
+                        ((current.type === 'inherited' && firstRole.type === 'inherited') ||
+                            (current.type === 'assigned' && firstRole.type === 'assigned'))) {
+                        allSame = true;
+                    } else {
+                        allSame = false;
+                        break;
                     }
                 }
 
-                return [everyoneRole, authenticatedRole];
+                if (allSame) {
+                    firstRole.principal = firstRole.role  === 'none' ? 'staff' : 'patron';
+                    return [firstRole];
+                } else {
+                    return winningRoles;
+                }
             },
 
             /**
@@ -569,20 +577,34 @@
                     return false;
                 }
                 if (this.add_new_princ_id !== '') {
+                    if (this.patron_roles.assigned.roles.some(r => r.principal === this.add_new_princ_id)) {
+                        this.$emit('error-msg', "Principal has already been assigned a role");
+                        return false;
+                    }
                     this.patron_roles.assigned.roles.push({
                         principal: this.add_new_princ_id,
                         role: this.add_new_princ_role,
                         assignedTo: this.uuid
                     });
+                    this.add_new_princ_id = '';
+                    this.add_new_princ_role = 'none';
                 }
             },
 
             otherPrincipalName(princ_role) {
-              let mapping = this.allowed_other_principals.find(e => e.id === princ_role.principal);
-              if (mapping === null) {
-                return '';
-              }
-              return mapping.name;
+                let mapping = this.allowed_other_principals.find(e => e.id === princ_role.principal);
+                if (mapping === null) {
+                    return '';
+                }
+                return mapping.name;
+            },
+
+            removeOtherAssignedPrincipal(principal) {
+                let index = this.patron_roles.assigned.roles.findIndex(r => r.principal === principal);
+                if (index == -1) {
+                    return;
+                }
+                this.patron_roles.assigned.roles.splice(index, 1);
             }
         },
 
