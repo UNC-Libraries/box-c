@@ -273,7 +273,7 @@ public class LorisContentService {
 
         Datastream fileDs = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         String extent = fileDs.getExtent();
-        if (extent != null) {
+        if (extent != null && !extent.equals("")) {
             String[] imgDimensions = extent.split("x");
             canvas.setHeight(Integer.parseInt(imgDimensions[0]));
             canvas.setWidth(Integer.parseInt(imgDimensions[1]));
