@@ -109,10 +109,7 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(async () => {
             wrapper.setData({
-                submit_roles: {
-                    embargo: embargo_date
-                },
-                unsaved_changes: true
+                embargo: embargo_date
             });
 
             await wrapper.vm.$nextTick();
@@ -124,6 +121,7 @@ describe('patronRoles.vue', () => {
         });
     });
 
+    // TODO
     it("updates assigned permissions after saving to the server", () => {
         wrapper.setData({
             patron_roles: full_roles,
@@ -157,9 +155,9 @@ describe('patronRoles.vue', () => {
         stubDataLoad();
 
         moxios.wait(() => {
-            expect(wrapper.vm.display_roles).toEqual(response);
-            expect(wrapper.vm.patron_roles).toEqual(response);
-            expect(wrapper.vm.submit_roles).toEqual(response.assigned);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(response.assigned.roles);
+            expect(wrapper.vm.embargo).toEqual(response.assigned.embargo);
+            expect(wrapper.vm.submissionAccessDetails()).toEqual(response.assigned);
             expect(wrapper.vm.dedupedRoles).toEqual([{
                 principal: 'patron',
                 role: 'canViewAccessCopies',
@@ -172,57 +170,16 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("renders extra patron roles from the server", (done) => {
-        const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
-            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
-            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
-        const resp_with_allowed_patrons = {
-            inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
-            assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
-        };
-        const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
-        delete resp_without_extras['allowedPrincipals'];
-        stubDataLoad(resp_with_allowed_patrons);
-
-        moxios.wait(() => {
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
-            expect(wrapper.vm.display_roles).toEqual(resp_without_extras);
-            expect(wrapper.vm.patron_roles).toEqual(resp_without_extras);
-            expect(wrapper.vm.submit_roles).toEqual(resp_with_allowed_patrons.assigned);
-            expect(wrapper.vm.dedupedRoles).toEqual([
-                { principal: 'everyone', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
-                { principal: 'authenticated', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
-                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
-            ]);
-
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2]]);
-
-            let other_entries = wrapper.findAll('.other-patron-assigned');
-            expect(other_entries.length).toEqual(1);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
-            done();
-        });
-    });
-
     it("adds an extra patron group", (done) => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
             assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [
-                {
-                    id: "my:special:group",
-                    name: "Special Group"
-                }
-            ]
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
         };
         stubDataLoad(resp_with_allowed_patrons);
 
         moxios.wait(async () => {
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(2);
-            expect(wrapper.vm.patron_roles.assigned).toEqual(resp_with_allowed_patrons.assigned);
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([]);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(resp_with_allowed_patrons.assigned.roles);
 
             // Click to show the add other principal inputs
             wrapper.find('#add-other-principal').trigger('click');
@@ -232,23 +189,25 @@ describe('patronRoles.vue', () => {
             wrapper.find('#add-other-principal').trigger('click');
 
             // Model should have updated by adding the new role to the list of assigned roles
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
             const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
                 { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
                 { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
-            expect(wrapper.vm.patron_roles.assigned.roles).toEqual(assigned_other_roles);
-            expect(wrapper.vm.otherAssignedPrincipals[0]).toEqual(assigned_other_roles[2]);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
             // Once the UI has refreshed it should now show added entry
             await wrapper.vm.$nextTick();
-            let other_entries = wrapper.findAll('.other-patron-assigned');
-            expect(other_entries.length).toEqual(1);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            let other_entries = wrapper.findAll('.patron-assigned');
+            expect(other_entries.length).toEqual(3);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             // The new entry inputs should be cleared
             expect(wrapper.vm.add_new_princ_id).toEqual('');
-            expect(wrapper.vm.add_new_princ_role).toEqual('none');
+            expect(wrapper.vm.add_new_princ_role).toEqual('canViewOriginals');
 
             done();
         });
@@ -261,24 +220,13 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [
-                {
-                    id: "my:special:group",
-                    name: "Special Group"
-                },
-                {
-                    id: "the:extra:special:group",
-                    name: "Extra Special Group"
-                },
-            ]
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
+                { id: "the:extra:special:group", name: "Extra Special Group" }]
         };
-        const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
-        delete resp_without_extras['allowedPrincipals'];
         stubDataLoad(resp_with_allowed_patrons);
 
         moxios.wait(async () => {
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2]]);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
             // Click to show the add other principal inputs
             wrapper.find('#add-other-principal').trigger('click');
@@ -293,16 +241,20 @@ describe('patronRoles.vue', () => {
             wrapper.findAll('#add-new-patron-principal-id option').at(1).setSelected();
             wrapper.find('#add-other-principal').trigger('click');
 
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2],
+            expect(wrapper.vm.assignedPatronRoles).toEqual([assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2],
                 { principal: 'the:extra:special:group', role: 'canViewAccessCopies', assignedTo: UUID }]);
 
             await wrapper.vm.$nextTick();
-            let other_entries = wrapper.findAll('.other-patron-assigned');
-            expect(other_entries.length).toEqual(2);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewOriginals');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Extra Special Group');
+            let other_entries = wrapper.findAll('.patron-assigned');
+            expect(other_entries.length).toEqual(4);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
             expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            expect(other_entries.at(3).findAll('p').at(0).text()).toEqual('Extra Special Group');
+            expect(other_entries.at(3).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
             done();
         });
     });
@@ -310,44 +262,49 @@ describe('patronRoles.vue', () => {
     it("removes other patron principals", (done) => {
         const assigned_other_roles = [{ principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID  },
             { principal: 'authenticated', role: 'canViewMetadata', assignedTo: UUID  },
-            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  },
-            { principal: 'less:special:group', role: 'canViewAccessCopies', assignedTo: UUID  }];
+            { principal: 'less:special:group', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: 'null' },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
             allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
                 { id: "less:special:group", name: "Another Group" }]
         };
-        const resp_without_extras = cloneDeep(resp_with_allowed_patrons);
-        delete resp_without_extras['allowedPrincipals'];
         stubDataLoad(resp_with_allowed_patrons);
 
         moxios.wait(async () => {
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(4);
-            expect(wrapper.vm.submit_roles).toEqual(resp_with_allowed_patrons.assigned);
+            expect(wrapper.vm.assignedPatronRoles.length).toEqual(4);
+            expect(wrapper.vm.submissionAccessDetails()).toEqual(resp_with_allowed_patrons.assigned);
             expect(wrapper.vm.dedupedRoles).toEqual([
                 { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
                 { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
-                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
-                { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
+                { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
             ]);
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[2], assigned_other_roles[3]]);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
             // Click the remove button for the first principal assignment
-            wrapper.findAll("#other_assigned_principals_editor .btn-remove").at(0).trigger('click');
+            wrapper.findAll("#assigned_principals_editor .btn-remove").at(1).trigger('click');
 
             await wrapper.vm.$nextTick();
-            expect(wrapper.vm.patron_roles.assigned.roles.length).toEqual(3);
+            expect(wrapper.vm.assignedPatronRoles.length).toEqual(3);
+            expect(wrapper.vm.assignedPatronRoles).toEqual(
+                [assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2]]);
 
-            expect(wrapper.vm.otherAssignedPrincipals).toEqual([assigned_other_roles[3]]);
+            // console.log(wrapper.findAll('.inherited-permissions').at(0).html());
+            // console.log(wrapper.find('#assigned_principals_editor').html());
 
-            let other_entries = wrapper.findAll('.other-patron-assigned');
-            expect(other_entries.length).toEqual(1);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Another Group');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            let other_entries = wrapper.findAll('.patron-assigned');
+            expect(other_entries.length).toEqual(3);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Another Group');
+            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
 
-            expect(wrapper.vm.submit_roles.roles).toEqual([assigned_other_roles[0],
-                assigned_other_roles[1], assigned_other_roles[3]]);
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual(
+                [assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2]]);
             done();
         });
     });

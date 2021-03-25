@@ -1,7 +1,7 @@
 <template>
     <tr :class="{onyen: user.principal === 'everyone'}">
         <td class="access-display">
-            {{ formattedPrincipal(user.principal) }}
+            {{ principalDisplayName(user.principal) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
@@ -44,16 +44,6 @@
                 }
 
                 return '(Overridden by parent)';
-            },
-
-            formattedPrincipal(user) {
-                if (user === 'everyone') {
-                    return "Public Users"
-                } else if (user === 'staff') {
-                    return 'No Patron Access';
-                } else {
-                    return user;
-                }
             },
 
             formattedRole(role) {
