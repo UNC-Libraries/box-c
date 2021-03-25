@@ -56,7 +56,6 @@ public abstract class AbstractQueryService {
             SearchFieldKeys.DEPARTMENT.name(),
             SearchFieldKeys.FILESIZE.name(),
             SearchFieldKeys.FILESIZE_TOTAL.name(),
-            SearchFieldKeys.FINDING_AID_LINK.name(),
             SearchFieldKeys.ID.name(),
             SearchFieldKeys.IDENTIFIER.name(),
             SearchFieldKeys.IS_PART.name(),
