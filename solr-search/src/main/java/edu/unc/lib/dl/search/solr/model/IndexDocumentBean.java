@@ -35,7 +35,6 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DEPARTMENT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DISPLAY_ORDER;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FILESIZE;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FILESIZE_TOTAL;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FINDING_AID_LINK;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FULL_TEXT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.IDENTIFIER;
@@ -386,15 +385,6 @@ public class IndexDocumentBean {
 
     public String getCollectionId() {
         return (String) fields.get(COLLECTION_ID.getSolrField());
-    }
-
-    @Field
-    public void setFindingAidLink(List<String> findingAidLink) {
-        fields.put(FINDING_AID_LINK.getSolrField(), findingAidLink);
-    }
-
-    public List<String> getFindingAidLink() {
-        return (List<String>) fields.get(FINDING_AID_LINK.getSolrField());
     }
 
     @Field
