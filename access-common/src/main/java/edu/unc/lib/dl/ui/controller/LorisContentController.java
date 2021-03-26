@@ -111,7 +111,7 @@ public class LorisContentController extends AbstractSolrSearchController {
                 String[] qualityFormatArray = qualityFormat.split("\\.");
                 String quality = qualityFormatArray[0];
                 String format = qualityFormatArray[1];
-
+                response.addHeader("Access-Control-Allow-Origin", "*");
                 lorisContentService.streamJP2(
                         id, region, size, rotation, quality, format, datastream,
                         response.getOutputStream(), response);
@@ -138,6 +138,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object
         if (this.hasAccess(pid, datastream)) {
             try {
+                response.addHeader("Access-Control-Allow-Origin", "*");
                 lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
             } catch (IOException e) {
                 LOG.error("Error retrieving JP2 metadata content for {}", id, e);
@@ -165,6 +166,7 @@ public class LorisContentController extends AbstractSolrSearchController {
             SimpleIdRequest idRequest = new SimpleIdRequest(id, GroupsThreadStore
                     .getAgentPrincipals().getPrincipals());
             BriefObjectMetadataBean briefObj = queryLayer.getObjectById(idRequest);
+            response.addHeader("Access-Control-Allow-Origin", "*");
             return lorisContentService.getCanvas(request, briefObj);
         } else {
             LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
@@ -189,6 +191,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
             List<BriefObjectMetadata> briefObjs = getDatastreams(pid);
+            response.addHeader("Access-Control-Allow-Origin", "*");
             return lorisContentService.getSequence(request, briefObjs);
         } else {
             LOG.debug("Manifest access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
@@ -217,6 +220,7 @@ public class LorisContentController extends AbstractSolrSearchController {
                 if (briefObjs.size() == 0) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                 } else {
+                    response.addHeader("Access-Control-Allow-Origin", "*");
                     return lorisContentService.getManifest(request, briefObjs);
                 }
             } catch (IOException e) {
