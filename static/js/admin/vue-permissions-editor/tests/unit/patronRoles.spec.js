@@ -138,6 +138,41 @@ describe('patronRoles.vue', () => {
         });
     });
 
+    it("commits uncommitted patron assignment", (done) => {
+        const resp_with_allowed_patrons = {
+            inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
+            assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" }]
+        };
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            // Click to show the add other principal inputs
+            wrapper.find('#add-other-principal').trigger('click');
+            // Select the existing patron principal to add
+            wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
+            wrapper.find('#add-other-principal').trigger('click');
+
+            await wrapper.vm.$nextTick();
+            stubDataSaveResponse();
+            wrapper.find('#is-submitting').trigger('click');
+            moxios.wait(async () => {
+                let request = moxios.requests.mostRecent()
+                expect(request.config.method).toEqual('put');
+                expect(JSON.parse(request.config.data)).toEqual(
+                    { roles: [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
+                            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
+                            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }],
+                        deleted: false, embargo: null, assignedTo: UUID }
+                );
+                expect(wrapper.vm.hasUnsavedChanges).toBe(false);
+
+                done();
+            });
+        });
+    });
+
     it("retrieves patron roles from the server", (done) => {
         stubDataLoad();
 
@@ -161,7 +196,7 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" }]
         };
         stubDataLoad(resp_with_allowed_patrons);
 
@@ -193,8 +228,8 @@ describe('patronRoles.vue', () => {
             expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             // The new entry inputs should be cleared
-            expect(wrapper.vm.add_new_princ_id).toEqual('');
-            expect(wrapper.vm.add_new_princ_role).toEqual('canViewOriginals');
+            expect(wrapper.vm.new_assignment_principal).toEqual('');
+            expect(wrapper.vm.new_assignment_role).toEqual('canViewOriginals');
 
             // Added group not active since no inherited role for it
             expect(wrapper.vm.displayAssignments).toEqual([
@@ -214,8 +249,8 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
-                { id: "the:extra:special:group", name: "Extra Special Group" }]
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" },
+                { principal: "the:extra:special:group", name: "Extra Special Group" }]
         };
         stubDataLoad(resp_with_allowed_patrons);
 
@@ -228,8 +263,6 @@ describe('patronRoles.vue', () => {
             wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
             wrapper.findAll('#add-new-patron-principal-role option').at(3).setSelected();
             wrapper.find('#add-other-principal').trigger('click');
-
-            expect(wrapper.emitted()['error-msg'][0]).toEqual(['Principal has already been assigned a role']);
 
             // Try adding principal that has not already been assigned
             wrapper.findAll('#add-new-patron-principal-id option').at(1).setSelected();
@@ -265,8 +298,8 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
-                { id: "less:special:group", name: "Another Group" }]
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" },
+                { principal: "less:special:group", name: "Another Group" }]
         };
         stubDataLoad(resp_with_allowed_patrons);
 
@@ -319,8 +352,8 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: [], deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
-                { id: "less:special:group", name: "Another Group" }]
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" },
+                { principal: "less:special:group", name: "Another Group" }]
         };
         wrapper.setProps({
             containerType: 'Collection'
@@ -360,7 +393,7 @@ describe('patronRoles.vue', () => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_other_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
-            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" }]
         };
         const expected_assigned = [
             { principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
@@ -456,9 +489,20 @@ describe('patronRoles.vue', () => {
         stubDataLoad(response);
 
         moxios.wait(() => {
-            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
+            expect(wrapper.vm.user_type).toEqual('staff');
+
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(2);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('none');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('none');
+
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([
+                {principal: 'everyone', role: 'none', assignedTo: UUID },
+                {principal: 'authenticated', role: 'none', assignedTo: UUID }]);
             expect(wrapper.vm.displayAssignments).toEqual([
-                { principal: 'staff', role: 'none', assignedTo: null, type: 'assigned', deleted: false, embargo: false }
+                { principal: 'staff', role: 'none', assignedTo: UUID, type: 'assigned', deleted: false, embargo: false }
             ]);
             done();
         })

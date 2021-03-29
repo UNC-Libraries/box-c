@@ -36,7 +36,7 @@ import com.google.common.net.InetAddresses;
 public class IPAddressPatronPrincipalConfig {
 
     private String name;
-    private String id;
+    private String principal;
     private String ipInclude;
     private List<IPRange> includeRanges;
 
@@ -49,13 +49,13 @@ public class IPAddressPatronPrincipalConfig {
         this.name = name;
     }
 
-    public String getId() {
-        return id;
+    public String getPrincipal() {
+        return principal;
     }
 
     @JsonProperty(required = true)
-    public void setId(String id) {
-        this.id = id;
+    public void setPrincipal(String principal) {
+        this.principal = principal;
     }
 
     @JsonIgnore

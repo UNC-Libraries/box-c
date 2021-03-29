@@ -45,18 +45,18 @@
                     </li>
                     <li id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
                         <p class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="add-new-patron-principal-id" v-model="add_new_princ_id" :disabled="shouldDisable">
-                                <option v-for="princ in allowed_other_principals" :value="princ.id">{{ princ.name }}</option>
+                            <select id="add-new-patron-principal-id" v-model="new_assignment_principal" :disabled="shouldDisable">
+                                <option v-for="princ in allowed_other_principals" :value="princ.principal">{{ princ.name }}</option>
                             </select>
                         </p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="add-new-patron-principal-role" v-model="add_new_princ_role" :disabled="shouldDisable">
+                            <select id="add-new-patron-principal-role" v-model="new_assignment_role" :disabled="shouldDisable">
                                 <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
                             </select>
                         </div>
                     </li>
                     <li>
-                        <button @click="addOtherPrincipal" id="add-other-principal" :disabled="shouldDisable">Add Other Group</button>
+                        <button @click="addOtherPrincipal" id="add-other-principal" :disabled="shouldDisable">Add Group</button>
                     </li>
                 </ul>
             </li>
@@ -93,7 +93,6 @@
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
-    import isEmpty from 'lodash.isempty';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -147,8 +146,8 @@
                 selected_patron_assignments: [],
                 embargo: null,
                 deleted: false,
-                add_new_princ_role: VIEW_ORIGINAL_ROLE,
-                add_new_princ_id: '',
+                new_assignment_role: VIEW_ORIGINAL_ROLE,
+                new_assignment_principal: '',
                 response_message: '',
                 user_type: null,
                 shouldShowAddOtherPrincipals: false,
@@ -163,6 +162,14 @@
 
             displayAssignments() {
                 let assigned = cloneDeep(this.assignedPatronRoles);
+                // Display the new assignment before it is committed, if valid
+                if (this.shouldShowAddOtherPrincipals) {
+                    try {
+                        assigned.push(this.getNewAssignment());
+                    } catch (e) {
+                        // ignore invalid assignments
+                    }
+                }
                 let inherited = cloneDeep(this.inherited.roles);
                 // If no roles available for a collection, revert to defaults
                 if (inherited.length == 0 && assigned.length == 0 && this.isCollection) {
@@ -183,7 +190,7 @@
                     return [];
                 } else if (this.user_type === ACCESS_TYPE_STAFF_ONLY) {
                     return this.getInheritedPrincipals()
-                                .map(princ => ({ principal: princ, role: STAFF_ONLY_ROLE, assignedTo: this.uuid }));
+                        .map(princ => ({ principal: princ, role: STAFF_ONLY_ROLE, assignedTo: this.uuid }));
                 } else {
                     return this.selected_patron_assignments
                                .map(pa => ({ principal: pa.principal, role: pa.role, assignedTo: this.uuid }));
@@ -216,6 +223,9 @@
                     return false;
                 }
                 if (this.embargo !== this.saved_details.embargo) {
+                    return true;
+                }
+                if (this.new_assignment_principal !== '') {
                     return true;
                 }
                 let assignedPatrons = this.assignedPatronRoles;
@@ -287,7 +297,11 @@
             _initializeSelectedAssignments(assignedRoles) {
                 // Set the main patron access setting mode type
                 if (assignedRoles.length === 0) {
-                    this.user_type = ACCESS_TYPE_INHERIT;
+                    if (this.isCollection) {
+                        this.user_type = ACCESS_TYPE_STAFF_ONLY;
+                    } else {
+                        this.user_type = ACCESS_TYPE_INHERIT;
+                    }
                 } else if (assignedRoles.every(r => r.role === STAFF_ONLY_ROLE)) {
                     this.user_type = ACCESS_TYPE_STAFF_ONLY;
                 } else {
@@ -324,7 +338,9 @@
 
             // Returns a set containing all inherited patron principals. Adds the basic principals if not present
             getInheritedPrincipals() {
-                return this.inherited.roles.map(r => r.principal);
+                let inherited = new Set(PROTECTED_PRINCIPALS);
+                this.inherited.roles.forEach(r => inherited.add(r.principal));
+                return Array.from(inherited);
             },
 
             // Returns true if the principal provided is protected, meaning it should always be present
@@ -344,6 +360,10 @@
             saveRoles() {
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
+                // Commit uncommitted new group assignment if one was input
+                if (this.shouldShowAddOtherPrincipals && this.new_assignment_principal !== '') {
+                    this.addOtherPrincipal();
+                }
                 let submissionDetails = this.submissionAccessDetails();
 
                 axios({
@@ -492,19 +512,31 @@
                     this.shouldShowAddOtherPrincipals = true;
                     return false;
                 }
-                if (this.add_new_princ_id !== '') {
-                    if (this.selected_patron_assignments.some(r => r.principal === this.add_new_princ_id)) {
-                        this.$emit('error-msg', "Principal has already been assigned a role");
-                        return false;
-                    }
-                    this.selected_patron_assignments.push({
-                        principal: this.add_new_princ_id,
-                        role: this.add_new_princ_role,
-                        assignedTo: this.uuid
-                    });
-                    this.add_new_princ_id = '';
-                    this.add_new_princ_role = VIEW_ORIGINAL_ROLE;
+                try {
+                    let new_assignment = this.getNewAssignment();
+                    this.selected_patron_assignments.push(new_assignment);
+                    this.new_assignment_principal = '';
+                    this.new_assignment_role = VIEW_ORIGINAL_ROLE;
+                } catch (e) {
+                    this.alertHandler.alertHandler('error', e);
+                    return false;
                 }
+            },
+
+            getNewAssignment() {
+                if (this.new_assignment_principal === '' || this.new_assignment_role === '') {
+                    throw 'Must select both a group and a role when adding a new patron role assignment';
+                }
+                if (this.new_assignment_principal !== '') {
+                    if (this.selected_patron_assignments.some(r => r.principal === this.new_assignment_principal)) {
+                        throw 'Principal has already been assigned a role';
+                    }
+                }
+                return {
+                    principal: this.new_assignment_principal,
+                    role: this.new_assignment_role,
+                    assignedTo: this.uuid
+                };
             },
 
             removeAssignedPrincipal(principal) {
@@ -565,10 +597,7 @@
             li {
                 display: block;
                 margin-left: 15px;
-
-                &:first-child {
-                    margin-bottom: 15px;
-                }
+                margin-bottom: 15px;
 
                 ul {
                     border-top: none;
@@ -581,7 +610,7 @@
                         margin-left: 0;
 
                         p {
-                            min-width: 225px;
+                            min-width: 170px;
                             margin: auto 20px auto 0;
 
                             select {
@@ -621,6 +650,11 @@
 
         p.error {
             color: red;
+        }
+
+        #add-new-patron-principal-id {
+            min-width: 170px;
+            width: auto;
         }
     }
 

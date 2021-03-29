@@ -14,7 +14,7 @@ export default {
                 return displayName;
             }
             // For custom defined principals
-            let mapping = allowed_other_principals.find(e => e.id === principal);
+            let mapping = allowed_other_principals.find(e => e.principal === principal);
             if (mapping === null) {
                 // no name available, fall back to principal
                 return principal;
