@@ -7,14 +7,14 @@ const PRINCIPAL_DISPLAY_NAMES = {
 
 export default {
     methods: {
-        principalDisplayName(principal) {
+        principalDisplayName(principal, allowed_other_principals) {
             // For reserved principals
             let displayName = PRINCIPAL_DISPLAY_NAMES[principal];
             if (displayName !== undefined) {
                 return displayName;
             }
             // For custom defined principals
-            let mapping = this.allowed_other_principals.find(e => e.id === principal);
+            let mapping = allowed_other_principals.find(e => e.id === principal);
             if (mapping === null) {
                 // no name available, fall back to principal
                 return principal;

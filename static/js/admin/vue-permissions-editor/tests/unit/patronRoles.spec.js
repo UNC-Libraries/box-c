@@ -196,6 +196,13 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.add_new_princ_id).toEqual('');
             expect(wrapper.vm.add_new_princ_role).toEqual('canViewOriginals');
 
+            // Added group not active since no inherited role for it
+            expect(wrapper.vm.displayAssignments).toEqual([
+                { principal: 'everyone', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'none', type: 'inherited', assignedTo: null, deleted: false, embargo: false }
+            ]);
+
             done();
         });
     });
@@ -250,7 +257,11 @@ describe('patronRoles.vue', () => {
         const assigned_other_roles = [{ principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID  },
             { principal: 'authenticated', role: 'canViewMetadata', assignedTo: UUID  },
             { principal: 'less:special:group', role: 'canViewAccessCopies', assignedTo: UUID  },
-            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
+            { principal: 'my:special:group', role: 'canViewAccessCopies', assignedTo: UUID  }];
+        const inherited_roles = [{ principal: 'everyone', role: 'canViewOriginals', assignedTo: null },
+            { principal: 'authenticated', role: 'canViewOriginals', assignedTo: null },
+            { principal: 'less:special:group', role: 'canViewOriginals', assignedTo: null  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null  }];
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
@@ -266,7 +277,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
                 { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
                 { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
-                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
+                { principal: 'my:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
             ]);
             expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
@@ -278,9 +289,6 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(
                 [assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2]]);
 
-            // console.log(wrapper.findAll('.inherited-permissions').at(0).html());
-            // console.log(wrapper.find('#assigned_principals_editor').html());
-
             let other_entries = wrapper.findAll('.patron-assigned');
             expect(other_entries.length).toEqual(3);
             expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
@@ -290,8 +298,99 @@ describe('patronRoles.vue', () => {
             expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Another Group');
             expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
 
+            expect(wrapper.vm.displayAssignments).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'canViewOriginals', type: 'inherited', assignedTo: null, deleted: false, embargo: false }
+            ]);
+
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual(
                 [assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2]]);
+            done();
+        });
+    });
+
+    it("other patron principals assigned to collection", (done) => {
+        const assigned_other_roles = [{ principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID  },
+            { principal: 'authenticated', role: 'canViewMetadata', assignedTo: UUID  },
+            { principal: 'less:special:group', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }];
+        const resp_with_allowed_patrons = {
+            inherited: { roles: [], deleted: false, embargo: null, assignedTo: null },
+            assigned: { roles: assigned_other_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" },
+                { id: "less:special:group", name: "Another Group" }]
+        };
+        wrapper.setProps({
+            containerType: 'Collection'
+        });
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
+            expect(wrapper.vm.submissionAccessDetails()).toEqual(resp_with_allowed_patrons.assigned);
+            expect(wrapper.vm.displayAssignments).toEqual([
+                { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'authenticated', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'less:special:group', role: 'canViewAccessCopies', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
+                { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
+            ]);
+
+            let other_entries = wrapper.findAll('.patron-assigned');
+            expect(other_entries.length).toEqual(4);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Another Group');
+            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(3).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(other_entries.at(3).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+
+            done();
+        });
+    });
+
+    it("inherited principals not present on object are displayed by default", (done) => {
+        const inherited_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: null  },
+            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: null  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null  }
+        ];
+        const resp_with_allowed_patrons = {
+            inherited: { roles: inherited_other_roles, deleted: false, embargo: null, assignedTo: null },
+            assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [{ id: "my:special:group", name: "Special Group" }]
+        };
+        const expected_assigned = [
+            { principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID  },
+            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: UUID  }
+        ];
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
+
+            wrapper.find('#user_type_parent').trigger('click');
+
+            await wrapper.vm.$nextTick();
+            expect(wrapper.vm.assignedPatronRoles).toEqual([]);
+
+            let other_entries = wrapper.findAll('.patron-assigned');
+            expect(other_entries.length).toEqual(3);
+            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+
+            wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
+
             done();
         });
     });
@@ -308,15 +407,18 @@ describe('patronRoles.vue', () => {
                 embargo: null, deleted: false
             }
         };
+        const staff_only_roles = [
+            { principal: "everyone", role: "none", assignedTo: null },
+            { principal: "authenticated", role: "none", assignedTo: null }
+        ];
 
         stubDataLoad(no_inherited_assigned_roles);
 
         moxios.wait(() => {
-            //
             expect(wrapper.vm.inherited.roles).toEqual(staff_only_roles);
             expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_roles);
             expect(wrapper.vm.displayAssignments).toEqual([
-                { principal: 'staff', role: 'none', deleted: false, embargo: false, type: 'inherited', assignedTo: UUID }
+                { principal: 'staff', role: 'none', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual(assigned_roles);
             done();
@@ -324,17 +426,42 @@ describe('patronRoles.vue', () => {
     });
 
     it("sets default roles on load if neither inherited or assigned roles are returned", (done) => {
+        const staff_only_roles = [
+            { principal: "everyone", role: "none", assignedTo: null },
+            { principal: "authenticated", role: "none", assignedTo: null }
+        ];
         stubDataLoad(empty_response)
 
         moxios.wait(() => {
             expect(wrapper.vm.displayAssignments).toEqual([
-                { principal: 'staff', role: 'none', deleted: false, embargo: false, type: 'inherited', assignedTo: UUID }
+                { principal: 'staff', role: 'none', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
             expect(wrapper.vm.inherited.roles).toEqual(staff_only_roles);
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
             done();
         });
+    });
+
+    it("collection with no assigned roles shows preview of staff only", (done) => {
+        wrapper.setProps({
+            containerType: 'Collection'
+        });
+
+        const response = {
+            inherited: { roles: [], deleted: false, embargo: null },
+            assigned: { roles: [], deleted: false, embargo: null }
+        };
+
+        stubDataLoad(response);
+
+        moxios.wait(() => {
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
+            expect(wrapper.vm.displayAssignments).toEqual([
+                { principal: 'staff', role: 'none', assignedTo: null, type: 'assigned', deleted: false, embargo: false }
+            ]);
+            done();
+        })
     });
 
     it("does not set default inherited display roles for collections and sets assigned permissions to returned roles", (done) => {

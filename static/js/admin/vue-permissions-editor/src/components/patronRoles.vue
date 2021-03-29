@@ -11,7 +11,10 @@
             </thead>
             <tbody>
             <template v-for="user in displayAssignments">
-                <patron-display-row :user="user" :user-type="user_type" :container-type="containerType"></patron-display-row>
+                <patron-display-row :user="user"
+                                    :user-type="user_type"
+                                    :container-type="containerType"
+                                    :allowed-other-principals="allowed_other_principals"></patron-display-row>
             </template>
             </tbody>
         </table>
@@ -25,28 +28,34 @@
             <li>
                 <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"
                        id="user_type_patron"><label for="user_type_patron"> Allow patron access</label>
-                <ul class="patron">
-                    <li id="assigned_principals_editor">
-                        <div v-for="(patron_princ, index) in selected_patron_assignments" v-bind:key="index" class="patron-assigned">
-                            <p>{{ principalDisplayName(patron_princ.principal, allowed_other_principals) }}</p>
+                <ul id="assigned_principals_editor" class="patron">
+                    <li v-for="(patron_princ, index) in selected_patron_assignments" v-bind:key="index" class="patron-assigned">
+                        <p>{{ principalDisplayName(patron_princ.principal, allowed_other_principals) }}</p>
+                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select v-model="patron_princ.role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
                             </select>
-                            <button class="btn-remove"
-                                    @click="removeAssignedPrincipal(patron_princ.principal)"
-                                    v-if="!patron_princ.protected">Remove</button>
                         </div>
-                        <div id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
+                        <button class="btn-remove"
+                                @click="removeAssignedPrincipal(patron_princ.principal)"
+                                :disabled="shouldDisable"
+                                v-if="!patron_princ.protected">Remove</button>
+                    </li>
+                    <li id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
+                        <p class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select id="add-new-patron-principal-id" v-model="add_new_princ_id" :disabled="shouldDisable">
                                 <option v-for="princ in allowed_other_principals" :value="princ.id">{{ princ.name }}</option>
                             </select>
+                        </p>
+                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select id="add-new-patron-principal-role" v-model="add_new_princ_role" :disabled="shouldDisable">
                                 <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
                             </select>
                         </div>
-                        
+                    </li>
+                    <li>
                         <button @click="addOtherPrincipal" id="add-other-principal" :disabled="shouldDisable">Add Other Group</button>
                     </li>
                 </ul>
@@ -105,6 +114,10 @@
     const ACCESS_TYPE_DIRECT = "patron";
 
     let initialRoles = () => ({ roles: [], embargo: null, deleted: false });
+    const DEFAULT_DISPLAY_COLLECTION = [
+        { principal: EVERYONE_PRINCIPAL, role: STAFF_ONLY_ROLE, assignedTo: null},
+        { principal: AUTH_PRINCIPAL, role: STAFF_ONLY_ROLE, assignedTo: null},
+    ];
 
     export default {
         name: 'patronRoles',
@@ -151,6 +164,10 @@
             displayAssignments() {
                 let assigned = cloneDeep(this.assignedPatronRoles);
                 let inherited = cloneDeep(this.inherited.roles);
+                // If no roles available for a collection, revert to defaults
+                if (inherited.length == 0 && assigned.length == 0 && this.isCollection) {
+                    assigned = cloneDeep(DEFAULT_DISPLAY_COLLECTION);
+                }
                 this.setRoleType(assigned, 'assigned');
                 this.setRoleType(inherited, 'inherited');
 
@@ -244,7 +261,6 @@
             },
 
             _initializeInherited(inherited) {
-                // this.inherited = initialRoles();
                 if (this.isCollection) {
                     return;
                 }
@@ -262,7 +278,7 @@
                         this.inherited.roles.push({
                             principal: princ,
                             role: STAFF_ONLY_ROLE,
-                            assignedTo: this.uuid
+                            assignedTo: null
                         });
                     }
                 }
@@ -406,7 +422,19 @@
                 if (assignedRole === undefined) {
                     return inheritedRole;
                 } else if (inheritedRole === undefined) {
-                    return assignedRole;
+                    // if a custom patron principal is not inherited, default to staff only unless this is a collection
+                    if (this.isProtectedPrincipal(assignedRole.principal) || this.isCollection) {
+                        return assignedRole;
+                    } else {
+                        return {
+                            principal: assignedRole.principal,
+                            role: STAFF_ONLY_ROLE,
+                            deleted: false,
+                            embargo: false,
+                            assignedTo: null,
+                            type: 'inherited'
+                        };
+                    }
                 }
 
                 let assignedRolePriority = this.possibleRoles.findIndex((r) => r.role === assignedRole.role);
@@ -548,16 +576,25 @@
                     text-align: left;
 
                     li {
-                        display: inline-flex;
+                        display: flex;
+                        text-indent: 0;
+                        margin-left: 0;
 
                         p {
-                            margin: auto 20px auto auto;
+                            min-width: 225px;
+                            margin: auto 20px auto 0;
+
+                            select {
+                                margin-left: 0;
+                            }
                         }
                     }
                 }
 
-                .public-role {
-                    margin-left: 30px;
+                .patron-assigned {
+                    button {
+                        position: relative;
+                    }
                 }
             }
         }
@@ -573,7 +610,9 @@
             top: 8px;
         }
 
-        .btn-disabled {
+        button:disabled,
+        button[disabled] {
+            opacity: .3;
             &:hover {
                 cursor: not-allowed;
                 opacity: .5
@@ -583,6 +622,10 @@
         p.error {
             color: red;
         }
+    }
+
+    #add-other-principal {
+        margin-left: 0;
     }
 
     #modal-permissions-editor {
