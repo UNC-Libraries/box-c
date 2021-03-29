@@ -1,7 +1,7 @@
 <template>
     <tr>
         <td class="access-display">
-            {{ principalDisplayName(user.principal, allowedOtherPrincipals) }}
+            {{ principalDisplayName(user.principal, allowedPrincipals) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
@@ -35,7 +35,7 @@
             containerType: String,
             user: Object,
             userType: String,
-            allowedOtherPrincipals: Array
+            allowedPrincipals: Array
         },
 
         methods: {

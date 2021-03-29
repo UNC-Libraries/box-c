@@ -34,8 +34,8 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^authenticated/);
-        expect(role.text()).toMatch(/^Metadata.Only/);
+        expect(principal.text()).toMatch(/^authenticated/i);
+        expect(role.text()).toMatch(/^Metadata.Only/i);
     });
 
     it("displays an override note", () => {
@@ -52,8 +52,8 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^authenticated/);
-        expect(role.text()).toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
+        expect(principal.text()).toMatch(/^authenticated/i);
+        expect(role.text()).toMatch(/^Metadata.Only.\(Overridden.by.parent\)/i);
     });
 
     it("does not display an override note if patron access is set to 'inherit from parent'", () => {
@@ -70,9 +70,9 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^authenticated/);
-        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
-        expect(role.text()).toMatch(/^Metadata.Only/);
+        expect(principal.text()).toMatch(/^authenticated/i);
+        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/i);
+        expect(role.text()).toMatch(/^Metadata.Only/i);
     });
 
     it("does not display an override note for assigned permissions", () => {
@@ -89,14 +89,14 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^authenticated/);
-        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/);
-        expect(role.text()).toMatch(/^Metadata.Only/);
+        expect(principal.text()).toMatch(/^authenticated/i);
+        expect(role.text()).not.toMatch(/^Metadata.Only.\(Overridden.by.parent\)/i);
+        expect(role.text()).toMatch(/^Metadata.Only/i);
     });
 
     it("displays public assigned patron roles", () => {
-        expect(principal.text()).toMatch(/^Public.Users/);
-        expect(role.text()).toMatch(/^All.of.this.Folder/);
+        expect(principal.text()).toMatch(/^Public.Users/i);
+        expect(role.text()).toMatch(/^All.of.this.Folder/i);
     });
 
     it("displays staff roles", () => {
@@ -113,7 +113,7 @@ describe('patronRoles.vue', () => {
         principal = columns.at(0);
         role = columns.at(1);
 
-        expect(principal.text()).toMatch(/^No.Patron.Access/);
+        expect(principal.text()).toMatch(/^No.Patron.Access/i);
         expect(role.text()).toMatch(/^N\/A/);
     });
 

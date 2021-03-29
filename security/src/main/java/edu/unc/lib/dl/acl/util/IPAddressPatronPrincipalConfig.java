@@ -73,7 +73,8 @@ public class IPAddressPatronPrincipalConfig {
     }
 
     /**
-     * @param ipAddr IP address represented as a BigInteger. See {@link IPAddressPatronPrincipalConfig#ipToBigInteger(String)}
+     * @param ipAddr IP address represented as a BigInteger. See
+     * {@link IPAddressPatronPrincipalConfig#ipToBigInteger(String)}
      * @return returns true if the given IP address is within the range of this patron group
      */
     public boolean inRange(BigInteger ipAddr) {
@@ -123,10 +124,11 @@ public class IPAddressPatronPrincipalConfig {
 
         /**
          * Address is in range if it is greater than or equal to the start of the range, and
-         * if an end
+         * less than or equal to the end of the range. If no end range is specified,
+         * then the address must be equal to the start of the range.
          *
          * @param addr
-         * @return
+         * @return true if the address is within this ip range
          */
         public boolean inRange(BigInteger addr) {
             int startCompare = addr.compareTo(start);

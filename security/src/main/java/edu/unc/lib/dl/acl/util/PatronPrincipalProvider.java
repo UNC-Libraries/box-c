@@ -69,7 +69,6 @@ public class PatronPrincipalProvider {
                 return princs;
             }
         }
-        log.error("Getting patron principals for user {} from address {}", username, remoteAddr);
 
         BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(remoteAddr);
         patronPrincConfigs.stream()
@@ -77,7 +76,7 @@ public class PatronPrincipalProvider {
                 .map(IPAddressPatronPrincipalConfig::getPrincipal)
                 .forEach(princs::add);
 
-        log.error("Returning patron principals {}", princs);
+        log.debug("Returning patron principals {}", princs);
 
         return princs;
     }
@@ -109,7 +108,7 @@ public class PatronPrincipalProvider {
             }
             if (StringUtils.isBlank(config.getPrincipal())) {
                 throw new IllegalArgumentException("Field 'id' is required for patron groups");
-            } else if (!config.getPrincipal().startsWith(IP_PRINC_NAMESPACE)){
+            } else if (!config.getPrincipal().startsWith(IP_PRINC_NAMESPACE)) {
                 throw new IllegalArgumentException("Field 'id' for IP Principal configuration must begin with "
                         + IP_PRINC_NAMESPACE);
             }

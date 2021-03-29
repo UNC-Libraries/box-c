@@ -76,7 +76,7 @@ public class InheritedAclFactory implements AclFactory {
         List<PID> path = getPidPath(target);
 
         Map<String, Set<String>> inheritedPrincRoles = new HashMap<>();
-        Set<String> specialPatronPrincs = null;
+        Set<String> customPatronPrincs = null;
 
         // Iterate through each step in the path except for the root content node
         int depth = 0;
@@ -98,12 +98,12 @@ public class InheritedAclFactory implements AclFactory {
                 }
 
                 if (depth == COLLECTION_PATH_DEPTH) {
-                    specialPatronPrincs = getSpecialPatronPrincs(objectPrincipalRoles);
+                    customPatronPrincs = getCustomPatronPrincs(objectPrincipalRoles);
                 }
 
                 // Apply any further patron restrictions to inherited patron principals
                 adjustPatronPrincipalRoles(pathPid, inheritedPrincRoles,
-                        inheritedPatronPrincipals, objectPrincipalRoles, specialPatronPrincs);
+                        inheritedPatronPrincipals, objectPrincipalRoles, customPatronPrincs);
             }
         }
 
@@ -118,7 +118,7 @@ public class InheritedAclFactory implements AclFactory {
         return inheritedPrincRoles;
     }
 
-    private Set<String> getSpecialPatronPrincs(Map<String, Set<String>> objectPrincipalRoles) {
+    private Set<String> getCustomPatronPrincs(Map<String, Set<String>> objectPrincipalRoles) {
         Set<String> princs = new HashSet<>(objectPrincipalRoles.keySet());
         princs.remove(AccessPrincipalConstants.PUBLIC_PRINC);
         princs.remove(AccessPrincipalConstants.AUTHENTICATED_PRINC);
@@ -179,7 +179,7 @@ public class InheritedAclFactory implements AclFactory {
             Map<String, Set<String>> inheritedPrincRoles,
             Set<String> inheritedPatronPrincipals,
             Map<String, Set<String>> objectPrincipalRoles,
-            Set<String> specialPatronPrincs) {
+            Set<String> customPatronPrincs) {
 
         // Discard any non-patron assignments at this depth
         Set<String> objPatronPrincipals = getPatronPrincipals(objectPrincipalRoles.keySet());
@@ -191,12 +191,12 @@ public class InheritedAclFactory implements AclFactory {
             return;
         }
 
-        // if both regular patron groups explicitly None, strip away inherited special groups unless directly added
-        if (specialPatronPrincs.size() > 0) {
+        // if both regular patron groups explicitly None, strip away inherited custom groups unless directly added
+        if (customPatronPrincs.size() > 0) {
             boolean publicNone = isAssignedNone(AccessPrincipalConstants.PUBLIC_PRINC, objectPrincipalRoles);
             boolean authNone = isAssignedNone(AccessPrincipalConstants.AUTHENTICATED_PRINC, objectPrincipalRoles);
             if (publicNone && authNone) {
-                specialPatronPrincs.stream()
+                customPatronPrincs.stream()
                         .filter(princ -> !objectPrincipalRoles.containsKey(princ))
                         .forEach(inheritedPrincRoles::remove);
             }

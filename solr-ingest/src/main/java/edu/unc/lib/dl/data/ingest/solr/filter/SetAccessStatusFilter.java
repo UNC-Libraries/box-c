@@ -23,8 +23,6 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,6 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
@@ -86,6 +83,11 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
+        // No need to continue with patron statuses if object is an AdminUnit
+        if (dip.getContentObject() instanceof AdminUnit) {
+            return status;
+        }
+
         Date objEmbargo = objAclFactory.getEmbargoUntil(pid);
         Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
         if (isEmbargoActive(objEmbargo)) {
@@ -98,9 +100,9 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         boolean restrictionsApplied = !status.isEmpty();
 
         List<RoleAssignment> inheritedAssignments = inheritedAclFactory.getPatronAccess(pid);
-        Map<String, Set<String>> objPrincRoles = objAclFactory.getPrincipalRoles(pid);
+        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(pid);
 
-        if (allPatronsRevoked(objPrincRoles)) {
+        if (allPatronsRevoked(objPatronRoles)) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
         } else if (!hasPatronAssignments(inheritedAssignments)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
@@ -108,30 +110,27 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (hasPatronSettings(dip.getContentObject())) {
+        boolean isCollection = dip.getContentObject() instanceof CollectionObject;
+        if (hasPatronSettings(objPatronRoles, isCollection)) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
 
         return status;
     }
 
-    private boolean hasPatronSettings(ContentObject contentObj) {
-        if (contentObj instanceof AdminUnit) {
-            return false;
-        }
-
-        List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(contentObj.getPid());
+    private boolean hasPatronSettings(List<RoleAssignment> objPatronRoles, boolean isCollection) {
         int numRoles = objPatronRoles.size();
-        boolean isCollection = contentObj instanceof CollectionObject;
 
         if (!isCollection && numRoles == 0) {
             return false;
         } else if (isCollection && numRoles < 2) {
             return true;
+        } else if (numRoles > 2) {
+            return true;
         }
 
         for (RoleAssignment role : objPatronRoles) {
-            if (!role.getRole().equals(canViewOriginals.getPropertyString())) {
+            if (!role.getRole().equals(canViewOriginals) || !isProtectedPatronPrincipal(role.getPrincipal())) {
                 return true;
             }
         }
@@ -139,18 +138,25 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         return false;
     }
 
-    private boolean allPatronsRevoked(Map<String, Set<String>> objPrincRoles) {
-        Set<String> publicRoles = objPrincRoles.get(PUBLIC_PRINC);
-        if (publicRoles == null) {
+    private boolean allPatronsRevoked(List<RoleAssignment> objPatronRoles) {
+        // If either public or authenticated principals aren't present, then can't be total revoke
+        long protectedPrincipalCount = objPatronRoles.stream()
+            .filter(ra -> isProtectedPatronPrincipal(ra.getPrincipal()))
+            .count();
+        if (protectedPrincipalCount < 2) {
             return false;
         }
-        Set<String> authRoles = objPrincRoles.get(AUTHENTICATED_PRINC);
-        if (authRoles == null) {
-            return false;
+        // If any principals have a role other than 'none', then not a total revocation
+        for (RoleAssignment roleAssignment : objPatronRoles) {
+            if (!UserRole.none.equals(roleAssignment.getRole())) {
+                return false;
+            }
         }
+        return true;
+    }
 
-        return publicRoles.contains(UserRole.none.getPropertyString())
-                && authRoles.contains(UserRole.none.getPropertyString());
+    private boolean isProtectedPatronPrincipal(String principal) {
+        return PUBLIC_PRINC.equals(principal) || AUTHENTICATED_PRINC.equals(principal);
     }
 
     private boolean containsAssignment(String principal, UserRole role, List<RoleAssignment> assignments) {

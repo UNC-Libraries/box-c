@@ -148,11 +148,11 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(async () => {
             // Click to show the add other principal inputs
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
             // Select the existing patron principal to add
             wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
             wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
 
             await wrapper.vm.$nextTick();
             stubDataSaveResponse();
@@ -192,7 +192,7 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("adds an extra patron group", (done) => {
+    it("adds an custom patron group", (done) => {
         const resp_with_allowed_patrons = {
             inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
             assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
@@ -204,11 +204,11 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(resp_with_allowed_patrons.assigned.roles);
 
             // Click to show the add other principal inputs
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
             // Select values for new patron role and then click the add button again
             wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
             wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
 
             // Model should have updated by adding the new role to the list of assigned roles
             const assigned_other_roles = [{ principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID  },
@@ -218,14 +218,14 @@ describe('patronRoles.vue', () => {
 
             // Once the UI has refreshed it should now show added entry
             await wrapper.vm.$nextTick();
-            let other_entries = wrapper.findAll('.patron-assigned');
-            expect(other_entries.length).toEqual(3);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
-            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(3);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(assigned_patrons.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             // The new entry inputs should be cleared
             expect(wrapper.vm.new_assignment_principal).toEqual('');
@@ -258,30 +258,30 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
 
             // Click to show the add other principal inputs
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
             // Select the existing patron principal to add
             wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
             wrapper.findAll('#add-new-patron-principal-role option').at(3).setSelected();
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
 
             // Try adding principal that has not already been assigned
             wrapper.findAll('#add-new-patron-principal-id option').at(1).setSelected();
-            wrapper.find('#add-other-principal').trigger('click');
+            wrapper.find('#add-principal').trigger('click');
 
             expect(wrapper.vm.assignedPatronRoles).toEqual([assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2],
                 { principal: 'the:extra:special:group', role: 'canViewAccessCopies', assignedTo: UUID }]);
 
             await wrapper.vm.$nextTick();
-            let other_entries = wrapper.findAll('.patron-assigned');
-            expect(other_entries.length).toEqual(4);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
-            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
-            expect(other_entries.at(3).findAll('p').at(0).text()).toEqual('Extra Special Group');
-            expect(other_entries.at(3).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(4);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(assigned_patrons.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            expect(assigned_patrons.at(3).findAll('p').at(0).text()).toEqual('Extra Special Group');
+            expect(assigned_patrons.at(3).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
             done();
         });
     });
@@ -322,14 +322,14 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(
                 [assigned_other_roles[0], assigned_other_roles[1], assigned_other_roles[2]]);
 
-            let other_entries = wrapper.findAll('.patron-assigned');
-            expect(other_entries.length).toEqual(3);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
-            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
-            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Another Group');
-            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(3);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(assigned_patrons.at(2).findAll('p').at(0).text()).toEqual('Another Group');
+            expect(assigned_patrons.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
 
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'everyone', role: 'canViewMetadata', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false },
@@ -370,16 +370,16 @@ describe('patronRoles.vue', () => {
                 { principal: 'my:special:group', role: 'canViewOriginals', type: 'assigned', assignedTo: UUID, deleted: false, embargo: false }
             ]);
 
-            let other_entries = wrapper.findAll('.patron-assigned');
-            expect(other_entries.length).toEqual(4);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
-            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
-            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Another Group');
-            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(3).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(3).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(4);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('canViewMetadata');
+            expect(assigned_patrons.at(2).findAll('p').at(0).text()).toEqual('Another Group');
+            expect(assigned_patrons.at(2).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(3).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(assigned_patrons.at(3).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             done();
         });
@@ -410,14 +410,14 @@ describe('patronRoles.vue', () => {
             await wrapper.vm.$nextTick();
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
 
-            let other_entries = wrapper.findAll('.patron-assigned');
-            expect(other_entries.length).toEqual(3);
-            expect(other_entries.at(0).findAll('p').at(0).text()).toEqual('Public users');
-            expect(other_entries.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
-            expect(other_entries.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
-            expect(other_entries.at(2).findAll('p').at(0).text()).toEqual('Special Group');
-            expect(other_entries.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
+            let assigned_patrons = wrapper.findAll('.patron-assigned');
+            expect(assigned_patrons.length).toEqual(3);
+            expect(assigned_patrons.at(0).findAll('p').at(0).text()).toEqual('Public users');
+            expect(assigned_patrons.at(0).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(1).findAll('p').at(0).text()).toEqual('Authenticated users');
+            expect(assigned_patrons.at(1).findAll('select').at(0).element.value).toEqual('canViewAccessCopies');
+            expect(assigned_patrons.at(2).findAll('p').at(0).text()).toEqual('Special Group');
+            expect(assigned_patrons.at(2).findAll('select').at(0).element.value).toEqual('canViewOriginals');
 
             wrapper.find('#user_type_patron').trigger('click');
             await wrapper.vm.$nextTick();

@@ -14,7 +14,7 @@
                 <patron-display-row :user="user"
                                     :user-type="user_type"
                                     :container-type="containerType"
-                                    :allowed-other-principals="allowed_other_principals"></patron-display-row>
+                                    :allowed-principals="allowed_principals"></patron-display-row>
             </template>
             </tbody>
         </table>
@@ -30,7 +30,7 @@
                        id="user_type_patron"><label for="user_type_patron"> Allow patron access</label>
                 <ul id="assigned_principals_editor" class="patron">
                     <li v-for="(patron_princ, index) in selected_patron_assignments" v-bind:key="index" class="patron-assigned">
-                        <p>{{ principalDisplayName(patron_princ.principal, allowed_other_principals) }}</p>
+                        <p>{{ principalDisplayName(patron_princ.principal, allowed_principals) }}</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select v-model="patron_princ.role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
@@ -43,10 +43,10 @@
                                 :disabled="shouldDisable"
                                 v-if="!patron_princ.protected">Remove</button>
                     </li>
-                    <li id="add-new-patron-principal" v-show="shouldShowAddOtherPrincipals">
+                    <li id="add-new-patron-principal" v-show="shouldShowAddPrincipal">
                         <p class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select id="add-new-patron-principal-id" v-model="new_assignment_principal" :disabled="shouldDisable">
-                                <option v-for="princ in allowed_other_principals" :value="princ.principal">{{ princ.name }}</option>
+                                <option v-for="princ in allowed_principals" :value="princ.principal">{{ princ.name }}</option>
                             </select>
                         </p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
@@ -56,7 +56,7 @@
                         </div>
                     </li>
                     <li>
-                        <button @click="addOtherPrincipal" id="add-other-principal" :disabled="shouldDisable">Add Group</button>
+                        <button @click="addPrincipal" id="add-principal" :disabled="shouldDisable">Add Group</button>
                     </li>
                 </ul>
             </li>
@@ -142,7 +142,7 @@
 
         data() {
             return {
-                allowed_other_principals: [],
+                allowed_principals: [],
                 selected_patron_assignments: [],
                 embargo: null,
                 deleted: false,
@@ -150,7 +150,7 @@
                 new_assignment_principal: '',
                 response_message: '',
                 user_type: null,
-                shouldShowAddOtherPrincipals: false,
+                shouldShowAddPrincipal: false,
                 saved_details: null
             }
         },
@@ -163,7 +163,7 @@
             displayAssignments() {
                 let assigned = cloneDeep(this.assignedPatronRoles);
                 // Display the new assignment before it is committed, if valid
-                if (this.shouldShowAddOtherPrincipals) {
+                if (this.shouldShowAddPrincipal) {
                     try {
                         assigned.push(this.getNewAssignment());
                     } catch (e) {
@@ -261,7 +261,7 @@
                     this._initializeInherited(response.data.inherited);
                     this.deleted = response.data.assigned.deleted;
                     this._initializeSelectedAssignments(response.data.assigned.roles);
-                    this.allowed_other_principals = response.data.allowedPrincipals;
+                    this.allowed_principals = response.data.allowedPrincipals;
                     this.saved_details = this.submissionAccessDetails();
                 }).catch((error) => {
                     let response_msg = `Unable to load current patron roles for: ${this.title}`;
@@ -361,8 +361,8 @@
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
                 // Commit uncommitted new group assignment if one was input
-                if (this.shouldShowAddOtherPrincipals && this.new_assignment_principal !== '') {
-                    this.addOtherPrincipal();
+                if (this.shouldShowAddPrincipal && this.new_assignment_principal !== '') {
+                    this.addPrincipal();
                 }
                 let submissionDetails = this.submissionAccessDetails();
 
@@ -507,9 +507,9 @@
                 this.displayModal();
             },
             
-            addOtherPrincipal() {
-                if (!this.shouldShowAddOtherPrincipals) {
-                    this.shouldShowAddOtherPrincipals = true;
+            addPrincipal() {
+                if (!this.shouldShowAddPrincipal) {
+                    this.shouldShowAddPrincipal = true;
                     return false;
                 }
                 try {
@@ -608,6 +608,7 @@
                         display: flex;
                         text-indent: 0;
                         margin-left: 0;
+                        margin-bottom: 8px;
 
                         p {
                             min-width: 170px;
@@ -658,7 +659,7 @@
         }
     }
 
-    #add-other-principal {
+    #add-principal {
         margin-left: 0;
     }
 

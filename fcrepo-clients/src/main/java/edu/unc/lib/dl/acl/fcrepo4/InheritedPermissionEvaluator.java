@@ -134,7 +134,7 @@ public class InheritedPermissionEvaluator {
         // Determine which roles would grant the sought after permission
         Set<String> rolesWithPermission = getRolesWithPermission(permission);
         Set<String> activePatronPrincipals = null;
-        Set<String> specialPatronGroups = null;
+        Set<String> customPatronGroups = null;
 
         // Ignore embargoes if the agent is requesting metadata
         boolean ignoreEmbargoes = Permission.viewMetadata.equals(permission);
@@ -159,11 +159,11 @@ public class InheritedPermissionEvaluator {
                     return false;
                 }
 
-                specialPatronGroups = getSpecialPatronGroups(activePatronPrincipals);
+                customPatronGroups = getCustomPatronGroups(activePatronPrincipals);
             }
 
             // Remove any active patron principals that do not grant the permission
-            revokePatronPermissions(princRoles, activePatronPrincipals, rolesWithPermission, specialPatronGroups);
+            revokePatronPermissions(princRoles, activePatronPrincipals, rolesWithPermission, customPatronGroups);
 
             if (activePatronPrincipals.isEmpty()) {
                 return false;
@@ -172,7 +172,7 @@ public class InheritedPermissionEvaluator {
         return true;
     }
 
-    private Set<String> getSpecialPatronGroups(Set<String> patronPrincipals) {
+    private Set<String> getCustomPatronGroups(Set<String> patronPrincipals) {
         Set<String> princs = new HashSet<>(patronPrincipals);
         princs.remove(AccessPrincipalConstants.PUBLIC_PRINC);
         princs.remove(AccessPrincipalConstants.AUTHENTICATED_PRINC);
@@ -186,17 +186,17 @@ public class InheritedPermissionEvaluator {
      * @param princRoles
      * @param activePrincipals
      * @param rolesWithPermission
-     * @param specialPatronPrincs
+     * @param customPatronPrincs
      */
     private void revokePatronPermissions(Map<String, Set<String>> princRoles, Set<String> activePrincipals,
-            Set<String> rolesWithPermission, Set<String> specialPatronPrincs) {
+            Set<String> rolesWithPermission, Set<String> customPatronPrincs) {
 
-        // If both regular patron groups explicitly None, deactivate special groups unless directly added
-        if (specialPatronPrincs.size() > 0) {
+        // If both regular patron groups explicitly None, deactivate custom groups unless directly added
+        if (customPatronPrincs.size() > 0) {
             boolean publicNone = isAssignedNone(AccessPrincipalConstants.PUBLIC_PRINC, princRoles);
             boolean authNone = isAssignedNone(AccessPrincipalConstants.AUTHENTICATED_PRINC, princRoles);
             if (publicNone && authNone) {
-                specialPatronPrincs.stream()
+                customPatronPrincs.stream()
                         .filter(princ -> !princRoles.containsKey(princ))
                         .forEach(activePrincipals::remove);
             }

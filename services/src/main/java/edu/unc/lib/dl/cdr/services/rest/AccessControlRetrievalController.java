@@ -61,7 +61,7 @@ public class AccessControlRetrievalController {
     private static final Logger log = LoggerFactory.getLogger(AccessControlRetrievalController.class);
     public static final String INHERITED_ROLES = "inherited";
     public static final String ASSIGNED_ROLES = "assigned";
-    public static final String ALLOWED_ADDITIONAL_PRINCIPALS = "allowedPrincipals";
+    public static final String ALLOWED_PATRON_PRINCIPALS = "allowedPrincipals";
     public static final String ROLES_KEY = "roles";
     public static final String EMBARGO_KEY = "embargo";
     public static final String DELETED_KEY = "deleted";
@@ -153,7 +153,7 @@ public class AccessControlRetrievalController {
         } else if (repoObj instanceof ContentObject) {
             result.put(INHERITED_ROLES, addInheritedPatronInfo(repoObj));
             result.put(ASSIGNED_ROLES, addAssignedPatronInfo(pid));
-            result.put(ALLOWED_ADDITIONAL_PRINCIPALS, patronPrincipalProvider.getConfiguredPatronPrincipals());
+            result.put(ALLOWED_PATRON_PRINCIPALS, patronPrincipalProvider.getConfiguredPatronPrincipals());
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {
