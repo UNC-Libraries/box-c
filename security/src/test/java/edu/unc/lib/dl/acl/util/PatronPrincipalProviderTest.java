@@ -104,13 +104,13 @@ public class PatronPrincipalProviderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void missingPrincipalIdTest() throws Exception {
+    public void missingPrincipalTest() throws Exception {
         addPatronConfig(null, TEST_GROUP_NAME, TEST_IP2);
         serializeConfigAndInit();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void invalidPrincipalIdTest() throws Exception {
+    public void invalidPrincipalTest() throws Exception {
         addPatronConfig("some:group:here", TEST_GROUP_NAME, TEST_IP2);
         serializeConfigAndInit();
     }
@@ -170,6 +170,26 @@ public class PatronPrincipalProviderTest {
     @Test(expected = IllegalArgumentException.class)
     public void missingPrincipalInvalidNumberRangePartsTest() throws Exception {
         addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-" + TEST_IP2 + "-" + TEST_IP2);
+        try {
+            serializeConfigAndInit();
+        } catch (JsonMappingException e) {
+            throw (Exception) e.getCause();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void missingPrincipalEndBeforeStartTest() throws Exception {
+        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP3 + "-" + TEST_IP2);
+        try {
+            serializeConfigAndInit();
+        } catch (JsonMappingException e) {
+            throw (Exception) e.getCause();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void missingPrincipalIpTooBigTest() throws Exception {
+        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "500.0.0.1");
         try {
             serializeConfigAndInit();
         } catch (JsonMappingException e) {

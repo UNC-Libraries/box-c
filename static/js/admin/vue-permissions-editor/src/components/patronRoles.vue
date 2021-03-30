@@ -43,7 +43,7 @@
                                 :disabled="shouldDisable"
                                 v-if="!patron_princ.protected">Remove</button>
                     </li>
-                    <li id="add-new-patron-principal" v-show="shouldShowAddPrincipal">
+                    <li id="add-new-patron-principal" v-show="should_show_add_principal">
                         <p class="select-wrapper" :class="{'is-disabled': shouldDisable}">
                             <select id="add-new-patron-principal-id" v-model="new_assignment_principal" :disabled="shouldDisable">
                                 <option v-for="princ in allowed_principals" :value="princ.principal">{{ princ.name }}</option>
@@ -54,6 +54,9 @@
                                 <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
                             </select>
                         </div>
+                        <button class="btn-remove"
+                                @click="removeNewAssignments()"
+                                :disabled="shouldDisable">Remove</button>
                     </li>
                     <li>
                         <button @click="addPrincipal" id="add-principal" :disabled="shouldDisable">Add Group</button>
@@ -150,7 +153,7 @@
                 new_assignment_principal: '',
                 response_message: '',
                 user_type: null,
-                shouldShowAddPrincipal: false,
+                should_show_add_principal: false,
                 saved_details: null
             }
         },
@@ -163,7 +166,7 @@
             displayAssignments() {
                 let assigned = cloneDeep(this.assignedPatronRoles);
                 // Display the new assignment before it is committed, if valid
-                if (this.shouldShowAddPrincipal) {
+                if (this.should_show_add_principal) {
                     try {
                         assigned.push(this.getNewAssignment());
                     } catch (e) {
@@ -361,8 +364,13 @@
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
                 // Commit uncommitted new group assignment if one was input
-                if (this.shouldShowAddPrincipal && this.new_assignment_principal !== '') {
-                    this.addPrincipal();
+                if (this.should_show_add_principal && this.new_assignment_principal !== '') {
+                    if (!this.addPrincipal()) {
+                        // Abort saving if unable to commit changes
+                        this.is_submitting = false;
+                        this.response_message = '';
+                        return false;
+                    }
                 }
                 let submissionDetails = this.submissionAccessDetails();
 
@@ -417,7 +425,7 @@
                 }
 
                 if (allSame) {
-                    firstRole.principal = firstRole.role === STAFF_ONLY_ROLE ? ACCESS_TYPE_STAFF_ONLY : ACCESS_TYPE_DIRECT;
+                    firstRole.principal = firstRole.role === STAFF_ONLY_ROLE ? STAFF_PRINCIPAL : PATRON_PRINCIPAL;
                     return [firstRole];
                 } else {
                     return winningRoles;
@@ -508,8 +516,8 @@
             },
             
             addPrincipal() {
-                if (!this.shouldShowAddPrincipal) {
-                    this.shouldShowAddPrincipal = true;
+                if (!this.should_show_add_principal) {
+                    this.should_show_add_principal = true;
                     return false;
                 }
                 try {
@@ -521,6 +529,12 @@
                     this.alertHandler.alertHandler('error', e);
                     return false;
                 }
+            },
+
+            removeNewAssignments() {
+                this.should_show_add_principal = false;
+                this.new_assignment_principal = '';
+                this.new_assignment_role = VIEW_ORIGINAL_ROLE;
             },
 
             getNewAssignment() {

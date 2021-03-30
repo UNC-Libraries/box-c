@@ -107,9 +107,9 @@ public class PatronPrincipalProvider {
                 throw new IllegalArgumentException("Field 'name' is required for patron groups");
             }
             if (StringUtils.isBlank(config.getPrincipal())) {
-                throw new IllegalArgumentException("Field 'id' is required for patron groups");
+                throw new IllegalArgumentException("Field 'principal' is required for patron groups");
             } else if (!config.getPrincipal().startsWith(IP_PRINC_NAMESPACE)) {
-                throw new IllegalArgumentException("Field 'id' for IP Principal configuration must begin with "
+                throw new IllegalArgumentException("Field 'principal' for IP Principal configuration must begin with "
                         + IP_PRINC_NAMESPACE);
             }
             if (StringUtils.isBlank(config.getIpInclude())) {

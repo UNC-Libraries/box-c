@@ -162,7 +162,7 @@ public class StoreUserAccessControlFilterTest {
 
         assertEquals(2, accessGroups.size());
         assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("Authenticated must be assigned", accessGroups.contains(TEST_IP_PRINC));
+        assertTrue("IP Group must be assigned", accessGroups.contains(TEST_IP_PRINC));
     }
 
     @Test

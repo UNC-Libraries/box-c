@@ -119,6 +119,10 @@ public class IPAddressPatronPrincipalConfig {
                             "Must specify end to the range or leave off '-': " + range);
                 }
                 end = ipToBigInteger(parts[1]);
+                if (start.compareTo(end) == 1) {
+                    throw new IllegalArgumentException(
+                            "Start of range must come before end of range: " + range);
+                }
             }
         }
 

@@ -173,6 +173,34 @@ describe('patronRoles.vue', () => {
         });
     });
 
+    it("new assignment remove button hides inputs", (done) => {
+        const resp_with_allowed_patrons = {
+            inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
+            assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID },
+            allowedPrincipals: [{ principal: "my:special:group", name: "Special Group" }]
+        };
+        stubDataLoad(resp_with_allowed_patrons);
+
+        moxios.wait(async () => {
+            expect(wrapper.find('#add-new-patron-principal').isVisible()).toBe(false);
+
+            // Click to show the add principal inputs
+            wrapper.find('#add-principal').trigger('click');
+            wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option').at(3).setSelected();
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('#add-new-patron-principal').isVisible()).toBe(true);
+
+            wrapper.find('#add-new-patron-principal .btn-remove').trigger('click');
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('#add-new-patron-principal').isVisible()).toBe(false);
+            expect(wrapper.find('#add-new-patron-principal-role').element.value).toEqual('canViewOriginals');
+            expect(wrapper.find('#add-new-patron-principal-id').element.value).toEqual('');
+
+            done();
+        });
+    });
+
     it("retrieves patron roles from the server", (done) => {
         stubDataLoad();
 
