@@ -68,7 +68,7 @@ public class StoreUserAccessControlFilterTest {
 
     private static final String TEST_IP = "192.168.150.16";
     private static final String TEST_IP_PRINC = IP_PRINC_NAMESPACE + "test_grp";
-    private static final String CONFIG = "[{ \"id\" : \"" + TEST_IP_PRINC
+    private static final String CONFIG = "[{ \"principal\" : \"" + TEST_IP_PRINC
             + "\", \"name\" : \"Test Group\", \"ipInclude\" : \"" + TEST_IP + "\"}]";
 
     @Rule

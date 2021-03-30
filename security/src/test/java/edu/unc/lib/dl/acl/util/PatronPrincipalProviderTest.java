@@ -80,7 +80,7 @@ public class PatronPrincipalProviderTest {
     private void addPatronConfig(String id, String name, String ipInclude) {
         Map<String, String> info = new HashMap<>();
         if (id != null) {
-            info.put("id", id);
+            info.put("principal", id);
         }
         if (name != null) {
             info.put("name", name);
