@@ -22,6 +22,11 @@
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
     
+    <bean name="patronPrincipalProvider" class="edu.unc.lib.dl.acl.util.PatronPrincipalProvider"
+            init-method="init">
+        <property name="patronGroupConfigPath" value="src/test/resources/patron-principals.json" />
+    </bean>
+    
     <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="0" />
