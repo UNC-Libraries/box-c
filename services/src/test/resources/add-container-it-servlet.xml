@@ -40,6 +40,7 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="storageLocationManager" ref="storageLocationManager" />
+        <property name="updateDescriptionService" ref="updateDescriptionService" />
     </bean>
 
     <bean id="patronService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">

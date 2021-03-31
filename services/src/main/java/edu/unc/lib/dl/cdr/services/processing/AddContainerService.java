@@ -21,13 +21,20 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.jdom2.output.Format.getPrettyFormat;
 import static org.springframework.util.Assert.notNull;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +56,12 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -71,6 +80,7 @@ public class AddContainerService {
     private OperationsMessageSender operationsMessageSender;
     private PatronAccessAssignmentService patronService;
     private StorageLocationManager storageLocationManager;
+    private UpdateDescriptionService updateDescService;
 
     private static final Timer timer = TimerFactory.createTimerForClass(AddContainerService.class);
 
@@ -139,6 +149,8 @@ public class AddContainerService {
                 patronService.updatePatronAccess(agent, containerPid, accessDetails);
             }
 
+            storeDescription(containerPid, addRequest);
+
             child.getPremisLog()
                 .buildEvent(Premis.Creation)
                 .addImplementorAgent(AgentPids.forPerson(agent))
@@ -153,6 +165,23 @@ public class AddContainerService {
         // Send message that the action completed
         operationsMessageSender.sendAddOperation(agent.getUsername(), Arrays.asList(parentPid),
                 Arrays.asList(child.getPid()), null, null);
+    }
+
+    private void storeDescription(PID containerPid, AddContainerRequest addRequest) throws IOException {
+        Document doc = new Document();
+        Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
+        doc.addContent(mods);
+
+        Element titleInfo = new Element("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
+        Element title = new Element("title", JDOMNamespaceUtil.MODS_V3_NS);
+        title.setText(addRequest.getLabel());
+        titleInfo.addContent(title);
+        mods.addContent(titleInfo);
+
+        String modsString = new XMLOutputter(getPrettyFormat()).outputString(mods.getDocument());
+
+        updateDescService.updateDescription(addRequest.getAgent(), containerPid,
+                IOUtils.toInputStream(modsString, StandardCharsets.UTF_8));
     }
 
     /**
@@ -197,6 +226,10 @@ public class AddContainerService {
 
     public void setStorageLocationManager(StorageLocationManager storageLocationManager) {
         this.storageLocationManager = storageLocationManager;
+    }
+
+    public void setUpdateDescriptionService(UpdateDescriptionService updateDescService) {
+        this.updateDescService = updateDescService;
     }
 
     public static class AddContainerRequest {

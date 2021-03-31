@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Resource;
+import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
@@ -48,6 +51,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.test.AclModelBuilder;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  *
@@ -390,6 +394,14 @@ public class AddContainerIT extends AbstractAPIIT {
     private void assertChildContainerAdded(ContentContainerObject parent, String label, Class<?> memberClass) {
         ContentObject member = getMemberByLabel(parent, label);
         assertTrue(memberClass.isInstance(member));
+    }
+
+    public void assertModsPopulated(ContentObject member, String label) throws Exception {
+        SAXBuilder sb = createSAXBuilder();
+        Document doc = sb.build(member.getDescription().getBinaryStream());
+        String title = doc.getRootElement().getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS)
+                .getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
+        assertEquals("Title did not match expected value", label, title);
     }
 
     private void assertChildContainerNotAdded(ContentContainerObject parent) {

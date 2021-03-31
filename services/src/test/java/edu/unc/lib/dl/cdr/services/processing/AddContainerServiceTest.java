@@ -63,6 +63,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -99,6 +100,8 @@ public class AddContainerServiceTest {
     private StorageLocationManager storageLocationManager;
     @Mock
     private StorageLocation storageLocation;
+    @Mock
+    private UpdateDescriptionService updateDescService;
 
     @Captor
     private ArgumentCaptor<Collection<PID>> destinationsCaptor;
@@ -145,6 +148,7 @@ public class AddContainerServiceTest {
         service.setTransactionManager(txManager);
         service.setOperationsMessageSender(messageSender);
         service.setStorageLocationManager(storageLocationManager);
+        service.setUpdateDescriptionService(updateDescService);
     }
 
     private AddContainerRequest createRequest(String label, boolean staffOnly, Resource containerType) {
