@@ -20,8 +20,6 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
-import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
-import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -33,7 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
@@ -50,6 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.IPAddressPatronPrincipalConfig;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -144,13 +143,11 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
+        PatronRolesResponse result = parseResponse(mvcResult);
 
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
-        assertInfoEmpty(inherited);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
-        assertInfoEmpty(assigned);
+        assertInfoEmpty(result.assigned);
     }
 
     @Test
@@ -166,15 +163,21 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(2, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewOriginals);
         assertFalse(assigned.isDeleted());
         assertNull(assigned.getEmbargo());
+
+        assertEquals(1, result.allowedPrincipals.size());
+        IPAddressPatronPrincipalConfig config = result.allowedPrincipals.get(0);
+        assertEquals("unc:patron:ipp:test_group", config.getPrincipal());
+        assertEquals("Test Patron Group", config.getName());
+        assertNull(config.getIpInclude());
     }
 
     @Test
@@ -195,14 +198,14 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
+        PatronRolesResponse result = parseResponse(mvcResult);
 
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronAccessDetails inherited = result.inherited;
         assertNull(inherited.getRoles());
         assertTrue(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(2, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewOriginals);
@@ -224,10 +227,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(2, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewOriginals);
@@ -250,10 +253,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(2, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewOriginals);
@@ -273,9 +276,9 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
-        assertInfoEmpty(result.get(ASSIGNED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
+        assertInfoEmpty(result.assigned);
     }
 
     @Test
@@ -294,10 +297,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(2, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewOriginals);
@@ -320,15 +323,15 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(2, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(inherited, AUTHENTICATED_PRINC, canViewOriginals);
         assertFalse(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        assertInfoEmpty(result.get(ASSIGNED_ROLES));
+        assertInfoEmpty(result.assigned);
     }
 
     @Test
@@ -349,15 +352,15 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(2, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewMetadata);
         assertHasRole(inherited, AUTHENTICATED_PRINC, canViewOriginals);
         assertFalse(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         assertHasRole(assigned, AUTHENTICATED_PRINC, canViewMetadata);
         assertFalse(assigned.isDeleted());
@@ -381,10 +384,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        assertInfoEmpty(result.get(INHERITED_ROLES));
+        PatronRolesResponse result = parseResponse(mvcResult);
+        assertInfoEmpty(result.inherited);
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertFalse(assigned.isDeleted());
@@ -406,13 +409,13 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(0, inherited.getRoles().size());
         assertTrue(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        assertInfoEmpty(result.get(ASSIGNED_ROLES));
+        assertInfoEmpty(result.assigned);
     }
 
     @Test
@@ -432,8 +435,8 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(2, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewMetadata);
         // Auth principal role reflects the applied embargo
@@ -441,7 +444,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         assertFalse(inherited.isDeleted());
         assertEquals(embargoUntil.getTime(), inherited.getEmbargo());
 
-        assertInfoEmpty(result.get(ASSIGNED_ROLES));
+        assertInfoEmpty(result.assigned);
     }
 
     @Test
@@ -463,14 +466,14 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(1, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewOriginals);
         assertFalse(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         // Assigned role should still be returned despite deleted status
         assertHasRole(assigned, PUBLIC_PRINC, canViewOriginals);
@@ -498,14 +501,14 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(1, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewOriginals);
         assertFalse(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         // Role should be unaffected by embargo in assigned
         assertHasRole(assigned, PUBLIC_PRINC, canViewOriginals);
@@ -537,17 +540,57 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertTrue(inherited.getRoles().isEmpty());
         assertTrue(inherited.isDeleted());
         assertEquals(embargoUntil.getTime(), inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, canViewMetadata);
         assertTrue(assigned.isDeleted());
         assertEquals(embargoUntil.getTime(), assigned.getEmbargo());
+    }
+
+    @Test
+    public void getFromFolderWithCustomPatrons() throws Exception {
+        String customGroup = "unc:patron:ipp:test_group";
+        createCollectionInUnit(new AclModelBuilder("Collection")
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(customGroup)
+                .model);
+        FolderObject folder = repositoryObjectFactory.createFolderObject(
+                new AclModelBuilder("Folder with patrons")
+                    .addNoneRole(PUBLIC_PRINC)
+                    .addCanViewMetadata(AUTHENTICATED_PRINC)
+                    .addCanViewOriginals(customGroup)
+                    .model);
+        collObj.addMember(folder);
+
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult mvcResult = mvc.perform(get("/acl/patron/" + folder.getPid().getId()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
+        assertEquals(3, inherited.getRoles().size());
+        assertHasRole(inherited, PUBLIC_PRINC, canViewMetadata);
+        assertHasRole(inherited, AUTHENTICATED_PRINC, canViewOriginals);
+        assertHasRole(inherited, customGroup, canViewOriginals);
+        assertFalse(inherited.isDeleted());
+        assertNull(inherited.getEmbargo());
+
+        PatronAccessDetails assigned = result.assigned;
+        assertEquals(3, assigned.getRoles().size());
+        assertHasRole(assigned, PUBLIC_PRINC, UserRole.none);
+        assertHasRole(assigned, AUTHENTICATED_PRINC, canViewMetadata);
+        assertHasRole(assigned, customGroup, canViewOriginals);
+        assertFalse(assigned.isDeleted());
+        assertNull(assigned.getEmbargo());
     }
 
     @Test
@@ -572,14 +615,14 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, PatronAccessDetails> result = parseResponse(mvcResult);
-        PatronAccessDetails inherited = result.get(INHERITED_ROLES);
+        PatronRolesResponse result = parseResponse(mvcResult);
+        PatronAccessDetails inherited = result.inherited;
         assertEquals(1, inherited.getRoles().size());
         assertHasRole(inherited, PUBLIC_PRINC, canViewOriginals);
         assertFalse(inherited.isDeleted());
         assertNull(inherited.getEmbargo());
 
-        PatronAccessDetails assigned = result.get(ASSIGNED_ROLES);
+        PatronAccessDetails assigned = result.assigned;
         assertEquals(1, assigned.getRoles().size());
         assertHasRole(assigned, PUBLIC_PRINC, UserRole.none);
         assertFalse(assigned.isDeleted());
@@ -612,10 +655,34 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .model);
     }
 
-    private Map<String, PatronAccessDetails> parseResponse(MvcResult result) throws Exception {
+    private PatronRolesResponse parseResponse(MvcResult result) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, PatronAccessDetails>>() {});
+                new TypeReference<PatronRolesResponse>() {});
+    }
+
+    public static class PatronRolesResponse {
+        private PatronAccessDetails inherited;
+        private PatronAccessDetails assigned;
+        private List<IPAddressPatronPrincipalConfig> allowedPrincipals;
+        public PatronAccessDetails getInherited() {
+            return inherited;
+        }
+        public void setInherited(PatronAccessDetails inherited) {
+            this.inherited = inherited;
+        }
+        public PatronAccessDetails getAssigned() {
+            return assigned;
+        }
+        public void setAssigned(PatronAccessDetails assigned) {
+            this.assigned = assigned;
+        }
+        public List<IPAddressPatronPrincipalConfig> getAllowedPrincipals() {
+            return allowedPrincipals;
+        }
+        public void setAllowedPrincipals(List<IPAddressPatronPrincipalConfig> allowedPrincipals) {
+            this.allowedPrincipals = allowedPrincipals;
+        }
     }
 
     private Calendar getNextYear() {

@@ -44,12 +44,14 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
@@ -60,6 +62,7 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
 public class SetAccessStatusFilterTest {
 
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+    private static final String CUSTOM_GROUP = AccessPrincipalConstants.IP_PRINC_NAMESPACE + "special";
 
     @Mock
     private DocumentIndexingPackage dip;
@@ -420,6 +423,178 @@ public class SetAccessStatusFilterTest {
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
+    }
+
+    @Test
+    public void testCollectionWithCustomGroup() throws Exception {
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
+        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+    }
+
+    @Test
+    public void testCollectionWithOnlyCustomGroup() throws Exception {
+        contentObj = mock(CollectionObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testFolderWithCustomGroup() throws Exception {
+        contentObj = mock(FolderObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testFolderMinimalStaffOnlyWithInheritedCustomGroup() throws Exception {
+        contentObj = mock(FolderObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testFolderTotallyStaffOnlyWithInheritedCustomGroup() throws Exception {
+        contentObj = mock(FolderObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.none);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.none, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, custom));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testFolderInheritAssignmentsDirectNoneExceptCustomDirectly() throws Exception {
+        contentObj = mock(FolderObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
+        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
+        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, custom));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testFolderInheritAssignmentsOnlyCustomDirectly() throws Exception {
+        contentObj = mock(FolderObject.class);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+
+        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
+        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
+        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+
+        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
+        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(custom));
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        List<String> status = listCaptor.getValue();
+        assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
     }
 
     private void addPrincipalRoles(PID pid, String principal, UserRole... roles) {

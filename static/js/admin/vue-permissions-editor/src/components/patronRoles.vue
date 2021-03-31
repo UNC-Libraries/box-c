@@ -2,7 +2,7 @@
     <div id="patron-roles">
         <h3>Effective Patron Access</h3>
 
-        <table v-if="hasParentRole || hasObjectRole" class="border inherited-permissions">
+        <table class="border inherited-permissions">
             <thead>
             <tr>
                 <th class="access-display">Who can access</th>
@@ -10,56 +10,67 @@
             </tr>
             </thead>
             <tbody>
-            <template v-for="user in dedupedRoles">
-                <patron-display-row :user="user" :user-type="user_type" :container-type="containerType"></patron-display-row>
+            <template v-for="user in displayAssignments">
+                <patron-display-row :user="user"
+                                    :user-type="user_type"
+                                    :container-type="containerType"
+                                    :allowed-principals="allowed_principals"></patron-display-row>
             </template>
             </tbody>
         </table>
-        <p v-else>There are no current permissions assigned</p>
 
         <h3 class="update-roles">Set Patron Access</h3>
         <ul class="set-patron-roles">
             <li v-if="!isCollection">
-                <span @click="updateRoleList" id="parent">
-                    <input type="radio" @click="updateRoleList" v-model="user_type" value="parent" :disabled="isDeleted"> Inherit from parent
-                </span>
+                <input type="radio" v-model="user_type" value="parent" :disabled="isDeleted"
+                        id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
             </li>
             <li>
-                <span @click="updateRoleList" id="patron">
-                    <input type="radio" @click="updateRoleList" v-model="user_type" value="patron" :disabled="isDeleted"> Allow patron access
-                </span>
-                <ul class="patron">
-                    <li class="public-role">
-                        <p>Public users</p>
+                <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"
+                       id="user_type_patron"><label for="user_type_patron"> Allow patron access</label>
+                <ul id="assigned_principals_editor" class="patron">
+                    <li v-for="(patron_princ, index) in selected_patron_assignments" v-bind:key="index" class="patron-assigned">
+                        <p>{{ principalDisplayName(patron_princ.principal, allowed_principals) }}</p>
                         <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="public" @change="updateRole('everyone')" class="public-select" v-model="everyone_role" :disabled="shouldDisable">
+                            <select v-model="patron_princ.role" :disabled="shouldDisable">
                                 <template v-for="(role, index) in possibleRoles">
                                     <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
                                 </template>
                             </select>
                         </div>
+                        <button class="btn-remove"
+                                @click="removeAssignedPrincipal(patron_princ.principal)"
+                                :disabled="shouldDisable"
+                                v-if="!patron_princ.protected">Remove</button>
+                    </li>
+                    <li id="add-new-patron-principal" v-show="should_show_add_principal">
+                        <p class="select-wrapper" :class="{'is-disabled': shouldDisable}">
+                            <select id="add-new-patron-principal-id" v-model="new_assignment_principal" :disabled="shouldDisable">
+                                <option v-for="princ in allowed_principals" :value="princ.principal">{{ princ.name }}</option>
+                            </select>
+                        </p>
+                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
+                            <select id="add-new-patron-principal-role" v-model="new_assignment_role" :disabled="shouldDisable">
+                                <option v-for="role in possibleRoles" :value="role.role">{{ role.text }}</option>
+                            </select>
+                        </div>
+                        <button class="btn-remove"
+                                @click="removeNewAssignments()"
+                                :disabled="shouldDisable">Remove</button>
                     </li>
                     <li>
-                        <p>Authenticated users</p>
-                        <div class="select-wrapper" :class="{'is-disabled': shouldDisable}">
-                            <select id="authenticated" @change="updateRole('authenticated')" v-model="authenticated_role" :disabled="shouldDisable">
-                                <template v-for="(role, index) in possibleRoles">
-                                    <option v-if="index > 0" :value="role.role">{{ role.text }}</option>
-                                </template>
-                            </select>
-                        </div>
+                        <button @click="addPrincipal" id="add-principal" :disabled="shouldDisable">Add Group</button>
                     </li>
                 </ul>
             </li>
             <li>
-                <span @click="updateRoleList" id="staff">
-                    <input type="radio" @click="updateRoleList" v-model="user_type" value="staff" :disabled="isDeleted"> Staff only access
-                </span>
+                <input type="radio" v-model="user_type" value="staff" :disabled="isDeleted"
+                        id="user_type_staff"> <label for="user_type_staff"> Staff only access</label>
             </li>
         </ul>
 
         <embargo ref="embargoInfo"
-                 :current-embargo="display_roles.assigned.embargo"
+                 :current-embargo="embargo"
                  :is-deleted="isDeleted"
                  @embargo-info="setEmbargo"
                  @error-msg="embargoError">
@@ -70,8 +81,8 @@
                 <button id="is-submitting"
                         type="submit"
                         @click="saveRoles"
-                        :class="{'btn-disabled': !unsaved_changes}"
-                        :disabled="!unsaved_changes">Save Changes</button>
+                        :class="{'btn-disabled': !hasUnsavedChanges}"
+                        :disabled="!hasUnsavedChanges">Save Changes</button>
             </li>
             <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
         </ul>
@@ -85,21 +96,30 @@
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
-    import isEmpty from 'lodash.isempty';
 
-    const METADATA_ONLY_ROLES = [
-        { principal: 'everyone', role: 'canViewMetadata' },
-        { principal: 'authenticated', role: 'canViewMetadata' }
+    const EVERYONE_PRINCIPAL = 'everyone';
+    const AUTH_PRINCIPAL = 'authenticated';
+    // Special display only principals
+    const STAFF_PRINCIPAL = 'staff';
+    const PATRON_PRINCIPAL = 'patron';
+    const PROTECTED_PRINCIPALS = [EVERYONE_PRINCIPAL, AUTH_PRINCIPAL];
+    const PROTECTED_PRINCIPALS_SET = new Set(PROTECTED_PRINCIPALS);
+
+    const STAFF_ONLY_ROLE = 'none';
+    const VIEW_METADATA_ROLE = 'canViewMetadata';
+    const VIEW_ACCESS_COPIES_ROLE = 'canViewAccessCopies';
+    const VIEW_ORIGINAL_ROLE = 'canViewOriginals';
+    const DEFAULT_ROLE = VIEW_ORIGINAL_ROLE;
+
+    const ACCESS_TYPE_INHERIT = "parent";
+    const ACCESS_TYPE_STAFF_ONLY = "staff";
+    const ACCESS_TYPE_DIRECT = "patron";
+
+    let initialRoles = () => ({ roles: [], embargo: null, deleted: false });
+    const DEFAULT_DISPLAY_COLLECTION = [
+        { principal: EVERYONE_PRINCIPAL, role: STAFF_ONLY_ROLE, assignedTo: null},
+        { principal: AUTH_PRINCIPAL, role: STAFF_ONLY_ROLE, assignedTo: null},
     ];
-    const STAFF_ONLY_ROLES = [
-        { principal: 'everyone', role: 'none' },
-        { principal: 'authenticated', role: 'none' }
-    ];
-    const VIEW_ORIGINAL_ROLES = [
-        { principal: 'everyone', role: 'canViewOriginals' },
-        { principal: 'authenticated', role: 'canViewOriginals' }
-    ];
-    let initialRoles = () => cloneDeep({ roles: [], embargo: null, deleted: false });
 
     export default {
         name: 'patronRoles',
@@ -118,25 +138,23 @@
             uuid: String
         },
 
+        created() {
+            // Initialize non-reactive variables
+            this.inherited = initialRoles();
+        },
+
         data() {
             return {
-                display_roles: {
-                    inherited: initialRoles(),
-                    assigned: initialRoles()
-                },
-                patron_roles: {
-                    inherited: initialRoles(),
-                    assigned: initialRoles()
-                },
-                submit_roles: initialRoles(),
-                role_history: {},
-                authenticated_role: 'none',
-                everyone_role: 'none',
-                history_set: false,
-                last_clicked_access: '',
+                allowed_principals: [],
+                selected_patron_assignments: [],
+                embargo: null,
+                deleted: false,
+                new_assignment_role: VIEW_ORIGINAL_ROLE,
+                new_assignment_principal: '',
                 response_message: '',
-                unsaved_changes: false,
-                user_type: ''
+                user_type: null,
+                should_show_add_principal: false,
+                saved_details: null
             }
         },
 
@@ -145,17 +163,21 @@
                 return this.possibleRoleList(this.containerType);
             },
 
-            hasParentRole() {
-                return this.display_roles.inherited.roles.length > 0;
-            },
-
-            hasObjectRole() {
-                return this.display_roles.assigned.roles.length > 0;
-            },
-
-            dedupedRoles() {
-                let assigned = cloneDeep(this.display_roles.assigned.roles);
-                let inherited = cloneDeep(this.display_roles.inherited.roles);
+            displayAssignments() {
+                let assigned = cloneDeep(this.assignedPatronRoles);
+                // Display the new assignment before it is committed, if valid
+                if (this.should_show_add_principal) {
+                    try {
+                        assigned.push(this.getNewAssignment());
+                    } catch (e) {
+                        // ignore invalid assignments
+                    }
+                }
+                let inherited = cloneDeep(this.inherited.roles);
+                // If no roles available for a collection, revert to defaults
+                if (inherited.length == 0 && assigned.length == 0 && this.isCollection) {
+                    assigned = cloneDeep(DEFAULT_DISPLAY_COLLECTION);
+                }
                 this.setRoleType(assigned, 'assigned');
                 this.setRoleType(inherited, 'inherited');
 
@@ -163,38 +185,67 @@
             },
 
             /**
-             * Returns the current state of users
+             * Returns the current state of roles assigned to patrons
              * @returns {*[]}
              */
             assignedPatronRoles() {
-                return [
-                    { principal: 'everyone', role: this.everyone_role },
-                    { principal: 'authenticated', role: this.authenticated_role }
-                ];
+                if (this.user_type === ACCESS_TYPE_INHERIT) {
+                    return [];
+                } else if (this.user_type === ACCESS_TYPE_STAFF_ONLY) {
+                    return this.getInheritedPrincipals()
+                        .map(princ => ({ principal: princ, role: STAFF_ONLY_ROLE, assignedTo: this.uuid }));
+                } else {
+                    return this.selected_patron_assignments
+                               .map(pa => ({ principal: pa.principal, role: pa.role, assignedTo: this.uuid }));
+                }
             },
 
             shouldDisable() {
-                return this.user_type === 'staff' || this.user_type === 'parent';
+                return this.user_type === ACCESS_TYPE_STAFF_ONLY || this.user_type === ACCESS_TYPE_INHERIT;
             },
 
             isEmbargoed() {
-                return this.display_roles.assigned.embargo !== null;
+                return this.embargo !== null;
             },
 
             isEmbargoedParent() {
-                return this.patron_roles.inherited.embargo !== null;
+                return this.inherited.embargo !== null;
             },
 
             isDeleted() {
-                return this.display_roles.assigned.deleted;
-            },
-
-            isDeletedParent() {
-                return this.patron_roles.inherited.deleted;
+                return this.deleted || this.inherited.deleted;
             },
 
             isCollection() {
                 return this.containerType.toLowerCase() === 'collection';
+            },
+
+            hasUnsavedChanges() {
+                // return false if the saved state hasn't been loaded yet
+                if (this.saved_details === null) {
+                    return false;
+                }
+                if (this.embargo !== this.saved_details.embargo) {
+                    return true;
+                }
+                if (this.new_assignment_principal !== '') {
+                    return true;
+                }
+                let assignedPatrons = this.assignedPatronRoles;
+                if (assignedPatrons.length != this.saved_details.roles.length) {
+                    return true;
+                }
+                for (let i = 0; i < assignedPatrons.length; i++) {
+                    let saved = this.saved_details.roles[i];
+                    let assigned = assignedPatrons[i];
+                    if (saved.principal != assigned.principal) {
+                        return true;
+                    }
+                    if (saved.role != assigned.role) {
+                        return true;
+                    }
+                }
+                return false;
             }
         },
 
@@ -209,20 +260,12 @@
 
             getRoles() {
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                    // Set display roles
-                    this.display_roles.inherited = this._setInitialInherited(response.data.inherited);
-                    this.display_roles.assigned = this._setInitialAssigned(response.data.assigned);
-                    // Set roles from server
-                    this.patron_roles = {
-                        inherited: cloneDeep(response.data.inherited), // Pick up default roles for comparing roles
-                        assigned: cloneDeep(response.data.assigned)
-                    };
-                    // Set submit roles
-                    this.submit_roles = cloneDeep(response.data.assigned);
-                    // Set form variables
-                    this._setInitialForm(response.data.assigned.roles.length);
-                    // Set form history
-                    this.setRoleHistory();
+                    this.embargo = response.data.assigned.embargo;
+                    this._initializeInherited(response.data.inherited);
+                    this.deleted = response.data.assigned.deleted;
+                    this._initializeSelectedAssignments(response.data.assigned.roles);
+                    this.allowed_principals = response.data.allowedPrincipals;
+                    this.saved_details = this.submissionAccessDetails();
                 }).catch((error) => {
                     let response_msg = `Unable to load current patron roles for: ${this.title}`;
                     this.alertHandler.alertHandler('error', response_msg);
@@ -230,60 +273,118 @@
                 });
             },
 
-            _setInitialInherited(responseInherited) {
-                let inherited = cloneDeep(responseInherited);
-
-                if (inherited.roles === null || inherited.roles.length === 0) {
-                    inherited.roles = (!this.isCollection) ? STAFF_ONLY_ROLES : [];
-                } else if (inherited.roles.length === 1) {
-                    const hasEveryone = inherited.roles.find((d) => d.principal === 'everyone') !== undefined;
-                    let princText = hasEveryone ? 'authenticated' : 'everyone';
-                    inherited.roles.push({ principal: princText, role: 'none' });
+            _initializeInherited(inherited) {
+                if (this.isCollection) {
+                    return;
                 }
-
-                return inherited;
+                // Merge the incoming non-null inherited details into the defaults
+                if (inherited != null) {
+                    Object.keys(inherited).forEach(key => {
+                        if (inherited[key] !== null) {
+                            this.inherited[key] = inherited[key];
+                        }
+                    })
+                }
+                // Add any missing protected principals for non-collection objects
+                for (let princ of PROTECTED_PRINCIPALS) {
+                    if (!this.inherited.roles.some(r => r.principal === princ)) {
+                        this.inherited.roles.push({
+                            principal: princ,
+                            role: STAFF_ONLY_ROLE,
+                            assignedTo: null
+                        });
+                    }
+                }
             },
 
-            _setInitialAssigned(responseAssigned) {
-                let assigned = cloneDeep(responseAssigned);
-
-                if (assigned.roles.length === 0)  {
-                    assigned.roles = this.isCollection ? STAFF_ONLY_ROLES : VIEW_ORIGINAL_ROLES;
-                }
-
-                return assigned;
-            },
-
-            // Note: Collections always have roles
-            _setInitialForm(noAssigned) {
-                if (!this.isCollection && noAssigned === 0) {
-                    this.authenticated_role = 'canViewOriginals';
-                    this.everyone_role = 'canViewOriginals';
-                    this.user_type = 'parent';
+            _initializeSelectedAssignments(assignedRoles) {
+                // Set the main patron access setting mode type
+                if (assignedRoles.length === 0) {
+                    if (this.isCollection) {
+                        this.user_type = ACCESS_TYPE_STAFF_ONLY;
+                    } else {
+                        this.user_type = ACCESS_TYPE_INHERIT;
+                    }
+                } else if (assignedRoles.every(r => r.role === STAFF_ONLY_ROLE)) {
+                    this.user_type = ACCESS_TYPE_STAFF_ONLY;
                 } else {
-                    this.authenticated_role = this.display_roles.assigned.roles[this.userIndex('authenticated')].role;
-                    this.everyone_role = this.display_roles.assigned.roles[this.userIndex('everyone')].role;
-                    let isStaffRole = this.authenticated_role === 'none' && this.everyone_role === 'none';
-                    this.user_type = (isStaffRole) ? 'staff' : 'patron';
+                    this.user_type = ACCESS_TYPE_DIRECT;
                 }
+
+                // Ensure that the basic protected principals are always present
+                let principal_set = new Set(this.getInheritedPrincipals());
+                // Add in all inherited and assigned principals
+                assignedRoles.forEach(r => principal_set.add(r.principal));
+                // Sort the principals so they are in the order: everyone, authenticated, everything else
+                let principals = Array.from(principal_set).sort(this.principalComparator);
+                // populate the initial selected assignments for the "allow patron access" section
+                let defaultRole = this.user_type === ACCESS_TYPE_STAFF_ONLY ? STAFF_ONLY_ROLE : DEFAULT_ROLE;
+                for (let principal of principals) {
+                    let assignment = assignedRoles.find(r => r.principal === principal);
+                    this.selected_patron_assignments.push({
+                        principal: principal,
+                        role: assignment !== undefined ? assignment.role : defaultRole,
+                        protected: this.isProtectedPrincipal(principal)
+                    });
+                }
+            },
+
+            principalComparator(a, b) {
+                if (a === EVERYONE_PRINCIPAL) {
+                    return -1;
+                }
+                if (a === AUTH_PRINCIPAL) {
+                    return b === EVERYONE_PRINCIPAL ? 1 : -1;
+                }
+                return a.localeCompare(b);
+            },
+
+            // Returns a set containing all inherited patron principals. Adds the basic principals if not present
+            getInheritedPrincipals() {
+                let inherited = new Set(PROTECTED_PRINCIPALS);
+                this.inherited.roles.forEach(r => inherited.add(r.principal));
+                return Array.from(inherited);
+            },
+
+            // Returns true if the principal provided is protected, meaning it should always be present
+            isProtectedPrincipal(principal) {
+                return PROTECTED_PRINCIPALS_SET.has(principal);
+            },
+
+            submissionAccessDetails() {
+                return {
+                    roles: cloneDeep(this.assignedPatronRoles),
+                    deleted: this.deleted,
+                    embargo: this.embargo,
+                    assignedTo: this.uuid
+                };
             },
 
             saveRoles() {
                 this.is_submitting = true;
                 this.response_message = 'Saving permissions \u2026';
+                // Commit uncommitted new group assignment if one was input
+                if (this.should_show_add_principal && this.new_assignment_principal !== '') {
+                    if (!this.addPrincipal()) {
+                        // Abort saving if unable to commit changes
+                        this.is_submitting = false;
+                        this.response_message = '';
+                        return false;
+                    }
+                }
+                let submissionDetails = this.submissionAccessDetails();
 
                 axios({
                     method: 'put',
                     url: `/services/api/edit/acl/patron/${this.uuid}`,
-                    data: JSON.stringify(this.submit_roles),
+                    data: JSON.stringify(submissionDetails),
                     headers: {'content-type': 'application/json; charset=utf-8'}
                 }).then((response) => {
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
-                    this.unsaved_changes = false;
                     this.is_submitting = false;
                     this.response_message = '';
-                    this.patron_roles.assigned = cloneDeep(this.submit_roles);
+                    this.saved_details = submissionDetails;
 
                     // Update entry in results table
                     this.actionHandler.addEvent({
@@ -299,159 +400,36 @@
                 });
             },
 
-            setParentRole() {
-                this.everyone_role = 'canViewOriginals';
-                this.authenticated_role = 'canViewOriginals';
-                this.submit_roles.roles = [];
-                this.display_roles.assigned.roles = [];
-            },
-
-            setPatronRole() {
-                this.display_roles.assigned.roles = this.assignedPatronRoles;
-                this.submit_roles.roles = [
-                    { principal: 'everyone', role: this.everyone_role, assignedTo: this.uuid },
-                    { principal: 'authenticated', role: this.authenticated_role, assignedTo: this.uuid }
-                ]
-            },
-
-            setStaffRole() {
-                this.everyone_role = 'none';
-                this.authenticated_role = 'none';
-                this.display_roles.assigned.roles = STAFF_ONLY_ROLES;
-                this.submit_roles.roles = [
-                    { principal: 'everyone', role: 'none', assignedTo: this.uuid },
-                    { principal: 'authenticated', role: 'none', assignedTo: this.uuid }
-                ];
-            },
-
-            selectedRole(type) {
-                this.user_type = type;
-                if (type === 'parent') {
-                    this.setParentRole();
-                } else if (type === 'patron') {
-                    this.setPatronRole();
-                } else {
-                    this.setStaffRole();
-                }
-            },
-
-            /**
-             * Update the role type and current roles when switching between parent/patron/staff options
-             * Pull from role history if any, for patron roles
-             * @param e
-             */
-            updateRoleList(e) {
-                if (!this.isDeleted) {
-                    let type = e.target.id;
-
-                    // Use wrapper id if radio button clicked
-                    if (type === '') {
-                        type = e.target.parentElement.id;
-                    }
-
-                    if ((type === 'staff' || type === 'parent') && this.last_clicked_access === 'patron') {
-                        this.setRoleHistory();
-                    }
-
-                    if (type === 'patron') {
-                        this.loadPreviousRole(type);
-                    }
-
-                    this.last_clicked_access = type;
-                    this.selectedRole(type);
-                    this.setUnsavedChanges();
-                }
-            },
-
-            /**
-             * Update roles if one of the patron select boxes is updated
-             * @param principal
-             */
-            updateRole(principal) {
-                this.setPatronRole();
-                this.setUnsavedChanges();
-            },
-
-            setRoleHistory() {
-                if (!this.history_set) {
-                    this.role_history = {
-                        patron: this.everyone_role,
-                        authenticated: this.authenticated_role
-                    };
-                    this.history_set = true;
-                }
-            },
-
-            /**
-             * Load previously set patron role if patron option is checked
-             * @param type
-             */
-            loadPreviousRole(type) {
-                if (!isEmpty(this.role_history)) {
-                    this.everyone_role = this.role_history.patron;
-                    this.authenticated_role = this.role_history.authenticated;
-
-                    if (type === 'patron') {
-                        this.history_set = false;
-                    }
-                }
-            },
-
-            setUnsavedChanges() {
-                let loaded_roles = this.patron_roles.assigned;
-                this.unsaved_changes = this._hasRoleChange('everyone') || this._hasRoleChange('authenticated') ||
-                    loaded_roles.embargo !== this.submit_roles.embargo || loaded_roles.deleted !== this.submit_roles.deleted;
-            },
-
-            /**
-             * Determine if a user's role has changed
-             * @param type
-             * @returns {boolean}
-             * @private
-             */
-            _hasRoleChange(type) {
-                let initial_role = this.patron_roles.assigned.roles.find(user => user.principal === type);
-                let current_role = this.submit_roles.roles.find(user => user.principal === type);
-                let initial_role_exists = initial_role !== undefined;
-                let current_role_exists = current_role !== undefined;
-
-                if (!initial_role_exists && !current_role_exists) {
-                    return false;
-                } else if ((!initial_role_exists && current_role_exists) ||
-                    (initial_role_exists && !current_role_exists)) {
-                    return true;
-                } else {
-                    return initial_role.role !== current_role.role;
-                }
-            },
-
-            userIndex(principal, is_display = true) {
-                let roles = is_display ? this.display_roles.assigned.roles : this.patron_roles.assigned.roles;
-                return roles.findIndex((user) => principal === user.principal);
-            },
-
             /**
              * Return array of winning roles
              * @param allRoles
              * @returns {array}
              */
             winningRoleList(allRoles) {
-                let everyone = allRoles.filter((d) => d.principal === 'everyone');
-                let authenticated = allRoles.filter((d) => d.principal === 'authenticated');
-
-                let everyoneRole = this.winningRole(everyone);
-                let authenticatedRole = this.winningRole(authenticated);
-
-                // Compact roles if they have the same role and are of the same type
-                if (everyoneRole.role === authenticatedRole.role) {
-                    if ((everyoneRole.type === 'inherited' && authenticatedRole.type === 'inherited') ||
-                        (everyoneRole.type === 'assigned' && authenticatedRole.type === 'assigned')) {
-                        everyoneRole.principal = everyoneRole.role  === 'none' ? 'staff' : 'patron';
-                        return [everyoneRole];
+                if (allRoles.length == 0) {
+                    return [];
+                }
+                let principalsPresent = Array.from(new Set(allRoles.map(r => r.principal)));
+                let winningRoles = principalsPresent.map(p => allRoles.filter(r => r.principal === p))
+                                                    .map(roles => this.winningRole(roles));
+                let firstRole = winningRoles[0];
+                let allSame = true;
+                for (let i = 1; i < winningRoles.length; i++) {
+                    let current = winningRoles[i];
+                    if (!(current.role === firstRole.role &&
+                            ((current.type === 'inherited' && firstRole.type === 'inherited') ||
+                            (current.type === 'assigned' && firstRole.type === 'assigned')))) {
+                        allSame = false;
+                        break;
                     }
                 }
 
-                return [everyoneRole, authenticatedRole];
+                if (allSame) {
+                    firstRole.principal = firstRole.role === STAFF_ONLY_ROLE ? STAFF_PRINCIPAL : PATRON_PRINCIPAL;
+                    return [firstRole];
+                } else {
+                    return winningRoles;
+                }
             },
 
             /**
@@ -472,7 +450,19 @@
                 if (assignedRole === undefined) {
                     return inheritedRole;
                 } else if (inheritedRole === undefined) {
-                    return assignedRole;
+                    // if a custom patron principal is not inherited, default to staff only unless this is a collection
+                    if (this.isProtectedPrincipal(assignedRole.principal) || this.isCollection) {
+                        return assignedRole;
+                    } else {
+                        return {
+                            principal: assignedRole.principal,
+                            role: STAFF_ONLY_ROLE,
+                            deleted: false,
+                            embargo: false,
+                            assignedTo: null,
+                            type: 'inherited'
+                        };
+                    }
                 }
 
                 let assignedRolePriority = this.possibleRoles.findIndex((r) => r.role === assignedRole.role);
@@ -487,15 +477,15 @@
 
             addRoleInfo(role, type) {
                 const hasEmbargo = type === 'assigned' ? this.isEmbargoed : this.isEmbargoedParent;
-                const hasDeletion = type === 'assigned' ? this.isDeleted : this.isDeletedParent;
+                const hasDeletion = type === 'assigned' ? this.deleted : this.inherited.deleted;
                 role.embargo = hasEmbargo;
                 role.deleted = hasDeletion;
 
                 if (hasDeletion) {
-                    role.role = 'none';
+                    role.role = STAFF_ONLY_ROLE;
                 }
-                if (hasEmbargo && role.role !== 'none') {
-                    role.role = 'canViewMetadata';
+                if (hasEmbargo && role.role !== STAFF_ONLY_ROLE) {
+                    role.role = VIEW_METADATA_ROLE;
                 }
 
                 return role;
@@ -514,14 +504,7 @@
              * @param embargo_info
              */
             setEmbargo(embargo_info) {
-                this.display_roles.assigned.embargo = embargo_info;
-                this.submit_roles.embargo = embargo_info;
-
-                if (embargo_info === null) {
-                    this.loadPreviousRole();
-                }
-
-                this.setUnsavedChanges();
+                this.embargo = embargo_info;
             },
 
             /**
@@ -530,6 +513,52 @@
              */
             showModal() {
                 this.displayModal();
+            },
+            
+            addPrincipal() {
+                if (!this.should_show_add_principal) {
+                    this.should_show_add_principal = true;
+                    return false;
+                }
+                try {
+                    let new_assignment = this.getNewAssignment();
+                    this.selected_patron_assignments.push(new_assignment);
+                    this.new_assignment_principal = '';
+                    this.new_assignment_role = VIEW_ORIGINAL_ROLE;
+                } catch (e) {
+                    this.alertHandler.alertHandler('error', e);
+                    return false;
+                }
+            },
+
+            removeNewAssignments() {
+                this.should_show_add_principal = false;
+                this.new_assignment_principal = '';
+                this.new_assignment_role = VIEW_ORIGINAL_ROLE;
+            },
+
+            getNewAssignment() {
+                if (this.new_assignment_principal === '' || this.new_assignment_role === '') {
+                    throw 'Must select both a group and a role when adding a new patron role assignment';
+                }
+                if (this.new_assignment_principal !== '') {
+                    if (this.selected_patron_assignments.some(r => r.principal === this.new_assignment_principal)) {
+                        throw 'Principal has already been assigned a role';
+                    }
+                }
+                return {
+                    principal: this.new_assignment_principal,
+                    role: this.new_assignment_role,
+                    assignedTo: this.uuid
+                };
+            },
+
+            removeAssignedPrincipal(principal) {
+                let index = this.selected_patron_assignments.findIndex(r => r.principal === principal);
+                if (index == -1) {
+                    return;
+                }
+                this.selected_patron_assignments.splice(index, 1);
             }
         },
 
@@ -582,10 +611,7 @@
             li {
                 display: block;
                 margin-left: 15px;
-
-                &:first-child {
-                    margin-bottom: 15px;
-                }
+                margin-bottom: 15px;
 
                 ul {
                     border-top: none;
@@ -593,16 +619,26 @@
                     text-align: left;
 
                     li {
-                        display: inline-flex;
+                        display: flex;
+                        text-indent: 0;
+                        margin-left: 0;
+                        margin-bottom: 8px;
 
                         p {
-                            margin: auto 20px auto auto;
+                            min-width: 170px;
+                            margin: auto 20px auto 0;
+
+                            select {
+                                margin-left: 0;
+                            }
                         }
                     }
                 }
 
-                .public-role {
-                    margin-left: 30px;
+                .patron-assigned {
+                    button {
+                        position: relative;
+                    }
                 }
             }
         }
@@ -618,7 +654,9 @@
             top: 8px;
         }
 
-        .btn-disabled {
+        button:disabled,
+        button[disabled] {
+            opacity: .3;
             &:hover {
                 cursor: not-allowed;
                 opacity: .5
@@ -628,6 +666,15 @@
         p.error {
             color: red;
         }
+
+        #add-new-patron-principal-id {
+            min-width: 170px;
+            width: auto;
+        }
+    }
+
+    #add-principal {
+        margin-left: 0;
     }
 
     #modal-permissions-editor {

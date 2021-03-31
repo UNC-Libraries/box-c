@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.PrincipalClassifier;
 import edu.unc.lib.dl.acl.util.UserRole;
 
 /**
@@ -59,6 +60,10 @@ public class GlobalPermissionEvaluator {
                         .map(p -> new SimpleEntry<>(p, (String) e.getKey())))
                 // Transform into map of principal to permissions
                 .collect(Collectors.toMap(SimpleEntry::getKey, p -> {
+                    if (PrincipalClassifier.isPatronPrincipal(p.getKey())) {
+                        throw new IllegalArgumentException(
+                                "Cannot grant global role to patron principal " + p.getKey());
+                    }
                     String roleString = p.getValue().substring(GLOBAL_PROP_PREFIX.length());
                     UserRole role = UserRole.valueOf(roleString);
                     // Role must be valid and not a patron

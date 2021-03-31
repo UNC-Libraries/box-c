@@ -1,0 +1,7 @@
+[
+	{
+		"principal" : "unc:patron:ipp:test_group",
+		"name" : "Test Patron Group",
+		"ipInclude" : "192.168.1.1"
+	}
+]

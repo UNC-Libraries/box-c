@@ -1,7 +1,7 @@
 <template>
-    <tr :class="{onyen: user.principal === 'everyone'}">
+    <tr>
         <td class="access-display">
-            {{ formattedPrincipal(user.principal) }}
+            {{ principalDisplayName(user.principal, allowedPrincipals) }}
             <div class="display-note-btn" :class="{hidden: nonPublicRole(user.principal)}">
                 <i class="far fa-question-circle" :class="{hidden: nonPublicRole(user.principal)}"></i>
                 <div class="arrow" :class="{'arrow-offset': alignTooltip(user.principal)}"></div>
@@ -34,7 +34,8 @@
         props: {
             containerType: String,
             user: Object,
-            userType: String
+            userType: String,
+            allowedPrincipals: Array
         },
 
         methods: {
@@ -44,16 +45,6 @@
                 }
 
                 return '(Overridden by parent)';
-            },
-
-            formattedPrincipal(user) {
-                if (user === 'everyone') {
-                    return "Public Users"
-                } else if (user === 'staff') {
-                    return 'No Patron Access';
-                } else {
-                    return user;
-                }
             },
 
             formattedRole(role) {
@@ -80,12 +71,6 @@
 <style scoped lang="scss">
     #modal-permissions-editor {
         .border {
-            tr.onyen {
-                td {
-                    border-bottom: none;
-                }
-            }
-
             td {
                 height: auto;
                 padding: 7px 0 7px 15px;

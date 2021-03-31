@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_NAMESPACE;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -59,6 +62,10 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private static CollectionObject collObj1;
     private static FolderObject collObj1Folder1;
     private static WorkObject collObj1Folder1Work1;
+    private static FolderObject collObj1Folder2;
+    private static WorkObject collObj1Folder2Work1;
+    private static WorkObject collObj1Folder2Work2;
+    private static WorkObject collObj1Folder2Work3;
     private static WorkObject collObj1Work2;
     private static CollectionObject collObj2;
     private static FolderObject collObj2Folder1;
@@ -67,7 +74,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private static CollectionObject collObj3;
     private static AdminUnit adminUnit2;
 
-    private static final String EVERYONE_PRINC = "everyone";
+    private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 
     private static final String UNIT_OWNER_PRINC = "adminUser";
 
@@ -135,18 +142,42 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
         collObj1 = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Coll1 Public Collection")
-                    .addCanViewOriginals(EVERYONE_PRINC)
+                    .addCanViewOriginals(PUBLIC_PRINC)
+                    .addCanViewOriginals(AUTHENTICATED_PRINC)
+                    .addCanViewOriginals(PATRON_GROUP)
                     .model);
         adminUnit1.addMember(collObj1);
 
         collObj1Folder1 = repoObjFactory.createFolderObject(
                 new AclModelBuilder("Folder No Patron PubColl")
-                    .addNoneRole(EVERYONE_PRINC)
+                    .addNoneRole(PUBLIC_PRINC)
                     .model);
         collObj1.addMember(collObj1Folder1);
 
         collObj1Folder1Work1 = collObj1Folder1.addWork(
                 new AclModelBuilder("Work Unmodified in Folder No Patron").model);
+
+        collObj1Folder2 = repoObjFactory.createFolderObject(
+                new AclModelBuilder("Folder Downgraded Public")
+                    .addCanViewMetadata(PUBLIC_PRINC)
+                    .model);
+        collObj1.addMember(collObj1Folder2);
+
+        collObj1Folder2Work1 = collObj1Folder2.addWork(
+                new AclModelBuilder("Work Unmodified in Folder Downgraded Public").model);
+
+        collObj1Folder2Work2 = collObj1Folder2.addWork(
+                new AclModelBuilder("Work Staff Only in Folder Downgraded Public")
+                    .addNoneRole(PUBLIC_PRINC)
+                    .addNoneRole(AUTHENTICATED_PRINC)
+                    .model);
+
+        collObj1Folder2Work3 = collObj1Folder2.addWork(
+                new AclModelBuilder("Work Re-added special group in Folder Downgraded Public")
+                    .addNoneRole(PUBLIC_PRINC)
+                    .addNoneRole(AUTHENTICATED_PRINC)
+                    .addCanViewOriginals(PATRON_GROUP)
+                    .model);
 
         collObj1Work2 = repoObjFactory.createWorkObject(
                 new AclModelBuilder("Work Unmodified PubColl").model);
@@ -162,7 +193,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
         collObj2Folder1 = repoObjFactory.createFolderObject(
                 new AclModelBuilder("Folder No Patron Staff Only Coll")
-                    .addNoneRole(EVERYONE_PRINC)
+                    .addNoneRole(PUBLIC_PRINC)
                     .model);
         collObj2.addMember(collObj2Folder1);
 
@@ -235,7 +266,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void unitHasPatronPermissionTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertTrue("Everyone should be able to view unit",
                 aclService.hasAccess(adminUnit1.getPid(), principals, Permission.viewMetadata));
@@ -243,7 +274,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneHasAccessToPublicWorkTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertTrue("Everyone should be able to access unrestricted work",
                 aclService.hasAccess(collObj1Work2.getPid(), principals, Permission.viewOriginal));
@@ -251,21 +282,21 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void assertEveryoneCanAccess() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         aclService.assertHasAccess(null, collObj1Work2.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test(expected = AccessRestrictionException.class)
     public void assertEveryoneCannotAccess() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         aclService.assertHasAccess(null, collObj1Folder1Work1.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test
     public void everyoneCannotAccessRestrictedFolderTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access staff only folder",
                 aclService.hasAccess(collObj1Folder1.getPid(), principals, Permission.viewOriginal));
@@ -273,7 +304,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessWorkInheritedFromFolderTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access work in a staff only folder",
                 aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
@@ -281,7 +312,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessRestrictedCollTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access staff only collection",
                 aclService.hasAccess(collObj2.getPid(), principals, Permission.viewOriginal));
@@ -289,10 +320,56 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessWorkInRestrictedCollTest() {
-        final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to work in restricted collection",
                 aclService.hasAccess(collObj2Folder1Work1.getPid(), principals, Permission.viewOriginal));
+    }
+
+    @Test
+    public void everyoneDowngradedAccess() {
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+
+        assertTrue("Everyone must have view metadata access",
+                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewMetadata));
+        assertFalse("Everyone must not have originals access",
+                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+    }
+
+    @Test
+    public void authenticatedHigherPermissions() {
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, AUTHENTICATED_PRINC);
+
+        assertTrue("Authenticated must have view originals access for folder",
+                aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
+        assertTrue("Authenticated must have view originals access for work",
+                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+    }
+
+    @Test
+    public void specialPatronGroupHigherPermissions() {
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+
+        assertTrue("Patron group must have view originals access for folder",
+                aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
+        assertTrue("Patron group must have view originals access for work",
+                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+    }
+
+    @Test
+    public void specialPatronGroupStaffOnly() {
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+
+        assertFalse("Patron group must have no access for work",
+                aclService.hasAccess(collObj1Folder2Work2.getPid(), principals, Permission.viewMetadata));
+    }
+
+    @Test
+    public void specialPatronGroupStaffOnlyReUpped() {
+        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+
+        assertTrue("Patron group must have originals access for work",
+                aclService.hasAccess(collObj1Folder2Work3.getPid(), principals, Permission.viewOriginal));
     }
 
     @Test

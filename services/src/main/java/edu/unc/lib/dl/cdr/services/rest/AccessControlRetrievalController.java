@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +37,7 @@ import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.PatronPrincipalProvider;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -60,6 +61,7 @@ public class AccessControlRetrievalController {
     private static final Logger log = LoggerFactory.getLogger(AccessControlRetrievalController.class);
     public static final String INHERITED_ROLES = "inherited";
     public static final String ASSIGNED_ROLES = "assigned";
+    public static final String ALLOWED_PATRON_PRINCIPALS = "allowedPrincipals";
     public static final String ROLES_KEY = "roles";
     public static final String EMBARGO_KEY = "embargo";
     public static final String DELETED_KEY = "deleted";
@@ -72,8 +74,10 @@ public class AccessControlRetrievalController {
     private InheritedAclFactory inheritedAclFactory;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private PatronPrincipalProvider patronPrincipalProvider;
 
-    @GetMapping(value = "/acl/staff/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/acl/staff/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> getStaffRoles(@PathVariable("id") String id) {
         log.debug("Retrieving staff roles for {}", id);
@@ -129,7 +133,7 @@ public class AccessControlRetrievalController {
      * @param id
      * @return
      */
-    @GetMapping(value = "/acl/patron/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/acl/patron/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> getPatronAccess(@PathVariable("id") String id) {
         log.debug("Retrieving patron access details for {}", id);
@@ -149,6 +153,7 @@ public class AccessControlRetrievalController {
         } else if (repoObj instanceof ContentObject) {
             result.put(INHERITED_ROLES, addInheritedPatronInfo(repoObj));
             result.put(ASSIGNED_ROLES, addAssignedPatronInfo(pid));
+            result.put(ALLOWED_PATRON_PRINCIPALS, patronPrincipalProvider.getConfiguredPatronPrincipals());
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         } else {

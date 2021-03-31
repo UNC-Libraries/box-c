@@ -35,7 +35,7 @@ public class AccessGroupSet extends HashSet<String> {
         addAccessGroups(groups.split(";"));
     }
 
-    public AccessGroupSet(String[] groups) {
+    public AccessGroupSet(String... groups) {
         super();
         addAccessGroups(groups);
     }

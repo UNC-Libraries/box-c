@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canDescribe;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewAccessCopies;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static org.junit.Assert.assertEquals;
@@ -206,6 +207,28 @@ public class SetAccessControlFilterTest {
                 canViewOriginals.name() + "|" + PUBLIC_PRINC));
         assertTrue(listCaptor.getValue().contains(
                 canManage.name() + "|" + PRINC2));
+    }
+
+    @Test
+    public void testHasCustomPatronPrincipal() throws Exception {
+        addPatronAccess(PUBLIC_PRINC, canViewMetadata);
+        addPatronAccess(AUTHENTICATED_PRINC, canViewAccessCopies);
+        String customGroup = AccessPrincipalConstants.IP_PRINC_NAMESPACE + "custom";
+        addPatronAccess(customGroup, canViewOriginals);
+
+        filter.filter(dip);
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("All principals should be granted read rights",
+                listCaptor.getValue(), PUBLIC_PRINC, AUTHENTICATED_PRINC, customGroup);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(
+                canViewMetadata.name() + "|" + PUBLIC_PRINC));
+        assertTrue(listCaptor.getValue().contains(
+                canViewAccessCopies.name() + "|" + AUTHENTICATED_PRINC));
+        assertTrue(listCaptor.getValue().contains(
+                canViewOriginals.name() + "|" + customGroup));
     }
 
     @Test
