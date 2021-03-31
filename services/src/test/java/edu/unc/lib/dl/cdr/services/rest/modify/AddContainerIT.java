@@ -156,7 +156,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         String label = "folder_label";
         String staffOnly = "false";
-        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+        mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
                 .param("label", label)
                 .param("staffOnly", staffOnly))
                 .andExpect(status().is4xxClientError())
@@ -176,7 +176,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         String label = "folder_label";
         String staffOnly = "true";
-        MvcResult result = mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
+        mvc.perform(post("/edit/create/folder/" + collObj.getPid().getId())
                 .param("label", label)
                 .param("staffOnly", staffOnly))
                 .andExpect(status().is4xxClientError())

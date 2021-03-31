@@ -47,6 +47,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
@@ -146,13 +147,21 @@ public class AddContainerServiceTest {
         service.setStorageLocationManager(storageLocationManager);
     }
 
+    private AddContainerRequest createRequest(String label, boolean staffOnly, Resource containerType) {
+        AddContainerRequest req = new AddContainerRequest();
+        req.setParentPid(parentPid);
+        req.setLabel(label);
+        req.setStaffOnly(staffOnly);
+        return req.withContainerType(containerType).withAgent(agent);
+    }
+
     @Test(expected = TransactionCancelledException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
         try {
-            service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
+            service.addContainer(createRequest("folder", false, Cdr.Folder));
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -168,7 +177,7 @@ public class AddContainerServiceTest {
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
         try {
-            service.addContainer(agent, parentPid, "collection", false, Cdr.Collection);
+            service.addContainer(createRequest("collection", false, Cdr.Collection));
         } catch (TransactionCancelledException e) {
             assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -190,7 +199,7 @@ public class AddContainerServiceTest {
         });
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
+        service.addContainer(createRequest("folder", false, Cdr.Folder));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
@@ -226,7 +235,7 @@ public class AddContainerServiceTest {
         });
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "work", false, Cdr.Work);
+        service.addContainer(createRequest("work", false, Cdr.Work));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();

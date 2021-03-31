@@ -77,16 +77,13 @@ public class AddContainerService {
     /**
      * Creates a new container as a child of the given parent using the agent principals provided.
      *
-     * @param agent security principals of the agent making request.
-     * @param parentPid pid of parent obj to add child container to
-     * @param label label for the new container, to be stored as dc:title
-     * @param staffOnly whether container should have public access
-     * @param containerType the type of new container to be created
+     * @param addRequest request object containing the details of the container to create
      */
-    public void addContainer(AgentPrincipals agent, PID parentPid, String label,
-                             Boolean staffOnly, Resource containerType) {
-        notNull(parentPid, "A parent pid must be provided");
-        notNull(containerType, "A type must be provided for the next container");
+    public void addContainer(AddContainerRequest addRequest) {
+        notNull(addRequest.getParentPid(), "A parent pid must be provided");
+        notNull(addRequest.getContainerType(), "A type must be provided for the next container");
+        PID parentPid = addRequest.getParentPid();
+        AgentPrincipals agent = addRequest.getAgent();
 
         ContentContainerObject child = null;
         FedoraTransaction tx = txManager.startTransaction();
@@ -95,12 +92,13 @@ public class AddContainerService {
             PID containerPid = PIDs.get(UUID.randomUUID().toString());
             Model containerModel = createDefaultModel();
             Resource containerResc = containerModel.createResource(containerPid.getRepositoryPath());
-            containerResc.addLiteral(DcElements.title, label);
+            containerResc.addLiteral(DcElements.title, addRequest.getLabel());
 
             StorageLocation storageLoc = storageLocationManager.getStorageLocation(parentPid);
             containerResc.addLiteral(Cdr.storageLocation, storageLoc.getId());
             log.debug("Adding new container to storage location {}", storageLoc.getId());
 
+            Resource containerType = addRequest.getContainerType();
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
@@ -129,7 +127,7 @@ public class AddContainerService {
             ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);
             parent.addMember(child);
 
-            if (staffOnly && !Cdr.AdminUnit.equals(containerType)) {
+            if (addRequest.isStaffOnly() && !Cdr.AdminUnit.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
@@ -199,5 +197,59 @@ public class AddContainerService {
 
     public void setStorageLocationManager(StorageLocationManager storageLocationManager) {
         this.storageLocationManager = storageLocationManager;
+    }
+
+    public static class AddContainerRequest {
+        private PID parentPid;
+        private String label;
+        private Boolean staffOnly = false;
+        private Resource containerType;
+        private AgentPrincipals agent;
+
+        public void setId(String id) {
+            this.setParentPid(PIDs.get(id));
+        }
+
+        public PID getParentPid() {
+            return parentPid;
+        }
+
+        public void setParentPid(PID parentPid) {
+            this.parentPid = parentPid;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public Boolean isStaffOnly() {
+            return staffOnly;
+        }
+
+        public void setStaffOnly(Boolean staffOnly) {
+            this.staffOnly = staffOnly;
+        }
+
+        public Resource getContainerType() {
+            return containerType;
+        }
+
+        public AddContainerRequest withContainerType(Resource containerType) {
+            this.containerType = containerType;
+            return this;
+        }
+
+        public AgentPrincipals getAgent() {
+            return agent;
+        }
+
+        public AddContainerRequest withAgent(AgentPrincipals agent) {
+            this.agent = agent;
+            return this;
+        }
     }
 }
