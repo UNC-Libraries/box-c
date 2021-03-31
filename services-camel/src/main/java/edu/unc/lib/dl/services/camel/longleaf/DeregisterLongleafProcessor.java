@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services.camel.longleaf;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.HistogramFactory;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;
 
@@ -62,16 +64,23 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
 
         String deregList = messages.stream().map(m -> {
             URI uri = URI.create(m);
+            Path filePath;
             if ("file".equals(uri.getScheme())) {
-                return Paths.get(uri).toString();
+                filePath = Paths.get(uri);
             } else if (uri.getScheme() == null && m.startsWith("/")) {
                 // No scheme, assume it is a file path
-                return Paths.get(m).normalize().toString();
+                filePath = Paths.get(m);
             } else {
                 log.warn("Ignoring invalid content URI during deregistration: {}", m);
                 return null;
             }
-        }).filter(m -> m !=null).collect(Collectors.joining("\n"));
+            // Translate the content URI into its base logical path
+            return FileSystemTransferHelpers.getBaseBinaryPath(filePath.normalize());
+        }).filter(m -> m != null).collect(Collectors.joining("\n"));
+        // No valid content URIs to deregister
+        if (deregList.length() == 0) {
+            return;
+        }
 
         try (Timer.Context context = timer.time()) {
             ExecuteResult result = executeCommand("deregister -l @-", deregList);

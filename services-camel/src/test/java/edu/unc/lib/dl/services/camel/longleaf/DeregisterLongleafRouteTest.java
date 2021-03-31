@@ -231,7 +231,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     }
 
     private String generateContentUri() {
-        return "file:///path/to/file/" + UUID.randomUUID().toString();
+        return "file:///path/to/file/" + UUID.randomUUID().toString() + "." + System.nanoTime();
     }
 
     private String[] generateContentUris(int num) {

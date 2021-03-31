@@ -20,10 +20,13 @@ import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 import org.slf4j.Logger;
+
+import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
 
 /**
  * @author bbpennel
@@ -61,9 +64,15 @@ public abstract class AbstractLongleafRouteTest {
     protected void assertSubmittedPaths(String... contentUris) {
         for (String contentUri : contentUris) {
             URI uri = URI.create(contentUri);
-            String contentPath = uri.getScheme() == null ? contentUri : Paths.get(uri).toString();
+            Path contentPath;
+            if (uri.getScheme() == null) {
+                contentPath = Paths.get(contentUri);
+            } else {
+                contentPath = Paths.get(uri);
+            }
+            String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
             assertTrue("Expected content uri to be submitted: " + contentPath,
-                    output.stream().anyMatch(line -> line.contains(contentPath)));
+                    output.stream().anyMatch(line -> line.contains(basePath)));
         }
     }
 
