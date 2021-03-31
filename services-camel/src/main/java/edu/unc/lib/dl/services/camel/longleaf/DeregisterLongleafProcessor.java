@@ -62,11 +62,16 @@ public class DeregisterLongleafProcessor extends AbstractLongleafProcessor {
 
         String deregList = messages.stream().map(m -> {
             URI uri = URI.create(m);
-            if (uri.getScheme().equals("file")) {
+            if ("file".equals(uri.getScheme())) {
                 return Paths.get(uri).toString();
+            } else if (uri.getScheme() == null && m.startsWith("/")) {
+                // No scheme, assume it is a file path
+                return Paths.get(m).normalize().toString();
+            } else {
+                log.warn("Ignoring invalid content URI during deregistration: {}", m);
+                return null;
             }
-            return m;
-        }).collect(Collectors.joining("\n"));
+        }).filter(m -> m !=null).collect(Collectors.joining("\n"));
 
         try (Timer.Context context = timer.time()) {
             ExecuteResult result = executeCommand("deregister -l @-", deregList);

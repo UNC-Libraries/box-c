@@ -61,7 +61,7 @@ public abstract class AbstractLongleafRouteTest {
     protected void assertSubmittedPaths(String... contentUris) {
         for (String contentUri : contentUris) {
             URI uri = URI.create(contentUri);
-            String contentPath = Paths.get(uri).toString();
+            String contentPath = uri.getScheme() == null ? contentUri : Paths.get(uri).toString();
             assertTrue("Expected content uri to be submitted: " + contentPath,
                     output.stream().anyMatch(line -> line.contains(contentPath)));
         }
