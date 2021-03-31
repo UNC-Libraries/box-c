@@ -50,6 +50,7 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.services.MessageSender;
 
 /**
@@ -134,6 +135,31 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertSubmittedPaths(5000, contentUris);
     }
 
+    // Should process file uris, and absolute paths without file://, but not http uris or relative
+    @Test
+    public void deregisterMultipleMixOfSchemes() throws Exception {
+        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+                .whenCompleted(2 + 9)
+                .create();
+
+        String[] contentUris = new String[3*4];
+        String[] successUris = new String[3*2];
+        for (int i = 0; i < 3; i++) {
+            contentUris[i*3] = generateContentUri();
+            successUris[i*2] = contentUris[i*3];
+            contentUris[i*3+1] = "/path/to/file/" + UUID.randomUUID().toString();
+            successUris[i*2+1] = contentUris[i*3+1];
+            contentUris[i*3+2] = PIDs.get(UUID.randomUUID().toString()).getRepositoryPath();
+            contentUris[i*3+3] = "file/" + UUID.randomUUID().toString();
+        }
+        sendMessages(contentUris);
+
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Deregister route not satisfied", result1);
+
+        assertSubmittedPaths(10000, successUris);
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void deregisterPartialSuccess() throws Exception {
@@ -205,7 +231,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     }
 
     private String generateContentUri() {
-        return "file:///path/to/file/" + UUID.randomUUID().toString();
+        return "file:///path/to/file/" + UUID.randomUUID().toString() + "." + System.nanoTime();
     }
 
     private String[] generateContentUris(int num) {
