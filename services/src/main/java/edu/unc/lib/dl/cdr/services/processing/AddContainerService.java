@@ -19,6 +19,9 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_TYPE;
 import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.jdom2.output.Format.getPrettyFormat;
@@ -30,6 +33,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
@@ -61,6 +65,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import io.dropwizard.metrics5.Timer;
 
@@ -108,24 +113,24 @@ public class AddContainerService {
             containerResc.addLiteral(Cdr.storageLocation, storageLoc.getId());
             log.debug("Adding new container to storage location {}", storageLoc.getId());
 
-            Resource containerType = addRequest.getContainerType();
+            ResourceType containerType = addRequest.getContainerType();
             // Create the appropriate container
-            if (Cdr.AdminUnit.equals(containerType)) {
+            if (ResourceType.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create admin units",
                         parentPid, agent.getPrincipals(), Permission.createAdminUnit);
                 child = repoObjFactory.createAdminUnit(containerPid, containerModel);
-            } else if (Cdr.Collection.equals(containerType)) {
+            } else if (ResourceType.Collection.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create collections",
                         parentPid, agent.getPrincipals(), Permission.createCollection);
                 child = repoObjFactory.createCollectionObject(containerPid, containerModel);
-            } else if (Cdr.Folder.equals(containerType)) {
+            } else if (ResourceType.Folder.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create folders",
                         parentPid, agent.getPrincipals(), Permission.ingest);
                 child = repoObjFactory.createFolderObject(containerPid, containerModel);
-            } else if (Cdr.Work.equals(containerType)) {
+            } else if (ResourceType.Work.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create works",
                         parentPid, agent.getPrincipals(), Permission.ingest);
@@ -137,12 +142,12 @@ public class AddContainerService {
             ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);
             parent.addMember(child);
 
-            if (addRequest.isStaffOnly() && !Cdr.AdminUnit.equals(containerType)) {
+            if (addRequest.isStaffOnly() && !ResourceType.AdminUnit.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
                 patronService.updatePatronAccess(agent, containerPid, accessDetails, true);
-            } else if (Cdr.Collection.equals(containerType)) {
+            } else if (ResourceType.Collection.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, canViewOriginals),
                         new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
@@ -172,11 +177,18 @@ public class AddContainerService {
         Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
         doc.addContent(mods);
 
-        Element titleInfo = new Element("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
-        Element title = new Element("title", JDOMNamespaceUtil.MODS_V3_NS);
-        title.setText(addRequest.getLabel());
-        titleInfo.addContent(title);
-        mods.addContent(titleInfo);
+        mods.addContent(new Element("titleInfo", JDOMNamespaceUtil.MODS_V3_NS)
+                .addContent(new Element("title", JDOMNamespaceUtil.MODS_V3_NS)
+                        .setText(addRequest.getLabel().trim())));
+
+        // Add in optional collection number field, only for collections
+        if (ResourceType.Collection.equals(addRequest.getContainerType())
+                && !StringUtils.isBlank(addRequest.getCollectionNumber())) {
+            mods.addContent(new Element(COLLECTION_NUMBER_EL, JDOMNamespaceUtil.MODS_V3_NS)
+                    .setAttribute("type", COLLECTION_NUMBER_TYPE)
+                    .setAttribute("displayLabel", COLLECTION_NUMBER_LABEL)
+                    .setText(addRequest.getCollectionNumber().trim()));
+        }
 
         String modsString = new XMLOutputter(getPrettyFormat()).outputString(mods.getDocument());
 
@@ -236,8 +248,9 @@ public class AddContainerService {
         private PID parentPid;
         private String label;
         private Boolean staffOnly = false;
-        private Resource containerType;
+        private ResourceType containerType;
         private AgentPrincipals agent;
+        private String collectionNumber;
 
         public void setId(String id) {
             this.setParentPid(PIDs.get(id));
@@ -267,11 +280,19 @@ public class AddContainerService {
             this.staffOnly = staffOnly;
         }
 
-        public Resource getContainerType() {
+        public String getCollectionNumber() {
+            return collectionNumber;
+        }
+
+        public void setCollectionNumber(String collectionNumber) {
+            this.collectionNumber = collectionNumber;
+        }
+
+        public ResourceType getContainerType() {
             return containerType;
         }
 
-        public AddContainerRequest withContainerType(Resource containerType) {
+        public AddContainerRequest withContainerType(ResourceType containerType) {
             this.containerType = containerType;
             return this;
         }

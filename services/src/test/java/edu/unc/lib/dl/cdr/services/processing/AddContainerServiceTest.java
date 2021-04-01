@@ -68,6 +68,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -151,7 +152,7 @@ public class AddContainerServiceTest {
         service.setUpdateDescriptionService(updateDescService);
     }
 
-    private AddContainerRequest createRequest(String label, boolean staffOnly, Resource containerType) {
+    private AddContainerRequest createRequest(String label, boolean staffOnly, ResourceType containerType) {
         AddContainerRequest req = new AddContainerRequest();
         req.setParentPid(parentPid);
         req.setLabel(label);
@@ -165,7 +166,7 @@ public class AddContainerServiceTest {
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
         try {
-            service.addContainer(createRequest("folder", false, Cdr.Folder));
+            service.addContainer(createRequest("folder", false, ResourceType.Folder));
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -181,7 +182,7 @@ public class AddContainerServiceTest {
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
         try {
-            service.addContainer(createRequest("collection", false, Cdr.Collection));
+            service.addContainer(createRequest("collection", false, ResourceType.Collection));
         } catch (TransactionCancelledException e) {
             assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -203,7 +204,7 @@ public class AddContainerServiceTest {
         });
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(createRequest("folder", false, Cdr.Folder));
+        service.addContainer(createRequest("folder", false, ResourceType.Folder));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
@@ -239,7 +240,7 @@ public class AddContainerServiceTest {
         });
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(createRequest("work", false, Cdr.Work));
+        service.addContainer(createRequest("work", false, ResourceType.Work));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();

@@ -33,7 +33,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * API controller for creating new containers
@@ -51,25 +51,25 @@ public class AddContainerController {
     @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAdminUnit(AddContainerRequest addRequest) {
-        return createContainer(addRequest.withContainerType(Cdr.AdminUnit));
+        return createContainer(addRequest.withContainerType(ResourceType.AdminUnit));
     }
 
     @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createCollection(AddContainerRequest addRequest) {
-        return createContainer(addRequest.withContainerType(Cdr.Collection));
+        return createContainer(addRequest.withContainerType(ResourceType.Collection));
     }
 
     @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createFolder(AddContainerRequest addRequest) {
-        return createContainer(addRequest.withContainerType(Cdr.Folder));
+        return createContainer(addRequest.withContainerType(ResourceType.Folder));
     }
 
     @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createWork(AddContainerRequest addRequest) {
-        return createContainer(addRequest.withContainerType(Cdr.Work));
+        return createContainer(addRequest.withContainerType(ResourceType.Work));
     }
 
     private ResponseEntity<Object> createContainer(AddContainerRequest addRequest) {

@@ -20,9 +20,13 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +35,7 @@ import java.util.Map;
 
 import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +56,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.util.DescriptionConstants;
 
 /**
  *
@@ -341,7 +346,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        String label = "collection";
+        String label = "staff only collection";
         String adminId = adminUnit.getPid().getId();
         MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
                 .param("label", label)
@@ -360,6 +365,39 @@ public class AddContainerIT extends AbstractAPIIT {
         ContentObject member = getMemberByLabel(adminUnit, label);
         assertHasAssignment(PUBLIC_PRINC, none, member);
         assertHasAssignment(AUTHENTICATED_PRINC, none, member);
+
+        assertModsPopulated(member, label, null);
+    }
+
+    @Test
+    public void testAddCollectionWithCollectionNumber() throws UnsupportedOperationException, Exception {
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        contentRoot.addMember(adminUnit);
+
+        treeIndexer.indexAll(baseAddress);
+
+        String label = "collection with number";
+        String collNum = "12345678";
+        String adminId = adminUnit.getPid().getId();
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + adminId)
+                .param("label", label)
+                .param("collectionNumber", collNum))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        treeIndexer.indexAll(baseAddress);
+
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(adminId, respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        ContentObject member = getMemberByLabel(adminUnit, label);
+        assertHasAssignment(PUBLIC_PRINC, canViewOriginals, member);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, member);
+
+        assertModsPopulated(member, label, collNum);
     }
 
     @Test
@@ -396,12 +434,21 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(memberClass.isInstance(member));
     }
 
-    public void assertModsPopulated(ContentObject member, String label) throws Exception {
+    public void assertModsPopulated(ContentObject member, String label, String expectedCollNum) throws Exception {
         SAXBuilder sb = createSAXBuilder();
         Document doc = sb.build(member.getDescription().getBinaryStream());
-        String title = doc.getRootElement().getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS)
-                .getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
+        String title = doc.getRootElement().getChild("titleInfo", MODS_V3_NS)
+                .getChildText("title", MODS_V3_NS);
         assertEquals("Title did not match expected value", label, title);
+
+        Element idEl = doc.getRootElement().getChild(COLLECTION_NUMBER_EL, MODS_V3_NS);
+        if (expectedCollNum != null) {
+            assertEquals(COLLECTION_NUMBER_LABEL, idEl.getAttributeValue("displayLabel"));
+            assertEquals(DescriptionConstants.COLLECTION_NUMBER_TYPE, idEl.getAttributeValue("type"));
+            assertEquals(expectedCollNum, idEl.getText());
+        } else {
+            assertNull(idEl);
+        }
     }
 
     private void assertChildContainerNotAdded(ContentContainerObject parent) {
