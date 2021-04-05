@@ -79,6 +79,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
         status.put(DepositField.sourceUri.name(), sourceUri.toString());
         status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         job.run();
 
@@ -130,6 +131,67 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         // Verify that the description file for the bag exists
         File modsFile = job.getModsPath(PIDs.get(bagFolder.getURI())).toFile();
         assertTrue(modsFile.exists());
+
+        Set<String> cleanupSet = new HashSet<>();
+        StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
+        while (it.hasNext()) {
+            Statement stmt = it.nextStatement();
+            cleanupSet.add(stmt.getString());
+        }
+
+        assertEquals("Incorrect number of objects identified for cleanup", 1, cleanupSet.size());
+        assertTrue("Cleanup of bag not set", cleanupSet.contains(sourceUri.toString()));
+    }
+
+    @Test
+    public void testConversionWithoutCreateParentFolder() throws Exception {
+        URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "false");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+
+        assertEquals(1, depositBag.size());
+
+        Resource folder = (Resource) depositBag.iterator().next();
+
+        assertEquals("Folder label was not set", "test", folder.getProperty(CdrDeposit.label).getString());
+        assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
+
+        Bag childrenBag = model.getBag(folder.getURI());
+
+        assertEquals(2, childrenBag.size());
+
+        // Put children into a map since we can't guarantee order from jena
+        Map<String, Resource> children = new HashMap<>(2);
+        NodeIterator childIt = childrenBag.iterator();
+        while (childIt.hasNext()) {
+            Resource file = (Resource) childIt.next();
+            children.put(file.getProperty(CdrDeposit.label).getString(), file);
+        }
+
+        // Verify that all manifests were added.
+        List<String> manifestPaths = depositBag.listProperties(CdrDeposit.hasDatastreamManifest)
+                .toList().stream()
+                .map(Statement::getResource)
+                .map(r -> r.getProperty(CdrDeposit.stagingLocation).getString())
+                .collect(Collectors.toList());
+        assertEquals("Unexpected number of manifests", 2, manifestPaths.size());
+        List<String> expectedFilePaths = Arrays.asList(sourceUri.toString() + "bagit.txt",
+                sourceUri.toString() + "manifest-md5.txt");
+        assertTrue("Must contain all of the expected manifest files, but contained " + manifestPaths,
+                manifestPaths.containsAll(expectedFilePaths));
+
+        // Verify that files and their properties were added
+        assertFileAdded(children.get("lorem.txt"), "fa5c89f3c88b81bfd5e821b0316569af",
+                sourceUri.toString() + "data/test/lorem.txt");
+
+        assertFileAdded(children.get("ipsum.txt"), "e78f5438b48b39bcbdea61b73679449d",
+                sourceUri.toString() + "data/test/ipsum.txt");
 
         Set<String> cleanupSet = new HashSet<>();
         StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);

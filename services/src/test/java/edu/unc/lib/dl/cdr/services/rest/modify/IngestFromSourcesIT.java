@@ -445,6 +445,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
         assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
         assertTrue(Boolean.parseBoolean(candStatus1.get(DepositField.staffOnly.name())));
+        assertFalse(Boolean.parseBoolean(candStatus1.get(DepositField.createParentFolder.name())));
         assertDepositorDetailsStored(candStatus1);
 
         Map<String, String> candStatus2 = getDepositStatusByPath(depositIds, candPath2);
@@ -452,6 +453,37 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         assertEquals(DIRECTORY.getUri(), candStatus2.get(DepositField.packagingType.name()));
         assertFalse(Boolean.parseBoolean(candStatus2.get(DepositField.staffOnly.name())));
         assertDepositorDetailsStored(candStatus2);
+    }
+
+    @Test
+    public void ingestBagWithCreateParent() throws Exception {
+        Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
+
+        Path configPath = createConfigFile(
+                createBasicConfig("testsource1", sourceFolderPath, destPid));
+        initializeManager(configPath);
+
+        mockAncestors(destPid, rootPid, adminUnitPid);
+
+        IngestPackageDetails bagDetails = new IngestPackageDetails("testsource1", candPath1.getFileName().toString(),
+                BAGIT, null, false);
+        bagDetails.setCreateParentFolder(true);
+        List<IngestPackageDetails> details = asList(bagDetails);
+
+        MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(details)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<String> depositIds = verifySuccessResponse(result, destPid);
+
+        Map<String, String> candStatus1 = getDepositStatusByPath(depositIds, candPath1);
+        assertEquals(destPid.getId(), candStatus1.get(DepositField.containerId.name()));
+        assertEquals(BAGIT.getUri(), candStatus1.get(DepositField.packagingType.name()));
+        assertFalse(Boolean.parseBoolean(candStatus1.get(DepositField.staffOnly.name())));
+        assertTrue(Boolean.parseBoolean(candStatus1.get(DepositField.createParentFolder.name())));
+        assertDepositorDetailsStored(candStatus1);
     }
 
     // Test retrieving result from list and submitting to ingest service works
