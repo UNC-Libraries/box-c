@@ -71,26 +71,14 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         depositStatus.put(DepositField.staffOnly.name(), "true");
         when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
-        PID objPid = makePid();
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
-
-        Resource fileResc = addFileObject(objBag);
-        objBag.addProperty(Cdr.primaryObject, fileResc);
-
-        depBag.add(objBag);
+        Bag objBag = addWorkObject(depBag);
         job.closeModel();
 
         job.run();
 
         model = job.getReadOnlyModel();
-        Resource roles = model.getResource(objPid.getRepositoryPath());
-
-        assertTrue(roles.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
-        assertTrue(roles.hasProperty(none.getProperty(), PUBLIC_PRINC));
-
-        Resource resultFileResc = model.getResource(fileResc.getURI());
-        assertFalse(resultFileResc.hasProperty(none.getProperty()));
+        assertAssignedNoneRole(objBag);
+        assertPrimaryObjectNotNoneRole(objBag);
     }
 
     @Test
@@ -99,6 +87,52 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         depositStatus.put(DepositField.staffOnly.name(), "false");
         when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
+        Bag objBag = addWorkObject(depBag);
+        job.closeModel();
+
+        job.run();
+
+        model = job.getReadOnlyModel();
+        assertNotAssignedNoneRole(objBag);
+        assertPrimaryObjectNotNoneRole(objBag);
+    }
+
+    @Test
+    public void testStaffOnlyMultipleTopLevel() throws Exception {
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.staffOnly.name(), "true");
+        when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
+
+        Bag objBag = addWorkObject(depBag);
+        Bag objBag2 = addWorkObject(depBag);
+
+        job.closeModel();
+
+        job.run();
+
+        model = job.getReadOnlyModel();
+        assertAssignedNoneRole(objBag);
+        assertPrimaryObjectNotNoneRole(objBag);
+        assertAssignedNoneRole(objBag2);
+        assertPrimaryObjectNotNoneRole(objBag2);
+    }
+
+    private void assertAssignedNoneRole(Resource objResc) {
+        assertTrue(objResc.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
+        assertTrue(objResc.hasProperty(none.getProperty(), PUBLIC_PRINC));
+    }
+
+    private void assertNotAssignedNoneRole(Resource objResc) {
+        assertFalse(objResc.hasProperty(none.getProperty(), AUTHENTICATED_PRINC));
+        assertFalse(objResc.hasProperty(none.getProperty(), PUBLIC_PRINC));
+    }
+
+    private void assertPrimaryObjectNotNoneRole(Resource workResc) {
+        Resource primary = workResc.getPropertyResourceValue(Cdr.primaryObject);
+        assertFalse(primary.hasProperty(none.getProperty()));
+    }
+
+    private Bag addWorkObject(Bag parent) throws Exception {
         PID objPid = makePid();
         Bag objBag = model.createBag(objPid.getRepositoryPath());
         objBag.addProperty(RDF.type, Cdr.Work);
@@ -106,19 +140,8 @@ public class StaffOnlyPermissionJobTest extends AbstractDepositJobTest {
         Resource fileResc = addFileObject(objBag);
         objBag.addProperty(Cdr.primaryObject, fileResc);
 
-        depBag.add(objBag);
-        job.closeModel();
-
-        job.run();
-
-        model = job.getReadOnlyModel();
-        Resource roles = model.getResource(objPid.getRepositoryPath());
-
-        assertFalse(roles.hasProperty(none.getProperty()));
-        assertFalse(roles.hasProperty(none.getProperty()));
-
-        Resource resultFileResc = model.getResource(fileResc.getURI());
-        assertFalse(resultFileResc.hasProperty(none.getProperty()));
+        parent.add(objBag);
+        return objBag;
     }
 
     private Resource addFileObject(Bag parent) throws Exception {

@@ -78,7 +78,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				candidate.type = "Directory";
 			}
 			
-			if ("fileSize" in candidate) {
+			if ("fileSize" in candidate && candidate["fileSize"] > 0) {
 				candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.fileSize);
 			}
 			

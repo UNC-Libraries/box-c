@@ -62,15 +62,14 @@ public class StaffOnlyPermissionJob extends AbstractDepositJob {
         Model model = getWritableModel();
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
         NodeIterator iterator = getChildIterator(depositBag);
-
-        if (iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Resource childResc = (Resource) iterator.next();
-            setStaffOnly(childResc, model);
+            setStaffOnly(childResc);
         }
     }
 
-    private void setStaffOnly(Resource resc, Model model) {
-            model.add(resc, CdrAcl.none, PUBLIC_PRINC);
-            model.add(resc, CdrAcl.none, AUTHENTICATED_PRINC);
+    private void setStaffOnly(Resource resc) {
+        resc.addProperty(CdrAcl.none, PUBLIC_PRINC);
+        resc.addProperty(CdrAcl.none, AUTHENTICATED_PRINC);
     }
 }
