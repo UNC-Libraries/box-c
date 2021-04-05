@@ -1,8 +1,14 @@
 <form id="create_container_form" method="post" class="edit_form">
 	<div class="form_field">
-		<label><%= options.containerType %> Name*</label>
-		<input name="name" size="38"></input>
+		<label for="add_container_name"><%= options.containerType %> Name <span class="required">*</span></label>
+		<input name="name" id="add_container_name" size="38"></input>
 	</div>
+	<% if (options.containerType == "Collection") { %>
+		<div class="form_field">
+			<label for="add_container_coll_number">Collection Number</label>
+			<input name="coll_number" id="add_container_coll_number" size="38"></input>
+		</div>
+	<% } %>
 	<% if (options.staffOnly) { %>
 		<div class="form_field">
 			<label for="staff_only">Restrict to staff only access?</label>

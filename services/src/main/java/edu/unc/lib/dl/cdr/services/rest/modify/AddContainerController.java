@@ -18,26 +18,22 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService;
-import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * API controller for creating new containers
@@ -54,45 +50,35 @@ public class AddContainerController {
 
     @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id,
-                                                  @RequestParam("label") String label) {
-        return createContainer(id, label, false, Cdr.AdminUnit);
+    public ResponseEntity<Object> createAdminUnit(AddContainerRequest addRequest) {
+        return createContainer(addRequest.withContainerType(ResourceType.AdminUnit));
     }
 
     @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label,
-                                                   @RequestParam(value = "staffOnly", defaultValue = "false")
-                                                           boolean staffOnly) {
-        return createContainer(id, label, staffOnly, Cdr.Collection);
+    public ResponseEntity<Object> createCollection(AddContainerRequest addRequest) {
+        return createContainer(addRequest.withContainerType(ResourceType.Collection));
     }
 
     @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label,
-                                               @RequestParam(value = "staffOnly", defaultValue = "false")
-                                                       boolean staffOnly) {
-        return createContainer(id, label, staffOnly, Cdr.Folder);
+    public ResponseEntity<Object> createFolder(AddContainerRequest addRequest) {
+        return createContainer(addRequest.withContainerType(ResourceType.Folder));
     }
 
     @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createWork(@PathVariable("id") String id, @RequestParam("label") String label) {
-        return createContainer(id, label, false, Cdr.Work);
+    public ResponseEntity<Object> createWork(AddContainerRequest addRequest) {
+        return createContainer(addRequest.withContainerType(ResourceType.Work));
     }
 
-    private ResponseEntity<Object> createContainer(String id, String label, boolean staff_only,
-                                                   Resource containerType) {
+    private ResponseEntity<Object> createContainer(AddContainerRequest addRequest) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");
-        result.put("pid", id);
-
-        PID parentPid = PIDs.get(id);
+        result.put("pid", addRequest.getParentPid().getId());
 
         try {
-            addContainerService.addContainer(
-                    AgentPrincipals.createFromThread(), parentPid, label, staff_only, containerType
-            );
+            addContainerService.addContainer(addRequest.withAgent(AgentPrincipals.createFromThread()));
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

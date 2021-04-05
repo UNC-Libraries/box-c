@@ -46,6 +46,7 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	
 	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
 		this.containerName = $("input[name='name']", this.$form).val();
+		let collNumber = $("input[name='coll_number']", this.$form).val();
 		this.staffOnly = $("input[name='staff_only']", this.$form);
 
 		var pid;
@@ -58,6 +59,9 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		var typeName = this.options.containerType.charAt(0).toLowerCase() + this.options.containerType.substr(1);
 		var apiUrl = "/services/api/edit/create/" + typeName + "/" + pid + "?label=" + this.containerName;
 
+		if (collNumber !== undefined && collNumber.length > 0) {
+			apiUrl += "&collectionNumber=" + collNumber;
+		}
 		if (this.staffOnly.length > 0) {
 			apiUrl += "&staffOnly=" + this.staffOnly.is(':checked');
 		}

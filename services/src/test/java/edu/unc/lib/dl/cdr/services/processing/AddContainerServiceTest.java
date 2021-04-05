@@ -47,6 +47,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
@@ -62,10 +63,12 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -98,6 +101,8 @@ public class AddContainerServiceTest {
     private StorageLocationManager storageLocationManager;
     @Mock
     private StorageLocation storageLocation;
+    @Mock
+    private UpdateDescriptionService updateDescService;
 
     @Captor
     private ArgumentCaptor<Collection<PID>> destinationsCaptor;
@@ -144,6 +149,15 @@ public class AddContainerServiceTest {
         service.setTransactionManager(txManager);
         service.setOperationsMessageSender(messageSender);
         service.setStorageLocationManager(storageLocationManager);
+        service.setUpdateDescriptionService(updateDescService);
+    }
+
+    private AddContainerRequest createRequest(String label, boolean staffOnly, ResourceType containerType) {
+        AddContainerRequest req = new AddContainerRequest();
+        req.setParentPid(parentPid);
+        req.setLabel(label);
+        req.setStaffOnly(staffOnly);
+        return req.withContainerType(containerType).withAgent(agent);
     }
 
     @Test(expected = TransactionCancelledException.class)
@@ -152,7 +166,7 @@ public class AddContainerServiceTest {
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
         try {
-            service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
+            service.addContainer(createRequest("folder", false, ResourceType.Folder));
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -168,7 +182,7 @@ public class AddContainerServiceTest {
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
         try {
-            service.addContainer(agent, parentPid, "collection", false, Cdr.Collection);
+            service.addContainer(createRequest("collection", false, ResourceType.Collection));
         } catch (TransactionCancelledException e) {
             assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -190,7 +204,7 @@ public class AddContainerServiceTest {
         });
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "folder", false, Cdr.Folder);
+        service.addContainer(createRequest("folder", false, ResourceType.Folder));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
@@ -226,7 +240,7 @@ public class AddContainerServiceTest {
         });
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, "work", false, Cdr.Work);
+        service.addContainer(createRequest("work", false, ResourceType.Work));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();

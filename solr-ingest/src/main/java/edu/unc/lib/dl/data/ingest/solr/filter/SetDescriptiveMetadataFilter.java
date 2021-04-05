@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_TYPE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
@@ -263,7 +266,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractCollectionId(Element mods, IndexDocumentBean idb) {
-        List<Element> identifiers = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+        List<Element> identifiers = mods.getChildren(COLLECTION_NUMBER_EL, JDOMNamespaceUtil.MODS_V3_NS);
         String collectionId = null;
 
         if (!identifiers.isEmpty()) {
@@ -275,7 +278,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     continue;
                 }
 
-                if (collection.getValue().equals("Collection Number") && type.getValue().equals("local")) {
+                if (collection.getValue().equals(COLLECTION_NUMBER_LABEL)
+                        && type.getValue().equals(COLLECTION_NUMBER_TYPE)) {
                     collectionId = aid.getValue();
                     break;
                 }
