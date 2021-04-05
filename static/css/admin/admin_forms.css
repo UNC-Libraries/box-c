@@ -542,3 +542,34 @@
 #ingest_source_metadata .file_browse_entry_data h2 {
 	font-size: 16px;
 }
+
+.file_browse_entry_data .file_browse_type_info {
+	font-size: 14px;
+	padding-top: 8px;
+	padding-bottom: 12px;
+}
+
+.file_browse_entry_data .fas {
+	opacity: 60%;
+}
+
+#ingest_source_metadata .file_browse_entry_inputs label {
+	display: inline-block;
+	margin-right: 0.5em;
+}
+
+#ingest_source_metadata .file_browse_entry_inputs {
+	margin-left: -65px;
+}
+
+.folder_name_form label {
+	margin-left: 2em;
+}
+
+.tooltip {
+	display: inline-flex;
+}
+
+.tooltip .tt-text {
+	display: none;
+}

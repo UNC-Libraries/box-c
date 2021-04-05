@@ -15,7 +15,7 @@
 		%>
 		<tr class="file_browse_entry">
 			<td class="file_browse_type_icon">
-				<% if (candidate.type == "BagIt") { %>
+				<% if (candidate.type === "BagIt") { %>
 					<i class="fas fa-suitcase"></i>
 				<% } else { %>
 					<i class="fas fa-folder"></i>
@@ -24,20 +24,38 @@
 			
 			<td class="file_browse_entry_data">
 				<h2><%= candidate.patternMatched %></h2>
-				<p><%= candidate.base %><br/>
-					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
-					<% if ("files" in candidate) { %>
-						&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
+				<div class="file_browse_type_info">Type: <%= candidate.type %>
+					<% if (candidate.type === "BagIt") { %>
+						<div class="tooltip">
+							<i class="fas fa-info-circle"></i>
+							<div class="tt-text">
+								Version: <%= candidate.version? candidate.version : "unknown" %><br/>
+								File Count: <%= candidate.fileCount? candidate.fileCount : "unknown" %><br/>
+								Size: <%= candidate.sizeFormatted? candidate.sizeFormatted : "unknown" %>
+							</div>
+						</div>
 					<% } %>
-					<% if ("sizeFormatted" in candidate) { %>
-						&ndash; <%= candidate.sizeFormatted %>
-					<% } %>
-				</p>
+				</div>
 				<div class="file_browse_entry_inputs">
-					<label for="file_label">Label <span class="required">*</span></label>
-					<input id="file_label" type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
-					<label for="staff_only">Restrict to staff only access?</label>
-					<input id="staff_only" type="checkbox" name="staff-only"/>
+					<% if (candidate.type === "BagIt") { %>
+						<input id="create_parent_input_<%= index %>" type="checkbox" name="create_parent_input">
+						<label for="create_parent_input_<%= index %>">Create a new folder for the files in this bag?
+							<div class="tooltip">
+								<i class="far fa-question-circle"></i>
+								<div class="tt-text">
+									Check this option to deposit the contents of this Bag into a newly created folder.
+									Otherwise the contents of the Bag will be added directly to the deposit destination.
+								</div>
+							</div>
+						</label>
+						<br/>
+					<% } %>
+					<div class="folder_name_form <%= (candidate.type === 'BagIt') ? 'hidden' : '' %>">
+						<label for="folder_name_<%= index %>">Folder name <span class="required">*</span></label>
+						<input id="folder_name_<%= index %>" type="text" name="folder_name" size="40" value="<%= candidate.filename %>" />
+					</div>
+					<input id="staff_only_<%= index %>" type="checkbox" name="staff-only"/>
+					<label for="staff_only_<%= index %>">Restrict to staff only access?</label>
 				</div>
 			</td>
 			
