@@ -195,24 +195,24 @@
                                 <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
                             </button>
 
-                            <button id="openFile" class="toolbarButton openFile hiddenLargeView" title="Open File" tabindex="32" data-l10n-id="open_file">
+                            <button id="openFile" class="toolbarButton openFile hiddenLargeView hidden" title="Open File" tabindex="32" data-l10n-id="open_file">
                                 <span data-l10n-id="open_file_label">Open</span>
                             </button>
 
-                            <button id="print" class="toolbarButton print hiddenMediumView" title="Print" tabindex="33" data-l10n-id="print">
+                            <button id="print" class="toolbarButton print hiddenMediumView" title="Print" tabindex="32" data-l10n-id="print">
                                 <span data-l10n-id="print_label">Print</span>
                             </button>
 
-                            <button id="download" class="toolbarButton download hiddenMediumView" title="Download" tabindex="34" data-l10n-id="download">
+                            <button id="download" class="toolbarButton download hiddenMediumView" title="Download" tabindex="33" data-l10n-id="download">
                                 <span data-l10n-id="download_label">Download</span>
                             </button>
-                            <a href="#" id="viewBookmark" class="toolbarButton bookmark hiddenSmallView" title="Current view (copy or open in new window)" tabindex="35" data-l10n-id="bookmark">
+                            <a href="#" id="viewBookmark" class="toolbarButton bookmark hiddenSmallView hidden" title="Current view (copy or open in new window)" tabindex="35" data-l10n-id="bookmark">
                                 <span data-l10n-id="bookmark_label">Current View</span>
                             </a>
 
                             <div class="verticalToolbarSeparator hiddenSmallView"></div>
 
-                            <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="36" data-l10n-id="tools">
+                            <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="34" data-l10n-id="tools">
                                 <span data-l10n-id="tools_label">Tools</span>
                             </button>
                         </div>

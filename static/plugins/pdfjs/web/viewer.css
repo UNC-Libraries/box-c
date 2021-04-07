@@ -3345,6 +3345,9 @@ html[dir="rtl"] #documentPropertiesOverlay .row > * {
 #thumbnailView .thumbnailImage {
   height: 125px !important;
 }
+.thumbnail.selected > .thumbnailSelectionRing {
+  height: 140px !important;
+}
 .toolbarButton:hover,
 .splitToolbarButton > .toolbarButton:hover,
 .splitToolbarButton.toggled > .toolbarButton.toggled {
