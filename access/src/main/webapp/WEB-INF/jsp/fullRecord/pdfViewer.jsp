@@ -375,4 +375,4 @@
     </div><!-- outerContainer -->
     <div id="printContainer"></div>
 </div>
-<script src="/static/plugins/pdfjs/web/viewer.js"></script>
+<script src="/static/plugins/pdfjs/web/viewer.min.js"></script>
