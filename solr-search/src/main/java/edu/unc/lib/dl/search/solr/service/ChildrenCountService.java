@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Service for calculating the number of child objects within containers.
@@ -123,6 +124,10 @@ public class ChildrenCountService extends AbstractQueryService {
 
         // Calculate the child count for each provided container one at a time
         for (BriefObjectMetadata container : containers) {
+            // Skip counts for any file objects
+            if (ResourceType.File.name().equals(container.getResourceType())) {
+                continue;
+            }
             SolrQuery solrQuery = createBaseQuery(principals, container, commonQuery);
 
             try {

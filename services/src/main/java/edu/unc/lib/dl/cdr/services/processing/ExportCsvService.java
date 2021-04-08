@@ -39,6 +39,7 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,6 +177,9 @@ public class ExportCsvService {
 
         Map<String, String> roleList = new HashMap<>();
         for (String role : roles) {
+            if (StringUtils.isBlank(role)) {
+                continue;
+            }
             String[] principalRole = role.split("\\|");
             roleList.put(principalRole[1], principalRole[0]);
         }
@@ -276,7 +280,7 @@ public class ExportCsvService {
 
         // Container info: child count
         Long childCount = object.getCountMap().get("child");
-        if (childCount > 0) {
+        if (childCount != null && childCount > 0) {
             printer.print(childCount.toString());
         } else {
             printer.print("");
