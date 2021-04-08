@@ -26,6 +26,7 @@
     "@vue/cli-service": "^4.5.7",
     "@vue/test-utils": "1.1.0",
     "babel-jest": "^26.5.2",
+    "caniuse-lite": "^1.0.30001208",
     "jest-environment-jsdom": "^26.5.2",
     "jest-localstorage-mock": "^2.4.3",
     "moxios": "^0.4.0",
