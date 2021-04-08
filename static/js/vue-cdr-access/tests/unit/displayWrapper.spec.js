@@ -70,7 +70,6 @@ describe('displayWrapper.vue', () => {
             is_folder: false,
             record_count: 0,
             record_list: [],
-            search_method: 'listJson',
             uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
         });
     });
@@ -97,6 +96,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+
         expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
     });

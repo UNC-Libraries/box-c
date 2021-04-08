@@ -90,10 +90,7 @@
                 return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
             },
 
-            hasSearchQuery() {
-                let query = this.$route.query.anywhere;
-                return query !== undefined && query !== '';
-            }
+
         },
 
         methods: {
@@ -121,9 +118,14 @@
                 });
             },
 
+            hasSearchQuery() {
+                let query = this.$route.query.anywhere;
+                return query !== undefined && query !== '';
+            },
+
             updateParams() {
                 let params = this.setTypes();
-                this.search_method = (this.coerceWorksOnly(params.works_only) || this.hasSearchQuery) ? 'searchJson' : 'listJson';
+                this.search_method = (this.coerceWorksOnly(params.works_only) || this.hasSearchQuery()) ? 'searchJson' : 'listJson';
                 return params;
             },
 
