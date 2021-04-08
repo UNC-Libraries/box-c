@@ -29,6 +29,12 @@
         <property name="location" ref="propertiesURI"/>
         <property name="ignoreResourceNotFound" value="false"/>
     </bean>
+    
+    <bean id="exportCsvService" class="edu.unc.lib.dl.cdr.services.processing.ExportCsvService">
+        <property name="childrenCountService" ref="childrenCountService"/>
+        <property name="aclService" ref="aclService"/>
+        <property name="queryLayer" ref="queryLayer"/>
+    </bean>
 
     <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
         <value>${access.group.admin}</value>
