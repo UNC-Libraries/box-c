@@ -278,8 +278,8 @@ public class DepositData {
     }
 
     /**
-     * @return if true, then if this deposit would create a parent container to wrap
-     *      the contents of the deposit, it will skip creation of that parent container.
+     * @return if true, then this deposit will create a parent container to wrap the contents of
+     *      the deposit if appropriate for the deposit type.
      */
     public boolean getCreateParentFolder() {
         return createParentFolder;
