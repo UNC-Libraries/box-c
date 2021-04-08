@@ -2,7 +2,7 @@
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search></browse-search>
+                <browse-search :object-type="container_metadata.type"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -88,6 +88,11 @@
 
             showWorksOnly() {
                 return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
+            },
+
+            hasSearchQuery() {
+                let query = this.$route.query.anywhere;
+                return query !== undefined && query !== '';
             }
         },
 
@@ -118,7 +123,7 @@
 
             updateParams() {
                 let params = this.setTypes();
-                this.search_method = (this.coerceWorksOnly(params.works_only)) ? 'searchJson' : 'listJson';
+                this.search_method = (this.coerceWorksOnly(params.works_only) || this.hasSearchQuery) ? 'searchJson' : 'listJson';
                 return params;
             },
 

@@ -22,7 +22,7 @@ describe('browseSearch.vue', () => {
             localVue,
             router,
             propsData: {
-                recordId: '1234'
+                objectType: 'Folder'
             }
         });
     });
@@ -48,6 +48,27 @@ describe('browseSearch.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.anywhere).toEqual(encodeURIComponent(''));
     });
 
+    it("sets placeholder text from the object type", () => {
+        expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this folder');
+    });
+
+    it("sets default placeholder text if no object type is given", () => {
+        const localVue = createLocalVue();
+        const $route = {
+            path: '/record/1234',
+            name: 'displayRecords',
+            query: { anywhere: encodeURIComponent('Test Folder') }
+        };
+
+        wrapper = shallowMount(browseSearch, {
+            localVue,
+            mocks: {
+                $route
+            }
+        });
+        expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
+    });
+
     it("can set the search query value from the url", () => {
         const localVue = createLocalVue();
         const $route = {
@@ -62,7 +83,7 @@ describe('browseSearch.vue', () => {
                 $route
             },
             propsData: {
-                recordId: '1234'
+                objectType: 'Folder'
             }
         });
 

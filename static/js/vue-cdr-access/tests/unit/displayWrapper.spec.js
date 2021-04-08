@@ -70,6 +70,7 @@ describe('displayWrapper.vue', () => {
             is_folder: false,
             record_count: 0,
             record_list: [],
+            search_method: 'listJson',
             uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
         });
     });
@@ -82,6 +83,7 @@ describe('displayWrapper.vue', () => {
         });
 
         moxios.wait(() => {
+            expect(wrapper.vm.search_method).toEqual('listJson');
             expect(wrapper.vm.record_count).toEqual(response.resultCount);
             expect(wrapper.vm.record_list).toEqual(response.metadata);
             expect(wrapper.vm.container_name).toEqual(response.container.title);
@@ -108,6 +110,15 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
     });
 
+    it("uses the correct search parameters if search text is specified", () => {
+        wrapper.vm.$router.currentRoute.query.anywhere = 'search query';
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+    });
+
     it("uses the correct parameters for admin set browse", () => {
         wrapper.setData({
             is_admin_unit: true,
@@ -115,6 +126,7 @@ describe('displayWrapper.vue', () => {
             is_folder: false
         });
         wrapper.vm.$router.currentRoute.query.works_only = 'false';
+        wrapper.vm.$router.currentRoute.query.anywhere = '';
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
 
@@ -155,5 +167,6 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        wrapper = null;
     });
 });
