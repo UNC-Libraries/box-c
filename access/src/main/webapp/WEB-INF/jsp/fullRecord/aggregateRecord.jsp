@@ -136,6 +136,9 @@
 
             <div class="clear">
                 <c:choose>
+                    <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'pdf'}">
+                        <c:import url="fullRecord/pdfViewer.jsp" />
+                    </c:when>
                     <c:when test="${viewerNeeded}">
                         <div class="clear_space"></div>
                         <link rel="stylesheet" href="/static/plugins/uv/uv.css">

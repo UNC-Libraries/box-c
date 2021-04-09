@@ -119,6 +119,9 @@
     </div>
     <div class="clear">
         <c:choose>
+            <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'pdf'}">
+                <c:import url="fullRecord/pdfViewer.jsp" />
+            </c:when>
             <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
                 <link rel="stylesheet" href="/static/plugins/uv/uv.css">
                 <div class="clear_space"></div>

@@ -77,6 +77,10 @@ endif
 	# Custom uv file, a work around to fix issue with jQuery.
 	cp static/plugins/uv/offline.js static/plugins/uv/lib/
 
+	# Minify viewer.js file for pdf viewer (Uncomment the lines below if changes are made to the viewer.js file. Requires nodejs 15.x or higher)
+	# npm install minify -g
+	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
+
 	# Make sure files are empty
 	cat /dev/null > static/js/vue-access.js
 	cat /dev/null > static/css/sass/cdr-ui.scss

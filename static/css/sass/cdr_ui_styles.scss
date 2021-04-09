@@ -135,6 +135,19 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
+form.search {
+  button:focus {
+    color: #363636;
+  }
+}
+
+.browse-search {
+  .button.is-focused,
+  .button:focus {
+    color: #363636;
+  }
+}
+
 a.search-result-num {
   background-color: $container-blue;
   color: white !important;
