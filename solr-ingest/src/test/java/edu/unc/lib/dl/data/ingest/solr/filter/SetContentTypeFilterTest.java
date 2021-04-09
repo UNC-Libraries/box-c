@@ -94,10 +94,7 @@ public class SetContentTypeFilterTest {
 
     @Test
     public void testGetContentTypeFromFileObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getOriginalFile()).thenReturn(binObj);
-        when(binObj.getFilename()).thenReturn("data.csv");
-        when(binObj.getMimetype()).thenReturn("ext.csv");
+        mockFile("data.csv", "ext.csv");
 
         filter.filter(dip);
 
@@ -108,11 +105,8 @@ public class SetContentTypeFilterTest {
 
     @Test
     public void testExtensionNotFoundInMapping() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getOriginalFile()).thenReturn(binObj);
         // use filename with raw image extension not found in our mapping
-        when(binObj.getFilename()).thenReturn("image.x3f");
-        when(binObj.getMimetype()).thenReturn("some_wacky_type");
+        mockFile("image.x3f", "some_wacky_type");
 
         filter.filter(dip);
 
@@ -142,15 +136,119 @@ public class SetContentTypeFilterTest {
 
     @Test
     public void testGetPlainTextContentType() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getOriginalFile()).thenReturn(binObj);
-        when(binObj.getFilename()).thenReturn("file.txt");
-        when(binObj.getMimetype()).thenReturn("text/plain");
+        mockFile("file.txt", "text/plain");
 
         filter.filter(dip);
 
         verify(idb).setContentType(listCaptor.capture());
         assertEquals("^text,Text", listCaptor.getValue().get(0));
         assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testAppleDoublePdf() throws Exception {
+        mockFile("._doc.pdf", "multipart/appledouble");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
+        assertEquals("/unknown^pdf,pdf", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testImageJpg() throws Exception {
+        mockFile("picture.jpg", "image/jpg");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^image,Image", listCaptor.getValue().get(0));
+        assertEquals("/image^jpg,jpg", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testVideoMp4() throws Exception {
+        mockFile("my_video", "video/mp4");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^video,Video", listCaptor.getValue().get(0));
+        assertEquals("/video^mp4,mp4", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testAudioWav() throws Exception {
+        mockFile("sound_file.wav", "audio/wav");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^audio,Audio", listCaptor.getValue().get(0));
+        assertEquals("/audio^wav,wav", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testNoMimetype() throws Exception {
+        mockFile("unidentified.stuff", null);
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
+        assertEquals("/unknown^stuff,stuff", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testExtensionTooLongFallbackToMimetype() throws Exception {
+        mockFile("unidentified.superlongextension", "text/plain");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^text,Text", listCaptor.getValue().get(0));
+        assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testExtensionTooLongNoFallback() throws Exception {
+        mockFile("unidentified.superlongextension", "application/boxc-stuff");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
+        assertEquals("/unknown^unknown,unknown", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testNoExtensionNoMimetype() throws Exception {
+        mockFile("unidentified", null);
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
+        assertEquals("/unknown^unknown,unknown", listCaptor.getValue().get(1));
+    }
+
+    @Test
+    public void testInvalidExtensionFallbackToMimetype() throws Exception {
+        mockFile("unidentified.20210401", "text/plain");
+
+        filter.filter(dip);
+
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^text,Text", listCaptor.getValue().get(0));
+        assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+    }
+
+
+    private void mockFile(String filename, String mimetype) {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(binObj.getFilename()).thenReturn(filename);
+        when(binObj.getMimetype()).thenReturn(mimetype);
     }
 }
