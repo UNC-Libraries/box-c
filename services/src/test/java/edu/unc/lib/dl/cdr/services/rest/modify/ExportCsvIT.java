@@ -58,6 +58,7 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
@@ -135,6 +136,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     private FedoraSparqlUpdateService sparqlUpdateService;
     @Autowired
     private UpdateDescriptionService updateDescService;
+    @Autowired
+    private ExportCsvService exportCsvService;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -549,6 +552,45 @@ public class ExportCsvIT extends AbstractAPIIT {
                 .andReturn();
     }
 
+    @Test
+    public void multiPageExport() throws Exception {
+        exportCsvService.setPageSize(2);
+
+        Map<String, PID> pidList = addWorkToFolder();
+        PID folderPid = folderObj.getPid();
+        PID workPid = pidList.get("workPid");
+        PID filePid = pidList.get("filePid");
+
+        String id = unitObj.getPid().getId();
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
+                workPid, filePid);
+
+        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertValidFileInfo(response, id);
+
+        List<CSVRecord> csvList = parseCsvResponse(response);
+        assertEquals("Unexpected number of results", 5, csvList.size());
+
+        assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
+                FOLDER_PATH, 3, false, 1, false, "Authenticated", false);
+
+        String pathToWork = FOLDER_PATH + "/" + workPid.getId();
+        assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
+                pathToWork, 4, false, null, null, null,
+                1, false, "Authenticated", false);
+
+        String pathToFile = pathToWork + "/file.txt";
+        assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
+                pathToFile, 5, false, "text/plain", null, (long) 7,
+                null, false, "Authenticated", false);
+    }
+
     private Map<String, PID> addWorkToFolder() throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         PID workPid = workObj.getPid();
@@ -614,7 +656,8 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     private void assertValidFileInfo(MockHttpServletResponse response, String id) {
         String filename = String.format("\"%s.csv\"", id);
-        assertTrue(response.getHeader("Content-Disposition").endsWith(filename));
+        assertTrue("Expected header to end with " + filename + " but was " + response.getHeader("Content-Disposition"),
+                response.getHeader("Content-Disposition").endsWith(filename));
         assertEquals("text/csv", response.getContentType());
     }
 
@@ -633,32 +676,32 @@ public class ExportCsvIT extends AbstractAPIIT {
         checksum = checksum == null ? "" : checksum;
 
         for (CSVRecord rec : csvList) {
-            PID pid = PIDs.get(rec.get(ExportCsvController.PID_HEADER));
+            PID pid = PIDs.get(rec.get(ExportCsvService.PID_HEADER));
             if (!pid.equals(expectedPid)) {
                 continue;
             }
-            assertEquals(objType.name(), rec.get(ExportCsvController.OBJ_TYPE_HEADER));
-            assertEquals(path, rec.get(ExportCsvController.PATH_HEADER));
-            assertEquals(depth, Integer.parseInt(rec.get(ExportCsvController.DEPTH_HEADER)));
-            assertEquals(deleted, Boolean.parseBoolean(rec.get(ExportCsvController.DELETED_HEADER)));
-            assertEquals(mimetype, rec.get(ExportCsvController.MIME_TYPE_HEADER));
-            assertEquals(checksum, rec.get(ExportCsvController.CHECKSUM_HEADER));
+            assertEquals(objType.name(), rec.get(ExportCsvService.OBJ_TYPE_HEADER));
+            assertEquals(path, rec.get(ExportCsvService.PATH_HEADER));
+            assertEquals(depth, Integer.parseInt(rec.get(ExportCsvService.DEPTH_HEADER)));
+            assertEquals(deleted, Boolean.parseBoolean(rec.get(ExportCsvService.DELETED_HEADER)));
+            assertEquals(mimetype, rec.get(ExportCsvService.MIME_TYPE_HEADER));
+            assertEquals(checksum, rec.get(ExportCsvService.CHECKSUM_HEADER));
             if (fileSize == null) {
-                assertTrue(StringUtils.isBlank(rec.get(ExportCsvController.FILE_SIZE_HEADER)));
+                assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             } else {
-                assertEquals(fileSize, new Long(rec.get(ExportCsvController.FILE_SIZE_HEADER)));
+                assertEquals(fileSize, new Long(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             }
             if (numChildren == null) {
-                assertTrue(StringUtils.isBlank(rec.get(ExportCsvController.NUM_CHILDREN_HEADER)));
+                assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             } else {
-                assertEquals(numChildren, new Integer(rec.get(ExportCsvController.NUM_CHILDREN_HEADER)));
+                assertEquals(numChildren, new Integer(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
             }
 
             String expectedDescribed = described ? CONTENT_DESCRIBED : CONTENT_NOT_DESCRIBED;
             assertEquals("Unexpected description field value",
-                    expectedDescribed, rec.get(ExportCsvController.DESCRIBED_HEADER));
-            assertEquals(permissions, rec.get(ExportCsvController.PATRON_PERMISSIONS_HEADER));
-            assertEquals(embargoed, Boolean.parseBoolean(rec.get(ExportCsvController.EMBARGO_HEADER)));
+                    expectedDescribed, rec.get(ExportCsvService.DESCRIBED_HEADER));
+            assertEquals(permissions, rec.get(ExportCsvService.PATRON_PERMISSIONS_HEADER));
+            assertEquals(embargoed, Boolean.parseBoolean(rec.get(ExportCsvService.EMBARGO_HEADER)));
             return;
         }
         fail("No CSV record with PID " + expectedPid.getId() + " present");

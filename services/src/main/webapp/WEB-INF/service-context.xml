@@ -419,6 +419,12 @@
         <property name="mappingPath" value="${storageLocationMappings.path}" />
     </bean>
     
+    <bean id="exportCsvService" class="edu.unc.lib.dl.cdr.services.processing.ExportCsvService">
+        <property name="childrenCountService" ref="childrenCountService"/>
+        <property name="aclService" ref="aclService"/>
+        <property name="queryLayer" ref="queryLayer"/>
+    </bean>
+    
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
         <property name="arguments">
