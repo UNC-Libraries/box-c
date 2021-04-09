@@ -125,7 +125,7 @@ define('AlertHandler', ['jquery', 'jquery-ui', 'qtip'], function($) {
 			// Otherwise, start/clear the timer depending on event type
 			clearTimeout(api.timer);
 			if (event.type !== 'mouseover') {
-				api.timer = setTimeout(api.hide, lifespan);
+				api.timer = setTimeout(api.hide.bind(this), lifespan);
 			}
 		}
 	});

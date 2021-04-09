@@ -45,6 +45,7 @@ public class DepositData {
     private String depositMethod;
     private boolean staffOnly;
     private boolean overrideTimestamps;
+    private boolean createParentFolder;
 
     public DepositData(InputStream inputStream, String filename, String mimeType, PackagingType packagingType,
             String depositMethod, AgentPrincipals depositingAgent) {
@@ -274,5 +275,17 @@ public class DepositData {
 
     public void setOverrideTimestamps(boolean overrideTimestamps) {
         this.overrideTimestamps = overrideTimestamps;
+    }
+
+    /**
+     * @return if true, then this deposit will create a parent container to wrap the contents of
+     *      the deposit if appropriate for the deposit type.
+     */
+    public boolean getCreateParentFolder() {
+        return createParentFolder;
+    }
+
+    public void setCreateParentFolder(boolean createParentFolder) {
+        this.createParentFolder = createParentFolder;
     }
 }

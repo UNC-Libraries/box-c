@@ -154,6 +154,7 @@ public class IngestSourceController {
             deposit.setDepositorEmail(GroupsThreadStore.getEmail());
 
             deposit.setStaffOnly(packageDetails.getStaffOnly());
+            deposit.setCreateParentFolder(packageDetails.getCreateParentFolder());
 
             try {
                 depositIds.add(depositService.submitDeposit(destination, deposit).getId());
@@ -177,6 +178,7 @@ public class IngestSourceController {
         private PackagingType packagingType;
         private String label;
         private boolean staffOnly;
+        private boolean createParentFolder;
 
         public IngestPackageDetails() {
         }
@@ -236,6 +238,14 @@ public class IngestSourceController {
 
         public void setPackageUri(URI packageUri) {
             this.packageUri = packageUri;
+        }
+
+        public boolean getCreateParentFolder() {
+            return createParentFolder;
+        }
+
+        public void setCreateParentFolder(boolean createParentFolder) {
+            this.createParentFolder = createParentFolder;
         }
     }
 }

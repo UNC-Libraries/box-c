@@ -24,7 +24,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			title: "Add from file server",
 			resizable: false
 		});
-		
+
 		this.pid = pid;
 		
 		this.loadCandidateList();
@@ -78,8 +78,8 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				candidate.type = "Directory";
 			}
 			
-			if ("size" in candidate) {
-				candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.size);
+			if ("fileSize" in candidate && candidate["fileSize"] > 0) {
+				candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.fileSize);
 			}
 			
 			var lastSlash = candidate.patternMatched.lastIndexOf("/");
@@ -205,10 +205,26 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		var candidatesForm = metadataTemplate({selectedCandidates : selectedCandidates});
 		
 		this.dialog.html(candidatesForm);
+
+		$('.tooltip', this.dialog).each(function() {
+			$(this).qtip({
+				content: {
+					text: $('.tt-text', this)
+				},
+				style : {
+					classes : "qtip-admin qtip-rounded qtip-light",
+				}
+			});
+		});
 		
 		this.dialog.find("#ingest_source_choose").click(function(e) {
 			e.preventDefault();
 			self.loadCandidateList(selectedCandidates);
+		});
+
+		$(".file_browse_entry_inputs input[name='create_parent_input']", this.dialog).click(function() {
+			let parent = $(this).parent();
+			$(".folder_name_form", parent).toggleClass('hidden');
 		});
 		
 		this.$form = this.dialog.find("form");
@@ -221,21 +237,28 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			self.dialog.find(".file_browse_entry").each(function(index) {
 				var $this = $(this);
 				var candidate = selectedCandidates[index];
-				
-				var label = $this.find("input[name='file_label']").val();
-				if (!label.trim()) {
+
+				var createParentFolderInput = $this.find("input[name='create_parent_input']");
+				var createParentFolder = true;
+				if (createParentFolderInput.length > 0) {
+					createParentFolder = createParentFolderInput.prop("checked");
+				}
+
+				var folderName = $this.find("input[name='folder_name']").val();
+				if (createParentFolder && !folderName.trim()) {
 					missingFields = true;
 					return false;
 				}
-				
+
 				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'DIRECTORY';
 				
 				var info = {
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,
 					packagingType : packagingType,
-					label : $this.find("input[name='file_label']").val(),
-					staffOnly: $this.find("input[name=staff-only]").prop("checked")
+					label : folderName,
+					staffOnly: $this.find("input[name=staff-only]").prop("checked"),
+					createParentFolder: createParentFolder
 				};
 				fileInfo.push(info);
 			});
