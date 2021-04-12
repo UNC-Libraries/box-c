@@ -23,6 +23,8 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <%@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
 
+<c:set var="hasOriginalFileAccess">${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}</c:set>
+
 <div class="full_record_top">
     <div class="collinfo_metadata browse-header column">
         <c:import url="fullRecord/navigationBar.jsp" />
@@ -119,7 +121,7 @@
     </div>
     <div class="clear">
         <c:choose>
-            <c:when test="${cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
+            <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
                 <c:import url="fullRecord/pdfViewer.jsp" />
             </c:when>
             <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
@@ -127,12 +129,10 @@
                 <div class="clear_space"></div>
                 <div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
             </c:when>
-            <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-                <c:if test="${cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
-                    <div class="clear_space"></div>
-                    <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
-                    </audio>
-                </c:if>
+            <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
+                <div class="clear_space"></div>
+                <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
+                </audio>
             </c:when>
         </c:choose>
     </div>
