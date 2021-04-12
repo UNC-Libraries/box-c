@@ -76,7 +76,7 @@
                  @error-msg="embargoError">
         </embargo>
         <p class="message" :class="{error: !/Saving/.test(response_message)}">{{ response_message }}</p>
-        <ul>
+        <ul class="submit-btn-options">
             <li>
                 <button id="is-submitting"
                         type="submit"
@@ -84,7 +84,7 @@
                         :class="{'btn-disabled': !hasUnsavedChanges}"
                         :disabled="!hasUnsavedChanges">Save Changes</button>
             </li>
-            <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">Cancel</button></li>
+            <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">{{ closeEditorText }}</button></li>
         </ul>
     </div>
 </template>
@@ -175,7 +175,7 @@
                 }
                 let inherited = cloneDeep(this.inherited.roles);
                 // If no roles available for a collection, revert to defaults
-                if (inherited.length == 0 && assigned.length == 0 && this.isCollection) {
+                if (inherited.length === 0 && assigned.length === 0 && this.isCollection) {
                     assigned = cloneDeep(DEFAULT_DISPLAY_COLLECTION);
                 }
                 this.setRoleType(assigned, 'assigned');
@@ -232,20 +232,24 @@
                     return true;
                 }
                 let assignedPatrons = this.assignedPatronRoles;
-                if (assignedPatrons.length != this.saved_details.roles.length) {
+                if (assignedPatrons.length !== this.saved_details.roles.length) {
                     return true;
                 }
                 for (let i = 0; i < assignedPatrons.length; i++) {
                     let saved = this.saved_details.roles[i];
                     let assigned = assignedPatrons[i];
-                    if (saved.principal != assigned.principal) {
+                    if (saved.principal !== assigned.principal) {
                         return true;
                     }
-                    if (saved.role != assigned.role) {
+                    if (saved.role !== assigned.role) {
                         return true;
                     }
                 }
                 return false;
+            },
+
+            closeEditorText() {
+                return this.hasUnsavedChanges ? 'Cancel' : 'Close';
             }
         },
 
@@ -406,7 +410,7 @@
              * @returns {array}
              */
             winningRoleList(allRoles) {
-                if (allRoles.length == 0) {
+                if (allRoles.length === 0) {
                     return [];
                 }
                 let principalsPresent = Array.from(new Set(allRoles.map(r => r.principal)));
@@ -512,6 +516,7 @@
              * See mixins/displayModal.js
              */
             showModal() {
+                this.unsaved_changes = this.hasUnsavedChanges;
                 this.displayModal();
             },
             
@@ -555,7 +560,7 @@
 
             removeAssignedPrincipal(principal) {
                 let index = this.selected_patron_assignments.findIndex(r => r.principal === principal);
-                if (index == -1) {
+                if (index === -1) {
                     return;
                 }
                 this.selected_patron_assignments.splice(index, 1);
@@ -670,6 +675,43 @@
         #add-new-patron-principal-id {
             min-width: 170px;
             width: auto;
+        }
+
+        .submit-btn-options {
+            padding: 10px 0;
+            position: fixed;
+            bottom: 5vh;
+            width: 100%;
+            max-width: 620px;
+            pointer-events: none;
+
+            li {
+                pointer-events: all;
+            }
+        }
+
+        @media screen and (min-height: 850px) {
+            .submit-btn-options {
+                bottom: 15vh;
+            }
+        }
+
+        @media screen and (min-height: 1000px) {
+            .submit-btn-options {
+                bottom: 25vh;
+            }
+        }
+
+        @media screen and (max-height: 700px) {
+            .submit-btn-options {
+                bottom: 1vh;
+            }
+        }
+
+        @media screen and (max-height: 670px) {
+            .submit-btn-options {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
         }
     }
 
