@@ -119,7 +119,7 @@
     </div>
     <div class="clear">
         <c:choose>
-            <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'pdf'}">
+            <c:when test="${cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
                 <c:import url="fullRecord/pdfViewer.jsp" />
             </c:when>
             <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
@@ -128,7 +128,7 @@
                 <div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
             </c:when>
             <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-                <c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
+                <c:if test="${cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
                     <div class="clear_space"></div>
                     <audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
                     </audio>

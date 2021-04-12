@@ -78,16 +78,14 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject obj = dip.getContentObject();
-        FileObject fileObj;
         if (obj instanceof WorkObject) {
-            fileObj = ((WorkObject) obj).getPrimaryObject();
+            return ((WorkObject) obj).getPrimaryObject();
         } else if (obj instanceof FileObject) {
-            fileObj = (FileObject) obj;
+            return (FileObject) obj;
         } else {
             // object being indexed must be a work or a file object
-            fileObj = null;
+            return null;
         }
-        return fileObj;
     }
 
     private String getExtension(String filepath, String mimetype) {

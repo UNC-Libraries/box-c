@@ -136,7 +136,7 @@
 
             <div class="clear">
                 <c:choose>
-                    <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'pdf'}">
+                    <c:when test="${cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
                         <c:import url="fullRecord/pdfViewer.jsp" />
                     </c:when>
                     <c:when test="${viewerNeeded}">
@@ -146,7 +146,7 @@
                     </c:when>
                     <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
                         <c:choose>
-                            <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
+                            <c:if test="${cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
                                 <div class="clear_space"></div>
                                 <audio class="audio_player inline_viewer" src="${dataFileUrl}">
                                 </audio>

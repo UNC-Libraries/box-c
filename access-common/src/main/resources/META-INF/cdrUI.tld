@@ -77,6 +77,20 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>originalFileMimetypeMatches</name>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
+		<function-signature>
+			boolean originalFileMimetypeMatches(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+		</function-signature>
+	</function>
+	<function>
+		<name>getOriginalFileMimetype</name>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
+		<function-signature>
+			java.lang.String getOriginalFileMimetype(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
+		</function-signature>
+	</function>
+	<function>
 		<name>getPreferredDatastream</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
