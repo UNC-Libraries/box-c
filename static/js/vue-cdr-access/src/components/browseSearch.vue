@@ -48,7 +48,9 @@
 
         computed: {
             searchText() {
-                return `Search within this ${this.objectType.toLowerCase()}`
+                const object_type = this.objectType.toLowerCase();
+                const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
+                return `Search within this ${object_text}`
             }
         },
 
