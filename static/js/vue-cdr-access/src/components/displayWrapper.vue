@@ -130,7 +130,7 @@
             },
 
             setTypes() {
-                let params = this.updateWorkType(this.is_admin_unit, this.urlParams().works_only);
+                let params = this.updateWorkType(this.urlParams().works_only);
                 this.default_work_type = params.types;
                 return params;
             },

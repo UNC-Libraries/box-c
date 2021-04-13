@@ -103,16 +103,15 @@ describe('routeUtils', () => {
 
     it("updates work type", () => {
         // Admin units
-        expect(wrapper.vm.updateWorkType(true, false).types).toEqual('Collection');
-        expect(wrapper.vm.updateWorkType(true, true).types).toEqual('Collection');
+        expect(wrapper.vm.updateWorkType(false).types).toEqual('Work,Folder,Collection');
 
         // Works only
         wrapper.vm.$router.currentRoute.query.works_only = 'true';
-        expect(wrapper.vm.updateWorkType(false, true).types).toEqual('Work');
+        expect(wrapper.vm.updateWorkType(true).types).toEqual('Work');
 
         // All work types
         wrapper.vm.$router.currentRoute.query.works_only = 'false';
-        expect(wrapper.vm.updateWorkType(false, false).types).toEqual('Work,Folder');
+        expect(wrapper.vm.updateWorkType(false).types).toEqual('Work,Folder,Collection');
     });
 
     it("coerces works only value to a boolean from a string", () => {

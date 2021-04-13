@@ -63,17 +63,14 @@ export default {
 
         /**
          * Set work types to display
-         * @param is_admin_unit
          * @param works_only
          * @returns {*|({start: number, sort: string, rows: (*|number), browse_type: string}&Dictionary<string|(string|null)[]>)}
          */
-        updateWorkType(is_admin_unit, works_only) {
+        updateWorkType(works_only) {
             let params = this.urlParams();
 
-            if (is_admin_unit) {
-                params.types = 'Collection'
-            } else if (!this.coerceWorksOnly(works_only)) {
-                params.types = 'Work,Folder';
+            if (!this.coerceWorksOnly(works_only)) {
+                params.types = 'Work,Folder,Collection';
             } else {
                 params.types = 'Work';
             }
