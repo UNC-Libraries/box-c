@@ -62,34 +62,30 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        ContentObject contentObj = dip.getContentObject();
-        // object being indexed must be a work or a file object
-        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
-                return;
-        }
+        // object being indexed must be a file object, or a work with a primary object
         FileObject fileObj = getFileObject(dip);
-        BinaryObject binObj;
         if (fileObj == null) {
                 return;
         }
-        binObj = fileObj.getOriginalFile();
+        BinaryObject binObj = fileObj.getOriginalFile();
         String filepath = binObj.getFilename();
         String mimetype = binObj.getMimetype();
-        log.debug("The binary has filepath {} and mimetype {}", filepath, mimetype);
-        ArrayList<String> contentTypes = new ArrayList<>();
+        log.debug("The binary {} has filepath {} and mimetype {}", binObj.getPid(), filepath, mimetype);
+        List<String> contentTypes = new ArrayList<>();
         extractContentType(filepath, mimetype, contentTypes);
         dip.getDocument().setContentType(contentTypes);
     }
 
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject obj = dip.getContentObject();
-        FileObject fileObj;
         if (obj instanceof WorkObject) {
-            fileObj = ((WorkObject) obj).getPrimaryObject();
+            return ((WorkObject) obj).getPrimaryObject();
+        } else if (obj instanceof FileObject) {
+            return (FileObject) obj;
         } else {
-            fileObj = (FileObject) obj;
+            // object being indexed must be a work or a file object
+            return null;
         }
-        return fileObj;
     }
 
     private String getExtension(String filepath, String mimetype) {
@@ -103,19 +99,18 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             }
         }
         if (mimetype != null) {
-            String extension = mimetypeToExtensionMap.getProperty(mimetype);
-            return extension;
+            return mimetypeToExtensionMap.getProperty(mimetype);
         }
         return null;
     }
 
     private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
-        ContentCategory contentCategory = getContentCategory(mimetype, getExtension(filepath, mimetype));
+        String extension = getExtension(filepath, mimetype);
+        ContentCategory contentCategory = getContentCategory(mimetype, extension);
         // add string with name + display-name to list of content types
         contentTypes.add('^' + contentCategory.getJoined());
         StringBuilder contentType = new StringBuilder();
         contentType.append('/').append(contentCategory.name()).append('^');
-        String extension = getExtension(filepath, mimetype);
         if (extension == null) {
             contentType.append("unknown,unknown");
         } else {
@@ -147,7 +142,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         }
 
         String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
-        contentCategory = (String) contentTypeProperties.get("ext." + extension);
+        if (contentCategory == null) {
+            contentCategory = (String) contentTypeProperties.get("ext." + extension);
+        }
 
         return ContentCategory.getContentCategory(contentCategory);
     }

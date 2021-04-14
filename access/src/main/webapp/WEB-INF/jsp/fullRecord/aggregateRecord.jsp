@@ -33,6 +33,7 @@
 </c:choose>
 
 <c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
+<c:set var="hasOriginalFileAccess">${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}</c:set>
 
 <div class="full_record_top">
             <div class="collinfo_metadata browse-header aggregate-record">
@@ -49,7 +50,7 @@
                         </c:if>
 
                         <c:choose>
-                            <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
+                            <c:when test="${hasOriginalFileAccess}">
                                 <div class="actionlink right download">
                                     <a class="button" href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
                                 </div>
@@ -136,7 +137,7 @@
 
             <div class="clear">
                 <c:choose>
-                    <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'pdf'}">
+                    <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
                         <c:import url="fullRecord/pdfViewer.jsp" />
                     </c:when>
                     <c:when test="${viewerNeeded}">
@@ -144,14 +145,10 @@
                         <link rel="stylesheet" href="/static/plugins/uv/uv.css">
                         <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
                     </c:when>
-                    <c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
-                        <c:choose>
-                            <c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-                                <div class="clear_space"></div>
-                                <audio class="audio_player inline_viewer" src="${dataFileUrl}">
-                                </audio>
-                            </c:when>
-                        </c:choose>
+                    <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
+                        <div class="clear_space"></div>
+                        <audio class="audio_player inline_viewer" src="${dataFileUrl}">
+                        </audio>
                     </c:when>
                 </c:choose>
             </div>

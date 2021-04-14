@@ -43,6 +43,7 @@ public class DatastreamUtil {
     public static void setDatastreamEndpoint(String uri) {
         datastreamEndpoint = uri;
     }
+
     /**
      * Returns a URL for retrieving a specific datastream of the provided object.
      *
@@ -87,6 +88,31 @@ public class DatastreamUtil {
      */
     public static String getOriginalFileUrl(BriefObjectMetadata metadata) {
         return getDatastreamUrl(metadata, ORIGINAL_FILE.getId());
+    }
+
+    /**
+     * @param metadata metadata record for object
+     * @return Get the mimetype of the original file datastream, or null if no original file
+     */
+    public static String getOriginalFileMimetype(BriefObjectMetadata metadata) {
+        Datastream preferredDS = getPreferredDatastream(metadata, ORIGINAL_FILE.getId());
+        if (preferredDS == null) {
+            return null;
+        }
+        return preferredDS.getMimetype();
+    }
+
+    /**
+     * @param metadata metadata record for object
+     * @param suffix mimetype suffix
+     * @return
+     */
+    public static boolean originalFileMimetypeMatches(BriefObjectMetadata metadata, String pattern) {
+        String mimetype = getOriginalFileMimetype(metadata);
+        if (mimetype == null) {
+            return false;
+        }
+        return mimetype.matches(pattern);
     }
 
     /**
