@@ -3,7 +3,7 @@
         <div class="browse-search field has-addons">
             <div class="control">
                 <input @keyup.enter="getResults" class="input" type="text" v-model.trim="search_query"
-                       placeholder="Search within this level" aria-label="Search within this level">
+                       :placeholder="searchText" :aria-label="searchText">
             </div>
             <div class="control">
                 <button @click="getResults" class="button">Search</button>
@@ -18,6 +18,13 @@
 
     export default {
         name: 'browseSearch',
+
+        props: {
+            objectType: {
+                default: 'object',
+                type: String
+            }
+        },
 
         watch: {
             // Checks for route changes and updates the search box text as needed, keeping it up
@@ -36,6 +43,14 @@
         data() {
             return {
                 search_query: ''
+            }
+        },
+
+        computed: {
+            searchText() {
+                const object_type = this.objectType.toLowerCase();
+                const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
+                return `Search within this ${object_text}`
             }
         },
 

@@ -56,7 +56,7 @@ describe('worksOnly.vue', () => {
         wrapper.setData({ works_only: true });
         record_input.trigger('click');
 
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("updates route to only show works if button is checked for a list view", () => {
@@ -72,7 +72,7 @@ describe('worksOnly.vue', () => {
         wrapper.setData({ works_only: true });
         record_input.trigger('click');
 
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
     });
 
     afterEach(() => {

@@ -25,8 +25,5 @@ export default new Router({
       name: 'collectionBrowse',
       component: collectionBrowse
     }
-  ],
-  scrollBehavior (to, from, savedPosition) {
-    return { x: 0, y: 0 }
-  }
+  ]
 });

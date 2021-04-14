@@ -42,7 +42,7 @@
                 this.works_only = !this.works_only;
 
                 let params = this.urlParams();
-                params.types = this.updateWorkType(this.adminUnit, this.works_only).types;
+                params.types = this.updateWorkType(this.works_only).types;
                 params.works_only = this.works_only;
 
                 this.$router.push({ name: 'displayRecords', query: params }).catch((e) => {

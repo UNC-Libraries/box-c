@@ -76,12 +76,13 @@ describe('displayWrapper.vue', () => {
 
     it("retrieves data", (done) => {
         wrapper.vm.retrieveData();
-        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder`, {
+        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder%2CCollection`, {
             status: 200,
             response: JSON.stringify(response)
         });
 
         moxios.wait(() => {
+            expect(wrapper.vm.search_method).toEqual('listJson');
             expect(wrapper.vm.record_count).toEqual(response.resultCount);
             expect(wrapper.vm.record_list).toEqual(response.metadata);
             expect(wrapper.vm.container_name).toEqual(response.container.title);
@@ -95,6 +96,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+
         expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
     });
@@ -105,7 +107,16 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
+    });
+
+    it("uses the correct search parameters if search text is specified", () => {
+        wrapper.vm.$router.currentRoute.query.anywhere = 'search query';
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("uses the correct parameters for admin set browse", () => {
@@ -115,11 +126,12 @@ describe('displayWrapper.vue', () => {
             is_folder: false
         });
         wrapper.vm.$router.currentRoute.query.works_only = 'false';
+        wrapper.vm.$router.currentRoute.query.anywhere = '';
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
 
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Collection');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("updates the url when work type changes", () => {
@@ -130,7 +142,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
         wrapper.vm.updateUrl();
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder');
+        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
@@ -155,5 +167,6 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        wrapper = null;
     });
 });

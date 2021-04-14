@@ -54,7 +54,7 @@ describe('browseSort.vue', () => {
         expect(wrapper_search.vm.sort_order).toEqual('title,reverse');
     });
 
-    it("maintains the base path when changing search pages", async () => {
+    it("maintains the base path when changing search pages", () => {
         wrapper_search.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
 
         // Change sort types
