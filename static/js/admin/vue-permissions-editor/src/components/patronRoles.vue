@@ -23,7 +23,7 @@
         <ul class="set-patron-roles">
             <li v-if="!isCollection">
                 <input type="radio" v-model="user_type" value="parent" :disabled="isDeleted"
-                        id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
+                       id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
             </li>
             <li>
                 <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"
@@ -65,17 +65,16 @@
             </li>
             <li>
                 <input type="radio" v-model="user_type" value="staff" :disabled="isDeleted"
-                        id="user_type_staff"> <label for="user_type_staff"> Staff only access</label>
+                       id="user_type_staff"> <label for="user_type_staff"> Staff only access</label>
             </li>
         </ul>
 
         <embargo ref="embargoInfo"
                  :current-embargo="embargo"
                  :is-deleted="isDeleted"
-                 @embargo-info="setEmbargo"
-                 @error-msg="embargoError">
+                 @embargo-info="setEmbargo">
         </embargo>
-        <p class="message" :class="{error: !/Saving/.test(response_message)}">{{ response_message }}</p>
+
         <ul class="submit-btn-options">
             <li>
                 <button id="is-submitting"
@@ -151,7 +150,6 @@
                 deleted: false,
                 new_assignment_role: VIEW_ORIGINAL_ROLE,
                 new_assignment_principal: '',
-                response_message: '',
                 user_type: null,
                 should_show_add_principal: false,
                 saved_details: null
@@ -366,13 +364,11 @@
 
             saveRoles() {
                 this.is_submitting = true;
-                this.response_message = 'Saving permissions \u2026';
                 // Commit uncommitted new group assignment if one was input
                 if (this.should_show_add_principal && this.new_assignment_principal !== '') {
                     if (!this.addPrincipal()) {
                         // Abort saving if unable to commit changes
                         this.is_submitting = false;
-                        this.response_message = '';
                         return false;
                     }
                 }
@@ -387,7 +383,6 @@
                     let response_msg = `Patron roles successfully updated for: ${this.title}`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
-                    this.response_message = '';
                     this.saved_details = submissionDetails;
 
                     // Update entry in results table
@@ -493,14 +488,6 @@
                 }
 
                 return role;
-            },
-
-            /**
-             * Updates display message based on emitted event from embargo component
-             * @param error_msg
-             */
-            embargoError(error_msg) {
-                this.response_message = error_msg;
             },
 
             /**
@@ -668,49 +655,23 @@
             }
         }
 
-        p.error {
-            color: red;
-        }
-
         #add-new-patron-principal-id {
             min-width: 170px;
             width: auto;
         }
 
         .submit-btn-options {
-            padding: 10px 0;
-            position: fixed;
-            bottom: 5vh;
+            position: absolute;
+            bottom: 1vh;
+            padding: 10px 30px;
             width: 100%;
             max-width: 620px;
             pointer-events: none;
+            background-color: rgba(0, 0, 0, 0.05);
+            margin-left: -25px;
 
             li {
                 pointer-events: all;
-            }
-        }
-
-        @media screen and (min-height: 850px) {
-            .submit-btn-options {
-                bottom: 15vh;
-            }
-        }
-
-        @media screen and (min-height: 1000px) {
-            .submit-btn-options {
-                bottom: 25vh;
-            }
-        }
-
-        @media screen and (max-height: 700px) {
-            .submit-btn-options {
-                bottom: 1vh;
-            }
-        }
-
-        @media screen and (max-height: 670px) {
-            .submit-btn-options {
-                background-color: rgba(0, 0, 0, 0.05);
             }
         }
     }

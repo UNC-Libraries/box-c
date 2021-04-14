@@ -148,7 +148,7 @@
 <style scoped lang="scss">
     #set-embargo {
         border-top: 1px solid gray;
-        margin: 25px -25px 0 -25px;
+        margin: 25px -25px;
 
         h3 {
             color: black;
