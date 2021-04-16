@@ -662,16 +662,45 @@
 
         .submit-btn-options {
             position: absolute;
-            bottom: 1vh;
-            padding: 10px 30px;
+            top: 90.5vh;
             width: 100%;
             max-width: 620px;
             pointer-events: none;
-            background-color: rgba(0, 0, 0, 0.05);
-            margin-left: -25px;
+            background-color: white;
+            padding: 3px;
 
             li {
                 pointer-events: all;
+            }
+        }
+
+        @media screen and (max-height: 605px) {
+            .submit-btn-options {
+                top: 90.3vh
+            }
+        }
+
+        @media screen and (max-height: 580px) {
+            .submit-btn-options {
+                top: 90.1vh
+            }
+        }
+
+        @media screen and (max-height: 545px) {
+            .submit-btn-options {
+                top: 89.7vh
+            }
+        }
+
+        @media screen and (max-height: 520px) {
+            .submit-btn-options {
+                top: 89.4vh
+            }
+        }
+
+        @media screen and (max-height: 495px) {
+            .submit-btn-options {
+                top: 88.9vh
             }
         }
     }
