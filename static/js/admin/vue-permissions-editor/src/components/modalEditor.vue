@@ -156,7 +156,6 @@
             border-radius: 0 0 5px 5px;
             margin: 10px -30px -20px -30px;
             max-height: 550px;
-            overflow: auto;
             padding: 20px 0;
         }
     }

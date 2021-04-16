@@ -15,10 +15,6 @@ const response = {
     inherited: { roles: inherited_roles, deleted: false, embargo: null, assignedTo: null },
     assigned: { roles: assigned_roles,  deleted: false, embargo: null, assignedTo: UUID }
 };
-const role_history = {
-    authenticated: 'canViewAccessCopies',
-    patron: 'canViewAccessCopies'
-};
 const none_response = {
     inherited: { roles: null, deleted: false, embargo: null },
     assigned: { roles: [
@@ -53,18 +49,6 @@ const full_roles = {
 };
 let compacted_assigned_can_view_roles = [
     { principal: 'patron', role: 'canViewAccessCopies', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
-];
-const STAFF_PERMS = [
-    { principal: 'everyone', role: 'none' },
-    { principal: 'authenticated', role: 'none' }
-];
-const DEFAULT_PERMS = [
-    { principal: 'everyone', role: 'canViewOriginals' },
-    { principal: 'authenticated', role: 'canViewOriginals' }
-];
-const staff_only_roles = [
-    { principal: "everyone", role: "none", assignedTo: UUID },
-    { principal: "authenticated", role: "none", assignedTo: UUID }
 ];
 
 let wrapper, selects;
@@ -1084,13 +1068,99 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("prompts the user if 'Cancel' is clicked and there are unsaved changes", () => {
+    it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays aren't the same size", () => {
         wrapper.setData({
-            unsaved_changes: true
+            saved_details: {
+                roles: []
+            }
+        });
+        wrapper.vm.assignedPatronRoles.set = jest.fn().mockReturnValue([{
+            assignedTo: '1234',
+            principal: 'everyone',
+            role: 'canViewAccessCopies'
+        }, {
+            assignedTo: '1234',
+            principal: 'authenticated',
+            role: 'canViewOriginals'
+        }]);
+        wrapper.find('#is-canceling').trigger('click');
+        expect(global.confirm).toHaveBeenCalled();
+    });
+
+    it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays don't have the same values", () => {
+        wrapper.setData({
+            saved_details: {
+                roles: [{
+                    assignedTo: '1234',
+                    principal: 'everyone',
+                    role: 'canViewAccessCopies'
+                }, {
+                    assignedTo: '1234',
+                    principal: 'authenticated',
+                    role: 'canViewAccessCopies'
+                }]
+            }
+        });
+        wrapper.vm.assignedPatronRoles.set = jest.fn().mockReturnValue([{
+            assignedTo: '1234',
+            principal: 'everyone',
+            role: 'canViewAccessCopies'
+        }, {
+            assignedTo: '1234',
+            principal: 'authenticated',
+            role: 'canViewOriginals'
+        }]);
+        wrapper.find('#is-canceling').trigger('click');
+        expect(global.confirm).toHaveBeenCalled();
+    });
+
+    it("prompts the user if 'Cancel' is clicked and an embargo has been added", () => {
+        wrapper.setData({
+            saved_details: {
+                embargo: null
+            },
+            embargo: '2099-12-31'
         });
         wrapper.find('#is-canceling').trigger('click');
         expect(global.confirm).toHaveBeenCalled();
     });
+
+    it("prompts the user if 'Cancel' is clicked and an embargo has been removed", () => {
+        wrapper.setData({
+            saved_details: {
+                embargo: '2099-12-31'
+            },
+            embargo: null
+        });
+        wrapper.find('#is-canceling').trigger('click');
+        expect(global.confirm).toHaveBeenCalled();
+    });
+
+    it("prompts the user if 'Cancel' is clicked and a new user has been added", () => {
+        wrapper.setData({
+            saved_details: {
+                embargo: null
+            },
+            new_assignment_principal: 'bigGroup',
+            new_assignment_role: 'canViewOriginals'
+        });
+        wrapper.find('#is-canceling').trigger('click');
+        expect(global.confirm).toHaveBeenCalled();
+    });
+
+    it("Updates 'cancel' button text if there are unsaved changes", async () => {
+        //stubDataLoad();
+        wrapper.setData({
+            saved_details: {}
+        })
+
+        let btn = wrapper.find('#is-canceling');
+        expect(btn.text()).toBe('Close');
+
+        wrapper.find('#user_type_patron').setChecked();
+        await wrapper.vm.$nextTick();
+        expect(btn.text()).toBe('Cancel');
+    })
 
     afterEach(() => {
         moxios.uninstall();
