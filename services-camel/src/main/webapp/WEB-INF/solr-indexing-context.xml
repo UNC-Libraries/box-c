@@ -110,8 +110,8 @@
         class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
         init-method="init">
         <property name="solrSettings" ref="solrSettings" />
-        <property name="autoPushCount" value="1000" />
-        <property name="updateThreads" value="2" />
+        <property name="autoPushCount" value="${solr.update.autoPushCount}" />
+        <property name="updateThreads" value="${solr.update.updateThreads}" />
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />

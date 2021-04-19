@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
@@ -58,9 +57,13 @@ public class SolrUpdateDriver {
     public void init() {
         log.debug("Instantiating concurrent udpate solr server for " + solrSettings.getUrl());
 
-        solrClient = new HttpSolrClient.Builder(solrSettings.getUrl())
+        solrClient = new TolerantConcurrentUpdateSolrClient.Builder(solrSettings.getUrl())
+                .withThreadCount(updateThreads)
+                .withQueueSize(autoPushCount)
                 .build();
-        updateSolrClient = new HttpSolrClient.Builder(solrSettings.getUrl())
+        updateSolrClient = new TolerantConcurrentUpdateSolrClient.Builder(solrSettings.getUrl())
+                .withThreadCount(updateThreads)
+                .withQueueSize(autoPushCount)
                 .build();
     }
 
