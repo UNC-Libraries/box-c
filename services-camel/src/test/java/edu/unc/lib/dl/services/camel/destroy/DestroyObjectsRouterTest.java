@@ -115,7 +115,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         Model model = createDefaultModel();
         Resource resc = model.getResource(pid.getRepositoryPath());
         resc.addProperty(RDF.type, Cdr.Work);
-        when(workObj.getResource()).thenReturn(resc);
+        when(workObj.getResource(true)).thenReturn(resc);
         when(workObj.getPid()).thenReturn(pid);
         when(workObj.getUri()).thenReturn(pid.getRepositoryUri());
         when(workObj.getTypes()).thenReturn(Collections.singletonList(Cdr.Work.getURI()));

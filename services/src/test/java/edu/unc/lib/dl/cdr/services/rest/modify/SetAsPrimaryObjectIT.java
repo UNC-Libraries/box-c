@@ -183,11 +183,13 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
     }
 
     private void assertPrimaryObjectSet(WorkObject parent, FileObject fileObj) {
+        parent.refresh();
         assertNotNull(parent.getPrimaryObject());
         assertEquals(parent.getPrimaryObject().getPid(), fileObj.getPid());
     }
 
     private void assertPrimaryObjectNotSet(WorkObject parent) {
+        parent.refresh();
         assertNull(parent.getPrimaryObject());
     }
 

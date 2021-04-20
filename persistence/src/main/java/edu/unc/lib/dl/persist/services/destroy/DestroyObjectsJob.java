@@ -93,7 +93,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                     continue;
                 }
 
-                if (!repoObj.getResource().hasProperty(RDF.type, Cdr.Tombstone)) {
+                if (!repoObj.getResource(true).hasProperty(RDF.type, Cdr.Tombstone)) {
                     RepositoryObject parentObj = repoObj.getParent();
 
                     // purge tree with repoObj as root from repository
@@ -142,7 +142,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
             }
         }
 
-        Resource rootResc = rootOfTree.getResource();
+        Resource rootResc = rootOfTree.getResource(true);
         Model rootModel = rootResc.getModel();
         List<URI> binaryUris = null;
         if (rootOfTree instanceof FileObject) {
@@ -196,7 +196,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
     private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
-        Resource childResc = child.getResource();
+        Resource childResc = child.getResource(true);
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);
         Model childModel = childResc.getModel();
         StmtIterator iter = childModel.listStatements(selector);

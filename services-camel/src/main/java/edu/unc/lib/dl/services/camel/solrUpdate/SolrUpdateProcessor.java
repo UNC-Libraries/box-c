@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.dl.metrics.TimerFactory.createTimerForClass;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.stream.Collectors.toMap;
@@ -36,6 +37,7 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Processes solr update messages, triggering the requested solr update action.
@@ -45,44 +47,47 @@ import edu.unc.lib.dl.util.IndexingActionType;
  */
 public class SolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
+    private static final Timer timer = createTimerForClass(SolrUpdateProcessor.class);
 
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        log.debug("Processing solr update");
-        final Message in = exchange.getIn();
+        try (Timer.Context context = timer.time()) {
+            log.debug("Processing solr update");
+            final Message in = exchange.getIn();
 
-        Document msgBody = MessageUtil.getDocumentBody(in);
-        Element body = msgBody.getRootElement();
+            Document msgBody = MessageUtil.getDocumentBody(in);
+            Element body = msgBody.getRootElement();
 
-        String pid = body.getChild("pid", ATOM_NS).getTextTrim();
-        String action = body.getChild("actionType", ATOM_NS).getTextTrim();
-        IndexingActionType actionType = IndexingActionType.getAction(action);
+            String pid = body.getChild("pid", ATOM_NS).getTextTrim();
+            String action = body.getChild("actionType", ATOM_NS).getTextTrim();
+            IndexingActionType actionType = IndexingActionType.getAction(action);
 
-        List<String> children = extractChildren(body);
+            List<String> children = extractChildren(body);
 
-        Map<String, String> params = extractParams(body);
+            Map<String, String> params = extractParams(body);
 
-        Element authorEl = body.getChild("author", ATOM_NS);
-        String author = null;
-        if (authorEl != null) {
-            author = authorEl.getChildText("name", ATOM_NS);
-        }
+            Element authorEl = body.getChild("author", ATOM_NS);
+            String author = null;
+            if (authorEl != null) {
+                author = authorEl.getChildText("name", ATOM_NS);
+            }
 
-        SolrUpdateRequest updateRequest;
-        if (children == null) {
-            updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
-        } else {
-            updateRequest = new ChildSetRequest(pid, children, actionType, author);
-        }
-        updateRequest.setParams(params);
+            SolrUpdateRequest updateRequest;
+            if (children == null) {
+                updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
+            } else {
+                updateRequest = new ChildSetRequest(pid, children, actionType, author);
+            }
+            updateRequest.setParams(params);
 
-        IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
-        if (indexingAction != null) {
-            log.info("Performing action {} on object {}",
-                    action, pid);
-            indexingAction.performAction(updateRequest);
+            IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
+            if (indexingAction != null) {
+                log.info("Performing action {} on object {}",
+                        action, pid);
+                indexingAction.performAction(updateRequest);
+            }
         }
     }
 

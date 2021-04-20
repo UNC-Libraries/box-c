@@ -117,7 +117,7 @@ public class PatronAccessAssignmentService {
                     + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
 
-            Model updated = ModelFactory.createDefaultModel().add(repoObj.getModel());
+            Model updated = ModelFactory.createDefaultModel().add(repoObj.getModel(true));
             Resource rolesEventResc = replacePatronRoles(repoObj, agent, updated, accessDetails.getRoles());
             Resource embargoEventResc = updateEmbargo(repoObj, agent, updated, accessDetails.getEmbargo());
 

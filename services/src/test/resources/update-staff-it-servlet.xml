@@ -57,7 +57,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="0" />
         <property name="cacheTimeToLive" value="0" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">

@@ -89,6 +89,7 @@ public class WorkObject extends ContentContainerObject {
 
         // Add the relation
         repoObjFactory.createExclusiveRelationship(this, Cdr.primaryObject, primaryObj.getResource());
+        refresh();
     }
 
     /**
@@ -116,6 +117,7 @@ public class WorkObject extends ContentContainerObject {
         }
 
         repoObjFactory.addMember(this, member);
+        member.refresh();
         return this;
     }
 
@@ -182,6 +184,9 @@ public class WorkObject extends ContentContainerObject {
 
         // Add the new file object as a member of this Work
         repoObjFactory.addMember(this, fileObj);
+        // Force the work and its new file to refresh to reflect membership change
+        fileObj.refresh();
+        refresh();
 
         return fileObj;
     }

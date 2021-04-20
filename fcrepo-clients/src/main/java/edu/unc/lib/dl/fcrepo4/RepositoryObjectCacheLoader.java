@@ -62,8 +62,15 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
     @Override
     public RepositoryObject load(PID pid) {
-        log.debug("Loading repository object {} for cache", pid);
+        long start = System.nanoTime();
+        try {
+            return loadObject(pid);
+        } finally {
+            log.debug("Loaded repository object {} in {}s", pid, (System.nanoTime() - start) / 1e9);
+        }
+    }
 
+    public RepositoryObject loadObject(PID pid) {
         String etag;
         try (FcrepoResponse response = client.head(pid.getRepositoryUri())
                 .perform()) {

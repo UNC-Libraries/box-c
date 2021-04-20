@@ -23,6 +23,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor;
 
 /**
  * Route for performing solr updates for update requests.
@@ -42,6 +43,9 @@ public class SolrUpdateRouter extends RouteBuilder {
     @BeanInject(value = "solrUpdatePreprocessor")
     private SolrUpdatePreprocessor solrUpdatePreprocessor;
 
+    @BeanInject(value = "cacheInvalidatingProcessor")
+    private CacheInvalidatingProcessor cacheInvalidatingProcessor;
+
     @Override
     public void configure() throws Exception {
         onException(NotFoundException.class)
@@ -60,24 +64,19 @@ public class SolrUpdateRouter extends RouteBuilder {
             .routeId("CdrServiceSolrUpdate")
             .startupOrder(510)
             .bean(solrUpdatePreprocessor)
+            // Ensure that data for the object being directly indexed is up to date
+            .bean(cacheInvalidatingProcessor)
             .log(LoggingLevel.DEBUG, log, "Received solr update message with action ${header[CdrSolrUpdateAction]}")
             .choice()
                 .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
-                    .to("{{cdr.solrupdate.large.consumer}}")
+                    .to("{{cdr.solrupdate.large.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isSmallAction")
-                    .to("{{cdr.solrupdate.small.dest}}")
+                    .bean(solrSmallUpdateProcessor)
                 .otherwise()
                     .bean(solrUpdatePreprocessor, "logUnknownSolrUpdate")
             .endChoice();
 
-        from("{{cdr.solrupdate.small.consumer}}")
-            .routeId("CdrSolrUpdateSmall")
-            .startupOrder(508)
-            .log(LoggingLevel.DEBUG, log, "Performing batch of small solr updates")
-            .split(body())
-            .bean(solrSmallUpdateProcessor);
-
-        from("{{cdr.solrupdate.large.consumer}}")
+        from("{{cdr.solrupdate.large.camel}}")
             .routeId("CdrSolrUpdateLarge")
             .startupOrder(507)
             .log(LoggingLevel.DEBUG, log, "Performing large solr update")

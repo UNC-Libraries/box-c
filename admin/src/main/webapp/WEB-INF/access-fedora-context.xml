@@ -57,7 +57,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">

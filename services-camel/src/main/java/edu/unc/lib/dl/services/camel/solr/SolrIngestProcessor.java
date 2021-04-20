@@ -17,6 +17,7 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
+import static edu.unc.lib.dl.metrics.TimerFactory.createTimerForClass;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.util.IndexingActionType;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Index newly ingested objects in Solr
@@ -50,6 +52,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
  */
 public class SolrIngestProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrIngestProcessor.class);
+    private static final Timer timer = createTimerForClass(SolrIngestProcessor.class);
 
     private DocumentIndexingPackageFactory factory;
     private DocumentIndexingPipeline pipeline;
@@ -67,38 +70,40 @@ public class SolrIngestProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        final Message in = exchange.getIn();
-        String fcrepoUri = (String) in.getHeader(FCREPO_URI);
+        try (Timer.Context context = timer.time()) {
+            final Message in = exchange.getIn();
+            String fcrepoUri = (String) in.getHeader(FCREPO_URI);
 
-        log.debug("Processing solr request for {}", fcrepoUri);
+            log.debug("Processing solr request for {}", fcrepoUri);
 
-        List<PID> targetPids = new ArrayList<>();
-        PID targetPid = PIDs.get(fcrepoUri);
-        String resourceTypes = (String) in.getHeader(RESOURCE_TYPE);
+            List<PID> targetPids = new ArrayList<>();
+            PID targetPid = PIDs.get(fcrepoUri);
+            String resourceTypes = (String) in.getHeader(RESOURCE_TYPE);
 
-        // for binaries, need to index the file and work objects which contain it
-        if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
-            targetPid = PIDs.get(targetPid.getId());
-            FileObject parentFile = repoObjLoader.getFileObject(targetPid);
-            RepositoryObject grandParent = parentFile.getParent();
-            // Index both the parent file and work
-            if (grandParent instanceof WorkObject) {
-                targetPids.add(grandParent.getPid());
+            // for binaries, need to index the file and work objects which contain it
+            if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
+                targetPid = PIDs.get(targetPid.getId());
+                FileObject parentFile = repoObjLoader.getFileObject(targetPid);
+                RepositoryObject grandParent = parentFile.getParent();
+                // Index both the parent file and work
+                if (grandParent instanceof WorkObject) {
+                    targetPids.add(grandParent.getPid());
+                }
             }
-        }
 
-        targetPids.add(targetPid);
+            targetPids.add(targetPid);
 
-        log.debug("Indexing objects {}", targetPids);
-        for (PID pid: targetPids) {
-            SolrUpdateRequest updateRequest = new SolrUpdateRequest(
-                    pid.getRepositoryPath(), IndexingActionType.ADD);
+            log.debug("Indexing objects {}", targetPids);
+            for (PID pid: targetPids) {
+                SolrUpdateRequest updateRequest = new SolrUpdateRequest(
+                        pid.getRepositoryPath(), IndexingActionType.ADD);
 
-            DocumentIndexingPackage dip = factory.createDip(pid);
-            updateRequest.setDocumentIndexingPackage(dip);
+                DocumentIndexingPackage dip = factory.createDip(pid);
+                updateRequest.setDocumentIndexingPackage(dip);
 
-            pipeline.process(dip);
-            solrUpdateDriver.addDocument(dip.getDocument());
+                pipeline.process(dip);
+                solrUpdateDriver.addDocument(dip.getDocument());
+            }
         }
     }
 }

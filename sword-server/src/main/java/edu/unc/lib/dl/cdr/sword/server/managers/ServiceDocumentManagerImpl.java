@@ -60,7 +60,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 
     private Collection<PackagingType> acceptedPackaging;
     @Autowired
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     @Override
     public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
@@ -124,7 +124,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
      */
     protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
             SwordConfigurationImpl config) throws IOException {
-        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
         ContentContainerObject containerObj;
         if (repoObj instanceof ContentContainerObject) {
             containerObj = (ContentContainerObject) repoObj;

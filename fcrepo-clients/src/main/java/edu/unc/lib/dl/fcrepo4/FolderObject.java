@@ -59,6 +59,7 @@ public class FolderObject extends ContentContainerObject {
         }
 
         repoObjFactory.addMember(this, member);
+        member.refresh();
         return this;
     }
 
@@ -80,10 +81,11 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created folder object
      */
     public FolderObject addFolder(Model model) {
-        FolderObject work = repoObjFactory.createFolderObject(model);
-        repoObjFactory.addMember(this, work);
+        FolderObject folder = repoObjFactory.createFolderObject(model);
+        repoObjFactory.addMember(this, folder);
+        folder.refresh();
 
-        return work;
+        return folder;
     }
 
     /**
@@ -105,6 +107,7 @@ public class FolderObject extends ContentContainerObject {
     public WorkObject addWork(Model model) {
         WorkObject work = repoObjFactory.createWorkObject(model);
         repoObjFactory.addMember(this, work);
+        work.refresh();
 
         return work;
     }

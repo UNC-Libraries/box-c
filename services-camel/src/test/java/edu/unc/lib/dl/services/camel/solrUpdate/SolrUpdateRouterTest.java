@@ -102,11 +102,12 @@ public class SolrUpdateRouterTest {
     @Test
     public void indexSingleObject() throws Exception {
         Document msg = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.ADD);
-        template.sendBodyAndHeaders(msg, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(2)
+                .whenCompleted(1)
                 .create();
+
+        template.sendBodyAndHeaders(msg, null);
 
         notify.matches(5l, TimeUnit.SECONDS);
 
@@ -121,12 +122,13 @@ public class SolrUpdateRouterTest {
 
         Document msg = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.ADD);
         Document msg2 = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.UPDATE_DESCRIPTION);
-        template.sendBodyAndHeaders(msg, null);
-        template.sendBodyAndHeaders(msg2, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(3)
+                .whenCompleted(2)
                 .create();
+
+        template.sendBodyAndHeaders(msg, null);
+        template.sendBodyAndHeaders(msg2, null);
 
         notify.matches(5l, TimeUnit.SECONDS);
 
@@ -141,13 +143,14 @@ public class SolrUpdateRouterTest {
         Document msg1 = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.ADD);
         Document msg2 = makeIndexingOperationBody(USER, targetPid2, null, IndexingActionType.UPDATE_DESCRIPTION);
         Document msg3 = makeIndexingOperationBody(USER, targetPid, null, IndexingActionType.UPDATE_ACCESS);
+
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(3)
+                .create();
+
         template.sendBodyAndHeaders(msg1, null);
         template.sendBodyAndHeaders(msg2, null);
         template.sendBodyAndHeaders(msg3, null);
-
-        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(4)
-                .create();
 
         notify.matches(5l, TimeUnit.SECONDS);
 
@@ -162,11 +165,12 @@ public class SolrUpdateRouterTest {
     public void indexLarge() throws Exception {
         Document msg = makeIndexingOperationBody(USER, targetPid, Arrays.asList(targetPid),
                 IndexingActionType.UPDATE_ACCESS_TREE);
-        template.sendBodyAndHeaders(msg, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(1)
                 .create();
+
+        template.sendBodyAndHeaders(msg, null);
 
         notify.matches(5l, TimeUnit.SECONDS);
 
@@ -183,13 +187,13 @@ public class SolrUpdateRouterTest {
                 IndexingActionType.ADD_SET_TO_PARENT);
         Document msg3 = makeIndexingOperationBody(USER, targetPid2, null, IndexingActionType.ADD);
 
-        template.sendBodyAndHeaders(msg1, null);
-        template.sendBodyAndHeaders(msg2, null);
-        template.sendBodyAndHeaders(msg3, null);
-
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(3)
                 .create();
+
+        template.sendBodyAndHeaders(msg1, null);
+        template.sendBodyAndHeaders(msg2, null);
+        template.sendBodyAndHeaders(msg3, null);
 
         notify.matches(5l, TimeUnit.SECONDS);
 

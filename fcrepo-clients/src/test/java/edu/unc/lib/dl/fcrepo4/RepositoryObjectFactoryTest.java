@@ -185,7 +185,7 @@ public class RepositoryObjectFactoryTest {
         PID memberPid = pidMinter.mintContentPid();
         ContentObject member = mock(ContentObject.class);
         when(member.getPid()).thenReturn(memberPid);
-        when(member.getModel()).thenReturn(memberModel);
+        when(member.getModel(true)).thenReturn(memberModel);
         when(member.getMetadataUri()).thenReturn(memberPid.getRepositoryUri());
 
         repoObjFactory.addMember(parent, member);

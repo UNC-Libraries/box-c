@@ -28,6 +28,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor;
 
 /**
  * Meta router which sequences all service routes to run on events.
@@ -40,6 +41,9 @@ public class MetaServicesRouter extends RouteBuilder {
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
+
+    @BeanInject(value = "cacheInvalidatingProcessor")
+    private CacheInvalidatingProcessor cacheInvalidatingProcessor;
 
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
@@ -75,6 +79,7 @@ public class MetaServicesRouter extends RouteBuilder {
                     }
                 })
             .end()
+            .bean(cacheInvalidatingProcessor)
             .filter().method(FedoraIdFilters.class, "allowedForLongleaf")
                 .wireTap("direct-vm:filter.longleaf")
             .end().end() // ending the filter and the wiretap

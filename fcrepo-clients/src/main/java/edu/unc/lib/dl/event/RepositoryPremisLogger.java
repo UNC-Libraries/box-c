@@ -111,7 +111,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         try {
             Model logModel = ModelFactory.createDefaultModel();
 
-            Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+            Statement s = repoObject.getResource(true).getProperty(Cdr.hasEvents);
             boolean isNewLog = s == null;
 
             // For new logs, add in representation statement
@@ -168,6 +168,7 @@ public class RepositoryPremisLogger implements PremisLogger {
 
         // Link from the repository object to its event log
         repoObjFactory.createRelationship(repoObject, Cdr.hasEvents, eventsObj.getResource());
+        repoObject.refresh();
 
         return this;
     }

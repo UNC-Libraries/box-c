@@ -41,6 +41,7 @@ public class AdminUnit extends ContentContainerObject {
                     + " as a member of AdminUnit " + pid.getQualifiedId());
         }
         repoObjFactory.addMember(this, member);
+        member.refresh();
         return this;
     }
 

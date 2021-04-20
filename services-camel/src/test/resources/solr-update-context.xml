@@ -27,6 +27,10 @@
         <constructor-arg ref="solrUpdatePreprocessorReal" />
     </bean>
     
+    <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+    </bean>
+    
     <bean id="solrUpdatePreprocessorReal" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     

@@ -144,4 +144,15 @@ public class RepositoryObjectLoader {
         }
     }
 
+    /**
+     * Clear any cache entry for the provided pid
+     * @param pid
+     */
+    public void invalidate(PID pid) {
+        repositoryObjCache.invalidate(pid);
+    }
+
+    public LoadingCache<PID, RepositoryObject> getRepositoryObjectCache() {
+        return repositoryObjCache;
+    }
 }

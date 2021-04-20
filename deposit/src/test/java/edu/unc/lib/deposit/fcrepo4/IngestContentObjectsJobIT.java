@@ -256,7 +256,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Try directly retrieving the folder
         FolderObject folder = repoObjLoader.getFolderObject(folderPid);
         // Verify that its title was set to the expected value
-        String title = folder.getResource().getProperty(DC.title).getString();
+        String title = folder.getResource(true).getProperty(DC.title).getString();
         assertEquals("Folder title was not correctly set", label, title);
         // Verify that ingestion event gets added for folder
         Model logModel = folder.getPremisLog().getEventsModel();
@@ -729,6 +729,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Order of the children isn't guaranteed, so find by primary obj pid
         WorkObject workA = (WorkObject) folderMembers.get(0);
         WorkObject workB = (WorkObject) folderMembers.get(1);
+        workA.refresh();
+        workB.refresh();
 
         FileObject file1Obj;
         FileObject file2Obj;
@@ -1072,15 +1074,15 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Verify that the correct original deposit ids are assigned to each folder
         FolderObject folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
-        Resource f1DepositResc = folder1.getResource().getProperty(Cdr.originalDeposit).getResource();
+        Resource f1DepositResc = folder1.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(deposit2Pid.getRepositoryPath(), f1DepositResc.getURI());
 
         FolderObject folder2 = repoObjLoader.getFolderObject(folderObj2Pid);
-        Resource f2DepositResc = folder2.getResource().getProperty(Cdr.originalDeposit).getResource();
+        Resource f2DepositResc = folder2.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(depositPid.getRepositoryPath(), f2DepositResc.getURI());
 
         FolderObject folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
-        Resource f3DepositResc = folder3.getResource().getProperty(Cdr.originalDeposit).getResource();
+        Resource f3DepositResc = folder3.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(deposit3Pid.getRepositoryPath(), f3DepositResc.getURI());
 
         ContentObject destObj = repoObjLoader.getFolderObject(destinationPid);
@@ -1319,7 +1321,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private void assertStorageLocationPresent(ContentObject contentObj) {
         assertTrue("Storage location property was not set",
-                contentObj.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID));
+                contentObj.getResource(true).hasLiteral(Cdr.storageLocation, LOC1_ID));
     }
 
     private String getSha1(Path filePath) throws Exception {
