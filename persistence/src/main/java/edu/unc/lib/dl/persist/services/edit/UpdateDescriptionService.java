@@ -40,6 +40,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService.DatastreamVersion;
@@ -146,7 +147,8 @@ public class UpdateDescriptionService {
             }
 
             if (sendsMessages) {
-                operationsMessageSender.sendUpdateDescriptionOperation(username, asList(obj.getPid()));
+                operationsMessageSender.sendUpdateDescriptionOperation(
+                        username, asList(obj.getPid()), request.getPriority());
             }
 
             return descBinary;
@@ -212,6 +214,7 @@ public class UpdateDescriptionService {
         private BinaryTransferSession transferSession;
         private AgentPrincipals agent;
         private InputStream modsStream;
+        private IndexingPriority priority;
 
         public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, InputStream modsStream) {
             this.agent = agent;
@@ -265,6 +268,15 @@ public class UpdateDescriptionService {
 
         public void setModsStream(InputStream modsStream) {
             this.modsStream = modsStream;
+        }
+
+        public IndexingPriority getPriority() {
+            return priority;
+        }
+
+        public UpdateDescriptionRequest withPriority(IndexingPriority priority) {
+            this.priority = priority;
+            return this;
         }
     }
 }

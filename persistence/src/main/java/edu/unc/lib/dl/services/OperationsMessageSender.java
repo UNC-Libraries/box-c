@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import edu.unc.lib.dl.util.ResourceType;
 
@@ -274,6 +275,10 @@ public class OperationsMessageSender extends MessageSender {
         return getMessageId(msg);
     }
 
+    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
+        return sendUpdateDescriptionOperation(userid, pids, null);
+    }
+
     /**
      * Sends Update MODS operation message.
      *
@@ -281,7 +286,7 @@ public class OperationsMessageSender extends MessageSender {
      * @param pids objects whose MODS changed
      * @return id of operation message
      */
-    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
+    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids, IndexingPriority priority) {
         Element contentEl = createAtomEntry(userid, pids.iterator().next(),
                 CDRActions.UPDATE_DESCRIPTION);
 
@@ -292,6 +297,10 @@ public class OperationsMessageSender extends MessageSender {
         updateEl.addContent(subjects);
         for (PID sub : pids) {
             subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        if (priority != null) {
+            contentEl.getParentElement().addContent(new Element("category", ATOM_NS).setText(priority.name()));
         }
 
         Document msg = contentEl.getDocument();

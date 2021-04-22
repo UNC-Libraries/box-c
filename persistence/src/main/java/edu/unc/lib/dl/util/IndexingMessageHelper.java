@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 
 /**
  * Helper methods for generating indexing messages
@@ -44,11 +45,11 @@ public class IndexingMessageHelper {
 
     public static Document makeIndexingOperationBody(String userid, PID targetPid, Collection<PID> children,
             IndexingActionType actionType) {
-        return makeIndexingOperationBody(userid, targetPid, children, actionType, null);
+        return makeIndexingOperationBody(userid, targetPid, children, actionType, null, null);
     }
 
     public static Document makeIndexingOperationBody(String userid, PID targetPid, Collection<PID> children,
-            IndexingActionType actionType, Map<String, String> params) {
+            IndexingActionType actionType, Map<String, String> params, IndexingPriority priority) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
@@ -73,6 +74,10 @@ public class IndexingMessageHelper {
                 paramEl.setText(param.getValue());
                 paramsEl.addContent(paramEl);
             }
+        }
+
+        if (priority != null) {
+            entry.addContent(new Element("category", ATOM_NS).setText(priority.name()));
         }
 
         return msg;

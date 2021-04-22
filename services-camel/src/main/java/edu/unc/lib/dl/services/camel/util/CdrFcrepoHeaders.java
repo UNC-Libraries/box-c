@@ -45,4 +45,6 @@ public abstract class CdrFcrepoHeaders {
     public static final String CdrEnhancementSet = "CdrEnhancementSet";
 
     public static final String CdrSolrUpdateAction = "CdrSolrUpdateAction";
+
+    public static final String CdrSolrIndexingPriority = "CdrSolrIndexingPriority";
 }

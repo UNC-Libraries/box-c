@@ -70,6 +70,11 @@ public class SolrUpdatePreprocessor implements Processor {
         String pidString = body.getChild("pid", ATOM_NS).getTextTrim();
         PID pid = PIDs.get(pidString);
         in.setHeader(FcrepoHeaders.FCREPO_URI, pid.getRepositoryPath());
+
+        String priority = body.getChildTextTrim("category", ATOM_NS);
+        if (priority != null) {
+            in.setHeader(CdrFcrepoHeaders.CdrSolrIndexingPriority, priority);
+        }
     }
 
     private static final Set<IndexingActionType> LARGE_ACTIONS =

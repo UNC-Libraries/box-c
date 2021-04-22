@@ -54,6 +54,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
@@ -357,8 +358,10 @@ public class ImportXMLJob implements Runnable {
                                             currentPid.getQualifiedId());
                                     BinaryTransferSession transferSession =
                                             session.forDestination(locationManager.getStorageLocation(currentPid));
-                                    updateService.updateDescription(new UpdateDescriptionRequest(
-                                            agent, currentPid, modsStream).withTransferSession(transferSession));
+                                    updateService.updateDescription(
+                                            new UpdateDescriptionRequest(agent, currentPid, modsStream)
+                                                .withTransferSession(transferSession)
+                                                .withPriority(IndexingPriority.low));
                                     updated.add(currentPid.getId());
                                     log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {

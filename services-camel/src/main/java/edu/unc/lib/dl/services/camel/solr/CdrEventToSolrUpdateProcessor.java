@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
@@ -61,7 +62,8 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             return;
         }
 
-        Element content = body.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
+        Element rootEl = body.getRootElement();
+        Element content = rootEl.getChild("content", JDOMNamespaceUtil.ATOM_NS);
         Element contentBody = content.getChildren().get(0);
 
         if (contentBody == null || contentBody.getChildren().size() == 0) {
@@ -117,8 +119,11 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             return;
         }
 
+        String priorityString = rootEl.getChildText("category", JDOMNamespaceUtil.ATOM_NS);
+        IndexingPriority priority = priorityString == null ? null : IndexingPriority.valueOf(priorityString);
+
         messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
-                indexingActionType);
+                indexingActionType, null, priority);
     }
 
     private List<String> populateList(String field, Element contentBody) {

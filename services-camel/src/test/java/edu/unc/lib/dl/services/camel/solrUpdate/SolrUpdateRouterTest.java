@@ -52,6 +52,7 @@ import org.springframework.test.context.ContextHierarchy;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -215,6 +216,26 @@ public class SolrUpdateRouterTest {
         verify(solrUpdatePreprocessor, timeout(1000).times(1)).logUnknownSolrUpdate(any());
         verify(solrSmallUpdateProcessor, never()).process(any(Exchange.class));
         verify(solrLargeUpdateProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void indexLowPriority() throws Exception {
+        Document msg = makeIndexingOperationBody(USER, targetPid, Arrays.asList(targetPid),
+                IndexingActionType.UPDATE_ACCESS_TREE);
+        msg.getRootElement()
+                .addContent(new Element("category", ATOM_NS).setText(IndexingPriority.low.name()));
+
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(1)
+                .create();
+
+        template.sendBodyAndHeaders(msg, null);
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
+        verify(solrSmallUpdateProcessor).process(exchangeCaptor.capture());
+        List<Exchange> exchanges = exchangeCaptor.getAllValues();
+        assertMessage(exchanges, targetPid, IndexingActionType.UPDATE_ACCESS_TREE);
     }
 
     private void assertMessage(List<Exchange> exchanges, PID expectedPid, IndexingActionType expectedAction)

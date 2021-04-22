@@ -23,7 +23,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor;
+import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 
 /**
  * Route for performing solr updates for update requests.
@@ -68,6 +70,9 @@ public class SolrUpdateRouter extends RouteBuilder {
             .bean(cacheInvalidatingProcessor)
             .log(LoggingLevel.DEBUG, log, "Received solr update message with action ${header[CdrSolrUpdateAction]}")
             .choice()
+                .when(simple("${headers[" + CdrFcrepoHeaders.CdrSolrIndexingPriority
+                        + "]} == '" + IndexingPriority.low.name() + "'"))
+                    .to("{{cdr.solrupdate.priority.low.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
                     .to("{{cdr.solrupdate.large.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isSmallAction")
@@ -81,5 +86,11 @@ public class SolrUpdateRouter extends RouteBuilder {
             .startupOrder(507)
             .log(LoggingLevel.DEBUG, log, "Performing large solr update")
             .bean(solrLargeUpdateProcessor);
+
+        from("{{cdr.solrupdate.priority.low.camel}}")
+            .routeId("CdrSolrUpdateLowPriority")
+            .startupOrder(508)
+            .log(LoggingLevel.DEBUG, log, "Performing low priority solr update")
+            .bean(solrSmallUpdateProcessor);
     }
 }

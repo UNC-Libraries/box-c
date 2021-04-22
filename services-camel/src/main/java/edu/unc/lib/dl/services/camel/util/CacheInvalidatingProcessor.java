@@ -61,7 +61,7 @@ public class CacheInvalidatingProcessor implements Processor {
         if (pid == null || !PIDConstants.CONTENT_QUALIFIER.equals(pid.getQualifier())) {
             return;
         }
-        log.warn("Invalidating caches for {}", pid);
+        log.debug("Invalidating caches for {}", pid);
         repoObjLoader.invalidate(pid);
         objectAclFactory.invalidate(pid);
     }
