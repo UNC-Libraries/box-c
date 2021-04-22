@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
@@ -99,7 +100,7 @@ public class EditTitleService {
             new XMLOutputter().output(newMods, outStream);
             InputStream newModsStream = new ByteArrayInputStream(outStream.toByteArray());
 
-            updateDescriptionService.updateDescription(agent, pid, newModsStream);
+            updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, pid, newModsStream));
         } catch (JDOMException e) {
             throw new ServiceException("Unable to build mods document for " + pid, e);
         } catch (IOException e) {

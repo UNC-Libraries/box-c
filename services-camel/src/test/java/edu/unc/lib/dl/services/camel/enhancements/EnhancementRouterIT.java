@@ -70,6 +70,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;
@@ -278,8 +279,8 @@ public class EnhancementRouterIT {
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject descObj = updateDescriptionService.updateDescription(mock(AgentPrincipals.class),
-                fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes()));
+        BinaryObject descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+                mock(AgentPrincipals.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)

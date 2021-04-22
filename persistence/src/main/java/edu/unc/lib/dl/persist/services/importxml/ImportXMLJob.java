@@ -59,6 +59,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 import io.dropwizard.metrics5.Timer;
 
@@ -356,7 +357,8 @@ public class ImportXMLJob implements Runnable {
                                             currentPid.getQualifiedId());
                                     BinaryTransferSession transferSession =
                                             session.forDestination(locationManager.getStorageLocation(currentPid));
-                                    updateService.updateDescription(transferSession, agent, currentPid, modsStream);
+                                    updateService.updateDescription(new UpdateDescriptionRequest(
+                                            agent, currentPid, modsStream).withTransferSession(transferSession));
                                     updated.add(currentPid.getId());
                                     log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {

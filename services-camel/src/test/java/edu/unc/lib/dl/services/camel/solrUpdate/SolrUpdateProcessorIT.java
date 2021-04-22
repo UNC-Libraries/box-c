@@ -70,6 +70,7 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
@@ -133,14 +134,12 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(4)
+                .whenCompleted(2)
                 .create();
 
         processor.process(exchange);
 
         assertTrue(notify.matches(6l, TimeUnit.SECONDS));
-
-        Thread.sleep(100);
 
         server.commit();
 
@@ -167,7 +166,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @Test
     public void testUpdateDescription() throws Exception {
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
-        updateDescriptionService.updateDescription(agent, collObj.getPid(), modsStream);
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
 
         indexObjectsInTripleStore();
 
@@ -259,7 +258,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         // Wait for indexing to complete
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(4)
+                .whenCompleted(2)
                 .create();
 
         makeIndexingMessage(rootObj, null, RECURSIVE_ADD);
@@ -267,14 +266,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         notify.matches(5l, TimeUnit.SECONDS);
 
-        Thread.sleep(100);
-
         server.commit();
 
         makeIndexingMessage(unitObj, null, DELETE_SOLR_TREE);
         processor.process(exchange);
-
-        Thread.sleep(100);
 
         server.commit();
 
@@ -303,7 +298,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         setCollectionSupplementalInformationFilter.setCollectionFilters(file.getAbsolutePath());
 
         InputStream modsStream = streamResource("/datastreams/modsWithRla.xml");
-        updateDescriptionService.updateDescription(agent, collObj.getPid(), modsStream);
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
 
         indexObjectsInTripleStore();
 

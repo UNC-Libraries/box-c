@@ -167,6 +167,11 @@
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     
+    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+        <property name="objectAclFactory" ref="objectAclFactory"/>
+    </bean>
+    
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     

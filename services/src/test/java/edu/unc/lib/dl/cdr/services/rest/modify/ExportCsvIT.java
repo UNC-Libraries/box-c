@@ -76,6 +76,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionJob;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
@@ -218,8 +219,10 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
 
-        updateDescService.updateDescription(getAgentPrincipals(), folderPid, Files.newInputStream(MODS_PATH_1));
-        updateDescService.updateDescription(getAgentPrincipals(), workPid, Files.newInputStream(MODS_PATH_2));
+        updateDescService.updateDescription(new UpdateDescriptionRequest(
+                getAgentPrincipals(), folderPid, Files.newInputStream(MODS_PATH_1)));
+        updateDescService.updateDescription(new UpdateDescriptionRequest(
+                getAgentPrincipals(), workPid, Files.newInputStream(MODS_PATH_2)));
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,

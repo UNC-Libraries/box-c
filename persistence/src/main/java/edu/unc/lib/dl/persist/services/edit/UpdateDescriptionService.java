@@ -88,41 +88,31 @@ public class UpdateDescriptionService {
      */
     public BinaryObject updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
             throws MetadataValidationException, IOException {
-
-        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-
-        return updateDescription(null, agent, obj, modsStream);
+        return updateDescription(new UpdateDescriptionRequest(agent, pid, modsStream));
     }
 
     /**
-     * Updates the MODS description of an object as part of the provided ongoing session.
+     * Updates the MODS description of an object using the details of the provided request
      *
-     * @param transferSession ongoing transfer session
-     * @param agent
-     * @param pid
-     * @param modsStream
-     * @throws MetadataValidationException
+     * @param request update request
+     * @return binary object of the updated description
      * @throws IOException
      */
-    public BinaryObject updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
-            PID pid, InputStream modsStream) throws MetadataValidationException, IOException {
-
-        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-
-        return updateDescription(transferSession, agent, obj, modsStream);
-    }
-
-    public BinaryObject updateDescription(BinaryTransferSession transferSession, AgentPrincipals agent,
-            ContentObject obj, InputStream modsStream) throws IOException {
-
+    public BinaryObject updateDescription(UpdateDescriptionRequest request) throws IOException {
+        PID pid = request.getPid();
+        ContentObject obj = request.getContentObject();
+        if (obj == null) {
+            obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+        }
         log.debug("Updating description for {}", obj.getPid().getId());
         try (Timer.Context context = timer.time()) {
             if (checksAccess) {
                 aclService.assertHasAccess("User does not have permissions to update description",
-                    obj.getPid(), agent.getPrincipals(), Permission.editDescription);
+                    obj.getPid(), request.getAgent().getPrincipals(), Permission.editDescription);
             }
 
-            String username = agent.getUsername();
+            String username = request.getAgent().getUsername();
+            InputStream modsStream = request.getModsStream();
             if (validate) {
                 if (!modsStream.markSupported()) {
                     modsStream = new ByteArrayInputStream(toByteArray(modsStream));
@@ -137,7 +127,7 @@ public class UpdateDescriptionService {
             newVersion.setContentStream(modsStream);
             newVersion.setContentType(MD_DESCRIPTIVE.getMimetype());
             newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
-            newVersion.setTransferSession(transferSession);
+            newVersion.setTransferSession(request.getTransferSession());
 
             BinaryObject descBinary;
             if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {
@@ -214,5 +204,67 @@ public class UpdateDescriptionService {
 
     public void setChecksAccess(boolean checksAccess) {
         this.checksAccess = checksAccess;
+    }
+
+    public static class UpdateDescriptionRequest {
+        private PID pid;
+        private ContentObject contentObject;
+        private BinaryTransferSession transferSession;
+        private AgentPrincipals agent;
+        private InputStream modsStream;
+
+        public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, InputStream modsStream) {
+            this.agent = agent;
+            this.pid = pid;
+            this.modsStream = modsStream;
+        }
+        public UpdateDescriptionRequest(AgentPrincipals agent, ContentObject obj, InputStream modsStream) {
+            this.agent = agent;
+            this.contentObject = obj;
+            this.pid = obj.getPid();
+            this.modsStream = modsStream;
+        }
+
+        public PID getPid() {
+            return pid;
+        }
+
+        public void setPid(PID pid) {
+            this.pid = pid;
+        }
+
+        public ContentObject getContentObject() {
+            return contentObject;
+        }
+
+        public UpdateDescriptionRequest withContentObject(ContentObject contentObject) {
+            this.contentObject = contentObject;
+            return this;
+        }
+
+        public BinaryTransferSession getTransferSession() {
+            return transferSession;
+        }
+
+        public UpdateDescriptionRequest withTransferSession(BinaryTransferSession transferSession) {
+            this.transferSession = transferSession;
+            return this;
+        }
+
+        public AgentPrincipals getAgent() {
+            return agent;
+        }
+
+        public void setAgent(AgentPrincipals agent) {
+            this.agent = agent;
+        }
+
+        public InputStream getModsStream() {
+            return modsStream;
+        }
+
+        public void setModsStream(InputStream modsStream) {
+            this.modsStream = modsStream;
+        }
     }
 }

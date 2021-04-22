@@ -61,6 +61,7 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
@@ -192,8 +193,8 @@ public class AddContainerService {
 
         String modsString = new XMLOutputter(getPrettyFormat()).outputString(mods.getDocument());
 
-        updateDescService.updateDescription(addRequest.getAgent(), containerPid,
-                IOUtils.toInputStream(modsString, StandardCharsets.UTF_8));
+        updateDescService.updateDescription(new UpdateDescriptionRequest(addRequest.getAgent(), containerPid,
+                IOUtils.toInputStream(modsString, StandardCharsets.UTF_8)));
     }
 
     /**

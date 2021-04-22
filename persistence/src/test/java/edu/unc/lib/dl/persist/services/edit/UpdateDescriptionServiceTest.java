@@ -52,6 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService.DatastreamVersion;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -132,7 +133,7 @@ public class UpdateDescriptionServiceTest {
 
     @Test
     public void updateDescriptionTest() throws Exception {
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
         verify(versioningService).addVersion(versionCaptor.capture());
         DatastreamVersion version = versionCaptor.getValue();
@@ -147,7 +148,7 @@ public class UpdateDescriptionServiceTest {
     public void updateDescriptionAlreadyExistsTest() throws Exception {
         when(repoObjFactory.objectExists(modsPid.getRepositoryUri())).thenReturn(true);
 
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
         verify(versioningService).addVersion(versionCaptor.capture());
         DatastreamVersion version = versionCaptor.getValue();
@@ -163,7 +164,7 @@ public class UpdateDescriptionServiceTest {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
 
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
     }
 
     @Test
@@ -173,7 +174,7 @@ public class UpdateDescriptionServiceTest {
 
         service.setChecksAccess(false);
 
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
         verify(versioningService).addVersion(any());
         assertMessageSent();
@@ -183,7 +184,7 @@ public class UpdateDescriptionServiceTest {
     public void invalidModsTest() throws Exception {
         doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
 
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
     }
 
     @Test
@@ -191,12 +192,14 @@ public class UpdateDescriptionServiceTest {
         service.setValidate(false);
         doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
 
-        service.updateDescription(transferSession, agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream)
+                .withTransferSession(transferSession));
     }
 
     @Test
     public void updateDescriptionProvidedSession() throws Exception {
-        service.updateDescription(transferSession, agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream)
+                .withTransferSession(transferSession));
 
         verify(versioningService).addVersion(versionCaptor.capture());
         DatastreamVersion version = versionCaptor.getValue();
@@ -210,7 +213,7 @@ public class UpdateDescriptionServiceTest {
     public void updateDescriptionDisableMassgesTest() throws Exception {
         service.setSendsMessages(false);
 
-        service.updateDescription(agent, objPid, modsStream);
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
         verify(versioningService).addVersion(versionCaptor.capture());
         DatastreamVersion version = versionCaptor.getValue();
