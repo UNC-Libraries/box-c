@@ -118,7 +118,6 @@ public class RepositoryObjectDriver {
                 .accept(TURTLE_MIMETYPE)
                 .perform()) {
 
-            log.debug("Retrieving new model for {}", obj.getPid());
             Model model = ModelFactory.createDefaultModel();
             model.read(response.getBody(), null, Lang.TURTLE.getName());
 
