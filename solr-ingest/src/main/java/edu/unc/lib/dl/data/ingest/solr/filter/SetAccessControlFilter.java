@@ -53,25 +53,32 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         Set<String> staffPrincipals = new HashSet<>();
         List<String> roleGroups = new ArrayList<>();
 
+        long start = System.nanoTime();
         List<RoleAssignment> staffAssignments = aclFactory.getStaffRoleAssignments(dip.getPid());
         staffAssignments.forEach(assignment -> {
             addRoleGroup(roleGroups, assignment);
             readPrincipals.add(assignment.getPrincipal());
             staffPrincipals.add(assignment.getPrincipal());
         });
+        log.debug("Staff role assignments for {} retrieved in {}",
+                idb.getPid(), System.nanoTime() - start);
 
         // Grant visibility to the collections object
         if (dip.getContentObject() instanceof ContentRootObject
                 || dip.getContentObject() instanceof AdminUnit) {
             staffPrincipals.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
             readPrincipals.add(AccessPrincipalConstants.PUBLIC_PRINC);
+        } else {
+            // Retrieve patron settings for all other object types
+            start = System.nanoTime();
+            List<RoleAssignment> patronAssignments = aclFactory.getPatronAccess(dip.getPid());
+            patronAssignments.forEach(assignment -> {
+                addRoleGroup(roleGroups, assignment);
+                readPrincipals.add(assignment.getPrincipal());
+            });
+            log.debug("Patron role assignments for {} retrieved in {}",
+                    idb.getPid(), System.nanoTime() - start);
         }
-
-        List<RoleAssignment> patronAssignments = aclFactory.getPatronAccess(dip.getPid());
-        patronAssignments.forEach(assignment -> {
-            addRoleGroup(roleGroups, assignment);
-            readPrincipals.add(assignment.getPrincipal());
-        });
 
         idb.setRoleGroup(roleGroups);
         idb.setAdminGroup(new ArrayList<>(staffPrincipals));
