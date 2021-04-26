@@ -28,7 +28,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     

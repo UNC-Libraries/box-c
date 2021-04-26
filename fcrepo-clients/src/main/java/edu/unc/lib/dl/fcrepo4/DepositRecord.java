@@ -66,7 +66,10 @@ public class DepositRecord extends RepositoryObject {
         if (mimetype == null) {
             mimetype = "text/plain";
         }
-        return repoObjFactory.createOrUpdateBinary(manifestPid, manifestUri, filename, mimetype, sha1, md5, null);
+        BinaryObject manifestObj = repoObjFactory.createOrUpdateBinary(
+                manifestPid, manifestUri, filename, mimetype, sha1, md5, null);
+        refresh();
+        return manifestObj;
     }
 
     /**

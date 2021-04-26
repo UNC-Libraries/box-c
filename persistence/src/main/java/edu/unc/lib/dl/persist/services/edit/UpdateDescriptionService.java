@@ -151,6 +151,7 @@ public class UpdateDescriptionService {
                         username, asList(obj.getPid()), request.getPriority());
             }
 
+            obj.refresh();
             return descBinary;
         }
     }

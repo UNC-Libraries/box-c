@@ -70,7 +70,7 @@ public class RepositoryObjectFactory {
 
     private FcrepoClient client;
 
-    private RepositoryObjectDriver repoObjDriver;
+    private RepositoryObjectLoader repoObjLoader;
 
     private RepositoryPIDMinter pidMinter;
 
@@ -120,8 +120,7 @@ public class RepositoryObjectFactory {
         }
 
         log.debug("Retrieving created deposit record object {}", pid.getId());
-        DepositRecord depositRecord = new DepositRecord(pid, repoObjDriver, this);
-        return depositRecord;
+        return repoObjLoader.getDepositRecord(pid);
     }
 
     /**
@@ -153,7 +152,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new AdminUnit(pid, repoObjDriver, this);
+        return repoObjLoader.getAdminUnit(pid);
     }
 
     /**
@@ -202,7 +201,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new CollectionObject(pid, repoObjDriver, this);
+        return repoObjLoader.getCollectionObject(pid);
     }
 
     /**
@@ -234,7 +233,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new FolderObject(pid, repoObjDriver, this);
+        return repoObjLoader.getFolderObject(pid);
     }
 
     /**
@@ -266,7 +265,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new WorkObject(pid, repoObjDriver, this);
+        return repoObjLoader.getWorkObject(pid);
     }
 
     /**
@@ -316,7 +315,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        return new FileObject(pid, repoObjDriver, this);
+        return repoObjLoader.getFileObject(pid);
     }
 
     /**
@@ -373,7 +372,9 @@ public class RepositoryObjectFactory {
             resultUriString = resultUriString.replace("/" + FCR_METADATA, "");
         }
 
-        return new BinaryObject(PIDs.get(resultUriString), storageUri, repoObjDriver, this);
+        PID binPid = PIDs.get(resultUriString);
+        repoObjLoader.invalidate(binPid);
+        return repoObjLoader.getBinaryObject(binPid);
     }
 
     private void updateBinaryDescription(PID binPid, URI describedBy, Model model) {
@@ -459,7 +460,7 @@ public class RepositoryObjectFactory {
                 throw ClientFaultResolver.resolve(e);
             }
         }
-        return new BinaryObject(PIDs.get(resultUri), repoObjDriver, this);
+        return repoObjLoader.getBinaryObject(PIDs.get(resultUri));
     }
 
     /**
@@ -530,7 +531,9 @@ public class RepositoryObjectFactory {
                  throw ClientFaultResolver.resolve(e);
              }
          }
-         return new BinaryObject(PIDs.get(updatePath), repoObjDriver, this);
+         PID binPid = PIDs.get(updatePath);
+         repoObjLoader.invalidate(binPid);
+         return repoObjLoader.getBinaryObject(binPid);
      }
 
     /**
@@ -675,8 +678,8 @@ public class RepositoryObjectFactory {
         this.ldpFactory = ldpFactory;
     }
 
-    public void setRepositoryObjectDriver(RepositoryObjectDriver repoObjDriver) {
-        this.repoObjDriver = repoObjDriver;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {
