@@ -33,8 +33,8 @@
 	<sch:pattern>
 		<sch:title>Key Date</sch:title>
 		<sch:rule context="mods:originInfo/mods:*[@keyDate='yes']">
-			<sch:assert test="@encoding = 'iso8601'">Dates must be explicitly encoded according to
-				the ISO 8601 standard. (The encoding attribute must be 'iso8601'.)</sch:assert>
+			<sch:assert test="@encoding = 'iso8601' or @encoding = 'edtf'">Dates must be explicitly encoded according to
+				the ISO 8601 or edtf standards. (The encoding attribute must be 'iso8601' or 'edtf'.)</sch:assert>
 		</sch:rule>
 	</sch:pattern>
 	
