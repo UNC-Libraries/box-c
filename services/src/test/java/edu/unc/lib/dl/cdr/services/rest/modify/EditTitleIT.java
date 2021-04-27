@@ -77,7 +77,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        work.refresh();
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
@@ -96,7 +96,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        work.refresh();
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
@@ -125,7 +125,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        work.refresh();
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));

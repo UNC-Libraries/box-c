@@ -729,8 +729,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Order of the children isn't guaranteed, so find by primary obj pid
         WorkObject workA = (WorkObject) folderMembers.get(0);
         WorkObject workB = (WorkObject) folderMembers.get(1);
-        workA.refresh();
-        workB.refresh();
+        workA.shouldRefresh();
+        workB.shouldRefresh();
 
         FileObject file1Obj;
         FileObject file2Obj;

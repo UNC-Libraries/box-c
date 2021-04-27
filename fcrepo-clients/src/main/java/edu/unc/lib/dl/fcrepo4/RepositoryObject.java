@@ -282,9 +282,9 @@ public abstract class RepositoryObject {
     }
 
     /**
-     * Refresh the state of this object from data sources
+     * Indicate that the state of this object should be refreshed
      */
-    public void refresh() {
+    public void shouldRefresh() {
         model = null;
         premisLog = null;
         types = null;

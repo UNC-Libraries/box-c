@@ -68,7 +68,7 @@ public class DepositRecord extends RepositoryObject {
         }
         BinaryObject manifestObj = repoObjFactory.createOrUpdateBinary(
                 manifestPid, manifestUri, filename, mimetype, sha1, md5, null);
-        refresh();
+        shouldRefresh();
         return manifestObj;
     }
 
