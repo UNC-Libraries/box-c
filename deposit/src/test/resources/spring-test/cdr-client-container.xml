@@ -122,8 +122,8 @@
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
-        <property name="cacheTimeToLive" value="1000" />
-        <property name="cacheMaxSize" value="50" />
+        <property name="cacheTimeToLive" value="10000" />
+        <property name="cacheMaxSize" value="500" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     

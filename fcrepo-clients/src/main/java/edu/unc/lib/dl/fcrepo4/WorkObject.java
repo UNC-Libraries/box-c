@@ -89,7 +89,6 @@ public class WorkObject extends ContentContainerObject {
 
         // Add the relation
         repoObjFactory.createExclusiveRelationship(this, Cdr.primaryObject, primaryObj.getResource());
-        shouldRefresh();
     }
 
     /**

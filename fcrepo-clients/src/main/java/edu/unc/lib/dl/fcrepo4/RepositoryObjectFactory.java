@@ -556,6 +556,7 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
+        subject.shouldRefresh();
     }
 
     /**
@@ -577,6 +578,7 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
                 previousValues);
         persistTripleToFedora(repoObj.getMetadataUri(), sparqlUpdate);
+        repoObj.shouldRefresh();
     }
 
     /**
@@ -589,6 +591,7 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlDelete(
                 subject.getRepositoryPath(), property, null);
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), sparqlUpdate);
+        repoObj.shouldRefresh();
     }
 
     /**
@@ -601,6 +604,7 @@ public class RepositoryObjectFactory {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getPid().getRepositoryPath(),
                 property, object);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
+        subject.shouldRefresh();
     }
 
     /**
@@ -611,6 +615,7 @@ public class RepositoryObjectFactory {
     public void createRelationships(RepositoryObject subject, Model model) {
         String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(model);
         persistTripleToFedora(subject.getMetadataUri(), sparqlUpdate);
+        subject.shouldRefresh();
     }
 
     /**

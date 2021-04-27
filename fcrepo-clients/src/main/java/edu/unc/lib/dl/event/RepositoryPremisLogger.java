@@ -168,7 +168,6 @@ public class RepositoryPremisLogger implements PremisLogger {
 
         // Link from the repository object to its event log
         repoObjFactory.createRelationship(repoObject, Cdr.hasEvents, eventsObj.getResource());
-        repoObject.shouldRefresh();
 
         return this;
     }
