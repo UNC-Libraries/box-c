@@ -363,8 +363,9 @@ public class ImportXMLJob implements Runnable {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
                                 } catch (MetadataValidationException ex) {
+                                    log.debug("Validation failed for {}", currentPid, ex);
                                     failed.put(currentPid.getRepositoryPath(),
-                                            "MODS is not valid: " + ex.getMessage());
+                                            "MODS is not valid: " + ex.getDetailedMessage());
                                 } catch (IOException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "Error reading or converting MODS stream: " + ex.getMessage());
