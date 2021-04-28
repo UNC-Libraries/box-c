@@ -40,7 +40,7 @@ import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
@@ -89,7 +89,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     @Autowired
     private ContentPathFactory pathFactory;
     @Autowired
-    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
+    private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private RepositoryInitializer repoInitializer;
 
@@ -108,7 +108,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         globalPermissionEvaluator = new GlobalPermissionEvaluator(properties);
 
         aclFactory = new ObjectAclFactory();
-        aclFactory.setRepositoryObjectCacheLoader(repositoryObjectCacheLoader);
+        aclFactory.setRepositoryObjectLoader(repositoryObjectLoader);
         aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.init();

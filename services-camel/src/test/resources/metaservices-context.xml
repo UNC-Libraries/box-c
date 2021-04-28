@@ -32,6 +32,10 @@
     <bean id="nonBinaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor" />
     </bean>
+    
+    <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+    </bean>
 
     <camel:camelContext id="CdrMetaServicesRouter">
         <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>

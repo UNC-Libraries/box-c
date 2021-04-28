@@ -29,7 +29,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
@@ -42,11 +42,17 @@
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
     
+    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" value="0" />
+        <property name="cacheMaxSize" value="0" />
+    </bean>
+    
     <bean id="uncachedObjectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="0" />
         <property name="cacheTimeToLive" value="0" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
     </bean>
     
     <bean id="uncachedInheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
@@ -108,7 +114,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     

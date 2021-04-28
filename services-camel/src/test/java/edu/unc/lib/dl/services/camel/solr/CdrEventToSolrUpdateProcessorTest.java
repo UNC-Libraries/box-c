@@ -22,8 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +48,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -126,7 +129,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
-                actionTypeCaptor.capture());
+                actionTypeCaptor.capture(), anyMapOf(String.class, String.class), isNull(IndexingPriority.class));
 
         verifyTargetPid(pidCaptor.getValue());
 
@@ -147,7 +150,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
-                actionTypeCaptor.capture());
+                actionTypeCaptor.capture(), anyMapOf(String.class, String.class), isNull(IndexingPriority.class));
 
         verifyTargetPid(pidCaptor.getValue());
 

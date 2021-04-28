@@ -320,9 +320,9 @@ public class DestroyObjectsJobIT {
         assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
         assertTrue(logParentModel.contains(null, Premis.note, "3 object(s) were destroyed"));
 
-        Resource fileResc = fileObj.getResource();
-        Resource workResc = workObj.getResource();
-        Resource folderResc = folderObj.getResource();
+        Resource fileResc = fileObj.getResource(true);
+        Resource workResc = workObj.getResource(true);
+        Resource folderResc = folderObj.getResource(true);
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.Tombstone));
         assertTrue(fileResc.hasProperty(PcdmModels.memberOf, workResc));
         assertTrue(workResc.hasProperty(RDF.type, Cdr.Tombstone));

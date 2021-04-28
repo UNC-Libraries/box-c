@@ -45,6 +45,10 @@ public class MessageSender {
         jmsTemplate.send(new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
+                // Committing the session to flush changes in long running threads
+                if (session.getTransacted()) {
+                    session.commit();
+                }
                 return session.createTextMessage(msgStr);
             }
         });

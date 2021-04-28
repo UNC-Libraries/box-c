@@ -74,7 +74,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">

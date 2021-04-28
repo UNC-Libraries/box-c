@@ -64,6 +64,7 @@ import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -295,7 +296,7 @@ public class ImportXMLJobIT {
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
         InputStream modsStream = documentToInputStream(doc);
-        updateService.updateDescription(null, agent, workObj, modsStream);
+        updateService.updateDescription(new UpdateDescriptionRequest(agent, workObj, modsStream));
         return workPid;
     }
 

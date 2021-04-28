@@ -92,7 +92,7 @@ public class ExpireEmbargoService {
                     PID pid = PIDs.get(rescUri);
                     currentPid = pid;
                     RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-                    Resource resc = repoObj.getResource();
+                    Resource resc = repoObj.getResource(true);
 
                     // remove embargo
                     String embargoDate = resc.getProperty(embargoUntil).getString();

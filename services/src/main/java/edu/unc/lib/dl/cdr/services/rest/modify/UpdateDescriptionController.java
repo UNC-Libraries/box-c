@@ -36,6 +36,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 
 /**
@@ -66,7 +67,7 @@ public class UpdateDescriptionController {
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
         try (InputStream modsStream = request.getInputStream()) {
-            updateService.updateDescription(agent, pid, modsStream);
+            updateService.updateDescription(new UpdateDescriptionRequest(agent, pid, modsStream));
         } catch (MetadataValidationException e) {
             if (e.getMessage() != null) {
                 result.put("error", e.getMessage());

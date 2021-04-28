@@ -166,7 +166,7 @@
           init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
     <bean id="childrenCountService" class="edu.unc.lib.dl.search.solr.service.ChildrenCountService">

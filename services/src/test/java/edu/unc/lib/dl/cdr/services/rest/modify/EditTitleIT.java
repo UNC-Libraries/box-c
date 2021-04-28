@@ -50,6 +50,7 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 
 /**
  *
@@ -76,6 +77,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
@@ -94,6 +96,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
@@ -113,7 +116,8 @@ public class EditTitleIT extends AbstractAPIIT {
                         .addContent(new Element("title", MODS_V3_NS).setText(oldTitle))));
 
         InputStream modsStream = documentToInputStream(document);
-        updateDescriptionService.updateDescription(mock(AgentPrincipals.class), pid, modsStream);
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+                mock(AgentPrincipals.class), pid, modsStream));
 
         String newTitle = "new_work_title";
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
@@ -121,6 +125,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        work.shouldRefresh();
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));

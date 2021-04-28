@@ -74,6 +74,7 @@ public class SetAsPrimaryObjectService {
             }
             WorkObject work = (WorkObject) parent;
             work.setPrimaryObject(fileObjPid);
+            work.shouldRefresh();
 
             // Send message that the action completed
             operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(),
@@ -116,6 +117,7 @@ public class SetAsPrimaryObjectService {
                 updated.add(previousPrimary.getPid());
 
                 work.clearPrimaryObject();
+                work.shouldRefresh();
             }
 
             // Send message that the action completed

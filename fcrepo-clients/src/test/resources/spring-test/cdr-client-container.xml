@@ -28,7 +28,7 @@
     <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="sparqlUpdateService" ref="sparqlUpdateService" />
     </bean>

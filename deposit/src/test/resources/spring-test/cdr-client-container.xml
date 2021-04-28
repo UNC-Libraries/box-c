@@ -27,7 +27,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
@@ -89,7 +89,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
@@ -122,8 +122,8 @@
     </bean>
     
     <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
-        <property name="cacheTimeToLive" value="1000" />
-        <property name="cacheMaxSize" value="50" />
+        <property name="cacheTimeToLive" value="10000" />
+        <property name="cacheMaxSize" value="500" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     

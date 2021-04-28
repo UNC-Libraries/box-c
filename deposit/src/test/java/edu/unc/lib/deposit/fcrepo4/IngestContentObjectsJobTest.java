@@ -37,7 +37,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +70,6 @@ import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -80,7 +78,6 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -100,6 +97,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -470,8 +468,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         BinaryObject mockDescBin = mock(BinaryObject.class);
         when(mockDescBin.getContentUri()).thenReturn(URI.create("file://path/to/desc"));
-        when(updateDescService.updateDescription(eq(mockTransferSession), any(AgentPrincipals.class),
-                any(ContentObject.class), any(InputStream.class))).thenReturn(mockDescBin);
+        when(updateDescService.updateDescription(any(UpdateDescriptionRequest.class))).thenReturn(mockDescBin);
 
         Path modsPath = job.getModsPath(workPid, true);
         FileUtils.writeStringToFile(modsPath.toFile(), "Mods content", UTF_8);
@@ -499,8 +496,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
         verify(destinationObj).addMember(eq(work));
 
-        verify(updateDescService).updateDescription(eq(mockTransferSession), any(AgentPrincipals.class),
-                any(ContentObject.class), any(InputStream.class));
+        verify(updateDescService).updateDescription(any(UpdateDescriptionRequest.class));
 
         verify(work, times(2)).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
                 eq(mainMime), anyString(), anyString(), any(Model.class));

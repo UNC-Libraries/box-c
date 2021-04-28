@@ -50,7 +50,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -75,7 +75,7 @@ public class ObjectACLFactoryTest {
     private ObjectAclFactory aclFactory;
 
     @Mock
-    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
+    private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private ContentObject repoObj;
     private Model objModel;
@@ -88,7 +88,7 @@ public class ObjectACLFactoryTest {
         initMocks(this);
 
         aclFactory = new ObjectAclFactory();
-        aclFactory.setRepositoryObjectCacheLoader(repositoryObjectCacheLoader);
+        aclFactory.setRepositoryObjectLoader(repositoryObjectLoader);
         aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
         aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
 
@@ -98,7 +98,7 @@ public class ObjectACLFactoryTest {
         objModel = ModelFactory.createDefaultModel();
         objResc = objModel.getResource(pid.getRepositoryPath());
         when(repoObj.getModel()).thenReturn(objModel);
-        when(repositoryObjectCacheLoader.load(pid)).thenReturn(repoObj);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
     }
 
     @Test
@@ -237,12 +237,12 @@ public class ObjectACLFactoryTest {
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
         assertEquals("Incorrect number of principals returned", 1, results.size());
 
-        verify(repositoryObjectCacheLoader).load(pid);
+        verify(repositoryObjectLoader).getRepositoryObject(pid);
 
         // Second run, should not change the number of sparql invocations
         results = aclFactory.getPrincipalRoles(pid);
 
-        verify(repositoryObjectCacheLoader).load(pid);
+        verify(repositoryObjectLoader).getRepositoryObject(pid);
 
         assertEquals("Incorrect number of principals on second run", 1, results.size());
         Set<String> roles = results.get(MANAGE_GRP);
@@ -255,7 +255,7 @@ public class ObjectACLFactoryTest {
         objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
-        verify(repositoryObjectCacheLoader).load(pid);
+        verify(repositoryObjectLoader).getRepositoryObject(pid);
         assertEquals("Incorrect number of principals returned", 1, results.size());
 
         // Wait for expiration time
@@ -265,7 +265,7 @@ public class ObjectACLFactoryTest {
         assertEquals("Incorrect number of principals returned", 1, results.size());
         assertEquals("Incorrect number of roles for principal", 1, results.get(MANAGE_GRP).size());
 
-        verify(repositoryObjectCacheLoader, times(2)).load(pid);
+        verify(repositoryObjectLoader, times(2)).getRepositoryObject(pid);
     }
 
     @Test
@@ -283,7 +283,7 @@ public class ObjectACLFactoryTest {
         Resource resc2 = model2.getResource(pid2.getRepositoryPath());
         ContentObject repoObj2 = mock(ContentObject.class);
         when(repoObj2.getModel()).thenReturn(model2);
-        when(repositoryObjectCacheLoader.load(pid2)).thenReturn(repoObj2);
+        when(repositoryObjectLoader.getRepositoryObject(pid2)).thenReturn(repoObj2);
 
         resc2.addLiteral(CdrAcl.canAccess, PATRON_GRP);
         resc2.addLiteral(CdrAcl.canIngest, USER_PRINC);
@@ -293,14 +293,14 @@ public class ObjectACLFactoryTest {
         assertEquals("Incorrect number of roles for patron for pid2", 1, results.get(PATRON_GRP).size());
         assertEquals("Incorrect number of roles for user for pid2", 1, results.get(USER_PRINC).size());
 
-        verify(repositoryObjectCacheLoader, times(2)).load(any(PID.class));
+        verify(repositoryObjectLoader, times(2)).getRepositoryObject(any(PID.class));
 
         results = aclFactory.getPrincipalRoles(pid);
         assertEquals("Incorrect number of principals cached for pid1", 1, results.size());
         results = aclFactory.getPrincipalRoles(pid2);
         assertEquals("Incorrect number of principals cached for pid2", 2, results.size());
 
-        verify(repositoryObjectCacheLoader, times(2)).load(any(PID.class));
+        verify(repositoryObjectLoader, times(2)).getRepositoryObject(any(PID.class));
     }
 
     @Test

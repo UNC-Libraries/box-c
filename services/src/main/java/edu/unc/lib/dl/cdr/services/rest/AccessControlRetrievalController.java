@@ -73,7 +73,7 @@ public class AccessControlRetrievalController {
     @Autowired
     private InheritedAclFactory inheritedAclFactory;
     @Autowired
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private PatronPrincipalProvider patronPrincipalProvider;
 
@@ -87,7 +87,7 @@ public class AccessControlRetrievalController {
         aclService.assertHasAccess("Insufficient permissions to retrieve staff roles for " + id,
                 pid, agent.getPrincipals(), Permission.viewHidden);
 
-        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
         Map<String, Object> result = new HashMap<>();
         List<RoleAssignment> inherited = null;
@@ -143,7 +143,7 @@ public class AccessControlRetrievalController {
         aclService.assertHasAccess("Insufficient permissions to retrieve patron access for " + id,
                 pid, agent.getPrincipals(), Permission.viewHidden);
 
-        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
         Map<String, Object> result = new HashMap<>();
 

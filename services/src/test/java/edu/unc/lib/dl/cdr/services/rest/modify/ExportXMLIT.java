@@ -41,7 +41,6 @@ import java.util.Map;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -52,6 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -61,6 +61,7 @@ import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequ
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -192,8 +193,10 @@ public class ExportXMLIT extends AbstractAPIIT {
     private List<String> createObjects() throws Exception {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
-        updateDescriptionService.updateDescription(agent, folder.getPid(), Files.newInputStream(MODS_PATH_1));
-        updateDescriptionService.updateDescription(agent, work.getPid(), Files.newInputStream(MODS_PATH_2));
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+                agent, folder.getPid(), Files.newInputStream(MODS_PATH_1)));
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+                agent, work.getPid(), Files.newInputStream(MODS_PATH_2)));
 
         String pid1 = folder.getPid().getRepositoryPath();
         String pid2 = work.getPid().getRepositoryPath();

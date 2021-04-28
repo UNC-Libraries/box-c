@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -28,6 +29,8 @@ import java.net.URI;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
@@ -62,8 +65,8 @@ public class RepositoryObjectLoaderTest {
 
         repoObjLoader = new RepositoryObjectLoader();
         repoObjLoader.setRepositoryObjectCacheLoader(objectCacheLoader);
-        repoObjLoader.setCacheMaxSize(1L);
-        repoObjLoader.setCacheTimeToLive(10L);
+        repoObjLoader.setCacheMaxSize(10L);
+        repoObjLoader.setCacheTimeToLive(1000L);
         repoObjLoader.init();
 
         when(pidMinter.mintContentPid()).thenReturn(contentPid);
@@ -169,5 +172,17 @@ public class RepositoryObjectLoaderTest {
         repoObjLoader.getRepositoryObject(pid);
     }
 
+    @Test
+    public void invalidateTest() throws Exception {
+        PID pid = pidMinter.mintContentPid();
 
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
+        // Trigger population of cache
+        repoObjLoader.getRepositoryObject(pid);
+
+        LoadingCache<PID, RepositoryObject> repoObjCache = repoObjLoader.getRepositoryObjectCache();
+        assertNotNull(repoObjCache.getIfPresent(pid));
+        repoObjLoader.invalidate(pid);
+        assertNull(repoObjCache.getIfPresent(pid));
+    }
 }

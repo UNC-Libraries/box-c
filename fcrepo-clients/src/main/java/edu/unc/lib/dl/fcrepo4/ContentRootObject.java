@@ -43,6 +43,7 @@ public class ContentRootObject extends ContentContainerObject {
         }
 
         repoObjFactory.addMember(this, member);
+        member.shouldRefresh();
         return this;
     }
 

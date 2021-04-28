@@ -111,7 +111,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         try {
             Model logModel = ModelFactory.createDefaultModel();
 
-            Statement s = repoObject.getResource().getProperty(Cdr.hasEvents);
+            Statement s = repoObject.getResource(true).getProperty(Cdr.hasEvents);
             boolean isNewLog = s == null;
 
             // For new logs, add in representation statement

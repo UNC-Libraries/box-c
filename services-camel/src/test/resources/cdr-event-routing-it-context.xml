@@ -68,6 +68,10 @@
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
+    
+    <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+    </bean>
 
     <camel:camelContext id="cdrServiceCdrEvents">
         <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>

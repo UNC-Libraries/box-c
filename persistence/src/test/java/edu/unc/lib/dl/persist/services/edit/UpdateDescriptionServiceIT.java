@@ -49,6 +49,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -123,7 +124,7 @@ public class UpdateDescriptionServiceIT {
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(title, date));
         InputStream modsStream = documentToInputStream(doc);
-        updateService.updateDescription(null, agent, contentObj, modsStream);
+        updateService.updateDescription(new UpdateDescriptionRequest(agent, contentObj, modsStream));
     }
 
     private void assertHasMods(InputStream updatedMods, String expectedTitle, String expectedDate)

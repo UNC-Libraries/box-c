@@ -52,6 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -107,7 +108,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
-        updateDescriptionService.updateDescription(agent, workObj.getPid(), modsStream);
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workObj.getPid(), modsStream));
 
         indexObjectsInTripleStore();
 

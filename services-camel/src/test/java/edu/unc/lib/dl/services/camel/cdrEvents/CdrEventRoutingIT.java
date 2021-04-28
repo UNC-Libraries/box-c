@@ -113,11 +113,11 @@ public class CdrEventRoutingIT {
         List<PID> added = pidList(3);
         List<PID> destinations = pidList(1);
 
-        opsMsgSender.sendAddOperation(USER_ID, destinations, added, emptyList(), DEPOSIT_ID);
-
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(1)
                 .create();
+
+        opsMsgSender.sendAddOperation(USER_ID, destinations, added, emptyList(), DEPOSIT_ID);
 
         notify.matches(3l, TimeUnit.SECONDS);
 
@@ -134,11 +134,11 @@ public class CdrEventRoutingIT {
         int numPids = 3;
         List<PID> pids = pidList(numPids);
 
-        opsMsgSender.sendMarkForDeletionOperation(USER_ID, pids);
-
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(1)
                 .create();
+
+        opsMsgSender.sendMarkForDeletionOperation(USER_ID, pids);
 
         notify.matches(3l, TimeUnit.SECONDS);
 

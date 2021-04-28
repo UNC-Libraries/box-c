@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -45,7 +46,7 @@ public class IndexingMessageSender extends MessageSender {
      * @param actionType type of indexing action to perform
      */
     public void sendIndexingOperation(String userid, PID targetPid, IndexingActionType actionType) {
-        sendIndexingOperation(userid, targetPid, null, actionType, null);
+        sendIndexingOperation(userid, targetPid, null, actionType, null, null);
     }
 
     /**
@@ -58,7 +59,7 @@ public class IndexingMessageSender extends MessageSender {
      */
     public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
             IndexingActionType actionType) {
-        sendIndexingOperation(userid, targetPid, children, actionType, null);
+        sendIndexingOperation(userid, targetPid, children, actionType, null, null);
     }
 
     /**
@@ -72,8 +73,8 @@ public class IndexingMessageSender extends MessageSender {
      *            message
      */
     public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
-            IndexingActionType actionType, Map<String, String> parameters) {
-        Document msg = makeIndexingOperationBody(userid, targetPid, children, actionType, parameters);
+            IndexingActionType actionType, Map<String, String> parameters, IndexingPriority priority) {
+        Document msg = makeIndexingOperationBody(userid, targetPid, children, actionType, parameters, priority);
 
         LOG.debug("sending solr update message for {} of type {}", targetPid, actionType.toString());
         sendMessage(msg);

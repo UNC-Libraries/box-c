@@ -93,6 +93,7 @@ import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -834,7 +835,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         InputStream modsStream = Files.newInputStream(modsPath);
-        updateDescService.updateDescription(logTransferSession, agent, obj, modsStream);
+        updateDescService.updateDescription(
+                new UpdateDescriptionRequest(agent, obj, modsStream).withTransferSession(logTransferSession));
     }
 
     private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {

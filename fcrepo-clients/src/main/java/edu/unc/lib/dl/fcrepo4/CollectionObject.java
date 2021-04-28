@@ -60,6 +60,7 @@ public class CollectionObject extends ContentContainerObject {
         }
 
         repoObjFactory.addMember(this, member);
+        member.shouldRefresh();
         return this;
     }
 

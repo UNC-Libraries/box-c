@@ -95,7 +95,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
         }
 
         List<URI> binaryUris = new ArrayList<>();
-        addBinariesForCleanup(rootOfTree.getModel(), binaryUris);
+        addBinariesForCleanup(rootOfTree.getModel(true), binaryUris);
         cleanupBinaryUris.addAll(binaryUris);
 
         sendBinariesDestroyedMsg(rootOfTree, binaryUris);

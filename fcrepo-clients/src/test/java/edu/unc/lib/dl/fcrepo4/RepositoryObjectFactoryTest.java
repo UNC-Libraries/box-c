@@ -58,9 +58,7 @@ public class RepositoryObjectFactoryTest {
     @Mock
     private LdpContainerFactory ldpFactory;
     @Mock
-    private RepositoryObjectCacheLoader objectCacheLoader;
-    @Mock
-    private RepositoryObjectDriver driver;
+    private RepositoryObjectLoader repoObjLoader;
     @Mock
     private SparqlUpdateService sparqlUpdateService;
     @Mock
@@ -85,6 +83,7 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
         repoObjFactory.setSparqlUpdateService(sparqlUpdateService);
+        repoObjFactory.setRepositoryObjectLoader(repoObjLoader);
         pidMinter = new RepositoryPIDMinter();
         repoObjFactory.setPidMinter(pidMinter);
         linkHeaders = new ArrayList<>();
@@ -104,42 +103,42 @@ public class RepositoryObjectFactoryTest {
 
     @Test
     public void createDepositRecordTest() {
-
+        when(repoObjLoader.getDepositRecord(any(PID.class))).thenReturn(mock(DepositRecord.class));
         DepositRecord obj = repoObjFactory.createDepositRecord(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createAdminUnitTest() {
-
+        when(repoObjLoader.getAdminUnit(any(PID.class))).thenReturn(mock(AdminUnit.class));
         AdminUnit obj = repoObjFactory.createAdminUnit(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createCollectionObjectTest() throws Exception {
-
+        when(repoObjLoader.getCollectionObject(any(PID.class))).thenReturn(mock(CollectionObject.class));
         CollectionObject obj = repoObjFactory.createCollectionObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFolderObjectTest() throws Exception {
-
+        when(repoObjLoader.getFolderObject(any(PID.class))).thenReturn(mock(FolderObject.class));
         FolderObject obj = repoObjFactory.createFolderObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createWorkObjectTest() {
-
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(mock(WorkObject.class));
         WorkObject obj = repoObjFactory.createWorkObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFileObjectTest() {
-
+        when(repoObjLoader.getFileObject(any(PID.class))).thenReturn(mock(FileObject.class));
         FileObject obj = repoObjFactory.createFileObject(null);
         assertNotNull(obj);
     }
@@ -147,7 +146,9 @@ public class RepositoryObjectFactoryTest {
     @Test
     public void createFolderWithPidTest() {
         PID pid = pidMinter.mintContentPid();
-
+        FileObject mockFile = mock(FileObject.class);
+        when(mockFile.getPid()).thenReturn(pid);
+        when(repoObjLoader.getFileObject(pid)).thenReturn(mockFile);
         FileObject obj = repoObjFactory.createFileObject(pid, null);
         assertNotNull(obj);
         assertEquals(pid, obj.getPid());
@@ -158,6 +159,9 @@ public class RepositoryObjectFactoryTest {
         PID pid = pidMinter.mintContentPid();
         URI binaryUri = pid.getRepositoryUri();
         when(mockResponse.getLocation()).thenReturn(binaryUri);
+        BinaryObject mockBinary = mock(BinaryObject.class);
+        when(mockBinary.getPid()).thenReturn(pid);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(mockBinary);
 
         String slug = "slug";
         InputStream content = mock(InputStream.class);
@@ -169,7 +173,7 @@ public class RepositoryObjectFactoryTest {
                 mimetype, sha1Checksum, null, null);
 
         assertTrue(obj.getPid().getRepositoryPath().startsWith(binaryUri.toString()));
-     // check to see that client creates FcrepoResponse
+        // check to see that client creates FcrepoResponse
         verify(mockPostBuilder).perform();
     }
 
@@ -185,7 +189,7 @@ public class RepositoryObjectFactoryTest {
         PID memberPid = pidMinter.mintContentPid();
         ContentObject member = mock(ContentObject.class);
         when(member.getPid()).thenReturn(memberPid);
-        when(member.getModel()).thenReturn(memberModel);
+        when(member.getModel(true)).thenReturn(memberModel);
         when(member.getMetadataUri()).thenReturn(memberPid.getRepositoryUri());
 
         repoObjFactory.addMember(parent, member);

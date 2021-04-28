@@ -78,7 +78,12 @@ public abstract class RepositoryObject {
      * @throws FedoraException
      */
     public Model getModel() throws FedoraException {
-        driver.loadModel(this);
+        driver.loadModel(this, false);
+        return model;
+    }
+
+    public Model getModel(boolean checkForUpdates) throws FedoraException {
+        driver.loadModel(this, checkForUpdates);
         return model;
     }
 
@@ -104,7 +109,11 @@ public abstract class RepositoryObject {
     }
 
     public Resource getResource() throws FedoraException {
-        return getModel().getResource(getUri().toString());
+        return getResource(false);
+    }
+
+    public Resource getResource(boolean checkForUpdates) throws FedoraException {
+        return getModel(checkForUpdates).getResource(getUri().toString());
     }
 
     /**
@@ -270,6 +279,16 @@ public abstract class RepositoryObject {
             return false;
         }
         return remoteEtag.equals(getEtag());
+    }
+
+    /**
+     * Indicate that the state of this object should be refreshed
+     */
+    public void shouldRefresh() {
+        model = null;
+        premisLog = null;
+        types = null;
+        etag = null;
     }
 
     @Override

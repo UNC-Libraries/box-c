@@ -100,13 +100,15 @@ public class RepositoryObjectDriver {
      * repository object
      *
      * @param obj
+     * @param checkForUpdates if true, will reload the model if the object has changed
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDriver loadModel(RepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadModel(RepositoryObject obj, boolean checkForUpdates) throws FedoraException {
+        long start = System.nanoTime();
         URI metadataUri = obj.getMetadataUri();
-        // If the object is up to date and has already loaded the model then we're done
-        if (obj.hasModel() && obj.isUnmodified()) {
+        // Model needs to be loaded if not present, or if checkForUpdates is true and either in a tx or obj has changed
+        if (obj.hasModel() && !(checkForUpdates && (FedoraTransaction.isStillAlive() || !obj.isUnmodified()))) {
             log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
             return this;
         }
@@ -116,7 +118,6 @@ public class RepositoryObjectDriver {
                 .accept(TURTLE_MIMETYPE)
                 .perform()) {
 
-            log.debug("Retrieving new model for {}", obj.getPid());
             Model model = ModelFactory.createDefaultModel();
             model.read(response.getBody(), null, Lang.TURTLE.getName());
 
@@ -125,6 +126,7 @@ public class RepositoryObjectDriver {
 
             // Store updated modification info to track if the object changes
             obj.setEtag(parseEtag(response));
+            log.debug("Retrieved new model for {} in {}s", obj.getPid(), (System.nanoTime() - start) / 1e9);
 
             return this;
         } catch (IOException e) {

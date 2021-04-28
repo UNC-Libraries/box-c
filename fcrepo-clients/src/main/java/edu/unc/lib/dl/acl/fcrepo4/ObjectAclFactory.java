@@ -43,7 +43,7 @@ import com.google.common.cache.LoadingCache;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -67,7 +67,7 @@ public class ObjectAclFactory implements AclFactory {
     private long cacheTimeToLive;
     private long cacheMaxSize;
 
-    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
+    private RepositoryObjectLoader repoObjLoader;
 
     private final List<String> roleUris;
 
@@ -164,6 +164,14 @@ public class ObjectAclFactory implements AclFactory {
         return objAclCache.getUnchecked(pid);
     }
 
+    /**
+     * Invalidates cached data for the provided pid
+     * @param pid
+     */
+    public void invalidate(PID pid) {
+        objAclCache.invalidate(pid);
+    }
+
     public long getCacheTimeToLive() {
         return cacheTimeToLive;
     }
@@ -181,10 +189,10 @@ public class ObjectAclFactory implements AclFactory {
     }
 
     /**
-     * @param repositoryObjectCacheLoader the repositoryObjectCacheLoader to set
+     * @param repositoryObjectLoader the repositoryObjectLoader to set
      */
-    public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader repositoryObjectCacheLoader) {
-        this.repositoryObjectCacheLoader = repositoryObjectCacheLoader;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repoObjLoader = repositoryObjectLoader;
     }
 
     /**
@@ -199,7 +207,7 @@ public class ObjectAclFactory implements AclFactory {
         public List<Entry<String, String>> load(PID pid) {
             List<Entry<String, String>> valueResults = new ArrayList<>();
 
-            RepositoryObject repoObj = repositoryObjectCacheLoader.load(pid);
+            RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
             Model model = repoObj.getModel();
             StmtIterator it = model.listStatements();
             while (it.hasNext()) {

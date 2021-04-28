@@ -338,7 +338,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         // test one existing relationship
         Resource resc3 = createResource(repoObj3.getPid().getRepositoryPath());
         repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc3);
-        Model replaceModel1 = repoObj1.getModel();
+        Model replaceModel1 = getModel(repoObj1.getPid());
         Resource updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
         assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
         assertFalse(updatedResc1.hasProperty(DC.relation, resc2));
@@ -347,14 +347,14 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         Resource resc4 = createResource(repoObj4.getPid().getRepositoryPath());
         // add second relationship
         repoObjFactory.createRelationship(repoObj1, DC.relation, resc2);
-        replaceModel1 = repoObj1.getModel();
+        replaceModel1 = repoObj1.getModel(true);
         updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
         // check to see that the subject has two relationships using the property DC.relation
         assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
         assertTrue(updatedResc1.hasProperty(DC.relation, resc2));
         // create a new exclusive relationship to a new resource
         repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc4);
-        Model replaceModel1Again = repoObj1.getModel();
+        Model replaceModel1Again = repoObj1.getModel(true);
         Resource updatedResc1Again = replaceModel1Again.getResource(repoObj1.getPid().getRepositoryPath());
         assertTrue(updatedResc1Again.hasProperty(DC.relation, resc4));
         assertFalse(updatedResc1Again.hasProperty(DC.relation, resc2));

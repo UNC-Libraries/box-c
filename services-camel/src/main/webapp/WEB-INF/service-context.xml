@@ -66,7 +66,7 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
 
@@ -120,7 +120,7 @@
             init-method="init">
         <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
@@ -205,6 +205,11 @@
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -74,7 +75,7 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
         binObj = new BinaryObject(mockPid, driver, repoObjFactory);
 
-        when(driver.loadModel(binObj)).thenReturn(driver);
+        when(driver.loadModel(eq(binObj), anyBoolean())).thenReturn(driver);
 
         setupModel();
     }

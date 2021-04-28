@@ -156,6 +156,7 @@ public class FileObject extends ContentObject {
                     associationRelation, createResource(getOriginalFilePid(pid).getRepositoryPath()));
         }
 
+        shouldRefresh();
         return binObj;
     }
 

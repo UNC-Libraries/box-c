@@ -32,6 +32,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Header;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.fcrepo.camel.FcrepoHeaders;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -39,6 +40,8 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -64,8 +67,14 @@ public class SolrUpdatePreprocessor implements Processor {
 
         // Store the action type as a header
         in.setHeader(CdrFcrepoHeaders.CdrSolrUpdateAction, actionType);
-        // Serialize the message for persistence
-        in.setBody(new XMLOutputter().outputString(msgBody));
+        String pidString = body.getChild("pid", ATOM_NS).getTextTrim();
+        PID pid = PIDs.get(pidString);
+        in.setHeader(FcrepoHeaders.FCREPO_URI, pid.getRepositoryPath());
+
+        String priority = body.getChildTextTrim("category", ATOM_NS);
+        if (priority != null) {
+            in.setHeader(CdrFcrepoHeaders.CdrSolrIndexingPriority, priority);
+        }
     }
 
     private static final Set<IndexingActionType> LARGE_ACTIONS =
