@@ -106,6 +106,30 @@ public class MODSValidatorTest {
     }
 
     @Test
+    public void testValidEdtfDate() throws Exception {
+        doc.addContent(new Element("mods", MODS_V3_NS)
+                .addContent(new Element("originInfo", MODS_V3_NS)
+                        .addContent(new Element("dateCreated", MODS_V3_NS)
+                                .setAttribute("keyDate", "yes")
+                                .setAttribute("encoding", "edtf")
+                                .setText("2021-4"))));
+
+        validator.validate(convertDocumentToStream(doc));
+    }
+
+    @Test
+    public void testValidIsoDate() throws Exception {
+        doc.addContent(new Element("mods", MODS_V3_NS)
+                .addContent(new Element("originInfo", MODS_V3_NS)
+                        .addContent(new Element("dateCreated", MODS_V3_NS)
+                                .setAttribute("keyDate", "yes")
+                                .setAttribute("encoding", "iso8601")
+                                .setText("19300114"))));
+
+        validator.validate(convertDocumentToStream(doc));
+    }
+
+    @Test
     public void testSchemaFailure() throws Exception {
         thrown.expect(MetadataValidationException.class);
         thrown.expectMessage("schema");
