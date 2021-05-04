@@ -29,7 +29,8 @@ require.config({
 		'underscore': {
 			exports: '_'
 		}
-	}
+	},
+	waitSeconds: 120
 });
 define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTables', 'AudioPlayer', 'thumbnails'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
@@ -172,7 +173,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		$childFilesTable.DataTable({
 			ajax: {
 				processing: true,
-				url: '/listJson/' + $childFilesTable.attr('data-pid'),
+				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
 				dataSrc: function(d) {
 					return d.metadata;
 				}
