@@ -160,8 +160,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     private boolean overrideTimestamps;
 
-    private int filesIngestedInWork = 0;
-
     public IngestContentObjectsJob() {
         super();
     }
@@ -341,26 +339,37 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         WorkObject work = (WorkObject) parent;
-        FileObject obj = addFileToWork(work, childResc);
 
-        // Add ingestion event for file object
-        addIngestionEventForChild(obj);
-        addPremisEvents(obj);
-        // add MODS
-        addDescription(obj, childResc);
+        FedoraTransaction tx = txManager.startTransaction();
+        FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
+        PID pid = null;
+        try {
+            txRefresher.start();
 
-        overrideModifiedTimestamp(obj, childResc);
+            FileObject obj = addFileToWork(work, childResc);
+            pid = obj.getPid();
 
-        if (parentResc.equals(depositResc)) {
-            // File object at the root of the deposit, increment ingested count immediately
-            addClicks(1);
-            getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
-        } else {
-            // Defer increment of ingested count until the work obj finishes in case of rollback
-            filesIngestedInWork++;
+            // Add ingestion event for file object
+            addIngestionEventForChild(obj);
+            addPremisEvents(obj);
+            // add MODS
+            addDescription(obj, childResc);
+
+            overrideModifiedTimestamp(obj, childResc);
+            log.debug("Finished all updates for file {} in work {}", pid, work.getPid());
+
+            txRefresher.stop();
+        } catch (Exception e) {
+            txRefresher.interrupt();
+            tx.cancelAndIgnore();
+            throw e;
+        } finally {
+            tx.close();
         }
 
-        log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
+        addClicks(1);
+        getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
+        log.info("Created file object {} for deposit {}", pid, getDepositPID());
     }
 
     /**
@@ -681,16 +690,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         WorkObject obj = null;
         boolean skip = skipResumed(childResc);
-        if (skip) {
-            obj = repoObjLoader.getWorkObject(childPid);
-            ingestChildren(obj, childResc);
-
-            // Avoid adding primaryObject relation for a resuming deposit if already present
-            if (!obj.getResource().hasProperty(Cdr.primaryObject)) {
-                // Set the primary object for this work if one was specified
-                addPrimaryObject(obj, childResc);
-            }
-        } else {
+        if (!skip) {
             Model model = ModelFactory.createDefaultModel();
             Resource workResc = model.getResource(childPid.getRepositoryPath());
 
@@ -700,10 +700,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
             // send txid along with uris for the following actions
             FedoraTransaction tx = txManager.startTransaction();
-            FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
             try {
-                txRefresher.start();
-
                 obj = repoObjFactory.createWorkObject(childPid, model);
                 // Add ingestion event for the work itself
                 addIngestionEventForChild(obj);
@@ -712,48 +709,43 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 addDescription(obj, childResc);
 
                 log.info("Created work object {} for deposit {}", childPid, getDepositPID());
-
-                ingestChildren(obj, childResc);
-
-                // Set the primary object for this work if one was specified
-                addPrimaryObject(obj, childResc);
-
-                if (isObjectCompleted(obj.getPid())) {
-                    FedoraTransaction txPremis = txManager.startTransaction();
-
-                    try {
-                        // add ingestion event for the new folder
-                        addIngestionEventForContainer(obj, childResc);
-                        addPremisEvents(obj);
-                        overrideModifiedTimestamp(obj, childResc);
-                    } catch (Exception e) {
-                        txPremis.cancelAndIgnore();
-                        throw e;
-                    } finally {
-                        txPremis.close();
-                    }
-                }
-
-                // Add counts for files deposited for the work
-                if (filesIngestedInWork > 0) {
-                    addClicks(filesIngestedInWork);
-                    getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), filesIngestedInWork);
-                }
-
-                // Cease refreshing the transaction
-                txRefresher.stop();
             } catch (Exception e) {
-                txRefresher.interrupt();
                 tx.cancelAndIgnore();
                 throw e;
             } finally {
-                filesIngestedInWork = 0;
                 tx.close();
             }
 
-            // Increment the count of objects deposited after adding children
             addClicks(1);
             getDepositStatusFactory().incrIngestedObjects(getDepositUUID(), 1);
+
+        }
+        // Get non-transactional instance of the work
+        obj = repoObjLoader.getWorkObject(childPid);
+        ingestChildren(obj, childResc);
+
+        log.debug("Ingested children for work {}", obj.getPid());
+
+        // Avoid adding primaryObject relation for a resuming deposit if already present
+        if (!skip || !obj.getResource().hasProperty(Cdr.primaryObject)) {
+            // Set the primary object for this work if one was specified
+            addPrimaryObject(obj, childResc);
+        }
+
+        if (isObjectCompleted(obj.getPid())) {
+            FedoraTransaction txPremis = txManager.startTransaction();
+            try {
+                // add ingestion event for the new folder
+                addIngestionEventForContainer(obj, childResc);
+                addPremisEvents(obj);
+                overrideModifiedTimestamp(obj, childResc);
+            } catch (Exception e) {
+                txPremis.cancelAndIgnore();
+                throw e;
+            } finally {
+                txPremis.close();
+            }
+            log.debug("Finished all updates for work {}", obj.getPid());
         }
     }
 

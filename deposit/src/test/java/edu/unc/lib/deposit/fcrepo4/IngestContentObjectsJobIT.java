@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -442,7 +443,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
             ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
             List<ContentObject> destMembers = destObj.getMembers();
-            assertEquals("Incorrect number of children at destination", 0, destMembers.size());
+            assertEquals("Incorrect number of children at destination", 1, destMembers.size());
+
+            WorkObject workObj = (WorkObject) destMembers.get(0);
+            assertEquals("Incorrect number of files added", 0, workObj.getMembers().size());
         }
     }
 
@@ -566,7 +570,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         String badSha1 = "111111111111111111111111111111111111";
-        PID workPid = addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
+        PID filePid = addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null).get(1);
 
         job.closeModel();
 
@@ -575,7 +579,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         } finally {
             assertFalse(FedoraTransaction.hasTxId());
             assertFalse(FedoraTransaction.isStillAlive());
-            assertFalse(objectExists(workPid));
+            assertFalse(objectExists(filePid));
         }
     }
 
@@ -646,7 +650,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             fail("Test should not reach this line. Job should have thrown exception");
         } catch (JobFailedException e) {
             Map<String, String> jobStatus = jobStatusFactory.get(jobUUID);
-            assertNull(jobStatus.get(JobField.num.name()));
+            assertEquals("2", jobStatus.get(JobField.num.name()));
 
             Resource fileResc = job.getWritableModel().getResource(mainPid2.getRepositoryPath());
             Resource origResc = DepositModelHelpers.getDatastream(fileResc);
@@ -682,8 +686,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         depBag.add(folderBag);
 
         // Add children, where the second child is invalid due to missing location
-        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
-        PID file2Pid = addWorkWithFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
+        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5).get(1);
+        List<PID> work2Pids = addWorkWithFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
+        PID work2Pid = work2Pids.get(0);
+        PID file2Pid = work2Pids.get(1);
 
         job.closeModel();
 
@@ -704,7 +710,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         ContentObject mFolderFailed = destMembersFailed.get(0);
         List<ContentObject> folderMembersFailed = ((ContentContainerObject) mFolderFailed).getMembers();
-        assertEquals("Incorrect number of children in folder", 1, folderMembersFailed.size());
+        assertEquals("Incorrect number of children in folder", 2, folderMembersFailed.size());
+
+        WorkObject work2Failed = (WorkObject) findContentObjectByPid(folderMembersFailed, work2Pid);
+        assertEquals("No files should be present", 0, work2Failed.getMembers().size());
 
         // Fix the staging location of the second file
         model = job.getWritableModel();
@@ -946,7 +955,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag workBag = model.createBag(workPid.getRepositoryPath());
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, label);
-        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5_BAD);
+        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5_BAD).get(1);
 
 
         depBag.add(folderBag);
@@ -1139,7 +1148,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource fileResc = model.getResource(filePid.getRepositoryPath());
         fileResc.addLiteral(CdrDeposit.lastModifiedTime, LAST_MODIFIED_STRING);
         fileResc.addLiteral(CdrDeposit.createTime, CREATED_STRING);
-        workBag.add(fileResc);
 
         job.closeModel();
 
@@ -1292,7 +1300,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         return filePid;
     }
 
-    private PID addWorkWithFileObject(Bag parent, String stagingLocation,
+    private List<PID> addWorkWithFileObject(Bag parent, String stagingLocation,
             String mimetype, String sha1, String md5) throws Exception {
         Model model = parent.getModel();
         // Constructing the work in the deposit model with a label
@@ -1306,7 +1314,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(Cdr.primaryObject, createResource(fileObjPid.getRepositoryPath()));
         parent.add(workBag);
 
-        return fileObjPid;
+        return Arrays.asList(workPid, fileObjPid);
 
     }
 

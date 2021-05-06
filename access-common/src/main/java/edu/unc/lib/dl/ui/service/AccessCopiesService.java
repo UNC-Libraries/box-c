@@ -45,6 +45,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  * @author bbpennel
  */
 public class AccessCopiesService extends SolrSearchService {
+    private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     /**
@@ -68,7 +69,7 @@ public class AccessCopiesService extends SolrSearchService {
             return Collections.emptyList();
         }
 
-        QueryResponse resp = performQuery(briefObj, principals, 250);
+        QueryResponse resp = performQuery(briefObj, principals, MAX_FILES);
         List<?> results = resp.getBeans(BriefObjectMetadataBean.class);
         List<BriefObjectMetadata> mdObjs = (List<BriefObjectMetadata>) results;
         mdObjs.add(0, briefObj);
@@ -102,6 +103,8 @@ public class AccessCopiesService extends SolrSearchService {
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
             searchState.setPermissionLimits(Arrays.asList(Permission.viewAccessCopies));
         }
+        searchState.setIgnoreMaxRows(true);
+        searchState.setRowsPerPage(rows);
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
         searchState.setSortType("default");

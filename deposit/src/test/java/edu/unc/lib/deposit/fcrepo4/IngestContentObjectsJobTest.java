@@ -309,6 +309,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         job.run();
 
@@ -321,15 +322,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 eq(supMime), anyString(), anyString(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
-        // Add file count
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
+        // Add work and file count
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
         verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
                 anyString(), anyString(), isNull(String.class), isNull(String.class),
                 any(Property.class), eq(DCTerms.conformsTo), any(Resource.class));
-
-        // Add work object itself
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     /**
@@ -351,6 +349,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+
         job.run();
     }
 
@@ -371,6 +371,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenThrow(new FedoraException("Fail"))
                 .thenReturn(mockFileObj);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         job.run();
     }
@@ -490,6 +491,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 .thenThrow(new ChecksumMismatchException("Temporarily bad"))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         job.run();
 
@@ -504,15 +506,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 eq(supMime), anyString(), anyString(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
-        // Add file count
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(2));
+        // Add work and file count
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
         verify(mockFileObj, times(2)).addBinary(any(PID.class), any(URI.class),
                 anyString(), anyString(), isNull(String.class), isNull(String.class),
                 any(Property.class), eq(DCTerms.conformsTo), any(Resource.class));
-
-        // Add work object itself
-        verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
@@ -533,6 +532,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         when(depositStatusFactory.getState(depositUUID))
                 .thenReturn(DepositState.running)
@@ -723,6 +723,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 anyString(), anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         job.run();
 

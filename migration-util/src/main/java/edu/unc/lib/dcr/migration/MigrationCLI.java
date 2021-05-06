@@ -47,7 +47,8 @@ import picocli.CommandLine.Option;
         SendMessageCommand.class,
         SendSolrMessageCommand.class,
         RequeueDLQCommand.class,
-        DestroyObjectsCommand.class
+        DestroyObjectsCommand.class,
+        GenerateWorkCommand.class
     })
 public class MigrationCLI implements Callable<Integer> {
     private static final Logger output = getLogger(OUTPUT_LOGGER);
