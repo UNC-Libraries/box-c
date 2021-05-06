@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +37,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
 /**
@@ -52,7 +53,7 @@ public class UpdatePatronAccessController {
     @Autowired
     private PatronAccessAssignmentService patronService;
 
-    @PutMapping(value = "/edit/acl/patron/{id}", produces = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/edit/acl/patron/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> updatePatronAccess(@PathVariable("id") String id,
             @RequestBody PatronAccessDetails accessDetails) {
@@ -65,7 +66,8 @@ public class UpdatePatronAccessController {
 
         try {
             AgentPrincipals agent = AgentPrincipals.createFromThread();
-            String jobId = patronService.updatePatronAccess(agent, pid, accessDetails);
+            String jobId = patronService.updatePatronAccess(
+                    new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
             if (jobId == null) {
                 result.put("status", "No changes made");
             } else {

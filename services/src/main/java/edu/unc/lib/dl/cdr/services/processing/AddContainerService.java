@@ -59,6 +59,7 @@ import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
@@ -147,12 +148,14 @@ public class AddContainerService {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
-                patronService.updatePatronAccess(agent, containerPid, accessDetails, true);
+                patronService.updatePatronAccess(
+                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails, true));
             } else if (ResourceType.Collection.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, canViewOriginals),
                         new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
-                patronService.updatePatronAccess(agent, containerPid, accessDetails);
+                patronService.updatePatronAccess(
+                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails, false));
             }
 
             storeDescription(containerPid, addRequest);

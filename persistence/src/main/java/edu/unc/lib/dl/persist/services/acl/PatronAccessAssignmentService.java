@@ -51,6 +51,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -89,26 +90,24 @@ public class PatronAccessAssignmentService {
         accessValidator = new ContentObjectAccessRestrictionValidator();
     }
 
-    public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
-        return updatePatronAccess(agent, target, accessDetails, false);
-    }
+    public String updatePatronAccess(PatronAccessAssignmentRequest request) {
+        notNull(request.getAgent(), "Must provide an agent for this operation");
+        notNull(request.getTarget(), "Must provide the PID of the object to update");
+        notNull(request.getAccessDetails(), "Must provide patron access details");
 
-    public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails,
-                                     boolean isFolderCreation) {
-        notNull(agent, "Must provide an agent for this operation");
-        notNull(target, "Must provide the PID of the object to update");
-        notNull(accessDetails, "Must provide patron access details");
-
+        PID target = request.getTarget();
+        AgentPrincipals agent = request.getAgent();
         FedoraTransaction tx = txManager.startTransaction();
+        PatronAccessDetails accessDetails = request.getAccessDetails();
         log.info("Starting update of patron access on {}", target.getId());
         try (Timer.Context context = timer.time()) {
-            Permission permissionToCheck = isFolderCreation ? ingest : changePatronAccess;
+            Permission permissionToCheck = request.isFolderCreation() ? ingest : changePatronAccess;
             aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + target.getId(),
                     target, agent.getPrincipals(), permissionToCheck);
 
-            assertAssignmentsComplete(accessDetails);
+            assertAssignmentsComplete(request.getAccessDetails());
 
-            assertOnlyPatronRoles(accessDetails);
+            assertOnlyPatronRoles(request.getAccessDetails());
 
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
@@ -348,5 +347,59 @@ public class PatronAccessAssignmentService {
 
     public void setAccessValidator(ContentObjectAccessRestrictionValidator accessValidator) {
         this.accessValidator = accessValidator;
+    }
+
+    public static class PatronAccessAssignmentRequest {
+        private AgentPrincipals agent;
+        private PID target;
+        private PatronAccessDetails accessDetails;
+        private boolean isFolderCreation;
+
+        public PatronAccessAssignmentRequest() {
+        }
+
+        public PatronAccessAssignmentRequest(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails,
+                boolean isFolderCreation) {
+            this.agent = agent;
+            this.target = target;
+            this.accessDetails = accessDetails;
+            this.isFolderCreation = isFolderCreation;
+        }
+
+        public AgentPrincipals getAgent() {
+            return agent;
+        }
+
+        public void setAgent(AgentPrincipals agent) {
+            this.agent = agent;
+        }
+
+        public PID getTarget() {
+            return target;
+        }
+
+        public void setTarget(PID target) {
+            this.target = target;
+        }
+
+        public void setTarget(String target) {
+            this.target = PIDs.get(target);
+        }
+
+        public PatronAccessDetails getAccessDetails() {
+            return accessDetails;
+        }
+
+        public void setAccessDetails(PatronAccessDetails accessDetails) {
+            this.accessDetails = accessDetails;
+        }
+
+        public boolean isFolderCreation() {
+            return isFolderCreation;
+        }
+
+        public void setFolderCreation(boolean isFolderCreation) {
+            this.isFolderCreation = isFolderCreation;
+        }
     }
 }
