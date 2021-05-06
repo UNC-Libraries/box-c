@@ -143,21 +143,23 @@ describe('listDisplay.vue', () => {
         expect(wrapper.vm.getFileType(wrapper.vm.recordList[1].datastream)).toEqual('png');
     });
 
-    it("set a default browse type for record links when saved browse type shouldn't be used", () => {
+    it("set a default browse type for record links when saved browse type shouldn't be used", async () => {
         wrapper.setProps({
             useSavedBrowseType: false
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.vm.linkBrowseType).toBe('list-display');
     });
 
-    it("sets a default browse type for record links when saved browse type should be used and no value is set", () => {
+    it("sets a default browse type for record links when saved browse type should be used and no value is set", async () => {
         wrapper.setProps({
             useSavedBrowseType: true
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.vm.linkBrowseType).toBe('gallery-display');
     });
 
-    it("sets browse type form sessionStorage for record links when saved browse type should be used", () => {
+    it("sets browse type form sessionStorage for record links when saved browse type should be used", async () => {
         sessionStorage.setItem('browse-type', 'list-display');
         wrapper = shallowMount(listDisplay, {
             localVue,
@@ -166,10 +168,11 @@ describe('listDisplay.vue', () => {
                 useSavedBrowseType: true
             }
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.vm.linkBrowseType).toBe('list-display');
     });
 
-    it("doesn't display a collection number if one isn't set", () => {
+    it("doesn't display a collection number if one isn't set", async () => {
         wrapper = shallowMount(listDisplay, {
             localVue,
             router,
@@ -177,10 +180,11 @@ describe('listDisplay.vue', () => {
                 useSavedBrowseType: true
             }
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.findAll('.collection_id').length).toEqual(0);
     });
 
-    it("displays a collection number if one is set", () => {
+    it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
             localVue,
             router,
@@ -188,10 +192,11 @@ describe('listDisplay.vue', () => {
                 useSavedBrowseType: true
             }
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.findAll('.collection_id').length).toEqual(0);
     });
 
-    it("displays a collection number if one is set", () => {
+    it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
             localVue,
             router,
@@ -238,6 +243,7 @@ describe('listDisplay.vue', () => {
                 ]
             }
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.findAll('.collection_id').length).toEqual(1);
     });
 });
