@@ -190,6 +190,34 @@
                             <input type="number" id="pageNumber" class="toolbarField pageNumber" title="Page" value="1" size="4" min="1">
                             <span id="numPages" class="toolbarLabel"></span>
                         </div>
+                        <div id="toolbarViewerMiddle">
+                            <div class="splitToolbarButton">
+                                <button id="zoomOut" class="toolbarButton zoomOut" title="Zoom Out">
+                                    <span data-l10n-id="zoom_out_label">Zoom Out</span>
+                                </button>
+                                <div class="splitToolbarButtonSeparator"></div>
+                                <button id="zoomIn" class="toolbarButton zoomIn" title="Zoom In">
+                                    <span data-l10n-id="zoom_in_label">Zoom In</span>
+                                </button>
+                            </div>
+                            <span id="scaleSelectContainer" class="dropdownToolbarButton">
+                              <select id="scaleSelect" title="Zoom">
+                                <option id="pageAutoOption" title="" value="auto" selected="selected" data-l10n-id="page_scale_auto">Automatic Zoom</option>
+                                <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
+                                <option id="pageFitOption" title="" value="page-fit" data-l10n-id="page_scale_fit">Page Fit</option>
+                                <option id="pageWidthOption" title="" value="page-width" data-l10n-id="page_scale_width">Page Width</option>
+                                <option id="customScaleOption" title="" value="custom" disabled="disabled" hidden="true"></option>
+                                <option title="" value="0.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 50 }'>50%</option>
+                                <option title="" value="0.75" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 75 }'>75%</option>
+                                <option title="" value="1" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 100 }'>100%</option>
+                                <option title="" value="1.25" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 125 }'>125%</option>
+                                <option title="" value="1.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 150 }'>150%</option>
+                                <option title="" value="2" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 200 }'>200%</option>
+                                <option title="" value="3" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 300 }'>300%</option>
+                                <option title="" value="4" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 400 }'>400%</option>
+                              </select>
+                            </span>
+                        </div>
                         <div id="toolbarViewerRight">
                             <button id="presentationMode" class="toolbarButton presentationMode hiddenLargeView" title="Switch to Presentation Mode">
                                 <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
@@ -215,34 +243,6 @@
                             <button id="secondaryToolbarToggle" class="toolbarButton" title="Tools">
                                 <span data-l10n-id="tools_label">Tools</span>
                             </button>
-                        </div>
-                        <div id="toolbarViewerMiddle">
-                            <div class="splitToolbarButton">
-                                <button id="zoomOut" class="toolbarButton zoomOut" title="Zoom Out">
-                                    <span data-l10n-id="zoom_out_label">Zoom Out</span>
-                                </button>
-                                <div class="splitToolbarButtonSeparator"></div>
-                                <button id="zoomIn" class="toolbarButton zoomIn" title="Zoom In">
-                                    <span data-l10n-id="zoom_in_label">Zoom In</span>
-                                </button>
-                            </div>
-                            <span id="scaleSelectContainer" class="dropdownToolbarButton">
-                      <select id="scaleSelect" title="Zoom">
-                        <option id="pageAutoOption" title="" value="auto" selected="selected" data-l10n-id="page_scale_auto">Automatic Zoom</option>
-                        <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
-                        <option id="pageFitOption" title="" value="page-fit" data-l10n-id="page_scale_fit">Page Fit</option>
-                        <option id="pageWidthOption" title="" value="page-width" data-l10n-id="page_scale_width">Page Width</option>
-                        <option id="customScaleOption" title="" value="custom" disabled="disabled" hidden="true"></option>
-                        <option title="" value="0.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 50 }'>50%</option>
-                        <option title="" value="0.75" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 75 }'>75%</option>
-                        <option title="" value="1" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 100 }'>100%</option>
-                        <option title="" value="1.25" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 125 }'>125%</option>
-                        <option title="" value="1.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 150 }'>150%</option>
-                        <option title="" value="2" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 200 }'>200%</option>
-                        <option title="" value="3" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 300 }'>300%</option>
-                        <option title="" value="4" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 400 }'>400%</option>
-                      </select>
-                    </span>
                         </div>
                     </div>
                     <div id="loadingBar">
