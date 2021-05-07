@@ -18,6 +18,10 @@ package edu.unc.lib.dl.acl.util;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.Collection;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Stores the authentication principals for an agent.
  *
@@ -28,6 +32,9 @@ public class AgentPrincipals {
 
     private String username;
     private AccessGroupSet principals;
+
+    public AgentPrincipals() {
+    }
 
     /**
      * Constructs an AgentPrincipals object
@@ -67,6 +74,7 @@ public class AgentPrincipals {
     /**
      * @return the namespaced username
      */
+    @JsonIgnore
     public String getUsernameUri() {
         return USER_NAMESPACE + username;
     }
@@ -76,5 +84,13 @@ public class AgentPrincipals {
      */
     public AccessGroupSet getPrincipals() {
         return principals;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPrincipals(Collection<String> principals) {
+        this.principals = new AccessGroupSet(principals);
     }
 }

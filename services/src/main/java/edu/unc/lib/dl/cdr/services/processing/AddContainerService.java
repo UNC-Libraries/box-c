@@ -149,13 +149,14 @@ public class AddContainerService {
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, none),
                         new RoleAssignment(AUTHENTICATED_PRINC, none)));
                 patronService.updatePatronAccess(
-                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails, true));
+                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails)
+                            .withFolderCreation(true));
             } else if (ResourceType.Collection.equals(containerType)) {
                 PatronAccessDetails accessDetails = new PatronAccessDetails();
                 accessDetails.setRoles(asList(new RoleAssignment(PUBLIC_PRINC, canViewOriginals),
                         new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
                 patronService.updatePatronAccess(
-                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails, false));
+                        new PatronAccessAssignmentRequest(agent, containerPid, accessDetails));
             }
 
             storeDescription(containerPid, addRequest);

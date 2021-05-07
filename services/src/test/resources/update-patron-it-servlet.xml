@@ -32,11 +32,11 @@
 
     <context:component-scan resource-pattern="**/UpdatePatronAccessController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
-        <property name="aclService" ref="aclService" />
-        <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="transactionManager" ref="transactionManager" />
+    <bean id="patronAccessOperationTemplate" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
+    </bean>
+    
+    <bean id="patronAccessOperationSender" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+        <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
 </beans>

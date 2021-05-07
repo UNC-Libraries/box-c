@@ -23,12 +23,16 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -37,14 +41,13 @@ import java.util.TimeZone;
 
 import javax.ws.rs.core.MediaType;
 
-import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -52,13 +55,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.cdr.services.rest.modify.UpdatePatronAccessController.BulkPatronAccessDetails;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
-import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
@@ -77,9 +79,12 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
     private AdminUnit adminUnit;
     private CollectionObject collObj;
+    @Autowired
+    private JmsTemplate patronAccessOperationTemplate;
 
     @Before
     public void setup() throws Exception {
+        reset(patronAccessOperationTemplate);
         AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
 
         GroupsThreadStore.storeUsername(USER_NAME);
@@ -110,6 +115,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isForbidden())
             .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -130,6 +137,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isNotFound())
             .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -149,6 +158,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -168,6 +179,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -181,6 +194,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .content("{ Not valid }"))
                 .andExpect(status().isBadRequest())
             .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -207,32 +222,23 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        RepositoryObject target = repositoryObjectLoader.getRepositoryObject(collObj.getPid());
-        assertHasAssignment(PUBLIC_PRINC, canViewMetadata, target);
-        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
-
-        assertHasEmbargo(embargoUntil, target);
+        verify(patronAccessOperationTemplate).send(any(MessageCreator.class));
     }
 
     @Test
-    public void emptyDetailsToObjectWithNoDetails() throws Exception {
-        createCollectionInUnit(null);
-
-        treeIndexer.indexAll(baseAddress);
-
-        // Request to grant staff permission
+    public void invalidPid() throws Exception {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
 
-        MvcResult mvcResult = mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
+        mvc.perform(put("/edit/acl/patron/definitelynotapid")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(makeRequestBody(accessDetails)))
-                .andExpect(status().isOk())
+                .andExpect(status().isForbidden())
             .andReturn();
 
-        assertResponseWithoutChanges(mvcResult);
-
-        RepositoryObject target = repositoryObjectLoader.getRepositoryObject(collObj.getPid());
-        assertNoRoles(target);
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     @Test
@@ -254,8 +260,129 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        RepositoryObject target = repositoryObjectLoader.getRepositoryObject(collObj.getPid());
-        assertNoRoles(target);
+        verify(patronAccessOperationTemplate).send(any(MessageCreator.class));
+    }
+
+    @Test
+    public void bulkUpdateOneObject() throws Exception {
+        createCollectionInUnit(null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
+                new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setAccessDetails(accessDetails);
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
+
+        MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isOk())
+            .andReturn();
+
+        assertResponseSuccess(mvcResult);
+
+        verify(patronAccessOperationTemplate).send(any());
+    }
+
+    @Test
+    public void bulkUpdateNoIds() throws Exception {
+        createCollectionInUnit(null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
+                new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setAccessDetails(accessDetails);
+
+        mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isBadRequest())
+            .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
+    }
+
+    @Test
+    public void bulkUpdateNoDetails() throws Exception {
+        createCollectionInUnit(null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
+
+        mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isBadRequest())
+            .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
+    }
+
+    @Test
+    public void bulkUpdateMultiple() throws Exception {
+        createCollectionInUnit(null);
+        FolderObject folder1 = repositoryObjectFactory.createFolderObject(null);
+        FolderObject folder2 = repositoryObjectFactory.createFolderObject(null);
+        collObj.addMember(folder1);
+        collObj.addMember(folder2);
+
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
+                new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setAccessDetails(accessDetails);
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId(),
+                folder1.getPid().getId(), folder2.getPid().getId()));
+
+        MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isOk())
+            .andReturn();
+
+        assertResponseSuccess(mvcResult);
+
+        verify(patronAccessOperationTemplate, times(3)).send(any());
+    }
+
+    @Test
+    public void bulkUpdateInsufficientPermissions() throws Exception {
+        // Construct unit without any staff permissions granted
+        createCollectionInUnit(null, null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
+        bulkDetails.setAccessDetails(accessDetails);
+
+        mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isForbidden())
+            .andReturn();
+
+        verify(patronAccessOperationTemplate, never()).send(any());
     }
 
     private void createCollectionInUnit(Model collModel, Model unitModel) {
@@ -272,12 +399,6 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .model);
     }
 
-    private void assertHasAssignment(String princ, UserRole role, RepositoryObject obj) {
-        Resource resc = obj.getResource();
-        assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
-    }
-
     private Date getYearsInTheFuture(int numYears) {
         Date dt = new Date();
 
@@ -291,36 +412,9 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         return c.getTime();
     }
 
-    private void assertHasEmbargo(Date expectedEmbargo, RepositoryObject obj) {
-        Resource resc = obj.getResource();
-        Statement embargoStmt = resc.getProperty(CdrAcl.embargoUntil);
-        assertNotNull("Embargo was expected by not found", embargoStmt);
-        Date assigned = ((XSDDateTime) embargoStmt.getLiteral().getValue()).asCalendar().getTime();
-        assertEquals("Embargo did not match expected value",
-                expectedEmbargo, assigned);
-    }
-
-    private void assertNoRoles(RepositoryObject obj) {
-        Resource resc = obj.getResource();
-        StmtIterator it = resc.listProperties();
-        while (it.hasNext()) {
-            Statement stmt = it.next();
-            UserRole role = UserRole.getRoleByProperty(stmt.getPredicate().getURI());
-            if (role != null) {
-                fail("No roles should be assigned, but " + role + " for " + stmt.getString() + " was present");
-            }
-        }
-    }
-
-    private void assertResponseWithoutChanges(MvcResult mvcResult) throws Exception {
-        Map<String, Object> resp = getMapFromResponse(mvcResult);
-        assertEquals("No changes made", resp.get("status"));
-        assertEquals("editPatronAccess", resp.get("action"));
-    }
-
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
         Map<String, Object> resp = getMapFromResponse(mvcResult);
-        assertTrue("Missing job id", resp.containsKey("job"));
+        assertTrue(((String) resp.get("status")).contains("Submitted patron access update"));
         assertEquals("editPatronAccess", resp.get("action"));
     }
 }

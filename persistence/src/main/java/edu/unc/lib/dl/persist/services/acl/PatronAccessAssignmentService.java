@@ -40,6 +40,8 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -92,10 +94,10 @@ public class PatronAccessAssignmentService {
 
     public String updatePatronAccess(PatronAccessAssignmentRequest request) {
         notNull(request.getAgent(), "Must provide an agent for this operation");
-        notNull(request.getTarget(), "Must provide the PID of the object to update");
+        notNull(request.getTargetPid(), "Must provide the PID of the object to update");
         notNull(request.getAccessDetails(), "Must provide patron access details");
 
-        PID target = request.getTarget();
+        PID target = request.getTargetPid();
         AgentPrincipals agent = request.getAgent();
         FedoraTransaction tx = txManager.startTransaction();
         PatronAccessDetails accessDetails = request.getAccessDetails();
@@ -267,7 +269,7 @@ public class PatronAccessAssignmentService {
         return details.toString();
     }
 
-    private void assertAssignmentsComplete(PatronAccessDetails details) {
+    public static void assertAssignmentsComplete(PatronAccessDetails details) {
         if (details.getRoles() == null) {
             return;
         }
@@ -281,7 +283,7 @@ public class PatronAccessAssignmentService {
         }
     }
 
-    private void assertOnlyPatronRoles(PatronAccessDetails details) {
+    public static void  assertOnlyPatronRoles(PatronAccessDetails details) {
         if (details.getRoles() != null && details.getRoles().stream().anyMatch(a -> a.getRole().isStaffRole())) {
             throw new ServiceException("Only patron roles are applicable for this service");
         }
@@ -358,12 +360,10 @@ public class PatronAccessAssignmentService {
         public PatronAccessAssignmentRequest() {
         }
 
-        public PatronAccessAssignmentRequest(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails,
-                boolean isFolderCreation) {
+        public PatronAccessAssignmentRequest(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
             this.agent = agent;
             this.target = target;
             this.accessDetails = accessDetails;
-            this.isFolderCreation = isFolderCreation;
         }
 
         public AgentPrincipals getAgent() {
@@ -374,11 +374,16 @@ public class PatronAccessAssignmentService {
             this.agent = agent;
         }
 
-        public PID getTarget() {
+        @JsonIgnore
+        public PID getTargetPid() {
             return target;
         }
 
-        public void setTarget(PID target) {
+        public String getTarget() {
+            return target.getRepositoryPath();
+        }
+
+        public void setTargetPid(PID target) {
             this.target = target;
         }
 
@@ -400,6 +405,11 @@ public class PatronAccessAssignmentService {
 
         public void setFolderCreation(boolean isFolderCreation) {
             this.isFolderCreation = isFolderCreation;
+        }
+
+        public PatronAccessAssignmentRequest withFolderCreation(boolean isFolderCreation) {
+            this.isFolderCreation = isFolderCreation;
+            return this;
         }
     }
 }

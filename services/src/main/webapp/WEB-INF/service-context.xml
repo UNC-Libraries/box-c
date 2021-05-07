@@ -399,6 +399,16 @@
         <property name="transactionManager" ref="transactionManager" />
     </bean>
     
+    <bean id="patronAccessOperationTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.patron.access.assignment.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="patronAccessOperationSender" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+        <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
+    </bean>
+    
     <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />

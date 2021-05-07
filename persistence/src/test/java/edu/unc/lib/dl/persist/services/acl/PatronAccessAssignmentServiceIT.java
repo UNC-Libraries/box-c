@@ -167,7 +167,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -183,7 +183,8 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, true));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withFolderCreation(true));
     }
 
     @Test(expected = ServiceException.class)
@@ -196,7 +197,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canManage)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -215,7 +216,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -228,7 +229,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -242,7 +243,7 @@ public class PatronAccessAssignmentServiceIT {
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(PUBLIC_PRINC, canViewMetadata, target);
@@ -268,7 +269,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(null, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(null, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -280,7 +281,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, null, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, null, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -289,7 +290,7 @@ public class PatronAccessAssignmentServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -302,7 +303,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, null)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -315,7 +316,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(null, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -328,7 +329,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment("  ", null)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -343,7 +344,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, UserRole.none)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(PUBLIC_PRINC, UserRole.none, target);
@@ -370,7 +371,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertNoAssignment(PUBLIC_PRINC, target);
@@ -396,7 +397,7 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertNoAssignment(PUBLIC_PRINC, target);
@@ -420,7 +421,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -445,7 +446,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -461,7 +462,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -489,7 +490,7 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -518,7 +519,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -543,7 +544,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
         String opId = patronService.updatePatronAccess(
-                new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+                new PatronAccessAssignmentRequest(agent, pid, accessDetails));
         assertNull(opId);
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -573,7 +574,7 @@ public class PatronAccessAssignmentServiceIT {
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
         String opId = patronService.updatePatronAccess(
-                new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+                new PatronAccessAssignmentRequest(agent, pid, accessDetails));
         assertNull(opId);
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -599,7 +600,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(AUTHENTICATED_PRINC, canViewMetadata, target);
@@ -624,7 +625,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(GRP_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails, false));
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     private void createCollectionInUnit(Model collModel) {

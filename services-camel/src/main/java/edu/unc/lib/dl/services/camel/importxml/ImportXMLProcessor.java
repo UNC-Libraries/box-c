@@ -39,7 +39,7 @@ import edu.unc.lib.dl.persist.services.importxml.ImportXMLRequest;
  *
  */
 public class ImportXMLProcessor implements Processor {
-    final Logger log = LoggerFactory.getLogger(ImportXMLProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(ImportXMLProcessor.class);
 
     private UpdateDescriptionService updateService;
     private JavaMailSender mailSender;
