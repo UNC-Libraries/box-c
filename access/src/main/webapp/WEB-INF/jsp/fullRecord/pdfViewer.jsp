@@ -86,86 +86,7 @@
                 </div>
             </div>  <!-- findbar -->
 
-            <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
-                <div id="secondaryToolbarButtonContainer">
-                    <button id="secondaryPresentationMode" class="secondaryToolbarButton presentationMode visibleLargeView" title="Switch to Presentation Mode">
-                        <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
-                    </button>
 
-                    <button id="secondaryOpenFile" class="secondaryToolbarButton openFile visibleLargeView" title="Open File">
-                        <span data-l10n-id="open_file_label">Open</span>
-                    </button>
-
-                    <button id="secondaryPrint" class="secondaryToolbarButton print visibleMediumView" title="Print">
-                        <span data-l10n-id="print_label">Print</span>
-                    </button>
-
-                    <button id="secondaryDownload" class="secondaryToolbarButton download visibleMediumView" title="Download">
-                        <span data-l10n-id="download_label">Download</span>
-                    </button>
-
-                    <a href="#" id="secondaryViewBookmark" class="secondaryToolbarButton bookmark visibleSmallView" title="Current view (copy or open in new window)">
-                        <span data-l10n-id="bookmark_label">Current View</span>
-                    </a>
-
-                    <div class="horizontalToolbarSeparator visibleLargeView"></div>
-
-                    <button id="firstPage" class="secondaryToolbarButton firstPage" title="Go to First Page">
-                        <span data-l10n-id="first_page_label">Go to First Page</span>
-                    </button>
-                    <button id="lastPage" class="secondaryToolbarButton lastPage" title="Go to Last Page">
-                        <span data-l10n-id="last_page_label">Go to Last Page</span>
-                    </button>
-
-                    <div class="horizontalToolbarSeparator"></div>
-
-                    <button id="pageRotateCw" class="secondaryToolbarButton rotateCw" title="Rotate Clockwise">
-                        <span data-l10n-id="page_rotate_cw_label">Rotate Clockwise</span>
-                    </button>
-                    <button id="pageRotateCcw" class="secondaryToolbarButton rotateCcw" title="Rotate Counterclockwise">
-                        <span data-l10n-id="page_rotate_ccw_label">Rotate Counterclockwise</span>
-                    </button>
-
-                    <div class="horizontalToolbarSeparator"></div>
-
-                    <button id="cursorSelectTool" class="secondaryToolbarButton selectTool toggled" title="Enable Text Selection Tool">
-                        <span data-l10n-id="cursor_text_select_tool_label">Text Selection Tool</span>
-                    </button>
-                    <button id="cursorHandTool" class="secondaryToolbarButton handTool" title="Enable Hand Tool">
-                        <span data-l10n-id="cursor_hand_tool_label">Hand Tool</span>
-                    </button>
-
-                    <div class="horizontalToolbarSeparator"></div>
-
-                    <button id="scrollVertical" class="secondaryToolbarButton scrollModeButtons scrollVertical toggled" title="Use Vertical Scrolling">
-                        <span data-l10n-id="scroll_vertical_label">Vertical Scrolling</span>
-                    </button>
-                    <button id="scrollHorizontal" class="secondaryToolbarButton scrollModeButtons scrollHorizontal" title="Use Horizontal Scrolling">
-                        <span data-l10n-id="scroll_horizontal_label">Horizontal Scrolling</span>
-                    </button>
-                    <button id="scrollWrapped" class="secondaryToolbarButton scrollModeButtons scrollWrapped" title="Use Wrapped Scrolling">
-                        <span data-l10n-id="scroll_wrapped_label">Wrapped Scrolling</span>
-                    </button>
-
-                    <div class="horizontalToolbarSeparator scrollModeButtons"></div>
-
-                    <button id="spreadNone" class="secondaryToolbarButton spreadModeButtons spreadNone toggled" title="Do not join page spreads">
-                        <span data-l10n-id="spread_none_label">No Spreads</span>
-                    </button>
-                    <button id="spreadOdd" class="secondaryToolbarButton spreadModeButtons spreadOdd" title="Join page spreads starting with odd-numbered pages">
-                        <span data-l10n-id="spread_odd_label">Odd Spreads</span>
-                    </button>
-                    <button id="spreadEven" class="secondaryToolbarButton spreadModeButtons spreadEven" title="Join page spreads starting with even-numbered pages">
-                        <span data-l10n-id="spread_even_label">Even Spreads</span>
-                    </button>
-
-                    <div class="horizontalToolbarSeparator spreadModeButtons"></div>
-
-                    <button id="documentProperties" class="secondaryToolbarButton documentProperties" title="Document Properties…">
-                        <span data-l10n-id="document_properties_label">Document Properties…</span>
-                    </button>
-                </div>
-            </div>  <!-- secondaryToolbar -->
 
             <div class="toolbar">
                 <div id="toolbarContainer">
@@ -244,6 +165,86 @@
                                 <span data-l10n-id="tools_label">Tools</span>
                             </button>
                         </div>
+                        <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
+                            <div id="secondaryToolbarButtonContainer">
+                                <button id="secondaryPresentationMode" class="secondaryToolbarButton presentationMode visibleLargeView" title="Switch to Presentation Mode">
+                                    <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
+                                </button>
+
+                                <button id="secondaryOpenFile" class="secondaryToolbarButton openFile visibleLargeView" title="Open File">
+                                    <span data-l10n-id="open_file_label">Open</span>
+                                </button>
+
+                                <button id="secondaryPrint" class="secondaryToolbarButton print visibleMediumView" title="Print">
+                                    <span data-l10n-id="print_label">Print</span>
+                                </button>
+
+                                <button id="secondaryDownload" class="secondaryToolbarButton download visibleMediumView" title="Download">
+                                    <span data-l10n-id="download_label">Download</span>
+                                </button>
+
+                                <a href="#" id="secondaryViewBookmark" class="secondaryToolbarButton bookmark visibleSmallView" title="Current view (copy or open in new window)">
+                                    <span data-l10n-id="bookmark_label">Current View</span>
+                                </a>
+
+                                <div class="horizontalToolbarSeparator visibleLargeView"></div>
+
+                                <button id="firstPage" class="secondaryToolbarButton firstPage" title="Go to First Page">
+                                    <span data-l10n-id="first_page_label">Go to First Page</span>
+                                </button>
+                                <button id="lastPage" class="secondaryToolbarButton lastPage" title="Go to Last Page">
+                                    <span data-l10n-id="last_page_label">Go to Last Page</span>
+                                </button>
+
+                                <div class="horizontalToolbarSeparator"></div>
+
+                                <button id="pageRotateCw" class="secondaryToolbarButton rotateCw" title="Rotate Clockwise">
+                                    <span data-l10n-id="page_rotate_cw_label">Rotate Clockwise</span>
+                                </button>
+                                <button id="pageRotateCcw" class="secondaryToolbarButton rotateCcw" title="Rotate Counterclockwise">
+                                    <span data-l10n-id="page_rotate_ccw_label">Rotate Counterclockwise</span>
+                                </button>
+
+                                <div class="horizontalToolbarSeparator"></div>
+
+                                <button id="cursorSelectTool" class="secondaryToolbarButton selectTool toggled" title="Enable Text Selection Tool">
+                                    <span data-l10n-id="cursor_text_select_tool_label">Text Selection Tool</span>
+                                </button>
+                                <button id="cursorHandTool" class="secondaryToolbarButton handTool" title="Enable Hand Tool">
+                                    <span data-l10n-id="cursor_hand_tool_label">Hand Tool</span>
+                                </button>
+
+                                <div class="horizontalToolbarSeparator"></div>
+
+                                <button id="scrollVertical" class="secondaryToolbarButton scrollModeButtons scrollVertical toggled" title="Use Vertical Scrolling">
+                                    <span data-l10n-id="scroll_vertical_label">Vertical Scrolling</span>
+                                </button>
+                                <button id="scrollHorizontal" class="secondaryToolbarButton scrollModeButtons scrollHorizontal" title="Use Horizontal Scrolling">
+                                    <span data-l10n-id="scroll_horizontal_label">Horizontal Scrolling</span>
+                                </button>
+                                <button id="scrollWrapped" class="secondaryToolbarButton scrollModeButtons scrollWrapped" title="Use Wrapped Scrolling">
+                                    <span data-l10n-id="scroll_wrapped_label">Wrapped Scrolling</span>
+                                </button>
+
+                                <div class="horizontalToolbarSeparator scrollModeButtons"></div>
+
+                                <button id="spreadNone" class="secondaryToolbarButton spreadModeButtons spreadNone toggled" title="Do not join page spreads">
+                                    <span data-l10n-id="spread_none_label">No Spreads</span>
+                                </button>
+                                <button id="spreadOdd" class="secondaryToolbarButton spreadModeButtons spreadOdd" title="Join page spreads starting with odd-numbered pages">
+                                    <span data-l10n-id="spread_odd_label">Odd Spreads</span>
+                                </button>
+                                <button id="spreadEven" class="secondaryToolbarButton spreadModeButtons spreadEven" title="Join page spreads starting with even-numbered pages">
+                                    <span data-l10n-id="spread_even_label">Even Spreads</span>
+                                </button>
+
+                                <div class="horizontalToolbarSeparator spreadModeButtons"></div>
+
+                                <button id="documentProperties" class="secondaryToolbarButton documentProperties" title="Document Properties…">
+                                    <span data-l10n-id="document_properties_label">Document Properties…</span>
+                                </button>
+                            </div>
+                        </div>  <!-- secondaryToolbar -->
                     </div>
                     <div id="loadingBar">
                         <div class="progress">
