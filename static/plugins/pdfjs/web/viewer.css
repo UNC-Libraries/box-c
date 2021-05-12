@@ -362,7 +362,7 @@
   --sidebar-bg-color: rgba(245, 246, 247, 1);
   --toolbar-bg-color: rgba(249, 249, 250, 1);
   --toolbar-border-color: rgba(204, 204, 204, 1);
-  --button-hover-color: rgba(221, 222, 223, 1);
+  --button-hover-color: #13294B;
   --toggled-btn-bg-color: rgba(0, 0, 0, 0.3);
   --dropdown-btn-bg-color: rgba(215, 215, 219, 1);
   --separator-color: rgba(0, 0, 0, 0.3);
@@ -430,7 +430,7 @@
     --sidebar-bg-color: rgba(50, 50, 52, 1);
     --toolbar-bg-color: rgba(56, 56, 61, 1);
     --toolbar-border-color: rgba(12, 12, 13, 1);
-    --button-hover-color: rgba(102, 102, 103, 1);
+    --button-hover-color: #13294B;
     --toggled-btn-bg-color: rgba(0, 0, 0, 0.3);
     --dropdown-btn-bg-color: rgba(74, 74, 79, 1);
     --separator-color: rgba(0, 0, 0, 0.3);
