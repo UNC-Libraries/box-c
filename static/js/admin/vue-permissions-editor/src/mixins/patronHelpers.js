@@ -23,12 +23,13 @@ export default {
         },
 
         possibleRoleList(container) {
+            let displayType = container === null ? "object" : container;
             return [
                 { text: '', role: '' },
                 { text: 'No Access', role: 'none' },
                 { text: 'Metadata Only', role: 'canViewMetadata' },
                 { text: 'Access Copies', role: 'canViewAccessCopies' },
-                { text: `All of this ${container}`, role: 'canViewOriginals' }
+                { text: `All of this ${displayType}`, role: 'canViewOriginals' }
             ]
         }
     }

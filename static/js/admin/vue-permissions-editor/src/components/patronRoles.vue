@@ -1,8 +1,8 @@
 <template>
     <div id="patron-roles">
-        <h3>Effective Patron Access</h3>
+        <h3 v-if="!isBulkMode">Effective Patron Access</h3>
 
-        <table class="border inherited-permissions">
+        <table class="border inherited-permissions" v-if="!isBulkMode">
             <thead>
             <tr>
                 <th class="access-display">Who can access</th>
@@ -133,6 +133,7 @@
             changesCheck: Boolean,
             containerType: String,
             resultObject: Object,
+            resultObjects: Array,
             title: String,
             uuid: String
         },
@@ -162,6 +163,9 @@
             },
 
             displayAssignments() {
+                if (this.isBulkMode) {
+                  return [];
+                }
                 let assigned = cloneDeep(this.assignedPatronRoles);
                 // Display the new assignment before it is committed, if valid
                 if (this.should_show_add_principal) {
@@ -215,10 +219,18 @@
             },
 
             isCollection() {
-                return this.containerType.toLowerCase() === 'collection';
+                return this.containerType !== null && this.containerType.toLowerCase() === 'collection';
+            },
+
+            isBulkMode() {
+                return this.resultObjects !== undefined && this.resultObjects !== null && this.resultObjects.length > 0;
             },
 
             hasUnsavedChanges() {
+                // Can't determine if there are changes in bulk mode
+                if (this.isBulkMode) {
+                  return true;
+                }
                 // return false if the saved state hasn't been loaded yet
                 if (this.saved_details === null) {
                     return false;
@@ -261,6 +273,18 @@
             },
 
             getRoles() {
+                // No need to retrieve existing roles when performing bulk update
+                if (this.isBulkMode) {
+                    axios.get(`/services/api/acl/patron/allowedPrincipals`).then((response) => {
+                      this.allowed_principals = response.data;
+                      this._initializeSelectedAssignments([]);
+                    }).catch((error) => {
+                      let response_msg = 'Unable to load allowed principals';
+                      this.alertHandler.alertHandler('error', response_msg);
+                      console.log(error);
+                    });
+                    return;
+                }
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     this.embargo = response.data.assigned.embargo;
                     this._initializeInherited(response.data.inherited);
@@ -372,6 +396,14 @@
                         return false;
                     }
                 }
+                if (this.isBulkMode) {
+                    this._saveBulk();
+                } else {
+                    this._saveSingle();
+                }
+            },
+
+            _saveSingle() {
                 let submissionDetails = this.submissionAccessDetails();
 
                 axios({
@@ -393,6 +425,40 @@
                     });
                 }).catch((error) => {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
+                    this.is_submitting = false;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
+            },
+
+            _saveBulk() {
+                let submissionDetails = this.submissionAccessDetails();
+                let bulkDetails = {
+                    ids: this.resultObjects.map(ro => ro.pid),
+                    accessDetails: submissionDetails
+                };
+
+                axios({
+                    method: 'put',
+                    url: `/services/api/edit/acl/patron`,
+                    data: JSON.stringify(bulkDetails),
+                    headers: {'content-type': 'application/json; charset=utf-8'}
+                }).then((response) => {
+                    let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
+                    this.alertHandler.alertHandler('success', response_msg);
+                    this.is_submitting = false;
+                    this.saved_details = submissionDetails;
+
+                    for (let rObject of this.resultObjects) {
+                        // Update entry in results table
+                        this.actionHandler.addEvent({
+                            action : 'RefreshResult',
+                            target : rObject,
+                            waitForUpdate : true
+                        });
+                    }
+                }).catch((error) => {
+                    let response_msg = `Unable to bulk update patron roles`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);

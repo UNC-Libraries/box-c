@@ -47,6 +47,7 @@ const full_roles = {
         ],
         deleted: false, embargo: null }
 };
+const is_disabled = expect.stringContaining('disabled');
 let compacted_assigned_can_view_roles = [
     { principal: 'patron', role: 'canViewAccessCopies', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
 ];
@@ -1162,6 +1163,120 @@ describe('patronRoles.vue', () => {
         expect(btn.text()).toBe('Cancel');
     })
 
+    it("defaults to inherited for bulk update", (done) => {
+        mountBulk(resultObjectsTwoFolders);
+
+        moxios.wait(async () => {
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.find('.inherited-permissions').exists()).toBe(false)
+            expect(wrapper.vm.user_type).toEqual('parent');
+            expect(wrapper.vm.assignedPatronRoles).toEqual([]);
+            expect(wrapper.vm.displayAssignments).toEqual([]);
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
+
+            expect(wrapper.find('#is-submitting').html()).not.toEqual(is_disabled);
+            done();
+        });
+    });
+
+    it("User type changes to staff only during bulk update", (done) => {
+        mountBulk(resultObjectsTwoFolders);
+
+        moxios.wait(async () => {
+            wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.vm.user_type).toEqual('staff');
+            expect(wrapper.vm.assignedPatronRoles).toEqual([
+                {principal: 'everyone', role: 'none', assignedTo: null },
+                {principal: 'authenticated', role: 'none', assignedTo: null }]);
+            expect(wrapper.vm.displayAssignments).toEqual([]);
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([
+                {principal: 'everyone', role: 'none', assignedTo: null },
+                {principal: 'authenticated', role: 'none', assignedTo: null }]);
+
+            done();
+        });
+    });
+
+    it("Can submit custom groups during bulk update", (done) => {
+        stubAllowedPrincipals([{ principal: "my:special:group", name: "Special Group" }]);
+        mountBulk(resultObjectsTwoFolders);
+
+        moxios.wait(async () => {
+            wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.vm.$nextTick();
+
+            wrapper.findAll('.patron-assigned').at(0).findAll('option').at(1).setSelected();
+            wrapper.findAll('.patron-assigned').at(1).findAll('option').at(2).setSelected();
+            await wrapper.vm.$nextTick();
+
+            // Click to show the add other principal inputs
+            wrapper.find('#add-principal').trigger('click');
+            // Select values for new patron role and then click the add button again
+            wrapper.findAll('#add-new-patron-principal-id option').at(0).setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option').at(4).setSelected();
+            wrapper.find('#add-principal').trigger('click');
+            await wrapper.vm.$nextTick();
+
+            stubBulkDataSaveResponse();
+            wrapper.find('#is-submitting').trigger('click');
+            moxios.wait(async () => {
+                let request = moxios.requests.mostRecent()
+                expect(request.config.method).toEqual('put');
+                expect(JSON.parse(request.config.data)).toEqual({
+                    ids: ["73bc003c-9603-4cd9-8a65-93a22520ef6a", "0dfda46a-7812-44e9-8ad3-056b493622e7"],
+                    accessDetails: {
+                        roles: [
+                            { principal: 'everyone', role: 'canViewMetadata', assignedTo: null  },
+                            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: null  },
+                            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null  }],
+                        deleted: false, embargo: null, assignedTo: null
+                    }
+                });
+                expect(wrapper.vm.hasUnsavedChanges).toBe(true);
+
+                done();
+            });
+        });
+    });
+
+    const resultObjectsTwoFolders = [
+        {
+            pid: "73bc003c-9603-4cd9-8a65-93a22520ef6a",
+            metadata: {
+                title: "Folder 1",
+                type: "Folder"
+            }
+        },
+        {
+            pid: "0dfda46a-7812-44e9-8ad3-056b493622e7",
+            metadata: {
+                title: "Folder 2",
+                type: "Folder"
+            }
+        }
+    ];
+
+    function mountBulk(resultObjects) {
+        wrapper = shallowMount(patronRoles, {
+            localVue,
+            propsData: {
+                actionHandler: {
+                    addEvent: jest.fn()
+                },
+                alertHandler: {
+                    alertHandler: jest.fn() // This method lives outside of the Vue app
+                },
+                resultObjects: resultObjects,
+                changesCheck: false,
+                containerType: null,
+                uuid: null
+            }
+        });
+    }
+
     afterEach(() => {
         moxios.uninstall();
     });
@@ -1176,6 +1291,20 @@ describe('patronRoles.vue', () => {
 
     function stubDataSaveResponse() {
         moxios.stubRequest(`/services/api/edit/acl/patron/${wrapper.vm.uuid}`, {
+            status: 200
+        });
+    }
+
+    function stubAllowedPrincipals(load) {
+        wrapper.vm.getRoles();
+        moxios.stubRequest(`/services/api/acl/patron/allowedPrincipals`, {
+            status: 200,
+            response: JSON.stringify(load)
+        });
+    }
+
+    function stubBulkDataSaveResponse() {
+        moxios.stubRequest(`/services/api/edit/acl/patron`, {
             status: 200
         });
     }
