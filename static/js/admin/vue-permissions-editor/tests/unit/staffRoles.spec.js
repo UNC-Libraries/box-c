@@ -59,7 +59,7 @@ describe('staffRoles.vue', () => {
 
         wrapper.find('.info').trigger('click');
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('#role-list').element).toBeVisible();
+        expect(wrapper.find('#role-list').isVisible()).toBe(true);
     });
 
     it("triggers a submission", async () => {
@@ -342,12 +342,12 @@ describe('staffRoles.vue', () => {
         wrapper.setProps({containerType: 'AdminUnit'});
         await wrapper.vm.$nextTick();
         let btn = wrapper.find('#is-submitting');
-        expect(btn.element).toBeVisible();
+        expect(btn.isVisible()).toBe(true);
 
         wrapper.setProps({containerType: 'Collection'});
 
         await wrapper.vm.$nextTick();
-        expect(btn.element).toBeVisible();
+        expect(btn.isVisible()).toBe(true);
     });
 
     it("emits an event to reset 'changesCheck' in parent component", async () => {

@@ -17,7 +17,7 @@ let wrapper;
 
 describe('staffRoleList', () => {
     // Set wrapper using any component that uses staffRoleList mixin to avoid test warnings about missing template
-    beforeEach(() => {
+    it("displays all options for Admin Units", () => {
         wrapper = shallowMount(staffRolesSelect, {
             localVue,
             propsData: {
@@ -25,15 +25,16 @@ describe('staffRoleList', () => {
                 user: { principal: 'test_user', role: 'canAccess' }
             }
         });
-    });
-
-    it("displays all options for Admin Units", () => {
         expect(wrapper.vm.containerRoles(wrapper.vm.containerType)).toEqual(all_roles);
     });
 
     it("displays a subset of options for Collections", () => {
-        wrapper.setProps({
-            containerType: 'Collection',
+        wrapper = shallowMount(staffRolesSelect, {
+            localVue,
+            propsData: {
+                containerType: 'Collection',
+                user: { principal: 'test_user', role: 'canAccess' }
+            }
         });
         expect(wrapper.vm.containerRoles(wrapper.vm.containerType)).toEqual(collection_roles);
     });
