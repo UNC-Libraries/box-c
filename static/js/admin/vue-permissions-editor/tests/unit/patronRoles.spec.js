@@ -82,7 +82,8 @@ describe('patronRoles.vue', () => {
 
         moxios.wait(async () => {
             wrapper.setData({
-                embargo: embargo_date
+                embargo: embargo_date,
+                skip_embargo: false
             });
 
             await wrapper.vm.$nextTick();
@@ -989,7 +990,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewOriginals', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'patron', role: 'canViewMetadata', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID }
             ]);
@@ -1028,10 +1029,10 @@ describe('patronRoles.vue', () => {
         moxios.wait(() => {
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(embargo_date);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', null);
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: null, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
             done();
         })
@@ -1165,6 +1166,7 @@ describe('patronRoles.vue', () => {
 
     it("defaults to inherited for bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
+        stubAllowedPrincipals([]);
 
         moxios.wait(async () => {
             await wrapper.vm.$nextTick();
@@ -1201,7 +1203,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("Can submit custom groups during bulk update", (done) => {
-        stubAllowedPrincipals([{ principal: "my:special:group", name: "Special Group" }]);
+        stubAllowedPrincipals([{principal: "my:special:group", name: "Special Group"}]);
         mountBulk(resultObjectsTwoFolders);
 
         moxios.wait(async () => {
@@ -1229,11 +1231,40 @@ describe('patronRoles.vue', () => {
                     ids: ["73bc003c-9603-4cd9-8a65-93a22520ef6a", "0dfda46a-7812-44e9-8ad3-056b493622e7"],
                     accessDetails: {
                         roles: [
-                            { principal: 'everyone', role: 'canViewMetadata', assignedTo: null  },
-                            { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: null  },
-                            { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null  }],
+                            {principal: 'everyone', role: 'canViewMetadata', assignedTo: null},
+                            {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: null},
+                            {principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null}],
                         deleted: false, embargo: null, assignedTo: null
-                    }
+                    },
+                    skip_embargo: false
+                });
+                expect(wrapper.vm.hasUnsavedChanges).toBe(true);
+
+                done();
+            });
+        });
+    });
+
+    it("Bulk update submits added embargo", (done) => {
+        stubAllowedPrincipals([]);
+        mountBulk(resultObjectsTwoFolders);
+
+        moxios.wait(async () => {
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: embargo_date, skip_embargo: false});
+            await wrapper.vm.$nextTick();
+
+            stubBulkDataSaveResponse();
+            wrapper.find('#is-submitting').trigger('click');
+            moxios.wait(async () => {
+                let request = moxios.requests.mostRecent()
+                expect(request.config.method).toEqual('put');
+                expect(JSON.parse(request.config.data)).toEqual({
+                    ids: ["73bc003c-9603-4cd9-8a65-93a22520ef6a", "0dfda46a-7812-44e9-8ad3-056b493622e7"],
+                    accessDetails: {
+                        roles: [],
+                        deleted: false, embargo: embargo_date, assignedTo: null
+                    },
+                    skip_embargo: false
                 });
                 expect(wrapper.vm.hasUnsavedChanges).toBe(true);
 

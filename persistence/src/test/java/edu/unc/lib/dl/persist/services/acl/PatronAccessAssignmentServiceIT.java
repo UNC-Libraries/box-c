@@ -536,6 +536,80 @@ public class PatronAccessAssignmentServiceIT {
     }
 
     @Test
+    public void skipAddEmbargo() throws Exception {
+        createCollectionInUnit(null);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        Date embargoUntil = getYearsInTheFuture(1).getTime();
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setEmbargo(embargoUntil);
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+
+        assertNoRoles(target);
+
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void skipRemoveEmbargo() throws Exception {
+        Calendar originalEmbargo = getYearsInTheFuture(1);
+        createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+                .addEmbargoUntil(originalEmbargo)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+
+        assertNoRoles(target);
+        assertHasEmbargo(originalEmbargo.getTime(), target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void rolesUpdatedWhenSkippingEmbargo() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection")
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setRoles(asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(1, eventDetails.size());
+        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewOriginals.getPropertyString());
+
+        assertMessageSent(pid);
+    }
+
+    @Test
     public void makeNoChangesToObjectWithNoPatronAccess() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();

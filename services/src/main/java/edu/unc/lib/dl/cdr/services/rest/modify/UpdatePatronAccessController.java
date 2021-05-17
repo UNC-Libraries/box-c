@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -57,6 +58,7 @@ public class UpdatePatronAccessController {
     private static final Logger log = LoggerFactory.getLogger(UpdatePatronAccessController.class);
 
     @Autowired
+    @Qualifier("patronAccessOperationSender")
     private PatronAccessOperationSender patronAccessOperationSender;
     @Autowired
     private AccessControlService aclService;
@@ -74,7 +76,7 @@ public class UpdatePatronAccessController {
 
         try {
             AgentPrincipals agent = AgentPrincipals.createFromThread();
-            processUpdate(agent, pid, accessDetails);
+            processUpdate(agent, pid, accessDetails, false);
             result.put("status", "Submitted patron access update for " + pid.getId());
         } catch (ServiceException e) {
             result.put("error", e.getMessage());
@@ -90,14 +92,15 @@ public class UpdatePatronAccessController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private void processUpdate(AgentPrincipals agent, PID pid, PatronAccessDetails accessDetails) throws IOException {
+    private void processUpdate(AgentPrincipals agent, PID pid, PatronAccessDetails accessDetails,
+            boolean skipEmbargo) throws IOException {
         aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + pid.getId(),
                 pid, agent.getPrincipals(), Permission.changePatronAccess);
         PatronAccessAssignmentService.assertAssignmentsComplete(accessDetails);
         PatronAccessAssignmentService.assertOnlyPatronRoles(accessDetails);
 
         patronAccessOperationSender.sendUpdateRequest(new PatronAccessAssignmentRequest(
-                agent, pid, accessDetails));
+                agent, pid, accessDetails).withSkipEmbargo(skipEmbargo));
     }
 
     @PutMapping(value = "/edit/acl/patron", produces = APPLICATION_JSON_VALUE)
@@ -115,7 +118,7 @@ public class UpdatePatronAccessController {
         int count = 0;
         try {
             for (PID pid : pids) {
-                processUpdate(agent, pid, bulkAccessDetails.getAccessDetails());
+                processUpdate(agent, pid, bulkAccessDetails.getAccessDetails(), bulkAccessDetails.isSkipEmbargo());
                 count++;
             }
         } catch (ServiceException e) {
@@ -137,6 +140,7 @@ public class UpdatePatronAccessController {
     public static class BulkPatronAccessDetails {
         private List<String> ids;
         private PatronAccessDetails accessDetails;
+        private Boolean skipEmbargo;
 
         public List<String> getIds() {
             return ids;
@@ -152,6 +156,14 @@ public class UpdatePatronAccessController {
 
         public void setAccessDetails(PatronAccessDetails accessDetails) {
             this.accessDetails = accessDetails;
+        }
+
+        public boolean isSkipEmbargo() {
+            return skipEmbargo;
+        }
+
+        public void setSkipEmbargo(boolean skipEmbargo) {
+            this.skipEmbargo = skipEmbargo;
         }
     }
 }

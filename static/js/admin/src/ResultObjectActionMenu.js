@@ -428,6 +428,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						perms_editor_data.alertHandler = self.options.alertHandler;
 						perms_editor_data.actionHandler = self.actionHandler;
 						perms_editor_data.resultObject = resultObject;
+						perms_editor_data.resultObjects = null;
 						break;
 					case "staffPermissions":
 						perms_editor_data.permissionType = 'Staff';

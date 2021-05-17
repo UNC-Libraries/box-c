@@ -23,12 +23,15 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,12 +48,17 @@ import org.apache.jena.rdf.model.Model;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -60,7 +68,9 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
@@ -81,10 +91,17 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private CollectionObject collObj;
     @Autowired
     private JmsTemplate patronAccessOperationTemplate;
+    @Autowired
+    private PatronAccessOperationSender patronAccessOperationSender;
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
+    private static final ObjectReader MAPPER = new ObjectMapper().readerFor(PatronAccessAssignmentRequest.class);
 
     @Before
     public void setup() throws Exception {
+        initMocks(this);
         reset(patronAccessOperationTemplate);
+        reset(patronAccessOperationSender);
         AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
 
         GroupsThreadStore.storeUsername(USER_NAME);
@@ -383,6 +400,71 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
             .andReturn();
 
         verify(patronAccessOperationTemplate, never()).send(any());
+    }
+
+    @Test
+    public void bulkUpdateWithRolesAndEmbargo() throws Exception {
+        createCollectionInUnit(null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        Date embargoUntil = getYearsInTheFuture(1);
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        accessDetails.setEmbargo(embargoUntil);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setAccessDetails(accessDetails);
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
+
+        MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isOk())
+            .andReturn();
+
+        assertResponseSuccess(mvcResult);
+
+        verify(patronAccessOperationSender).sendMessage(stringCaptor.capture());
+        PatronAccessAssignmentRequest sentRequest = MAPPER.readValue(stringCaptor.getValue());
+        assertEquals(embargoUntil, sentRequest.getAccessDetails().getEmbargo());
+        assertEquals(1, sentRequest.getAccessDetails().getRoles().size());
+        assertFalse(sentRequest.isFolderCreation());
+        assertFalse(sentRequest.isSkipEmbargo());
+
+        verify(patronAccessOperationTemplate).send(any());
+    }
+
+    @Test
+    public void bulkUpdateSkipEmbargo() throws Exception {
+        createCollectionInUnit(null);
+
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        List<RoleAssignment> assignments = asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals));
+        accessDetails.setRoles(assignments);
+        BulkPatronAccessDetails bulkDetails = new BulkPatronAccessDetails();
+        bulkDetails.setAccessDetails(accessDetails);
+        bulkDetails.setIds(Arrays.asList(collObj.getPid().getId()));
+        bulkDetails.setSkipEmbargo(true);
+
+        MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(makeRequestBody(bulkDetails)))
+                .andExpect(status().isOk())
+            .andReturn();
+
+        assertResponseSuccess(mvcResult);
+
+        verify(patronAccessOperationSender).sendMessage(stringCaptor.capture());
+        PatronAccessAssignmentRequest sentRequest = MAPPER.readValue(stringCaptor.getValue());
+        assertNull(sentRequest.getAccessDetails().getEmbargo());
+        assertEquals(1, sentRequest.getAccessDetails().getRoles().size());
+        assertFalse(sentRequest.isFolderCreation());
+        assertTrue(sentRequest.isSkipEmbargo());
+
+        verify(patronAccessOperationTemplate).send(any());
     }
 
     private void createCollectionInUnit(Model collModel, Model unitModel) {

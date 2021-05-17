@@ -120,7 +120,7 @@ public class PatronAccessAssignmentService {
 
             Model updated = ModelFactory.createDefaultModel().add(repoObj.getModel(true));
             Resource rolesEventResc = replacePatronRoles(repoObj, agent, updated, accessDetails.getRoles());
-            Resource embargoEventResc = updateEmbargo(repoObj, agent, updated, accessDetails.getEmbargo());
+            Resource embargoEventResc = updateEmbargo(repoObj, updated, request);
 
             // No changes occurred, perform no updates to the resource
             if (rolesEventResc == null && embargoEventResc == null) {
@@ -218,7 +218,11 @@ public class PatronAccessAssignmentService {
         return !incomingRoles.containsAll(existingPatronRoles);
     }
 
-    private Resource updateEmbargo(RepositoryObject repoObj, AgentPrincipals agent, Model model, Date newEmbargo) {
+    private Resource updateEmbargo(RepositoryObject repoObj, Model model, PatronAccessAssignmentRequest request) {
+        if (request.isSkipEmbargo()) {
+            return null;
+        }
+        Date newEmbargo = request.getAccessDetails().getEmbargo();
         if (newEmbargo != null && !isEmbargoActive(newEmbargo)) {
             throw new InvalidAssignmentException("Cannot assign expired embargo to object "
                     + repoObj.getPid().getId());
@@ -248,7 +252,7 @@ public class PatronAccessAssignmentService {
         } else {
             // Produce the premis event for this embargo
             return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(AgentPids.forPerson(agent))
+                    .addImplementorAgent(AgentPids.forPerson(request.getAgent()))
                     .addEventDetail(eventText)
                     .create();
         }
@@ -356,6 +360,7 @@ public class PatronAccessAssignmentService {
         private PID target;
         private PatronAccessDetails accessDetails;
         private boolean isFolderCreation;
+        private boolean skipEmbargo;
 
         public PatronAccessAssignmentRequest() {
         }
@@ -409,6 +414,19 @@ public class PatronAccessAssignmentService {
 
         public PatronAccessAssignmentRequest withFolderCreation(boolean isFolderCreation) {
             this.isFolderCreation = isFolderCreation;
+            return this;
+        }
+
+        public boolean isSkipEmbargo() {
+            return skipEmbargo;
+        }
+
+        public void setSkipEmbargo(boolean skipEmbargo) {
+            this.skipEmbargo = skipEmbargo;
+        }
+
+        public PatronAccessAssignmentRequest withSkipEmbargo(boolean skipEmbargo) {
+            this.skipEmbargo = skipEmbargo;
             return this;
         }
     }

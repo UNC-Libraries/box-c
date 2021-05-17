@@ -30,13 +30,17 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/UpdatePatronAccessController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
-    
     <bean id="patronAccessOperationTemplate" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
     </bean>
     
-    <bean id="patronAccessOperationSender" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+    <bean id="patronAccessOperationSenderReal" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
         <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
+    
+    <bean id="patronAccessOperationSender" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="patronAccessOperationSenderReal" />
+    </bean>
+    
+    <context:component-scan resource-pattern="**/UpdatePatronAccessController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
 </beans>

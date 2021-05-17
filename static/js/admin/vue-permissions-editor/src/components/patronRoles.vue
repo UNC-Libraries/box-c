@@ -70,8 +70,9 @@
         </ul>
 
         <embargo ref="embargoInfo"
-                 :current-embargo="embargo"
+                 :current-embargo="currentEmbargo"
                  :is-deleted="isDeleted"
+                 :is-bulk-mode="isBulkMode"
                  @embargo-info="setEmbargo">
         </embargo>
 
@@ -148,6 +149,7 @@
                 allowed_principals: [],
                 selected_patron_assignments: [],
                 embargo: null,
+                skip_embargo: true,
                 deleted: false,
                 new_assignment_role: VIEW_ORIGINAL_ROLE,
                 new_assignment_principal: '',
@@ -214,6 +216,10 @@
                 return this.inherited.embargo !== null;
             },
 
+            currentEmbargo() {
+                return this.embargo;
+            },
+
             isDeleted() {
                 return this.deleted || this.inherited.deleted;
             },
@@ -276,12 +282,12 @@
                 // No need to retrieve existing roles when performing bulk update
                 if (this.isBulkMode) {
                     axios.get(`/services/api/acl/patron/allowedPrincipals`).then((response) => {
-                      this.allowed_principals = response.data;
-                      this._initializeSelectedAssignments([]);
+                        this.allowed_principals = response.data;
+                        this._initializeSelectedAssignments([]);
                     }).catch((error) => {
-                      let response_msg = 'Unable to load allowed principals';
-                      this.alertHandler.alertHandler('error', response_msg);
-                      console.log(error);
+                        let response_msg = 'Unable to load allowed principals';
+                        this.alertHandler.alertHandler('error', response_msg);
+                        console.log(error);
                     });
                     return;
                 }
@@ -435,7 +441,8 @@
                 let submissionDetails = this.submissionAccessDetails();
                 let bulkDetails = {
                     ids: this.resultObjects.map(ro => ro.pid),
-                    accessDetails: submissionDetails
+                    accessDetails: submissionDetails,
+                    skipEmbargo: this.skip_embargo
                 };
 
                 axios({
@@ -561,7 +568,13 @@
              * @param embargo_info
              */
             setEmbargo(embargo_info) {
-                this.embargo = embargo_info;
+                if (embargo_info === null) {
+                    this.embargo = null;
+                    this.skip_embargo = true;
+                } else {
+                    this.embargo = embargo_info.embargo;
+                    this.skip_embargo = embargo_info.skip_embargo;
+                }
             },
 
             /**

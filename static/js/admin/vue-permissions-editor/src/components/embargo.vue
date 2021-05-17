@@ -3,20 +3,41 @@
         <h3>Set Embargo</h3>
         <div class="embargo-details">
             <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
-            <p v-else>No embargo set for this object</p>
+            <p v-if="!has_embargo && !isBulkMode">No embargo set for this object</p>
 
 
-            <button id="show-form" v-if="!has_embargo && !show_form" @click="showForm">Add embargo</button>
-            <div class="form" v-if="has_embargo || show_form">
+            <button id="show-form" v-if="!has_embargo && !show_form && !isBulkMode" @click="showForm">Add embargo</button>
+            <div class="form" v-if="has_embargo || show_form || isBulkMode">
                 <form>
                     <fieldset :disabled="isDeleted">
-                        <div @click="setFixedEmbargoDate(1)"><input v-model="fixed_embargo_date" value="1" type="radio"> 1 year</div>
-                        <div @click="setFixedEmbargoDate(2)"><input v-model="fixed_embargo_date" value="2" type="radio"> 2 years</div>
-                        <input id="custom-embargo" placeholder="YYYY-MM-DD"
-                               @click="clearEmbargoError" @focusout="setCustomEmbargoDate" type="text" v-model="custom_embargo_date"> Custom Date
+                        <ul class="select-type-list">
+                            <li v-if="isBulkMode">
+                                <input v-model="embargo_type" value="ignore" type="radio" id="embargo-ignore">
+                                <label for="embargo-ignore">No Change</label>
+                            </li>
+                            <li v-if="isBulkMode">
+                                <input v-model="embargo_type" value="clear" type="radio" id="embargo-clear">
+                                <label for="embargo-clear">Clear embargoes</label>
+                            </li>
+                            <li>
+                                <input v-model="embargo_type" value="1year" type="radio" id="embargo-1year">
+                                <label for="embargo-1year">1 year</label>
+                            </li>
+                            <li>
+                                <input v-model="embargo_type" value="2years" type="radio" id="embargo-2years">
+                                <label for="embargo-2years">2 years</label>
+                            </li>
+                            <li>
+                                <input v-model="embargo_type" value="custom" type="radio" id="embargo-custom">
+                                <label for="custom-embargo">Custom Date <input id="custom-embargo" placeholder="YYYY-MM-DD"
+                                       @click="selectCustom" @focusout="setCustomEmbargoDate"
+                                       type="text" v-model="custom_embargo_date">
+                                </label>
+                            </li>
+                        </ul>
                     </fieldset>
                 </form>
-                <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo">Remove Embargo</button>
+                <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo" v-if="!isBulkMode">Remove Embargo</button>
             </div>
         </div>
     </div>
@@ -30,16 +51,17 @@
 
         props: {
             currentEmbargo: String,
-            isDeleted: Boolean
+            isDeleted: Boolean,
+            isBulkMode: Boolean
         },
 
         data() {
             return {
                 custom_embargo_date: '',
                 embargo_ends_date: '',
-                fixed_embargo_date: '',
                 has_embargo: false,
-                show_form: false
+                show_form: false,
+                embargo_type: "ignore"
             }
         },
 
@@ -51,6 +73,18 @@
                     this.embargo_ends_date = embargo;
                 } else {
                     this.embargo_ends_date = '';
+                }
+            },
+
+            embargo_type: function(newType, oldType) {
+                if (newType === "ignore") {
+                    this.ignoreEmbargo();
+                } else if (newType === "clear") {
+                    this.removeEmbargo(false);
+                } else if (newType === "1year") {
+                    this.setFixedEmbargoDate(1);
+                } else if (newType === "2years") {
+                    this.setFixedEmbargoDate(2);
                 }
             }
         },
@@ -71,14 +105,27 @@
             },
 
             /**
-             * Adds an embargo if none is already present
              * Removes an embargo if one is present
              */
-            removeEmbargo() {
-                if (window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
+            removeEmbargo(confirm = true) {
+                if (!confirm || window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
                     this.clearEmbargoInfo();
-                    this.$emit('embargo-info', null);
+                    this.$emit('embargo-info', {
+                        embargo: null,
+                        skip_embargo: false
+                    });
                 }
+            },
+
+            /**
+             * Embargo state should not be changed from whatever its current state is
+             */
+            ignoreEmbargo() {
+                this.clearEmbargoInfo();
+                this.$emit('embargo-info', {
+                    embargo: null,
+                    skip_embargo: true
+                });
             },
 
             /**
@@ -89,7 +136,6 @@
                 this.show_form = false;
                 this.custom_embargo_date = '';
                 this.embargo_ends_date = '';
-                this.fixed_embargo_date = '';
 
                 this.clearEmbargoError();
             },
@@ -106,10 +152,12 @@
             setFixedEmbargoDate(years) {
                 let future_date = addYears(new Date(), years);
                 this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
-                this.fixed_embargo_date = years;
                 this.custom_embargo_date = '';
                 this.clearEmbargoError();
-                this.$emit('embargo-info', this.embargo_ends_date);
+                this.$emit('embargo-info', {
+                    embargo: this.embargo_ends_date,
+                    skip_embargo: false
+                });
             },
 
             /**
@@ -121,15 +169,23 @@
                 let regex_match = /^[1-2]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])$/.test(this.custom_embargo_date);
 
                 if (date_filled && regex_match && isFuture(date_parts)) {
+                    this.embargo_type = 'custom';
                     this.$emit('error-msg', '');
-                    this.fixed_embargo_date = '';
                     this.embargo_ends_date = this.custom_embargo_date;
-                    this.$emit('embargo-info', this.embargo_ends_date);
+                    this.$emit('embargo-info', {
+                        embargo: this.embargo_ends_date,
+                        skip_embargo: false
+                    });
                 } else if (date_filled && !regex_match) {
                     this.$emit('error-msg', 'Please enter a valid date in the following format YYYY-MM-DD');
                 } else if (date_filled && !isFuture(date_parts)) {
                     this.$emit('error-msg', 'Please enter a future date');
                 }
+            },
+
+            selectCustom() {
+                this.embargo_type = 'custom';
+                this.clearEmbargoError();
             },
 
             /**
@@ -181,12 +237,27 @@
 
         input {
             margin-bottom: 10px;
+            margin-right: 10px;
         }
 
         input[type=text] {
             border: 1px solid lightgray;
             border-radius: 5px;
             padding: 5px;
+        }
+
+        .select-type-list {
+            list-style-type: none;
+            text-align: left;
+            border-top: none;
+            margin-top: 0;
+            padding-top: 0;
+
+            li {
+                display: block;
+                margin-left: 15px;
+                margin-bottom: 0px;
+            }
         }
     }
 </style>
