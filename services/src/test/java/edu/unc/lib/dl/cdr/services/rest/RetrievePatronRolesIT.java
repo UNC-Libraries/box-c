@@ -47,6 +47,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.IPAddressPatronPrincipalConfig;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -178,6 +179,35 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         assertEquals("unc:patron:ipp:test_group", config.getPrincipal());
         assertEquals("Test Patron Group", config.getName());
         assertNull(config.getIpInclude());
+    }
+
+    @Test
+    public void getAllowedPrincpals() throws Exception {
+        AccessGroupSet testPrincipals = new AccessGroupSet(PUBLIC_PRINC, AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+        GroupsThreadStore.storeGroups(testPrincipals);
+
+        treeIndexer.indexAll(baseAddress);
+
+        MvcResult mvcResult = mvc.perform(get("/acl/patron/allowedPrincipals"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<IPAddressPatronPrincipalConfig> allowed = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                new TypeReference<List<IPAddressPatronPrincipalConfig>>() {});
+
+        assertEquals(1, allowed.size());
+        IPAddressPatronPrincipalConfig config = allowed.get(0);
+        assertEquals("unc:patron:ipp:test_group", config.getPrincipal());
+        assertEquals("Test Patron Group", config.getName());
+        assertNull(config.getIpInclude());
+    }
+
+    @Test
+    public void getAllowedPrincpalsInsufficientPermissions() throws Exception {
+        mvc.perform(get("/acl/patron/allowedPrincipals"))
+                .andExpect(status().isForbidden())
+                .andReturn();
     }
 
     @Test

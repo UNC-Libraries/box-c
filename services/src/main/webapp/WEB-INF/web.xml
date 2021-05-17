@@ -81,8 +81,7 @@
     </filter>
     <filter-mapping>
         <filter-name>storeAccessLevelFilter</filter-name>
-        <url-pattern>/api/status/*</url-pattern>
-        <url-pattern>/api/edit/*</url-pattern>
+        <url-pattern>/api/*</url-pattern>
     </filter-mapping>
     
     <filter>
