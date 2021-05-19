@@ -47,7 +47,6 @@ const full_roles = {
         ],
         deleted: false, embargo: null }
 };
-const is_disabled = expect.stringContaining('disabled');
 let compacted_assigned_can_view_roles = [
     { principal: 'patron', role: 'canViewAccessCopies', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
 ];
@@ -1039,20 +1038,16 @@ describe('patronRoles.vue', () => {
     });
 
     it("disables 'submit' by default", () => {
-        let btn = wrapper.find('#is-submitting');
-        let is_disabled = expect.stringContaining('disabled');
-        expect(btn.html()).toEqual(is_disabled);
+        expectSaveButtonDisabled();
     });
 
     it("enables 'submit' button if user/role has been added or changed", (done) => {
         stubDataLoad();
 
         moxios.wait(async () => {
-            let btn = wrapper.find('#is-submitting');
-            let is_disabled = expect.stringContaining('disabled');
             wrapper.findAll('option').at(1).setSelected();
             await wrapper.vm.$nextTick();
-            expect(btn.html()).not.toEqual(is_disabled);
+            expectSaveButtonDisabled(false);
             done();
         });
     });
@@ -1177,7 +1172,7 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.displayAssignments).toEqual([]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
 
-            expect(wrapper.find('#is-submitting').html()).not.toEqual(is_disabled);
+            expectSaveButtonDisabled(false);
             done();
         });
     });
@@ -1236,10 +1231,9 @@ describe('patronRoles.vue', () => {
                             {principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null}],
                         deleted: false, embargo: null, assignedTo: null
                     },
-                    skip_embargo: false
+                    skipEmbargo: true
                 });
-                expect(wrapper.vm.hasUnsavedChanges).toBe(true);
-
+                expectSaveButtonDisabled();
                 done();
             });
         });
@@ -1264,13 +1258,17 @@ describe('patronRoles.vue', () => {
                         roles: [],
                         deleted: false, embargo: embargo_date, assignedTo: null
                     },
-                    skip_embargo: false
+                    skipEmbargo: false
                 });
-                expect(wrapper.vm.hasUnsavedChanges).toBe(true);
-
+                expectSaveButtonDisabled();
                 done();
             });
         });
+    });
+
+    it("Enables 'save' by default in bulk mode", () => {
+        mountBulk(resultObjectsTwoFolders);
+        expectSaveButtonDisabled(false);
     });
 
     const resultObjectsTwoFolders = [
@@ -1338,5 +1336,14 @@ describe('patronRoles.vue', () => {
         moxios.stubRequest(`/services/api/edit/acl/patron`, {
             status: 200
         });
+    }
+
+    function expectSaveButtonDisabled(expectDisabled = true) {
+        let disabledValue = wrapper.find('#is-submitting').attributes('disabled');
+        if (expectDisabled) {
+            expect(disabledValue).toEqual('disabled');
+        } else {
+            expect(disabledValue).not.toEqual('disabled');
+        }
     }
 });

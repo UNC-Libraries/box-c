@@ -81,8 +81,8 @@
                 <button id="is-submitting"
                         type="submit"
                         @click="saveRoles"
-                        :class="{'btn-disabled': !hasUnsavedChanges}"
-                        :disabled="!hasUnsavedChanges">Save Changes</button>
+                        :class="{'btn-disabled': !saveChangesAllowed}"
+                        :disabled="!saveChangesAllowed">Save Changes</button>
             </li>
             <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">{{ closeEditorText }}</button></li>
         </ul>
@@ -155,7 +155,8 @@
                 new_assignment_principal: '',
                 user_type: null,
                 should_show_add_principal: false,
-                saved_details: null
+                saved_details: null,
+                bulk_has_saved: false
             }
         },
 
@@ -233,10 +234,6 @@
             },
 
             hasUnsavedChanges() {
-                // Can't determine if there are changes in bulk mode
-                if (this.isBulkMode) {
-                  return true;
-                }
                 // return false if the saved state hasn't been loaded yet
                 if (this.saved_details === null) {
                     return false;
@@ -264,8 +261,15 @@
                 return false;
             },
 
+            saveChangesAllowed() {
+                if (this.isBulkMode) {
+                    return !this.bulk_has_saved;
+                }
+                return this.hasUnsavedChanges;
+            },
+
             closeEditorText() {
-                return this.hasUnsavedChanges ? 'Cancel' : 'Close';
+                return this.isBulkMode || this.hasUnsavedChanges ? 'Cancel' : 'Close';
             }
         },
 
@@ -284,6 +288,7 @@
                     axios.get(`/services/api/acl/patron/allowedPrincipals`).then((response) => {
                         this.allowed_principals = response.data;
                         this._initializeSelectedAssignments([]);
+                        this.bulk_has_saved = false;
                     }).catch((error) => {
                         let response_msg = 'Unable to load allowed principals';
                         this.alertHandler.alertHandler('error', response_msg);
@@ -454,7 +459,7 @@
                     let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
                     this.alertHandler.alertHandler('success', response_msg);
                     this.is_submitting = false;
-                    this.saved_details = submissionDetails;
+                    this.bulk_has_saved = true;
 
                     for (let rObject of this.resultObjects) {
                         // Update entry in results table
@@ -582,7 +587,7 @@
              * See mixins/displayModal.js
              */
             showModal() {
-                this.unsaved_changes = this.hasUnsavedChanges;
+                this.unsaved_changes = !this.isBulkMode && this.hasUnsavedChanges;
                 this.displayModal();
             },
             
