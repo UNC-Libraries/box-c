@@ -1234,6 +1234,7 @@ describe('patronRoles.vue', () => {
                     skipEmbargo: true,
                     skipRoles: false
                 });
+                expect(global.confirm).toHaveBeenCalled();
                 expectSaveButtonDisabled();
                 done();
             });
@@ -1262,6 +1263,7 @@ describe('patronRoles.vue', () => {
                     skipEmbargo: false,
                     skipRoles: true
                 });
+                expect(global.confirm).toHaveBeenCalled();
                 expectSaveButtonDisabled();
                 let btn = wrapper.find('#is-canceling');
                 expect(btn.text()).toBe('Close');

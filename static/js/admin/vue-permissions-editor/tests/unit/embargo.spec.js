@@ -29,12 +29,6 @@ describe('embargo.vue', () => {
             }
         });
 
-        // wrapper.setData({
-        //     custom_embargo_date: testDate,
-        //     embargo_ends_date: testDate,
-        //     has_embargo: true
-        // });
-
         await wrapper.vm.$nextTick();
         inputs = wrapper.findAll('input');
         global.confirm = jest.fn().mockReturnValue(true);

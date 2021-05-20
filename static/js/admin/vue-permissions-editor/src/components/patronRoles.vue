@@ -449,6 +449,9 @@
             },
 
             _saveBulk() {
+                if (!window.confirm(`Are you sure you want to update ${this.title}?`)) {
+                    return;
+                }
                 let submissionDetails = this.submissionAccessDetails();
                 let skipRoles = this.user_type === ACCESS_TYPE_IGNORE;
                 let bulkDetails = {
