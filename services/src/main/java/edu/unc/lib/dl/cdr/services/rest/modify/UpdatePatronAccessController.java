@@ -76,7 +76,7 @@ public class UpdatePatronAccessController {
 
         try {
             AgentPrincipals agent = AgentPrincipals.createFromThread();
-            processUpdate(agent, pid, accessDetails, false);
+            processUpdate(agent, pid, accessDetails, false, false);
             result.put("status", "Submitted patron access update for " + pid.getId());
         } catch (ServiceException e) {
             result.put("error", e.getMessage());
@@ -93,14 +93,14 @@ public class UpdatePatronAccessController {
     }
 
     private void processUpdate(AgentPrincipals agent, PID pid, PatronAccessDetails accessDetails,
-            boolean skipEmbargo) throws IOException {
+            boolean skipEmbargo, boolean skipRoles) throws IOException {
         aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + pid.getId(),
                 pid, agent.getPrincipals(), Permission.changePatronAccess);
         PatronAccessAssignmentService.assertAssignmentsComplete(accessDetails);
         PatronAccessAssignmentService.assertOnlyPatronRoles(accessDetails);
 
         patronAccessOperationSender.sendUpdateRequest(new PatronAccessAssignmentRequest(
-                agent, pid, accessDetails).withSkipEmbargo(skipEmbargo));
+                agent, pid, accessDetails).withSkipEmbargo(skipEmbargo).withSkipRoles(skipRoles));
     }
 
     @PutMapping(value = "/edit/acl/patron", produces = APPLICATION_JSON_VALUE)
@@ -118,7 +118,8 @@ public class UpdatePatronAccessController {
         int count = 0;
         try {
             for (PID pid : pids) {
-                processUpdate(agent, pid, bulkAccessDetails.getAccessDetails(), bulkAccessDetails.isSkipEmbargo());
+                processUpdate(agent, pid, bulkAccessDetails.getAccessDetails(), bulkAccessDetails.isSkipEmbargo(),
+                        bulkAccessDetails.isSkipRoles());
                 count++;
             }
         } catch (ServiceException e) {
@@ -140,7 +141,8 @@ public class UpdatePatronAccessController {
     public static class BulkPatronAccessDetails {
         private List<String> ids;
         private PatronAccessDetails accessDetails;
-        private Boolean skipEmbargo;
+        private boolean skipEmbargo;
+        private boolean skipRoles;
 
         public List<String> getIds() {
             return ids;
@@ -164,6 +166,14 @@ public class UpdatePatronAccessController {
 
         public void setSkipEmbargo(boolean skipEmbargo) {
             this.skipEmbargo = skipEmbargo;
+        }
+
+        public boolean isSkipRoles() {
+            return skipRoles;
+        }
+
+        public void setSkipRoles(boolean skipRoles) {
+            this.skipRoles = skipRoles;
         }
     }
 }

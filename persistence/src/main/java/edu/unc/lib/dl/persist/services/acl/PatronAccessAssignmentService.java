@@ -100,7 +100,6 @@ public class PatronAccessAssignmentService {
         PID target = request.getTargetPid();
         AgentPrincipals agent = request.getAgent();
         FedoraTransaction tx = txManager.startTransaction();
-        PatronAccessDetails accessDetails = request.getAccessDetails();
         log.info("Starting update of patron access on {}", target.getId());
         try (Timer.Context context = timer.time()) {
             Permission permissionToCheck = request.isFolderCreation() ? ingest : changePatronAccess;
@@ -119,7 +118,7 @@ public class PatronAccessAssignmentService {
             }
 
             Model updated = ModelFactory.createDefaultModel().add(repoObj.getModel(true));
-            Resource rolesEventResc = replacePatronRoles(repoObj, agent, updated, accessDetails.getRoles());
+            Resource rolesEventResc = replacePatronRoles(repoObj, updated, request);
             Resource embargoEventResc = updateEmbargo(repoObj, updated, request);
 
             // No changes occurred, perform no updates to the resource
@@ -149,13 +148,18 @@ public class PatronAccessAssignmentService {
      * Replace all the patron roles for the provided object
      *
      * @param repoObj
-     * @param agent
      * @param model
-     * @param assignments
+     * @param request
      * @return Returns the premis event resource created to capture this event, or null if no patron roles changed.
      */
-    private Resource replacePatronRoles(RepositoryObject repoObj, AgentPrincipals agent, Model model,
-            Collection<RoleAssignment> assignments) {
+    private Resource replacePatronRoles(RepositoryObject repoObj, Model model, PatronAccessAssignmentRequest request) {
+        if (request.isSkipRoles()) {
+            return null;
+        }
+
+        Collection<RoleAssignment> assignments = request.getAccessDetails().getRoles();
+        AgentPrincipals agent = request.getAgent();
+
         // Update a copy of the model for this object
         Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
 
@@ -361,6 +365,7 @@ public class PatronAccessAssignmentService {
         private PatronAccessDetails accessDetails;
         private boolean isFolderCreation;
         private boolean skipEmbargo;
+        private boolean skipRoles;
 
         public PatronAccessAssignmentRequest() {
         }
@@ -427,6 +432,19 @@ public class PatronAccessAssignmentService {
 
         public PatronAccessAssignmentRequest withSkipEmbargo(boolean skipEmbargo) {
             this.skipEmbargo = skipEmbargo;
+            return this;
+        }
+
+        public boolean isSkipRoles() {
+            return skipRoles;
+        }
+
+        public void setSkipRoles(boolean skipRoles) {
+            this.skipRoles = skipRoles;
+        }
+
+        public PatronAccessAssignmentRequest withSkipRoles(boolean skipRoles) {
+            this.skipRoles = skipRoles;
             return this;
         }
     }

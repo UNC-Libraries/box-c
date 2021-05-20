@@ -1159,7 +1159,7 @@ describe('patronRoles.vue', () => {
         expect(btn.text()).toBe('Cancel');
     })
 
-    it("defaults to inherited for bulk update", (done) => {
+    it("defaults to no change for bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
         stubAllowedPrincipals([]);
 
@@ -1167,7 +1167,7 @@ describe('patronRoles.vue', () => {
             await wrapper.vm.$nextTick();
 
             expect(wrapper.find('.inherited-permissions').exists()).toBe(false)
-            expect(wrapper.vm.user_type).toEqual('parent');
+            expect(wrapper.vm.user_type).toEqual('ignore');
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
             expect(wrapper.vm.displayAssignments).toEqual([]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
@@ -1231,7 +1231,8 @@ describe('patronRoles.vue', () => {
                             {principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null}],
                         deleted: false, embargo: null, assignedTo: null
                     },
-                    skipEmbargo: true
+                    skipEmbargo: true,
+                    skipRoles: false
                 });
                 expectSaveButtonDisabled();
                 done();
@@ -1258,9 +1259,12 @@ describe('patronRoles.vue', () => {
                         roles: [],
                         deleted: false, embargo: embargo_date, assignedTo: null
                     },
-                    skipEmbargo: false
+                    skipEmbargo: false,
+                    skipRoles: true
                 });
                 expectSaveButtonDisabled();
+                let btn = wrapper.find('#is-canceling');
+                expect(btn.text()).toBe('Close');
                 done();
             });
         });

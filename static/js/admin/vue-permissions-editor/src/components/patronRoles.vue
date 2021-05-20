@@ -21,6 +21,10 @@
 
         <h3 class="update-roles">Set Patron Access</h3>
         <ul class="set-patron-roles">
+            <li v-if="isBulkMode">
+                <input type="radio" v-model="user_type" value="ignore"
+                       id="user_type_ignore"> <label for="user_type_ignore"> No Change</label>
+            </li>
             <li v-if="!isCollection">
                 <input type="radio" v-model="user_type" value="parent" :disabled="isDeleted"
                        id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
@@ -114,6 +118,7 @@
     const ACCESS_TYPE_INHERIT = "parent";
     const ACCESS_TYPE_STAFF_ONLY = "staff";
     const ACCESS_TYPE_DIRECT = "patron";
+    const ACCESS_TYPE_IGNORE = "ignore";
 
     let initialRoles = () => ({ roles: [], embargo: null, deleted: false });
     const DEFAULT_DISPLAY_COLLECTION = [
@@ -194,7 +199,7 @@
              * @returns {*[]}
              */
             assignedPatronRoles() {
-                if (this.user_type === ACCESS_TYPE_INHERIT) {
+                if (this.user_type === ACCESS_TYPE_INHERIT || this.user_type === ACCESS_TYPE_IGNORE) {
                     return [];
                 } else if (this.user_type === ACCESS_TYPE_STAFF_ONLY) {
                     return this.getInheritedPrincipals()
@@ -269,7 +274,7 @@
             },
 
             closeEditorText() {
-                return this.isBulkMode || this.hasUnsavedChanges ? 'Cancel' : 'Close';
+                return (this.isBulkMode && !this.bulk_has_saved) || this.hasUnsavedChanges ? 'Cancel' : 'Close';
             }
         },
 
@@ -289,6 +294,7 @@
                         this.allowed_principals = response.data;
                         this._initializeSelectedAssignments([]);
                         this.bulk_has_saved = false;
+                        this.user_type = ACCESS_TYPE_IGNORE;
                     }).catch((error) => {
                         let response_msg = 'Unable to load allowed principals';
                         this.alertHandler.alertHandler('error', response_msg);
@@ -444,10 +450,12 @@
 
             _saveBulk() {
                 let submissionDetails = this.submissionAccessDetails();
+                let skipRoles = this.user_type === ACCESS_TYPE_IGNORE;
                 let bulkDetails = {
                     ids: this.resultObjects.map(ro => ro.pid),
                     accessDetails: submissionDetails,
-                    skipEmbargo: this.skip_embargo
+                    skipEmbargo: this.skip_embargo,
+                    skipRoles: skipRoles
                 };
 
                 axios({

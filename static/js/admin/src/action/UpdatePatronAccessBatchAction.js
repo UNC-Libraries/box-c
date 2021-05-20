@@ -21,8 +21,10 @@ define('UpdatePatronAccessBatchAction', [ 'jquery', 'AbstractBatchAction'], func
         perms_editor_data.actionHandler = this.context.actionHandler;
         if (targets.length == 1) {
             perms_editor_data.resultObject = targets[0];
+            perms_editor_data.resultObjects = null;
             perms_editor_data.metadata = targets[0].metadata;
         } else {
+            perms_editor_data.resultObject = null;
             perms_editor_data.resultObjects = targets;
             perms_editor_data.metadata = {
                 title: targets.length + " objects",

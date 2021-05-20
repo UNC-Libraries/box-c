@@ -610,6 +610,83 @@ public class PatronAccessAssignmentServiceIT {
     }
 
     @Test
+    public void skipOverwritingRoles() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection with patron roles")
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(PUBLIC_PRINC, canViewOriginals, target);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void embargoUpdatedWhenSkippingRoles() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection with patron roles")
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        Date embargoUntil = getYearsInTheFuture(1).getTime();
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setEmbargo(embargoUntil);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertHasEmbargo(embargoUntil, target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(1, eventDetails.size());
+        assertEventWithDetail(eventDetails, "Set an embargo that will expire " + formatDateToUTC(embargoUntil));
+
+        assertMessageSent(pid);
+    }
+
+    @Test
+    public void skipRolesAndEmbargoes() throws Exception {
+        Calendar originalEmbargo = getYearsInTheFuture(1);
+        createCollectionInUnit(new AclModelBuilder("Collection with patron and embargo")
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .addEmbargoUntil(originalEmbargo)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertHasEmbargo(originalEmbargo.getTime(), target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
     public void makeNoChangesToObjectWithNoPatronAccess() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
