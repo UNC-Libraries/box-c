@@ -74,7 +74,7 @@
         </ul>
 
         <embargo ref="embargoInfo"
-                 :current-embargo="currentEmbargo"
+                 :current-embargo="embargo"
                  :is-deleted="isDeleted"
                  :is-bulk-mode="isBulkMode"
                  @embargo-info="setEmbargo">
@@ -222,10 +222,6 @@
                 return this.inherited.embargo !== null;
             },
 
-            currentEmbargo() {
-                return this.embargo;
-            },
-
             isDeleted() {
                 return this.deleted || this.inherited.deleted;
             },
@@ -268,7 +264,7 @@
 
             saveChangesAllowed() {
                 if (this.isBulkMode) {
-                    return !this.bulk_has_saved;
+                    return !this.bulk_has_saved && !(this.user_type === ACCESS_TYPE_IGNORE && this.skip_embargo === true);
                 }
                 return this.hasUnsavedChanges;
             },

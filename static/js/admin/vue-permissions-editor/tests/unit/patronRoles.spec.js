@@ -1159,7 +1159,7 @@ describe('patronRoles.vue', () => {
         expect(btn.text()).toBe('Cancel');
     })
 
-    it("defaults to no change for bulk update", (done) => {
+    it("Save button to disabled when no changes for bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
         stubAllowedPrincipals([]);
 
@@ -1171,8 +1171,23 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
             expect(wrapper.vm.displayAssignments).toEqual([]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
+            expectSaveButtonDisabled();
 
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: embargo_date, skip_embargo: false});
+            await wrapper.vm.$nextTick();
             expectSaveButtonDisabled(false);
+
+            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: null, skip_embargo: true});
+            await wrapper.vm.$nextTick();
+            expectSaveButtonDisabled();
+
+            wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.vm.$nextTick();
+            expectSaveButtonDisabled(false);
+
+            wrapper.find('#user_type_ignore').trigger('click');
+            await wrapper.vm.$nextTick();
+            expectSaveButtonDisabled();
             done();
         });
     });

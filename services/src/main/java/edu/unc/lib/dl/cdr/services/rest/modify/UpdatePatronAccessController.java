@@ -76,7 +76,8 @@ public class UpdatePatronAccessController {
 
         try {
             AgentPrincipals agent = AgentPrincipals.createFromThread();
-            processUpdate(agent, pid, accessDetails, false, false);
+            validateUpdate(agent, pid, accessDetails);
+            patronAccessOperationSender.sendUpdateRequest(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
             result.put("status", "Submitted patron access update for " + pid.getId());
         } catch (ServiceException e) {
             result.put("error", e.getMessage());
@@ -92,15 +93,11 @@ public class UpdatePatronAccessController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private void processUpdate(AgentPrincipals agent, PID pid, PatronAccessDetails accessDetails,
-            boolean skipEmbargo, boolean skipRoles) throws IOException {
+    private void validateUpdate(AgentPrincipals agent, PID pid, PatronAccessDetails accessDetails) {
         aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + pid.getId(),
                 pid, agent.getPrincipals(), Permission.changePatronAccess);
         PatronAccessAssignmentService.assertAssignmentsComplete(accessDetails);
         PatronAccessAssignmentService.assertOnlyPatronRoles(accessDetails);
-
-        patronAccessOperationSender.sendUpdateRequest(new PatronAccessAssignmentRequest(
-                agent, pid, accessDetails).withSkipEmbargo(skipEmbargo).withSkipRoles(skipRoles));
     }
 
     @PutMapping(value = "/edit/acl/patron", produces = APPLICATION_JSON_VALUE)
@@ -117,9 +114,16 @@ public class UpdatePatronAccessController {
         List<PID> pids = bulkAccessDetails.getIds().stream().map(PIDs::get).collect(Collectors.toList());
         int count = 0;
         try {
+            // Validate all update requests
             for (PID pid : pids) {
-                processUpdate(agent, pid, bulkAccessDetails.getAccessDetails(), bulkAccessDetails.isSkipEmbargo(),
-                        bulkAccessDetails.isSkipRoles());
+                validateUpdate(agent, pid, bulkAccessDetails.getAccessDetails());
+            }
+            // Submit the updates
+            for (PID pid : pids) {
+                patronAccessOperationSender.sendUpdateRequest(
+                        new PatronAccessAssignmentRequest(agent, pid, bulkAccessDetails.getAccessDetails())
+                            .withSkipEmbargo(bulkAccessDetails.isSkipEmbargo())
+                            .withSkipRoles(bulkAccessDetails.isSkipRoles()));
                 count++;
             }
         } catch (ServiceException e) {
