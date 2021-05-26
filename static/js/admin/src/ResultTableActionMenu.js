@@ -4,6 +4,10 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 	var defaultOptions = {
 		resultObjectList : null,
 		actions : {
+			updatePatronBatch : {
+				label : "Update Patron Access",
+				action : "UpdatePatronAccessBatch"
+			},
 			deleteBatch : {
 				label : "Delete",
 				action : "OpenDeleteBatch"

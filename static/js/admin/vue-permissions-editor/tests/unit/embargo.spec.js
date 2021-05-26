@@ -29,14 +29,7 @@ describe('embargo.vue', () => {
             }
         });
 
-        wrapper.setData({
-            custom_embargo_date: testDate,
-            embargo_ends_date: testDate,
-            has_embargo: true
-        });
-
         await wrapper.vm.$nextTick();
-        btn = wrapper.find('#remove-embargo');
         inputs = wrapper.findAll('input');
         global.confirm = jest.fn().mockReturnValue(true);
     });
@@ -79,8 +72,7 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: null });
 
         await wrapper.vm.$nextTick();
-        wrapper.find('#show-form').trigger('click');
-        await wrapper.vm.$nextTick();
+        await showForm();
         expect(wrapper.find('.form').exists()).toBe(true);
     });
 
@@ -97,9 +89,7 @@ describe('embargo.vue', () => {
         wrapper.setProps({ currentEmbargo: null });
 
         await wrapper.vm.$nextTick();
-        wrapper.find('#show-form').trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await showForm();
         expect(wrapper.find('#remove-embargo').classes('hidden')).toBe(true);
     });
 
@@ -116,89 +106,186 @@ describe('embargo.vue', () => {
     });
 
     it("emits an event when a new embargo is added", async () => {
-        wrapper.setData({
-            has_embargo: false
-        });
+        await showForm();
+        wrapper.find("#custom-embargo").setValue(testDate);
+        wrapper.find("#custom-embargo").trigger('focusout');
 
         await wrapper.vm.$nextTick();
-        inputs.at(2).trigger('focusout');
-        wrapper.setProps({
-            currentEmbargo: testDate
-        });
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.emitted()['embargo-info'][0]).toEqual([testDate]);
-        expect(wrapper.vm.has_embargo).toBe(true);
+        expect(wrapper.emitted()['embargo-info'][0]).toEqual([{
+            embargo: testDate,
+            skip_embargo: false
+        }]);
     });
 
     it("updates current embargo if one is already present", async () => {
+        await setStartingEmbargo();
         expect(wrapper.vm.embargo_ends_date).toBe(testDate);
         await wrapper.vm.$nextTick();
-        inputs.at(0).trigger('click');
+        wrapper.find("#embargo-1year").trigger('click');
+        await wrapper.vm.$nextTick();
 
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
-        expect(wrapper.vm.fixed_embargo_date).toEqual('1');
         expect(wrapper.vm.embargo_ends_date).toEqual(next_year);
     });
 
-    it("asks user to confirm that they want to delete an embargo", () => {
-        btn.trigger('click');
+    it("asks user to confirm that they want to delete an embargo", async() => {
+        await setStartingEmbargo();
+        wrapper.find('#remove-embargo').trigger('click');
         expect(global.confirm).toHaveBeenCalled();
     });
 
     it("emits an event when an embargo is removed", async() => {
-        btn.trigger('click');
-        wrapper.setProps({
-            currentEmbargo: null
-        });
+        await setStartingEmbargo();
+        wrapper.find('#remove-embargo').trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.emitted()['embargo-info'][0]).toEqual([null]);
+        expect(wrapper.emitted()['embargo-info'][0]).toEqual([{
+            embargo: null,
+            skip_embargo: false
+        }]);
         expect(wrapper.vm.has_embargo).toBe(false);
     });
 
     it("emits an error message if user tries to add embargo with the wrong date format", async() => {
-        wrapper.setData({
-            custom_embargo_date: '2099-01'
-        });
-
+        await showForm();
+        wrapper.find("#custom-embargo").setValue('2099-01');
+        wrapper.find("#custom-embargo").trigger('focusout');
         await wrapper.vm.$nextTick();
-        inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a valid date in the following format YYYY-MM-DD']);
 
-        wrapper.setData({
-            custom_embargo_date: '2099-60-34'
-        });
-
+        wrapper.find("#custom-embargo").setValue('2099-60-34');
+        wrapper.find("#custom-embargo").trigger('focusout');
         await wrapper.vm.$nextTick();
-        inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a valid date in the following format YYYY-MM-DD']);
     });
 
     it("emits an error message if user tries to add embargo in the past", async () => {
-        wrapper.setData(past_embargo);
+        await showForm();
+        wrapper.find("#custom-embargo").setValue('2011-01-01');
+        wrapper.find("#custom-embargo").trigger('focusout');
         await wrapper.vm.$nextTick();
-        inputs.at(2).trigger('focusout');
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
     });
 
     it("emits a message to clear error message if a form input is clicked", async () => {
-        wrapper.setData(past_embargo);
+        await showForm();
+        wrapper.find("#custom-embargo").setValue('2011-01-01');
+        wrapper.find("#custom-embargo").trigger('focusout');
         await wrapper.vm.$nextTick();
-        inputs.at(2).trigger('focusout');
 
         expect(wrapper.emitted()['error-msg'][0]).toEqual(['Please enter a future date']);
 
-        inputs.at(2).trigger('click');
+        wrapper.find("#custom-embargo").trigger('click');
+        await wrapper.vm.$nextTick();
         expect(wrapper.emitted()['error-msg'][1]).toEqual(['']);
+    });
+
+    it("Custom radio button selected when custom input is focused", async() => {
+        await showForm();
+        wrapper.find("#custom-embargo").trigger('click');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.vm.embargo_type).toEqual('custom');
     });
 
     it("disables the form if the object or its parent is marked for deletion", async () => {
         wrapper.setProps({
             isDeleted: true
         });
-
-        await wrapper.vm.$nextTick();
+        await setStartingEmbargo();
         expect(wrapper.find('fieldset').html()).toEqual(expect.stringContaining('disabled="disabled"'));
     });
+
+    it("Shows correct embargo type options in single mode", async() => {
+        await setStartingEmbargo();
+
+        expect(wrapper.find('#embargo-ignore').exists()).toBe(false);
+        expect(wrapper.find('#embargo-clear').exists()).toBe(false);
+        expect(wrapper.find('#embargo-1year').exists()).toBe(true);
+        expect(wrapper.find('#embargo-2years').exists()).toBe(true);
+        expect(wrapper.find('#embargo-custom').exists()).toBe(true);
+        expect(wrapper.find('#remove-embargo').exists()).toBe(true);
+    });
+
+    it("Defaults to and shows correct embargo type options in bulk mode", async() => {
+        await setToBulkMode();
+
+        expect(wrapper.find('#show-form').exists()).toBe(false);
+        expect(wrapper.find('#embargo-ignore').exists()).toBe(true);
+        expect(wrapper.find('#embargo-clear').exists()).toBe(true);
+        expect(wrapper.find('#embargo-1year').exists()).toBe(true);
+        expect(wrapper.find('#embargo-2years').exists()).toBe(true);
+        expect(wrapper.find('#embargo-custom').exists()).toBe(true);
+        expect(wrapper.find('#remove-embargo').exists()).toBe(false);
+
+        expect(wrapper.vm.embargo_type).toEqual('ignore');
+    });
+
+    it("In bulk mode, clearing embargo sends event", async() => {
+        await setToBulkMode();
+        wrapper.find("#embargo-clear").trigger('click');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.vm.embargo_type).toEqual('clear');
+        expect(wrapper.emitted()['embargo-info'][0]).toEqual([{
+            embargo: null,
+            skip_embargo: false
+        }]);
+    });
+
+    it("In bulk mode, setting no change to embargo sends event", async() => {
+        await setToBulkMode();
+        wrapper.find("#embargo-1year").trigger('click');
+        await wrapper.vm.$nextTick();
+        wrapper.find("#embargo-ignore").trigger('click');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.vm.embargo_type).toEqual('ignore');
+        expect(wrapper.emitted()['embargo-info'][1]).toEqual([{
+            embargo: null,
+            skip_embargo: true
+        }]);
+    });
+
+    it("In bulk mode, setting embargo duration sends event", async() => {
+        await setToBulkMode();
+        wrapper.find("#embargo-1year").trigger('click');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.vm.embargo_type).toEqual('1year');
+        let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
+        expect(wrapper.emitted()['embargo-info'][0]).toEqual([{
+            embargo: next_year,
+            skip_embargo: false
+        }]);
+    });
+
+    it("In bulk mode, setting custom duration sends event", async() => {
+        await setToBulkMode();
+        wrapper.find("#custom-embargo").trigger('click');
+        wrapper.find("#custom-embargo").setValue(testDate);
+        wrapper.find("#custom-embargo").trigger('focusout');
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.vm.embargo_type).toEqual('custom');
+        expect(wrapper.emitted()['embargo-info'][0]).toEqual([{
+            embargo: testDate,
+            skip_embargo: false
+        }]);
+    });
+
+    async function setToBulkMode() {
+        wrapper.setProps({ isBulkMode: true });
+        await wrapper.vm.$nextTick();
+    }
+
+    async function setStartingEmbargo(embargoDate = testDate) {
+        wrapper.setProps({ currentEmbargo: testDate });
+        await wrapper.vm.$nextTick();
+    }
+
+    async function showForm() {
+        wrapper.find("#show-form").trigger('click');
+        await wrapper.vm.$nextTick();
+    }
 });

@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.PatronPrincipalProvider;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -121,6 +122,20 @@ public class AccessControlRetrievalController {
         result.put(ASSIGNED_ROLES, assignedInfo);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * @return Returns a json array of allowed patron principals
+     */
+    @GetMapping(value = "/acl/patron/allowedPrincipals", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> getPatronAccess() {
+        log.debug("Retrieving allowed patron principals");
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        if (!agent.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(patronPrincipalProvider.getConfiguredPatronPrincipals(), HttpStatus.OK);
     }
 
     /**

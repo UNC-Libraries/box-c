@@ -440,6 +440,18 @@
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
+    
+    <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
+        <property name="aclService" ref="aclService" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+
+    <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">
+        <property name="patronAccessAssignmentService" ref="patronAccessAssignmentService" />
+    </bean>
 
     <!-- Camel contexts -->
 
@@ -485,5 +497,9 @@
 
     <camel:camelContext id="CdrDestroyDerivatives">
         <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrUpdatePatronAccess">
+        <camel:package>edu.unc.lib.dl.services.camel.patronAccess</camel:package>
     </camel:camelContext>
 </beans>

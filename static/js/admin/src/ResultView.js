@@ -24,11 +24,11 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
 							]
 						},
-						/*{
+						{
 							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'}
+								{action : 'UpdatePatronAccessBatch', label : 'Update Patron Access', joiner : ' for'}
 							]
-						},*/
+						},
 						{
 							actions : [
 								{action : 'RestoreBatch', label : 'Restore'},

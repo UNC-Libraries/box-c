@@ -84,6 +84,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
@@ -166,7 +167,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -182,7 +183,8 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails, true);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withFolderCreation(true));
     }
 
     @Test(expected = ServiceException.class)
@@ -195,7 +197,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canManage)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -214,7 +216,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -227,7 +229,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -241,7 +243,7 @@ public class PatronAccessAssignmentServiceIT {
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata),
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(PUBLIC_PRINC, canViewMetadata, target);
@@ -267,7 +269,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(null, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(null, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -279,7 +281,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, null, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, null, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -288,7 +290,7 @@ public class PatronAccessAssignmentServiceIT {
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
-        patronService.updatePatronAccess(agent, pid, null);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -301,7 +303,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, null)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -314,7 +316,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(null, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -327,7 +329,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment("  ", null)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -342,7 +344,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(PUBLIC_PRINC, UserRole.none)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(PUBLIC_PRINC, UserRole.none, target);
@@ -369,7 +371,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertNoAssignment(PUBLIC_PRINC, target);
@@ -395,7 +397,7 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertNoAssignment(PUBLIC_PRINC, target);
@@ -419,7 +421,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -444,7 +446,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     @Test
@@ -460,7 +462,7 @@ public class PatronAccessAssignmentServiceIT {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -488,7 +490,7 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -517,7 +519,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
 
@@ -534,6 +536,157 @@ public class PatronAccessAssignmentServiceIT {
     }
 
     @Test
+    public void skipAddEmbargo() throws Exception {
+        createCollectionInUnit(null);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        Date embargoUntil = getYearsInTheFuture(1).getTime();
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setEmbargo(embargoUntil);
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+
+        assertNoRoles(target);
+
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void skipRemoveEmbargo() throws Exception {
+        Calendar originalEmbargo = getYearsInTheFuture(1);
+        createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+                .addEmbargoUntil(originalEmbargo)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+
+        assertNoRoles(target);
+        assertHasEmbargo(originalEmbargo.getTime(), target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void rolesUpdatedWhenSkippingEmbargo() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection")
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setRoles(asList(new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
+
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(1, eventDetails.size());
+        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewOriginals.getPropertyString());
+
+        assertMessageSent(pid);
+    }
+
+    @Test
+    public void skipOverwritingRoles() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection with patron roles")
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(PUBLIC_PRINC, canViewOriginals, target);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertNoEmbargo(target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
+    public void embargoUpdatedWhenSkippingRoles() throws Exception {
+        createCollectionInUnit(new AclModelBuilder("Collection with patron roles")
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        Date embargoUntil = getYearsInTheFuture(1).getTime();
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setEmbargo(embargoUntil);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertHasEmbargo(embargoUntil, target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(1, eventDetails.size());
+        assertEventWithDetail(eventDetails, "Set an embargo that will expire " + formatDateToUTC(embargoUntil));
+
+        assertMessageSent(pid);
+    }
+
+    @Test
+    public void skipRolesAndEmbargoes() throws Exception {
+        Calendar originalEmbargo = getYearsInTheFuture(1);
+        createCollectionInUnit(new AclModelBuilder("Collection with patron and embargo")
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .addEmbargoUntil(originalEmbargo)
+                .model);
+        PID pid = collObj.getPid();
+        treeIndexer.indexAll(baseAddress);
+
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                .withSkipRoles(true)
+                .withSkipEmbargo(true));
+
+        RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
+        assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, target);
+
+        assertHasEmbargo(originalEmbargo.getTime(), target);
+
+        List<String> eventDetails = getEventDetails(target);
+        assertEquals(0, eventDetails.size());
+
+        assertMessageNotSent(pid);
+    }
+
+    @Test
     public void makeNoChangesToObjectWithNoPatronAccess() throws Exception {
         createCollectionInUnit(null);
         PID pid = collObj.getPid();
@@ -541,7 +694,8 @@ public class PatronAccessAssignmentServiceIT {
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
 
-        String opId = patronService.updatePatronAccess(agent, pid, accessDetails);
+        String opId = patronService.updatePatronAccess(
+                new PatronAccessAssignmentRequest(agent, pid, accessDetails));
         assertNull(opId);
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -570,7 +724,8 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        String opId = patronService.updatePatronAccess(agent, pid, accessDetails);
+        String opId = patronService.updatePatronAccess(
+                new PatronAccessAssignmentRequest(agent, pid, accessDetails));
         assertNull(opId);
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
@@ -596,7 +751,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
 
         RepositoryObject target = repoObjLoader.getRepositoryObject(pid);
         assertHasAssignment(AUTHENTICATED_PRINC, canViewMetadata, target);
@@ -621,7 +776,7 @@ public class PatronAccessAssignmentServiceIT {
         accessDetails.setRoles(asList(
                 new RoleAssignment(GRP_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(agent, pid, accessDetails);
+        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
     }
 
     private void createCollectionInUnit(Model collModel) {

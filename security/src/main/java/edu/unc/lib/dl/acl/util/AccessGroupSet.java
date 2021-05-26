@@ -40,7 +40,7 @@ public class AccessGroupSet extends HashSet<String> {
         addAccessGroups(groups);
     }
 
-    public AccessGroupSet(AccessGroupSet groups) {
+    public AccessGroupSet(Collection<String> groups) {
         super(groups);
     }
 

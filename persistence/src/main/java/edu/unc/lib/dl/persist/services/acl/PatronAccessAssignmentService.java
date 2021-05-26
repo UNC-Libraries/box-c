@@ -40,6 +40,8 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -51,6 +53,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -89,26 +92,23 @@ public class PatronAccessAssignmentService {
         accessValidator = new ContentObjectAccessRestrictionValidator();
     }
 
-    public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
-        return updatePatronAccess(agent, target, accessDetails, false);
-    }
+    public String updatePatronAccess(PatronAccessAssignmentRequest request) {
+        notNull(request.getAgent(), "Must provide an agent for this operation");
+        notNull(request.getTargetPid(), "Must provide the PID of the object to update");
+        notNull(request.getAccessDetails(), "Must provide patron access details");
 
-    public String updatePatronAccess(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails,
-                                     boolean isFolderCreation) {
-        notNull(agent, "Must provide an agent for this operation");
-        notNull(target, "Must provide the PID of the object to update");
-        notNull(accessDetails, "Must provide patron access details");
-
+        PID target = request.getTargetPid();
+        AgentPrincipals agent = request.getAgent();
         FedoraTransaction tx = txManager.startTransaction();
         log.info("Starting update of patron access on {}", target.getId());
         try (Timer.Context context = timer.time()) {
-            Permission permissionToCheck = isFolderCreation ? ingest : changePatronAccess;
+            Permission permissionToCheck = request.isFolderCreation() ? ingest : changePatronAccess;
             aclService.assertHasAccess("Insufficient privileges to assign patron roles for object " + target.getId(),
                     target, agent.getPrincipals(), permissionToCheck);
 
-            assertAssignmentsComplete(accessDetails);
+            assertAssignmentsComplete(request.getAccessDetails());
 
-            assertOnlyPatronRoles(accessDetails);
+            assertOnlyPatronRoles(request.getAccessDetails());
 
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
@@ -118,8 +118,8 @@ public class PatronAccessAssignmentService {
             }
 
             Model updated = ModelFactory.createDefaultModel().add(repoObj.getModel(true));
-            Resource rolesEventResc = replacePatronRoles(repoObj, agent, updated, accessDetails.getRoles());
-            Resource embargoEventResc = updateEmbargo(repoObj, agent, updated, accessDetails.getEmbargo());
+            Resource rolesEventResc = replacePatronRoles(repoObj, updated, request);
+            Resource embargoEventResc = updateEmbargo(repoObj, updated, request);
 
             // No changes occurred, perform no updates to the resource
             if (rolesEventResc == null && embargoEventResc == null) {
@@ -148,13 +148,18 @@ public class PatronAccessAssignmentService {
      * Replace all the patron roles for the provided object
      *
      * @param repoObj
-     * @param agent
      * @param model
-     * @param assignments
+     * @param request
      * @return Returns the premis event resource created to capture this event, or null if no patron roles changed.
      */
-    private Resource replacePatronRoles(RepositoryObject repoObj, AgentPrincipals agent, Model model,
-            Collection<RoleAssignment> assignments) {
+    private Resource replacePatronRoles(RepositoryObject repoObj, Model model, PatronAccessAssignmentRequest request) {
+        if (request.isSkipRoles()) {
+            return null;
+        }
+
+        Collection<RoleAssignment> assignments = request.getAccessDetails().getRoles();
+        AgentPrincipals agent = request.getAgent();
+
         // Update a copy of the model for this object
         Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
 
@@ -217,7 +222,11 @@ public class PatronAccessAssignmentService {
         return !incomingRoles.containsAll(existingPatronRoles);
     }
 
-    private Resource updateEmbargo(RepositoryObject repoObj, AgentPrincipals agent, Model model, Date newEmbargo) {
+    private Resource updateEmbargo(RepositoryObject repoObj, Model model, PatronAccessAssignmentRequest request) {
+        if (request.isSkipEmbargo()) {
+            return null;
+        }
+        Date newEmbargo = request.getAccessDetails().getEmbargo();
         if (newEmbargo != null && !isEmbargoActive(newEmbargo)) {
             throw new InvalidAssignmentException("Cannot assign expired embargo to object "
                     + repoObj.getPid().getId());
@@ -247,7 +256,7 @@ public class PatronAccessAssignmentService {
         } else {
             // Produce the premis event for this embargo
             return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(AgentPids.forPerson(agent))
+                    .addImplementorAgent(AgentPids.forPerson(request.getAgent()))
                     .addEventDetail(eventText)
                     .create();
         }
@@ -268,7 +277,7 @@ public class PatronAccessAssignmentService {
         return details.toString();
     }
 
-    private void assertAssignmentsComplete(PatronAccessDetails details) {
+    public static void assertAssignmentsComplete(PatronAccessDetails details) {
         if (details.getRoles() == null) {
             return;
         }
@@ -282,7 +291,7 @@ public class PatronAccessAssignmentService {
         }
     }
 
-    private void assertOnlyPatronRoles(PatronAccessDetails details) {
+    public static void  assertOnlyPatronRoles(PatronAccessDetails details) {
         if (details.getRoles() != null && details.getRoles().stream().anyMatch(a -> a.getRole().isStaffRole())) {
             throw new ServiceException("Only patron roles are applicable for this service");
         }
@@ -348,5 +357,95 @@ public class PatronAccessAssignmentService {
 
     public void setAccessValidator(ContentObjectAccessRestrictionValidator accessValidator) {
         this.accessValidator = accessValidator;
+    }
+
+    public static class PatronAccessAssignmentRequest {
+        private AgentPrincipals agent;
+        private PID target;
+        private PatronAccessDetails accessDetails;
+        private boolean isFolderCreation;
+        private boolean skipEmbargo;
+        private boolean skipRoles;
+
+        public PatronAccessAssignmentRequest() {
+        }
+
+        public PatronAccessAssignmentRequest(AgentPrincipals agent, PID target, PatronAccessDetails accessDetails) {
+            this.agent = agent;
+            this.target = target;
+            this.accessDetails = accessDetails;
+        }
+
+        public AgentPrincipals getAgent() {
+            return agent;
+        }
+
+        public void setAgent(AgentPrincipals agent) {
+            this.agent = agent;
+        }
+
+        @JsonIgnore
+        public PID getTargetPid() {
+            return target;
+        }
+
+        public String getTarget() {
+            return target.getRepositoryPath();
+        }
+
+        public void setTargetPid(PID target) {
+            this.target = target;
+        }
+
+        public void setTarget(String target) {
+            this.target = PIDs.get(target);
+        }
+
+        public PatronAccessDetails getAccessDetails() {
+            return accessDetails;
+        }
+
+        public void setAccessDetails(PatronAccessDetails accessDetails) {
+            this.accessDetails = accessDetails;
+        }
+
+        public boolean isFolderCreation() {
+            return isFolderCreation;
+        }
+
+        public void setFolderCreation(boolean isFolderCreation) {
+            this.isFolderCreation = isFolderCreation;
+        }
+
+        public PatronAccessAssignmentRequest withFolderCreation(boolean isFolderCreation) {
+            this.isFolderCreation = isFolderCreation;
+            return this;
+        }
+
+        public boolean isSkipEmbargo() {
+            return skipEmbargo;
+        }
+
+        public void setSkipEmbargo(boolean skipEmbargo) {
+            this.skipEmbargo = skipEmbargo;
+        }
+
+        public PatronAccessAssignmentRequest withSkipEmbargo(boolean skipEmbargo) {
+            this.skipEmbargo = skipEmbargo;
+            return this;
+        }
+
+        public boolean isSkipRoles() {
+            return skipRoles;
+        }
+
+        public void setSkipRoles(boolean skipRoles) {
+            this.skipRoles = skipRoles;
+        }
+
+        public PatronAccessAssignmentRequest withSkipRoles(boolean skipRoles) {
+            this.skipRoles = skipRoles;
+            return this;
+        }
     }
 }

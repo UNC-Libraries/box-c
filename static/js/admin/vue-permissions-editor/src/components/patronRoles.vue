@@ -1,8 +1,8 @@
 <template>
     <div id="patron-roles">
-        <h3>Effective Patron Access</h3>
+        <h3 v-if="!isBulkMode">Effective Patron Access</h3>
 
-        <table class="border inherited-permissions">
+        <table class="border inherited-permissions" v-if="!isBulkMode">
             <thead>
             <tr>
                 <th class="access-display">Who can access</th>
@@ -21,6 +21,10 @@
 
         <h3 class="update-roles">Set Patron Access</h3>
         <ul class="set-patron-roles">
+            <li v-if="isBulkMode">
+                <input type="radio" v-model="user_type" value="ignore"
+                       id="user_type_ignore"> <label for="user_type_ignore"> No Change</label>
+            </li>
             <li v-if="!isCollection">
                 <input type="radio" v-model="user_type" value="parent" :disabled="isDeleted"
                        id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
@@ -72,6 +76,7 @@
         <embargo ref="embargoInfo"
                  :current-embargo="embargo"
                  :is-deleted="isDeleted"
+                 :is-bulk-mode="isBulkMode"
                  @embargo-info="setEmbargo">
         </embargo>
 
@@ -80,8 +85,8 @@
                 <button id="is-submitting"
                         type="submit"
                         @click="saveRoles"
-                        :class="{'btn-disabled': !hasUnsavedChanges}"
-                        :disabled="!hasUnsavedChanges">Save Changes</button>
+                        :class="{'btn-disabled': !saveChangesAllowed}"
+                        :disabled="!saveChangesAllowed">Save Changes</button>
             </li>
             <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">{{ closeEditorText }}</button></li>
         </ul>
@@ -113,6 +118,7 @@
     const ACCESS_TYPE_INHERIT = "parent";
     const ACCESS_TYPE_STAFF_ONLY = "staff";
     const ACCESS_TYPE_DIRECT = "patron";
+    const ACCESS_TYPE_IGNORE = "ignore";
 
     let initialRoles = () => ({ roles: [], embargo: null, deleted: false });
     const DEFAULT_DISPLAY_COLLECTION = [
@@ -133,6 +139,7 @@
             changesCheck: Boolean,
             containerType: String,
             resultObject: Object,
+            resultObjects: Array,
             title: String,
             uuid: String
         },
@@ -147,12 +154,14 @@
                 allowed_principals: [],
                 selected_patron_assignments: [],
                 embargo: null,
+                skip_embargo: true,
                 deleted: false,
                 new_assignment_role: VIEW_ORIGINAL_ROLE,
                 new_assignment_principal: '',
                 user_type: null,
                 should_show_add_principal: false,
-                saved_details: null
+                saved_details: null,
+                bulk_has_saved: false
             }
         },
 
@@ -162,6 +171,9 @@
             },
 
             displayAssignments() {
+                if (this.isBulkMode) {
+                  return [];
+                }
                 let assigned = cloneDeep(this.assignedPatronRoles);
                 // Display the new assignment before it is committed, if valid
                 if (this.should_show_add_principal) {
@@ -187,7 +199,7 @@
              * @returns {*[]}
              */
             assignedPatronRoles() {
-                if (this.user_type === ACCESS_TYPE_INHERIT) {
+                if (this.user_type === ACCESS_TYPE_INHERIT || this.user_type === ACCESS_TYPE_IGNORE) {
                     return [];
                 } else if (this.user_type === ACCESS_TYPE_STAFF_ONLY) {
                     return this.getInheritedPrincipals()
@@ -215,7 +227,11 @@
             },
 
             isCollection() {
-                return this.containerType.toLowerCase() === 'collection';
+                return this.containerType !== null && this.containerType.toLowerCase() === 'collection';
+            },
+
+            isBulkMode() {
+                return this.resultObjects !== undefined && this.resultObjects !== null && this.resultObjects.length > 0;
             },
 
             hasUnsavedChanges() {
@@ -246,8 +262,15 @@
                 return false;
             },
 
+            saveChangesAllowed() {
+                if (this.isBulkMode) {
+                    return !this.bulk_has_saved && !(this.user_type === ACCESS_TYPE_IGNORE && this.skip_embargo === true);
+                }
+                return this.hasUnsavedChanges;
+            },
+
             closeEditorText() {
-                return this.hasUnsavedChanges ? 'Cancel' : 'Close';
+                return (this.isBulkMode && !this.bulk_has_saved) || this.hasUnsavedChanges ? 'Cancel' : 'Close';
             }
         },
 
@@ -261,6 +284,20 @@
             },
 
             getRoles() {
+                // No need to retrieve existing roles when performing bulk update
+                if (this.isBulkMode) {
+                    axios.get(`/services/api/acl/patron/allowedPrincipals`).then((response) => {
+                        this.allowed_principals = response.data;
+                        this._initializeSelectedAssignments([]);
+                        this.bulk_has_saved = false;
+                        this.user_type = ACCESS_TYPE_IGNORE;
+                    }).catch((error) => {
+                        let response_msg = 'Unable to load allowed principals';
+                        this.alertHandler.alertHandler('error', response_msg);
+                        console.log(error);
+                    });
+                    return;
+                }
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
                     this.embargo = response.data.assigned.embargo;
                     this._initializeInherited(response.data.inherited);
@@ -372,6 +409,14 @@
                         return false;
                     }
                 }
+                if (this.isBulkMode) {
+                    this._saveBulk();
+                } else {
+                    this._saveSingle();
+                }
+            },
+
+            _saveSingle() {
                 let submissionDetails = this.submissionAccessDetails();
 
                 axios({
@@ -393,6 +438,46 @@
                     });
                 }).catch((error) => {
                     let response_msg = `Unable to update patron roles for: ${this.title}`;
+                    this.is_submitting = false;
+                    this.alertHandler.alertHandler('error', response_msg);
+                    console.log(error);
+                });
+            },
+
+            _saveBulk() {
+                if (!window.confirm(`Are you sure you want to update ${this.title}?`)) {
+                    return;
+                }
+                let submissionDetails = this.submissionAccessDetails();
+                let skipRoles = this.user_type === ACCESS_TYPE_IGNORE;
+                let bulkDetails = {
+                    ids: this.resultObjects.map(ro => ro.pid),
+                    accessDetails: submissionDetails,
+                    skipEmbargo: this.skip_embargo,
+                    skipRoles: skipRoles
+                };
+
+                axios({
+                    method: 'put',
+                    url: `/services/api/edit/acl/patron`,
+                    data: JSON.stringify(bulkDetails),
+                    headers: {'content-type': 'application/json; charset=utf-8'}
+                }).then((response) => {
+                    let response_msg = `Submitted patron access updates for ${this.resultObjects.length} objects`;
+                    this.alertHandler.alertHandler('success', response_msg);
+                    this.is_submitting = false;
+                    this.bulk_has_saved = true;
+
+                    for (let rObject of this.resultObjects) {
+                        // Update entry in results table
+                        this.actionHandler.addEvent({
+                            action : 'RefreshResult',
+                            target : rObject,
+                            waitForUpdate : true
+                        });
+                    }
+                }).catch((error) => {
+                    let response_msg = `Unable to bulk update patron roles`;
                     this.is_submitting = false;
                     this.alertHandler.alertHandler('error', response_msg);
                     console.log(error);
@@ -495,7 +580,13 @@
              * @param embargo_info
              */
             setEmbargo(embargo_info) {
-                this.embargo = embargo_info;
+                if (embargo_info === null) {
+                    this.embargo = null;
+                    this.skip_embargo = true;
+                } else {
+                    this.embargo = embargo_info.embargo;
+                    this.skip_embargo = embargo_info.skip_embargo;
+                }
             },
 
             /**
@@ -503,7 +594,7 @@
              * See mixins/displayModal.js
              */
             showModal() {
-                this.unsaved_changes = this.hasUnsavedChanges;
+                this.unsaved_changes = !this.isBulkMode && this.hasUnsavedChanges;
                 this.displayModal();
             },
             

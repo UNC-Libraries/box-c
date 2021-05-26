@@ -28,6 +28,7 @@
                                                   :changes-check="checkForUnsavedChanges"
                                                   :container-type="metadata.type"
                                                   :result-object="resultObject"
+                                                  :result-objects="resultObjects"
                                                   :title="metadata.title"
                                                   :uuid="metadata.id"
                                                   @reset-changes-check="resetChangesCheck"
@@ -69,6 +70,7 @@
                 metadata: {},
                 permissionType: '',
                 resultObject: {},
+                resultObjects: [],
                 showModal: false,
             };
         },
