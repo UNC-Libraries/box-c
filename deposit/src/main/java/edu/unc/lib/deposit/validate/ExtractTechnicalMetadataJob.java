@@ -51,7 +51,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -64,6 +64,8 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
+
+import com.google.common.base.CharMatcher;
 
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -311,17 +313,23 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * XML document
      *
      * @param objPid
-     * @param stagedPath
+     * @param stagedUriString
      * @return
      */
-    private Document getFitsDocument(PID objPid, String stagedPath) {
+    private Document getFitsDocument(PID objPid, String stagedUriString) {
         HttpUriRequest request;
-        URI stagedUri = URI.create(stagedPath);
+        URI stagedUri = URI.create(stagedUriString);
+        Path stagedPath;
         if (!stagedUri.isAbsolute()) {
-            stagedUri = Paths.get(getDepositDirectory().toString(), stagedPath).toUri();
+            stagedPath = Paths.get(getDepositDirectory().toString(), stagedUriString);
+            stagedUri = stagedPath.toUri();
+        } else {
+            stagedPath = Paths.get(stagedUri);
         }
 
-        if (processFilesLocally) {
+        boolean pathInBounds = charactersInBoundsForFITS(stagedPath);
+        // FITS cannot currently handle file paths that contain unicode characters, so need to upload
+        if (processFilesLocally && pathInBounds) {
             // Files are available locally to FITS, so just pass along path
             URI fitsUri = null;
             try {
@@ -337,16 +345,22 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             request = new HttpGet(fitsUri);
         } else {
             // Files are to be processed remotely, so upload them via a post request
-            File stagedFile = new File(stagedUri);
-            HttpEntity entity = MultipartEntityBuilder.create()
-                    .addPart("datafile", new FileBody(stagedFile))
-                    .build();
+            HttpEntity entity;
+            try {
+                entity = MultipartEntityBuilder.create()
+                        .addPart("datafile", new InputStreamBody(Files.newInputStream(stagedPath),
+                                stagedPath.getFileName().toString()))
+                        .build();
+            } catch (IOException e) {
+                failJob(e, "Unable to read file {0}", stagedPath);
+                return null;
+            }
 
             HttpPost postRequest = new HttpPost(fitsExamineUri);
             postRequest.setEntity(entity);
             request = postRequest;
 
-            log.debug("Requesting FITS document for {} using remote file from {}", objPid, stagedFile);
+            log.debug("Requesting FITS document for {} using remote file from {}", objPid, stagedPath);
         }
 
         try (CloseableHttpResponse resp = httpClient.execute(request)) {
@@ -364,6 +378,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                     objPid);
         }
         return null;
+    }
+
+    private boolean charactersInBoundsForFITS(Path path) {
+        return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
     /**
