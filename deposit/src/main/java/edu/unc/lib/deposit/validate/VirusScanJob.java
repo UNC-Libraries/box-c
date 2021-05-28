@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -28,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.CharMatcher;
 
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
@@ -107,7 +111,20 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                     URI fileURI = URI.create(href.getValue());
                     Path file = Paths.get(fileURI);
 
-                    ScanResult result = clamClient.scanWithResult(file);
+                    ScanResult result;
+                    // Clamd is unable to find files with unicode characters in their path
+                    if (charactersInBoundsForClam(file)) {
+                        result = clamClient.scanWithResult(file);
+                    } else {
+                        // Scan files with unicode in their paths via streaming
+                        try {
+                            result = clamClient.scanWithResult(Files.newInputStream(file));
+                        } catch (IOException e) {
+                            failures.put(fileURI.toString(), "Failed to scan file");
+                            log.error("Unable to scan file {}", file, e);
+                            return;
+                        }
+                    }
 
                     switch (result.getStatus()) {
                     case FOUND:
@@ -172,6 +189,10 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                     .addEventDetail(scannedObjects + "files scanned for viruses.")
                     .write();
         }
+    }
+
+    private boolean charactersInBoundsForClam(Path path) {
+        return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
     // unused, no results to flush

@@ -225,6 +225,44 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertTrue("Type was not set", rescFile2.hasProperty(RDF.type, Cdr.Work));
     }
 
+    @Test
+    public void unicodeFilenameTest() throws Exception {
+        File unicodeDepDir = tmpDir.newFolder("unicode_test");
+        String filename = "weird\uD83D\uDC7D.txt";
+        File testFile2 = new File(unicodeDepDir, filename);
+        testFile2.createNewFile();
+
+        status.put(DepositField.sourceUri.name(), unicodeDepDir.toURI().toString());
+        status.put(DepositField.fileName.name(), "Unicode Test File");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+
+        assertEquals(1, depositBag.size());
+
+        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+        assertEquals("Bag folder label was not set", "Unicode Test File", bagFolder.getProperty(CdrDeposit.label).getString());
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
+
+        // Verify that file and its properties were added to work
+        Resource work = getChildByLabel(bagFolder, testFile2.getName());
+        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+
+        Bag workBag = model.getBag(work.getURI());
+        Resource file = getChildByLabel(workBag, testFile2.getName());
+        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+
+        Resource originalResc = DepositModelHelpers.getDatastream(file);
+        String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
+        System.out.println(tagPath);
+        System.out.println("\uD83D\uDC7D");
+        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"));
+
+    }
+
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {
         NodeIterator iterator = bagResc.iterator();
         while (iterator.hasNext()) {

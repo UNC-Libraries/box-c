@@ -20,7 +20,7 @@ import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,7 +71,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     @Override
     public abstract void runJob();
 
-    protected Bag getSourceBag(Bag depositBag, File sourceFile) {
+    protected Bag getSourceBag(Bag depositBag, Path sourceFile) {
         Model model = depositBag.getModel();
         Map<String, String> status = getDepositStatus();
 
@@ -83,14 +83,14 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
             label = status.get(DepositField.fileName.name());
         }
         if (label == null) {
-            label = sourceFile.getName();
+            label = sourceFile.getFileName().toString();
         }
         model.add(bagFolder, CdrDeposit.label, label);
         model.add(bagFolder, RDF.type, Cdr.Folder);
         depositBag.add(bagFolder);
 
         // Cache the source bag folder
-        pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
+        pathToFolderBagCache.put(sourceFile.getFileName().toString(), bagFolder);
 
         addTitle(containerPID, label);
 
@@ -105,8 +105,8 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * @param filepath
      * @return the resource representing the original binary for the created file resource
      */
-    protected Resource getFileResource(Bag sourceBag, String filepath) {
-        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+    protected Resource getFileResource(Bag sourceBag, Path filepath) {
+        String filename = filepath.getFileName().toString();
         Bag parentBag = getParentBag(sourceBag, filepath);
 
         // Create work object
@@ -140,7 +140,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * @param filepath
      * @return
      */
-    protected Bag getFolderBag(Bag sourceBag, String filepath) {
+    protected Bag getFolderBag(Bag sourceBag, Path filepath) {
         Bag parentBag = getParentBag(sourceBag, filepath);
 
         PID pid = createPID();
@@ -148,7 +148,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
         parentBag.add(bagFolder);
 
-        pathToFolderBagCache.put(filepath, bagFolder);
+        pathToFolderBagCache.put(filepath.toString(), bagFolder);
         return bagFolder;
     }
 
@@ -166,9 +166,9 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * @param filepath
      * @return
      */
-    protected Bag getParentBag(Bag sourceBag, String filepath) {
+    protected Bag getParentBag(Bag sourceBag, Path filepath) {
         // Retrieve the bag from the cache by base filepath if available.
-        String basePath = Paths.get(filepath).getParent().toString();
+        String basePath = filepath.getParent().toString();
         if (pathToFolderBagCache.containsKey(basePath)) {
             return pathToFolderBagCache.get(basePath);
         }
@@ -176,10 +176,10 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         Model model = sourceBag.getModel();
 
         // find or create a folder resource for the filepath
-        String[] pathSegments = filepath.split("/");
+        String[] pathSegments = basePath.split("/");
 
         // Nothing to do with paths that only have data
-        if (pathSegments.length <= 2) {
+        if (pathSegments.length <= 1) {
             return sourceBag;
         }
 
