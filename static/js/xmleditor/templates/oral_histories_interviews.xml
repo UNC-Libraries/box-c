@@ -1,0 +1,82 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:titleInfo>
+        <mods:title />
+    </mods:titleInfo>
+    <mods:name type="personal">
+        <mods:namePart />
+        <mods:namePart type="date" />
+        <mods:namePart type="termsOfAddress" />
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Interviewee</mods:roleTerm>
+        </mods:role>
+        <mods:description>Correct Spelling: </mods:description>
+        <mods:description>Pronouns: </mods:description>
+        <mods:description>Age at Recording: </mods:description>
+        <mods:description>Date of Birth: </mods:description>
+        <mods:description>Gender Identity, Sexuality: </mods:description>
+        <mods:description>Ethnic or Racial Identity: </mods:description>
+        <mods:description>Occupation: </mods:description>
+        <mods:description>Place of Origin: </mods:description>
+        <mods:description>Place of Residence: </mods:description>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:namePart />
+        <mods:namePart type="date" />
+        <mods:namePart type="termsOfAddress" />
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Interviewer</mods:roleTerm>
+        </mods:role>
+        <mods:affiliation />
+    </mods:name>
+    <mods:identifier displayLabel="Interview Number" type="local" />
+    <mods:identifier displayLabel="Digital Folder Number" type="local" />
+    <mods:originInfo>
+        <mods:dateCreated encoding="w3cdtf" />
+    </mods:originInfo>
+    <mods:note displayLabel="Keywords" />
+    <mods:note displayLabel="Place of Interview" />
+    <mods:note displayLabel="Locations" />
+    <mods:physicalDescription>
+        <mods:extent />
+    </mods:physicalDescription>
+    <mods:typeOfResource>sound recording-nonmusical</mods:typeOfResource>
+    <mods:abstract />
+    <mods:relatedItem type="host" displayLabel="Host Collection">
+        <mods:titleInfo>
+            <mods:title />
+        </mods:titleInfo>
+    </mods:relatedItem>
+    <mods:location displayLabel="Alternate file location">
+        <mods:url />
+    </mods:location>
+    <mods:accessCondition xmlns:xlink="http://www.w3.org/1999/xlink" displayLabel="License" type="use and reproduction" xlink:href="" />
+    <mods:accessCondition xmlns:xlink="http://www.w3.org/1999/xlink" displayLabel="Rights" type="use and reproduction" xlink:href="" />
+    <mods:accessCondition displayLabel="Restrictions" type="restriction on access" />
+    <mods:genre authority="lcgft">Oral histories</mods:genre>
+    <mods:note />
+    <mods:relatedItem type="host" displayLabel="Series">
+        <mods:titleInfo>
+            <mods:title />
+        </mods:titleInfo>
+    </mods:relatedItem>
+    <mods:identifier displayLabel="Collection Number" type="local" />
+    <mods:relatedItem type="host" displayLabel="Digital Collection">
+        <mods:titleInfo>
+            <mods:title />
+        </mods:titleInfo>
+    </mods:relatedItem>
+    <mods:language>
+        <mods:languageTerm authority="iso639-2b" type="code" />
+    </mods:language>
+    <mods:name type="corporate">
+        <mods:namePart />
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Producer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:subject>
+        <mods:topic authority="lcsh" />
+        <mods:name authority="naf" />
+        <mods:geographic authority="lcsh" />
+    </mods:subject>
+</mods:mods>
