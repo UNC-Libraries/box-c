@@ -1,0 +1,32 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:titleInfo>
+        <mods:title />
+    </mods:titleInfo>
+    <mods:name type="corporate">
+        <mods:namePart />
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Producer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:identifier displayLabel="Collection Number" type="local" />
+    <mods:identifier displayLabel="Accession Number" type="local" />
+    <mods:identifier displayLabel="Digital Folder Number" type="local" />
+    <mods:relatedItem type="host" displayLabel="Digital Collection">
+        <mods:titleInfo>
+            <mods:title />
+        </mods:titleInfo>
+    </mods:relatedItem>
+    <mods:originInfo>
+        <mods:dateCreated encoding="w3cdtf" />
+    </mods:originInfo>
+    <mods:abstract />
+    <mods:language>
+        <mods:languageTerm authority="iso639-2b" type="code" />
+    </mods:language>
+    <mods:note displayLabel="Keywords" />
+    <mods:subject>
+        <mods:topic authority="lcsh" />
+        <mods:name authority="naf" />
+        <mods:geographic authority="lcsh" />
+    </mods:subject>
+</mods:mods>
