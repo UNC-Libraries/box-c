@@ -578,6 +578,28 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
                 .until(() -> numFileObjs * 2 == storageUriStmts.size());
     }
 
+    @Test
+    public void depositWithWorkContainingUnicodeFilename() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        PID objPid = makePid();
+        Path filePath = candidatePath.resolve("alienfile\uD83D\uDC7D.txt");
+        Resource fileResc = addFileObject(objPid, workBag, filePath, FILE_CONTENT1, true);
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+        assertFitsFileTransferred(postFileResc);
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
     private void assertManifestTranferred(List<URI> manifestUris, String name) {
         URI manifestUri = manifestUris.stream()
                 .filter(m -> StringUtils.substringAfterLast(m.toString(), "/")
@@ -618,15 +640,19 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private Resource addFileObject(Bag parent, String content, boolean withFits) throws Exception {
         PID objPid = makePid();
+        return addFileObject(objPid, parent, candidatePath.resolve(objPid.getId() + ".txt"), content, withFits);
+    }
+
+    private Resource addFileObject(PID objPid, Bag parent, Path path, String content, boolean withFits)
+            throws Exception {
         Resource objResc = depositModel.getResource(objPid.getRepositoryPath());
         objResc.addProperty(RDF.type, Cdr.FileObject);
 
         PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
         Resource originalResc = depositModel.getResource(originalPid.getRepositoryPath());
         objResc.addProperty(CdrDeposit.hasDatastreamOriginal, originalResc);
-        File originalFile = candidatePath.resolve(objPid.getId() + ".txt").toFile();
-        FileUtils.writeStringToFile(originalFile, content, "UTF-8");
-        originalResc.addProperty(CdrDeposit.stagingLocation, originalFile.toPath().toUri().toString());
+        Files.write(path, content.getBytes());
+        originalResc.addProperty(CdrDeposit.stagingLocation, path.toUri().toString());
 
         if (withFits) {
             Files.createFile(job.getTechMdPath(objPid, true));
