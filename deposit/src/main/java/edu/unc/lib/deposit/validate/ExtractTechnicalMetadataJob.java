@@ -43,6 +43,7 @@ import java.util.Objects;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -327,19 +328,22 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             stagedPath = Paths.get(stagedUri);
         }
 
-        boolean pathInBounds = charactersInBoundsForFITS(stagedPath);
+        Path sanitizedPath = null;
         // FITS cannot currently handle file paths that contain unicode characters, so need to upload
-        if (processFilesLocally && pathInBounds) {
+        if (processFilesLocally) {
             // Files are available locally to FITS, so just pass along path
             URI fitsUri = null;
             try {
+                sanitizedPath = sanitizePath(stagedPath);
                 URIBuilder builder = new URIBuilder(fitsExamineUri);
-                builder.addParameter("file", stagedUri.getPath());
+                builder.addParameter("file", (sanitizedPath == null ? stagedPath : sanitizedPath).toString());
                 fitsUri = builder.build();
 
                 log.debug("Requesting FITS document for {} using local file via URI {}", objPid, fitsUri);
             } catch (URISyntaxException e) {
                 failJob(e, "Failed to construct FITs report uri for {0}", objPid);
+            } catch (IOException e) {
+                failJob(e, "Failed to create symbolic link to file for extract {0} for {1}", stagedPath, objPid);
             }
 
             request = new HttpGet(fitsUri);
@@ -376,12 +380,32 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         } catch (IOException | JDOMException e) {
             failJob(e, "Failed to stream report for {0} from server to report document",
                     objPid);
+        } finally {
+            // Cleanup symbolic link if one was created
+            if (sanitizedPath != null) {
+                try {
+                    Files.deleteIfExists(sanitizedPath);
+                } catch (IOException e) {
+                    log.warn("Failed to cleanup sanitized path {}: {}", sanitizedPath, e.getMessage());
+                }
+            }
         }
         return null;
     }
 
-    private boolean charactersInBoundsForFITS(Path path) {
-        return CharMatcher.ascii().matchesAllOf(path.toString());
+    private Path sanitizePath(Path path) throws IOException {
+        if (CharMatcher.ascii().matchesAllOf(path.toString())) {
+            return null;
+        }
+        String ext = FilenameUtils.getExtension(path.getFileName().toString());
+        if (!ext.equals("")) {
+            ext = "." + ext;
+        }
+        // Get a temp path for the symbolic link to be created at, using the same extension as the original
+        Path linkPath = Files.createTempFile("extract", ext);
+        Files.delete(linkPath);
+        Files.createSymbolicLink(linkPath, path);
+        return linkPath;
     }
 
     /**

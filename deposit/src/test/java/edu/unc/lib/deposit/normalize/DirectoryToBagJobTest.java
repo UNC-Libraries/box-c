@@ -23,6 +23,9 @@ import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -243,24 +246,66 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Unicode Test File", bagFolder.getProperty(CdrDeposit.label).getString());
+        assertEquals("Bag folder label was not set", "Unicode Test File",
+                bagFolder.getProperty(CdrDeposit.label).getString());
         assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
         assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(bagFolder, testFile2.getName());
         assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+        assertEquals("Work label incorrect", filename, work.getProperty(CdrDeposit.label).getString());
 
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, testFile2.getName());
         assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertEquals("File label incorrect", filename, file.getProperty(CdrDeposit.label).getString());
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
-        System.out.println(tagPath);
-        System.out.println("\uD83D\uDC7D");
         assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"));
+    }
 
+    @Test
+    public void unicodeNestedDirectoryTest() throws Exception {
+        File unicodeDepDir = tmpDir.newFolder("unicode_test");
+        String nestedFilename = "\uD83D\uDC7D_sightings";
+        Path unicodeNested = Paths.get(unicodeDepDir.getAbsolutePath(), nestedFilename);
+        Files.createDirectory(unicodeNested);
+        Path testFile = unicodeNested.resolve("ufo.txt");
+        Files.createFile(testFile);
+
+        status.put(DepositField.sourceUri.name(), unicodeDepDir.toURI().toString());
+        status.put(DepositField.fileName.name(), "Unicode Nested Test File");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+
+        assertEquals(1, depositBag.size());
+
+        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+        assertEquals("Bag folder label was not set", "Unicode Nested Test File",
+                bagFolder.getProperty(CdrDeposit.label).getString());
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
+        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
+
+        Bag nestedFolder = model.getBag((Resource) bagFolder.iterator().next());
+        assertEquals("Bag folder label was not set", nestedFilename,
+                nestedFolder.getProperty(CdrDeposit.label).getString());
+
+        // Verify that file and its properties were added to work
+        Resource work = getChildByLabel(nestedFolder, testFile.getFileName().toString());
+        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+
+        Bag workBag = model.getBag(work.getURI());
+        Resource file = getChildByLabel(workBag, testFile.getFileName().toString());
+        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+
+        Resource originalResc = DepositModelHelpers.getDatastream(file);
+        String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
+        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"));
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {
