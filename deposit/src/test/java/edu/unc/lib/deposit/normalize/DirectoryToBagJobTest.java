@@ -305,7 +305,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
-        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"));
+        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/%F0%9F%91%BD_sightings/ufo.txt"));
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

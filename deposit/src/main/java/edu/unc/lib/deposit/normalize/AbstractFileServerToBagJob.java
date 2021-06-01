@@ -185,7 +185,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         Bag currentNode = sourceBag;
 
-        for (int i = 1; i < pathSegments.length - 1; i++) {
+        for (int i = 1; i < pathSegments.length; i++) {
 
             String segment = pathSegments[i];
             String folderPath = StringUtils.join(Arrays.copyOfRange(pathSegments, 0, i + 1), "/");
