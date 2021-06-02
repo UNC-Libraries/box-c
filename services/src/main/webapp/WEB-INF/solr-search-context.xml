@@ -61,7 +61,6 @@
 
     <bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
         <property name="searchSettings" ref="searchSettings" />
-        <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
     
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil">
