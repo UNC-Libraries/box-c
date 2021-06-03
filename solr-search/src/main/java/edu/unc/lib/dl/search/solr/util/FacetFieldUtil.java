@@ -15,7 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +30,11 @@ import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -43,67 +47,85 @@ public class FacetFieldUtil {
 
     /**
      * Apply facet restrictions to a solr query based on the type of facet provided
-     *
-     * @param facetObject
+     * @param facetObject Facet to add to the query
      * @param solrQuery
      */
-    public void addToSolrQuery(Object facetObject, SolrQuery solrQuery) {
-        if (facetObject instanceof CutoffFacet) {
-            this.addCutoffFacetValue((CutoffFacet) facetObject, solrQuery);
-        } else if (facetObject instanceof MultivaluedHierarchicalFacet) {
-            this.addMultivaluedFacetValue((MultivaluedHierarchicalFacet) facetObject, solrQuery);
-        } else if (facetObject instanceof CaseInsensitiveFacet) {
-            this.addCaseInsensitiveFacetValue((CaseInsensitiveFacet) facetObject, solrQuery);
-        } else if (facetObject instanceof GenericFacet) {
-            this.addGenericFacetValue((GenericFacet) facetObject, solrQuery);
+    public void addToSolrQuery(SearchFacet facetObject, SolrQuery solrQuery) {
+        addToSolrQuery(Arrays.asList(facetObject), solrQuery);
+    }
+
+    /**
+     * Apply facet restrictions to a solr query based on the type of facet provided
+     *
+     * @param facetObject list of facets to add to query
+     * @param solrQuery
+     */
+    public void addToSolrQuery(List<SearchFacet> facetObject, SolrQuery solrQuery) {
+        if (facetIsOfType(facetObject, CutoffFacet.class)) {
+            addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
+        } else if (facetIsOfType(facetObject, MultivaluedHierarchicalFacet.class)) {
+            addFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
+        } else if (facetIsOfType(facetObject, CaseInsensitiveFacet.class)) {
+            addFacetValue(facetObject, solrQuery, caseInsensitiveFacetToFq);
+        } else if (facetIsOfType(facetObject, GenericFacet.class)) {
+            addFacetValue(facetObject, solrQuery, genericFacetToFq);
         }
     }
 
-    private void addCutoffFacetValue(CutoffFacet facet, SolrQuery solrQuery) {
+    private boolean facetIsOfType(List<SearchFacet> facets, Class<?> expected) {
+        if (facets.isEmpty()) {
+            return false;
+        }
+        return expected.isInstance(facets.get(0));
+    }
+
+    private void addFacetValue(List<SearchFacet> facets, SolrQuery solrQuery,
+            Function<SearchFacet, String> toFqFunct) {
+        String fq = facets.stream().map(toFqFunct).collect(Collectors.joining(" OR "));
+        solrQuery.addFilterQuery(fq);
+    }
+
+    private Function<SearchFacet, String> cutoffFacetToFq = (inFacet) -> {
+        CutoffFacet facet = (CutoffFacet) inFacet;
         List<HierarchicalFacetNode> facetNodes = facet.getFacetNodes();
         CutoffFacetNode endNode = (CutoffFacetNode) facetNodes.get(facetNodes.size() - 1);
         String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
 
-        StringBuilder filterQuery = new StringBuilder();
+        StringBuilder filterQuery = new StringBuilder("(");
         filterQuery.append(solrFieldName).append(":").append(endNode.getTier()).append(",");
         if (!endNode.getSearchKey().equals("*")) {
             filterQuery.append(SolrSettings.sanitize(endNode.getSearchKey()));
         } else {
             filterQuery.append('*');
         }
-        solrQuery.addFilterQuery(filterQuery.toString());
 
         if (facet.getCutoff() != null) {
-            filterQuery = new StringBuilder();
-            filterQuery.append('!').append(solrFieldName).append(':').append(facet.getCutoff()).append(',').append('*');
-            solrQuery.addFilterQuery(filterQuery.toString());
+            filterQuery.append(" AND !").append(solrFieldName).append(':').append(facet.getCutoff())
+                .append(',').append('*');
         }
+        return filterQuery.append(')').toString();
+    };
 
-        if (facet.getFacetCutoff() != null) {
-            solrQuery.setFacetPrefix(solrFieldName, facet.getFacetCutoff() + ",");
-        }
-    }
-
-    private void addMultivaluedFacetValue(MultivaluedHierarchicalFacet facet, SolrQuery solrQuery) {
+    private Function<SearchFacet, String> multivaluedFacetToFq = (inFacet) -> {
+        MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) inFacet;
         StringBuilder filterQuery = new StringBuilder();
         String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
 
         filterQuery.append(solrFieldName).append(":").append(
                 SolrSettings.sanitize(facet.getSearchValue())).append(",*");
-        solrQuery.addFilterQuery(filterQuery.toString());
+        return filterQuery.toString();
+    };
 
-        solrQuery.add("f." + solrFieldName + ".facet.prefix", facet.getPivotValue());
-    }
+    private Function<SearchFacet, String> genericFacetToFq = (facet) -> {
+        return solrSettings.getFieldName(facet.getFieldName()) + ":\""
+                + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
+    };
 
-    private void addGenericFacetValue(GenericFacet facet, SolrQuery solrQuery) {
-        solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getFieldName()) + ":\""
-                + SolrSettings.sanitize(facet.getSearchValue()) + "\"");
-    }
-
-    private void addCaseInsensitiveFacetValue(CaseInsensitiveFacet facet, SolrQuery solrQuery) {
-        solrQuery.addFilterQuery(solrSettings.getFieldName(facet.getSearchName()) + ":\""
-                + SolrSettings.sanitize(facet.getSearchValue()) + "\"");
-    }
+    private Function<SearchFacet, String> caseInsensitiveFacetToFq = (inFacet) -> {
+        CaseInsensitiveFacet facet = (CaseInsensitiveFacet) inFacet;
+        return solrSettings.getFieldName(facet.getSearchName()) + ":\""
+                + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
+    };
 
     /**
      * Default pivoting values used for restricting facet list results.

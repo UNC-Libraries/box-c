@@ -92,7 +92,7 @@ public class SearchResultResponse {
     }
 
     public void extractCrumbDisplayValueFromRepresentative(BriefObjectMetadata representative) {
-        Object contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
+        List<SearchFacet> contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
         if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
             LOG.debug("Replacing content type search value "
                     + searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
@@ -124,7 +124,7 @@ public class SearchResultResponse {
 
             if (repFacet != null) {
                 ((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
-                searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), contentTypeValue);
+                searchState.setFacet(SearchFieldKeys.CONTENT_TYPE, contentTypeValue);
             }
         }
     }

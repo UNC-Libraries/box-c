@@ -102,7 +102,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
         CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
-        searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
+        searchRequest.getSearchState().addFacet(cutoff);
         searchRequest.setApplyCutoffs(true);
 
         SearchState searchState = searchRequest.getSearchState();
@@ -114,10 +114,10 @@ public class SearchActionController extends AbstractSolrSearchController {
     }
 
     private Map<String, Object> searchJsonRequest(HttpServletRequest request, String getFacets, String pid) {
-        String rootPid = (pid != null) ? pid : RepositoryPaths.getContentRootPid().getURI();
-
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(rootPid);
+        if (pid != null) {
+            searchRequest.setRootPid(pid);
+        }
         searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
@@ -127,8 +127,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         facetRequest.setApplyCutoffs(false);
         if (resultResponse.getSelectedContainer() != null) {
             SearchState facetState = (SearchState) searchState.clone();
-            facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
-                    resultResponse.getSelectedContainer().getPath());
+            facetState.addFacet(resultResponse.getSelectedContainer().getPath());
             facetRequest.setSearchState(facetState);
         }
 

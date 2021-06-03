@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Object representing the state of a search query, containing all of the search related parameters for specifying
@@ -42,7 +43,7 @@ public class SearchState implements Serializable, Cloneable {
 
     private Map<String, String> searchFields;
     private Map<String, RangePair> rangeFields;
-    private Map<String, Object> facets;
+    private Map<String, List<SearchFacet>> facets;
     private Map<String, Integer> facetLimits;
     private Map<String, String> facetSorts;
     private Collection<String> facetsToRetrieve;
@@ -65,7 +66,7 @@ public class SearchState implements Serializable, Cloneable {
         searchFields = new HashMap<String, String>();
         rangeFields = new HashMap<String, RangePair>();
         permissionLimits = null;
-        facets = new HashMap<String, Object>();
+        facets = new HashMap<String, List<SearchFacet>>();
         facetLimits = new HashMap<String, Integer>();
         facetSorts = new HashMap<String, String>();
         resultFields = null;
@@ -87,13 +88,9 @@ public class SearchState implements Serializable, Cloneable {
             }
         }
         if (searchState.getFacets() != null) {
-            facets = new HashMap<String, Object>();
-            for (Entry<String, Object> item : searchState.getFacets().entrySet()) {
-                if (item.getValue() instanceof edu.unc.lib.dl.search.solr.model.GenericFacet) {
-                    facets.put(item.getKey(), ((GenericFacet)item.getValue()).clone());
-                } else {
-                    facets.put(item.getKey(), item.getValue());
-                }
+            facets = new HashMap<String, List<SearchFacet>>();
+            for (Entry<String, List<SearchFacet>> item : searchState.getFacets().entrySet()) {
+                facets.put(item.getKey(), item.getValue());
             }
         }
         if (searchState.getFacetLimits() != null) {
@@ -135,11 +132,62 @@ public class SearchState implements Serializable, Cloneable {
         this.searchFields = searchFields;
     }
 
-    public Map<String, Object> getFacets() {
+    /**
+     * Retrieve the facets for this search state. The addFacet and setFacet methods should be preferred for
+     * updating facet values.
+     * @return
+     */
+    public Map<String, List<SearchFacet>> getFacets() {
         return facets;
     }
 
-    public void setFacets(Map<String, Object> facets) {
+    /**
+     * Add a facet value to this search state
+     * @param key key of the facet to add
+     * @param value String value of the facet
+     */
+    public void addFacet(SearchFieldKeys key, String value) {
+        addFacet(new GenericFacet(key.name(), value));
+    }
+
+    /**
+     * Add a facet value to this search state
+     * @param value facet value
+     */
+    public void addFacet(SearchFacet value) {
+        List<SearchFacet> existing = facets.get(value.getFieldName());
+        if (existing == null) {
+            existing = new ArrayList<SearchFacet>();
+        }
+        facets.put(value.getFieldName(), existing);
+        existing.add(value);
+    }
+
+    /**
+     * Set the value of the specified facet to the provided value
+     * @param key key of the facet to add
+     * @param value value of the facet to set.
+     */
+    @SuppressWarnings("unchecked")
+    public void setFacet(SearchFieldKeys key, Object value) {
+        List<SearchFacet> vals;
+        if (value instanceof List) {
+            vals = (List<SearchFacet>) value;
+        } else {
+            vals = new ArrayList<>();
+            if (value instanceof SearchFacet) {
+                vals.add((SearchFacet) value);
+            } else if (value instanceof String) {
+                vals.add(new GenericFacet(key.name(), (String) value));
+            } else {
+                throw new IllegalArgumentException("Invalid type " + value.getClass().getName()
+                        + " provided for facet " + key.name());
+            }
+        }
+        facets.put(key.name(), vals);
+    }
+
+    public void setFacets(Map<String, List<SearchFacet>> facets) {
         this.facets = facets;
     }
 

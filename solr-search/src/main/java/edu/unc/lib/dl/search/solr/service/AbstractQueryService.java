@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +26,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
@@ -38,6 +41,8 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  *
  */
 public abstract class AbstractQueryService {
+    private static final Logger log = getLogger(AbstractQueryService.class);
+
     private final static List<String> DEFAULT_RESULT_FIELDS = Arrays.asList(
             SearchFieldKeys.ABSTRACT.name(),
             SearchFieldKeys.ADMIN_GROUP.name(),
@@ -190,6 +195,7 @@ public abstract class AbstractQueryService {
      */
     protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
         try {
+            log.debug("Executing solr query: {}", query);
             return solrClient.query(query);
         } catch (IOException e) {
             throw new SolrServerException(e);

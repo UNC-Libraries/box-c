@@ -16,10 +16,12 @@
 package edu.unc.lib.dl.search.solr.validator;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -75,7 +77,7 @@ public class SearchStateValidator {
 
         //Validate facet fields
 
-        Map<String,Object> facets = searchState.getFacets();
+        Map<String, List<SearchFacet>> facets = searchState.getFacets();
         if (facets != null) {
             Iterator<String> facetIt = facets.keySet().iterator();
             while (facetIt.hasNext()) {

@@ -19,6 +19,7 @@ import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -73,7 +74,7 @@ public class SearchStateUtil {
         }
         String ancestorPath = SearchFieldKeys.ANCESTOR_PATH.toString();
         if (searchState.getFacets() != null && searchState.getFacets().size() > 0) {
-            for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
+            for (Entry<String,List<SearchFacet>> field: searchState.getFacets().entrySet()) {
                 if (!ancestorPath.equals(field.getKey())) {
                     String fieldName = searchSettings.searchFieldParam(field.getKey());
                     if (field.getValue() instanceof SearchFacet) {

@@ -30,8 +30,6 @@ import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -46,6 +44,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
+import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse.ResultNode;
@@ -249,9 +248,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
         // Add subject filter to search state
         SearchState searchState = new SearchState();
-        Map<String, Object> facets = new HashMap<>();
-        facets.put(SUBJECT.name(), "computers");
-        searchState.setFacets(facets);
+        searchState.setFacet(SUBJECT, new GenericFacet(SUBJECT.name(), "computers"));
 
         HierarchicalBrowseRequest browseRequest = makeRequest(testCorpus.coll1Pid);
         browseRequest.setSearchState(searchState);

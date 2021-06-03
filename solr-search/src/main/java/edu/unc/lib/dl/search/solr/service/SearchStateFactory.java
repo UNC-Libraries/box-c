@@ -22,11 +22,13 @@ import static edu.unc.lib.dl.util.ResourceType.Folder;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +38,8 @@ import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -94,7 +96,7 @@ public class SearchStateFactory {
 
         CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
         depthFacet.setCutoff(2);
-        searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
+        searchState.addFacet(depthFacet);
 
         populateSearchState(searchState, request);
         return searchState;
@@ -275,7 +277,7 @@ public class SearchStateFactory {
     private void populateQueryableFields(SearchState searchState, Map<String,String[]> request) {
         Map<String,String> searchFields = searchState.getSearchFields();
         Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
-        Map<String,Object> facetFields = searchState.getFacets();
+        Map<String,List<SearchFacet>> facetFields = searchState.getFacets();
 
         Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
         while (paramIt.hasNext()) {
@@ -297,8 +299,10 @@ public class SearchStateFactory {
                 searchFields.put(key, value);
             } else if (searchSettings.facetNames.contains(key)) {
                 try {
-                    GenericFacet facet = this.facetFieldFactory.createFacet(key, value);
-                    facetFields.put(facet.getFieldName(), facet);
+                    List<SearchFacet> facetValues = Arrays.stream(value.split("\\s*\\|\\|\\s*"))
+                            .map(v -> facetFieldFactory.createFacet(key, v))
+                            .collect(Collectors.toList());
+                    facetFields.put(key, facetValues);
                 } catch (InvalidFacetException e) {
                     log.debug("Invalid facet " + key + " with value " + value, e);
                 }
@@ -311,7 +315,6 @@ public class SearchStateFactory {
             }
         }
     }
-
 
     /**
      * Populates the attributes of the given SearchState object with search state
@@ -463,20 +466,20 @@ public class SearchStateFactory {
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.ANCESTOR_PATH.name()));
         if (parameter != null && parameter.length() > 0) {
             CutoffFacet hierFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), parameter);
-            searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), hierFacet);
+            searchState.addFacet(hierFacet);
         }
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DEPARTMENT.name()));
         if (parameter != null && parameter.length() > 0) {
             CaseInsensitiveFacet facet = new CaseInsensitiveFacet(SearchFieldKeys.DEPARTMENT.name(), parameter);
-            searchState.getFacets().put(SearchFieldKeys.DEPARTMENT.name(), facet);
+            searchState.addFacet(facet);
         }
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE.name()));
         if (parameter != null && parameter.length() > 0) {
             MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(
                     SearchFieldKeys.CONTENT_TYPE.name(), parameter);
-            searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), hierFacet);
+            searchState.addFacet(hierFacet);
         }
 
         //Store date added.

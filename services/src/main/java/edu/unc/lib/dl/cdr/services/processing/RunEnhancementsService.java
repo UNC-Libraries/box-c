@@ -87,7 +87,7 @@ public class RunEnhancementsService {
 
                 if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
-                    searchState.getFacets().put(SearchFieldKeys.RESOURCE_TYPE.name(), ResourceType.File.name());
+                    searchState.addFacet(SearchFieldKeys.RESOURCE_TYPE, ResourceType.File.name());
                     searchState.setResultFields(resultsFieldList);
 
                     SearchRequest searchRequest = new SearchRequest();

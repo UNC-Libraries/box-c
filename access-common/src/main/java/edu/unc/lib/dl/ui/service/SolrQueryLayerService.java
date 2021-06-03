@@ -42,6 +42,7 @@ import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -138,9 +139,10 @@ public class SolrQueryLayerService extends SolrSearchService {
             if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
                 ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "2,*");
                 ancestorPath.setFacetCutoff(3);
-                searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
+                searchState.setFacet(SearchFieldKeys.ANCESTOR_PATH, ancestorPath);
             } else {
-                ancestorPath = (CutoffFacet) searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+                List<SearchFacet> ancestorFacets = searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
+                ancestorPath = (CutoffFacet) ancestorFacets.get(0);
                 if (ancestorPath.getFacetCutoff() == null) {
                     ancestorPath.setFacetCutoff(ancestorPath.getHighestTier() + 1);
                 }
@@ -193,7 +195,7 @@ public class SolrQueryLayerService extends SolrSearchService {
     public SearchResultResponse getFullRecordSupplementalData(CutoffFacet ancestorPath, AccessGroupSet accessGroups,
             List<String> facetsToRetrieve) {
         SearchState searchState = searchStateFactory.createSearchState();
-        searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
+        searchState.addFacet(ancestorPath);
         searchState.setRowsPerPage(0);
         searchState.setFacetsToRetrieve(facetsToRetrieve);
         return getFacetList(new SearchRequest(searchState, accessGroups, true));
@@ -289,7 +291,7 @@ public class SolrQueryLayerService extends SolrSearchService {
                     || !searchState.getResultFields().contains(SearchFieldKeys.CONTENT_TYPE.name())) {
                 SearchState contentTypeSearchState = new SearchState();
                 contentTypeSearchState.setRowsPerPage(1);
-                contentTypeSearchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(),
+                contentTypeSearchState.setFacet(SearchFieldKeys.CONTENT_TYPE,
                         searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
                 contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKeys.CONTENT_TYPE.name()));
 
