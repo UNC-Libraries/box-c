@@ -46,6 +46,27 @@ public class FacetFieldUtil {
     private FacetFieldFactory facetFieldFactory;
 
     /**
+     * Add facet prefixes for facets present in the provided searchState
+     * @param searchState
+     * @param solrQuery
+     */
+    public void addFacetPrefixes(SearchState searchState, SolrQuery solrQuery) {
+        searchState.getFacets().forEach((fieldName, facets) -> {
+            if (facetIsOfType(facets, CutoffFacet.class)) {
+                CutoffFacet facet = (CutoffFacet) facets.get(0);
+                String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
+                if (facet.getFacetCutoff() != null) {
+                    solrQuery.setFacetPrefix(solrFieldName, facet.getFacetCutoff() + ",");
+                }
+            } else if (facetIsOfType(facets, MultivaluedHierarchicalFacet.class)) {
+                MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) facets.get(0);
+                String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
+                solrQuery.setFacetPrefix(solrFieldName, facet.getPivotValue());
+            }
+        });
+    }
+
+    /**
      * Apply facet restrictions to a solr query based on the type of facet provided
      * @param facetObject Facet to add to the query
      * @param solrQuery
@@ -72,7 +93,12 @@ public class FacetFieldUtil {
         }
     }
 
-    private boolean facetIsOfType(List<SearchFacet> facets, Class<?> expected) {
+    /**
+     * @param facets
+     * @param expected
+     * @return return true if the facets in the provided list are of the expected type
+     */
+    public static boolean facetIsOfType(List<SearchFacet> facets, Class<?> expected) {
         if (facets.isEmpty()) {
             return false;
         }

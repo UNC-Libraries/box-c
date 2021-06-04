@@ -84,14 +84,14 @@ public class CaseInsensitiveFacet extends GenericFacet {
     }
 
     public static void deduplicateCaseInsensitiveValues(FacetFieldObject facetFieldObject) {
-        Map<String, GenericFacet> rollupMap = new LinkedHashMap<>(facetFieldObject.getValues().size());
-        for (GenericFacet genericFacet: facetFieldObject.getValues()) {
+        Map<String, SearchFacet> rollupMap = new LinkedHashMap<>(facetFieldObject.getValues().size());
+        for (SearchFacet genericFacet: facetFieldObject.getValues()) {
             CaseInsensitiveFacet deptFacet = (CaseInsensitiveFacet) genericFacet;
-            GenericFacet existingFacet = rollupMap.get(deptFacet.getSearchValue());
+            SearchFacet existingFacet = rollupMap.get(deptFacet.getSearchValue());
             if (existingFacet == null) {
                 rollupMap.put(deptFacet.getSearchValue(), deptFacet);
             } else {
-                existingFacet.setCount(existingFacet.getCount() + deptFacet.getCount());
+                ((GenericFacet) existingFacet).setCount(existingFacet.getCount() + deptFacet.getCount());
             }
         }
         if (rollupMap.size() < facetFieldObject.getValues().size()) {

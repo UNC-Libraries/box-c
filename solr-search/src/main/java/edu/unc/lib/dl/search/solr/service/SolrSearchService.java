@@ -200,6 +200,10 @@ public class SolrSearchService extends AbstractQueryService {
 
         SolrQuery solrQuery = this.generateSearch(searchRequest);
 
+        if (searchRequest.isRetrieveFacets()) {
+            facetFieldUtil.addFacetPrefixes(searchRequest.getSearchState(), solrQuery);
+        }
+
         LOG.debug("getSearchResults query: " + solrQuery);
         try {
             SearchResultResponse resultResponse = executeSearch(solrQuery, searchRequest.getSearchState(),

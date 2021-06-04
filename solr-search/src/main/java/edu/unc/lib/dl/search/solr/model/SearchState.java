@@ -165,6 +165,14 @@ public class SearchState implements Serializable, Cloneable {
 
     /**
      * Set the value of the specified facet to the provided value
+     * @param value value of the facet to set.
+     */
+    public void setFacet(SearchFacet value) {
+        setFacet(SearchFieldKeys.valueOf(value.getFieldName()), value);
+    }
+
+    /**
+     * Set the value of the specified facet to the provided value
      * @param key key of the facet to add
      * @param value value of the facet to set.
      */

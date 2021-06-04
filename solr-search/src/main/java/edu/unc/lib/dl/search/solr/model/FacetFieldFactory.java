@@ -32,7 +32,7 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -86,7 +86,7 @@ public class FacetFieldFactory {
     }
 
     public FacetFieldObject createFacetFieldObject(String fieldKey, FacetField facetField) {
-        List<GenericFacet> values = new ArrayList<GenericFacet>();
+        List<SearchFacet> values = new ArrayList<SearchFacet>();
 
         // Generate list of facet values from Solr facet fields if they are provided.
         if (facetField != null) {

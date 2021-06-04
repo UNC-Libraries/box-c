@@ -26,7 +26,7 @@ public class CaseInsensitiveFacetTest extends Assert {
     @Test
     public void deduplicateTest() {
 
-        List<GenericFacet> facetList = new ArrayList<GenericFacet>();
+        List<SearchFacet> facetList = new ArrayList<>();
         facetList.add(new CaseInsensitiveFacet("f", "aaa"));
         CaseInsensitiveFacet facet = new CaseInsensitiveFacet("f", "baa");
         facet.setCount(2);
