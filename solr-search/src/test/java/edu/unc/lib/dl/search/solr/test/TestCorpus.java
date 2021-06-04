@@ -184,8 +184,7 @@ public class TestCorpus {
         newDoc.addField("title", title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", pid.getId());
-        newDoc.addField("ancestorIds", makeAncestorIds(pid, ancestors));
-        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        addPathProperties(newDoc, pid, ancestors);
         newDoc.addField("resourceType", type.name());
         return newDoc;
     }
@@ -195,10 +194,20 @@ public class TestCorpus {
         newDoc.addField("title", title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", ancestors[ancestors.length - 1].getId());
-        newDoc.addField("ancestorIds", makeAncestorIds(null, ancestors));
-        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        addPathProperties(newDoc, null, ancestors);
         newDoc.addField("resourceType", ResourceType.File.name());
         return newDoc;
+    }
+
+    public void addPathProperties(SolrInputDocument newDoc, PID selfPid, PID... ancestors) {
+        newDoc.addField("ancestorIds", makeAncestorIds(selfPid, ancestors));
+        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        if (ancestors.length > 1) {
+            newDoc.addField("parentUnit", ancestors[1].getId());
+        }
+        if (ancestors.length > 2) {
+            newDoc.addField("parentCollection", ancestors[2].getId());
+        }
     }
 
     public void addFileProperties(SolrInputDocument doc, ContentCategory typeCategory, String typeExt) {

@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
@@ -32,7 +32,6 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Service for retrieving facet listings for searches supporting selection of multiple values for the same facet.
@@ -47,24 +46,11 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
         BriefObjectMetadata selectedContainer = null;
-        CutoffFacet collectionsFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
-        collectionsFacet.setFacetCutoff(3);
         if (searchRequest.getRootPid() != null) {
             selectedContainer = searchService.addSelectedContainer(searchRequest.getRootPid(), searchState,
                     searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
-        } else {
-            // Set default retrieval depth for facet to just get collection objects if not otherwise specified
-            if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
-                searchState.setFacet(SearchFieldKeys.ANCESTOR_PATH, collectionsFacet);
-            } else {
-                List<SearchFacet> ancestorFacets = searchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-                // Cap the depth of facets that will be retrieved in case it is not already set
-                ancestorFacets.forEach(f -> {
-                    CutoffFacet ancestorPath = (CutoffFacet) ancestorFacets.get(0);
-                    if (ancestorPath.getFacetCutoff() == null) {
-                        ancestorPath.setFacetCutoff(3);
-                    }
-                });
+            if (selectedContainer == null) {
+                throw new NotFoundException("Invalid container selected");
             }
         }
 
@@ -86,12 +72,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         for (Entry<String, List<SearchFacet>> facetEntry: searchRequest.getSearchState().getFacets().entrySet()) {
             String facetName = facetEntry.getKey();
             SearchState selectedState = (SearchState) searchState.clone();
-            // Reset collections facet to unfiltered but only returning facets at the collection level
-            if (facetName.equals(SearchFieldKeys.ANCESTOR_PATH.name())) {
-                selectedState.setFacet(collectionsFacet);
-            } else {
-                selectedState.getFacets().remove(facetName);
-            }
+            selectedState.getFacets().remove(facetName);
 
             selectedState.setFacetsToRetrieve(Arrays.asList(facetName));
             SearchRequest selectedRequest = new SearchRequest(selectedState, searchRequest.getAccessGroups(), true);
