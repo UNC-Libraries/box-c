@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,8 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService;
+import edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -47,6 +50,11 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
+
+    @Autowired
+    private MultiSelectFacetListService multiSelectFacetListService;
+    @Autowired
+    private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
 
     @RequestMapping("/search")
     public String search() {
@@ -133,7 +141,8 @@ public class SearchActionController extends AbstractSolrSearchController {
 
         // Retrieve the facet result set
         if (Boolean.valueOf(getFacets)) {
-            SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+            SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
+            parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
             resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
         }
 

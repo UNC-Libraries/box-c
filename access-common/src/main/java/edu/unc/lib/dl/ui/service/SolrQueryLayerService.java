@@ -171,7 +171,8 @@ public class SolrQueryLayerService extends SolrSearchService {
                     SearchFieldKeys.PARENT_COLLECTION.name());
 
             if (parentCollectionFacet != null) {
-                for (GenericFacet pidFacet : parentCollectionFacet.getValues()) {
+                for (SearchFacet searchFacet : parentCollectionFacet.getValues()) {
+                    GenericFacet pidFacet = (GenericFacet) searchFacet;
                     String parentName = pathFactory.getName(pidFacet.getSearchValue());
 
                     if (parentName != null) {

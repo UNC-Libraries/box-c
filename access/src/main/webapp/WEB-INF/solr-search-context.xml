@@ -134,6 +134,16 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
     
+    <bean id="multiSelectFacetListService" class="edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="searchService" ref="queryLayer" />
+    </bean>
+    
+    <bean id="parentCollectionFacetTitleService" class="edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService">
+        <property name="pathFactory" ref="pathFactory" />
+    </bean>
+    
     <bean id="unrestrictedSolrAccessRestrictionUtil" class="edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil">
         <property name="searchSettings" ref="searchSettings" />
         <property name="disablePermissionFiltering" value="true" />

@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.PARENT_COLLECTION;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLE_GROUP;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -435,9 +436,31 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         service.getFacetListResult(request);
     }
 
+    @Test
+    public void filterByFacetNotBeingRetrievedTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Arrays.asList(
+                CONTENT_TYPE.name(), ROLE_GROUP.name()));
+        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        request.setApplyCutoffs(false);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertFalse(resp.getFacetFields().hasFacet(PARENT_COLLECTION.name()));
+
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+
+        assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 6);
+    }
+
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {
-        System.out.print("----");
-        return ffo.getValues().stream().peek(f -> System.out.println(f.getSearchValue() + " " + f.getCount())).filter(f -> f.getSearchValue().equals(value)).findFirst().orElse(null);
+        return ffo.getValues().stream().filter(f -> f.getSearchValue().equals(value)).findFirst().orElse(null);
     }
 
     private void assertFacetValueCount(SearchResultResponse resp, SearchFieldKeys key, String value, int expectedCount) {

@@ -69,6 +69,14 @@ public class FacetFieldList extends ArrayList<FacetFieldObject> {
         return j;
     }
 
+    /**
+     * @param facetName name of facet to check
+     * @return true if a facet with the given name is present in this list
+     */
+    public boolean hasFacet(String facetName) {
+        return indexOf(this, facetName, 0) != -1;
+    }
+
     @Override
     public boolean contains(Object facetObject) {
         if (facetObject instanceof String) {

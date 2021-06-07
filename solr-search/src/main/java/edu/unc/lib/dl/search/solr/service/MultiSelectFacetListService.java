@@ -79,6 +79,9 @@ public class MultiSelectFacetListService extends AbstractQueryService {
             SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
 
             int index = FacetFieldList.indexOf(resultFacets, facetName);
+            if (index == -1) {
+                continue;
+            }
             // For MultivaluedHierarchicalFacet need to pull in the facets for child tiers
             if (FacetFieldUtil.facetIsOfType(facetEntry.getValue(), MultivaluedHierarchicalFacet.class)) {
                 List<SearchFacet> merged = new ArrayList<>(selectedResponse.getFacetFields().get(0).getValues());
