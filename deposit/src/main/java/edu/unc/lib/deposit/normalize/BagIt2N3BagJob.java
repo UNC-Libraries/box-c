@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
 import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.MD5;
 import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.SHA1;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -110,7 +109,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             // Turn the bag itself into the top level folder for this deposit
             org.apache.jena.rdf.model.Bag sourceBag;
             if (createParentFolder) {
-                sourceBag = getSourceBag(depositBag, new File(sourceUri));
+                sourceBag = getSourceBag(depositBag, sourceFile);
             } else {
                 sourceBag = depositBag;
             }
@@ -138,7 +137,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
                     String filePath = relativePath.toString();
                     log.debug("Adding object {}: {}", i++, filePath);
 
-                    Resource originalResource = getFileResource(sourceBag, filePath);
+                    Resource originalResource = getFileResource(sourceBag, relativePath);
 
                     // add checksums
                     model.add(originalResource, checksumProperty, pathToChecksum.getValue());

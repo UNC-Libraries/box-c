@@ -15,15 +15,14 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -43,6 +42,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  */
 public class DirectoryToBagJob extends AbstractFileServerToBagJob {
     private static final Logger log = LoggerFactory.getLogger(DirectoryToBagJob.class);
+    private static final int MAX_DEPTH = 128;
 
     public DirectoryToBagJob() {
         super();
@@ -63,42 +63,39 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         Map<String, String> status = getDepositStatus();
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
         Path sourcePath = Paths.get(sourceUri);
-        File sourceFile = sourcePath.toFile();
-
-        // List all files and directories in the deposit
-        Collection<File> fileListings =
-                FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
 
         interruptJobIfStopped();
 
         // Turn the base directory itself into the top level folder for this deposit
-        Bag sourceBag = getSourceBag(depositBag, sourceFile);
+        Bag sourceBag = getSourceBag(depositBag, sourcePath);
 
-        int i = 0;
         // Add all of the payload objects into the bag folder
-        for (File file : fileListings) {
-            // skip adding the base directory to the deposit
-            if (file.equals(sourceFile)) {
-                continue;
-            }
+        try (Stream<Path> stream = Files.walk(sourcePath, MAX_DEPTH)) {
+            stream.forEach(file -> {
+                // skip adding the base directory to the deposit
+                if (file.equals(sourcePath)) {
+                    return;
+                }
 
-            log.debug("Adding object {}: {}", i++, file.getName());
+                log.debug("Adding object: {}", file.getFileName());
 
-            Path filePath = sourcePath.getParent().relativize(file.toPath());
-            String filePathString = filePath.toString();
-            String filename = filePath.getFileName().toString();
+                Path filePath = sourcePath.getParent().relativize(file);
+                String filename = filePath.getFileName().toString();
 
-            if (!file.isDirectory()) {
-                Resource originalResource = getFileResource(sourceBag, filePathString);
+                if (Files.isRegularFile(file)) {
+                    Resource originalResource = getFileResource(sourceBag, filePath);
 
-                // Find staged path for the file
-                Path storedPath = Paths.get(file.getAbsolutePath());
-                model.add(originalResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
-            } else {
-                Bag folderBag = getFolderBag(sourceBag, filePathString);
-                model.add(folderBag, CdrDeposit.label, filename);
-                model.add(folderBag, RDF.type, Cdr.Folder);
-            }
+                    // Find staged path for the file
+                    Path storedPath = file.toAbsolutePath();
+                    model.add(originalResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
+                } else {
+                    Bag folderBag = getFolderBag(sourceBag, filePath);
+                    model.add(folderBag, CdrDeposit.label, filename);
+                    model.add(folderBag, RDF.type, Cdr.Folder);
+                }
+            });
+        } catch (IOException e) {
+            failJob(e, "Failed to read deposit directory {0}", sourcePath);
         }
         commit(() -> depModel.add(model));
     }

@@ -43,6 +43,7 @@ import java.util.Objects;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -51,7 +52,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -64,6 +65,8 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
+
+import com.google.common.base.CharMatcher;
 
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -311,42 +314,57 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * XML document
      *
      * @param objPid
-     * @param stagedPath
+     * @param stagedUriString
      * @return
      */
-    private Document getFitsDocument(PID objPid, String stagedPath) {
+    private Document getFitsDocument(PID objPid, String stagedUriString) {
         HttpUriRequest request;
-        URI stagedUri = URI.create(stagedPath);
+        URI stagedUri = URI.create(stagedUriString);
+        Path stagedPath;
         if (!stagedUri.isAbsolute()) {
-            stagedUri = Paths.get(getDepositDirectory().toString(), stagedPath).toUri();
+            stagedPath = Paths.get(getDepositDirectory().toString(), stagedUriString);
+            stagedUri = stagedPath.toUri();
+        } else {
+            stagedPath = Paths.get(stagedUri);
         }
 
+        Path sanitizedPath = null;
+        // FITS cannot currently handle file paths that contain unicode characters, so need to upload
         if (processFilesLocally) {
             // Files are available locally to FITS, so just pass along path
             URI fitsUri = null;
             try {
+                sanitizedPath = sanitizePath(stagedPath);
                 URIBuilder builder = new URIBuilder(fitsExamineUri);
-                builder.addParameter("file", stagedUri.getPath());
+                builder.addParameter("file", (sanitizedPath == null ? stagedPath : sanitizedPath).toString());
                 fitsUri = builder.build();
 
                 log.debug("Requesting FITS document for {} using local file via URI {}", objPid, fitsUri);
             } catch (URISyntaxException e) {
                 failJob(e, "Failed to construct FITs report uri for {0}", objPid);
+            } catch (IOException e) {
+                failJob(e, "Failed to create symbolic link to file for extract {0} for {1}", stagedPath, objPid);
             }
 
             request = new HttpGet(fitsUri);
         } else {
             // Files are to be processed remotely, so upload them via a post request
-            File stagedFile = new File(stagedUri);
-            HttpEntity entity = MultipartEntityBuilder.create()
-                    .addPart("datafile", new FileBody(stagedFile))
-                    .build();
+            HttpEntity entity;
+            try {
+                entity = MultipartEntityBuilder.create()
+                        .addPart("datafile", new InputStreamBody(Files.newInputStream(stagedPath),
+                                stagedPath.getFileName().toString()))
+                        .build();
+            } catch (IOException e) {
+                failJob(e, "Unable to read file {0}", stagedPath);
+                return null;
+            }
 
             HttpPost postRequest = new HttpPost(fitsExamineUri);
             postRequest.setEntity(entity);
             request = postRequest;
 
-            log.debug("Requesting FITS document for {} using remote file from {}", objPid, stagedFile);
+            log.debug("Requesting FITS document for {} using remote file from {}", objPid, stagedPath);
         }
 
         try (CloseableHttpResponse resp = httpClient.execute(request)) {
@@ -362,8 +380,32 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         } catch (IOException | JDOMException e) {
             failJob(e, "Failed to stream report for {0} from server to report document",
                     objPid);
+        } finally {
+            // Cleanup symbolic link if one was created
+            if (sanitizedPath != null) {
+                try {
+                    Files.deleteIfExists(sanitizedPath);
+                } catch (IOException e) {
+                    log.warn("Failed to cleanup sanitized path {}: {}", sanitizedPath, e.getMessage());
+                }
+            }
         }
         return null;
+    }
+
+    private Path sanitizePath(Path path) throws IOException {
+        if (CharMatcher.ascii().matchesAllOf(path.toString())) {
+            return null;
+        }
+        String ext = FilenameUtils.getExtension(path.getFileName().toString());
+        if (!ext.equals("")) {
+            ext = "." + ext;
+        }
+        // Get a temp path for the symbolic link to be created at, using the same extension as the original
+        Path linkPath = Files.createTempFile("extract", ext);
+        Files.delete(linkPath);
+        Files.createSymbolicLink(linkPath, path);
+        return linkPath;
     }
 
     /**
