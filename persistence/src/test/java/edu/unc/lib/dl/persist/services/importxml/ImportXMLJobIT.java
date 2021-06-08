@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
 
@@ -40,7 +41,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -124,6 +124,8 @@ public class ImportXMLJobIT {
     private StorageLocationManager locationManager;
     @Autowired
     private BinaryTransferServiceImpl transferService;
+    @Autowired
+    private String baseAddress;
 
     @Before
     public void init_() throws Exception {
@@ -134,7 +136,7 @@ public class ImportXMLJobIT {
         when(mailSender.createMimeMessage()).thenReturn(mimeMsg);
         when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
 
-        TestHelper.setContentBase("http://localhost:48085/rest/");
+        TestHelper.setContentBase(baseAddress);
     }
 
     @Test
