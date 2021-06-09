@@ -34,6 +34,7 @@ import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
@@ -86,6 +87,13 @@ public enum UserRole {
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
             createAdminUnit, assignStaffRoles, runEnhancements, reindex);
+
+    public static final List<String> PATRON_ROLE_PRECEDENCE = asList(
+            UserRole.none.getPropertyString(),
+            UserRole.canViewMetadata.getPropertyString(),
+            UserRole.canViewAccessCopies.getPropertyString(),
+            UserRole.canViewOriginals.getPropertyString()
+            );
 
     private URI uri;
     private String predicate;

@@ -24,6 +24,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
@@ -41,6 +42,12 @@ public class AclModelBuilder {
         model = createDefaultModel();
         resc = model.getResource("");
         resc.addProperty(DC.title, title);
+    }
+
+    public AclModelBuilder(PID pid) {
+        model = createDefaultModel();
+        resc = model.getResource(pid.getRepositoryPath());
+        resc.addProperty(DC.title, pid.getId());
     }
 
     public AclModelBuilder addUnitOwner(String princ) {
@@ -61,6 +68,10 @@ public class AclModelBuilder {
 
     public AclModelBuilder addCanViewMetadata(String princ) {
         return addProp(CdrAcl.canViewMetadata, princ);
+    }
+
+    public AclModelBuilder addCanViewAccessCopies(String princ) {
+        return addProp(CdrAcl.canViewAccessCopies, princ);
     }
 
     public AclModelBuilder addCanViewOriginals(String princ) {

@@ -17,25 +17,21 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -45,23 +41,24 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
+import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  * @author harring
  */
 public class SetAccessStatusFilterTest {
-
-    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
     private static final String CUSTOM_GROUP = AccessPrincipalConstants.IP_PRINC_NAMESPACE + "special";
 
     @Mock
@@ -69,16 +66,23 @@ public class SetAccessStatusFilterTest {
     @Mock
     private IndexDocumentBean idb;
     @Mock
-    private InheritedAclFactory inheritedAclFactory;
+    private RepositoryObjectLoader repoObjLoader;
     @Mock
+    private ContentPathFactory contentPathFactory;
+    private InheritedAclFactory inheritedAclFactory;
     private ObjectAclFactory objAclFactory;
     @Mock
     private ContentObject contentObj;
     @Mock
+    private CollectionObject parentObj;
+    @Mock
+    private AdminUnit unitObj;
+    @Mock
     private Date date;
 
-    @Mock
     private PID pid;
+    private PID parentPid;
+    private PID unitPid;
 
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
@@ -89,12 +93,38 @@ public class SetAccessStatusFilterTest {
     public void setup() throws Exception {
         initMocks(this);
 
-        when(pid.toString()).thenReturn(PID_STRING);
+        pid = PIDs.get(UUID.randomUUID().toString());
+        parentPid = PIDs.get(UUID.randomUUID().toString());
+        unitPid = PIDs.get(UUID.randomUUID().toString());
+
+        objAclFactory = new ObjectAclFactory();
+        objAclFactory.setRepositoryObjectLoader(repoObjLoader);
+        objAclFactory.setCacheMaxSize(10);
+        objAclFactory.setCacheTimeToLive(1000);
+        objAclFactory.init();
+        inheritedAclFactory = new InheritedAclFactory();
+        inheritedAclFactory.setObjectAclFactory(objAclFactory);
+        inheritedAclFactory.setPathFactory(contentPathFactory);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getPid()).thenReturn(pid);
+        when(parentObj.getPid()).thenReturn(parentPid);
+        when(unitObj.getPid()).thenReturn(unitPid);
+        when(contentObj.getModel()).thenReturn(ModelFactory.createDefaultModel());
+        when(parentObj.getModel()).thenReturn(ModelFactory.createDefaultModel());
+        when(unitObj.getModel()).thenReturn(ModelFactory.createDefaultModel());
+
+        when(repoObjLoader.getRepositoryObject(pid)).thenReturn(contentObj);
+        when(repoObjLoader.getRepositoryObject(parentPid)).thenReturn(parentObj);
+        when(repoObjLoader.getRepositoryObject(unitPid)).thenReturn(unitObj);
+        when(contentPathFactory.getAncestorPids(unitPid)).thenReturn(
+                Arrays.asList(RepositoryPaths.getContentRootPid()));
+        when(contentPathFactory.getAncestorPids(parentPid)).thenReturn(
+                Arrays.asList(RepositoryPaths.getContentRootPid(), unitPid));
+        when(contentPathFactory.getAncestorPids(pid)).thenReturn(
+                Arrays.asList(RepositoryPaths.getContentRootPid(), unitPid, parentPid));
 
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
@@ -103,8 +133,8 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testIsMarkedForDeletion() throws Exception {
-
-        when(inheritedAclFactory.isMarkedForDeletion(any(PID.class))).thenReturn(true);
+        Model model = new AclModelBuilder(pid).markForDeletion().model;
+        when(contentObj.getModel()).thenReturn(model);
 
         filter.filter(dip);
 
@@ -115,11 +145,12 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testIsObjectEmbargoed() throws Exception {
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        when(objAclFactory.getEmbargoUntil(pid)).thenReturn(getNextYear());
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addEmbargoUntil(getNextYear()).model);
 
         filter.filter(dip);
 
@@ -128,14 +159,15 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testIsParentEmbargoed() throws Exception {
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
-
-        when(inheritedAclFactory.getEmbargoUntil(pid)).thenReturn(getNextYear());
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .addEmbargoUntil(getNextYear()).model);
 
         filter.filter(dip);
 
@@ -143,14 +175,19 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsUnit() throws Exception {
+        when(dip.getPid()).thenReturn(unitPid);
+        when(dip.getContentObject()).thenReturn(unitObj);
+
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
@@ -159,171 +196,147 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithCanViewOriginalsRolesWork() throws Exception {
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithMetadataRoleWork() throws Exception {
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewMetadata(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithDifferentRolesWork() throws Exception {
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-    }
-
-    @Test
-    public void testPatronSettingsAdminUnit() throws Exception {
-        contentObj = mock(AdminUnit.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
-
-        filter.filter(dip);
-
-        verify(idb).setStatus(listCaptor.capture());
-        assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsNoRolesCollection() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithCanViewOriginalsCollection() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithMetadataRoleCollection() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewMetadata(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronSettingsWithDifferentRolesCollection() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testHasStaffOnlyAccess() throws Exception {
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testHasPublicAccess() throws Exception {
-
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testHasInheritedPublicAccess() throws Exception {
-
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
@@ -331,60 +344,93 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
-    public void testHasInheritedPublicAccessAndObjectPublicAccess() throws Exception {
-
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewMetadata);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewMetadata, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+    public void testHasInheritedPublicAccessAndObjectMetadataAccess() throws Exception {
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewMetadata(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testHasPartialAccess() throws Exception {
-
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+    }
+
+    @Test
+    public void testHasMatchingMixedRevokedAccess() throws Exception {
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
+
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC).model);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testHasMixedRevokedAccess() throws Exception {
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.none);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+    }
+
+    @Test
+    public void testHasMixedInheritedNoneAccess() throws Exception {
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC).model);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testParentHasStaffOnlyAccess() throws Exception {
-        addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanManage("managerGroup").model);
 
         filter.filter(dip);
 
@@ -392,17 +438,16 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testPatronPermissions() throws Exception {
-        addInheritedRoleAssignment(pid, "managerGroup", UserRole.canManage);
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewMetadata, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewAccessCopies, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanManage("managerGroup").model);
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewAccessCopies(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
@@ -410,6 +455,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
@@ -423,45 +469,35 @@ public class SetAccessStatusFilterTest {
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testCollectionWithCustomGroup() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.canViewOriginals);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.canViewOriginals);
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
-
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.canViewOriginals, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.canViewOriginals, pid);
-        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewOriginals(PUBLIC_PRINC)
+                .addCanViewOriginals(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testCollectionWithOnlyCustomGroup() throws Exception {
-        contentObj = mock(CollectionObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        when(dip.getPid()).thenReturn(parentPid);
+        when(dip.getContentObject()).thenReturn(parentObj);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
-
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
@@ -469,23 +505,17 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testFolderWithCustomGroup() throws Exception {
-        contentObj = mock(FolderObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        redefineContentObject(FolderObject.class);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
-
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        RoleAssignment customGroup = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, customGroup));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
@@ -493,24 +523,21 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testFolderMinimalStaffOnlyWithInheritedCustomGroup() throws Exception {
-        contentObj = mock(FolderObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        redefineContentObject(FolderObject.class);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
-        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewAccessCopies(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC).model);
 
         filter.filter(dip);
 
@@ -518,26 +545,22 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testFolderTotallyStaffOnlyWithInheritedCustomGroup() throws Exception {
-        contentObj = mock(FolderObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        redefineContentObject(FolderObject.class);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
-        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewAccessCopies(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.none);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.none, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, custom));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC)
+                .addNoneRole(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
@@ -545,26 +568,22 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testFolderInheritAssignmentsDirectNoneExceptCustomDirectly() throws Exception {
-        contentObj = mock(FolderObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        redefineContentObject(FolderObject.class);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
-        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewAccessCopies(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
-        addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
-        addPrincipalRoles(pid, AUTHENTICATED_PRINC, UserRole.none);
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
-
-        RoleAssignment publicUser = new RoleAssignment(PUBLIC_PRINC, UserRole.none, pid);
-        RoleAssignment authenticated = new RoleAssignment(AUTHENTICATED_PRINC, UserRole.none, pid);
-        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(publicUser, authenticated, custom));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addNoneRole(PUBLIC_PRINC)
+                .addNoneRole(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
@@ -572,22 +591,20 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
     @Test
     public void testFolderInheritAssignmentsOnlyCustomDirectly() throws Exception {
-        contentObj = mock(FolderObject.class);
-        when(dip.getContentObject()).thenReturn(contentObj);
-        when(contentObj.getPid()).thenReturn(pid);
+        redefineContentObject(FolderObject.class);
 
-        addInheritedRoleAssignment(pid, PUBLIC_PRINC, UserRole.canViewMetadata);
-        addInheritedRoleAssignment(pid, AUTHENTICATED_PRINC, UserRole.canViewAccessCopies);
-        addInheritedRoleAssignment(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
+        when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
+                .addCanViewMetadata(PUBLIC_PRINC)
+                .addCanViewAccessCopies(AUTHENTICATED_PRINC)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
-        addPrincipalRoles(pid, CUSTOM_GROUP, UserRole.canViewOriginals);
-
-        RoleAssignment custom = new RoleAssignment(CUSTOM_GROUP, UserRole.canViewOriginals, pid);
-        when(objAclFactory.getPatronRoleAssignments(pid)).thenReturn(asList(custom));
+        when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
+                .addCanViewOriginals(CUSTOM_GROUP).model);
 
         filter.filter(dip);
 
@@ -595,35 +612,21 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
     }
 
-    private void addPrincipalRoles(PID pid, String principal, UserRole... roles) {
-        Map<String, Set<String>> princRoles = objAclFactory.getPrincipalRoles(pid);
-        if (princRoles == null || princRoles.isEmpty()) {
-            princRoles = new HashMap<>();
-            when(objAclFactory.getPrincipalRoles(pid)).thenReturn(princRoles);
-        }
-
-        princRoles.put(principal, Arrays.stream(roles)
-                .map(UserRole::getPropertyString)
-                .collect(Collectors.toSet()));
+    private void redefineContentObject(Class<? extends ContentObject> clazz) {
+        contentObj = mock(clazz);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getPid()).thenReturn(pid);
+        when(repoObjLoader.getRepositoryObject(pid)).thenReturn(contentObj);
     }
 
-    private void addInheritedRoleAssignment(PID pid, String principal, UserRole role) {
-        List<RoleAssignment> assignments = inheritedAclFactory.getPatronAccess(pid);
-        if (assignments == null || assignments.isEmpty()) {
-            assignments = new ArrayList<>();
-            when(inheritedAclFactory.getPatronAccess(pid)).thenReturn(assignments);
-        }
-
-        assignments.add(new RoleAssignment(principal, role));
-    }
-
-    private Date getNextYear() {
+    private Calendar getNextYear() {
         Date dt = new Date();
         Calendar c = Calendar.getInstance();
         c.setTime(dt);
         c.add(Calendar.DATE, 365);
-        return c.getTime();
+        return c;
     }
 }
