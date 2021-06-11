@@ -261,26 +261,30 @@ public class RepositoryObjectDriver {
      * @throws ObjectTypeMismatchException thrown if object is not of a type eligible to have a parent.
      */
     public RepositoryObject getParentObject(RepositoryObject obj) {
-        PID parentPid = null;
+        PID parentPid = getParentPid(obj);
 
+        return repositoryObjectLoader.getRepositoryObject(parentPid);
+    }
+
+    /**
+     * Retrieves the PID of the parent of the provided object
+     * @param obj
+     * @return
+     */
+    public PID getParentPid(RepositoryObject obj) {
         if (obj instanceof BinaryObject) {
-            parentPid = fetchContainer(obj, PcdmModels.hasFile);
+            return fetchContainer(obj, PcdmModels.hasFile);
         } else if (obj instanceof ContentObject) {
             // For resources in the membership hierarchy, use reverse membership
             Statement memberOf = obj.getResource().getProperty(PcdmModels.memberOf);
             if (memberOf != null) {
-                parentPid = PIDs.get(memberOf.getObject().toString());
+                return PIDs.get(memberOf.getObject().toString());
             }
         } else {
             throw new ObjectTypeMismatchException("Unable to get parent object for " + obj.getPid()
                     + ", resources of type " + obj.getClass().getName() + " are not eligible.");
         }
-
-        if (parentPid == null) {
-            throw new OrphanedObjectException("Cannot find a parent container for object " + obj.getPid());
-        }
-
-        return repositoryObjectLoader.getRepositoryObject(parentPid);
+        throw new OrphanedObjectException("Cannot find a parent container for object " + obj.getPid());
     }
 
     /**

@@ -180,6 +180,13 @@ public abstract class RepositoryObject {
     public abstract RepositoryObject getParent();
 
     /**
+     * @return pid of the parent of the current object
+     */
+    public PID getParentPid() {
+        return driver.getParentPid(this);
+    }
+
+    /**
      * Get the last modified date
      *
      * @return
