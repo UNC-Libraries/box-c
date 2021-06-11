@@ -22,10 +22,7 @@ import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +36,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
@@ -88,8 +86,9 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
+        ContentObject contentObj = dip.getContentObject();
         // No need to continue with patron statuses if object is an AdminUnit
-        if (dip.getContentObject() instanceof AdminUnit) {
+        if (contentObj instanceof AdminUnit) {
             return status;
         }
 
@@ -120,64 +119,57 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        boolean isCollection = dip.getContentObject() instanceof CollectionObject;
+        boolean isCollection = contentObj instanceof CollectionObject;
         if (hasPatronSettings(objPatronRoles, isCollection)) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
-        if (!isCollection && !isMarkedForDeletion && !isDirectlyStaffOnly
-                && inheritingPatronRestrictions(objPatronRoles, inheritedAssignments, isEmbargoed)) {
-            status.add(FacetConstants.INHERITED_PATRON_RESTRICTIONS);
+        if (!isCollection && !isMarkedForDeletion
+                && inheritingPatronRestrictions(contentObj, objPatronRoles, inheritedAssignments, isEmbargoed)) {
+            status.add(FacetConstants.INHERITED_PATRON_SETTINGS);
         }
 
         return status;
     }
 
-    private boolean inheritingPatronRestrictions(List<RoleAssignment> objRoles, List<RoleAssignment> inheritedRoles,
-            boolean isEmbargoed) {
-        // No roles defined any any level, so inheriting staff only
-        if (inheritedRoles.isEmpty() && objRoles.isEmpty()) {
+    private boolean inheritingPatronRestrictions(ContentObject contentObj, List<RoleAssignment> objRoles,
+            List<RoleAssignment> inheritedRoles, boolean isEmbargoed) {
+        boolean noObjAssignments = objRoles.isEmpty();
+        // No roles defined at any level, so inheriting staff only
+        if (inheritedRoles.isEmpty() && noObjAssignments) {
             return true;
         }
         UserRole maxInheritedRole = isEmbargoed ? UserRole.canViewMetadata : canViewOriginals;
-        Set<String> encounteredPrincipals = new HashSet<>();
-        // Determine if any inherited roles are more restrictive than direct object roles
-        for (RoleAssignment inherited: inheritedRoles) {
-            encounteredPrincipals.add(inherited.getPrincipal());
-            // Inherited role is maxed, so cannot be restricting
-            if (maxInheritedRole.equals(inherited.getRole())) {
-                continue;
-            }
-            Optional<RoleAssignment> objMatchOpt = objRoles.stream()
-                    .filter(o -> o.getPrincipal().equals(inherited.getPrincipal())).findFirst();
-            // No role defined for the principal at the object level, so the inherited role is restricting it
-            if (!objMatchOpt.isPresent()) {
-                return true;
-            }
-            // Check if the inherited role is lower precedence (more restrictive) than the direct role
-            UserRole objRole = objMatchOpt.get().getRole();
-            if (UserRole.PATRON_ROLE_PRECEDENCE.indexOf(inherited.getRole().getPropertyString())
-                    < UserRole.PATRON_ROLE_PRECEDENCE.indexOf(objRole.getPropertyString())) {
-                return true;
-            }
+        // If no assignments on object, then then make decision based off the object's inherited roles
+        if (noObjAssignments) {
+            return !hasDefaultRoleAssignments(maxInheritedRole, inheritedRoles);
         }
-        // Catch cases where role is not present in inherited set, but is present for object. This implies
-        // that the inherited permission is staff only, but the object is set to something less restrictive
-        for (RoleAssignment objRole: objRoles) {
-            encounteredPrincipals.add(objRole.getPrincipal());
-            // If object is set to none role, inherited can't be more restrictive
-            if (UserRole.none.equals(objRole.getRole())) {
-                continue;
-            }
-            // No inherited role for principal, which implies it is staff only and therefore restricting
-            if (inheritedRoles.stream().noneMatch(i -> i.getPrincipal().equals(objRole.getPrincipal()))) {
-                return true;
-            }
-        }
-        // Check if any protected patron principals are missing, indicating that they are restricted
-        if (!encounteredPrincipals.containsAll(AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS)) {
+        // Since inherited roles incorporate the object's roles, move up one level to the parent's inherited roles
+        PID parentPid = contentObj.getParentPid();
+        List<RoleAssignment> parentRoles = inheritedAclFactory.getPatronAccess(parentPid);
+        if (parentRoles.size() != AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS.size()) {
             return true;
         }
-        return false;
+        // Adjust default role depending on if an embargo is being applied
+        Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(parentPid);
+        boolean parentEmbargoed = isEmbargoActive(parentEmbargo);
+        UserRole maxParentRole = parentEmbargoed ? UserRole.canViewMetadata : canViewOriginals;
+
+        return !hasDefaultRoleAssignments(maxParentRole, parentRoles);
+    }
+
+    private boolean hasDefaultRoleAssignments(UserRole defaultRole, List<RoleAssignment> roles) {
+        // assignments cannot match defaults if there are more or fewer rows than the protected set
+        if (roles.size() != AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS.size()) {
+            return false;
+        }
+        // Check to see if any protected principals do not have the default role in the provided assignment list
+        for (String principal: AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS) {
+            if (roles.stream().noneMatch(ir -> ir.getPrincipal().equals(principal)
+                    && defaultRole.equals(ir.getRole()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean hasPatronSettings(List<RoleAssignment> objPatronRoles, boolean isCollection) {

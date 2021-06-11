@@ -110,7 +110,9 @@ public class SetAccessStatusFilterTest {
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getPid()).thenReturn(pid);
+        when(contentObj.getParentPid()).thenReturn(parentPid);
         when(parentObj.getPid()).thenReturn(parentPid);
+        when(parentObj.getParentPid()).thenReturn(unitPid);
         when(unitObj.getPid()).thenReturn(unitPid);
         when(contentObj.getModel()).thenReturn(ModelFactory.createDefaultModel());
         when(parentObj.getModel()).thenReturn(ModelFactory.createDefaultModel());
@@ -159,7 +161,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -175,7 +177,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -187,7 +189,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -196,7 +198,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -209,7 +211,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -222,7 +224,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -235,7 +237,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -247,7 +249,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -263,7 +265,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -279,7 +281,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -295,7 +297,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -312,7 +314,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -329,7 +331,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -344,7 +346,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -362,7 +364,7 @@ public class SetAccessStatusFilterTest {
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -376,7 +378,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -393,7 +395,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -410,7 +412,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -424,7 +426,7 @@ public class SetAccessStatusFilterTest {
         verify(idb).setStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -438,7 +440,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -455,7 +457,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -469,7 +471,7 @@ public class SetAccessStatusFilterTest {
         assertFalse(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
         assertFalse(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -486,7 +488,7 @@ public class SetAccessStatusFilterTest {
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PATRON_SETTINGS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -505,7 +507,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -523,7 +525,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -545,7 +547,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -568,7 +570,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertTrue(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -591,7 +593,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     @Test
@@ -612,7 +614,7 @@ public class SetAccessStatusFilterTest {
         List<String> status = listCaptor.getValue();
         assertTrue(status.contains(FacetConstants.PATRON_SETTINGS));
         assertFalse(status.contains(FacetConstants.STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_RESTRICTIONS));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
     private void redefineContentObject(Class<? extends ContentObject> clazz) {
