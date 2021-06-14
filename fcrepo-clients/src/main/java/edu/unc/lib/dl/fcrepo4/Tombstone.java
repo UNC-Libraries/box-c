@@ -45,4 +45,9 @@ public class Tombstone extends ContentObject {
         // tombstone is not in the hierarchy, so doesn't have a parent
         return null;
     }
+
+    @Override
+    public PID getParentPid() {
+        return null;
+    }
 }

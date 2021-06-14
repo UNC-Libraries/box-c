@@ -111,6 +111,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
         </dependency>

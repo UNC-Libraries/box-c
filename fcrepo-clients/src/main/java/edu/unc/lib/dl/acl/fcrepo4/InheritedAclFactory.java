@@ -17,7 +17,6 @@ package edu.unc.lib.dl.acl.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
-import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,13 +58,6 @@ public class InheritedAclFactory implements AclFactory {
     private ObjectAclFactory objectAclFactory;
 
     private ContentPathFactory pathFactory;
-
-    private static final List<String> PATRON_ROLE_PRECEDENCE = asList(
-            UserRole.none.getPropertyString(),
-            UserRole.canViewMetadata.getPropertyString(),
-            UserRole.canViewAccessCopies.getPropertyString(),
-            UserRole.canViewOriginals.getPropertyString()
-            );
 
     private static final int EMBARGO_ROLE_PRECEDENCE = 1;
 
@@ -220,8 +212,8 @@ public class InheritedAclFactory implements AclFactory {
             }
 
             String inherited = inheritedRoles.iterator().next();
-            int inheritedIndex = PATRON_ROLE_PRECEDENCE.indexOf(inherited);
-            int objIndex = PATRON_ROLE_PRECEDENCE.indexOf(objRole);
+            int inheritedIndex = UserRole.PATRON_ROLE_PRECEDENCE.indexOf(inherited);
+            int objIndex = UserRole.PATRON_ROLE_PRECEDENCE.indexOf(objRole);
 
             if (objIndex < inheritedIndex) {
                 inheritedPrincRoles.put(patronPrincipal, objRoles);
@@ -266,7 +258,7 @@ public class InheritedAclFactory implements AclFactory {
             UserRole role = UserRole.getRoleByProperty(roleString);
 
             if (isEmbargoed) {
-                int objIndex = PATRON_ROLE_PRECEDENCE.indexOf(roleString);
+                int objIndex = UserRole.PATRON_ROLE_PRECEDENCE.indexOf(roleString);
                 if (objIndex > EMBARGO_ROLE_PRECEDENCE) {
                     role = UserRole.canViewMetadata;
                 }
