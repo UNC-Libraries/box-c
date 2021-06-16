@@ -144,4 +144,29 @@ public class SearchStateFactoryTest {
         assertEquals("canManage|managerGroup", facetValues.get(1).getSearchValue());
         assertEquals(0, searchState.getStartRow().intValue());
     }
+
+    @Test
+    public void extractCollectionFacets() throws Exception {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream("src/test/resources/search.properties"));
+
+        SearchSettings searchSettings = new SearchSettings();
+        searchSettings.setProperties(properties);
+
+        SearchStateFactory searchStateFactory = new SearchStateFactory();
+        searchStateFactory.setSearchSettings(searchSettings);
+        Map<String, String[]> parameters = new LinkedHashMap<String, String[]>();
+        parameters.put("collection", new String[]{"52726582-2cea-455a-8220-c360dbe5082b"});
+        parameters.put("anywhere", new String[]{"query"});
+        FacetFieldFactory fff = new FacetFieldFactory();
+        fff.setSearchSettings(searchSettings);
+        searchStateFactory.setFacetFieldFactory(fff);
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+
+        assertTrue(searchState.getFacets().containsKey("PARENT_COLLECTION"));
+        List<SearchFacet> facetValues = searchState.getFacets().get("PARENT_COLLECTION");
+        assertEquals("52726582-2cea-455a-8220-c360dbe5082b", facetValues.get(0).getSearchValue());
+        assertTrue(searchState.getSearchFields().containsKey(SearchFieldKeys.DEFAULT_INDEX.name()));
+    }
 }
