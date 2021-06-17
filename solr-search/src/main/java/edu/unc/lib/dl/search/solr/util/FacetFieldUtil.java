@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -85,7 +86,7 @@ public class FacetFieldUtil {
         if (facetIsOfType(facetObject, CutoffFacet.class)) {
             addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
         } else if (facetIsOfType(facetObject, MultivaluedHierarchicalFacet.class)) {
-            addFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
+            addHierarchicalFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
         } else if (facetIsOfType(facetObject, CaseInsensitiveFacet.class)) {
             addFacetValue(facetObject, solrQuery, caseInsensitiveFacetToFq);
         } else if (facetIsOfType(facetObject, GenericFacet.class)) {
@@ -108,6 +109,21 @@ public class FacetFieldUtil {
     private void addFacetValue(List<SearchFacet> facets, SolrQuery solrQuery,
             Function<SearchFacet, String> toFqFunct) {
         String fq = facets.stream().map(toFqFunct).collect(Collectors.joining(" OR "));
+        solrQuery.addFilterQuery(fq);
+    }
+
+    private void addHierarchicalFacetValue(List<SearchFacet> facets, SolrQuery solrQuery,
+            Function<SearchFacet, String> toFqFunct) {
+        // Find all the parent facet values for selected nested values
+        Set<String> parentSearchValues = facets.stream().map(f -> (MultivaluedHierarchicalFacet) f)
+                .filter(f -> f.getFacetNodes().size() > 1)
+                .map(f -> f.getFacetNodes().get(f.getFacetNodes().size() - 2).getSearchValue())
+                .collect(Collectors.toSet());
+        String fq = facets.stream()
+                // Exclude any parent facet values if child selected, as the child value takes precedence
+                .filter(f -> !parentSearchValues.contains(f.getSearchValue()))
+                .map(toFqFunct)
+                .collect(Collectors.joining(" OR "));
         solrQuery.addFilterQuery(fq);
     }
 

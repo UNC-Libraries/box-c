@@ -109,6 +109,55 @@ public class FacetFieldUtilTest {
     }
 
     @Test
+    public void addMultivaluedHierarchicalParentAndChildrenToQuery() {
+        SolrQuery query = new SolrQuery();
+
+        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
+        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^pdf");
+        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^txt");
+
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), query);
+
+        String[] filterQueries = query.getFilterQueries();
+        assertEquals(1, filterQueries.length);
+
+        assertEquals("contentType:\\/text\\^pdf,* OR contentType:\\/text\\^txt,*", filterQueries[0]);
+    }
+
+    @Test
+    public void addMultivaluedHierarchicalMultipleParentAndChildToQuery() {
+        SolrQuery query = new SolrQuery();
+
+        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
+        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^txt");
+        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
+        MultivaluedHierarchicalFacet facet4 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
+
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3, facet4), query);
+
+        String[] filterQueries = query.getFilterQueries();
+        assertEquals(1, filterQueries.length);
+
+        assertEquals("contentType:\\/text\\^txt,* OR contentType:\\/image\\^png,*", filterQueries[0]);
+    }
+
+    @Test
+    public void addMultivaluedHierarchicalMultipleParentOneChildToQuery() {
+        SolrQuery query = new SolrQuery();
+
+        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
+        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
+        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
+
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), query);
+
+        String[] filterQueries = query.getFilterQueries();
+        assertEquals(1, filterQueries.length);
+
+        assertEquals("contentType:\\^text,* OR contentType:\\/image\\^png,*", filterQueries[0]);
+    }
+
+    @Test
     public void addCaseInsensitiveFacetToQuery() {
         SolrQuery query = new SolrQuery();
 
