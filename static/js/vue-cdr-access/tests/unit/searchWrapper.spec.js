@@ -57,7 +57,73 @@ const response = {
             "timestamp": 1572621099939
         }
     ],
+    "facetFields": [
+        {
+            "name": "CONTENT_TYPE",
+            "values": [
+                {
+                    "fieldName": "CONTENT_TYPE",
+                    "count": 1,
+                    "displayValue": "Image"
+                }
+            ]
+        }
+    ],
     "resultCount": 1
+};
+const no_results = {
+    "container": {
+        "ancestorNames": "/Content Collections Root",
+        "added": "2019-07-29T17:20:57.813Z",
+        "id": "collections",
+        "title": "Content Collections Root",
+        "type": "ContentRoot",
+        "updated": "2019-07-29T17:20:57.883Z",
+        "contentStatus": [
+            "Not Described"
+        ],
+        "rollup": "collections",
+        "timestamp": 1564420860864
+    },
+    "pageRows": 20,
+    "searchQueryUrl": "anywhere=",
+    "metadata": [],
+    "facetFields": [{
+        name: "CONTENT_TYPE",
+        values: []
+    }],
+    "resultCount": 0
+};
+const facets_no_results = {
+    "container": {
+        "ancestorNames": "/Content Collections Root",
+        "added": "2019-07-29T17:20:57.813Z",
+        "id": "collections",
+        "title": "Content Collections Root",
+        "type": "ContentRoot",
+        "updated": "2019-07-29T17:20:57.883Z",
+        "contentStatus": [
+            "Not Described"
+        ],
+        "rollup": "collections",
+        "timestamp": 1564420860864
+    },
+    "pageRows": 20,
+    "searchQueryUrl": "anywhere=",
+    "metadata": [],
+    "facetFields": [
+        {
+            "name": "CONTENT_TYPE",
+            "values": [
+                {
+                    "fieldName": "CONTENT_TYPE",
+                    "count": 1,
+                    "displayValue": "Image"
+                }
+            ]
+        }
+    ],
+    "resultCount": 0
 };
 let wrapper;
 
@@ -71,21 +137,53 @@ describe('searchWrapper.vue', () => {
         });
 
         wrapper.vm.$router.currentRoute.query.anywhere = '';
-        wrapper.vm.retrieveData();
-        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
-            status: 200,
-            response: JSON.stringify(response)
-        });
     });
 
     it("retrieves data", (done) => {
+        loadFullData();
         moxios.wait(() => {
             expect(wrapper.vm.records).toEqual(response.metadata);
             done();
         });
     });
 
+    it("displays facets for results", (done) => {
+        loadFullData();
+        moxios.wait(() => {
+            expect(wrapper.find('.facet-list').isVisible()).toBe(true);
+            expect(wrapper.vm.hasFacets).toBe(true);
+            done();
+        });
+    });
+
+    it("displays facets if facets but no results", (done) => {
+        wrapper.vm.retrieveData();
+        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+            status: 200,
+            response: JSON.stringify(facets_no_results)
+        });
+        moxios.wait(() => {
+            expect(wrapper.find('.facet-list').isVisible()).toBe(true);
+            expect(wrapper.vm.hasFacets).toBe(true);
+            done();
+        });
+    });
+
+    it("does not display facets if there are no facets and no results", (done) => {
+        wrapper.vm.retrieveData();
+        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+            status: 200,
+            response: JSON.stringify(no_results)
+        });
+        moxios.wait(() => {
+           // expect(wrapper.find('.facet-list').isVisible()).toBe(false);
+            expect(wrapper.vm.hasFacets).toBe(false);
+            done();
+        });
+    });
+
     it("displays start and end records for current page", (done) => {
+        loadFullData();
         moxios.wait(() => {
             expect(wrapper.vm.recordDisplayCounts).toEqual('1-1');
             done();
@@ -96,3 +194,11 @@ describe('searchWrapper.vue', () => {
         moxios.uninstall();
     });
 });
+
+function loadFullData() {
+    wrapper.vm.retrieveData();
+    moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+        status: 200,
+        response: JSON.stringify(response)
+    });
+}
