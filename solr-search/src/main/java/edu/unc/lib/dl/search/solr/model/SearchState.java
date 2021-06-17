@@ -46,7 +46,7 @@ public class SearchState implements Serializable, Cloneable {
     private Map<String, List<SearchFacet>> facets;
     private Map<String, Integer> facetLimits;
     private Map<String, String> facetSorts;
-    private Collection<String> facetsToRetrieve;
+    private List<String> facetsToRetrieve;
     private Collection<Permission> permissionLimits;
     private Integer baseFacetLimit;
     private Integer startRow;
@@ -398,11 +398,11 @@ public class SearchState implements Serializable, Cloneable {
         this.resultFields = resultFields;
     }
 
-    public Collection<String> getFacetsToRetrieve() {
+    public List<String> getFacetsToRetrieve() {
         return facetsToRetrieve;
     }
 
-    public void setFacetsToRetrieve(Collection<String> facetsToRetrieve) {
+    public void setFacetsToRetrieve(List<String> facetsToRetrieve) {
         this.facetsToRetrieve = facetsToRetrieve;
     }
 

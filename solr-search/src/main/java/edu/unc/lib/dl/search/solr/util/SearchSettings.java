@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -75,13 +74,13 @@ public class SearchSettings extends AbstractSettings {
     // Fields which are searched as date fields
     public Set<String> dateSearchableFields;
     // Fields which are filterable as facets
-    public Set<String> facetNames;
+    public List<String> facetNames;
     // Facets shown by default in normal search results
-    public Set<String> searchFacetNames;
+    public List<String> searchFacetNames;
     // Fields which are filterable as facets in a collection browse
-    public Set<String> collectionBrowseFacetNames;
+    public List<String> collectionBrowseFacetNames;
     // Fields which are filterable as facets in a structure browse
-    public Set<String> facetNamesStructureBrowse;
+    public List<String> facetNamesStructureBrowse;
     // Classes for facet fields. If not specified, then it is a GenericFacet
     public Map<String, Class<?>> facetClasses;
     // Delimiter which separates the components of a hierarchical facet in string form (such as tier, search value).
@@ -140,10 +139,10 @@ public class SearchSettings extends AbstractSettings {
     public void setProperties(Properties properties) {
         this.properties = properties;
 
-        facetNames = new LinkedHashSet<>();
-        searchFacetNames = new LinkedHashSet<>();
-        collectionBrowseFacetNames = new LinkedHashSet<>();
-        facetNamesStructureBrowse = new LinkedHashSet<>();
+        facetNames = new ArrayList<>();
+        searchFacetNames = new ArrayList<>();
+        collectionBrowseFacetNames = new ArrayList<>();
+        facetNamesStructureBrowse = new ArrayList<>();
         this.facetClasses = new HashMap<>();
         operators = new HashSet<>();
 
@@ -325,19 +324,19 @@ public class SearchSettings extends AbstractSettings {
         this.searchableFields = searchableFields;
     }
 
-    public Set<String> getFacetNames() {
+    public List<String> getFacetNames() {
         return facetNames;
     }
 
-    public void setFacetNames(Set<String> facetNames) {
+    public void setFacetNames(List<String> facetNames) {
         this.facetNames = facetNames;
     }
 
-    public Set<String> getFacetNamesStructureBrowse() {
+    public List<String> getFacetNamesStructureBrowse() {
         return facetNamesStructureBrowse;
     }
 
-    public void setFacetNamesStructureBrowse(Set<String> facetNamesStructureBrowse) {
+    public void setFacetNamesStructureBrowse(List<String> facetNamesStructureBrowse) {
         this.facetNamesStructureBrowse = facetNamesStructureBrowse;
     }
 
@@ -637,11 +636,11 @@ public class SearchSettings extends AbstractSettings {
         this.resourceTypeContentRoot = resourceTypeContentRoot;
     }
 
-    public Set<String> getCollectionBrowseFacetNames() {
+    public List<String> getCollectionBrowseFacetNames() {
         return collectionBrowseFacetNames;
     }
 
-    public void setCollectionBrowseFacetNames(Set<String> collectionBrowseFacetNames) {
+    public void setCollectionBrowseFacetNames(List<String> collectionBrowseFacetNames) {
         this.collectionBrowseFacetNames = collectionBrowseFacetNames;
     }
 

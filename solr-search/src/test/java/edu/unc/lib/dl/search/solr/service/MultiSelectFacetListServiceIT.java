@@ -26,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
+import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
@@ -457,6 +459,30 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
         assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 6);
         assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 6);
+    }
+
+    @Test
+    public void retainFacetOrderTest() throws Exception {
+        SearchState searchState = new SearchState();
+        List<String> facetsInOrder = Arrays.asList(PARENT_COLLECTION.name(), CONTENT_TYPE.name(), ROLE_GROUP.name());
+        searchState.setFacetsToRetrieve(facetsInOrder);
+
+        SearchRequest request1 = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp1 = service.getFacetListResult(request1);
+
+        FacetFieldList facets1 = resp1.getFacetFields();
+        List<String> names1 = facets1.stream().map(FacetFieldObject::getName).collect(Collectors.toList());
+        assertEquals(facetsInOrder, names1);
+
+        // Add filter to first facet, to ensure that it stays at the first first
+        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+
+        SearchRequest request2 = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp2 = service.getFacetListResult(request2);
+
+        FacetFieldList facets2 = resp2.getFacetFields();
+        List<String> names2 = facets2.stream().map(FacetFieldObject::getName).collect(Collectors.toList());
+        assertEquals(facetsInOrder, names2);
     }
 
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {

@@ -102,6 +102,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
             }
         }
 
+        resultFacets.sort(searchRequest.getSearchState().getFacetsToRetrieve());
         return resultResponse;
     }
 
