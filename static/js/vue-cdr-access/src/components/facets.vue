@@ -1,19 +1,14 @@
 <template>
     <div id="facetList" class="contentarea">
         <h2 class="facet-header">Filter results by...</h2>
-        <div class="selected_facets" v-if="updateFacetInfo.length > 0">
-            <ul>
-                <li class="selected-facet-entry" v-for="entry in updateFacetInfo">
-                    <div @click="updateAll(entry, true)"><i class="fas fa-times"></i> {{ displayText(entry.value) }}</div>
-                </li>
-            </ul>
-        </div>
-        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.facetsToSelect">
+        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.facetList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
                 <ul>
                     <li v-for="value in facet.values">
-                        <a @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
+                        <a v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                            {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
+                        <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
             </div>
@@ -22,7 +17,6 @@
 </template>
 
 <script>
-    import clonedeep from 'lodash.clonedeep';
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -39,8 +33,7 @@
 
         data() {
             return {
-                selected_facets: [],
-                facet_display: []
+                selected_facets: []
             }
         },
 
@@ -60,7 +53,7 @@
                 return UUID_REGEX.test(this.$route.path);
             },
 
-            updateFacetInfo() {
+            selectedFacetInfo() {
                 const display_list = [];
                 this.selected_facets.map((f) => {
                     const regex = /^.*?=/;
@@ -74,28 +67,6 @@
                     });
                 });
                 return display_list;
-            },
-
-            facetsToSelect() {
-                if (this.selected_facets.length === 0) {
-                    return this.facetList;
-                }
-                const selectable_facets = [];
-                this.facetList.forEach((f) => {
-                    const cloned_facet_object = clonedeep(f);
-                    cloned_facet_object.values = cloned_facet_object.values.filter(v => {
-                        const has_index = this.facet_display.findIndex((hv) => {
-                            return hv.facet_value.toLowerCase() === v.displayValue.toLowerCase();
-                        });
-                        return has_index === -1;
-                    });
-                    selectable_facets.push(cloned_facet_object);
-                });
-                return selectable_facets;
-            },
-
-            allFacetValues() {
-                return this.facetList.map(f => f.values).flat();
             }
         },
 
@@ -123,14 +94,8 @@
                 }
             },
 
-            /**
-             * Determine display text for selected facets
-             * @param value
-             * @returns {string|*}
-             */
-            displayText(value) {
-                const display = this.facet_display.find(fv => fv.facet === value);
-                return display.facet_value;
+            isSelected(facet) {
+                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
             },
 
             /**
@@ -179,19 +144,19 @@
              * @param facet
              */
             facetInfoRemove(facet) {
-               const type_regex = new RegExp(facet.type);
+               const facet_type = this.facetType(facet);
+               const type_regex = new RegExp(facet_type);
                const current_index = this.selected_facets.findIndex(sf => type_regex.test(sf));
                if (current_index !== -1) {
                    const facet_parts = this.selected_facets[current_index].split('=');
                    const current_values = facet_parts[1].split('||');
-                   const current_value_regex = new RegExp(facet.value, 'i');
+                   const current_value_regex = new RegExp(facet.limitToValue, 'i');
                    const updated_values = current_values.filter(f => !current_value_regex.test(f)).join('||');
                    if (updated_values === '') {
                        this.selected_facets.splice(current_index, 1);
                    } else {
                        this.selected_facets.splice(current_index, 1, `${facet_parts[0]}=${updated_values}`);
                    }
-                   this.facet_display = this.facet_display.filter(dv => !current_value_regex.test(dv.facet));
                }
             },
 
@@ -231,12 +196,7 @@
                 }
             },
 
-            /**
-             * Create base facet value for a selected facet
-             * @param value
-             * @returns {string}
-             */
-            facetValue(value) {
+            facetType(value) {
                 let facet_type;
 
                 if (value.fieldName === 'PARENT_COLLECTION') {
@@ -250,6 +210,17 @@
                 } else {
                     facet_type = '';
                 }
+
+                return facet_type;
+            },
+
+            /**
+             * Create base facet value for a selected facet
+             * @param value
+             * @returns {string}
+             */
+            facetValue(value) {
+                let facet_type = this.facetType(value);
 
                 const current_facet_value = this.selected_facets.filter((f) => {
                     const regex = new RegExp(facet_type);
@@ -275,17 +246,9 @@
              */
             _setFacetFromRoute(type, facet_value) {
                 if (facet_value !== undefined) {
-                    // Set values for url
                     const decoded_facet_value = decodeURIComponent(facet_value);
                     const updated_value = `${type}=${decoded_facet_value}`
                     this.selected_facets.push(updated_value);
-                    // Set selected facets display text
-                    decoded_facet_value.split('||').forEach((fv) => {
-                        if (this.facet_display.findIndex(af => af.facet === fv) === -1) {
-                            const facet_text = this.allFacetValues.find(dv => dv.limitToValue === fv);
-                            this.facet_display.push({facet_value: facet_text.displayValue, facet: fv});
-                        }
-                    });
                 }
             },
 
@@ -320,26 +283,10 @@
 
         .facet-display {
             margin-bottom: 25px;
+            text-transform: capitalize;
 
-            a {
+            a, i {
                 padding-left: 15px;
-            }
-        }
-
-        .selected_facets {
-            margin-bottom: 50px;
-            margin-top: -20px;
-        }
-
-        .selected-facet-entry {
-            text-indent: 0;
-
-            div {
-                text-transform: capitalize;
-            }
-
-            &:hover {
-                cursor: pointer;
             }
 
             i {
@@ -347,6 +294,11 @@
                 position: relative;
                 vertical-align: text-top;
             }
+        }
+
+        .selected_facets {
+            margin-bottom: 50px;
+            margin-top: -20px;
         }
     }
 </style>

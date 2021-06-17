@@ -91,18 +91,11 @@ describe('facets.vue', () => {
     });
 
     it("displays a listing of selected facets", async () => {
-        expect(wrapper.find('.selected_facets').exists()).toBe(false);
-
         selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets').exists()).toBe(true);
-        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
+        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_display).toEqual([{
-            facet: "image",
-            facet_value: "Image"
-        }]);
     });
 
     it("clears a selected facet if it is unchecked", async () => {
@@ -110,21 +103,15 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
+        expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_display).toEqual([{
-            facet: "image",
-            facet_value: "Image"
-        }]);
 
         // Remove facet
-        let selected = wrapper.find('.selected_facets div');
-        selected.trigger('click');
+        selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets').exists()).toBe(false);
+        expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).toEqual([]);
-        expect(wrapper.vm.facet_display).toEqual([])
     });
 
     it("updates the query parameters if a facet is selected", async () => {
@@ -145,8 +132,7 @@ describe('facets.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
 
         // Remove facet
-        let selected = wrapper.find('.selected_facets div');
-        selected.trigger('click');
+        selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
@@ -157,9 +143,6 @@ describe('facets.vue', () => {
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
-        expect(wrapper.vm.facet_display).toEqual(
-            [{ facet: 'd77fd8c9-744b-42ab-8e20-5ad9bdf8194e', facet_value: 'testCollection' }]
-        );
     });
 
     it("accepts multiple facets", async () => {
@@ -168,10 +151,6 @@ describe('facets.vue', () => {
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
-        expect(wrapper.vm.facet_display).toEqual([
-            { facet: 'd77fd8c9-744b-42ab-8e20-5ad9bdf8194e', facet_value: 'testCollection' },
-            { facet: 'image', facet_value: 'Image' }
-        ]);
     });
 
     it("accepts multiple facets and facets of the same type", async () => {
@@ -181,11 +160,6 @@ describe('facets.vue', () => {
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image||image/png']);
-        expect(wrapper.vm.facet_display).toEqual([
-            { facet: 'd77fd8c9-744b-42ab-8e20-5ad9bdf8194e', facet_value: 'testCollection' },
-            { facet: 'image', facet_value: 'Image' },
-            { facet: 'image/png', facet_value: 'png' }
-        ]);
     });
 
     it("removes the child facet if a parent facet is removed", async () => {
@@ -193,32 +167,18 @@ describe('facets.vue', () => {
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
-        expect(wrapper.vm.facet_display).toEqual([
-            { facet: 'image', facet_value: 'Image' },
-            { facet: 'image/png', facet_value: 'png' }
-        ]);
 
         // Should always be above child facet
-        let parent_facet = wrapper.find('.selected_facets div');
-        parent_facet.trigger('click');
-
+        selected_facet.trigger('click');
         expect(wrapper.vm.selected_facets).toEqual([]);
-        expect(wrapper.vm.facet_display).toEqual([]);
     });
 
     it("sets selected facets, including parent facets, if the page is reloaded", async () => {
         wrapper.vm.$router.push('/search/?format=image%257C%257Cimage%252Fpng');
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
-
-        expect(wrapper.vm.facet_display).toEqual([
-            { facet: 'image', facet_value: 'Image' },
-            { facet: 'image/png', facet_value: 'png' },
-        ]);
-
-        let display = wrapper.findAll('.selected_facets div');
-        expect(display.at(0).text()).toBe('Image');
-        expect(display.at(1).text()).toBe('png');
+        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
+        expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
     });
 
     afterEach(() => {
