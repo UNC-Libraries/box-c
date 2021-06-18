@@ -98,6 +98,31 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
     });
 
+    it("displays a clear all facets button", async () => {
+        expect(wrapper.find('#clear-all').exists()).toBe(false);
+        selected_facet.trigger('click');
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('#clear-all').isVisible()).toBe(true);
+    });
+
+    it("does not display a clear all facets button if no facets are selected", async () => {
+        wrapper.setData({
+            selected_facets: []
+        })
+        expect(wrapper.find('#clear-all').exists()).toBe(false);
+    });
+
+    it("clears all selected facets if 'Clear Filters' button is clicked", async () => {
+        selected_facet.trigger('click');
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.selected_facets).toEqual(['format=image']);
+
+        wrapper.find('#clear-all').trigger('click');
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.selected_facets).toEqual([]);
+    });
+
     it("clears a selected facet if it is unchecked", async () => {
         // Add facet
         selected_facet.trigger('click');

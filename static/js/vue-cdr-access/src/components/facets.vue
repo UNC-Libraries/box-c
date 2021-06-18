@@ -1,5 +1,9 @@
 <template>
     <div id="facetList" class="contentarea">
+        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-danger is-small" @click.prevent="clearAll()">
+            <span class="icon is-small">
+                <i class="fas fa-times"></i>
+            </span> Clear filters</a>
         <h2 class="facet-header">Filter results by...</h2>
         <div class="facet-display" v-if="facet.values.length" v-for="facet in this.facetList">
             <div v-if="showFacetDisplay(facet)">
@@ -71,6 +75,10 @@
         },
 
         methods: {
+            clearAll() {
+                this.selected_facets = [];
+            },
+
             updateAll(facet, remove = false) {
                 if (remove) {
                     this.facetInfoRemove(facet);
@@ -299,6 +307,14 @@
         .selected_facets {
             margin-bottom: 50px;
             margin-top: -20px;
+        }
+
+        a.button {
+            width: initial;
+
+            span {
+                padding-right: 10px;
+            }
         }
     }
 </style>
