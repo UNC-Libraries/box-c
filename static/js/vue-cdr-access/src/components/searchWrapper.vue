@@ -75,7 +75,6 @@
             },
 
             hasFacets() {
-                console.log(this.facet_list.map(f => f.values).flat())
                 return this.facet_list.map(f => f.values).flat().length > 0;
             },
 

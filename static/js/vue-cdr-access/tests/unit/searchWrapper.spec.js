@@ -176,7 +176,7 @@ describe('searchWrapper.vue', () => {
             response: JSON.stringify(no_results)
         });
         moxios.wait(() => {
-           // expect(wrapper.find('.facet-list').isVisible()).toBe(false);
+            expect(wrapper.find('.facet-list').exists()).toBe(false);
             expect(wrapper.vm.hasFacets).toBe(false);
             done();
         });
