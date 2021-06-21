@@ -172,25 +172,28 @@ public class SearchState implements Serializable, Cloneable {
     }
 
     /**
-     * Set the value of the specified facet to the provided value
+     * Set the value of the specified facet to the provided list of values
      * @param key key of the facet to add
-     * @param value value of the facet to set.
+     * @param values list of values to set.
      */
-    @SuppressWarnings("unchecked")
+    public void setFacet(SearchFieldKeys key, List<SearchFacet> values) {
+        facets.put(key.name(), values);
+    }
+
+    /**
+     * Set value of the specified facet to the provided value
+     * @param key
+     * @param value
+     */
     public void setFacet(SearchFieldKeys key, Object value) {
-        List<SearchFacet> vals;
-        if (value instanceof List) {
-            vals = (List<SearchFacet>) value;
+        List<SearchFacet> vals = new ArrayList<>();
+        if (value instanceof SearchFacet) {
+            vals.add((SearchFacet) value);
+        } else if (value instanceof String) {
+            vals.add(new GenericFacet(key.name(), (String) value));
         } else {
-            vals = new ArrayList<>();
-            if (value instanceof SearchFacet) {
-                vals.add((SearchFacet) value);
-            } else if (value instanceof String) {
-                vals.add(new GenericFacet(key.name(), (String) value));
-            } else {
-                throw new IllegalArgumentException("Invalid type " + value.getClass().getName()
-                        + " provided for facet " + key.name());
-            }
+            throw new IllegalArgumentException("Invalid type " + value.getClass().getName()
+                    + " provided for facet " + key.name());
         }
         facets.put(key.name(), vals);
     }

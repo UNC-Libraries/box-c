@@ -72,8 +72,10 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         searchState.setRowsPerPage(0);
         searchState.setResourceTypes(null);
 
+        // Perform base search with all filters applied, generating the base result response which will be returned.
         SearchResultResponse resultResponse = searchService.getSearchResults(facetRequest);
         resultResponse.setSelectedContainer(selectedContainer);
+        // Get list of facet fields without filters. Next we will add facet fields which are filtered to this list.
         FacetFieldList resultFacets = resultResponse.getFacetFields();
 
         // For each facet selected in the original search state, add facet list with results as
