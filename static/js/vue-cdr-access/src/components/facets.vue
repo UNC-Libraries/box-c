@@ -5,12 +5,12 @@
                 <i class="fas fa-times"></i>
             </span> Clear filters</a>
         <h2 class="facet-header">Filter results by...</h2>
-        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.facetList">
+        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
                 <ul>
                     <li v-for="value in facet.values">
-                        <a v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                        <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
                             {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
@@ -21,6 +21,7 @@
 </template>
 
 <script>
+    import sortBy from 'lodash.sortby';
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -71,6 +72,17 @@
                     });
                 });
                 return display_list;
+            },
+
+            sortedFacetsList() {
+                return this.facetList.map((facet) => {
+                    if (facet.name === 'PARENT_COLLECTION') {
+                        return facet;
+                    }
+
+                    facet.values = sortBy(facet.values, ['limitToValue', 'count']);
+                    return facet;
+                });
             }
         },
 
@@ -302,11 +314,10 @@
                 position: relative;
                 vertical-align: text-top;
             }
-        }
 
-        .selected_facets {
-            margin-bottom: 50px;
-            margin-top: -20px;
+            .is-selected {
+                font-weight: bold;
+            }
         }
 
         a.button {
