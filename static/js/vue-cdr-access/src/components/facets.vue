@@ -61,13 +61,13 @@
             selectedFacetInfo() {
                 const display_list = [];
                 this.selected_facets.map((f) => {
-                    const regex = /^.*?=/;
-                    const facet_type = f.match(regex);
-                    const facets = f.split('||');
+                    const parts = f.split(/=(.+)/, 2);
+                    const facet_type = parts[0];
+                    const facets = parts[1].split("||");
                     facets.forEach((fv) => {
                         display_list.push({
-                            type: facet_type[0].replace('=', ''),
-                            value: fv.toLowerCase().replace(regex, '')
+                            type: facet_type,
+                            value: fv.toLowerCase()
                         });
                     });
                 });
@@ -76,11 +76,10 @@
 
             sortedFacetsList() {
                 return this.facetList.map((facet) => {
-                    if (facet.name === 'PARENT_COLLECTION') {
-                        return facet;
+                    if (facet.name === 'CONTENT_TYPE') {
+                        facet.values = sortBy(facet.values, ['limitToValue', 'count']);
                     }
 
-                    facet.values = sortBy(facet.values, ['limitToValue', 'count']);
                     return facet;
                 });
             }
@@ -103,8 +102,7 @@
                 const facet_value = this.facetValue(facet);
                 const facet_type = facet_value.split('=');
                 const found_facet = this.selected_facets.findIndex((f) => {
-                    const regx = new RegExp(facet_type[0]);
-                    return regx.test(f);
+                    return f.startsWith(`${facet_type[0]}=`);
                 });
                 // Remove old facet value, instead of replacing or selected_facet watcher doesn't fire
                 if (found_facet !== -1) {
@@ -165,13 +163,20 @@
              */
             facetInfoRemove(facet) {
                const facet_type = this.facetType(facet);
-               const type_regex = new RegExp(facet_type);
-               const current_index = this.selected_facets.findIndex(sf => type_regex.test(sf));
+               const current_index = this.selected_facets.findIndex(sf => sf.startsWith(facet_type));
+
                if (current_index !== -1) {
                    const facet_parts = this.selected_facets[current_index].split('=');
                    const current_values = facet_parts[1].split('||');
-                   const current_value_regex = new RegExp(facet.limitToValue, 'i');
-                   const updated_values = current_values.filter(f => !current_value_regex.test(f)).join('||');
+
+                   let updated_values;
+                   if (facet_type.startsWith('format')) {
+                       let current_value_regex = new RegExp(facet.limitToValue);
+                       updated_values = current_values.filter(f => !current_value_regex.test(f)).join('||');
+                   } else {
+                       updated_values = current_values.filter(f => f !== facet.limitToValue).join('||');
+                   }
+
                    if (updated_values === '') {
                        this.selected_facets.splice(current_index, 1);
                    } else {
@@ -240,17 +245,17 @@
              * @returns {string}
              */
             facetValue(value) {
-                let facet_type = this.facetType(value);
-
-                const current_facet_value = this.selected_facets.filter((f) => {
-                    const regex = new RegExp(facet_type);
-                    return regex.test(f);
-                });
+                const facet_type = this.facetType(value);
+                const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
 
                 if (current_facet_value.length === 1) {
-                    const joined_facets = `${current_facet_value[0]}||${value.limitToValue}`;
-                    const deduped_facets = Array.from(new Set(joined_facets.split('||')));
-                    return `${deduped_facets.join('||')}`
+                    const selected_facet_parts = current_facet_value[0]
+                        .replace(new RegExp(facet_type), '')
+                        .split('||');
+                    const facet_set = new Set(selected_facet_parts);
+                    facet_set.add(value.limitToValue);
+
+                    return `${facet_type}${Array.from(facet_set).join('||')}`
                 }
 
                 return `${facet_type}${value.limitToValue}`;
