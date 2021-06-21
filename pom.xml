@@ -191,8 +191,6 @@
         <module>clamav-java</module>
         <module>fcrepo</module>
         <module>spoof</module>
-        
-        <module>migration-util</module>
   </modules>
 
     <reporting>
