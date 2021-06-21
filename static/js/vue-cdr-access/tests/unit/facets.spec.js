@@ -73,7 +73,7 @@ describe('facets.vue', () => {
         let facet_list = wrapper.findAll('.facet-display a');
         collection = facet_list.at(0);
         selected_facet = facet_list.at(2);
-        selected_sub_facet = facet_list.at(4);
+        selected_sub_facet = facet_list.at(3);
 
     });
 
@@ -87,7 +87,7 @@ describe('facets.vue', () => {
 
         expect(facet_headers.at(1).text()).toBe('Format');
         expect(facets.at(2).find('a').text()).toBe('Image (8)');
-        expect(facets.at(3).find('a').text()).toBe('Text (2)');
+        expect(facets.at(3).find('a').text()).toBe('png (2)');
     });
 
     it("displays a listing of selected facets", async () => {
