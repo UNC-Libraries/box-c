@@ -147,6 +147,8 @@
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
         <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
+        
+        <build-tools.path>metadata/src/main/resources/</build-tools.path>
     </properties>
 
     <distributionManagement>
@@ -191,7 +193,7 @@
         <module>clamav-java</module>
         <module>fcrepo</module>
         <module>spoof</module>
-  </modules>
+    </modules>
 
     <reporting>
         <plugins>
@@ -297,7 +299,8 @@
                         <id>check-style</id>
                         <phase>verify</phase>
                         <configuration>
-                            <configLocation>checkstyle.xml</configLocation>
+                            <configLocation>${build-tools.path}checkstyle/checkstyle.xml</configLocation>
+                            <suppressionsLocation>${build-tools.path}checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
@@ -314,7 +317,7 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <version>${license-maven-plugin.version}</version>
                 <configuration>
-                    <header>etc/header.txt</header>
+                    <header>${build-tools.path}license/header.txt</header>
                     <mapping>
                         <java>JAVADOC_STYLE</java>
                         <jsp>DYNASCRIPT_STYLE</jsp>
