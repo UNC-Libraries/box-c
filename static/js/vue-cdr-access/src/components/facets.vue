@@ -250,7 +250,7 @@
 
                 if (current_facet_value.length === 1) {
                     const selected_facet_parts = current_facet_value[0]
-                        .replace(new RegExp(facet_type), '')
+                        .replace(facet_type, '')
                         .split('||');
                     const facet_set = new Set(selected_facet_parts);
                     facet_set.add(value.limitToValue);
