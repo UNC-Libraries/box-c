@@ -17,10 +17,8 @@ package edu.unc.lib.dl.persist.services.transfer;
 
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -28,6 +26,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -131,16 +130,13 @@ public class FSToFSTransferClient implements BinaryTransferClient {
         }
 
         String digest;
-        File srcFile = srcPath.toFile();
-        final long srcLen = srcFile.length();
-        File destFile = destPath.toFile();
+        final long srcLen = Files.size(srcPath);
         try (
-                FileInputStream fis = new FileInputStream(srcFile);
+                InputStream fis = Files.newInputStream(srcPath);
                 DigestInputStream digestStream = new DigestInputStream(
                         fis, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
                 ReadableByteChannel input = Channels.newChannel(digestStream);
-                FileOutputStream fos = new FileOutputStream(destFile);
-                FileChannel output = fos.getChannel()) {
+                FileChannel output = FileChannel.open(destPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
 
             long pos = 0;
             long count = 0;
@@ -158,12 +154,12 @@ public class FSToFSTransferClient implements BinaryTransferClient {
             throw new UnsupportedAlgorithmException(e);
         }
 
-        final long dstLen = destFile.length();
+        final long dstLen = Files.size(destPath);
         if (srcLen != dstLen) {
             throw new IOException("Failed to copy full contents from '" +
-                    srcFile + "' to '" + destFile + "' Expected length: " + srcLen + " Actual: " + dstLen);
+                    srcPath + "' to '" + destPath + "' Expected length: " + srcLen + " Actual: " + dstLen);
         }
-        destFile.setLastModified(srcFile.lastModified());
+        Files.setLastModifiedTime(destPath, Files.getLastModifiedTime(srcPath));
 
         return digest;
     }

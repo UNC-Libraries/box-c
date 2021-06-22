@@ -39,6 +39,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 					tagValue = 'deleted';
 				} else if (/staff-only/i.test(d)) {
 					tagValue = 'staff-only';
+				} else if(/inherited patron settings/i.test(d)) {
+					tagValue = 'inherited-settings';
 				} else {
 					tagValue = d.trim().toLowerCase()
 						.replace(/parent\s+is\s+/, '')
@@ -88,6 +90,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				break;
 			case 'staff-only':
 				helpText = 'Only users with staff roles can access this object';
+				break;
+			case 'inherited-settings':
+				helpText = 'Object is inheriting patron access settings which have been modified (typically they are more restrictive)';
 				break;
 			default:
 				helpText = '';

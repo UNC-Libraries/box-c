@@ -29,12 +29,14 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
@@ -79,21 +81,27 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         PID pid = dip.getPid();
         List<String> status = new ArrayList<>();
 
-        if (inheritedAclFactory.isMarkedForDeletion(pid)) {
+        boolean isMarkedForDeletion = inheritedAclFactory.isMarkedForDeletion(pid);
+        if (isMarkedForDeletion) {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
+        ContentObject contentObj = dip.getContentObject();
         // No need to continue with patron statuses if object is an AdminUnit
-        if (dip.getContentObject() instanceof AdminUnit) {
+        if (contentObj instanceof AdminUnit) {
             return status;
         }
 
         Date objEmbargo = objAclFactory.getEmbargoUntil(pid);
-        Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
-        if (isEmbargoActive(objEmbargo)) {
+        boolean isEmbargoed = isEmbargoActive(objEmbargo);
+        if (isEmbargoed) {
             status.add(FacetConstants.EMBARGOED);
-        } else if (isEmbargoActive(parentEmbargo)) {
-            status.add(FacetConstants.EMBARGOED_PARENT);
+        } else {
+            Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
+            if (isEmbargoActive(parentEmbargo)) {
+                status.add(FacetConstants.EMBARGOED_PARENT);
+                isEmbargoed = true;
+            }
         }
 
         // Don't mark as public access if embargoes or deletion were present
@@ -102,7 +110,8 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         List<RoleAssignment> inheritedAssignments = inheritedAclFactory.getPatronAccess(pid);
         List<RoleAssignment> objPatronRoles = objAclFactory.getPatronRoleAssignments(pid);
 
-        if (allPatronsRevoked(objPatronRoles)) {
+        boolean isDirectlyStaffOnly = allPatronsRevoked(objPatronRoles);
+        if (isDirectlyStaffOnly) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
         } else if (!hasPatronAssignments(inheritedAssignments)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
@@ -110,12 +119,57 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        boolean isCollection = dip.getContentObject() instanceof CollectionObject;
+        boolean isCollection = contentObj instanceof CollectionObject;
         if (hasPatronSettings(objPatronRoles, isCollection)) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
+        if (!isCollection && !isMarkedForDeletion
+                && inheritingPatronRestrictions(contentObj, objPatronRoles, inheritedAssignments, isEmbargoed)) {
+            status.add(FacetConstants.INHERITED_PATRON_SETTINGS);
+        }
 
         return status;
+    }
+
+    private boolean inheritingPatronRestrictions(ContentObject contentObj, List<RoleAssignment> objRoles,
+            List<RoleAssignment> inheritedRoles, boolean isEmbargoed) {
+        boolean noObjAssignments = objRoles.isEmpty();
+        // No roles defined at any level, so inheriting staff only
+        if (inheritedRoles.isEmpty() && noObjAssignments) {
+            return true;
+        }
+        UserRole maxInheritedRole = isEmbargoed ? UserRole.canViewMetadata : canViewOriginals;
+        // If no assignments on object, then then make decision based off the object's inherited roles
+        if (noObjAssignments) {
+            return !hasDefaultRoleAssignments(maxInheritedRole, inheritedRoles);
+        }
+        // Since inherited roles incorporate the object's roles, move up one level to the parent's inherited roles
+        PID parentPid = contentObj.getParentPid();
+        List<RoleAssignment> parentRoles = inheritedAclFactory.getPatronAccess(parentPid);
+        if (parentRoles.size() != AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS.size()) {
+            return true;
+        }
+        // Adjust default role depending on if an embargo is being applied
+        Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(parentPid);
+        boolean parentEmbargoed = isEmbargoActive(parentEmbargo);
+        UserRole maxParentRole = parentEmbargoed ? UserRole.canViewMetadata : canViewOriginals;
+
+        return !hasDefaultRoleAssignments(maxParentRole, parentRoles);
+    }
+
+    private boolean hasDefaultRoleAssignments(UserRole defaultRole, List<RoleAssignment> roles) {
+        // assignments cannot match defaults if there are more or fewer rows than the protected set
+        if (roles.size() != AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS.size()) {
+            return false;
+        }
+        // Check to see if any protected principals do not have the default role in the provided assignment list
+        for (String principal: AccessPrincipalConstants.PROTECTED_PATRON_PRINCIPALS) {
+            if (roles.stream().noneMatch(ir -> ir.getPrincipal().equals(principal)
+                    && defaultRole.equals(ir.getRole()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean hasPatronSettings(List<RoleAssignment> objPatronRoles, boolean isCollection) {

@@ -65,7 +65,7 @@
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         
-        <spring.version>5.2.3.RELEASE</spring.version>
+        <spring.version>5.2.4.RELEASE</spring.version>
         <spring.security.version>5.1.5.RELEASE</spring.security.version>
         <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
         <quartz.version>2.3.2</quartz.version>
@@ -91,7 +91,7 @@
         <guava.version>30.1.1-jre</guava.version>
         <sword2-server.version>1.0</sword2-server.version>
         
-        <httpclient.version>4.5.6</httpclient.version>
+        <httpclient.version>4.5.13</httpclient.version>
         <commons-compress.version>1.19</commons-compress.version>
         <commons-codec.version>1.11</commons-codec.version>
         <commons-io.version>2.7</commons-io.version>

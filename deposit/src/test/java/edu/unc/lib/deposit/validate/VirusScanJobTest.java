@@ -156,6 +156,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         job.run();
 
+        verify(clamClient, times(3)).scanWithResult(any(Path.class));
+
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
@@ -359,6 +361,62 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
         verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
         verify(premisEventBuilder, times(2)).addOutcome(true);
+    }
+
+    @Test
+    public void passScanUnicodeFilenameTest() throws Exception {
+        when(clamClient.scanWithResult(any(InputStream.class))).thenReturn(scanResult);
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        File alienFile = new File(depositDir, "alienfile\uD83D\uDC7D.txt");
+        alienFile.createNewFile();
+        PID file1Pid = addFileObject(depBag, alienFile);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(clamClient).scanWithResult(any(InputStream.class));
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder).addOutcome(true);
+    }
+
+    @Test
+    public void passScanUnicodeParentDirTest() throws Exception {
+        when(clamClient.scanWithResult(any(InputStream.class))).thenReturn(scanResult);
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        File alienDir = new File(depositDir, "topsecret\uD83D\uDC7D");
+        alienDir.mkdir();
+        File alienFile = new File(alienDir, "ufo.txt");
+        alienFile.createNewFile();
+        PID file1Pid = addFileObject(depBag, alienFile);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(clamClient).scanWithResult(any(InputStream.class));
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+
+        verify(premisLogger, times(2)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
+        verify(premisEventBuilder).addOutcome(true);
     }
 
     private PID addFileObject(Bag parent, File stagedFile) {

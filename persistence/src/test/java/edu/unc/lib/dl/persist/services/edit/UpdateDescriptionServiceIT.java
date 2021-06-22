@@ -63,6 +63,8 @@ import edu.unc.lib.dl.test.TestHelper;
 })
 public class UpdateDescriptionServiceIT {
     @Autowired
+    private String baseAddress;
+    @Autowired
     private RepositoryObjectFactory repoObjFactory;
 
     @Autowired
@@ -75,7 +77,7 @@ public class UpdateDescriptionServiceIT {
     public void init_() throws Exception {
         initMocks(this);
 
-        TestHelper.setContentBase("http://localhost:48085/rest/");
+        TestHelper.setContentBase(baseAddress);
     }
 
     @Test

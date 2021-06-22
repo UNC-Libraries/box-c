@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -410,6 +411,44 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         }
     }
 
+    @Test
+    public void unicodeFilenameTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+
+        // Create the work object which nests the file
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        depositBag.add(workBag);
+        String filename = "weird\uD83D\uDC7D.txt";
+        File sourceFile = tmpFolder.newFile(filename);
+        addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
+
+        job.closeModel();
+
+        job.run();
+
+        HttpUriRequest request = getRequest();
+        String submittedPath = getSubmittedFilePath(request);
+        System.out.println("Submitted " + submittedPath);
+        assertNotEquals("Submitted path should not match original",
+                sourceFile.getAbsolutePath().replace("/", "%2F"), submittedPath);
+    }
+
+    private HttpUriRequest getRequest() throws Exception {
+        ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
+        verify(httpClient).execute(requestCaptor.capture());
+        return requestCaptor.getValue();
+    }
+
+    private String getSubmittedFilePath(HttpUriRequest request) {
+        String submitted = request.getURI().toString();
+        if (!submitted.startsWith(FITS_BASE_URI + "/examine?file=")) {
+            return null;
+        }
+        return submitted.replace(FITS_BASE_URI + "/examine?file=", "");
+    }
+
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
             String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
 
@@ -419,13 +458,10 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         // Post-run model info for the file object
         Resource fileResc = model.getResource(filePid.getRepositoryPath());
 
-        ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
-        verify(httpClient).execute(requestCaptor.capture());
-        HttpUriRequest request = requestCaptor.getValue();
+        HttpUriRequest request = getRequest();
+        String submittedPath = getSubmittedFilePath(request);
 
-        assertEquals("FITS service not called with the expected path",
-                FITS_BASE_URI + "/examine?file=" + absFilePath.replace("/", "%2F"),
-                request.getURI().toString());
+        assertEquals("FITS service not called with the expected path", absFilePath.replace("/", "%2F"), submittedPath);
 
         assertEquals("Incorrect number of reports in output dir",
                 numberReports, techmdDir.list().length);
