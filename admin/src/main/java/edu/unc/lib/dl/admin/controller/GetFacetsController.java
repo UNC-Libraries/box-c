@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,16 +27,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService;
+import edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 public class GetFacetsController extends AbstractSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(GetFacetsController.class);
+
+    @Autowired
+    private MultiSelectFacetListService multiSelectFacetListService;
+    @Autowired
+    private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
 
     @RequestMapping("/facets/{pid}")
     public String getFacets(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
@@ -60,7 +68,8 @@ public class GetFacetsController extends AbstractSearchController {
         searchRequest.setRetrieveFacets(true);
         LOG.debug("Retrieving facet list");
         // Retrieve the facet result set
-        SearchResultResponse resultResponse = queryLayer.getFacetList(searchRequest);
+        SearchResultResponse resultResponse = multiSelectFacetListService.getFacetListResult(searchRequest);
+        parentCollectionFacetTitleService.populateTitles(resultResponse.getFacetFields());
         model.addAttribute("facetFields", resultResponse.getFacetFields());
         String searchStateUrl = SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState());
         model.addAttribute("searchStateUrl", searchStateUrl);

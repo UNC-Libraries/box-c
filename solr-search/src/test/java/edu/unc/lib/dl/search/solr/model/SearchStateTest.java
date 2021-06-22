@@ -15,28 +15,31 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
+import java.util.List;
+
 import org.junit.Test;
 
-public class SearchStateTest extends Assert {
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+
+public class SearchStateTest {
 
     @Test
     public void hierarchicalFacetCloning() {
         SearchState searchState = new SearchState();
-        Map<String,Object> facets = new HashMap<String,Object>();
-        facets.put("CONTENT_TYPE", new MultivaluedHierarchicalFacet("CONTENT_TYPE", "^text,Text"));
-        searchState.setFacets(facets);
+        searchState.setFacet(SearchFieldKeys.CONTENT_TYPE,
+                new MultivaluedHierarchicalFacet("CONTENT_TYPE", "^text,Text"));
 
         SearchState searchStatePartDeux = new SearchState(searchState);
-        Object facetObject = searchStatePartDeux.getFacets().get("CONTENT_TYPE");
+        List<SearchFacet> facetObject = searchStatePartDeux.getFacets().get("CONTENT_TYPE");
         assertNotNull(facetObject);
 
-        assertTrue(facetObject instanceof MultivaluedHierarchicalFacet);
+        assertTrue(facetObject.get(0) instanceof MultivaluedHierarchicalFacet);
 
-        assertEquals(1, ((AbstractHierarchicalFacet)facetObject).getFacetNodes().size());
+        assertEquals(1, ((AbstractHierarchicalFacet)facetObject.get(0)).getFacetNodes().size());
 
     }
 }

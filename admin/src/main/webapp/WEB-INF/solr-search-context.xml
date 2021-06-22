@@ -76,7 +76,6 @@
 
     <bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
         <property name="searchSettings" ref="searchSettings" />
-        <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
     
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil">
@@ -117,6 +116,16 @@
         <property name="cacheSize" value="5000" />
         <property name="timeToLiveMilli" value="10000" />
         <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
+    <bean id="multiSelectFacetListService" class="edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="searchService" ref="queryLayer" />
+    </bean>
+    
+    <bean id="parentCollectionFacetTitleService" class="edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService">
+        <property name="pathFactory" ref="pathFactory" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

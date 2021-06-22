@@ -12,9 +12,7 @@ const router = new VueRouter({
         }
     ]
 });
-let wrapper;
-let selected_facet;
-let collection;
+let wrapper, collection, selected_facet, selected_sub_facet;
 
 describe('facets.vue', () => {
     beforeEach(() => {
@@ -31,14 +29,14 @@ describe('facets.vue', () => {
                                 displayValue: "testCollection",
                                 limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
                                 value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-                                fieldName: "ANCESTOR_PATH"
+                                fieldName: "PARENT_COLLECTION"
                             },
                             {
                                 count: 1,
                                 displayValue: "test2Collection",
                                 limitToValue: "88386d31-6931-467d-add5-1d109f335302",
                                 value: "88386d31-6931-467d-add5-1d109f335302",
-                                fieldName: "ANCESTOR_PATH"
+                                fieldName: "PARENT_COLLECTION"
                             }
                         ]
                     },
@@ -56,7 +54,14 @@ describe('facets.vue', () => {
                                 count: 2,
                                 displayValue: "Text",
                                 limitToValue: "text",
-                                image: "^text,Text",
+                                value: "^text,Text",
+                                fieldName: "CONTENT_TYPE"
+                            },
+                            {
+                                count: 2,
+                                displayValue: "png",
+                                limitToValue: "image/png",
+                                value: "/image^png,png",
                                 fieldName: "CONTENT_TYPE"
                             }
                         ]
@@ -65,8 +70,11 @@ describe('facets.vue', () => {
             }
         });
 
-        selected_facet = wrapper.findAll('.facet-display a').at(2);
-        collection = wrapper.find('.facet-display a');
+        let facet_list = wrapper.findAll('.facet-display a');
+        collection = facet_list.at(0);
+        selected_facet = facet_list.at(2);
+        selected_sub_facet = facet_list.at(3);
+
     });
 
     it("displays returned facets with counts", () => {
@@ -79,24 +87,40 @@ describe('facets.vue', () => {
 
         expect(facet_headers.at(1).text()).toBe('Format');
         expect(facets.at(2).find('a').text()).toBe('Image (8)');
-        expect(facets.at(3).find('a').text()).toBe('Text (2)');
+        expect(facets.at(3).find('a').text()).toBe('png (2)');
     });
 
     it("displays a listing of selected facets", async () => {
-        expect(wrapper.find('.selected_facets').exists()).toBe(false);
-
         selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets').exists()).toBe(true);
-        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
+        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "Image",
-            limitToValue: "image",
-            value: "^image,Image",
-            fieldName: "CONTENT_TYPE"
-        })]);
+    });
+
+    it("displays a clear all facets button", async () => {
+        expect(wrapper.find('#clear-all').exists()).toBe(false);
+        selected_facet.trigger('click');
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('#clear-all').isVisible()).toBe(true);
+    });
+
+    it("does not display a clear all facets button if no facets are selected", async () => {
+        wrapper.setData({
+            selected_facets: []
+        })
+        expect(wrapper.find('#clear-all').exists()).toBe(false);
+    });
+
+    it("clears all selected facets if 'Clear Filters' button is clicked", async () => {
+        selected_facet.trigger('click');
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.selected_facets).toEqual(['format=image']);
+
+        wrapper.find('#clear-all').trigger('click');
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.selected_facets).toEqual([]);
     });
 
     it("clears a selected facet if it is unchecked", async () => {
@@ -104,23 +128,15 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets div').text()).toBe('Image');
+        expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).toEqual(['format=image']);
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "Image",
-            limitToValue: "image",
-            value: "^image,Image",
-            fieldName: "CONTENT_TYPE"
-        })]);
 
         // Remove facet
-        let selected = wrapper.find('.selected_facets div');
-        selected.trigger('click');
+        selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.find('.selected_facets').exists()).toBe(false);
+        expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).toEqual([]);
-        expect(wrapper.vm.facet_info).toEqual([])
     });
 
     it("updates the query parameters if a facet is selected", async () => {
@@ -141,46 +157,17 @@ describe('facets.vue', () => {
         expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
 
         // Remove facet
-        let selected = wrapper.find('.selected_facets div');
-        selected.trigger('click');
+        selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
         expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
     });
 
-    it("updates the url if a 'collection' is selected", async () => {
-        collection.trigger('click');
+    it("updates facet display for a collection", async () => {
+        wrapper.vm.$router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-    });
-
-    it("updates the url if a 'collection' is removed", async () => {
-        collection.trigger('click');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.path).toBe('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-
-        let selected = wrapper.find('.selected_facets div');
-        selected.trigger('click');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.path).toBe('/search');
-    });
-
-    it("updates facet display if a collection uuid is in the url when page is loaded", async () => {
-        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
-
-        // Returns a sub-set of facet info when building values from the page url
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "testCollection",
-            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            fieldName: "ANCESTOR_PATH",
-        })]);
+        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
     });
 
     it("accepts multiple facets", async () => {
@@ -188,77 +175,39 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "testCollection",
-            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            fieldName: "ANCESTOR_PATH"
-        }), JSON.stringify( {
-            displayValue: "Image",
-
-            limitToValue: "image",
-            value: "^image,Image",
-            fieldName: "CONTENT_TYPE"
-        })]);
+        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
     });
 
-    it("removes the child facet facet if a parent facet is removed", async () => {
-        wrapper.vm.$router.push('/search?format=image%252Fpng');
+    it("accepts multiple facets and facets of the same type", async () => {
+        collection.trigger('click');
+        selected_facet.trigger('click');
+        selected_sub_facet.trigger('click');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.vm.selected_facets).toEqual(['format=image', 'format=image/png']);
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "Image",
-            limitToValue: "image",
-            value: "^image,Image",
-            fieldName: "CONTENT_TYPE",
-        }), JSON.stringify({
-            displayValue: "png",
-            limitToValue: "image/png",
-            value: "/image^png,png",
-            fieldName: "CONTENT_TYPE",
-        })]);
+        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image||image/png']);
+    });
+
+    it("removes the child facet if a parent facet is removed", async () => {
+        wrapper.vm.$router.push('/search?format=image%257C%257Cimage%252Fpng');
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
 
         // Should always be above child facet
-        let parent_facet = wrapper.find('.selected_facets div');
-        parent_facet.trigger('click');
-
+        selected_facet.trigger('click');
         expect(wrapper.vm.selected_facets).toEqual([]);
-        expect(wrapper.vm.facet_info).toEqual([]);
     });
 
     it("sets selected facets, including parent facets, if the page is reloaded", async () => {
-        wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&format=image%252Fpng');
-
+        wrapper.vm.$router.push('/search/?format=image%257C%257Cimage%252Fpng');
         await wrapper.vm.$nextTick();
-        expect(wrapper.vm.selected_facets).toEqual(['d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image', 'format=image/png']);
-
-        expect(wrapper.vm.facet_info).toEqual([JSON.stringify({
-            displayValue: "testCollection",
-            limitToValue: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            value: "d77fd8c9-744b-42ab-8e20-5ad9bdf8194e",
-            fieldName: "ANCESTOR_PATH"
-        }), JSON.stringify({
-            displayValue: "Image",
-            limitToValue: "image",
-            value: "^image,Image",
-            fieldName: "CONTENT_TYPE",
-        }), JSON.stringify({
-            displayValue: "png",
-            limitToValue: "image/png",
-            value: "/image^png,png",
-            fieldName: "CONTENT_TYPE",
-        })]);
-
-        let display = wrapper.findAll('.selected_facets div');
-        expect(display.at(0).text()).toBe('testCollection');
-        expect(display.at(1).text()).toBe('Image');
-        expect(display.at(2).text()).toBe('png');
+        expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
+        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
+        expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
     });
 
     afterEach(() => {
-        wrapper.vm.facet_info = [];
+        wrapper.vm.facet_display = [];
         wrapper.vm.selected_facets = [];
     });
 });

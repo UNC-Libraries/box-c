@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,8 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService;
+import edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -47,6 +50,11 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
+
+    @Autowired
+    private MultiSelectFacetListService multiSelectFacetListService;
+    @Autowired
+    private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
 
     @RequestMapping("/search")
     public String search() {
@@ -102,7 +110,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
         CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
-        searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
+        searchRequest.getSearchState().addFacet(cutoff);
         searchRequest.setApplyCutoffs(true);
 
         SearchState searchState = searchRequest.getSearchState();
@@ -114,10 +122,10 @@ public class SearchActionController extends AbstractSolrSearchController {
     }
 
     private Map<String, Object> searchJsonRequest(HttpServletRequest request, String getFacets, String pid) {
-        String rootPid = (pid != null) ? pid : RepositoryPaths.getContentRootPid().getURI();
-
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(rootPid);
+        if (pid != null) {
+            searchRequest.setRootPid(pid);
+        }
         searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
@@ -127,14 +135,14 @@ public class SearchActionController extends AbstractSolrSearchController {
         facetRequest.setApplyCutoffs(false);
         if (resultResponse.getSelectedContainer() != null) {
             SearchState facetState = (SearchState) searchState.clone();
-            facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
-                    resultResponse.getSelectedContainer().getPath());
+            facetState.addFacet(resultResponse.getSelectedContainer().getPath());
             facetRequest.setSearchState(facetState);
         }
 
         // Retrieve the facet result set
         if (Boolean.valueOf(getFacets)) {
-            SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+            SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
+            parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
             resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
         }
 

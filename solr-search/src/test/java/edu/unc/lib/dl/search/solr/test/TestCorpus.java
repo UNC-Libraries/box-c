@@ -28,8 +28,10 @@ import java.util.stream.Collectors;
 
 import org.apache.solr.common.SolrInputDocument;
 
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.util.ContentCategory;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
@@ -42,16 +44,16 @@ import edu.unc.lib.dl.util.ResourceType;
  *    > coll1 (manager)
  *      > folder1
  *        > work1
- *          > file1
- *          > file2
+ *          > file1 -> text/txt
+ *          > file2 -> text/pdf
  *        > work2
- *          > file1
+ *          > file1 -> image/jpg
  *    > coll2
  *      > work3
- *        > file1
+ *        > file1 -> text/txt
  *      > privateFolder (remove public)
  *        > privateWork
- *          > file1
+ *          > file1 -> image/png
  *
  * @author bbpennel
  *
@@ -95,12 +97,12 @@ public class TestCorpus {
         List<SolrInputDocument> docs = new ArrayList<>();
 
         SolrInputDocument newDoc = makeContainerDocument(rootPid, "Collections", ResourceType.ContentRoot);
-        addAclProperties(newDoc, PUBLIC_PRINC);
+        addAclProperties(newDoc, PUBLIC_PRINC, null, null);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(unitPid, "Unit", ResourceType.AdminUnit,
                 rootPid);
-        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner");
+        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(coll1Pid, "Collection 1", ResourceType.Collection,
@@ -121,12 +123,14 @@ public class TestCorpus {
 
         newDoc = makeFileDocument(work1File1Pid, "File 1",
                 rootPid, unitPid, coll1Pid, folder1Pid, work1Pid);
+        addFileProperties(newDoc, ContentCategory.text, "txt");
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work1File2Pid, "File 2",
                 rootPid, unitPid, coll1Pid, folder1Pid, work1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
+        addFileProperties(newDoc, ContentCategory.text, "pdf");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(work2Pid, "Work 2", ResourceType.Work,
@@ -137,36 +141,39 @@ public class TestCorpus {
         newDoc = makeFileDocument(work2File1Pid, "File 3",
                 rootPid, unitPid, coll1Pid, folder1Pid, work2Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
+        addFileProperties(newDoc, ContentCategory.image, "jpg");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(coll2Pid, "Collection 2", ResourceType.Collection,
                 rootPid, unitPid);
-        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner");
+        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(work3Pid, "Work 3", ResourceType.Work,
                 rootPid, unitPid, coll2Pid);
-        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner");
+        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work3File1Pid, "File 1",
                 rootPid, unitPid, coll2Pid, work3Pid);
-        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner");
+        addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
+        addFileProperties(newDoc, ContentCategory.text, "txt");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(privateFolderPid, "Private Folder", ResourceType.Folder,
                 rootPid, unitPid, coll2Pid);
-        addAclProperties(newDoc, null, "unitOwner");
+        addAclProperties(newDoc, null, "unitOwner", null);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(privateWorkPid, "Private Work", ResourceType.Work,
                 rootPid, unitPid, coll2Pid, privateFolderPid);
-        addAclProperties(newDoc, null, "unitOwner");
+        addAclProperties(newDoc, null, "unitOwner", null);
         docs.add(newDoc);
 
         newDoc = makeFileDocument(privateWorkFile1Pid, "Private File",
                 rootPid, unitPid, coll2Pid, privateFolderPid, privateWorkPid);
-        addAclProperties(newDoc, null, "unitOwner");
+        addAclProperties(newDoc, null, "unitOwner", null);
+        addFileProperties(newDoc, ContentCategory.image, "png");
         docs.add(newDoc);
 
         return docs;
@@ -177,8 +184,7 @@ public class TestCorpus {
         newDoc.addField("title", title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", pid.getId());
-        newDoc.addField("ancestorIds", makeAncestorIds(pid, ancestors));
-        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        addPathProperties(newDoc, pid, ancestors);
         newDoc.addField("resourceType", type.name());
         return newDoc;
     }
@@ -188,21 +194,45 @@ public class TestCorpus {
         newDoc.addField("title", title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", ancestors[ancestors.length - 1].getId());
-        newDoc.addField("ancestorIds", makeAncestorIds(null, ancestors));
-        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        addPathProperties(newDoc, null, ancestors);
         newDoc.addField("resourceType", ResourceType.File.name());
         return newDoc;
     }
 
-    public void addAclProperties(SolrInputDocument doc, String readGroup, String... adminGroups) {
-        List<String> adminList = asList(adminGroups);
+    public void addPathProperties(SolrInputDocument newDoc, PID selfPid, PID... ancestors) {
+        newDoc.addField("ancestorIds", makeAncestorIds(selfPid, ancestors));
+        newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
+        if (ancestors.length > 1) {
+            newDoc.addField("parentUnit", ancestors[1].getId());
+        }
+        if (ancestors.length > 2) {
+            newDoc.addField("parentCollection", ancestors[2].getId());
+        }
+    }
 
+    public void addFileProperties(SolrInputDocument doc, ContentCategory typeCategory, String typeExt) {
+        String tier1 = "^" + typeCategory.name() + "," + typeCategory.getDisplayName();
+        String tier2 = "/" + typeCategory.name() + "^" + typeExt + "," + typeExt;
+        doc.addField("contentType", Arrays.asList(tier1, tier2));
+    }
+
+    public void addAclProperties(SolrInputDocument doc, String readGroup, String unitOwner, String manager) {
+        List<String> adminList = new ArrayList<>();
         List<String> roleGroups = new ArrayList<>();
-        roleGroups.addAll(adminList);
-        roleGroups.add(readGroup);
+        if (unitOwner != null) {
+            adminList.add(unitOwner);
+            roleGroups.add(UserRole.unitOwner.name() + "|" + unitOwner);
+        }
+        if (manager != null) {
+            adminList.add(manager);
+            roleGroups.add(UserRole.canManage.name() + "|" + manager);
+        }
+        if (readGroup != null) {
+            roleGroups.add(UserRole.canViewOriginals.name() + "|" + readGroup);
+            doc.addField("readGroup", asList(readGroup));
+        }
 
         doc.addField("roleGroup", roleGroups);
-        doc.addField("readGroup", asList(readGroup));
         doc.addField("adminGroup", adminList);
     }
 

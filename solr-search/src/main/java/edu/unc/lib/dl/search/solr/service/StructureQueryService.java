@@ -188,7 +188,7 @@ public class StructureQueryService extends AbstractQueryService {
 
         SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
         // Use the ancestor path facet from the state where we will have set a default value
-        hierarchyState.getFacets().put(ANCESTOR_PATH.name(), tierPath);
+        hierarchyState.addFacet(tierPath);
         hierarchyState.setRowsPerPage(0);
 
         SearchRequest hierarchyRequest = new SearchRequest(hierarchyState, principals, false);

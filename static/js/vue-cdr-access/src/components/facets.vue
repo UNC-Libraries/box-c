@@ -1,19 +1,18 @@
 <template>
     <div id="facetList" class="contentarea">
+        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-danger is-small" @click.prevent="clearAll()">
+            <span class="icon is-small">
+                <i class="fas fa-times"></i>
+            </span> Clear filters</a>
         <h2 class="facet-header">Filter results by...</h2>
-        <div class="selected_facets" v-if="facet_info.length > 0">
-            <ul>
-                <li class="selected-facet-entry" v-for="value in parsedFacetInfo">
-                    <div @click="updateAll(value, true)"><i class="fas fa-times"></i> {{ value.displayValue }}</div>
-                </li>
-            </ul>
-        </div>
-        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.facetList">
+        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
                 <ul>
                     <li v-for="value in facet.values">
-                        <a @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
+                        <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                            {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
+                        <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
             </div>
@@ -22,10 +21,11 @@
 </template>
 
 <script>
+    import sortBy from 'lodash.sortby';
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['format', 'language', 'subject'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject'];
 
     export default {
         name: 'facets',
@@ -38,7 +38,6 @@
 
         data() {
             return {
-                facet_info: [],
                 selected_facets: []
             }
         },
@@ -49,7 +48,6 @@
             },
 
            '$route.query'(route) {
-               this.facet_info = [];
                this.selected_facets = [];
                this.setFacetsFromParams();
             }
@@ -60,22 +58,62 @@
                 return UUID_REGEX.test(this.$route.path);
             },
 
-            parsedFacetInfo() {
-                return this.facet_info.map((facet) => JSON.parse(facet));
+            selectedFacetInfo() {
+                const display_list = [];
+                this.selected_facets.map((f) => {
+                    const parts = f.split(/=(.+)/, 2);
+                    const facet_type = parts[0];
+                    const facets = parts[1].split("||");
+                    facets.forEach((fv) => {
+                        display_list.push({
+                            type: facet_type,
+                            value: fv.toLowerCase()
+                        });
+                    });
+                });
+                return display_list;
+            },
+
+            sortedFacetsList() {
+                return this.facetList.map((facet) => {
+                    if (facet.name === 'CONTENT_TYPE') {
+                        facet.values = sortBy(facet.values, ['limitToValue', 'count']);
+                    }
+
+                    return facet;
+                });
             }
         },
 
         methods: {
-            updateAll(facet, remove = false) {
-                let facet_string = JSON.stringify(facet);
+            clearAll() {
+                this.selected_facets = [];
+            },
 
+            updateAll(facet, remove = false) {
                 if (remove) {
                     this.facetInfoRemove(facet);
                 } else {
-                    let facet_value = this.facetValue(facet);
-                    this.facet_info.push(facet_string);
-                    this.selected_facets.push(facet_value)
+                    this.updateSelectedFacet(facet);
                 }
+            },
+
+            updateSelectedFacet(facet) {
+                const facet_value = this.facetValue(facet);
+                const facet_type = facet_value.split('=');
+                const found_facet = this.selected_facets.findIndex((f) => {
+                    return f.startsWith(`${facet_type[0]}=`);
+                });
+                // Remove old facet value, instead of replacing or selected_facet watcher doesn't fire
+                if (found_facet !== -1) {
+                    this.selected_facets.splice(found_facet, 1, facet_value);
+                } else {
+                    this.selected_facets.push(facet_value);
+                }
+            },
+
+            isSelected(facet) {
+                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
             },
 
             /**
@@ -96,14 +134,6 @@
                     query: this.urlParams({}, true)
                 };
 
-                if (updated_facet_params.collection !== '') {
-                    base_search.path = updated_facet_params.path;
-                    base_search.query.collection_name = updated_facet_params.collection_name;
-                } else {
-                    base_search.name = 'searchRecords';
-                    delete base_search.query.collection_name;
-                }
-
                 // Unset current facets
                 POSSIBLE_FACET_PARAMS.forEach((facet) => delete base_search.query[facet]);
                 // Add/Update with new facets
@@ -118,77 +148,41 @@
 
             /**
              * Determine parameters to build the new url after a facet is selected/deselected
-             * @returns {{queryFacets: {}, path: string, collection: string}}
+             * @returns {{path: string, queryFacets: {}}}
              */
             updateUrl() {
-                let updated_facets = this.selected_facets;
-
-                // Add/remove collection
-                let path = '/search/';
-                let collection_id = '';
-                let collection_name = '';
-                let collection = updated_facets.findIndex((facet) => {
-                    return UUID_REGEX.test(facet);
-                });
-
-                if (collection !== -1) {
-                    if (this.$route.query.collection_name !== undefined) {
-                        collection_name = this.$route.query.collection_name;
-                    } else {
-                        let current_collection = this.parsedFacetInfo.find((f) => f.fieldName === 'ANCESTOR_PATH');
-                        if (current_collection !== undefined) {
-                            collection_name = current_collection.displayValue;
-                        }
-                    }
-
-                    collection_id = this.selected_facets[collection];
-                    path += collection_id;
-
-                    // Remove collection from facets array without removing it from this.selected_facets
-                    updated_facets = updated_facets.filter((f) => {
-                        return !UUID_REGEX.test(f);
-                    });
-                }
-
                 return {
-                    collection: collection_id,
-                    collection_name: collection_name,
-                    path: path,
-                    queryFacets: this._formatFacets(updated_facets)
+                    path: '/search/',
+                    queryFacets: this._formatFacets(this.selected_facets)
                 };
             },
 
            /**
-             * Remove full facet info for deselected facets
+             * Remove full facet info for deselected facets and their children
              * @param facet
              */
             facetInfoRemove(facet) {
-                this._updateSelectedFacets(facet);
-                this._removeFacetInfo(facet);
-            },
+               const facet_type = this.facetType(facet);
+               const current_index = this.selected_facets.findIndex(sf => sf.startsWith(facet_type));
 
-            /**
-             * Remove children of base facets
-             * @param facet
-             * @private
-             */
-            _removeFacetInfo(facet) {
-                let regex = new RegExp(facet.limitToValue);
-                this.facet_info = this.facet_info.filter((f) => {
-                    return !regex.test(JSON.parse(f).limitToValue)
-                });
-            },
+               if (current_index !== -1) {
+                   const facet_parts = this.selected_facets[current_index].split('=');
+                   const current_values = facet_parts[1].split('||');
 
-            /**
-             * Add/remove item from selected facet list
-             * @param facet
-             * @private
-             */
-            _updateSelectedFacets(facet) {
-                let regex = new RegExp(this.facetValue(facet));
-                this.selected_facets = this.selected_facets.filter((sf) => {
-                    return !regex.test(sf);
-                });
+                   let updated_values;
+                   if (facet_type.startsWith('format')) {
+                       let current_value_regex = new RegExp(facet.limitToValue);
+                       updated_values = current_values.filter(f => !current_value_regex.test(f)).join('||');
+                   } else {
+                       updated_values = current_values.filter(f => f !== facet.limitToValue).join('||');
+                   }
+
+                   if (updated_values === '') {
+                       this.selected_facets.splice(current_index, 1);
+                   } else {
+                       this.selected_facets.splice(current_index, 1, `${facet_parts[0]}=${updated_values}`);
+                   }
+               }
             },
 
             /**
@@ -227,15 +221,12 @@
                 }
             },
 
-            /**
-             * Create base facet value for a selected facet
-             * @param value
-             * @returns {string}
-             */
-            facetValue(value) {
+            facetType(value) {
                 let facet_type;
 
-                if (value.fieldName === 'CONTENT_TYPE') {
+                if (value.fieldName === 'PARENT_COLLECTION') {
+                    facet_type = 'collection='
+                } else if (value.fieldName === 'CONTENT_TYPE') {
                     facet_type = 'format=';
                 } else if (value.fieldName === 'LANGUAGE') {
                     facet_type = 'language=';
@@ -245,81 +236,51 @@
                     facet_type = '';
                 }
 
+                return facet_type;
+            },
+
+            /**
+             * Create base facet value for a selected facet
+             * @param value
+             * @returns {string}
+             */
+            facetValue(value) {
+                const facet_type = this.facetType(value);
+                const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
+
+                if (current_facet_value.length === 1) {
+                    const selected_facet_parts = current_facet_value[0]
+                        .replace(facet_type, '')
+                        .split('||');
+                    const facet_set = new Set(selected_facet_parts);
+                    facet_set.add(value.limitToValue);
+
+                    return `${facet_type}${Array.from(facet_set).join('||')}`
+                }
+
                 return `${facet_type}${value.limitToValue}`;
             },
 
             /**
-             * Determine if a collection id is in the url and add it to selected facets, if so
-             * @private
-             */
-            _setCollectionFromRoute() {
-                let collection = this.$route.path.match(UUID_REGEX);
-                if (collection !== null) {
-                    this.selected_facets.push(collection[0]);
-
-                    let facet = {
-                        displayValue: this.$route.query.collection_name,
-                        limitToValue: collection[0],
-                        value: collection[0],
-                        fieldName: 'ANCESTOR_PATH'
-                    };
-
-                    this.facet_info.push(JSON.stringify(facet));
-                }
-            },
-
-            /**
-             * Determine if a facet value is in the url query and add it to selected facets, if so
+             * Determine if a facet value is in the url query and add it to selected facets, if so.
+             * This method triggers every time a facet is added/removed from the mounted() method
+             * as the url change triggers a reload.
              * @param type
              * @param facet_value
              * @private
              */
             _setFacetFromRoute(type, facet_value) {
                 if (facet_value !== undefined) {
-                    let decoded_facet_value = decodeURIComponent(facet_value);
-                    let grouped_facet = decoded_facet_value.split('/');
-
-                    grouped_facet.forEach((f, index) => {
-                        let limit_value = decoded_facet_value;
-                        let facet_string = f;
-                        let value = `/${grouped_facet.join('^')},${f}`;
-
-                        if (index === 0) {
-                            limit_value = f;
-                            facet_string = this._formatFacetValue(f);
-                            value = `^${f},${facet_string}`;
-                        }
-
-                        let facet_value = `${type}=${limit_value}`;
-
-                        if (this.selected_facets.findIndex((sf) => sf === facet_value) === -1) {
-                            let facet = { displayValue: facet_string, limitToValue: limit_value, value: value };
-                            facet.fieldName = (/format/.test(type)) ? 'CONTENT_TYPE' : type.toUpperCase();
-
-                            this.selected_facets.push(facet_value);
-                            this.facet_info.push(JSON.stringify(facet));
-                        }
-                    });
+                    const decoded_facet_value = decodeURIComponent(facet_value);
+                    const updated_value = `${type}=${decoded_facet_value}`
+                    this.selected_facets.push(updated_value);
                 }
-            },
-
-            /**
-             * Format display text for facets pulled from url
-             * @param facet
-             * @returns {string}
-             * @private
-             */
-            _formatFacetValue(facet) {
-                let first_letter = facet.substr(0, 1).toUpperCase();
-                return `${first_letter}${facet.substr(1)}`
             },
 
             /**
              * Set all facets from current url
              */
             setFacetsFromParams() {
-                this._setCollectionFromRoute();
-
                 let params = this.urlParams();
                 POSSIBLE_FACET_PARAMS.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
@@ -347,28 +308,28 @@
 
         .facet-display {
             margin-bottom: 25px;
+            text-transform: capitalize;
 
-            a {
+            a, i {
                 padding-left: 15px;
-            }
-        }
-
-        .selected_facets {
-            margin-bottom: 50px;
-            margin-top: -20px;
-        }
-
-        .selected-facet-entry {
-            text-indent: 0;
-
-            &:hover {
-                cursor: pointer;
             }
 
             i {
                 color: red;
                 position: relative;
                 vertical-align: text-top;
+            }
+
+            .is-selected {
+                font-weight: bold;
+            }
+        }
+
+        a.button {
+            width: initial;
+
+            span {
+                padding-right: 10px;
             }
         }
     }

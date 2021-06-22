@@ -20,8 +20,6 @@ import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -115,36 +113,6 @@ public abstract class AbstractSolrSearchController {
         searchRequest.setSearchState(searchState);
 
         return searchRequest;
-    }
-
-    private Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
-    /**
-     * Extracts and sets paths which follow the previous syntax for backwards compatibility.
-     * Pulls from either the action or facet parameter, in that order
-     *
-     * @param request
-     * @param searchRequest
-     */
-    protected boolean extractOldPathSyntax(HttpServletRequest request, SearchRequest searchRequest) {
-        String action = request.getParameter("action");
-        boolean added = this.getOldPath(action, searchRequest);
-        if (added) {
-            return true;
-        }
-        String facet = request.getParameter("facets");
-        return this.getOldPath(facet, searchRequest);
-    }
-
-    protected boolean getOldPath(String parameter, SearchRequest searchRequest) {
-        if (parameter != null) {
-            Matcher matches = oldFacetPath.matcher(parameter);
-            if (matches.find()) {
-                searchRequest.setRootPid(matches.group(2));
-                searchRequest.setApplyCutoffs(matches.group(3) != null);
-                return true;
-            }
-        }
-        return false;
     }
 
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {

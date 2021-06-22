@@ -5,11 +5,12 @@
         </div>
         <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
         <div v-if="!is_loading">
-            <div v-if="records.length > 0" class="columns">
-                <div class="column is-one-quarter facets-border border-box-left-top">
+            <div class="columns">
+                <div v-if="hasFacets" class="facet-list column is-one-quarter facets-border border-box-left-top">
                     <facets :facet-list="facet_list"></facets>
                 </div>
-                <div class="column is-three-quarters search-results-border border-box-left-top">
+
+                <div v-if="records.length > 0" class="column is-three-quarters search-results-border border-box-left-top">
                     <div class="bottomline paddedline">
                         <p>
                             Showing <span class="has-text-weight-bold">{{ recordDisplayCounts }}</span> of
@@ -19,8 +20,9 @@
                     </div>
                     <list-display v-if="records.length > 0" :record-list="records" :use-saved-browse-type="true"></list-display>
                 </div>
+                <p v-else class="spacing" :class="facetsWithNoResults">No records were found.</p>
             </div>
-            <p v-else class="spacing">No records were found.</p>
+
             <div class="columns is-mobile">
                 <div class="column is-12 search-pagination-bottom">
                     <pagination browse-type="search" :number-of-records="total_records"></pagination>
@@ -70,6 +72,17 @@
                 let offset = (search_start > 0) ? search_start : 0;
 
                 return `${start}-${parseInt(records) + offset}`;
+            },
+
+            hasFacets() {
+                return this.facet_list.map(f => f.values).flat().length > 0;
+            },
+
+            facetsWithNoResults() {
+                if (this.hasFacets) {
+                    return ['column', 'is-three-quarters'];
+                }
+                return [];
             }
         },
 
@@ -129,6 +142,7 @@
 
     p {
         margin: auto 0;
+        width: 100%;
     }
 
     @media screen and (max-width: 1024px) {

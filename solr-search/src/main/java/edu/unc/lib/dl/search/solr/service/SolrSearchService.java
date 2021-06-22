@@ -50,6 +50,7 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
+import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -199,6 +200,10 @@ public class SolrSearchService extends AbstractQueryService {
 
         SolrQuery solrQuery = this.generateSearch(searchRequest);
 
+        if (searchRequest.isRetrieveFacets()) {
+            facetFieldUtil.addFacetPrefixes(searchRequest.getSearchState(), solrQuery);
+        }
+
         LOG.debug("getSearchResults query: " + solrQuery);
         try {
             SearchResultResponse resultResponse = executeSearch(solrQuery, searchRequest.getSearchState(),
@@ -282,7 +287,8 @@ public class SolrSearchService extends AbstractQueryService {
         if (applyCutoffs) {
             selectedPath.setCutoff(selectedPath.getHighestTier() + 1);
         }
-        searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
+        // Override any existing ancestor path facets if a selected container is present
+        searchState.setFacet(SearchFieldKeys.ANCESTOR_PATH, selectedPath);
         return selectedContainer;
     }
 
@@ -388,22 +394,14 @@ public class SolrSearchService extends AbstractQueryService {
         }
 
         // Add facet limits
-        Map<String, Object> facets = searchState.getFacets();
+        Map<String, List<SearchFacet>> facets = searchState.getFacets();
         if (facets != null) {
-            Iterator<Entry<String, Object>> facetIt = facets.entrySet().iterator();
+            Iterator<Entry<String, List<SearchFacet>>> facetIt = facets.entrySet().iterator();
             while (facetIt.hasNext()) {
-                Entry<String, Object> facetEntry = facetIt.next();
-
-                if (facetEntry.getValue() instanceof String) {
-                    LOG.debug("Adding facet " + facetEntry.getKey() + " as a String");
-                    // Add Normal facets
-                    solrQuery.addFilterQuery(solrSettings.getFieldName(facetEntry.getKey()) + ":\""
-                            + SolrSettings.sanitize((String) facetEntry.getValue()) + "\"");
-                } else {
-                    LOG.debug("Adding facet {} as a  {}", facetEntry.getKey(),
-                            facetEntry.getValue().getClass().getName());
-                    facetFieldUtil.addToSolrQuery(facetEntry.getValue(), solrQuery);
-                }
+                Entry<String, List<SearchFacet>> facetEntry = facetIt.next();
+                LOG.debug("Adding facet {} as a  {}", facetEntry.getKey(),
+                        facetEntry.getValue().getClass().getName());
+                facetFieldUtil.addToSolrQuery(facetEntry.getValue(), solrQuery);
             }
         }
 

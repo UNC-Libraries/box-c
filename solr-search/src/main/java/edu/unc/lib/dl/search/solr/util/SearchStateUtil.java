@@ -19,8 +19,10 @@ import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,15 +75,15 @@ public class SearchStateUtil {
         }
         String ancestorPath = SearchFieldKeys.ANCESTOR_PATH.toString();
         if (searchState.getFacets() != null && searchState.getFacets().size() > 0) {
-            for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
-                if (!ancestorPath.equals(field.getKey())) {
-                    String fieldName = searchSettings.searchFieldParam(field.getKey());
-                    if (field.getValue() instanceof SearchFacet) {
-                        params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
-                    } else {
-                        params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
-                    }
+            for (Entry<String,List<SearchFacet>> field: searchState.getFacets().entrySet()) {
+                if (ancestorPath.equals(field.getKey())) {
+                    continue;
                 }
+                String fieldName = searchSettings.searchFieldParam(field.getKey());
+                String value = field.getValue().stream()
+                        .map(v -> urlEncodeParameter(v.getLimitToValue()))
+                        .collect(Collectors.joining("||"));
+                params.put(fieldName, value);
             }
         }
         return params;
