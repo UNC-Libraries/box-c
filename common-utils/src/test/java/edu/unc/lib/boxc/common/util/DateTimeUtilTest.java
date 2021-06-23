@@ -16,53 +16,22 @@
 /**
  *
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.boxc.common.util;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Gregory Jansen
  *
  */
-public class DateTimeUtilTest extends Assert {
-
-    private final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
-
-    @Before
-    public void init() {
-        DateTimeZone.setDefault(DateTimeZone.forID("EST"));
-    }
-
-    @After
-    public void after() {
-        DateTimeZone.setDefault(defaultTimeZone);
-    }
-
-    @Test
-    public void utcToDateTest() throws Exception {
-        Date plainDate = DateTimeUtil.parseUTCDateToDate("2001");
-        DateTime date = new DateTime(plainDate.getTime());
-        assertEquals(2001, date.getYear());
-
-        plainDate = DateTimeUtil.parseUTCDateToDate("2001-05-08");
-        date = new DateTime(plainDate.getTime());
-        assertEquals(2001, date.getYear());
-        assertEquals(5, date.getMonthOfYear());
-        assertEquals(8, date.getDayOfMonth());
-
-        try {
-            plainDate = DateTimeUtil.parseUTCDateToDate("2002-02-01T12:13:14");
-            fail();
-        } catch (IllegalArgumentException e) {
-        }
-    }
+public class DateTimeUtilTest {
 
     @Test
     public void utcToDateTimeTest() throws Exception {
@@ -78,7 +47,6 @@ public class DateTimeUtilTest extends Assert {
         assertEquals(2002, date.getYear());
         assertEquals(2, date.getMonthOfYear());
         assertEquals(1, date.getDayOfMonth());
-        assertEquals(17, date.getHourOfDay());
         assertEquals(13, date.getMinuteOfHour());
         assertEquals(14, date.getSecondOfMinute());
 
@@ -86,7 +54,6 @@ public class DateTimeUtilTest extends Assert {
         assertEquals(2004, date.getYear());
         assertEquals(2, date.getMonthOfYear());
         assertEquals(4, date.getDayOfMonth());
-        assertEquals(17, date.getHourOfDay());
         assertEquals(13, date.getMinuteOfHour());
         assertEquals(14, date.getSecondOfMinute());
         assertEquals(5, date.getMillisOfSecond());

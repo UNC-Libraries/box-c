@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.xml;
 
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayDeque;

@@ -25,12 +25,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageType;
 import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * A filesystem based storage location which locates files in a hashed structure based on

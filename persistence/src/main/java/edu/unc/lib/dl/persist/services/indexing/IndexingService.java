@@ -19,7 +19,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import io.dropwizard.metrics5.Timer;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.boxc.common.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -25,8 +25,9 @@ import java.io.InputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Process zip files
@@ -34,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  *
  */
 public class ZipFileUtil {
-    private static final Log log = LogFactory.getLog(ZipFileUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(ZipFileUtil.class);
 
     private ZipFileUtil() {
     }
@@ -42,7 +43,7 @@ public class ZipFileUtil {
     /**
      * Create a temporary directory, unzip the contents of the given zip file to
      * it, and return the directory.
-     * 
+     *
      * If anything goes wrong during this process, clean up the temporary
      * directory and throw an exception.
      */
@@ -52,13 +53,13 @@ public class ZipFileUtil {
         tempDir.delete();
         tempDir.mkdir();
         tempDir.deleteOnExit();
-        log.info("Unzipping to temporary directory: " + tempDir.getPath());
+        log.debug("Unzipping to temporary directory: {}", tempDir.getPath());
         try {
             unzip(new FileInputStream(zipFile), tempDir);
             return tempDir;
         } catch (IOException e) {
             // attempt cleanup, then re-throw
-            org.apache.commons.io.FileUtils.deleteDirectory(tempDir);
+            FileUtils.deleteDirectory(tempDir);
             throw e;
         }
     }
@@ -66,7 +67,7 @@ public class ZipFileUtil {
     /**
      * Create a temporary directory, unzip the contents of the given zip file to
      * it, and return the directory.
-     * 
+     *
      * If anything goes wrong during this process, clean up the temporary
      * directory and throw an exception.
      */
@@ -76,26 +77,26 @@ public class ZipFileUtil {
         tempDir.delete();
         tempDir.mkdir();
         tempDir.deleteOnExit();
-        log.debug("Unzipping to temporary directory: " + tempDir.getPath());
+        log.debug("Unzipping to temporary directory: {}", tempDir.getPath());
         try {
             unzip(zipStream, tempDir);
             return tempDir;
         } catch (IOException e) {
             // attempt cleanup, then re-throw
-            org.apache.commons.io.FileUtils.deleteDirectory(tempDir);
+            FileUtils.deleteDirectory(tempDir);
             throw e;
         }
     }
 
     /**
      * Unzips the contents of the zip file to the directory.
-     * 
+     *
      * If anything goes wrong during this process, clean up the temporary
      * directory and throw an exception.
      */
     public static void unzipToDir(File zipFile, File destDir)
             throws IOException {
-        log.debug("Unzipping to directory: " + destDir.getPath());
+        log.debug("Unzipping to directory: {}", destDir.getPath());
         unzip(new FileInputStream(zipFile), destDir);
     }
 

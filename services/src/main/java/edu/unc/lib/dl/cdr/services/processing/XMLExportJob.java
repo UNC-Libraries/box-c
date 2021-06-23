@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
@@ -46,7 +46,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.persist.services.EmailHandler;
 import io.dropwizard.metrics5.Timer;
 

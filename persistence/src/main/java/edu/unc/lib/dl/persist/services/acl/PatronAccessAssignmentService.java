@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
+import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.Assert.notNull;
 
@@ -60,7 +60,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;

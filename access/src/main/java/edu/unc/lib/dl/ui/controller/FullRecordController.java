@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;

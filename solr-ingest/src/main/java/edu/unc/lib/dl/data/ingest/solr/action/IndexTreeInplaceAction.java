@@ -25,10 +25,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Performs an update of an object and all of its descendants. After they have all updated, any descendants which were

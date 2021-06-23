@@ -33,7 +33,7 @@
 	<c:set var="currentUrl" value="${currentUrl}?${pageContext.request.queryString}"/>
 </c:if>
 <c:set var="currentRelativeUrl" scope="request" value="${currentUrl}"/>
-<s:eval var="currentAbsoluteUrl" scope="request" expression="T(edu.unc.lib.dl.util.URIUtil).join(accessBaseUrl, currentRelativeUrl)"/>
+<s:eval var="currentAbsoluteUrl" scope="request" expression="T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, currentRelativeUrl)"/>
 <c:choose>
 	<c:when test="${template =='json'}">
 		<c:import url="/jsp/template/jsonTemplate.jsp" />

@@ -25,7 +25,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.util.URIUtil;
+import edu.unc.lib.boxc.common.util.URIUtil;
 
 /**
  * Initializes the structure of the repository

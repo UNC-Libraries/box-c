@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.schematron;
 
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createTransformerFactory;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createTransformerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;

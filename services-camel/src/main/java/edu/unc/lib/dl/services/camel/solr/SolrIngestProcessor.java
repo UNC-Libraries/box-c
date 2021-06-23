@@ -17,7 +17,7 @@
 package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.metrics.TimerFactory.createTimerForClass;
+import static edu.unc.lib.boxc.common.metrics.TimerFactory.createTimerForClass;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.util.ArrayList;

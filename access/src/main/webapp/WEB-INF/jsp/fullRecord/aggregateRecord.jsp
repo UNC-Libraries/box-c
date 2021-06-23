@@ -45,7 +45,7 @@
                     <div class="column is-narrow-desktop action-btn item-actions">
                         <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
                             <s:eval var="editDescriptionUrl" expression=
-                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
+                                "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
                             <div class="actionlink right"><a class="button" href="${editDescriptionUrl}"><i class="fa fa-edit"></i> Edit</a></div>
                         </c:if>
 

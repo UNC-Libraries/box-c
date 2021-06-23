@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

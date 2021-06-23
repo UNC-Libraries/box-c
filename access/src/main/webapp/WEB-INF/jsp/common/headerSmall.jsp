@@ -63,15 +63,15 @@
                     <c:choose>
                         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
                             <s:eval var="jumpToAdmin" expression=
-                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)" />
+                                "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)" />
                         </c:when>
                         <c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
                             <s:eval var="jumpToAdmin" expression=
-                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', briefObject.ancestorPathFacet.searchKey)" />
+                                "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.ancestorPathFacet.searchKey)" />
                         </c:when>
                         <c:when test="${not empty briefObject}">
                             <s:eval var="jumpToAdmin" expression=
-                                "T(edu.unc.lib.dl.util.URIUtil).join(adminBaseUrl, 'list', briefObject.id)" />
+                                "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.id)" />
                         </c:when>
                         <c:otherwise>
                             <c:set var="jumpToAdmin" value="${adminBaseUrl}" />

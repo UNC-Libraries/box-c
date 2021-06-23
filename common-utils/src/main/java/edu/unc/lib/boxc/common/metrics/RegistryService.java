@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.metrics;
+package edu.unc.lib.boxc.common.metrics;
 
 import static io.dropwizard.metrics5.SharedMetricRegistries.getOrCreate;
 

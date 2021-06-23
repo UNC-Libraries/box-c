@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
 import static edu.unc.lib.dl.search.solr.service.StructureQueryService.CONTAINERS_COUNT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.SUBJECT;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ResourceType.Folder;
 import static edu.unc.lib.dl.util.ResourceType.Work;
 import static org.junit.Assert.assertEquals;

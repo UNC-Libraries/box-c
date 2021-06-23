@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.addDatastream;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.getDatastream;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

@@ -26,10 +26,10 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's

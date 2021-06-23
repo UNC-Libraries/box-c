@@ -13,43 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.metrics;
+package edu.unc.lib.boxc.common.metrics;
 
-import io.dropwizard.metrics5.Histogram;
-import io.dropwizard.metrics5.MetricName;
+import io.dropwizard.metrics5.Counter;
 import io.dropwizard.metrics5.MetricRegistry;
 
 /**
- * A factory for creating histrograms for reporting various metrics
+ * A factory for creating counters for reporting various metrics
  *
  * @author harring
  *
  */
-public class HistogramFactory {
+public class CounterFactory {
 
     private static final MetricRegistry registry = RegistryService.getInstance().getRegistry();
 
-    private HistogramFactory() {
+    private CounterFactory() {
 
     }
 
     /**
-     * Creates and registers a histogram under the given name
+     * Creates and registers a counter for the given class
      *
-     * @param metricName the name under which to register the histogram
+     * @param className the class name under which to register the counter
+     * @param metricNames any further specific name(s) for the counter (Optional)
      */
-    public static Histogram createHistogram(String name) {
-        return registry.histogram(name);
-
+    public static Counter createCounter(Class<?> className, String... metricNames) {
+        return registry.counter(MetricRegistry.name(className, metricNames));
     }
 
-    /**
-     * Creates and registers a histogram under the given metric name
-     *
-     * @param metricName the name under which to register the histogram
-     */
-    public static Histogram createHistogram(MetricName metricName) {
-        return registry.histogram(metricName);
-
-    }
 }

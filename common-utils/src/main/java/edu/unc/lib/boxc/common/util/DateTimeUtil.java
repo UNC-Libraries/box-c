@@ -16,44 +16,54 @@
 /**
  *
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.boxc.common.util;
 
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * @author Gregory Jansen
  *
  */
-public abstract class DateTimeUtil {
-
-    public final static DateTimeFormatter utcFormatter = DateTimeFormat
-            .forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(
-                    DateTimeZone.UTC);
-    public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat
-            .forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
-
-    public static Date parseUTCDateToDate(String utcDate) {
-        return ISODateTimeFormat.dateParser().parseDateTime(utcDate).toDate();
+public class DateTimeUtil {
+    private DateTimeUtil() {
     }
 
+    public final static DateTimeFormatter ISO_UTC_MILLISECONDS =
+            new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
+
+    /**
+     * Parse a UTC formatted timestamp as a date
+     * @param utcDate
+     * @return
+     */
     public static Date parseUTCToDate(String utcDate) {
         return parseUTCToDateTime(utcDate).toDate();
     }
 
-    public static DateTime parseUTCToDateTime(String utcDate) {
+    /**
+     * This is only visible for testing until we switch to java 8 time implementation
+     * @param utcDate
+     * @return
+     */
+    protected static DateTime parseUTCToDateTime(String utcDate) {
+        // TODO remove jodatime dependency. At the moment it is required for extensive ISO8601 parsing
         DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
                 .parseDateTime(utcDate);
         return isoDT.withZone(DateTimeZone.forID("UTC"));
     }
 
+    /**
+     * @param date
+     * @return date formatted in UTC YYYY-MM-DDTHH:MM:SS.SSSZ format
+     */
     public static String formatDateToUTC(Date date) {
-        DateTime dateTime = new DateTime(date);
-        return utcFormatter.print(dateTime);
+        return ISO_UTC_MILLISECONDS.format(date.toInstant().atOffset(ZoneOffset.UTC));
     }
 }

@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import edu.unc.lib.dl.util.ZipFileUtil;
+import edu.unc.lib.boxc.common.util.ZipFileUtil;
 
 public class DepositTestUtils {
 

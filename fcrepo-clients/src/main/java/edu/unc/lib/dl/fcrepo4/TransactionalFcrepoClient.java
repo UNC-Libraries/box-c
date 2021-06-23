@@ -38,8 +38,8 @@ import org.fcrepo.client.FcrepoLink;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * This wrapper class rewrites uris to have a transaction id (txid) in them, if one is present on the current thread

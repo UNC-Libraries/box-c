@@ -34,7 +34,7 @@
     <c:set var="currentUrl" value="${currentUrl}?${pageContext.request.queryString}"/>
 </c:if>
 <c:set var="currentRelativeUrl" scope="request" value="${currentUrl}"/>
-<s:eval var="currentAbsoluteUrl" scope="request" expression="T(edu.unc.lib.dl.util.URIUtil).join(accessBaseUrl, currentRelativeUrl)"/>
+<s:eval var="currentAbsoluteUrl" scope="request" expression="T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, currentRelativeUrl)"/>
 
 <c:url var="contactUrl" scope="request" value="https://library.unc.edu/wilson/contact/">
     <c:param name="refer" value="${currentAbsoluteUrl}"/>

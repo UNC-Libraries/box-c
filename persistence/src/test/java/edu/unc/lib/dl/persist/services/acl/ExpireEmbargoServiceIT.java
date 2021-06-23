@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
-import static edu.unc.lib.dl.util.DateTimeUtil.formatDateToUTC;
+import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

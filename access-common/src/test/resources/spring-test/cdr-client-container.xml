@@ -136,7 +136,7 @@
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
     
-    <bean id="schemaFactory" class="edu.unc.lib.dl.xml.SecureXMLFactory"
+    <bean id="schemaFactory" class="edu.unc.lib.boxc.common.xml.SecureXMLFactory"
         factory-method="createSchemaFactory" scope="prototype">
     </bean>
     

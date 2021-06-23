@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
-import static edu.unc.lib.dl.metrics.TimerFactory.createTimerForClass;
+import static edu.unc.lib.boxc.common.metrics.TimerFactory.createTimerForClass;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.stream.Collectors.toMap;
