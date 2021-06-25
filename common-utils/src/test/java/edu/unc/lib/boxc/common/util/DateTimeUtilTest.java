@@ -25,6 +25,8 @@ import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -32,6 +34,17 @@ import org.junit.Test;
  *
  */
 public class DateTimeUtilTest {
+    private final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
+
+    @Before
+    public void init() {
+        DateTimeZone.setDefault(DateTimeZone.forID("EST"));
+    }
+
+    @After
+    public void after() {
+        DateTimeZone.setDefault(defaultTimeZone);
+    }
 
     @Test
     public void utcToDateTimeTest() throws Exception {
@@ -47,6 +60,7 @@ public class DateTimeUtilTest {
         assertEquals(2002, date.getYear());
         assertEquals(2, date.getMonthOfYear());
         assertEquals(1, date.getDayOfMonth());
+        assertEquals(17, date.getHourOfDay());
         assertEquals(13, date.getMinuteOfHour());
         assertEquals(14, date.getSecondOfMinute());
 
@@ -54,6 +68,7 @@ public class DateTimeUtilTest {
         assertEquals(2004, date.getYear());
         assertEquals(2, date.getMonthOfYear());
         assertEquals(4, date.getDayOfMonth());
+        assertEquals(17, date.getHourOfDay());
         assertEquals(13, date.getMinuteOfHour());
         assertEquals(14, date.getSecondOfMinute());
         assertEquals(5, date.getMillisOfSecond());
