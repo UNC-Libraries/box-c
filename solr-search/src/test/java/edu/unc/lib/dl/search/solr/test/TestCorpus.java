@@ -119,6 +119,7 @@ public class TestCorpus {
         newDoc = makeContainerDocument(work1Pid, "Work 1", ResourceType.Work,
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
+        addFileProperties(newDoc, ContentCategory.text, "txt");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work1File1Pid, "File 1",
@@ -136,6 +137,7 @@ public class TestCorpus {
         newDoc = makeContainerDocument(work2Pid, "Work 2", ResourceType.Work,
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
+        addFileProperties(newDoc, ContentCategory.image, "jpg");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work2File1Pid, "File 3",
@@ -152,6 +154,7 @@ public class TestCorpus {
         newDoc = makeContainerDocument(work3Pid, "Work 3", ResourceType.Work,
                 rootPid, unitPid, coll2Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
+        addFileProperties(newDoc, ContentCategory.text, "txt");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work3File1Pid, "File 1",
@@ -168,6 +171,7 @@ public class TestCorpus {
         newDoc = makeContainerDocument(privateWorkPid, "Private Work", ResourceType.Work,
                 rootPid, unitPid, coll2Pid, privateFolderPid);
         addAclProperties(newDoc, null, "unitOwner", null);
+        addFileProperties(newDoc, ContentCategory.image, "png");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(privateWorkFile1Pid, "Private File",

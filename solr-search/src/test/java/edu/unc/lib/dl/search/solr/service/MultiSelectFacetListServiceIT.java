@@ -120,17 +120,17 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 5);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 12);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 14);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 9);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 4);
     }
 
     @Test
@@ -143,17 +143,17 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 5);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 6);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 3);
     }
 
     @Test
@@ -167,17 +167,17 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 5);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 8);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 11);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 4);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 3);
     }
 
     @Test
@@ -190,76 +190,73 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 1);
 
-        assertEquals(3, resp.getResultCount());
+        assertEquals(2, resp.getResultCount());
     }
 
     @Test
     public void secondTierContentTypeFacetTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
+        searchState.setFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
-        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
+        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 1);
         assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 1);
 
-        assertEquals(2, resp.getResultCount());
+        assertEquals(1, resp.getResultCount());
     }
 
     @Test
     public void parentAndChildContentTypeFacetTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text"));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
+        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image"));
+        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
-        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
+        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 1);
         assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 1);
 
-        assertEquals(2, resp.getResultCount());
+        assertEquals(1, resp.getResultCount());
     }
 
     @Test
@@ -276,11 +273,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 2);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 6);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 5);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
 
@@ -296,26 +292,26 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void multipleSameParentContentTypeFacetTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/pdf"));
+        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
+        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/png"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 1);
     }
 
     @Test
@@ -328,16 +324,16 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 12);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 14);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 9);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 4);
     }
 
     @Test
@@ -351,16 +347,16 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 5);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 5);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 5);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 5);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 2);
     }
 
     @Test
@@ -377,11 +373,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -404,11 +399,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -426,8 +420,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 5);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 0);
 
@@ -446,17 +440,17 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 6);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 2);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 3);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 12);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 11);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 7);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 4);
     }
 
     @Test(expected = NotFoundException.class)
@@ -486,13 +480,13 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFalse(resp.getFacetFields().hasFacet(PARENT_COLLECTION.name()));
 
         assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 6);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 3);
     }
 
     @Test
