@@ -36,6 +36,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
@@ -43,7 +44,6 @@ import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.PcdmUse;
 import edu.unc.lib.dl.util.RDFModelUtil;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *

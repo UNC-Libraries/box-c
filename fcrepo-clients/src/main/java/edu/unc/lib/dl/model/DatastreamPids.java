@@ -23,9 +23,9 @@ import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Helper methods for calculating PIDs to datastreams

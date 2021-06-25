@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
 
 import java.io.File;
 import java.io.FileInputStream;

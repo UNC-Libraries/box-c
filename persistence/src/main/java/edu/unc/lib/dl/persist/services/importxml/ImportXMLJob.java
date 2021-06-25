@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.importxml;
 
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createXMLInputFactory;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,13 +47,13 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.samskivert.mustache.Template;
 
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;

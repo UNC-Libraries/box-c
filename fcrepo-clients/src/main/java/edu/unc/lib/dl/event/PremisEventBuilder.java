@@ -25,10 +25,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Prov;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Builder for creating a PREMIS RDF event.

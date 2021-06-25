@@ -17,12 +17,12 @@ package edu.unc.lib.dl.model;
 
 import java.util.Objects;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Helper methods for getting PIDs for agent

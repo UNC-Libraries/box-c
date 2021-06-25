@@ -21,7 +21,7 @@ import java.util.List;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
-import edu.unc.lib.dl.util.DateTimeUtil;
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
 
 /**
  * Convenience methods for working with JDOM

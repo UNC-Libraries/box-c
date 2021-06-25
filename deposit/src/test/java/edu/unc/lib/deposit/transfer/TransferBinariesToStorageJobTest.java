@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA_HISTORY;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

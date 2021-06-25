@@ -49,13 +49,13 @@ import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
 import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
 import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
 import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 import edu.unc.lib.dl.util.ResourceType;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Generates request, connects to, and streams the output from loris.  Sets pertinent headers.

@@ -67,9 +67,9 @@ import java.util.Map;
 
 import org.apache.solr.client.solrj.beans.Field;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  *

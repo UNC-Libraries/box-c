@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -43,12 +43,12 @@ import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *

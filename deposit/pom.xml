@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
+            <artifactId>common-utils</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

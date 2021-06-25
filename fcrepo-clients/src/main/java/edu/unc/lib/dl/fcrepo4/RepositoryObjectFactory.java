@@ -45,6 +45,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -54,7 +55,6 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Creates objects in the repository matching specific object profile types.

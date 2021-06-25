@@ -44,9 +44,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
-import edu.unc.lib.dl.test.SelfReturningAnswer;
 /**
  *
  * @author bbpennel

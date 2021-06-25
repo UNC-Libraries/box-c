@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.xml;
-
-import java.io.IOException;
+package edu.unc.lib.boxc.common.xml;
 
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
@@ -27,11 +25,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
 import org.jdom2.input.SAXBuilder;
-import org.springframework.core.io.ClassPathResource;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
-
-import edu.unc.lib.dl.exceptions.RepositoryException;
 
 /**
  * Factory for common XML based classes with XXE turned off and other security settings
@@ -86,10 +81,10 @@ public class SecureXMLFactory {
         tf.setURIResolver(new URIResolver() {
             @Override
             public Source resolve(String href, String base) throws TransformerException {
-                ClassPathResource svrlRes = new ClassPathResource(href, relativeClass);
+                relativeClass.getResourceAsStream(href);
                 try {
-                    return new StreamSource(svrlRes.getInputStream());
-                } catch (IOException e) {
+                    return new StreamSource(relativeClass.getResourceAsStream(href));
+                } catch (Exception e) {
                     throw new TransformerException("Cannot resolve " + href, e);
                 }
             }
@@ -106,7 +101,7 @@ public class SecureXMLFactory {
             factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
-            throw new RepositoryException("Unable to configure schema factory", e);
+            throw new RuntimeException("Unable to configure schema factory", e);
         }
         return factory;
     }

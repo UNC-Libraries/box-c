@@ -54,7 +54,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;

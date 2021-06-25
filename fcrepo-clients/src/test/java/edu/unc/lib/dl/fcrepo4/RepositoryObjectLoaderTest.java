@@ -32,11 +32,11 @@ import org.mockito.Mock;
 
 import com.google.common.cache.LoadingCache;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *

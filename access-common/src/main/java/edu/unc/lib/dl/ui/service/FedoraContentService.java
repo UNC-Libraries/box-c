@@ -35,6 +35,7 @@ import org.apache.jena.riot.WebContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -46,7 +47,6 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.model.StoragePolicy;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Streams binary content from repository objects.

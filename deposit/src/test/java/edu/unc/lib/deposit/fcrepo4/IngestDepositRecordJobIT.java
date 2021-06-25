@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;

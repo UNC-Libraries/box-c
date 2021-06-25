@@ -23,11 +23,11 @@
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jquery.xmleditor.css" />
 
 <s:eval var="viewRecordUrl" expression=
-	"T(edu.unc.lib.dl.util.URIUtil).join(accessBaseUrl, 'record', resultObject.id)" />
+	"T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, 'record', resultObject.id)" />
 <s:eval var="originalSubpath" expression=
 	"T(edu.unc.lib.dl.ui.util.DatastreamUtil).getOriginalFileUrl(resultObject)" />
 <s:eval var="originalFileUrl" expression=
-	"T(edu.unc.lib.dl.util.URIUtil).join(accessBaseUrl, originalSubpath)" />
+	"T(edu.unc.lib.boxc.common.util.URIUtil).join(accessBaseUrl, originalSubpath)" />
 
 <script>
 	var require = {

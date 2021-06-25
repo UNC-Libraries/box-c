@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;

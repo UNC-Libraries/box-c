@@ -36,7 +36,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import edu.unc.lib.dl.util.URIUtil;
+import edu.unc.lib.boxc.common.util.URIUtil;
 
 /**
  * Service for getting finding aid URLs

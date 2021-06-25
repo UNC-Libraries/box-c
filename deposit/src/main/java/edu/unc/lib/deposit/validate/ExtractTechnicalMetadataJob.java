@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newBufferedWriter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
@@ -68,6 +68,7 @@ import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.base.CharMatcher;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
@@ -75,7 +76,6 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.util.MimetypeHelpers;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Job which performs technical metadata extraction on binary files included in

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.boxc.common.util;
 
 import static java.text.Normalizer.Form.NFD;
 import static java.util.Locale.ENGLISH;

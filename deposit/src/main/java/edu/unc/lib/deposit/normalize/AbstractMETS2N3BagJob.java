@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 
 import java.io.File;
 import java.io.FileOutputStream;

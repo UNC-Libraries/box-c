@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ResourceType.File;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;

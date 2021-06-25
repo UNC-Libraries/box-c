@@ -24,8 +24,8 @@ import static edu.unc.lib.dl.fedora.PIDConstants.DEPOSITS_QUALIFIER;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Provides access to base URIs needed for interacting with the repository

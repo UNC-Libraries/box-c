@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -49,6 +49,7 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.util.concurrent.MoreExecutors;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
@@ -61,7 +62,6 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
-import edu.unc.lib.dl.util.URIUtil;
 import fi.solita.clamav.ClamAVClient;
 import fi.solita.clamav.ScanResult;
 import fi.solita.clamav.ScanResult.Status;

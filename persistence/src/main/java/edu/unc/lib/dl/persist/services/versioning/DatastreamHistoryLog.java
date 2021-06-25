@@ -31,10 +31,10 @@ import org.jdom2.JDOMException;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.xml.SecureXMLFactory;
 
 /**
  * Object representing the history of a datastream as a timestamped XML based log.

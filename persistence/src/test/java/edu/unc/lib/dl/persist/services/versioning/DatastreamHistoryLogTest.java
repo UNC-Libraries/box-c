@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.util.DateTimeUtil.parseUTCToDate;
+import static edu.unc.lib.boxc.common.util.DateTimeUtil.parseUTCToDate;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
@@ -35,10 +35,10 @@ import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.xml.SecureXMLFactory;
 
 /**
  * @author bbpennel

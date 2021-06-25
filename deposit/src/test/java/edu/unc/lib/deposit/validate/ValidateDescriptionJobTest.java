@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.validate;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

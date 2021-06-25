@@ -19,8 +19,8 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.EVENT_ID_PREFIX;
 
 import java.util.UUID;
 
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Minter of PIDs for content objects, deposit records, and PREMIS events.
