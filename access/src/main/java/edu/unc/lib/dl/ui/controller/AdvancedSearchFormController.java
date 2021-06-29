@@ -97,9 +97,13 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
         String container = request.getParameter("container");
 
         request.getSession().setAttribute("searchState", searchState);
-
         model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-        return "redirect:/search" + ((container != null && container.length() > 0) ? '/' + container : "");
+        String collection = (container != null && container.length() > 0) ? container : null;
+        if (collection == null) {
+            return "redirect:/search";
+        }
+
+        return "redirect:/search?collection=" + collection;
     }
 }
