@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 
 /**
  *

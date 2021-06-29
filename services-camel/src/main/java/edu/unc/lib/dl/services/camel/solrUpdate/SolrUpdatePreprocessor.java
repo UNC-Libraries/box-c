@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.dl.util.IndexingActionType.CLEAN_REINDEX;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
@@ -22,7 +23,6 @@ import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import java.util.EnumSet;
 import java.util.Set;

@@ -30,10 +30,10 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.IanaRelation;
 
 /**
  * Represents a generic repository object within the main content tree.

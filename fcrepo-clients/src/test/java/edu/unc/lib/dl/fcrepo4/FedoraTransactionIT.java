@@ -35,11 +35,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  *

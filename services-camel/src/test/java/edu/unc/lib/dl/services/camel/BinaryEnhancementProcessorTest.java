@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.boxc.model.api.rdf.Cdr.Collection;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.rdf.Cdr.Collection;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;

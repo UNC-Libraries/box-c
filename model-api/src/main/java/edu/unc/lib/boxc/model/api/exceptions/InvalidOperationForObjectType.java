@@ -13,27 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.exceptions;
+package edu.unc.lib.boxc.model.api.exceptions;
 
 /**
- * Exception indicating that the provided value was not a valid PID
+ * Exception thrown when an operation is attempted on an object type which it is
+ * not applicable to.
  *
  * @author bbpennel
+ *
  */
-public class InvalidPidException extends RepositoryException {
-
+public class InvalidOperationForObjectType extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public InvalidPidException(String message) {
+    public InvalidOperationForObjectType() {
+    }
+
+    public InvalidOperationForObjectType(String message) {
         super(message);
     }
 
-    public InvalidPidException(Throwable ex) {
-        super(ex);
+    public InvalidOperationForObjectType(Throwable cause) {
+        super(cause);
     }
 
-    public InvalidPidException(String message, Throwable ex) {
-        super(message, ex);
+    public InvalidOperationForObjectType(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public InvalidOperationForObjectType(String message, Throwable cause, boolean enableSuppression,
+            boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 
 }

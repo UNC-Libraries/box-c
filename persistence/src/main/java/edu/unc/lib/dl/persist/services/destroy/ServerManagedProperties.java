@@ -17,8 +17,8 @@ package edu.unc.lib.dl.persist.services.destroy;
 
 import org.apache.jena.rdf.model.Property;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 
 /**
  * Contains properties managed by Fedora that we want to store in Tombstones

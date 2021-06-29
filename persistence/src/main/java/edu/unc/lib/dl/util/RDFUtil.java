@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.jdom2.Element;
 
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 
 /**
  * 

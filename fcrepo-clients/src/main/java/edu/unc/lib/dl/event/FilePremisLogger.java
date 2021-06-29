@@ -34,10 +34,10 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 
 /**

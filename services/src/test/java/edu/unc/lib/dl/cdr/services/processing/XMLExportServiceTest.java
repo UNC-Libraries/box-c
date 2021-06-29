@@ -47,6 +47,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -63,7 +64,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.persist.services.EmailHandler;
 
 /**

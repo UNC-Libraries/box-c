@@ -35,7 +35,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
 

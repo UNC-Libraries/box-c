@@ -23,7 +23,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.dl.services.camel.images.ImageDerivativeProcessor;
 

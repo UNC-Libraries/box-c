@@ -39,12 +39,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.Premis;
 
 /**
  *

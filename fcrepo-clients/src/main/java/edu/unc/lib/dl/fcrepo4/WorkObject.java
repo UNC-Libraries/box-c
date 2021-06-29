@@ -24,12 +24,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
 
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**

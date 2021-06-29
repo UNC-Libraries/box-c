@@ -26,7 +26,7 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 
-import edu.unc.lib.dl.rdf.Ldp;
+import edu.unc.lib.boxc.model.api.rdf.Ldp;
 
 /**
  * Test utility which indexes a tree of repository objects into a single model.

@@ -29,8 +29,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
 
 /**

@@ -23,12 +23,12 @@ import java.util.List;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Ebucore;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**

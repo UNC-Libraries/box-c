@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
+import static edu.unc.lib.boxc.model.api.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;

@@ -15,11 +15,13 @@
  */
 package edu.unc.lib.dl.persist.services.delete;
 
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
-import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
 
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -28,8 +30,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**

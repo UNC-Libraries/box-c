@@ -67,6 +67,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
@@ -85,8 +87,6 @@ import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
  * @author bbpennel

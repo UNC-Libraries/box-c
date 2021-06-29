@@ -23,8 +23,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.junit.Test;
 
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 
 /**
  *

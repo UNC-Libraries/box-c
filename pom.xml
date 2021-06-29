@@ -194,6 +194,8 @@
         <module>fcrepo</module>
         <module>spoof</module>
         <module>common-utils</module>
+        <module>model-api</module>
+        <module>model-fcrepo</module>
     </modules>
 
     <reporting>

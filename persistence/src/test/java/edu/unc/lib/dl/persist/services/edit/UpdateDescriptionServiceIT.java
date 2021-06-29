@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.MockitoAnnotations.initMocks;

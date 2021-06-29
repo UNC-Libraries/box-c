@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.exceptions;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+
 /**
  * Thrown when an unsupported digest algorithm is specified
  *

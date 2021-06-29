@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;

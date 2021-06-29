@@ -33,8 +33,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import edu.unc.lib.boxc.model.api.xml.NamespaceConstants;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  * An quick SAX extractor of METS header information.

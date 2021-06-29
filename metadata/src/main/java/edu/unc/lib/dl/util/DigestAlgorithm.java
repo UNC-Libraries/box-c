@@ -17,7 +17,7 @@ package edu.unc.lib.dl.util;
 
 import org.apache.jena.rdf.model.Property;
 
-import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 
 /**
  * Digest algorithms supported by bxc

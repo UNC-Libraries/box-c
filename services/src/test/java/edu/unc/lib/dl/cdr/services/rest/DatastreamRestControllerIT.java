@@ -58,6 +58,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -67,7 +68,6 @@ import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.model.DatastreamType;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
 import edu.unc.lib.dl.util.DerivativeService;
 

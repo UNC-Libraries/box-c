@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.exceptions.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;

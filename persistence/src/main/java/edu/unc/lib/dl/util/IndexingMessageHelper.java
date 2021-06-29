@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
 import java.util.Collection;
 import java.util.Map;

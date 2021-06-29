@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +60,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -81,7 +82,6 @@ import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.edit.EditTitleService;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;

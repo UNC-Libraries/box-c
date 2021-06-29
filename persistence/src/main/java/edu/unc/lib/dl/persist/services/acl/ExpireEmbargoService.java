@@ -17,7 +17,7 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.parseUTCToDate;
-import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +35,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -44,7 +45,6 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.JMSMessageUtil;

@@ -17,10 +17,10 @@ package edu.unc.lib.dl.fcrepo4;
 
 import org.apache.jena.rdf.model.Model;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**

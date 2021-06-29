@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 
 /**
  * Resource Types

@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.persist.services.importxml;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.writeToFile;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
 import static org.junit.Assert.assertEquals;

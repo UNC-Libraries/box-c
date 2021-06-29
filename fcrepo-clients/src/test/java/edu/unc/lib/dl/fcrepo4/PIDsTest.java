@@ -27,7 +27,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.exceptions.InvalidPidException;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.test.TestHelper;

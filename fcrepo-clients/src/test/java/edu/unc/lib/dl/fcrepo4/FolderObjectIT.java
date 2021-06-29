@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.rdf.PcdmModels.memberOf;
+import static edu.unc.lib.boxc.model.api.rdf.PcdmModels.memberOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,9 +27,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Test;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 
 /**
  *

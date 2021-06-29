@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -44,7 +45,6 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;

@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

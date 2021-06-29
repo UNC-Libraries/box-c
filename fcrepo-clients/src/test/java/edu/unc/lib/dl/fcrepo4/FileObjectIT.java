@@ -34,10 +34,10 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.rdf.PcdmUse;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.DatastreamType;
-import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  *

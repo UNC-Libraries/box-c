@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;

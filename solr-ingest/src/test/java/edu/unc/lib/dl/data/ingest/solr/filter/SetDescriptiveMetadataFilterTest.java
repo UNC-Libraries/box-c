@@ -45,12 +45,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 

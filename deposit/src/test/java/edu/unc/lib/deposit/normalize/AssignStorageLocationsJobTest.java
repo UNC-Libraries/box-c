@@ -34,12 +34,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**

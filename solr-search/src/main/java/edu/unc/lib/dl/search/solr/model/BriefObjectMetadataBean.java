@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 

@@ -24,8 +24,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
  * Test utility for constructing models containing access control details using

@@ -50,14 +50,14 @@ import org.xml.sax.SAXException;
 
 import com.google.common.io.Files;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;

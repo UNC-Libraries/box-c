@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -47,7 +48,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageType;
 import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
-import edu.unc.lib.dl.rdf.Cdr;
 
 /**
  * @author bbpennel

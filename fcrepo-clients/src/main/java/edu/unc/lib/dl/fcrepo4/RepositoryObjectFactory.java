@@ -46,12 +46,12 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.IanaRelation;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;

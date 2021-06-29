@@ -30,8 +30,8 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  *

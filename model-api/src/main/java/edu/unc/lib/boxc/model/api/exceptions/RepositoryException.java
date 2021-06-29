@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.exceptions;
+package edu.unc.lib.boxc.model.api.exceptions;
 
 /**
  * General exception related to the state of the box-c repository

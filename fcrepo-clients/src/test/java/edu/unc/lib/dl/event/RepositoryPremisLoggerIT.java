@@ -54,6 +54,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -64,8 +66,6 @@ import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.rdf.Prov;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 

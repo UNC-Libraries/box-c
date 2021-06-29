@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.exceptions;
+package edu.unc.lib.boxc.model.api.exceptions;
 
 /**
  * Exception indicating that an invalid membership hierarchy was encountered

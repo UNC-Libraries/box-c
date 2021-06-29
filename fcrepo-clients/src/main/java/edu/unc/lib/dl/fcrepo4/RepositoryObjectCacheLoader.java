@@ -34,11 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheLoader;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.util.EntityTag;
 
 /**

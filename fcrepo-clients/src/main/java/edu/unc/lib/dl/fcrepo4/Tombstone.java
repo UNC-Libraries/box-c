@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * Represents a tombstone object within the repository

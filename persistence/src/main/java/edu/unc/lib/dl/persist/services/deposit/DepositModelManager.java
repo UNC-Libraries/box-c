@@ -47,8 +47,8 @@ import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.dl.exceptions.InterruptedRuntimeException;
-import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**

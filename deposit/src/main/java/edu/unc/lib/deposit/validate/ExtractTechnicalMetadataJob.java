@@ -16,10 +16,10 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XSI_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.newBufferedWriter;
 import static org.apache.commons.lang3.StringUtils.substringBeforeLast;

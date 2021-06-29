@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.exceptions;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+
 /**
  * Exception indicating that a checksum did not match the expected value
  *

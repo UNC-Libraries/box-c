@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
 import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.excludeDepositRecord;
-import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.File;
@@ -60,6 +60,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -94,12 +100,6 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.rdf.IanaRelation;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.ObjectPersistenceException;

@@ -15,18 +15,18 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.dl.rdf.CdrAcl.canAccess;
-import static edu.unc.lib.dl.rdf.CdrAcl.canDescribe;
-import static edu.unc.lib.dl.rdf.CdrAcl.canIngest;
-import static edu.unc.lib.dl.rdf.CdrAcl.canManage;
-import static edu.unc.lib.dl.rdf.CdrAcl.canProcess;
-import static edu.unc.lib.dl.rdf.CdrAcl.canViewAccessCopies;
-import static edu.unc.lib.dl.rdf.CdrAcl.canViewMetadata;
-import static edu.unc.lib.dl.rdf.CdrAcl.canViewOriginals;
-import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
-import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
-import static edu.unc.lib.dl.rdf.CdrAcl.none;
-import static edu.unc.lib.dl.rdf.CdrAcl.unitOwner;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canAccess;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canDescribe;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canIngest;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canManage;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canProcess;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewAccessCopies;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewMetadata;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewOriginals;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.none;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.unitOwner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,11 +41,11 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.util.PrincipalClassifier;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
  * Validator which determines if a provided model contains access restriction

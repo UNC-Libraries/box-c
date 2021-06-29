@@ -35,11 +35,11 @@ import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 
 /**
  *

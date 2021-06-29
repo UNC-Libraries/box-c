@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.dl.util.IndexingActionType.ADD;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;

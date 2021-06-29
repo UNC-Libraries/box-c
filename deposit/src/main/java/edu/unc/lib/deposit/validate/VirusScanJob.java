@@ -33,15 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.CharMatcher;
 
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.exceptions.RepositoryException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import fi.solita.clamav.ClamAVClient;
 import fi.solita.clamav.ScanResult;

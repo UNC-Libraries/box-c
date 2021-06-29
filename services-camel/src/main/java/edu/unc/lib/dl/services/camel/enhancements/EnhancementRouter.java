@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.enhancements;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrEnhancementSet;
 import static org.apache.camel.LoggingLevel.DEBUG;
@@ -28,7 +28,7 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor;

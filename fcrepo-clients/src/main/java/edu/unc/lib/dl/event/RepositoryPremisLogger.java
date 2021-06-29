@@ -36,7 +36,9 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -48,8 +50,6 @@ import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
 

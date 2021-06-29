@@ -27,7 +27,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

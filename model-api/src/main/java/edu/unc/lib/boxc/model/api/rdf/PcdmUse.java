@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.rdf;
+package edu.unc.lib.boxc.model.api.rdf;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 

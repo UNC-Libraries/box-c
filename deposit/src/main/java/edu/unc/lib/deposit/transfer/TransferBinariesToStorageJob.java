@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.hasDatastreamDescriptiveHistory;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.model.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.dl.rdf.CdrDeposit.hasDatastreamDescriptiveHistory;
 import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -45,6 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -57,8 +59,6 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination

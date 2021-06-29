@@ -55,6 +55,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
@@ -63,12 +67,8 @@ import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronA
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ResourceType;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import io.dropwizard.metrics5.Timer;
 
 /**

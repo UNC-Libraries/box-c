@@ -24,11 +24,11 @@ import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
-import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 
 /**
  * Filters statements against a list of permitted predicates

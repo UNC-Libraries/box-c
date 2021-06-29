@@ -35,10 +35,10 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Processor to set mimetype and Id of derivative to delete

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.xml;
+package edu.unc.lib.boxc.model.api.xml;
 
 /**
  * Utility class to contain various XML namespace values for the digital library

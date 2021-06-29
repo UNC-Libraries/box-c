@@ -36,13 +36,13 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-import edu.unc.lib.dl.exceptions.ObjectHierarchyException;
-import edu.unc.lib.dl.exceptions.OrphanedObjectException;
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectHierarchyException;
+import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

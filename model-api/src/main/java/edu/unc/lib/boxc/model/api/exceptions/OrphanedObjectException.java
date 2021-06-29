@@ -13,36 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.model;
+package edu.unc.lib.boxc.model.api.exceptions;
 
 /**
- * Exception thrown when an operation is attempted on an object type which it is
- * not applicable to.
+ * Exception thrown when an object is not part of the membership hierarchy of the repository.
  *
  * @author bbpennel
  *
  */
-public class InvalidOperationForObjectType extends RuntimeException {
+public class OrphanedObjectException extends RepositoryException {
     private static final long serialVersionUID = 1L;
 
-    public InvalidOperationForObjectType() {
-    }
-
-    public InvalidOperationForObjectType(String message) {
+    public OrphanedObjectException(String message) {
         super(message);
     }
-
-    public InvalidOperationForObjectType(Throwable cause) {
-        super(cause);
-    }
-
-    public InvalidOperationForObjectType(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public InvalidOperationForObjectType(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
 }

@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import edu.unc.lib.boxc.model.api.xml.NamespaceConstants;
 import junit.framework.TestCase;
 
 /**

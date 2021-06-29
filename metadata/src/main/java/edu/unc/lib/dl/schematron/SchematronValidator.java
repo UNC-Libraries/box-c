@@ -44,7 +44,7 @@ import org.jdom2.transform.JDOMSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 
 /**
  * This class validates XML documents against ISO Schematron files. It can be

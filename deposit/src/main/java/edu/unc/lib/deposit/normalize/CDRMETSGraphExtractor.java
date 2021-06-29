@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.METS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XLINK_NS;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,10 +42,10 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
  *

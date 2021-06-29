@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.api.services;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 
 /**
  * Exception indicating that a lock or acquisition of one was interrupted

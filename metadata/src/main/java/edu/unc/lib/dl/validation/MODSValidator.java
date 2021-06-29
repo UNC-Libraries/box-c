@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.validation;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

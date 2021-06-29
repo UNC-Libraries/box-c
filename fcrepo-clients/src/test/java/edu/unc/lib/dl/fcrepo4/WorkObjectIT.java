@@ -34,9 +34,9 @@ import org.apache.jena.vocabulary.DC;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 
 /**
  *

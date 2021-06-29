@@ -35,6 +35,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -45,7 +46,6 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.rdf.Ldp;
 
 /**
  * A job for destroying objects from the repository, which does not leave behind
