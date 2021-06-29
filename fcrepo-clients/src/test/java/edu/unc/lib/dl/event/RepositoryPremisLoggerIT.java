@@ -54,8 +54,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
+import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -89,7 +92,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
     @Mock
     private BinaryTransferSession mockSession;
     @Autowired
-    private PremisLoggerFactory premisLoggerFactory;
+    private PremisLoggerFactoryImpl premisLoggerFactory;
 
     @Before
     public void init() throws Exception {

@@ -39,14 +39,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
@@ -87,7 +87,7 @@ public class MarkForDeletionJobTest {
     @Captor
     private ArgumentCaptor<String> messageCaptor;
 
-    private PremisEventBuilder eventBuilder;
+    private PremisEventBuilderImpl eventBuilder;
 
     private PID pid;
 
@@ -104,7 +104,7 @@ public class MarkForDeletionJobTest {
 
         when(contentObj.getMetadataUri()).thenReturn(URI.create(""));
 
-        eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
         when(contentObj.getPremisLog()).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Deaccession))).thenReturn(eventBuilder);
 

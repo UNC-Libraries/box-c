@@ -48,11 +48,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
@@ -118,7 +118,7 @@ public class DestroyDerivativesRouterIT {
     @Autowired
     private FedoraSparqlUpdateService sparqlUpdateService;
     @Autowired
-    private PremisLoggerFactory premisLoggerFactory;
+    private PremisLoggerFactoryImpl premisLoggerFactory;
     @Autowired
     private CamelContext cdrDestroyDerivatives;
     @Autowired

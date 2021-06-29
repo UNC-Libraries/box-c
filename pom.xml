@@ -581,6 +581,16 @@
                 <artifactId>metadata</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>model-api</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>model-fcrepo</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
              <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>fcrepo-clients</artifactId>

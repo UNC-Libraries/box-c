@@ -36,7 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;

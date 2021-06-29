@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.event;
+package edu.unc.lib.boxc.model.api.event;
 
 import java.io.InputStream;
 import java.util.Date;
@@ -21,6 +21,7 @@ import java.util.Date;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -45,7 +46,7 @@ public interface PremisLogger extends AutoCloseable {
      * @param eventType
      * @return PremisEventBuilder
      */
-    public PremisEventBuilder buildEvent(Resource eventType);
+    public PremisEventBuilderImpl buildEvent(Resource eventType);
 
     /**
      * Adds events to this log

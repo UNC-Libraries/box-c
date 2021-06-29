@@ -33,10 +33,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
@@ -150,7 +150,7 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
             FixityCheckResult result = (FixityCheckResult) resultObj;
             // Store event for calculation of checksums
             PremisLogger premisDepositLogger = getPremisLogger(result.rescPid);
-            PremisEventBuilder builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+            PremisEventBuilderImpl builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
                     .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService));
             result.details.forEach(builder::addEventDetail);
             builder.write();

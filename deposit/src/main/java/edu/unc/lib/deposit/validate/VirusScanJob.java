@@ -33,12 +33,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.CharMatcher;
 
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.AgentPids;
@@ -147,7 +147,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                         PID binPid = href.getKey();
                         PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
                         PremisLogger premisLogger = getPremisLogger(parentPid);
-                        PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+                        PremisEventBuilderImpl premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
                         premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                                 .addEventDetail("File passed pre-ingest scan for viruses")

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.event;
+package edu.unc.lib.boxc.model.fcrepo.event;
 
 import static edu.unc.lib.dl.model.DatastreamPids.getMdEventsPid;
 
@@ -34,6 +34,7 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
@@ -64,7 +65,7 @@ public class FilePremisLogger implements PremisLogger {
     }
 
     @Override
-    public PremisEventBuilder buildEvent(PID eventPid, Resource eventType, Date date) {
+    public PremisEventBuilderImpl buildEvent(PID eventPid, Resource eventType, Date date) {
         if (eventPid == null) {
             eventPid = pidMinter.mintPremisEventPid(objectPid);
         }
@@ -72,7 +73,7 @@ public class FilePremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(objectPid, eventPid, eventType, date, this);
+        return new PremisEventBuilderImpl(objectPid, eventPid, eventType, date, this);
     }
 
     /**
@@ -82,7 +83,7 @@ public class FilePremisLogger implements PremisLogger {
      * @return PremisEventBuilder
      */
     @Override
-    public PremisEventBuilder buildEvent(Resource eventType) {
+    public PremisEventBuilderImpl buildEvent(Resource eventType) {
         return buildEvent(null, eventType, null);
     }
 

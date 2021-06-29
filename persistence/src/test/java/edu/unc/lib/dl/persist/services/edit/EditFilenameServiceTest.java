@@ -40,16 +40,16 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -103,7 +103,7 @@ public class EditFilenameServiceTest {
     @Captor
     private ArgumentCaptor<List<PID>> pidCaptor;
 
-    private PremisEventBuilder eventBuilder;
+    private PremisEventBuilderImpl eventBuilder;
 
     private PID pid;
 
@@ -130,7 +130,7 @@ public class EditFilenameServiceTest {
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("user");
 
-        eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
         when(repoObj.getPremisLog()).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.FilenameChange))).thenReturn(eventBuilder);
         when(agent.getUsernameUri()).thenReturn("agentname");

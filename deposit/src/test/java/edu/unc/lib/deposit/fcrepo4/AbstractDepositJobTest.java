@@ -36,9 +36,9 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
+import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
@@ -82,11 +82,11 @@ public class AbstractDepositJobTest {
     @Mock
     protected DepositStatusFactory depositStatusFactory;
     @Mock
-    protected PremisLoggerFactory premisLoggerFactory;
+    protected PremisLoggerFactoryImpl premisLoggerFactory;
     @Mock
     protected PremisLogger premisLogger;
     @Mock
-    protected PremisEventBuilder premisEventBuilder;
+    protected PremisEventBuilderImpl premisEventBuilder;
     @Mock
     protected ActivityMetricsClient metricsClient;
     @Mock
