@@ -2,26 +2,11 @@ VERSION = ""
 
 build-all: build-admin build-access
 
-build-admin:
-	# Build vue permissions application files
-	npm --prefix static/js/admin/vue-permissions-editor ci
+build-admin: build-admin-npm build-admin-concat
 
-ifeq ($(DEPLOY_TYPE), prod)
-	npm --prefix static/js/admin/vue-permissions-editor run build
-else
-	npm --prefix static/js/admin/vue-permissions-editor run build-dev
-endif
+build-access: build-access-npm build-access-concat
 
-	cat /dev/null > static/js/vue-permissions.js
-
-	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*js > static/js/vue-permissions.js
-
-
-	# Add new line so app*.js doesn't get commented out
-	echo >> static/js/vue-permissions.js
-
-	cat static/js/admin/vue-permissions-editor/dist/js/app*js >> static/js/vue-permissions.js
-
+build-admin-concat:
 	cat static/js/lib/jquery.min.js > static/js/cdr-admin.js
 	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-admin.js
 	cat static/js/lib/jquery-ui.min.js >> static/js/cdr-admin.js
@@ -61,8 +46,56 @@ ifneq ($(VERSION), "")
 	done
 endif
 
-build-access:
-# Build vue application(s) files
+build-admin-npm:
+	# Build vue permissions application files
+	npm --prefix static/js/admin/vue-permissions-editor ci
+
+ifeq ($(DEPLOY_TYPE), prod)
+	npm --prefix static/js/admin/vue-permissions-editor run build
+else
+	npm --prefix static/js/admin/vue-permissions-editor run build-dev
+endif
+
+	cat /dev/null > static/js/vue-permissions.js
+	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*js > static/js/vue-permissions.js
+
+	# Add new line so app*.js doesn't get commented out
+	echo >> static/js/vue-permissions.js
+	cat static/js/admin/vue-permissions-editor/dist/js/app*js >> static/js/vue-permissions.js
+
+build-access-concat:
+	# Make sure file is empty
+	cat /dev/null > static/css/sass/cdr-ui.scss
+
+	cat static/css/sass/cdr_homepage.scss \
+		static/css/sass/cdr_ui_styles.scss \
+		>> static/css/sass/cdr-ui.scss
+	sass static/css/sass/cdr-ui.scss  static/css/cdr-ui.css --style "expanded"
+	cat static/js/lib/jquery.min.js > static/js/cdr-access.js
+	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
+	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
+	echo "});" >> static/js/cdr-access.js
+
+	cat \
+		static/js/public/src/*.js \
+		>> static/js/cdr-access.js
+
+	cat static/css/reset.css \
+		static/css/cdr_common.css \
+		static/css/cdrui_styles.css \
+		static/css/fluid_cap.css \
+		static/css/structure_browse.css \
+		static/css/cdr-ui.css \
+		static/css/cdr_vue_modal_styles.css \
+		> static/css/cdr_access.css
+
+ifeq ($(DEPLOY_TYPE), prod)
+	cat static/js/vue-cdr-access/dist/css/app*css >> static/css/cdr_access.css
+endif
+SUSPEND = "n"
+
+build-access-npm:
+	# Build vue application(s) files
 	npm --prefix static/js/vue-cdr-access ci
 
 ifeq ($(DEPLOY_TYPE), prod)
@@ -83,39 +116,11 @@ endif
 
 	# Make sure files are empty
 	cat /dev/null > static/js/vue-access.js
-	cat /dev/null > static/css/sass/cdr-ui.scss
-
-	cat static/css/sass/cdr_homepage.scss \
-		static/css/sass/cdr_ui_styles.scss \
-		>> static/css/sass/cdr-ui.scss
-	sass static/css/sass/cdr-ui.scss  static/css/cdr-ui.css --style "expanded"
-	cat static/js/lib/jquery.min.js > static/js/cdr-access.js
-	echo "define('jquery-ui', ['jquery'], function ($$) {" >> static/js/cdr-access.js
-	cat static/js/lib/jquery-ui-access.min.js >> static/js/cdr-access.js
-	echo "});" >> static/js/cdr-access.js
-
 	cat static/js/vue-cdr-access/dist/js/chunk-vendors*js >> static/js/vue-access.js
 
 	# Add new line so app*.js doesn't get commented out
 	echo >> static/js/vue-access.js
 	cat static/js/vue-cdr-access/dist/js/app*js >> static/js/vue-access.js
-
-	cat \
-		static/js/public/src/*.js \
-		>> static/js/cdr-access.js
-
-	cat static/css/reset.css \
-		static/css/cdr_common.css \
-		static/css/cdrui_styles.css \
-		static/css/fluid_cap.css \
-		static/css/structure_browse.css \
-		static/css/cdr-ui.css \
-		static/css/cdr_vue_modal_styles.css \
-		> static/css/cdr_access.css
-
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/vue-cdr-access/dist/css/app*css >> static/css/cdr_access.css
-endif
 SUSPEND = "n"
 
 build-bxc:
