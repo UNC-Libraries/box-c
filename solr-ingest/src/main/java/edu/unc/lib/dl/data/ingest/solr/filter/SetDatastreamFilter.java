@@ -47,11 +47,11 @@ import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.DerivativeService;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.

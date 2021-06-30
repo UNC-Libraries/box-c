@@ -60,11 +60,11 @@ import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.DerivativeService;
-import edu.unc.lib.dl.util.DerivativeService.Derivative;
 
 /**
  *

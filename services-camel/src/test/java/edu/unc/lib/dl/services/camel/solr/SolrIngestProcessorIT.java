@@ -53,6 +53,7 @@ import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -61,7 +62,6 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.test.TestHelper;
-import edu.unc.lib.dl.util.DerivativeService;
 
 /**
  *

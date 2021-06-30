@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 import static edu.unc.lib.boxc.model.api.StoragePolicy.EXTERNAL;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static org.springframework.util.Assert.notNull;
 

@@ -36,7 +36,8 @@ import org.junit.rules.TemporaryFolder;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.util.DerivativeService.Derivative;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 
 /**
  *

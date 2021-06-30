@@ -45,7 +45,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
  * @author harring
  *
  */
-public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
+public class TransactionalFcrepoClientTest {
 
     private static final String BASE_URI = "http://localhost:48085/rest/";
     private static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";

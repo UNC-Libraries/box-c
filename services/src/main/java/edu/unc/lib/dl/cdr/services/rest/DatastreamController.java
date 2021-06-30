@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.isDerivative;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.util.DerivativeService.isDerivative;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
