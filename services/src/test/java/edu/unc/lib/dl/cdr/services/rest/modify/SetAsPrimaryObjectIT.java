@@ -34,12 +34,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  *
@@ -53,9 +53,9 @@ import edu.unc.lib.dl.fedora.PID;
 })
 public class SetAsPrimaryObjectIT extends AbstractAPIIT {
 
-    private WorkObject parent;
+    private WorkObjectImpl parent;
     private PID parentPid;
-    private FileObject fileObj;
+    private FileObjectImpl fileObj;
     private PID fileObjPid;
 
     @Test
@@ -182,13 +182,13 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
-    private void assertPrimaryObjectSet(WorkObject parent, FileObject fileObj) {
+    private void assertPrimaryObjectSet(WorkObjectImpl parent, FileObjectImpl fileObj) {
         parent.shouldRefresh();
         assertNotNull(parent.getPrimaryObject());
         assertEquals(parent.getPrimaryObject().getPid(), fileObj.getPid());
     }
 
-    private void assertPrimaryObjectNotSet(WorkObject parent) {
+    private void assertPrimaryObjectNotSet(WorkObjectImpl parent) {
         parent.shouldRefresh();
         assertNull(parent.getPrimaryObject());
     }

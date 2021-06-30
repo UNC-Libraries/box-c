@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
-import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -34,10 +34,18 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.PcdmUse;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -60,7 +68,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void createFileObjectTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
 
         assertNotNull(fileObj);
         assertObjectExists(fileObj.getPid());
@@ -84,12 +92,12 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMultipleBinariesTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
 
         // Add the original
         Path origPath = Files.createTempFile("original", ".txt");
         FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
-        BinaryObject bObj2 = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
+        BinaryObjectImpl bObj2 = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                 origMd5Checksum);
 
         // Construct the derivative objects
@@ -99,12 +107,12 @@ public class FileObjectIT extends AbstractFedoraIT {
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         Path fitsPath = Files.createTempFile("extracted", ".txt");
         FileUtils.writeStringToFile(fitsPath.toFile(), textBodyString, "UTF-8");
-        BinaryObject bObj1 = fileObj.addBinary(fitsPid, fitsPath.toUri(), textFilename, textMimetype,
+        BinaryObjectImpl bObj1 = fileObj.addBinary(fitsPid, fitsPath.toUri(), textFilename, textMimetype,
                 null, RDF.type, PcdmUse.ExtractedText);
         assertNotNull(bObj1);
 
         // Retrieve the binary objects directly
-        List<BinaryObject> binaries = fileObj.getBinaryObjects();
+        List<BinaryObjectImpl> binaries = fileObj.getBinaryObjects();
 
         assertEquals("Incorrect number of binaries added", 2, binaries.size());
 
@@ -122,7 +130,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void testGetBinaryByName() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
 
         PID binPid = getOriginalFilePid(fileObj.getPid());
         Path contentPath = Files.createTempFile("test", ".txt");
@@ -144,11 +152,11 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void testGetParent() throws Exception {
-        WorkObject work = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
 
         Path origPath = Files.createTempFile("original", ".txt");
         FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
-        FileObject fileObj = work.addDataFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
+        FileObjectImpl fileObj = work.addDataFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                     origMd5Checksum);
 
         treeIndexer.indexAll(baseAddress);
@@ -171,7 +179,7 @@ public class FileObjectIT extends AbstractFedoraIT {
         assertEquals("Original content did not match submitted value", bodyString, respString);
     }
 
-    private BinaryObject findBinaryByPid(List<BinaryObject> binaries, PID pid) {
+    private BinaryObject findBinaryByPid(List<BinaryObjectImpl> binaries, PID pid) {
         return binaries.stream().filter(p -> p.getPid().equals(pid)).findAny().get();
     }
 }

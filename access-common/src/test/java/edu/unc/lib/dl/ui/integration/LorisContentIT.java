@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.ui.integration;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -54,25 +54,25 @@ import de.digitalcollections.iiif.model.openannotation.Annotation;
 import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
 import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
 import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
@@ -105,7 +105,7 @@ public class LorisContentIT {
     @Autowired
     protected RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
-    protected RepositoryPIDMinter pidMinter;
+    protected PIDMinter pidMinter;
     @Autowired
     protected RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -115,12 +115,12 @@ public class LorisContentIT {
     @Autowired
     private DerivativeService derivativeService;
 
-    protected ContentRootObject contentRoot;
+    protected ContentRootObjectImpl contentRoot;
 
     protected MockMvc mvc;
 
-    protected AdminUnit unitObj;
-    protected CollectionObject collObj;
+    protected AdminUnitImpl unitObj;
+    protected CollectionObjectImpl collObj;
 
     @Before
     public void setup() throws Exception {
@@ -144,9 +144,9 @@ public class LorisContentIT {
 
     @Test
     public void testGetManifestFileWithJp2() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work").model);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work").model);
         collObj.addMember(workObj);
-        FileObject fileObj = addFileObject(workObj, true);
+        FileObjectImpl fileObj = addFileObject(workObj, true);
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(contentRoot.getPid(), unitObj.getPid(), collObj.getPid(),
@@ -165,9 +165,9 @@ public class LorisContentIT {
 
     @Test
     public void testGetManifestNoImage() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work3").model);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work3").model);
         collObj.addMember(workObj);
-        FileObject fileObj = addFileObject(workObj, false);
+        FileObjectImpl fileObj = addFileObject(workObj, false);
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(contentRoot.getPid(), unitObj.getPid(), collObj.getPid(),
@@ -188,11 +188,11 @@ public class LorisContentIT {
 
     @Test
     public void testGetManifestMultipleFiles() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         collObj.addMember(workObj);
-        FileObject fileObj = addFileObject(workObj, true);
-        FileObject fileObj2 = addFileObject(workObj, "file2.txt", false, null);
-        FileObject fileObj3 = addFileObject(workObj, "file3.png", true, null);
+        FileObjectImpl fileObj = addFileObject(workObj, true);
+        FileObjectImpl fileObj2 = addFileObject(workObj, "file2.txt", false, null);
+        FileObjectImpl fileObj3 = addFileObject(workObj, "file3.png", true, null);
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(contentRoot.getPid(), unitObj.getPid(), collObj.getPid(),
@@ -210,10 +210,10 @@ public class LorisContentIT {
 
     @Test
     public void testGetManifestPrimaryObjectNonImage() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work4").model);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work4").model);
         collObj.addMember(workObj);
-        FileObject fileObj = addFileObject(workObj, "file2.txt", false, null);
-        FileObject fileObj2 = addFileObject(workObj, "file3.png", true, null);
+        FileObjectImpl fileObj = addFileObject(workObj, "file2.txt", false, null);
+        FileObjectImpl fileObj2 = addFileObject(workObj, "file3.png", true, null);
         workObj.setPrimaryObject(fileObj.getPid());
 
         treeIndexer.indexAll(baseAddress);
@@ -227,10 +227,10 @@ public class LorisContentIT {
     public void testGetManifestJp2MetadataOnly() throws Exception {
         GroupsThreadStore.storeGroups(new AccessGroupSet(PUBLIC_PRINC));
 
-        WorkObject workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work2").model);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work2").model);
         collObj.addMember(workObj);
-        FileObject fileObj = addFileObject(workObj, "file", true, UserRole.canViewMetadata);
-        FileObject fileObj2 = addFileObject(workObj, "file2", true, null);
+        FileObjectImpl fileObj = addFileObject(workObj, "file", true, UserRole.canViewMetadata);
+        FileObjectImpl fileObj2 = addFileObject(workObj, "file2", true, null);
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(contentRoot.getPid(), unitObj.getPid(), collObj.getPid(),
@@ -300,11 +300,11 @@ public class LorisContentIT {
         return manifest;
     }
 
-    private FileObject addFileObject(WorkObject workObj, boolean isImage) throws Exception {
+    private FileObjectImpl addFileObject(WorkObjectImpl workObj, boolean isImage) throws Exception {
         return addFileObject(workObj, "file", isImage, null);
     }
 
-    private FileObject addFileObject(WorkObject workObj, String filename, boolean isImage, UserRole role)
+    private FileObjectImpl addFileObject(WorkObjectImpl workObj, String filename, boolean isImage, UserRole role)
             throws Exception {
         String bodyString = "Content";
         String mimetype = isImage ? "image/png" : "text/plain";
@@ -318,7 +318,7 @@ public class LorisContentIT {
             model = new AclModelBuilder(filename).addNoneRole(PUBLIC_PRINC).model;
         }
 
-        FileObject fileObj = repoObjFactory.createFileObject(model);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(model);
         fileObj.addOriginalFile(contentPath.toUri(), filename, mimetype, null, null);
         PID filePid = fileObj.getPid();
 

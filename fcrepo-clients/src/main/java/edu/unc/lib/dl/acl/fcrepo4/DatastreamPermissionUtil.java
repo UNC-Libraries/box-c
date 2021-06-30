@@ -15,14 +15,14 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.getByIdentifier;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
-import static edu.unc.lib.dl.model.DatastreamType.getByIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.model.DatastreamType;
 
 /**
  * Helper methods for determining permissions of datastreams.

@@ -49,15 +49,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper;
@@ -91,7 +92,7 @@ public class VersionedDatastreamServiceIT {
     @Autowired
     private BinaryTransferServiceImpl transferService;
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
@@ -172,7 +173,7 @@ public class VersionedDatastreamServiceIT {
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
         newV1.setContentType("text/xml");
 
-        BinaryObject dsObj = service.addVersion(newV1);
+        BinaryObjectImpl dsObj = service.addVersion(newV1);
         Date originalCreated = dsObj.getCreatedDate();
         String digest1 = dsObj.getSha1Checksum();
         assertNotNull("Checksum not set for first version", digest1);
@@ -211,7 +212,7 @@ public class VersionedDatastreamServiceIT {
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
         newV1.setContentType("text/xml");
 
-        BinaryObject dsObj = service.addVersion(newV1);
+        BinaryObjectImpl dsObj = service.addVersion(newV1);
         Date version1Date = dsObj.getCreatedDate();
         String digest1 = dsObj.getSha1Checksum();
         assertNotNull("Checksum not set for first version", digest1);
@@ -220,7 +221,7 @@ public class VersionedDatastreamServiceIT {
         newV2.setContentStream(getModsDocumentStream("more titles"));
         newV2.setContentType("text/xml");
 
-        BinaryObject dsObj2 = service.addVersion(newV2);
+        BinaryObjectImpl dsObj2 = service.addVersion(newV2);
         Date version2Date = dsObj2.getLastModified();
         String digest2 = dsObj2.getSha1Checksum();
         assertNotNull("Checksum not set for second version", digest2);
@@ -229,7 +230,7 @@ public class VersionedDatastreamServiceIT {
         newV3.setContentStream(getModsDocumentStream("lets leave it here"));
         newV3.setContentType("text/xml");
 
-        BinaryObject dsObjFinal = service.addVersion(newV3);
+        BinaryObjectImpl dsObjFinal = service.addVersion(newV3);
         String digest3 = dsObjFinal.getSha1Checksum();
         assertNotNull("Checksum not set for second version", digest3);
 
@@ -263,7 +264,7 @@ public class VersionedDatastreamServiceIT {
 
     @Test
     public void addVersion_NewDatastream_ProvidedTransferSession() throws Exception {
-        WorkObject work = repoObjFactory.createWorkObject(parentPid, null);
+        WorkObjectImpl work = repoObjFactory.createWorkObject(parentPid, null);
         treeIndexer.indexAll(baseAddress);
 
         try (BinaryTransferSession session = transferService.getSession(work)) {

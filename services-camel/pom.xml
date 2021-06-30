@@ -149,6 +149,10 @@
         <scope>test</scope>
         <type>test-jar</type>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>model-fcrepo</artifactId>
+    </dependency>
 
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>

@@ -15,18 +15,19 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.model.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.FULLTEXT_EXTRACTION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.util.DerivativeService;
 import edu.unc.lib.dl.util.DerivativeService.Derivative;
 
@@ -42,7 +43,7 @@ public class SetFullTextFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        FileObject fileObj = getFileObject(dip);
+        FileObjectImpl fileObj = getFileObject(dip);
         if (fileObj == null) {
             return;
         }
@@ -59,16 +60,16 @@ public class SetFullTextFilter implements IndexDocumentFilter {
         }
     }
 
-    private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
+    private FileObjectImpl getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject contentObj = dip.getContentObject();
         // object being indexed must be a work or a file object
-        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+        if (!(contentObj instanceof WorkObjectImpl) && !(contentObj instanceof FileObjectImpl)) {
             return null;
         }
-        if (contentObj instanceof WorkObject) {
+        if (contentObj instanceof WorkObjectImpl) {
             return ((WorkObject) contentObj).getPrimaryObject();
         } else {
-            return (FileObject) contentObj;
+            return (FileObjectImpl) contentObj;
         }
     }
 

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempFile;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
@@ -37,9 +37,17 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -53,7 +61,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repoObjFactory.createDepositRecord(model);
+        DepositRecordImpl record = repoObjFactory.createDepositRecord(model);
 
         assertNotNull(record);
 
@@ -76,7 +84,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         PID pid = repoObjFactory.createDepositRecord(model).getPid();
 
-        DepositRecord record = repoObjLoader.getDepositRecord(pid);
+        DepositRecordImpl record = repoObjLoader.getDepositRecord(pid);
 
         assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
     }
@@ -93,7 +101,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String mimetype1 = "text/plain";
         Path manifestPath = createTempFile("manifest", ".txt");
         writeStringToFile(manifestPath.toFile(), bodyString1, UTF_8);
-        BinaryObject manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1, null, null);
+        BinaryObjectImpl manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1, null, null);
 
         assertNotNull(manifest1);
         assertEquals(filename1, manifest1.getFilename());
@@ -104,7 +112,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
         String filename2 = "manifest2";
         Path manifestPath2 = createTempFile("manifest", ".txt");
         writeStringToFile(manifestPath2.toFile(), bodyString2, UTF_8);
-        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2, null, null);
+        BinaryObjectImpl manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2, null, null);
 
         assertNotNull(manifest2);
 
@@ -132,16 +140,16 @@ public class DepositRecordIT extends AbstractFedoraIT {
     @Test
     public void addObjectsTest() throws Exception {
         Model model = getDepositRecordModel();
-        DepositRecord record = repoObjFactory.createDepositRecord(model);
+        DepositRecordImpl record = repoObjFactory.createDepositRecord(model);
 
         repoInitializer.initializeRepository();
-        ContentRootObject rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        ContentRootObjectImpl rootObj = repoObjLoader.getContentRootObject(getContentRootPid());
+        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(adminUnit);
 
-        CollectionObject coll = repoObjFactory.createCollectionObject(modelWithOriginalDeposit(record));
+        CollectionObjectImpl coll = repoObjFactory.createCollectionObject(modelWithOriginalDeposit(record));
         adminUnit.addMember(coll);
-        WorkObject work = repoObjFactory.createWorkObject(modelWithOriginalDeposit(record));
+        WorkObjectImpl work = repoObjFactory.createWorkObject(modelWithOriginalDeposit(record));
         coll.addMember(work);
 
         treeIndexer.indexAll(baseAddress);
@@ -154,7 +162,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
         assertFalse(depositedObjects.contains(adminUnit.getPid()));
     }
 
-    private Model modelWithOriginalDeposit(DepositRecord record) {
+    private Model modelWithOriginalDeposit(DepositRecordImpl record) {
         Model refDepositModel = ModelFactory.createDefaultModel();
         Resource subj = refDepositModel.getResource("");
         subj.addProperty(Cdr.originalDeposit, record.getResource());

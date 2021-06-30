@@ -24,7 +24,8 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 
 /**

@@ -39,13 +39,14 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.dl.cdr.services.rest.modify.MoveObjectsController.MoveRequest;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  *
@@ -60,10 +61,10 @@ import edu.unc.lib.dl.fedora.PID;
 })
 public class MoveObjectsIT extends AbstractAPIIT {
 
-    private AdminUnit unitObj;
-    private CollectionObject collObj;
-    private ContentContainerObject sourceContainer;
-    private ContentContainerObject destContainer;
+    private AdminUnitImpl unitObj;
+    private CollectionObjectImpl collObj;
+    private AbstractContentContainerObject sourceContainer;
+    private AbstractContentContainerObject destContainer;
 
     @Before
     public void setup() {
@@ -162,7 +163,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
         PID pid1 = makePid();
         addSourceMembers(pid1);
 
-        FolderObject sourceContainer2 = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl sourceContainer2 = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(sourceContainer2);
         PID pid2 = makePid();
         addSourceMembers(sourceContainer2, pid2);
@@ -192,14 +193,14 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
     private void addSourceMembers(ContentContainerObject source, PID... pids) {
         for (PID pid : pids) {
-            ContentObject memberObj = repositoryObjectFactory.createWorkObject(pid, null);
+            AbstractContentObject memberObj = repositoryObjectFactory.createWorkObject(pid, null);
             source.addMember(memberObj);
         }
     }
 
     private void assertObjectsAtDestination(List<PID> movePids) {
         destContainer.setEtag(null);
-        List<ContentObject> destMembers = destContainer.getMembers();
+        List<AbstractContentObject> destMembers = destContainer.getMembers();
         for (PID movePid : movePids) {
             assertTrue("Destination did not contain moved object", destMembers.stream().
                     filter(m -> m.getPid().equals(movePid)).findAny().isPresent());
@@ -208,7 +209,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
     }
 
     private void assertObjectsRemovedFromSource(List<PID> movePids, ContentContainerObject source) {
-        List<ContentObject> sourceMembers = source.getMembers();
+        List<AbstractContentObject> sourceMembers = source.getMembers();
         for (PID movePid : movePids) {
             assertFalse("Source contained moved object", sourceMembers.stream().
                     filter(m -> m.getPid().equals(movePid)).findAny().isPresent());

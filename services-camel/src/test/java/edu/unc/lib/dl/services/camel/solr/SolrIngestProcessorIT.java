@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.services.camel.solr;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,17 +43,18 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -61,7 +62,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DerivativeService;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -101,10 +101,10 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexDescribedWork() throws Exception {
-        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
-        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
@@ -176,14 +176,14 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexFileObject() throws Exception {
-        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
         // Revoking patron access on the file
         Model fileModel = ModelFactory.createDefaultModel();
         Resource fileResc = fileModel.getResource("");
         fileResc.addProperty(CdrAcl.none, AUTHENTICATED_PRINC);
-        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null, fileModel);
 
         Path derivPath = derivativeService.getDerivativePath(fileObj.getPid(), DatastreamType.FULLTEXT_EXTRACTION);
@@ -225,14 +225,14 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexBinaryInWork() throws Exception {
-        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
-        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
 
-        BinaryObject binObj = fileObj.getOriginalFile();
+        BinaryObjectImpl binObj = fileObj.getOriginalFile();
 
         indexObjectsInTripleStore();
 
@@ -262,7 +262,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
     }
 
-    private void assertAncestorIds(BriefObjectMetadata md, RepositoryObject... ancestorObjs) {
+    private void assertAncestorIds(BriefObjectMetadata md, AbstractRepositoryObject... ancestorObjs) {
         String joinedIds = "/" + Arrays.stream(ancestorObjs)
                 .map(obj -> obj.getPid().getId())
                 .collect(Collectors.joining("/"));

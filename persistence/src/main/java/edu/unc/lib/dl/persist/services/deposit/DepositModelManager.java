@@ -48,8 +48,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.exceptions.InterruptedRuntimeException;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Manager which provides access to a common deposit dataset used for

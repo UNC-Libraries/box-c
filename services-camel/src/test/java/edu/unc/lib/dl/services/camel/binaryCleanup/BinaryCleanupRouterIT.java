@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.binaryCleanup;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,20 +41,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.google.common.collect.ImmutableMap;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
@@ -77,7 +77,7 @@ public class BinaryCleanupRouterIT {
     @Autowired
     private RepositoryInitializer repositoryInitializer;
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
     @javax.annotation.Resource(name = "repositoryObjectLoaderNoCache")
@@ -93,9 +93,9 @@ public class BinaryCleanupRouterIT {
     @Autowired
     private CamelContext cdrBinaryCleanup;
 
-    private AdminUnit adminUnit;
+    private AdminUnitImpl adminUnit;
 
-    private CollectionObject collection;
+    private CollectionObjectImpl collection;
 
     @Before
     public void init() {
@@ -106,7 +106,7 @@ public class BinaryCleanupRouterIT {
         repositoryInitializer.initializeRepository();
         PID contentRootPid = getContentRootPid();
 
-        ContentRootObject contentRoot = repoObjectLoader.getContentRootObject(contentRootPid);
+        ContentRootObjectImpl contentRoot = repoObjectLoader.getContentRootObject(contentRootPid);
         adminUnit = repoObjectFactory.createAdminUnit(null);
         collection = repoObjectFactory.createCollectionObject(null);
         contentRoot.addMember(adminUnit);
@@ -129,7 +129,7 @@ public class BinaryCleanupRouterIT {
 
     @Test
     public void binaryOnlyCurrentVersionTest() throws Exception {
-        FolderObject folder = repoObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repoObjectFactory.createFolderObject(null);
         PremisLogger premisLogger = folder.getPremisLog();
         premisLogger.buildEvent(Premis.Ingestion)
                     .addEventDetail("Ingested this thing")
@@ -154,7 +154,7 @@ public class BinaryCleanupRouterIT {
 
     @Test
     public void binaryMultipleOlderVersionsTest() throws Exception {
-        FolderObject folder = repoObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repoObjectFactory.createFolderObject(null);
         PremisLogger premisLogger = folder.getPremisLog();
         // Add events one by one, to produce multiple versions of log datastream
         premisLogger.buildEvent(Premis.Ingestion)
@@ -196,7 +196,7 @@ public class BinaryCleanupRouterIT {
 
     @Test
     public void binaryNewerVersionInTxTest() throws Exception {
-        FolderObject folder = repoObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repoObjectFactory.createFolderObject(null);
         PremisLogger premisLogger = folder.getPremisLog();
         // Add events one by one, to produce multiple versions of log datastream
         premisLogger.buildEvent(Premis.Ingestion)

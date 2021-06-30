@@ -17,8 +17,8 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 
 /**
  * @author bbpennel

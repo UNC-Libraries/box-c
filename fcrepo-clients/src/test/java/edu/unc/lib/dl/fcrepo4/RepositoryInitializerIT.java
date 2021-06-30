@@ -33,6 +33,9 @@ import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 
 /**
  *

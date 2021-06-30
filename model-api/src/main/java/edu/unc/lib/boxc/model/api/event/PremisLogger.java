@@ -21,8 +21,7 @@ import java.util.Date;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.event.PremisEventBuilderImpl;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Logs and provides access to PREMIS events for a repository object
@@ -46,7 +45,7 @@ public interface PremisLogger extends AutoCloseable {
      * @param eventType
      * @return PremisEventBuilder
      */
-    public PremisEventBuilderImpl buildEvent(Resource eventType);
+    public PremisEventBuilder buildEvent(Resource eventType);
 
     /**
      * Adds events to this log

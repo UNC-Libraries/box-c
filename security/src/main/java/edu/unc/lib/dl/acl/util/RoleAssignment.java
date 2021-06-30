@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.acl.util;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Object representing the assignment of a single role to a single principal

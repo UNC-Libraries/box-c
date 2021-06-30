@@ -22,6 +22,15 @@ import java.util.List;
 
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+
 /**
 *
 * @author bbpennel
@@ -31,17 +40,17 @@ public class CollectionObjectIT extends AbstractFedoraIT {
 
     @Test
     public void testAddAndGetMembers() throws Exception {
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
 
-        FolderObject folder = repoObjFactory.createFolderObject(null);
-        WorkObject work = repoObjFactory.createWorkObject(null);
+        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
+        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
 
         collObj.addMember(folder);
         collObj.addMember(work);
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> members = collObj.getMembers();
+        List<AbstractContentObject> members = collObj.getMembers();
         assertEquals("Incorrect number of members", 2, members.size());
 
         WorkObject workMember = (WorkObject) findContentObjectByPid(members, work.getPid());
@@ -53,8 +62,8 @@ public class CollectionObjectIT extends AbstractFedoraIT {
 
     @Test
     public void testGetParent() throws Exception {
-        AdminUnit adminObj = repoObjFactory.createAdminUnit(null);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        AdminUnitImpl adminObj = repoObjFactory.createAdminUnit(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
 
         adminObj.addMember(collObj);
 

@@ -16,7 +16,8 @@
 package edu.unc.lib.dl.persist.api.services;
 
 import com.google.common.util.concurrent.Striped;
-import edu.unc.lib.dl.fedora.PID;
+
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;

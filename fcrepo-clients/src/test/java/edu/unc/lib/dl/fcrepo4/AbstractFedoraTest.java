@@ -20,6 +20,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import org.junit.Before;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
+
 /**
  *
  * @author harring
@@ -36,7 +42,7 @@ public class AbstractFedoraTest {
     @Mock
     protected RepositoryObjectFactory repoObjFactory;
 
-    protected RepositoryPIDMinter pidMinter;
+    protected PIDMinter pidMinter;
 
     @Before
     public void initBase() {

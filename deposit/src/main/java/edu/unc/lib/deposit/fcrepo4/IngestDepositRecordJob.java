@@ -32,24 +32,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Rdfs;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.util.DigestAlgorithm;
-import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Creates and ingests the deposit record object
@@ -96,7 +96,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         logTransferSession = getTransferSession(dModel);
 
         // Create the deposit record object in Fedora
-        DepositRecord depositRecord;
+        DepositRecordImpl depositRecord;
         try {
             // In case of a resume, check if object already exists
             if (!repoObjFactory.objectExists(depositPID.getRepositoryUri())) {
@@ -181,8 +181,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         PremisEventBuilder eventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion)
                 .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
                         aipObjResc.getProperty(DcElements.title).getObject().toString())
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
-                .addAuthorizingAgent(AgentPids.forPerson(status.get(DepositField.depositorName.name())));
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                .addAuthorizingAgent(AgentPIDs.forPerson(status.get(DepositField.depositorName.name())));
 
         // Add in deposit format if present
         String depositFormat = null;

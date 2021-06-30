@@ -21,12 +21,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 
 /**
  * Populates the relations field with the primary object and invalid terms.
@@ -47,8 +48,8 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         ContentObject contentObj = dip.getContentObject();
 
         // if the content obj is a work obj, set relation on its primary object
-        if (contentObj instanceof WorkObject) {
-            FileObject primaryObj = ((WorkObject) contentObj).getPrimaryObject();
+        if (contentObj instanceof WorkObjectImpl) {
+            FileObjectImpl primaryObj = ((WorkObject) contentObj).getPrimaryObject();
 
             if (primaryObj != null) {
                 // store primary-object relation

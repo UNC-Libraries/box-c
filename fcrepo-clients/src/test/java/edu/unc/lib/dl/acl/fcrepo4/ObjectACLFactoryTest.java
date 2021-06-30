@@ -48,12 +48,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  *
@@ -75,9 +75,9 @@ public class ObjectACLFactoryTest {
     private ObjectAclFactory aclFactory;
 
     @Mock
-    private RepositoryObjectLoader repositoryObjectLoader;
+    private RepositoryObjectLoaderImpl repositoryObjectLoader;
     @Mock
-    private ContentObject repoObj;
+    private AbstractContentObject repoObj;
     private Model objModel;
     private Resource objResc;
 
@@ -281,7 +281,7 @@ public class ObjectACLFactoryTest {
         PID pid2 = makePid();
         Model model2 = ModelFactory.createDefaultModel();
         Resource resc2 = model2.getResource(pid2.getRepositoryPath());
-        ContentObject repoObj2 = mock(ContentObject.class);
+        AbstractContentObject repoObj2 = mock(AbstractContentObject.class);
         when(repoObj2.getModel()).thenReturn(model2);
         when(repositoryObjectLoader.getRepositoryObject(pid2)).thenReturn(repoObj2);
 

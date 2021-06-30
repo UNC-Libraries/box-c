@@ -59,24 +59,24 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -112,7 +112,7 @@ public class MoveObjectsServiceTest {
     private PID destPid;
     private PID sourcePid;
     @Mock
-    private FolderObject mockDestObj;
+    private FolderObjectImpl mockDestObj;
     @Mock
     private AccessGroupSet mockAccessSet;
     @Mock
@@ -128,7 +128,7 @@ public class MoveObjectsServiceTest {
     @Mock
     private Resource mockParentResource;
     @Mock
-    private FolderObject mockParent;
+    private FolderObjectImpl mockParent;
     @Mock
     private ObjectPath destObjPath;
     @Mock
@@ -201,7 +201,7 @@ public class MoveObjectsServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDestinationInvalidType() {
-        FileObject destFile = mock(FileObject.class);
+        FileObjectImpl destFile = mock(FileObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(destFile);
 
         service.moveObjects(mockAgent, destPid, asList(makePid()));
@@ -224,7 +224,7 @@ public class MoveObjectsServiceTest {
         List<PID> movePids = asList(makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(mockDestObj).addMember(any(ContentObject.class));
+        verify(mockDestObj).addMember(any(AbstractContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
 
@@ -236,11 +236,11 @@ public class MoveObjectsServiceTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("is not a file and cannot be added to a work");
 
-        WorkObject mockWorkObj = mock(WorkObject.class);
+        WorkObjectImpl mockWorkObj = mock(WorkObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
 
         PID movePid = makePid();
-        CollectionObject moveObj = mock(CollectionObject.class);
+        CollectionObjectImpl moveObj = mock(CollectionObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
         List<PID> movePids = asList(movePid);
@@ -252,11 +252,11 @@ public class MoveObjectsServiceTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("is not a folder or a work and cannot be added to a folder");
 
-        FolderObject mockFolderObj = mock(FolderObject.class);
+        FolderObjectImpl mockFolderObj = mock(FolderObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockFolderObj);
 
         PID movePid = makePid();
-        AdminUnit moveObj = mock(AdminUnit.class);
+        AdminUnitImpl moveObj = mock(AdminUnitImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
         List<PID> movePids = asList(movePid);
@@ -268,11 +268,11 @@ public class MoveObjectsServiceTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("is not a file and cannot be added to a work");
 
-        WorkObject mockWorkObj = mock(WorkObject.class);
+        WorkObjectImpl mockWorkObj = mock(WorkObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
 
         PID movePid = makePid();
-        FolderObject moveObj = mock(FolderObject.class);
+        FolderObjectImpl moveObj = mock(FolderObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
         List<PID> movePids = asList(movePid);
@@ -284,7 +284,7 @@ public class MoveObjectsServiceTest {
         List<PID> movePids = asList(makeMoveObject(mockParent), makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
+        verify(mockDestObj, times(2)).addMember(any(AbstractContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
 
@@ -342,9 +342,9 @@ public class MoveObjectsServiceTest {
         service.moveObjects(mockAgent, destPid, asList(makePid()));
     }
 
-    private PID makeMoveObject(ContentContainerObject parent) {
+    private PID makeMoveObject(AbstractContentContainerObject parent) {
         PID movePid = makePid();
-        WorkObject moveObj = mock(WorkObject.class);
+        WorkObjectImpl moveObj = mock(WorkObjectImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
         when(moveObj.getParent()).thenReturn(parent);
         return movePid;

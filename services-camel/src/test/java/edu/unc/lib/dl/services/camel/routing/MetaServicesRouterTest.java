@@ -17,11 +17,11 @@ package edu.unc.lib.dl.services.camel.routing;
 
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.FCR_VERSIONS;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.BASE_URL;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_VERSIONS;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_CREATE;
 import static edu.unc.lib.dl.services.camel.util.EventTypes.EVENT_UPDATE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -44,7 +44,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**

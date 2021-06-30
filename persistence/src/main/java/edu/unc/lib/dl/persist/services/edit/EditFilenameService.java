@@ -20,19 +20,20 @@ import java.util.Arrays;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
@@ -72,11 +73,11 @@ public class EditFilenameService {
 
             RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
 
-            if (!(obj instanceof FileObject)) {
+            if (!(obj instanceof FileObjectImpl)) {
                 throw new IllegalArgumentException("Failed to edit filename for " + obj.getPid());
             }
 
-            BinaryObject binaryObj = ((FileObject) obj).getOriginalFile();
+            BinaryObjectImpl binaryObj = ((FileObject) obj).getOriginalFile();
             String oldLabel = getOldLabel(binaryObj.getFilename());
 
             repoObjFactory.createExclusiveRelationship(binaryObj, Ebucore.filename, label);
@@ -84,7 +85,7 @@ public class EditFilenameService {
 
             obj.getPremisLog()
                 .buildEvent(Premis.FilenameChange)
-                .addImplementorAgent(AgentPids.forPerson(agent))
+                .addImplementorAgent(AgentPIDs.forPerson(agent))
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
                 .writeAndClose();
         } catch (Exception e) {

@@ -27,9 +27,15 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -45,7 +51,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
         Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Folder Title");
 
-        FolderObject obj = repoObjFactory.createFolderObject(model);
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(model);
 
         assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -56,9 +62,9 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addFolderTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(null);
 
-        FolderObject child = obj.addFolder();
+        FolderObjectImpl child = obj.addFolder();
 
         assertNotNull(child);
         assertObjectExists(child.getPid());
@@ -74,8 +80,8 @@ public class FolderObjectIT extends AbstractFedoraIT {
         Resource childResc = childModel.createResource("");
         childResc.addProperty(DcElements.title, "Work Title");
 
-        FolderObject obj = repoObjFactory.createFolderObject(null);
-        WorkObject work = obj.addWork(childModel);
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(null);
+        WorkObjectImpl work = obj.addWork(childModel);
 
         assertNotNull(work);
         assertObjectExists(work.getPid());
@@ -89,14 +95,14 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMembersTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(null);
 
-        WorkObject child1 = obj.addWork();
-        FolderObject child2 = obj.addFolder();
+        WorkObjectImpl child1 = obj.addWork();
+        FolderObjectImpl child2 = obj.addFolder();
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> members = obj.getMembers();
+        List<AbstractContentObject> members = obj.getMembers();
         assertEquals("Incorrect number of members", 2, members.size());
 
         WorkObject member1 = (WorkObject) findContentObjectByPid(members, child1.getPid());
@@ -108,20 +114,20 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addChildToTwoFoldersTest() throws Exception {
-        FolderObject folder1 = repoObjFactory.createFolderObject(null);
-        FolderObject folder2 = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folder1 = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folder2 = repoObjFactory.createFolderObject(null);
 
-        FolderObject child = folder1.addFolder();
+        FolderObjectImpl child = folder1.addFolder();
 
         // Add the child to the second folder, effectively moving it
         folder2.addMember(child);
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> members1 = folder1.getMembers();
+        List<AbstractContentObject> members1 = folder1.getMembers();
         assertEquals("Incorrect number of members", 0, members1.size());
 
-        List<ContentObject> members2 = folder2.getMembers();
+        List<AbstractContentObject> members2 = folder2.getMembers();
         assertEquals("Incorrect number of members", 1, members2.size());
 
         assertEquals(child.getPid(), members2.get(0).getPid());
@@ -129,8 +135,8 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getParentTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(null);
-        FolderObject child = obj.addFolder();
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl child = obj.addFolder();
 
         RepositoryObject parent = child.getParent();
         assertEquals("Parent returned by the child must match the folder it was created in",

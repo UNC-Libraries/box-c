@@ -25,9 +25,15 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 
 /**
  *
@@ -42,7 +48,7 @@ public class AdminUnitIT extends AbstractFedoraIT {
         Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Unit Title");
 
-        AdminUnit obj = repoObjFactory.createAdminUnit(model);
+        AdminUnitImpl obj = repoObjFactory.createAdminUnit(model);
 
         assertTrue(obj.getTypes().contains(Cdr.AdminUnit.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -53,14 +59,14 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
     @Test
     public void testAddCollectionAndGetMembers() throws Exception {
-        AdminUnit obj = repoObjFactory.createAdminUnit(null);
-        CollectionObject collectionObj = repoObjFactory.createCollectionObject(null);
+        AdminUnitImpl obj = repoObjFactory.createAdminUnit(null);
+        CollectionObjectImpl collectionObj = repoObjFactory.createCollectionObject(null);
 
         obj.addMember(collectionObj);
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> members = obj.getMembers();
+        List<AbstractContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
         assertEquals("Must return the created collection as a member",
                 collectionObj.getPid(), members.get(0).getPid());
@@ -70,10 +76,10 @@ public class AdminUnitIT extends AbstractFedoraIT {
     public void testGetParent() throws Exception {
         repoInitializer.initializeRepository();
 
-        ContentRootObject contentRoot = repoObjLoader.getContentRootObject(
+        ContentRootObjectImpl contentRoot = repoObjLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());
 
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
         RepositoryObject parent = adminUnit.getParent();

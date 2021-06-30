@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.acl.service;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Interface for services retrieving access control information for objects.

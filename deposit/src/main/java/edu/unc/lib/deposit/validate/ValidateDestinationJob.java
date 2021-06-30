@@ -33,22 +33,22 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -91,21 +91,21 @@ public class ValidateDestinationJob extends AbstractDepositJob {
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
 
-        if (!(destObj instanceof ContentContainerObject)) {
+        if (!(destObj instanceof AbstractContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
                     + ", types does not support children");
         }
 
-        if (destObj instanceof ContentRootObject) {
+        if (destObj instanceof ContentRootObjectImpl) {
             assertHasPermission(destPid, Permission.createAdminUnit);
             topLevelObjectsMatchAllowedTypes(destPid, ROOT_CHILD_TYPES, false);
-        } else if (destObj instanceof AdminUnit) {
+        } else if (destObj instanceof AdminUnitImpl) {
             assertHasPermission(destPid, Permission.createCollection);
             topLevelObjectsMatchAllowedTypes(destPid, ADMINUNIT_CHILD_TYPES, false);
-        } else if (destObj instanceof CollectionObject || destObj instanceof FolderObject) {
+        } else if (destObj instanceof CollectionObjectImpl || destObj instanceof FolderObjectImpl) {
             assertHasPermission(destPid, Permission.ingest);
             topLevelObjectsMatchAllowedTypes(destPid, COLL_FOLDER_CHILD_TYPES, false);
-        } else if (destObj instanceof WorkObject) {
+        } else if (destObj instanceof WorkObjectImpl) {
             assertHasPermission(destPid, Permission.ingest);
             topLevelObjectsMatchAllowedTypes(destPid, WORK_CHILD_TYPES, true);
         }

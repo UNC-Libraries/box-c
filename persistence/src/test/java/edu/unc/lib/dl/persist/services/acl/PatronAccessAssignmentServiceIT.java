@@ -61,9 +61,22 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -72,21 +85,8 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.AclModelBuilder;
@@ -130,9 +130,9 @@ public class PatronAccessAssignmentServiceIT {
 
     private AgentPrincipals agent;
     private AccessGroupSet groups;
-    private ContentRootObject contentRoot;
-    private AdminUnit adminUnit;
-    private CollectionObject collObj;
+    private ContentRootObjectImpl contentRoot;
+    private AdminUnitImpl adminUnit;
+    private CollectionObjectImpl collObj;
 
     @Before
     public void init() throws Exception {
@@ -203,11 +203,11 @@ public class PatronAccessAssignmentServiceIT {
     @Test(expected = InvalidAssignmentException.class)
     public void assignToBinaryObject() throws Exception {
         createCollectionInUnit(null);
-        WorkObject work = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
         URI contentUri = Files.createTempFile("test", ".txt").toUri();
         FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
-        BinaryObject binObj = fileObj.getOriginalFile();
+        BinaryObjectImpl binObj = fileObj.getOriginalFile();
 
         PID pid = binObj.getPid();
         treeIndexer.indexAll(baseAddress);
@@ -842,7 +842,7 @@ public class PatronAccessAssignmentServiceIT {
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-            assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
+            assertEquals(AgentPIDs.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }
 

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fedora;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+
 /**
  * Checksum did not match the provided checksum value.
  *

@@ -62,7 +62,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
@@ -70,7 +70,7 @@
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
 
-    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />

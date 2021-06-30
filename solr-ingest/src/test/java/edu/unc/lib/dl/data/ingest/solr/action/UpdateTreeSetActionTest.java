@@ -35,13 +35,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -90,7 +90,7 @@ public class UpdateTreeSetActionTest {
 
     @Test
     public void testSingleEmptyChild() throws Exception {
-        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
+        AbstractContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
 
         indexTriples(containerObj);
@@ -111,9 +111,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testMultipleChildren() throws Exception {
-        ContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
+        AbstractContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
         PID container1Pid = container1Obj.getPid();
-        ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
+        AbstractContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
         indexTriples(container1Obj, container2Obj);
@@ -136,9 +136,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testNestedChildren() throws Exception {
-        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
+        AbstractContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
-        ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
+        AbstractContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
 
         indexTriples(containerObj, childObj);
 
@@ -169,8 +169,8 @@ public class UpdateTreeSetActionTest {
         action.performAction(request);
     }
 
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
+    private void indexTriples(AbstractContentObject... objs) {
+        for (AbstractContentObject obj : objs) {
             sparqlModel.add(obj.getResource().getModel());
         }
     }

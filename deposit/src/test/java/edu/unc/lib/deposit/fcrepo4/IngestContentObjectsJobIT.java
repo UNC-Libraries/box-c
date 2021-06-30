@@ -16,8 +16,8 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -60,33 +60,38 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.event.FilePremisLogger;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamPids;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -95,7 +100,6 @@ import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  *
@@ -196,10 +200,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     private void setupDestination() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(
                 new AclModelBuilder("Coll").addCanIngest(INGESTOR_PRINC).model);
-        FolderObject destFolder = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl destFolder = repoObjFactory.createFolderObject(null);
 
         rootObj.addMember(unitObj);
         unitObj.addMember(collObj);
@@ -243,7 +247,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Verify that the destination has the folder added to it
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
+        List<AbstractContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
         Model destLogModel = destObj.getPremisLog().getEventsModel();
@@ -252,10 +256,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Make sure that the folder is present and is actually a folder
         ContentObject mFolder = findContentObjectByPid(destMembers, folderPid);
-        assertTrue("Child was not a folder", mFolder instanceof FolderObject);
+        assertTrue("Child was not a folder", mFolder instanceof FolderObjectImpl);
 
         // Try directly retrieving the folder
-        FolderObject folder = repoObjLoader.getFolderObject(folderPid);
+        FolderObjectImpl folder = repoObjLoader.getFolderObject(folderPid);
         // Verify that its title was set to the expected value
         String title = folder.getResource(true).getProperty(DC.title).getString();
         assertEquals("Folder title was not correctly set", label, title);
@@ -265,7 +269,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue("Ingestion event did not have expected note",
                 eventResc.hasProperty(Premis.note, "ingested as PID: " + folder.getPid().getQualifiedId()));
         Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
-        assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
+        assertEquals(AgentPIDs.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
         assertStorageLocationPresent(folder);
 
         assertClickCount(1);
@@ -306,17 +310,17 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = destObj.getMembers();
+        List<AbstractContentObject> destMembers = destObj.getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
         // Make sure that the work is present and is actually a work
-        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+        WorkObjectImpl mWork = (WorkObjectImpl) findContentObjectByPid(destMembers, workPid);
 
         String title = mWork.getResource().getProperty(DC.title).getString();
         assertEquals("Work title was not correctly set", label, title);
 
         // Verify that the properties of the primary object were added
-        FileObject primaryObj = mWork.getPrimaryObject();
+        FileObjectImpl primaryObj = mWork.getPrimaryObject();
         assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
         PID fitsPid = DatastreamPids.getTechnicalMetadataPid(primaryObj.getPid());
         BinaryObject fitsBin = repoObjLoader.getBinaryObject(fitsPid);
@@ -324,9 +328,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 TECHNICAL_METADATA.getMimetype(), BLANK_SHA1, null, 0);
 
         // Check the right number of members are present
-        List<ContentObject> workMembers = mWork.getMembers();
+        List<AbstractContentObject> workMembers = mWork.getMembers();
         assertEquals("Incorrect number of members in work", 2, workMembers.size());
-        FileObject supObj = (FileObject) findContentObjectByPid(workMembers, supPid);
+        FileObjectImpl supObj = (FileObjectImpl) findContentObjectByPid(workMembers, supPid);
         assertNotNull(supObj);
 
         // Verify the properties and content of the supplemental file
@@ -340,7 +344,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         List<Resource> eventRescs = workLogModel.listResourcesWithProperty(Prov.generated).toList();
         for (Resource eventResc: eventRescs) {
             Resource authAgent = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentAuthorizor);
-            assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
+            assertEquals(AgentPIDs.forPerson(DEPOSITOR_NAME).getRepositoryPath(), authAgent.getURI());
         }
 
         // Verify that ingestion event gets added for primary object
@@ -366,8 +370,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
      */
     @Test
     public void ingestSimpleFile() throws Exception {
-        WorkObject destWork = repoObjFactory.createWorkObject(null);
-        FolderObject parentFolder = repoObjLoader.getFolderObject(destinationPid);
+        WorkObjectImpl destWork = repoObjFactory.createWorkObject(null);
+        FolderObjectImpl parentFolder = repoObjLoader.getFolderObject(destinationPid);
         parentFolder.addMember(destWork);
 
         treeIndexer.indexTree(destWork.getModel());
@@ -387,14 +391,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         // Make sure that the work is present and is actually a work
-        WorkObject mWork = repoObjLoader.getWorkObject(destWork.getPid());
+        WorkObjectImpl mWork = repoObjLoader.getWorkObject(destWork.getPid());
 
         // Verify that the properties of the primary object were added
-        FileObject primaryObj = (FileObject) mWork.getMembers().get(0);
+        FileObjectImpl primaryObj = (FileObjectImpl) mWork.getMembers().get(0);
         assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
 
         // Check the right number of members are present
-        List<ContentObject> workMembers = mWork.getMembers();
+        List<AbstractContentObject> workMembers = mWork.getMembers();
         assertEquals("Incorrect number of members in work", 1, workMembers.size());
 
         // Verify that ingestion event gets added for work
@@ -442,10 +446,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             treeIndexer.indexAll(baseAddress);
 
             ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-            List<ContentObject> destMembers = destObj.getMembers();
+            List<AbstractContentObject> destMembers = destObj.getMembers();
             assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
-            WorkObject workObj = (WorkObject) destMembers.get(0);
+            WorkObjectImpl workObj = (WorkObjectImpl) destMembers.get(0);
             assertEquals("Incorrect number of files added", 0, workObj.getMembers().size());
         }
     }
@@ -482,12 +486,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = destObj.getMembers();
+        List<AbstractContentObject> destMembers = destObj.getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
         // Make sure that the work is present and is actually a work
-        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
-        BinaryObject descBin = mWork.getDescription();
+        WorkObjectImpl mWork = (WorkObjectImpl) findContentObjectByPid(destMembers, workPid);
+        BinaryObjectImpl descBin = mWork.getDescription();
         assertEquals("Mods content", IOUtils.toString(descBin.getBinaryStream(), UTF_8));
 
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(descBin.getPid());
@@ -534,17 +538,17 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = destObj.getMembers();
+        List<AbstractContentObject> destMembers = destObj.getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
         // Make sure that the work is present and is actually a work
-        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+        WorkObjectImpl mWork = (WorkObjectImpl) findContentObjectByPid(destMembers, workPid);
 
         String title = mWork.getResource().getProperty(DC.title).getString();
         assertEquals("Work title was not correctly set", label, title);
 
         // Verify that the properties of the primary object were added
-        FileObject primaryObj = mWork.getPrimaryObject();
+        FileObjectImpl primaryObj = mWork.getPrimaryObject();
         assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
         BinaryObject fitsBin = repoObjLoader.getBinaryObject(fitsPid);
         assertBinaryProperties(fitsBin, TECHNICAL_METADATA.getDefaultFilename(),
@@ -611,10 +615,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
+        List<AbstractContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
-        List<ContentObject> workMembers = ((ContentContainerObject) destMembers.get(0)).getMembers();
+        List<AbstractContentObject> workMembers = ((ContentContainerObject) destMembers.get(0)).getMembers();
         assertEquals("Incorrect number of members in work", 2, workMembers.size());
 
         assertClickCount(3);
@@ -705,14 +709,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Check that the folder and first child successfully made it in
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
+        List<AbstractContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembersFailed.size());
 
         ContentObject mFolderFailed = destMembersFailed.get(0);
-        List<ContentObject> folderMembersFailed = ((ContentContainerObject) mFolderFailed).getMembers();
+        List<AbstractContentObject> folderMembersFailed = ((ContentContainerObject) mFolderFailed).getMembers();
         assertEquals("Incorrect number of children in folder", 2, folderMembersFailed.size());
 
-        WorkObject work2Failed = (WorkObject) findContentObjectByPid(folderMembersFailed, work2Pid);
+        WorkObjectImpl work2Failed = (WorkObjectImpl) findContentObjectByPid(folderMembersFailed, work2Pid);
         assertEquals("No files should be present", 0, work2Failed.getMembers().size());
 
         // Fix the staging location of the second file
@@ -728,16 +732,16 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
+        List<AbstractContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
         ContentObject mFolder = destMembers.get(0);
-        List<ContentObject> folderMembers = ((ContentContainerObject) mFolder).getMembers();
+        List<AbstractContentObject> folderMembers = ((ContentContainerObject) mFolder).getMembers();
         assertEquals("Incorrect number of children in folder", 2, folderMembers.size());
 
         // Order of the children isn't guaranteed, so find by primary obj pid
-        WorkObject workA = (WorkObject) folderMembers.get(0);
-        WorkObject workB = (WorkObject) folderMembers.get(1);
+        WorkObjectImpl workA = (WorkObjectImpl) folderMembers.get(0);
+        WorkObjectImpl workB = (WorkObjectImpl) folderMembers.get(1);
         workA.shouldRefresh();
         workB.shouldRefresh();
 
@@ -788,20 +792,20 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
-        List<RepositoryObject> deposited = new ArrayList<>();
+        List<AbstractContentObject> members = ((ContentContainerObject) destObj).getMembers();
+        List<AbstractRepositoryObject> deposited = new ArrayList<>();
 
         for (int i = 0; i < nestingDepth; i++) {
             assertEquals("Incorrect number of children", 1, members.size());
-            FolderObject folder = (FolderObject) members.get(0);
+            FolderObjectImpl folder = (FolderObjectImpl) members.get(0);
             deposited.add(folder);
             members = folder.getMembers();
         }
 
         assertEquals("Incorrect number of children in last tier", 1, members.size());
-        WorkObject work = (WorkObject) members.get(0);
+        WorkObjectImpl work = (WorkObjectImpl) members.get(0);
         assertStorageLocationPresent(work);
-        FileObject primaryFile = work.getPrimaryObject();
+        FileObjectImpl primaryFile = work.getPrimaryObject();
         assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
         assertStorageLocationPresent(primaryFile);
         deposited.add(work);
@@ -811,7 +815,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertClickCount(nestingDepth + 2);
         ingestedObjectsCount(nestingDepth + 2);
 
-        assertLinksToDepositRecord(deposited.toArray(new RepositoryObject[deposited.size()]));
+        assertLinksToDepositRecord(deposited.toArray(new AbstractRepositoryObject[deposited.size()]));
     }
 
     @Test
@@ -841,9 +845,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = destObj.getMembers();
+        List<AbstractContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
-        FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
+        FolderObjectImpl folderObj = (FolderObjectImpl) findContentObjectByPid(destMembers, folderPid);
 
         assertNotNull(folderObj.getDescription());
 
@@ -874,9 +878,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = destObj.getMembers();
+        List<AbstractContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
-        FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
+        FolderObjectImpl folderObj = (FolderObjectImpl) findContentObjectByPid(destMembers, folderPid);
 
         assertNull(folderObj.getDescription());
 
@@ -907,12 +911,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Event 1")
-                .addAuthorizingAgent(AgentPids.forPerson("someuser"))
+                .addAuthorizingAgent(AgentPIDs.forPerson("someuser"))
                 .write();
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)
                 .addEventDetail("Event 2")
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         job.closeModel();
@@ -921,7 +925,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+        FolderObjectImpl folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
         assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
@@ -964,12 +968,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Event 1")
-                .addAuthorizingAgent(AgentPids.forPerson("someuser"))
+                .addAuthorizingAgent(AgentPIDs.forPerson("someuser"))
                 .write();
         // build event 2
         premisLogger.buildEvent(Premis.VirusCheck)
                 .addEventDetail("Event 2")
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         job.closeModel();
@@ -977,7 +981,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         try {
             job.run();
         } catch (Exception e) {
-            FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+            FolderObjectImpl folder = repoObjLoader.getFolderObject(folderObjPid);
 
             Model logModel = folder.getPremisLog().getEventsModel();
             assertFalse(logModel.contains(null, RDF.type, Premis.Ingestion));
@@ -994,7 +998,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.run();
         treeIndexer.indexAll(baseAddress);
 
-        FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+        FolderObjectImpl folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
         assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
@@ -1035,7 +1039,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        FolderObject folder = repoObjLoader.getFolderObject(folderObjPid);
+        FolderObjectImpl folder = repoObjLoader.getFolderObject(folderObjPid);
 
         Model logModel = folder.getPremisLog().getEventsModel();
         assertTrue(logModel.contains(null, RDF.type, Premis.Ingestion));
@@ -1082,19 +1086,19 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         treeIndexer.indexAll(baseAddress);
 
         // Verify that the correct original deposit ids are assigned to each folder
-        FolderObject folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
+        FolderObjectImpl folder1 = repoObjLoader.getFolderObject(folderObj1Pid);
         Resource f1DepositResc = folder1.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(deposit2Pid.getRepositoryPath(), f1DepositResc.getURI());
 
-        FolderObject folder2 = repoObjLoader.getFolderObject(folderObj2Pid);
+        FolderObjectImpl folder2 = repoObjLoader.getFolderObject(folderObj2Pid);
         Resource f2DepositResc = folder2.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(depositPid.getRepositoryPath(), f2DepositResc.getURI());
 
-        FolderObject folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
+        FolderObjectImpl folder3 = repoObjLoader.getFolderObject(folderObj3Pid);
         Resource f3DepositResc = folder3.getResource(true).getProperty(Cdr.originalDeposit).getResource();
         assertEquals(deposit3Pid.getRepositoryPath(), f3DepositResc.getURI());
 
-        ContentObject destObj = repoObjLoader.getFolderObject(destinationPid);
+        AbstractContentObject destObj = repoObjLoader.getFolderObject(destinationPid);
         Model destLogModel = destObj.getPremisLog().getEventsModel();
         assertTrue(destLogModel.contains(null, Premis.note,
                 "added 3 child objects to this container"));
@@ -1155,15 +1159,15 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        AdminUnit unitObj = repoObjLoader.getAdminUnit(unitPid);
+        AdminUnitImpl unitObj = repoObjLoader.getAdminUnit(unitPid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, unitObj);
-        CollectionObject collObj = repoObjLoader.getCollectionObject(collPid);
+        CollectionObjectImpl collObj = repoObjLoader.getCollectionObject(collPid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, collObj);
-        FolderObject folderObj = repoObjLoader.getFolderObject(folderPid);
+        FolderObjectImpl folderObj = repoObjLoader.getFolderObject(folderPid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, folderObj);
-        WorkObject workObj = repoObjLoader.getWorkObject(workPid);
+        WorkObjectImpl workObj = repoObjLoader.getWorkObject(workPid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, workObj);
-        FileObject fileObj = repoObjLoader.getFileObject(filePid);
+        FileObjectImpl fileObj = repoObjLoader.getFileObject(filePid);
         assertTimestamps(CREATED_DATE, LAST_MODIFIED_DATE, fileObj);
     }
 
@@ -1231,7 +1235,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         interruptTest();
     }
 
-    private void assertTimestamps(Date expectedCreated, Date expectedModified, ContentObject obj) {
+    private void assertTimestamps(Date expectedCreated, Date expectedModified, AbstractContentObject obj) {
         assertEquals("Date created for " + obj.getPid().getId() + " did not match expected value",
                 expectedCreated, obj.getCreatedDate());
         assertEquals("Last modifed for " + obj.getPid().getId() + " did not match expected value",
@@ -1327,7 +1331,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         }
     }
 
-    private void assertStorageLocationPresent(ContentObject contentObj) {
+    private void assertStorageLocationPresent(AbstractContentObject contentObj) {
         assertTrue("Storage location property was not set",
                 contentObj.getResource(true).hasLiteral(Cdr.storageLocation, LOC1_ID));
     }

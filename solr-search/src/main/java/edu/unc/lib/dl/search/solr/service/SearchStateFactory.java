@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.util.ResourceType.AdminUnit;
-import static edu.unc.lib.dl.util.ResourceType.Collection;
-import static edu.unc.lib.dl.util.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.AdminUnit;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Collection;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Folder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

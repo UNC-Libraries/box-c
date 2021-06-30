@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XLINK_NS;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import org.jdom2.filter.ElementFilter;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**

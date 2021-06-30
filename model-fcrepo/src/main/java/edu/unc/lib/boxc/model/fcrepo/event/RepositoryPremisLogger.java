@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.event;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getMdEventsPid;
-import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdEventsPid;
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -37,21 +37,21 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.util.ObjectPersistenceException;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 
@@ -67,7 +67,7 @@ public class RepositoryPremisLogger implements PremisLogger {
     private static final Logger log = getLogger(RepositoryPremisLogger.class);
     private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
     private BinaryTransferSession transferSession;
@@ -76,7 +76,7 @@ public class RepositoryPremisLogger implements PremisLogger {
     private boolean closed = false;
 
     public RepositoryPremisLogger(RepositoryObject repoObject, BinaryTransferSession transferSession,
-            RepositoryPIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
+            PIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
             RepositoryObjectFactory repoObjFactory) {
         this.repoObject = repoObject;
         this.pidMinter = pidMinter;

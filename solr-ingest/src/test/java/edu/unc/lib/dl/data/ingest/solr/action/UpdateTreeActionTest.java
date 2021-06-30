@@ -37,13 +37,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -82,11 +82,11 @@ public class UpdateTreeActionTest {
         corpus = new TestCorpus();
 
         // Establish basic containment relations
-        ContentContainerObject obj1 = makeContainer(corpus.pid1, repositoryObjectLoader);
-        ContentContainerObject obj2 = addContainerToParent(obj1, corpus.pid2, repositoryObjectLoader);
-        FileObject file1 = addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
-        FileObject file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
-        FileObject file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
+        AbstractContentContainerObject obj1 = makeContainer(corpus.pid1, repositoryObjectLoader);
+        AbstractContentContainerObject obj2 = addContainerToParent(obj1, corpus.pid2, repositoryObjectLoader);
+        FileObjectImpl file1 = addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
+        FileObjectImpl file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
+        FileObjectImpl file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
 
         sparqlModel = ModelFactory.createDefaultModel();
         sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
@@ -123,7 +123,7 @@ public class UpdateTreeActionTest {
 
     @Test
     public void testNoDescendents() throws Exception {
-        ContentObject obj6 = mock(ContentObject.class);
+        AbstractContentObject obj6 = mock(AbstractContentObject.class);
         when(obj6.getPid()).thenReturn(corpus.pid6);
         Model model = ModelFactory.createDefaultModel();
         when(obj6.getResource()).thenReturn(model.getResource(corpus.pid6.getRepositoryPath()));
@@ -138,8 +138,8 @@ public class UpdateTreeActionTest {
         assertTrue(pids.contains(corpus.pid6));
     }
 
-    private void indexTriples(ContentObject... objs) {
-        for (ContentObject obj : objs) {
+    private void indexTriples(AbstractContentObject... objs) {
+        for (AbstractContentObject obj : objs) {
             sparqlModel.add(obj.getResource().getModel());
         }
     }

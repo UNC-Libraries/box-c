@@ -34,7 +34,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -54,7 +61,7 @@ public abstract class AbstractFedoraIT {
     protected FcrepoClient client;
 
     @Autowired
-    protected RepositoryPIDMinter pidMinter;
+    protected PIDMinter pidMinter;
     @Autowired
     protected RepositoryObjectFactory repoObjFactory;
     @Autowired
@@ -109,7 +116,7 @@ public abstract class AbstractFedoraIT {
         }
     }
 
-    protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
+    protected ContentObject findContentObjectByPid(List<AbstractContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
     }

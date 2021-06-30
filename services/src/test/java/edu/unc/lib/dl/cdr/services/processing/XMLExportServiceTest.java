@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static edu.unc.lib.dl.util.ResourceType.Work;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -47,16 +47,17 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -135,7 +136,7 @@ public class XMLExportServiceTest {
     private PID mockObject() {
         PID pid = PIDs.get(UUID.randomUUID().toString());
 
-        ContentObject obj = mock(ContentObject.class);
+        AbstractContentObject obj = mock(AbstractContentObject.class);
         when(obj.getPid()).thenReturn(pid);
         when(obj.getLastModified()).thenReturn(new Date());
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(obj);
@@ -189,9 +190,9 @@ public class XMLExportServiceTest {
     @Test
     public void exportWithModsTest() throws Exception {
         PID pid1 = registerObject();
-        ContentObject contentObj = (ContentObject) repoObjLoader.getRepositoryObject(pid1);
+        AbstractContentObject contentObj = (AbstractContentObject) repoObjLoader.getRepositoryObject(pid1);
 
-        BinaryObject modsObj = mock(BinaryObject.class);
+        BinaryObjectImpl modsObj = mock(BinaryObjectImpl.class);
         Date lastModified = new Date();
         when(modsObj.getLastModified()).thenReturn(lastModified);
         InputStream modsIs = new FileInputStream(new File(

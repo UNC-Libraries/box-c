@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
 import static org.junit.Assert.assertEquals;
@@ -41,14 +41,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.model.DatastreamPids;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -82,13 +82,13 @@ public class UpdateDescriptionServiceIT {
 
     @Test
     public void addDescriptionToWork() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
 
         addDescription(workObj, "new title", "2018-04-06");
 
-        List<BinaryObject> mdBins = workObj.listMetadata();
+        List<BinaryObjectImpl> mdBins = workObj.listMetadata();
         assertEquals(1, mdBins.size());
-        BinaryObject modsBin = mdBins.get(0);
+        BinaryObjectImpl modsBin = mdBins.get(0);
         assertEquals(DatastreamPids.getMdDescriptivePid(workObj.getPid()), modsBin.getPid());
         assertEquals(MD_DESCRIPTIVE.getDefaultFilename(), modsBin.getFilename());
 
@@ -97,15 +97,15 @@ public class UpdateDescriptionServiceIT {
 
     @Test
     public void updateDescriptionOnFolder() throws Exception {
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
 
         addDescription(folderObj, "new title", "2018-04-06");
         addDescription(folderObj, "updated title", "2018-04-08");
 
-        List<BinaryObject> mdBins = folderObj.listMetadata();
+        List<BinaryObjectImpl> mdBins = folderObj.listMetadata();
         assertEquals(2, mdBins.size());
 
-        BinaryObject modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
+        BinaryObjectImpl modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
         assertEquals(DatastreamPids.getMdDescriptivePid(folderObj.getPid()), modsBin.getPid());
         assertEquals(MD_DESCRIPTIVE.getDefaultFilename(), modsBin.getFilename());
 
@@ -115,14 +115,14 @@ public class UpdateDescriptionServiceIT {
         assertNotNull(findDatastream(mdBins, MD_DESCRIPTIVE_HISTORY));
     }
 
-    private BinaryObject findDatastream(List<BinaryObject> mdBins, DatastreamType dsType) {
+    private BinaryObjectImpl findDatastream(List<BinaryObjectImpl> mdBins, DatastreamType dsType) {
         return mdBins.stream()
                 .filter(bin -> bin.getPid().getComponentId().endsWith(dsType.getId()))
                 .findFirst()
                 .get();
     }
 
-    private void addDescription(ContentObject contentObj, String title, String date) throws Exception {
+    private void addDescription(AbstractContentObject contentObj, String title, String date) throws Exception {
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(title, date));
         InputStream modsStream = documentToInputStream(doc);

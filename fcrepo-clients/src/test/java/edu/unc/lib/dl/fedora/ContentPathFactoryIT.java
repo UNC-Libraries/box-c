@@ -26,14 +26,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 
 /**
  *
@@ -46,9 +49,9 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     private ContentPathFactory pathFactory;
 
     private PID contentRootPid;
-    private ContentRootObject contentRoot;
-    private AdminUnit adminUnit;
-    private CollectionObject collObj;
+    private ContentRootObjectImpl contentRoot;
+    private AdminUnitImpl adminUnit;
+    private CollectionObjectImpl collObj;
 
     @Before
     public void init() {
@@ -81,12 +84,12 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void testGetFileAncestors() throws Exception {
-        WorkObject work = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
 
         Path contentPath = Files.createTempFile("test", ".txt");
-        FileObject fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
-        BinaryObject binObj = fileObj.getOriginalFile();
+        FileObjectImpl fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
+        BinaryObjectImpl binObj = fileObj.getOriginalFile();
 
         List<PID> ancestors = pathFactory.getAncestorPids(binObj.getPid());
 
@@ -109,7 +112,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         assertEquals(adminUnit.getPid(), ancestors.get(1));
 
         // Switch ownership of coll to a new unit
-        AdminUnit adminUnit2 = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl adminUnit2 = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit2);
 
         adminUnit2.addMember(collObj);

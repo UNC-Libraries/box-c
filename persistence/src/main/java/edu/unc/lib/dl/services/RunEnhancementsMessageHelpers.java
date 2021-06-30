@@ -22,7 +22,7 @@ import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Helper methods for run enhancement messages

@@ -18,7 +18,7 @@ package edu.unc.lib.dl.persist.api.ingest;
 import java.net.URI;
 import java.util.List;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Manager for retrieving and querying ingest sources

@@ -35,21 +35,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.deposit.fcrepo4.AbstractFedoraDepositJobIT;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -163,7 +163,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void unit_AddCollection() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -179,7 +179,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void unit_AddInvalidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -205,7 +205,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test(expected = AccessRestrictionException.class)
     public void unit_AddCollection_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -221,9 +221,9 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void collection_AddValidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -240,9 +240,9 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void collection_AddInvalidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -267,9 +267,9 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test(expected = AccessRestrictionException.class)
     public void collect_AddFolder_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -285,11 +285,11 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void folder_AddValidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -306,11 +306,11 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void folder_AddInvalidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -335,11 +335,11 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test(expected = AccessRestrictionException.class)
     public void folder_AddFolder_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -355,13 +355,13 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void work_AddFile() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -378,13 +378,13 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void work_AddInvalidTypes() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -409,13 +409,13 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test(expected = AccessRestrictionException.class)
     public void work_AddFile_InsufficientPermissions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -431,19 +431,19 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void file_AddChild() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         collObj.addMember(folderObj);
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
         Path origPath = Files.createTempFile("original", ".txt");
         FileUtils.writeStringToFile(origPath.toFile(), "content", UTF_8);
         origPath.toFile().deleteOnExit();
-        FileObject fileObj = workObj.addDataFile(origPath.toUri(), "file.txt", "text/plain", null, null);
+        FileObjectImpl fileObj = workObj.addDataFile(origPath.toUri(), "file.txt", "text/plain", null, null);
 
         treeIndexer.indexAll(baseAddress);
 
@@ -464,7 +464,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
 
     @Test
     public void unit_AddNestedChildren() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl unitObj = repoObjFactory.createAdminUnit(null);
         rootObj.addMember(unitObj);
 
         treeIndexer.indexAll(baseAddress);

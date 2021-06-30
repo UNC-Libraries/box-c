@@ -29,18 +29,18 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 import io.dropwizard.metrics5.Timer;
 
@@ -83,10 +83,10 @@ public class SolrIngestProcessor implements Processor {
             // for binaries, need to index the file and work objects which contain it
             if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
                 targetPid = PIDs.get(targetPid.getId());
-                FileObject parentFile = repoObjLoader.getFileObject(targetPid);
+                FileObjectImpl parentFile = repoObjLoader.getFileObject(targetPid);
                 RepositoryObject grandParent = parentFile.getParent();
                 // Index both the parent file and work
-                if (grandParent instanceof WorkObject) {
+                if (grandParent instanceof WorkObjectImpl) {
                     targetPids.add(grandParent.getPid());
                 }
             }

@@ -35,16 +35,17 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 
 /**
@@ -76,8 +77,8 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
     }
 
     private void destroyTree(RepositoryObject rootOfTree) {
-        if (!(rootOfTree instanceof WorkObject || rootOfTree instanceof FileObject
-                || rootOfTree instanceof FolderObject)) {
+        if (!(rootOfTree instanceof WorkObjectImpl || rootOfTree instanceof FileObjectImpl
+                || rootOfTree instanceof FolderObjectImpl)) {
             throw new ServiceException("Refusing to destroy object " + rootOfTree.getPid()
                     + " of type " + rootOfTree.getResourceType());
         }
@@ -85,11 +86,11 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
         assertCanDestroy(agent, rootOfTree, aclService);
 
         log.info("Completely destroying object {}", rootOfTree.getPid());
-        if (rootOfTree instanceof ContentContainerObject) {
+        if (rootOfTree instanceof AbstractContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
-            List<ContentObject> members = container.getMembers();
+            List<AbstractContentObject> members = container.getMembers();
 
-            for (ContentObject member : members) {
+            for (AbstractContentObject member : members) {
                 destroyTree(member);
             }
         }

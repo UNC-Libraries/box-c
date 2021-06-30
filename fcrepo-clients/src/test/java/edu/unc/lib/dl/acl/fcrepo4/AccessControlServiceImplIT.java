@@ -30,22 +30,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
@@ -57,22 +57,22 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private static final long CACHE_MAX_SIZE = 100l;
     private static final long CACHE_TIME_TO_LIVE = 100l;
 
-    private static ContentRootObject contentRoot;
-    private static AdminUnit adminUnit1;
-    private static CollectionObject collObj1;
-    private static FolderObject collObj1Folder1;
-    private static WorkObject collObj1Folder1Work1;
-    private static FolderObject collObj1Folder2;
-    private static WorkObject collObj1Folder2Work1;
-    private static WorkObject collObj1Folder2Work2;
-    private static WorkObject collObj1Folder2Work3;
-    private static WorkObject collObj1Work2;
-    private static CollectionObject collObj2;
-    private static FolderObject collObj2Folder1;
-    private static WorkObject collObj2Folder1Work1;
-    private static WorkObject collObj2Work2;
-    private static CollectionObject collObj3;
-    private static AdminUnit adminUnit2;
+    private static ContentRootObjectImpl contentRoot;
+    private static AdminUnitImpl adminUnit1;
+    private static CollectionObjectImpl collObj1;
+    private static FolderObjectImpl collObj1Folder1;
+    private static WorkObjectImpl collObj1Folder1Work1;
+    private static FolderObjectImpl collObj1Folder2;
+    private static WorkObjectImpl collObj1Folder2Work1;
+    private static WorkObjectImpl collObj1Folder2Work2;
+    private static WorkObjectImpl collObj1Folder2Work3;
+    private static WorkObjectImpl collObj1Work2;
+    private static CollectionObjectImpl collObj2;
+    private static FolderObjectImpl collObj2Folder1;
+    private static WorkObjectImpl collObj2Folder1Work1;
+    private static WorkObjectImpl collObj2Work2;
+    private static CollectionObjectImpl collObj3;
+    private static AdminUnitImpl adminUnit2;
 
     private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 

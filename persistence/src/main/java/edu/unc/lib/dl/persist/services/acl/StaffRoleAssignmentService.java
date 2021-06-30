@@ -39,18 +39,18 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -101,7 +101,7 @@ public class StaffRoleAssignmentService {
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
             // Verify that the target is a collection or admin unit
-            if (!(repoObj instanceof CollectionObject || repoObj instanceof AdminUnit)) {
+            if (!(repoObj instanceof CollectionObjectImpl || repoObj instanceof AdminUnitImpl)) {
                 throw new InvalidAssignmentException("Cannot assign staff roles to  object " + target.getId()
                         + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
@@ -111,7 +111,7 @@ public class StaffRoleAssignmentService {
             replaceStaffRoles(repoObj, assignments);
 
             repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(AgentPids.forPerson(agent))
+                    .addImplementorAgent(AgentPIDs.forPerson(agent))
                     .addEventDetail(createEventDetails(target))
                     .writeAndClose();
 

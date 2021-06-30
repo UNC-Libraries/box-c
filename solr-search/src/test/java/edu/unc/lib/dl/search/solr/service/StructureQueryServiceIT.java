@@ -16,13 +16,13 @@
 package edu.unc.lib.dl.search.solr.service;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
 import static edu.unc.lib.dl.search.solr.service.StructureQueryService.CONTAINERS_COUNT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.SUBJECT;
-import static edu.unc.lib.dl.util.ResourceType.Folder;
-import static edu.unc.lib.dl.util.ResourceType.Work;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,10 +38,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;

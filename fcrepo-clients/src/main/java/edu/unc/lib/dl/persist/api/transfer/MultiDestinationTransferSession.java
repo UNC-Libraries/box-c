@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.api.transfer;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 
 /**

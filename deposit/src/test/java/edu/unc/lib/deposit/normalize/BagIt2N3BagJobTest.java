@@ -46,8 +46,8 @@ import org.mockito.Captor;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 

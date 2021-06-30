@@ -46,18 +46,18 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.IPAddressPatronPrincipalConfig;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
@@ -80,8 +80,8 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
 
-    private AdminUnit adminUnit;
-    private CollectionObject collObj;
+    private AdminUnitImpl adminUnit;
+    private CollectionObjectImpl collObj;
 
     @Before
     public void init_() throws Exception {
@@ -99,10 +99,10 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     @Test
     public void insufficientPermissions() throws Exception {
         // Creating unit/coll with no permissions granted
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = pidMinter.mintContentPid();
-        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid, null);
+        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
 
         treeIndexer.indexAll(baseAddress);
@@ -297,7 +297,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     @Test
     public void getFromFolderWithNoPatrons() throws Exception {
         createCollectionInUnit(null);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
 
         treeIndexer.indexAll(baseAddress);
@@ -314,7 +314,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     @Test
     public void getFromFolderWithAssignedPatronsNoInherited() throws Exception {
         createCollectionInUnit(null);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder with patrons")
                     .addCanViewMetadata(PUBLIC_PRINC)
                     .addCanViewOriginals(AUTHENTICATED_PRINC)
@@ -344,7 +344,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewMetadata(PUBLIC_PRINC)
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
 
         treeIndexer.indexAll(baseAddress);
@@ -370,7 +370,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewMetadata(PUBLIC_PRINC)
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder with patrons")
                     .addCanViewMetadata(AUTHENTICATED_PRINC)
                     .model);
@@ -402,7 +402,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         createCollectionInUnit(new AclModelBuilder("Collection with none")
                 .addNoneRole(PUBLIC_PRINC)
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder with patrons")
                     .addCanViewMetadata(PUBLIC_PRINC)
                     .model);
@@ -430,7 +430,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewOriginals(PUBLIC_PRINC)
                 .markForDeletion()
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
 
         treeIndexer.indexAll(baseAddress);
@@ -456,7 +456,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .addEmbargoUntil(embargoUntil)
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder);
 
         treeIndexer.indexAll(baseAddress);
@@ -483,7 +483,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Collection")
                     .addCanViewOriginals(PUBLIC_PRINC)
                     .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder deleted")
                     .addCanViewOriginals(PUBLIC_PRINC)
                     .markForDeletion()
@@ -518,7 +518,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Collection")
                     .addCanViewOriginals(PUBLIC_PRINC)
                     .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder deleted")
                     .addCanViewOriginals(PUBLIC_PRINC)
                     .addEmbargoUntil(embargoUntil)
@@ -556,7 +556,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                     .markForDeletion()
                     .addEmbargoUntil(embargoUntil)
                     .model);
-        WorkObject work = repositoryObjectFactory.createWorkObject(
+        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(
                 new AclModelBuilder("Work")
                     .addCanViewMetadata(PUBLIC_PRINC)
                     .markForDeletion()
@@ -591,7 +591,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 .addCanViewOriginals(AUTHENTICATED_PRINC)
                 .addCanViewOriginals(customGroup)
                 .model);
-        FolderObject folder = repositoryObjectFactory.createFolderObject(
+        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(
                 new AclModelBuilder("Folder with patrons")
                     .addNoneRole(PUBLIC_PRINC)
                     .addCanViewMetadata(AUTHENTICATED_PRINC)
@@ -629,12 +629,12 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
                 new AclModelBuilder("Collection")
                     .addCanViewOriginals(PUBLIC_PRINC)
                     .model);
-        WorkObject work = repositoryObjectFactory.createWorkObject(null);
+        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(work);
 
         Path originalPath = Files.createTempFile("file", ".txt");
         FileUtils.writeStringToFile(originalPath.toFile(), origBodyString, "UTF-8");
-        FileObject fileObj = work.addDataFile(originalPath.toUri(), origFilename, origMimetype, null, null,
+        FileObjectImpl fileObj = work.addDataFile(originalPath.toUri(), origFilename, origMimetype, null, null,
                 new AclModelBuilder("Work")
                     .addNoneRole(PUBLIC_PRINC)
                     .model);

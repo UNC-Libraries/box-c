@@ -31,20 +31,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
@@ -129,7 +130,7 @@ public class MoveObjectsJob implements Runnable {
     private void retrieveDestinationContainer() {
         // Verify that the destination is a content container
         RepositoryObject destObj = repositoryObjectLoader.getRepositoryObject(destinationPid);
-        if (!(destObj instanceof ContentContainerObject)) {
+        if (!(destObj instanceof AbstractContentContainerObject)) {
             throw new IllegalArgumentException("Destination " + destinationPid + " was not a content container");
         }
         destContainer = (ContentContainerObject) destObj;
@@ -139,7 +140,7 @@ public class MoveObjectsJob implements Runnable {
         aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission to move object "
                 + objPid, objPid, agent.getPrincipals(), Permission.move);
 
-        ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
+        AbstractContentObject moveContent = (AbstractContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
         // Store the pid of the current parent as the move source for this object
         PID sourcePid = moveContent.getParent().getPid();
         addPidToSource(objPid, sourcePid);
@@ -151,7 +152,7 @@ public class MoveObjectsJob implements Runnable {
         destContainer.addMember(moveContent);
     }
 
-    private void adminUnitMove(PID sourcePid, ContentObject moveObj) {
+    private void adminUnitMove(PID sourcePid, AbstractContentObject moveObj) {
         Map<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
         String destAdminUnit = destContainerInfo.get("adminUnit");
 
@@ -160,7 +161,7 @@ public class MoveObjectsJob implements Runnable {
 
         if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
             moveObj.getPremisLog().buildEvent(Premis.MetadataModification)
-                    .addAuthorizingAgent(AgentPids.forPerson(agent))
+                    .addAuthorizingAgent(AgentPIDs.forPerson(agent))
                     .addEventDetail("Object moved from source {0} ({1}) in Admin Unit {2} ({3}) " +
                                     "to destination {4} ({5}) in Admin Unit {6} ({7})",
                             currentContainerInfo.get("container"), currentContainerInfo.get("containerTitle"),

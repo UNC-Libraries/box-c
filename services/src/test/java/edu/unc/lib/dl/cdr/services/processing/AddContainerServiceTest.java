@@ -45,30 +45,30 @@ import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -84,7 +84,7 @@ public class AddContainerServiceTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
-    private RepositoryObjectFactory repoObjFactory;
+    private RepositoryObjectFactoryImpl repoObjFactory;
     @Mock
     private TransactionManager txManager;
     @Mock
@@ -175,8 +175,8 @@ public class AddContainerServiceTest {
 
     @Test(expected = TransactionCancelledException.class)
     public void addCollectionToFolderTest() {
-        FolderObject folder = mock(FolderObject.class);
-        CollectionObject collection = mock(CollectionObject.class);
+        FolderObjectImpl folder = mock(FolderObjectImpl.class);
+        CollectionObjectImpl collection = mock(CollectionObjectImpl.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
         when(repoObjFactory.createCollectionObject(any(PID.class), any(ModelCom.class))).thenReturn(collection);
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
@@ -191,12 +191,12 @@ public class AddContainerServiceTest {
 
     @Test
     public void addFolderToCollectionTest() {
-        CollectionObject collection = mock(CollectionObject.class);
-        FolderObject folder = mock(FolderObject.class);
+        CollectionObjectImpl collection = mock(CollectionObjectImpl.class);
+        FolderObjectImpl folder = mock(FolderObjectImpl.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
-        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<FolderObject>() {
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<FolderObjectImpl>() {
             @Override
-            public FolderObject answer(InvocationOnMock invocation) throws Throwable {
+            public FolderObjectImpl answer(InvocationOnMock invocation) throws Throwable {
                 childPid = (PID) invocation.getArguments()[0];
                 when(folder.getPid()).thenReturn(childPid);
                 return folder;
@@ -226,13 +226,13 @@ public class AddContainerServiceTest {
 
     @Test
     public void addWorkToFolderTest() {
-        WorkObject work = mock(WorkObject.class);
-        FolderObject folder = mock(FolderObject.class);
+        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        FolderObjectImpl folder = mock(FolderObjectImpl.class);
 
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
-        when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<WorkObject>() {
+        when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<WorkObjectImpl>() {
             @Override
-            public WorkObject answer(InvocationOnMock invocation) throws Throwable {
+            public WorkObjectImpl answer(InvocationOnMock invocation) throws Throwable {
                 childPid = (PID) invocation.getArguments()[0];
                 when(work.getPid()).thenReturn(childPid);
                 return work;

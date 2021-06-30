@@ -18,8 +18,8 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**

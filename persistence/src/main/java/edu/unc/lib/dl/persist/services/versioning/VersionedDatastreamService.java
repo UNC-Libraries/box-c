@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDatastreamHistoryPid;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
@@ -27,16 +27,17 @@ import java.util.concurrent.locks.Lock;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
@@ -66,11 +67,11 @@ public class VersionedDatastreamService {
      * @param newVersion details of the new datastream version
      * @return the BinaryObject representation of the datastream updated
      */
-    public BinaryObject addVersion(DatastreamVersion newVersion) {
+    public BinaryObjectImpl addVersion(DatastreamVersion newVersion) {
         PID dsPid = newVersion.getDsPid();
 
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
-        BinaryObject dsObj = getBinaryObject(dsPid);
+        BinaryObjectImpl dsObj = getBinaryObject(dsPid);
 
         // Get a session for transferring the binary and its history
         BinaryTransferSession session = null;
@@ -113,7 +114,7 @@ public class VersionedDatastreamService {
      * @param dsPid
      * @return
      */
-    private BinaryObject getBinaryObject(PID dsPid) {
+    private BinaryObjectImpl getBinaryObject(PID dsPid) {
         try {
             return repoObjLoader.getBinaryObject(dsPid);
         } catch (NotFoundException e) {
@@ -128,7 +129,7 @@ public class VersionedDatastreamService {
      * @param session
      * @param currentDsObj
      */
-    private void updateDatastreamHistory(BinaryTransferSession session, BinaryObject currentDsObj) {
+    private void updateDatastreamHistory(BinaryTransferSession session, BinaryObjectImpl currentDsObj) {
         PID currentDsPid = currentDsObj.getPid();
 
         // Load existing datastream history if present
@@ -167,7 +168,7 @@ public class VersionedDatastreamService {
                 null);
     }
 
-    private BinaryObject updateHeadVersion(DatastreamVersion newVersion, BinaryTransferSession session) {
+    private BinaryObjectImpl updateHeadVersion(DatastreamVersion newVersion, BinaryTransferSession session) {
         PID dsPid = newVersion.getDsPid();
         // Transfer the incoming content to its storage location
         BinaryTransferOutcome dsOutcome;

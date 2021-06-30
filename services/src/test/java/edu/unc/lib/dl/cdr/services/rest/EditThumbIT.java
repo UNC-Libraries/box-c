@@ -49,15 +49,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.MessageSender;
 
 /**
@@ -71,7 +71,7 @@ import edu.unc.lib.dl.services.MessageSender;
 public class EditThumbIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
-    private CollectionObject collection;
+    private CollectionObjectImpl collection;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();

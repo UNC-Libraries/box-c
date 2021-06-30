@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.triplesReindexing;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -52,22 +52,22 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.test.TestHelper;
@@ -120,13 +120,13 @@ public class TriplesReindexingRouterIT {
     @Mock
     private Message message;
 
-    private ContentRootObject rootObj;
-    private AdminUnit unitObj;
-    private CollectionObject collObj;
-    private FolderObject folderObj1;
-    private FolderObject folderObj2;
-    private WorkObject workObj;
-    private FileObject fileObj;
+    private ContentRootObjectImpl rootObj;
+    private AdminUnitImpl unitObj;
+    private CollectionObjectImpl collObj;
+    private FolderObjectImpl folderObj1;
+    private FolderObjectImpl folderObj2;
+    private WorkObjectImpl workObj;
+    private FileObjectImpl fileObj;
 
     @Before
     public void setUp() throws Exception {
@@ -220,7 +220,7 @@ public class TriplesReindexingRouterIT {
     @Test
     public void testIndexingFromRepoRoot() throws Exception {
         // Create a deposit record
-        DepositRecord depositRec = repositoryObjectFactory.createDepositRecord(null);
+        DepositRecordImpl depositRec = repositoryObjectFactory.createDepositRecord(null);
 
         PID contentPid = RepositoryPaths.getRootPid();
         messageSender.sendIndexingOperation("user", contentPid, RECURSIVE_REINDEX);

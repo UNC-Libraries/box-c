@@ -40,11 +40,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -69,7 +69,7 @@ public class CDRMETSDepositHandlerTest {
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Mock
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     @Mock
     private DepositStatusFactory depositStatusFactory;
     @Captor

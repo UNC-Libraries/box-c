@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
-import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -35,10 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 
 /**

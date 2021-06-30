@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.work;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -60,10 +60,10 @@ import edu.unc.lib.deposit.validate.ValidateDescriptionJob;
 import edu.unc.lib.deposit.validate.ValidateDestinationJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.CounterFactory;
 import edu.unc.lib.boxc.common.metrics.HistogramFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;

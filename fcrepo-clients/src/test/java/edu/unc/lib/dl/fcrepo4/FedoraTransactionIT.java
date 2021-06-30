@@ -35,10 +35,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 
 /**
@@ -65,7 +67,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     public void createTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
 
-        FolderObject obj = null;
+        FolderObjectImpl obj = null;
         try {
             obj = repoObjFactory.createFolderObject(model);
 
@@ -86,7 +88,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test (expected = TransactionCancelledException.class)
     public void createRollbackTxTest() {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObject obj = repoObjFactory.createFolderObject(model);
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(model);
         tx.cancel();
         assertNull(repoObjLoader.getFolderObject(obj.getPid()));
         assertNull(obj.getUri());
@@ -100,7 +102,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
         repoObjFactory.createFolderObject(model);
 
         FedoraTransaction subTx = txManager.startTransaction();
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         subTx.close();
 
         assertNull(subTx.getTxUri());
@@ -117,7 +119,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test
     public void cannotAccessObjectOutsideTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObject folder = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
 
         verifyNonTxStatusCode(folder.getPid(), 404);
         tx.close();

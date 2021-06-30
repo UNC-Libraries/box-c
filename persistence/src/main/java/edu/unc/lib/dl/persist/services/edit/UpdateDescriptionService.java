@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getMdDescriptivePid;
-import static edu.unc.lib.dl.model.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.toByteArray;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -34,13 +34,14 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
@@ -99,11 +100,11 @@ public class UpdateDescriptionService {
      * @return binary object of the updated description
      * @throws IOException
      */
-    public BinaryObject updateDescription(UpdateDescriptionRequest request) throws IOException {
+    public BinaryObjectImpl updateDescription(UpdateDescriptionRequest request) throws IOException {
         PID pid = request.getPid();
-        ContentObject obj = request.getContentObject();
+        AbstractContentObject obj = request.getContentObject();
         if (obj == null) {
-            obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+            obj = (AbstractContentObject) repoObjLoader.getRepositoryObject(pid);
         }
         log.debug("Updating description for {}", obj.getPid().getId());
         try (Timer.Context context = timer.time()) {
@@ -130,7 +131,7 @@ public class UpdateDescriptionService {
             newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
             newVersion.setTransferSession(request.getTransferSession());
 
-            BinaryObject descBinary;
+            BinaryObjectImpl descBinary;
             if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {
                 descBinary = versioningService.addVersion(newVersion);
                 log.debug("Successfully updated description for {}", obj.getPid());
@@ -210,7 +211,7 @@ public class UpdateDescriptionService {
 
     public static class UpdateDescriptionRequest {
         private PID pid;
-        private ContentObject contentObject;
+        private AbstractContentObject contentObject;
         private BinaryTransferSession transferSession;
         private AgentPrincipals agent;
         private InputStream modsStream;
@@ -221,7 +222,7 @@ public class UpdateDescriptionService {
             this.pid = pid;
             this.modsStream = modsStream;
         }
-        public UpdateDescriptionRequest(AgentPrincipals agent, ContentObject obj, InputStream modsStream) {
+        public UpdateDescriptionRequest(AgentPrincipals agent, AbstractContentObject obj, InputStream modsStream) {
             this.agent = agent;
             this.contentObject = obj;
             this.pid = obj.getPid();
@@ -236,11 +237,11 @@ public class UpdateDescriptionService {
             this.pid = pid;
         }
 
-        public ContentObject getContentObject() {
+        public AbstractContentObject getContentObject() {
             return contentObject;
         }
 
-        public UpdateDescriptionRequest withContentObject(ContentObject contentObject) {
+        public UpdateDescriptionRequest withContentObject(AbstractContentObject contentObject) {
             this.contentObject = contentObject;
             return this;
         }

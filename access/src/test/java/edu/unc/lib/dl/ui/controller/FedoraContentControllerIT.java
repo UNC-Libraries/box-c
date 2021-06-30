@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
 import static org.junit.Assert.assertEquals;
@@ -47,14 +47,15 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -194,7 +195,7 @@ public class FedoraContentControllerIT {
 
         String content = "<fits>content</fits>";
 
-        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
@@ -225,7 +226,7 @@ public class FedoraContentControllerIT {
 
         String content = "<fits>content</fits>";
 
-        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 

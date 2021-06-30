@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataContainerUri;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getMetadataContainerUri;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -37,12 +37,21 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.PcdmUse;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
@@ -54,7 +63,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createDepositRecordTest() throws Exception {
-        DepositRecord depRec = repoObjFactory.createDepositRecord(null);
+        DepositRecordImpl depRec = repoObjFactory.createDepositRecord(null);
         PID pid = depRec.getPid();
         URI uri = pid.getRepositoryUri();
         String path = uri.toString();
@@ -78,7 +87,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createBinaryTest() throws Exception {
         // create parent for binary
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         String binarySlug = "binary_test";
         URI binaryUri = workObj.getPid().getRepositoryUri();
         String binaryPath = URIUtil.join(binaryUri, binarySlug);
@@ -92,7 +101,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
+        BinaryObjectImpl binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
                 null, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
@@ -120,7 +129,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createBinaryWithMultiPartMimeTypeSemicolonTest() throws Exception {
         // create parent for binary
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         String binarySlug = "binary_test";
         URI binaryUri = workObj.getPid().getRepositoryUri();
         String binaryPath = URIUtil.join(binaryUri, binarySlug);
@@ -134,7 +143,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain; charset=GB18030";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
+        BinaryObjectImpl binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
                 null, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
@@ -162,7 +171,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createBinaryWithMultiPartMimeTypeCommaTest() throws Exception {
         // create parent for binary
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         String binarySlug = "binary_test";
         URI binaryUri = workObj.getPid().getRepositoryUri();
         String binaryPath = URIUtil.join(binaryUri, binarySlug);
@@ -176,7 +185,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain, charset=GB18030";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
+        BinaryObjectImpl binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
                 null, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
@@ -203,7 +212,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createFileObjectTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
         PID pid = fileObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -228,7 +237,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createWorkObjectTest() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         PID pid = workObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -250,7 +259,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createFolderObjectTest() throws Exception {
 
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
         PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -271,7 +280,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createAdminUnitTest() throws Exception {
 
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(null);
         PID pid = adminUnit.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -293,7 +302,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createCollectionObjectTest() throws Exception {
 
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(null);
         PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();

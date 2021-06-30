@@ -42,11 +42,11 @@ import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.deposit.work.DepositSupervisor.ActionMonitoringTask;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.AbstractDepositHandler;
 import edu.unc.lib.dl.util.DepositException;
@@ -88,7 +88,7 @@ public class DepositSupervisorTest {
     private Config jesqueConfig;
 
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
 
     @Autowired
     private JobStatusFactory jobStatusFactory;

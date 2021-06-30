@@ -29,12 +29,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDConstants;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.PIDConstants;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -46,7 +46,7 @@ public class CacheInvalidatingProcessorTest {
     private static final String PID_PATH = "/de/75/d8/11/" + PID_UUID;
 
     @Mock
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoaderImpl repoObjLoader;
     @Mock
     private ObjectAclFactory objectAclFactory;
 

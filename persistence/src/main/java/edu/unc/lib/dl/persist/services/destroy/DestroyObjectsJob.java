@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
-import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
@@ -41,19 +41,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
@@ -105,7 +107,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                     // Add premis event to parent
                     String lineSeparator = System.getProperty("line.separator");
                     parentObj.getPremisLog().buildEvent(Premis.Deletion)
-                            .addAuthorizingAgent(AgentPids.forPerson(agent))
+                            .addAuthorizingAgent(AgentPIDs.forPerson(agent))
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
                             .addEventDetail("Objects destroyed:" + lineSeparator
@@ -131,11 +133,11 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         log.debug("Performing destroy on object {} of type {}",
                 rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
 
-        if (rootOfTree instanceof ContentContainerObject) {
+        if (rootOfTree instanceof AbstractContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
-            List<ContentObject> members = container.getMembers();
+            List<AbstractContentObject> members = container.getMembers();
 
-            for (ContentObject member : members) {
+            for (AbstractContentObject member : members) {
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
 
@@ -145,7 +147,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         Resource rootResc = rootOfTree.getResource(true);
         Model rootModel = rootResc.getModel();
         List<URI> binaryUris = null;
-        if (rootOfTree instanceof FileObject) {
+        if (rootOfTree instanceof FileObjectImpl) {
             FileObject fileObj = (FileObject) rootOfTree;
             binaryUris = destroyFile(fileObj, rootResc);
         }
@@ -162,7 +164,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
-            .addAuthorizingAgent(AgentPids.forPerson(agent))
+            .addAuthorizingAgent(AgentPIDs.forPerson(agent))
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();
     }
@@ -184,7 +186,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     }
 
     private List<URI> destroyFile(FileObject fileObj, Resource resc) {
-        BinaryObject origFile = fileObj.getOriginalFile();
+        BinaryObjectImpl origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
             URI uri = origFile.getContentUri();
@@ -194,7 +196,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         return null;
     }
 
-    private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
+    private void addBinaryMetadataToParent(Resource parentResc, BinaryObjectImpl child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource(true);
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);

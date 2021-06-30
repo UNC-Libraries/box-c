@@ -35,20 +35,20 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -103,7 +103,7 @@ public class ExpireEmbargoService {
                             formatDateToUTC(parseUTCToDate(embargoDate));
                     // Produce the premis event for this embargo
                     repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                            .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService))
+                            .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.embargoExpirationService))
                             .addEventDetail(eventText)
                             .writeAndClose();
                 } catch (Exception e) {

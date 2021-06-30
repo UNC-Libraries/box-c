@@ -60,14 +60,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdatePatronAccessController.BulkPatronAccessDetails;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender;
@@ -87,8 +87,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private static final String USER_URI = USER_NAMESPACE + USER_NAME;
     private static final String USER_GROUPS = "edu:lib:admin_grp";
 
-    private AdminUnit adminUnit;
-    private CollectionObject collObj;
+    private AdminUnitImpl adminUnit;
+    private CollectionObjectImpl collObj;
     @Autowired
     private JmsTemplate patronAccessOperationTemplate;
     @Autowired
@@ -350,8 +350,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void bulkUpdateMultiple() throws Exception {
         createCollectionInUnit(null);
-        FolderObject folder1 = repositoryObjectFactory.createFolderObject(null);
-        FolderObject folder2 = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder1 = repositoryObjectFactory.createFolderObject(null);
+        FolderObjectImpl folder2 = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder1);
         collObj.addMember(folder2);
 

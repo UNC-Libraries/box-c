@@ -30,12 +30,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
@@ -50,13 +50,13 @@ public class SetContentTypeFilterTest {
     @Mock
     private PID pid;
     @Mock
-    private FileObject fileObj;
+    private FileObjectImpl fileObj;
     @Mock
-    private WorkObject workObj;
+    private WorkObjectImpl workObj;
     @Mock
-    private BinaryObject binObj;
+    private BinaryObjectImpl binObj;
     @Mock
-    private FolderObject folderObj;
+    private FolderObjectImpl folderObj;
     @Mock
     private IndexDocumentBean idb;
     @Captor

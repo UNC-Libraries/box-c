@@ -35,16 +35,16 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Normalization job to ensure all FileObjects being ingested are wrapped in
@@ -185,7 +185,7 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
         premisDepositLogger.buildEvent(Premis.Creation)
                 .addEventDetail("Work created to contain FileObject {0}",
                         filePid.getRepositoryPath())
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 }

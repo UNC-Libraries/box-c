@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -48,21 +48,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJob;
@@ -153,9 +153,9 @@ public class DestroyDerivativesRouterIT {
 
     private RepositoryObjectTreeIndexer treeIndexer;
 
-    private AdminUnit adminUnit;
+    private AdminUnitImpl adminUnit;
 
-    private CollectionObject collection;
+    private CollectionObjectImpl collection;
 
     private final static String LOC1_ID = "loc1";
 
@@ -171,7 +171,7 @@ public class DestroyDerivativesRouterIT {
         AccessGroupSet testPrincipals = new AccessGroupSet("edu:unc:lib:cdr:admin");
         agent = new AgentPrincipals("testUser", testPrincipals);
 
-        ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        ContentRootObjectImpl contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
         adminUnit = repoObjectFactory.createAdminUnit(new AclModelBuilder("Unit")
                 .addUnitOwner(agent.getUsernameUri())
                 .model);
@@ -197,8 +197,8 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyImageTest() throws Exception {
-        WorkObject work = repoObjectFactory.createWorkObject(null);
-        FileObject fileObj = addFileToWork(work, "image/png");
+        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
+        FileObjectImpl fileObj = addFileToWork(work, "image/png");
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -216,7 +216,7 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyCollectionImageTest() throws Exception {
-        CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
 
         treeIndexer.indexAll(baseAddress);
@@ -243,7 +243,7 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyCollectionNoImageTest() throws Exception {
-        CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
 
         treeIndexer.indexAll(baseAddress);
@@ -261,9 +261,9 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyTextTest() throws Exception {
-        WorkObject work = repoObjectFactory.createWorkObject(null);
+        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
         String mimetype = "text/plain";
-        FileObject fileObj = addFileToWork(work, mimetype);
+        FileObjectImpl fileObj = addFileToWork(work, mimetype);
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -281,8 +281,8 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void invalidTypeTest() throws Exception {
-        WorkObject work = repoObjectFactory.createWorkObject(null);
-        FileObject fileObj = addFileToWork(work, "application/octet-stream");
+        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
+        FileObjectImpl fileObj = addFileToWork(work, "application/octet-stream");
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -298,7 +298,7 @@ public class DestroyDerivativesRouterIT {
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
-    private FileObject addFileToWork(WorkObject work, String mimetype) throws Exception {
+    private FileObjectImpl addFileToWork(WorkObjectImpl work, String mimetype) throws Exception {
         collection.addMember(work);
 
         String bodyString = "Content";

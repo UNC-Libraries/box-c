@@ -15,15 +15,15 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.THUMBNAIL_SMALL;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -58,16 +58,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
 import edu.unc.lib.dl.util.DerivativeService;
 
@@ -246,9 +246,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID folderPid = makePid();
         String id = folderPid.getId();
 
-        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+            .addAuthorizingAgent(AgentPIDs.forPerson("some_user"))
             .writeAndClose();
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
@@ -289,9 +289,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID folderPid = makePid();
         String id = folderPid.getId();
 
-        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+            .addAuthorizingAgent(AgentPIDs.forPerson("some_user"))
             .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)

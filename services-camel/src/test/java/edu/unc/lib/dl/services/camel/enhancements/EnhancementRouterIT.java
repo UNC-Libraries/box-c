@@ -17,13 +17,13 @@ package edu.unc.lib.dl.services.camel.enhancements;
 
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
 import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.model.DatastreamPids.getTechnicalMetadataPid;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -61,15 +61,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
@@ -166,7 +167,7 @@ public class EnhancementRouterIT {
 
     @Test
     public void nonBinaryWithSourceImages() throws Exception {
-        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl collObject = repoObjectFactory.createCollectionObject(null);
 
         String uuid = collObject.getPid().getUUID();
         String basePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
@@ -187,7 +188,7 @@ public class EnhancementRouterIT {
 
     @Test
     public void nonBinaryNoSourceImages() throws Exception {
-        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl collObject = repoObjectFactory.createCollectionObject(null);
         final Map<String, Object> headers = createEvent(collObject.getPid(),
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
@@ -202,7 +203,7 @@ public class EnhancementRouterIT {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
+        BinaryObjectImpl binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         // Separate exchanges when multicasting
@@ -228,7 +229,7 @@ public class EnhancementRouterIT {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
+        BinaryObjectImpl binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
@@ -253,11 +254,11 @@ public class EnhancementRouterIT {
 
     @Test
     public void testInvalidFile() throws Exception {
-        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjectFactory.createFileObject(null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         Path techmdPath = Files.createTempFile("fits", ".xml");
         FileUtils.writeStringToFile(techmdPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
+        BinaryObjectImpl binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -278,8 +279,8 @@ public class EnhancementRouterIT {
 
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
-        FileObject fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObject descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+        FileObjectImpl fileObj = repoObjectFactory.createFileObject(null);
+        BinaryObjectImpl descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
                 mock(AgentPrincipals.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -301,7 +302,7 @@ public class EnhancementRouterIT {
     public void testDepositManifestFileMetadata() throws Exception {
         DepositRecord recObj = repoObjectFactory.createDepositRecord(null);
         Path manifestPath = Files.createTempFile("manifest", ".txt");
-        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
+        BinaryObjectImpl manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
 
         String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);

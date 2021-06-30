@@ -45,16 +45,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdateStaffAccessController.UpdateStaffRequest;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
@@ -87,7 +87,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testInsufficientPermissions() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -108,9 +108,9 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testInvalidUnitOwnerAssignment() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
-        CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = coll.getPid();
 
@@ -148,7 +148,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
     @Test
     public void testNoAssignments() throws Exception {
         PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid,
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(pid,
                 new AclModelBuilder("Admin Unit Can Manage")
                 .addCanManage(USER_NAME)
                 .model);
@@ -168,14 +168,14 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
+        AdminUnitImpl updated = repositoryObjectLoader.getAdminUnit(pid);
         // Verify that existing assignment was cleared
         assertNoAssignment(USER_NAME, canManage, updated);
     }
 
     @Test
     public void testInvalidRolesBody() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -192,7 +192,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testNoRolesBody() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -206,7 +206,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testNoPrincipal() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -224,7 +224,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testInvalidRole() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -241,7 +241,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testAssignRoles() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -260,13 +260,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
+        AdminUnitImpl updated = repositoryObjectLoader.getAdminUnit(pid);
         assertHasAssignment(USER_URI, canManage, updated);
     }
 
     @Test
     public void testAssignGroup() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -285,13 +285,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
-        AdminUnit updated = repositoryObjectLoader.getAdminUnit(pid);
+        AdminUnitImpl updated = repositoryObjectLoader.getAdminUnit(pid);
         assertHasAssignment(USER_GROUPS, canManage, updated);
     }
 
     @Test
     public void testAssignMultipleRolesToSamePrincipal() throws Exception {
-        AdminUnit unit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(unit);
         PID pid = unit.getPid();
 
@@ -309,13 +309,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
             .andReturn();
     }
 
-    private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
+    private void assertHasAssignment(String princ, UserRole role, AbstractContentObject obj) {
         Resource resc = obj.getResource();
         assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
     }
 
-    private void assertNoAssignment(String princ, UserRole role, ContentObject obj) {
+    private void assertNoAssignment(String princ, UserRole role, AbstractContentObject obj) {
         Resource resc = obj.getResource();
         assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));

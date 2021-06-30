@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.event;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getMdEventsPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdEventsPid;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,18 +28,17 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
-import edu.unc.lib.dl.util.ObjectPersistenceException;
 
 /**
  * Logs PREMIS events for a repository object to a backing file
@@ -55,9 +54,9 @@ public class FilePremisLogger implements PremisLogger {
     private PID logPid;
     private Model model;
 
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
 
-    public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter) {
+    public FilePremisLogger(PID pid, File file, PIDMinter pidMinter) {
         this.objectPid = pid;
         this.premisFile = file;
         this.pidMinter = pidMinter;
@@ -141,7 +140,7 @@ public class FilePremisLogger implements PremisLogger {
 
         if (premisFile != null && premisFile.exists()) {
             InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
-            model.read(in, null, Lang.NTRIPLES.getName());
+            model.read(in, null, "N-TRIPLES");
         }
 
         return model;

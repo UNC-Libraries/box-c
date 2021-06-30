@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getOriginalFilePid;
-import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
-import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.THUMBNAIL_LARGE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.THUMBNAIL_SMALL;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
@@ -49,19 +49,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.DerivativeService;
 import edu.unc.lib.dl.util.DerivativeService.Derivative;
@@ -111,9 +111,9 @@ public class SetDatastreamFilterTest {
     private PID pid;
 
     @Mock
-    private FileObject fileObj;
+    private FileObjectImpl fileObj;
     @Mock
-    private BinaryObject binObj;
+    private BinaryObjectImpl binObj;
     @Mock
     private IndexDocumentBean idb;
     @Captor
@@ -159,13 +159,13 @@ public class SetDatastreamFilterTest {
 
     @Test
     public void fileObjectMultipleBinariesTest() throws Exception {
-        BinaryObject binObj2 = mock(BinaryObject.class);
+        BinaryObjectImpl binObj2 = mock(BinaryObjectImpl.class);
         when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
         when(binObj2.getResource()).thenReturn(
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
         when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
 
-        BinaryObject binObj3 = mock(BinaryObject.class);
+        BinaryObjectImpl binObj3 = mock(BinaryObjectImpl.class);
         when(binObj3.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + THUMBNAIL_LARGE.getId()));
         when(binObj3.getResource()).thenReturn(
                 fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
@@ -192,19 +192,19 @@ public class SetDatastreamFilterTest {
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST));
 
-        BinaryObject binObj2 = mock(BinaryObject.class);
+        BinaryObjectImpl binObj2 = mock(BinaryObjectImpl.class);
         when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
         when(binObj2.getResource()).thenReturn(
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
         when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
 
-        BinaryObject binObj3 = mock(BinaryObject.class);
+        BinaryObjectImpl binObj3 = mock(BinaryObjectImpl.class);
         when(binObj3.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + JP2_ACCESS_COPY.getId()));
         when(binObj3.getResource()).thenReturn(
                 fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, JP2_ACCESS_COPY.getMimetype(),
                         JP2_ACCESS_COPY.getDefaultFilename(), FILE3_DIGEST));
 
-        BinaryObject binObj4 = mock(BinaryObject.class);
+        BinaryObjectImpl binObj4 = mock(BinaryObjectImpl.class);
         when(binObj4.getPid()).thenReturn(PIDs.get(pid.getId() + "/" + THUMBNAIL_LARGE.getId()));
         when(binObj4.getResource()).thenReturn(
                 fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
@@ -256,7 +256,7 @@ public class SetDatastreamFilterTest {
 
     @Test
     public void workObjectTest() throws Exception {
-        WorkObject workObj = mock(WorkObject.class);
+        WorkObjectImpl workObj = mock(WorkObjectImpl.class);
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(workObj.getPid()).thenReturn(pid);
         addMetadataDatastreams(workObj);
@@ -283,7 +283,7 @@ public class SetDatastreamFilterTest {
 
     @Test
     public void workObjectWithoutPrimaryObjectTest() throws Exception {
-        WorkObject workObj = mock(WorkObject.class);
+        WorkObjectImpl workObj = mock(WorkObjectImpl.class);
 
         when(dip.getContentObject()).thenReturn(workObj);
 
@@ -296,7 +296,7 @@ public class SetDatastreamFilterTest {
 
     @Test
     public void folderObjectWithMetadataTest() throws Exception {
-        FolderObject folderObj = mock(FolderObject.class);
+        FolderObjectImpl folderObj = mock(FolderObjectImpl.class);
         addMetadataDatastreams(folderObj);
 
         when(dip.getContentObject()).thenReturn(folderObj);
@@ -375,21 +375,21 @@ public class SetDatastreamFilterTest {
     }
 
     private void addMetadataDatastreams(ContentObject obj) throws Exception {
-        BinaryObject fitsBin = mock(BinaryObject.class);
+        BinaryObjectImpl fitsBin = mock(BinaryObjectImpl.class);
         when(fitsBin.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
         when(fitsBin.getResource()).thenReturn(
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
         when(fitsBin.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
 
-        BinaryObject modsBin = mock(BinaryObject.class);
+        BinaryObjectImpl modsBin = mock(BinaryObjectImpl.class);
         when(modsBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_DESCRIPTIVE.getId(),
                         MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST));
-        BinaryObject premisBin = mock(BinaryObject.class);
+        BinaryObjectImpl premisBin = mock(BinaryObjectImpl.class);
         when(premisBin.getResource()).thenReturn(
                 fileResource(DatastreamType.MD_EVENTS.getId(),
                         PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST));
-        List<BinaryObject> mdBins = Arrays.asList(fitsBin, premisBin, modsBin);
+        List<BinaryObjectImpl> mdBins = Arrays.asList(fitsBin, premisBin, modsBin);
 
         when(obj.listMetadata()).thenReturn(mdBins);
     }

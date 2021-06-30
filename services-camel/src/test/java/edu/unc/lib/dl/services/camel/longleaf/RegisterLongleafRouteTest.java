@@ -52,11 +52,11 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
@@ -128,8 +128,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         mockDlq.expectedMessageCount(0);
         mockSuccess.expectedMessageCount(1);
 
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
         URI contentUri = origBin.getContentUri();
 
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
@@ -152,7 +152,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         mockDlq.expectedMessageCount(0);
         mockSuccess.expectedMessageCount(0);
 
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
         PID binPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
 
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
@@ -177,8 +177,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         FileUtils.writeStringToFile(new File(longleafScript), "exit 1", UTF_8);
 
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
                 .whenDone(2)
@@ -201,11 +201,11 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         mockDlq.expectedMessageCount(1);
         mockSuccess.expectedMessageCount(1);
 
-        FileObject fileObj1 = repoObjFactory.createFileObject(null);
-        BinaryObject origBin1 = createOriginalBinary(fileObj1, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj1 = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin1 = createOriginalBinary(fileObj1, TEXT1_BODY, TEXT1_SHA1, null);
         URI contentUri1 = origBin1.getContentUri();
-        FileObject fileObj2 = repoObjFactory.createFileObject(null);
-        BinaryObject origBin2 = createOriginalBinary(fileObj2, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj2 = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin2 = createOriginalBinary(fileObj2, TEXT1_BODY, TEXT1_SHA1, null);
         URI contentUri2 = origBin2.getContentUri();
 
         // Append to existing script
@@ -249,8 +249,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 "\necho 'ERROR: \"longleaf register\" was called with arguments [\"--ohno\"]'",
                 UTF_8, true);
 
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
                 .whenDone(2)
@@ -273,7 +273,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 failedList.contains(origBin.getPid().getRepositoryPath()));
     }
 
-    private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {
+    private BinaryObjectImpl createOriginalBinary(FileObjectImpl fileObj, String content, String sha1, String md5) {
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
         BinaryTransferOutcome outcome = transferSession.transfer(originalPid,
                 new ByteArrayInputStream(content.getBytes(UTF_8)));

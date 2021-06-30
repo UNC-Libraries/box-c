@@ -47,27 +47,27 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
@@ -97,7 +97,7 @@ public class ExpireEmbargoServiceIT {
 
     private ExpireEmbargoService service;
 
-    private ContentRootObject contentRoot;
+    private ContentRootObjectImpl contentRoot;
 
     @Before
     public void init() throws Exception {
@@ -120,7 +120,7 @@ public class ExpireEmbargoServiceIT {
     public void expireSingleEmbargoTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(-1);
 
-        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObjectImpl collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
@@ -144,12 +144,12 @@ public class ExpireEmbargoServiceIT {
     public void expireMultipleEmbargoesTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(-1);
         // create first embargoed collection
-        CollectionObject collObj1 = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObjectImpl collObj1 = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid1 = collObj1.getPid();
         // create second embargoed collection
-        CollectionObject collObj2 = createCollectionInUnit(new AclModelBuilder("Another collection with embargo")
+        CollectionObjectImpl collObj2 = createCollectionInUnit(new AclModelBuilder("Another collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid2 = collObj2.getPid();
@@ -178,7 +178,7 @@ public class ExpireEmbargoServiceIT {
 
     @Test
     public void expireNoEmbargoesTest() throws Exception {
-        CollectionObject collObj = createCollectionInUnit(null);
+        CollectionObjectImpl collObj = createCollectionInUnit(null);
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -199,7 +199,7 @@ public class ExpireEmbargoServiceIT {
     public void doNotExpireFutureEmbargoesTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(1);
 
-        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObjectImpl collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
@@ -224,10 +224,10 @@ public class ExpireEmbargoServiceIT {
         return cal;
     }
 
-    private CollectionObject createCollectionInUnit(Model collModel) {
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
+    private CollectionObjectImpl createCollectionInUnit(Model collModel) {
+        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(collModel);
+        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(collModel);
         adminUnit.addMember(collObj);
         return collObj;
     }
@@ -257,7 +257,7 @@ public class ExpireEmbargoServiceIT {
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.Dissemination));
             Resource execAgent = eventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-            assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
+            assertEquals(AgentPIDs.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
                     execAgent.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.storage;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -38,13 +38,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageType;
 import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
@@ -233,7 +233,7 @@ public class StorageLocationManagerImplTest {
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(collPid.getRepositoryPath());
         resc.addProperty(Cdr.storageLocation, LOC1_ID);
-        CollectionObject collObj = mock(CollectionObject.class);
+        CollectionObjectImpl collObj = mock(CollectionObjectImpl.class);
         when(collObj.getPid()).thenReturn(collPid);
         when(collObj.getResource()).thenReturn(resc);
 
@@ -256,7 +256,7 @@ public class StorageLocationManagerImplTest {
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(collPid.getRepositoryPath());
         resc.addProperty(Cdr.storageLocation, LOC2_ID);
-        CollectionObject collObj = mock(CollectionObject.class);
+        CollectionObjectImpl collObj = mock(CollectionObjectImpl.class);
         when(collObj.getPid()).thenReturn(collPid);
         when(collObj.getResource()).thenReturn(resc);
 
@@ -277,7 +277,7 @@ public class StorageLocationManagerImplTest {
 
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(collPid.getRepositoryPath());
-        CollectionObject collObj = mock(CollectionObject.class);
+        CollectionObjectImpl collObj = mock(CollectionObjectImpl.class);
         when(collObj.getPid()).thenReturn(collPid);
         when(collObj.getResource()).thenReturn(resc);
 
@@ -300,7 +300,7 @@ public class StorageLocationManagerImplTest {
         Resource resc = model.getResource(collPid.getRepositoryPath());
         // Loc2 is not configured
         resc.addProperty(Cdr.storageLocation, LOC2_ID);
-        CollectionObject collObj = mock(CollectionObject.class);
+        CollectionObjectImpl collObj = mock(CollectionObjectImpl.class);
         when(collObj.getPid()).thenReturn(collPid);
         when(collObj.getResource()).thenReturn(resc);
 
@@ -319,7 +319,7 @@ public class StorageLocationManagerImplTest {
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(unitPid.getRepositoryPath());
         resc.addProperty(Cdr.storageLocation, LOC1_ID);
-        AdminUnit unitObj = mock(AdminUnit.class);
+        AdminUnitImpl unitObj = mock(AdminUnitImpl.class);
         when(unitObj.getPid()).thenReturn(unitPid);
         when(unitObj.getResource()).thenReturn(resc);
 

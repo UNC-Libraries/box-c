@@ -55,24 +55,24 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * @author lfarrell
@@ -124,7 +124,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsFileObject() throws Exception {
-        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
+        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(null);
         PID filePid = fileObj.getPid();
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(filePid, ResourceType.File.name());
@@ -145,8 +145,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsWorkObject() throws Exception {
-        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
-        FileObject workFile = workObj
+        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
+        FileObjectImpl workFile = workObj
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID workPid = workObj.getPid();
         setResultMetadataObject(workPid, ResourceType.Work.name());
@@ -168,7 +168,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNonFileNonWorkObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
-        FileObject fileObj = folderObj.addWork()
+        FileObjectImpl fileObj = folderObj.addWork()
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID filePid = fileObj.getPid();
         setResultMetadataObject(filePid, ResourceType.Folder.name());
@@ -189,7 +189,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsNoAccess() throws Exception {
-        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
+        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 

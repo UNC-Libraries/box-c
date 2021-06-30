@@ -55,22 +55,23 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.util.DigestAlgorithm;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  *
@@ -100,7 +101,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         lockManager = PidLockManager.getDefaultPidLockManager();
 
-        when(transferService.getSession(any(RepositoryObject.class))).thenReturn(mockSession);
+        when(transferService.getSession(any(AbstractRepositoryObject.class))).thenReturn(mockSession);
         premisLoggerFactory.setBinaryTransferService(transferService);
 
         // No implementations of session available here, so mock from interface
@@ -136,7 +137,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource eventResc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         // Retrieve all of the events
@@ -159,7 +160,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         assertEventLogDigestChanged(parentObject);
@@ -417,7 +418,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // attempt to write log and fail
         Resource event = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
                 .create();
         Runnable commitThread = new Runnable() {
             @Override

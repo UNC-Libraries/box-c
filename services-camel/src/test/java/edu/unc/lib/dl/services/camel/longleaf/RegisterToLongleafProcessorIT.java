@@ -48,15 +48,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
@@ -96,7 +97,7 @@ public class RegisterToLongleafProcessorIT {
     @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
@@ -135,8 +136,8 @@ public class RegisterToLongleafProcessorIT {
 
     @Test
     public void registerSingleFileWithSha1() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
 
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
@@ -148,15 +149,15 @@ public class RegisterToLongleafProcessorIT {
 
     @Test
     public void registerWorkWithMetadataUsingMd5() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
         PID workPid = workObj.getPid();
-        BinaryObject modsBin = createBinary(DatastreamPids.getMdDescriptivePid(workPid),
+        BinaryObjectImpl modsBin = createBinary(DatastreamPids.getMdDescriptivePid(workPid),
                 TEXT2_BODY, null, TEXT2_MD5);
         URI modsStorageUri = modsBin.getContentUri();
-        BinaryObject modsHistoryBin = createBinary(DatastreamPids.getDatastreamHistoryPid(modsBin.getPid()),
+        BinaryObjectImpl modsHistoryBin = createBinary(DatastreamPids.getDatastreamHistoryPid(modsBin.getPid()),
                 TEXT3_BODY, null, TEXT3_MD5);
         URI modsHistoryStorageUri = modsHistoryBin.getContentUri();
-        BinaryObject premisBin = createBinary(DatastreamPids.getMdEventsPid(workPid),
+        BinaryObjectImpl premisBin = createBinary(DatastreamPids.getMdEventsPid(workPid),
                 TEXT4_BODY, null, TEXT4_MD5);
         URI premisStorageUri = premisBin.getContentUri();
 
@@ -165,7 +166,7 @@ public class RegisterToLongleafProcessorIT {
         BinaryTransferOutcome outcome = transferSession.transfer(originalPid, streamString(TEXT1_BODY));
         URI storageUri = outcome.getDestinationUri();
         FileObject fileObj = workObj.addDataFile(filePid, storageUri, "original", "text/plain", null, TEXT1_MD5, null);
-        BinaryObject origBin = fileObj.getOriginalFile();
+        BinaryObjectImpl origBin = fileObj.getOriginalFile();
 
         Exchange exchange = createBatchExchange(modsBin, modsHistoryBin, premisBin, origBin);
         processor.process(exchange);
@@ -180,10 +181,10 @@ public class RegisterToLongleafProcessorIT {
 
     @Test
     public void registerFileWithFitsAndMultipleDigests() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, TEXT1_MD5);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, TEXT1_MD5);
 
-        BinaryObject techBin = createBinary(DatastreamPids.getTechnicalMetadataPid(fileObj.getPid()),
+        BinaryObjectImpl techBin = createBinary(DatastreamPids.getTechnicalMetadataPid(fileObj.getPid()),
                 TEXT2_BODY, TEXT2_SHA1, TEXT2_MD5);
 
         Exchange exchange = createBatchExchange(origBin, techBin);
@@ -199,8 +200,8 @@ public class RegisterToLongleafProcessorIT {
 
     @Test
     public void registerSingleFileWithNoDigest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
-        BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, null, null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        BinaryObjectImpl origBin = createOriginalBinary(fileObj, TEXT1_BODY, null, null);
 
         Exchange exchange = createBatchExchange(origBin);
         processor.process(exchange);
@@ -210,13 +211,13 @@ public class RegisterToLongleafProcessorIT {
         assertManifestEntry("sha1", TEXT1_SHA1, origBin.getContentUri());
     }
 
-    private BinaryObject createBinary(PID binPid, String content, String sha1, String md5) {
+    private BinaryObjectImpl createBinary(PID binPid, String content, String sha1, String md5) {
         BinaryTransferOutcome outcome = transferSession.transfer(binPid, streamString(content));
         URI storageUri = outcome.getDestinationUri();
         return repoObjFactory.createOrUpdateBinary(binPid, storageUri, "text.txt", "text/plain", sha1, md5, null);
     }
 
-    private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {
+    private BinaryObjectImpl createOriginalBinary(FileObjectImpl fileObj, String content, String sha1, String md5) {
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
         BinaryTransferOutcome outcome = transferSession.transfer(originalPid, streamString(content));
         URI storageUri = outcome.getDestinationUri();
@@ -258,7 +259,7 @@ public class RegisterToLongleafProcessorIT {
         return new ByteArrayInputStream(text.getBytes(UTF_8));
     }
 
-    private Exchange createBatchExchange(RepositoryObject... objects) {
+    private Exchange createBatchExchange(AbstractRepositoryObject... objects) {
         Exchange exchange = mock(Exchange.class);
         Message msg = mock(Message.class);
         CamelContext context = mock(CamelContext.class);

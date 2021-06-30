@@ -34,9 +34,17 @@ import org.apache.jena.vocabulary.DC;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -58,7 +66,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Title");
 
-        WorkObject obj = repoObjFactory.createWorkObject(model);
+        WorkObjectImpl obj = repoObjFactory.createWorkObject(model);
 
         assertTrue(obj.getTypes().contains(Cdr.Work.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -68,7 +76,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addDataFileTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl obj = repoObjFactory.createWorkObject(null);
 
         String bodyString = "Content";
         String filename = "file.txt";
@@ -80,10 +88,10 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        List<ContentObject> members = obj.getMembers();
+        List<AbstractContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
 
-        assertTrue(members.get(0) instanceof FileObject);
+        assertTrue(members.get(0) instanceof FileObjectImpl);
 
         FileObject dataObj = (FileObject) members.get(0);
         BinaryObject bObj = dataObj.getOriginalFile();
@@ -98,7 +106,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addPrimaryObjectAndSupplements() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(null);
+        WorkObjectImpl obj = repoObjFactory.createWorkObject(null);
 
         // Create the primary object
         String bodyString = "Primary object";
@@ -106,7 +114,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         Path contentPath = Files.createTempFile("primary", ".txt");
         FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
 
-        FileObject primaryObj = obj.addDataFile(contentPath.toUri(), filename, null, null, null);
+        FileObjectImpl primaryObj = obj.addDataFile(contentPath.toUri(), filename, null, null, null);
         // Set it as the primary object for our work
         obj.setPrimaryObject(primaryObj.getPid());
 
@@ -116,12 +124,12 @@ public class WorkObjectIT extends AbstractFedoraIT {
         Path contentPath2 = Files.createTempFile("s1", ".txt");
         FileUtils.writeStringToFile(contentPath2.toFile(), bodyStringS, "UTF-8");
 
-        FileObject supp = obj.addDataFile(contentPath2.toUri(), filenameS, null, null, null);
+        FileObjectImpl supp = obj.addDataFile(contentPath2.toUri(), filenameS, null, null, null);
 
         treeIndexer.indexAll(baseAddress);
 
         // Retrieve the primary object and verify it
-        FileObject primaryResult = obj.getPrimaryObject();
+        FileObjectImpl primaryResult = obj.getPrimaryObject();
         assertEquals(primaryObj.getPid(), primaryResult.getPid());
         assertEquals(filename, primaryResult.getResource().getProperty(DC.title).getString());
 
@@ -133,7 +141,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         assertEquals("Original content did not match submitted value", bodyString, respString);
 
         // Get all members of this work and verify everything is there
-        List<ContentObject> members = obj.getMembers();
+        List<AbstractContentObject> members = obj.getMembers();
         assertEquals("Incorrect number of members assigned to work", 2, members.size());
 
         FileObject primaryMember = (FileObject) findContentObjectByPid(members, primaryObj.getPid());
@@ -146,8 +154,8 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getParentTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(null);
-        WorkObject child = obj.addWork();
+        FolderObjectImpl obj = repoObjFactory.createFolderObject(null);
+        WorkObjectImpl child = obj.addWork();
 
         RepositoryObject parent = child.getParent();
         assertEquals("Parent returned by the child must match the folder it was created in",

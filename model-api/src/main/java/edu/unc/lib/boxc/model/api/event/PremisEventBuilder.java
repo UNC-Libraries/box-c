@@ -17,7 +17,7 @@ package edu.unc.lib.boxc.model.api.event;
 
 import org.apache.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Interface for builder for creating a PREMIS RDF event.

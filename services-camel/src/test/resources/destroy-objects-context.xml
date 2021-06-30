@@ -30,7 +30,7 @@
     </bean>
     
     <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory" />
     </bean>
     
     <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">

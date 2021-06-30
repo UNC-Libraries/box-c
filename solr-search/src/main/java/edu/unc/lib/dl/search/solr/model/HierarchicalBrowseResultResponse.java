@@ -28,7 +28,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.util.ResourceType;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
 
 /**
  *

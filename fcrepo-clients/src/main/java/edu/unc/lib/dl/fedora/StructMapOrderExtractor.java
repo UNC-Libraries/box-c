@@ -19,6 +19,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+
 /**
  * @author Gregory Jansen
  *

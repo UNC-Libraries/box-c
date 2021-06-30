@@ -15,14 +15,14 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.AdminUnit;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Collection;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
-import static edu.unc.lib.dl.util.ResourceType.AdminUnit;
-import static edu.unc.lib.dl.util.ResourceType.Collection;
-import static edu.unc.lib.dl.util.ResourceType.Folder;
-import static edu.unc.lib.dl.util.ResourceType.Work;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
@@ -36,8 +36,9 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -50,7 +51,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Query service for producing structural views of search results.

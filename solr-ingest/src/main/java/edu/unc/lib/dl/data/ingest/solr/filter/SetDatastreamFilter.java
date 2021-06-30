@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,16 +37,18 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.DerivativeService;
@@ -68,14 +70,14 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Performing Datastream filter for object {}", dip.getPid());
 
-        ContentObject contentObj = dip.getContentObject();
+        AbstractContentObject contentObj = dip.getContentObject();
         IndexDocumentBean doc = dip.getDocument();
 
         List<Datastream> datastreams = new ArrayList<>();
 
-        FileObject fileObj = getFileObject(contentObj);
+        FileObjectImpl fileObj = getFileObject(contentObj);
         if (fileObj != null) {
-            boolean ownedByOtherObject = contentObj instanceof WorkObject;
+            boolean ownedByOtherObject = contentObj instanceof WorkObjectImpl;
 
             // Add list of file datastreams associated with this object
             addDatastreams(datastreams, fileObj.getBinaryObjects(), ownedByOtherObject);
@@ -96,10 +98,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         doc.setDatastream(getDatastreamStrings(datastreams));
     }
 
-    private FileObject getFileObject(ContentObject contentObj) {
-        if (contentObj instanceof FileObject) {
-            return (FileObject) contentObj;
-        } else if (contentObj instanceof WorkObject) {
+    private FileObjectImpl getFileObject(ContentObject contentObj) {
+        if (contentObj instanceof FileObjectImpl) {
+            return (FileObjectImpl) contentObj;
+        } else if (contentObj instanceof WorkObjectImpl) {
             WorkObject workObj = (WorkObject) contentObj;
             return workObj.getPrimaryObject();
         } else {
@@ -108,13 +110,13 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
     }
 
-    private BinaryObject getFits(List<BinaryObject> binList) {
+    private BinaryObjectImpl getFits(List<BinaryObjectImpl> binList) {
         return binList.stream().filter(obj -> obj.getPid().getQualifiedId().endsWith(TECHNICAL_METADATA.getId()))
                 .findFirst().orElse(null);
     }
 
-    private String getExtent(List<BinaryObject> binList) {
-        BinaryObject fits = getFits(binList);
+    private String getExtent(List<BinaryObjectImpl> binList) {
+        BinaryObjectImpl fits = getFits(binList);
 
         if (fits == null) {
             return null;
@@ -157,7 +159,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param binList list of binaries
      * @param ownedByOtherObject
      */
-    private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
+    private void addDatastreams(List<Datastream> dsList, List<BinaryObjectImpl> binList, boolean ownedByOtherObject) {
         binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 

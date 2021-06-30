@@ -20,9 +20,9 @@ import java.text.ParseException;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 
 /**
  * Indexing filter that extracts Fedora-generated dates about the creation and modification state of an object
@@ -35,7 +35,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 public class SetRecordDatesFilter implements IndexDocumentFilter {
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        ContentObject obj = dip.getContentObject();
+        AbstractContentObject obj = dip.getContentObject();
         Resource resc = obj.getResource();
         String dateAdded = resc.getProperty(Fcrepo4Repository.created).getLiteral().getValue().toString();
         String dateUpdated = resc.getProperty(Fcrepo4Repository.lastModified).getLiteral().getValue().toString();

@@ -23,13 +23,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
@@ -64,8 +64,8 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
                 idb.getPid(), System.nanoTime() - start);
 
         // Grant visibility to the collections object
-        if (dip.getContentObject() instanceof ContentRootObject
-                || dip.getContentObject() instanceof AdminUnit) {
+        if (dip.getContentObject() instanceof ContentRootObjectImpl
+                || dip.getContentObject() instanceof AdminUnitImpl) {
             staffPrincipals.add(AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
             readPrincipals.add(AccessPrincipalConstants.PUBLIC_PRINC);
         } else {

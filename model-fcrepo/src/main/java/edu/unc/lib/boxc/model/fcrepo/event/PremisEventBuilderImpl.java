@@ -30,7 +30,7 @@ import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Builder for creating a PREMIS RDF event.

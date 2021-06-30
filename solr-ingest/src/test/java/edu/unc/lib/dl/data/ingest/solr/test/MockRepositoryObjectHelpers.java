@@ -27,14 +27,14 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 
 /**
  *
@@ -50,8 +50,8 @@ public class MockRepositoryObjectHelpers {
         return PIDs.get(UUID.randomUUID().toString());
     }
 
-    public static FileObject makeFileObject(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
-        FileObject fileObj = mock(FileObject.class);
+    public static FileObjectImpl makeFileObject(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
+        FileObjectImpl fileObj = mock(FileObjectImpl.class);
         when(fileObj.getPid()).thenReturn(pid);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObj);
         Model model = ModelFactory.createDefaultModel();
@@ -62,12 +62,12 @@ public class MockRepositoryObjectHelpers {
         return fileObj;
     }
 
-    public static ContentContainerObject makeContainer(RepositoryObjectLoader repositoryObjectLoader) {
+    public static AbstractContentContainerObject makeContainer(RepositoryObjectLoader repositoryObjectLoader) {
         return makeContainer(makePid(), repositoryObjectLoader);
     }
 
-    public static ContentContainerObject makeContainer(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
-        ContentContainerObject container = mock(ContentContainerObject.class);
+    public static AbstractContentContainerObject makeContainer(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
+        AbstractContentContainerObject container = mock(AbstractContentContainerObject.class);
         when(container.getMembers()).thenReturn(new ArrayList<>());
         when(container.getPid()).thenReturn(pid);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
@@ -79,28 +79,28 @@ public class MockRepositoryObjectHelpers {
         return container;
     }
 
-    public static ContentContainerObject addContainerToParent(ContentContainerObject container,
+    public static AbstractContentContainerObject addContainerToParent(AbstractContentContainerObject container,
             RepositoryObjectLoader repositoryObjectLoader) {
         return addContainerToParent(container, makePid(), repositoryObjectLoader);
     }
 
-    public static ContentContainerObject addContainerToParent(ContentContainerObject container, PID childPid,
+    public static AbstractContentContainerObject addContainerToParent(AbstractContentContainerObject container, PID childPid,
             RepositoryObjectLoader repositoryObjectLoader) {
-        ContentContainerObject memberObj = makeContainer(childPid, repositoryObjectLoader);
-        ContentObject child = (ContentObject) repositoryObjectLoader.getRepositoryObject(childPid);
+        AbstractContentContainerObject memberObj = makeContainer(childPid, repositoryObjectLoader);
+        AbstractContentObject child = (AbstractContentObject) repositoryObjectLoader.getRepositoryObject(childPid);
         child.getResource().addProperty(PcdmModels.memberOf, container.getResource());
         return memberObj;
     }
 
-    public static FileObject addFileObjectToParent(ContentContainerObject container, PID childPid,
+    public static FileObjectImpl addFileObjectToParent(AbstractContentContainerObject container, PID childPid,
             RepositoryObjectLoader repositoryObjectLoader) {
-        FileObject memberObj = makeFileObject(childPid, repositoryObjectLoader);
+        FileObjectImpl memberObj = makeFileObject(childPid, repositoryObjectLoader);
         memberObj.getResource().addProperty(PcdmModels.memberOf, container.getResource());
         return memberObj;
     }
 
-    public static void addMembers(ContentContainerObject container, ContentObject... children) {
-        for (ContentObject child : children) {
+    public static void addMembers(AbstractContentContainerObject container, AbstractContentObject... children) {
+        for (AbstractContentObject child : children) {
             child.getResource().addProperty(PcdmModels.memberOf, container.getResource());
         }
     }

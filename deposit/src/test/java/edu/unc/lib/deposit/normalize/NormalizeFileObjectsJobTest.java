@@ -16,7 +16,7 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_BASE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,15 +48,15 @@ import org.mockito.stubbing.Answer;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**
@@ -81,7 +81,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     private PremisEventBuilderImpl mockPremisEventBuilder;
 
     @Mock
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
 
     @Before
     public void init() {

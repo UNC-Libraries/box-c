@@ -27,6 +27,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
@@ -34,10 +38,6 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 /**
@@ -86,9 +86,9 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
-        ContentObject contentObj = dip.getContentObject();
+        AbstractContentObject contentObj = dip.getContentObject();
         // No need to continue with patron statuses if object is an AdminUnit
-        if (contentObj instanceof AdminUnit) {
+        if (contentObj instanceof AdminUnitImpl) {
             return status;
         }
 
@@ -119,7 +119,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        boolean isCollection = contentObj instanceof CollectionObject;
+        boolean isCollection = contentObj instanceof CollectionObjectImpl;
         if (hasPatronSettings(objPatronRoles, isCollection)) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }
@@ -131,7 +131,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         return status;
     }
 
-    private boolean inheritingPatronRestrictions(ContentObject contentObj, List<RoleAssignment> objRoles,
+    private boolean inheritingPatronRestrictions(AbstractContentObject contentObj, List<RoleAssignment> objRoles,
             List<RoleAssignment> inheritedRoles, boolean isEmbargoed) {
         boolean noObjAssignments = objRoles.isEmpty();
         // No roles defined at any level, so inheriting staff only

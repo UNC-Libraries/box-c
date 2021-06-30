@@ -26,16 +26,17 @@ import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 
 /**
  * @author bbpennel
  */
 public class RegisterToLongleafProcessorTest {
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     private PID filePid;
 
     @Before

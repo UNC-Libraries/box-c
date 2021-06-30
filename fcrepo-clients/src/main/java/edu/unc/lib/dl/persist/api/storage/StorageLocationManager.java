@@ -18,8 +18,8 @@ package edu.unc.lib.dl.persist.api.storage;
 import java.net.URI;
 import java.util.List;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 
 /**
  * Manager for preservation storage locations

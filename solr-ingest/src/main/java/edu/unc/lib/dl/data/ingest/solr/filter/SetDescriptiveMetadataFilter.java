@@ -36,13 +36,14 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
@@ -103,7 +104,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Resource resc = dip.getContentObject().getResource();
         String dcTitle = titleText(resc, DcElements.title);
         String ebucoreTitle = titleText(resc, Ebucore.filename);
-        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObject) {
+        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObjectImpl) {
             ebucoreTitle = ((FileObject) dip.getContentObject()).getOriginalFile().getFilename();
         }
 

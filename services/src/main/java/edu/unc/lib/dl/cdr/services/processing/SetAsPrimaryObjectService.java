@@ -23,13 +23,13 @@ import java.util.List;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
@@ -61,18 +61,18 @@ public class SetAsPrimaryObjectService {
 
             RepositoryObject repoObj = repoObjLoader.getRepositoryObject(fileObjPid);
 
-            if (!(repoObj instanceof FileObject)) {
+            if (!(repoObj instanceof FileObjectImpl)) {
                 throw new InvalidOperationForObjectType("Cannot set " + fileObjPid.getUUID()
                         + " as primary object, since objects of type " + repoObj.getClass().getName()
                         + " are not eligible.");
             }
 
             RepositoryObject parent = repoObj.getParent();
-            if (!(parent instanceof WorkObject)) {
+            if (!(parent instanceof WorkObjectImpl)) {
                 throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
                 + " cannot have a primary object.");
             }
-            WorkObject work = (WorkObject) parent;
+            WorkObjectImpl work = (WorkObjectImpl) parent;
             work.setPrimaryObject(fileObjPid);
             work.shouldRefresh();
 
@@ -93,7 +93,7 @@ public class SetAsPrimaryObjectService {
             RepositoryObject repoObj = repoObjLoader.getRepositoryObject(objPid);
 
             RepositoryObject parent;
-            if (repoObj instanceof FileObject) {
+            if (repoObj instanceof FileObjectImpl) {
                 parent = repoObj.getParent();
             } else {
                 parent = repoObj;
@@ -102,17 +102,17 @@ public class SetAsPrimaryObjectService {
             aclService.assertHasAccess("Insufficient privileges to clear primary object for "
                     + parent.getPid().getId(), parent.getPid(), agent.getPrincipals(), editResourceType);
 
-            if (!(parent instanceof WorkObject)) {
+            if (!(parent instanceof WorkObjectImpl)) {
                 throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
                 + " cannot have a primary object.");
             }
 
-            WorkObject work = (WorkObject) parent;
+            WorkObjectImpl work = (WorkObjectImpl) parent;
 
             List<PID> updated = new ArrayList<>();
             updated.add(parent.getPid());
             // if there was a primary object before, capture its pid for reporting
-            FileObject previousPrimary = work.getPrimaryObject();
+            FileObjectImpl previousPrimary = work.getPrimaryObject();
             if (previousPrimary != null) {
                 updated.add(previousPrimary.getPid());
 

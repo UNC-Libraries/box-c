@@ -22,15 +22,15 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.ContentPathConstants;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ContentPathConstants;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for
@@ -53,7 +53,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         IndexDocumentBean idb = dip.getDocument();
         List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
 
-        if (pids.size() == 0 && !(dip.getContentObject() instanceof ContentRootObject)) {
+        if (pids.size() == 0 && !(dip.getContentObject() instanceof ContentRootObjectImpl)) {
             throw new IndexingException("Object " + dip.getPid() + " has no known ancestors");
         }
 
@@ -72,7 +72,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         String ancestorIds = "/" + pids.stream()
                 .map(pid -> pid.getId())
                 .collect(Collectors.joining("/"));
-        if (!(dip.getContentObject() instanceof FileObject)) {
+        if (!(dip.getContentObject() instanceof FileObjectImpl)) {
             ancestorIds += "/" + dip.getPid().getId();
         }
         idb.setAncestorIds(ancestorIds);
@@ -85,11 +85,11 @@ public class SetPathFilter implements IndexDocumentFilter {
             idb.setParentUnit(pids.get(ContentPathConstants.UNIT_DEPTH).getId());
         }
 
-        ContentObject contentObject = dip.getContentObject();
+        AbstractContentObject contentObject = dip.getContentObject();
 
         String rollup;
 
-        if (contentObject instanceof FileObject) {
+        if (contentObject instanceof FileObjectImpl) {
             rollup = pids.get(pids.size() - 1).getId();
         } else {
             rollup = contentObject.getPid().getId();

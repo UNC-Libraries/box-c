@@ -196,6 +196,7 @@
         <module>common-utils</module>
         <module>model-api</module>
         <module>model-fcrepo</module>
+        <module>integration</module>
     </modules>
 
     <reporting>

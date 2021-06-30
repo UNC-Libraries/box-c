@@ -49,20 +49,20 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -112,7 +112,7 @@ public class PatronAccessAssignmentService {
 
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
-            if (repoObj instanceof AdminUnit || !(repoObj instanceof ContentObject)) {
+            if (repoObj instanceof AdminUnitImpl || !(repoObj instanceof AbstractContentObject)) {
                 throw new InvalidAssignmentException("Cannot assign patron access to object " + target.getId()
                     + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
@@ -182,7 +182,7 @@ public class PatronAccessAssignmentService {
 
         // Add PREMIS event indicating the role changes
         return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                .addImplementorAgent(AgentPids.forPerson(agent))
+                .addImplementorAgent(AgentPIDs.forPerson(agent))
                 .addEventDetail(createRoleEventDetails(assignments))
                 .create();
     }
@@ -256,7 +256,7 @@ public class PatronAccessAssignmentService {
         } else {
             // Produce the premis event for this embargo
             return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(AgentPids.forPerson(request.getAgent()))
+                    .addImplementorAgent(AgentPIDs.forPerson(request.getAgent()))
                     .addEventDetail(eventText)
                     .create();
         }

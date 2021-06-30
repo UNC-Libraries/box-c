@@ -36,18 +36,18 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
@@ -64,7 +64,7 @@ public class RestoreDeletedJobTest {
     @Mock
     private SparqlUpdateService sparqlUpdateService;
     @Mock
-    private ContentObject contentObj;
+    private AbstractContentObject contentObj;
     @Mock
     private AgentPrincipals agent;
     @Mock
@@ -72,7 +72,7 @@ public class RestoreDeletedJobTest {
     @Mock
     private PremisLogger premisLogger;
     @Mock
-    private AdminUnit repoObj;
+    private AdminUnitImpl repoObj;
 
     private PremisEventBuilderImpl eventBuilder;
 
@@ -120,7 +120,7 @@ public class RestoreDeletedJobTest {
 
     @Test(expected = InvalidOperationForObjectType.class)
     public void invalidObjectTypeTest() {
-        DepositRecord depObj = mock(DepositRecord.class);
+        DepositRecordImpl depObj = mock(DepositRecordImpl.class);
         when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
 
         job.run();

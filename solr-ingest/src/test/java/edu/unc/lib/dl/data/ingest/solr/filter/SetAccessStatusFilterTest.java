@@ -38,19 +38,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.test.AclModelBuilder;
@@ -72,11 +72,11 @@ public class SetAccessStatusFilterTest {
     private InheritedAclFactory inheritedAclFactory;
     private ObjectAclFactory objAclFactory;
     @Mock
-    private ContentObject contentObj;
+    private AbstractContentObject contentObj;
     @Mock
-    private CollectionObject parentObj;
+    private CollectionObjectImpl parentObj;
     @Mock
-    private AdminUnit unitObj;
+    private AdminUnitImpl unitObj;
     @Mock
     private Date date;
 
@@ -512,7 +512,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderWithCustomGroup() throws Exception {
-        redefineContentObject(FolderObject.class);
+        redefineContentObject(FolderObjectImpl.class);
 
         when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
                 .addNoneRole(PUBLIC_PRINC)
@@ -530,7 +530,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderMinimalStaffOnlyWithInheritedCustomGroup() throws Exception {
-        redefineContentObject(FolderObject.class);
+        redefineContentObject(FolderObjectImpl.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -552,7 +552,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderTotallyStaffOnlyWithInheritedCustomGroup() throws Exception {
-        redefineContentObject(FolderObject.class);
+        redefineContentObject(FolderObjectImpl.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -575,7 +575,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderInheritAssignmentsDirectNoneExceptCustomDirectly() throws Exception {
-        redefineContentObject(FolderObject.class);
+        redefineContentObject(FolderObjectImpl.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -598,7 +598,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderInheritAssignmentsOnlyCustomDirectly() throws Exception {
-        redefineContentObject(FolderObject.class);
+        redefineContentObject(FolderObjectImpl.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -617,7 +617,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
-    private void redefineContentObject(Class<? extends ContentObject> clazz) {
+    private void redefineContentObject(Class<? extends AbstractContentObject> clazz) {
         contentObj = mock(clazz);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getPid()).thenReturn(pid);

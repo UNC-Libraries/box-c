@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller.structure;
 
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

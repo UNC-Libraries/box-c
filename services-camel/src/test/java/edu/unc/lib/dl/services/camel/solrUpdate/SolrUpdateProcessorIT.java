@@ -61,14 +61,15 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
+import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
 import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -77,7 +78,6 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -191,7 +191,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @Test
     public void testAddChildren() throws Exception {
         // Add extra collection
-        CollectionObject coll2Obj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObjectImpl coll2Obj = repositoryObjectFactory.createCollectionObject(null);
         unitObj.addMember(coll2Obj);
 
         indexObjectsInTripleStore();
@@ -357,9 +357,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         doc.addField("roleGroup", "dummyGroup");
 
         String resourceType;
-        if (obj instanceof AdminUnit) {
+        if (obj instanceof AdminUnitImpl) {
             resourceType = ResourceType.AdminUnit.name();
-        } else if (obj instanceof CollectionObject) {
+        } else if (obj instanceof CollectionObjectImpl) {
             resourceType = ResourceType.Collection.name();
         } else {
             resourceType = ResourceType.ContentRoot.name();

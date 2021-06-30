@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
-import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;

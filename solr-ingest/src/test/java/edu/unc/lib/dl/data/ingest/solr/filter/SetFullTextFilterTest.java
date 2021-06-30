@@ -33,15 +33,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.util.DerivativeService;
 
 /**
@@ -60,9 +60,9 @@ public class SetFullTextFilterTest {
     private PID filePid;
     private PID workPid;
     @Mock
-    private WorkObject workObj;
+    private WorkObjectImpl workObj;
     @Mock
-    private FileObject fileObj;
+    private FileObjectImpl fileObj;
 
     private DerivativeService derivativeService;
 
@@ -133,7 +133,7 @@ public class SetFullTextFilterTest {
 
     @Test
     public void testNotWorkOrFile() throws Exception {
-        FolderObject folder = mock(FolderObject.class);
+        FolderObjectImpl folder = mock(FolderObjectImpl.class);
         when(folder.getPid()).thenReturn(workPid);
 
         dip = factory.createDip(workPid);

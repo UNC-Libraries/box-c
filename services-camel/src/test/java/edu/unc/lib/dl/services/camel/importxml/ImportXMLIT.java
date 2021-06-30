@@ -52,11 +52,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.samskivert.mustache.Template;
 
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
@@ -137,7 +137,7 @@ public class ImportXMLIT {
 
     @Test
     public void updateDescription() throws Exception {
-        FolderObject folderObject = repoObjectFactory.createFolderObject(null);
+        FolderObjectImpl folderObject = repoObjectFactory.createFolderObject(null);
 
         Document updateDoc = makeUpdateDocument();
         addObjectUpdate(updateDoc, folderObject.getPid(), null)
@@ -153,7 +153,7 @@ public class ImportXMLIT {
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
 
-        FolderObject updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
+        FolderObjectImpl updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
         Document modsDoc = parseDescription(updateObject);
         assertModsFields(modsDoc, UPDATED_TITLE, UPDATED_DATE);
     }

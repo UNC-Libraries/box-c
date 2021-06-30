@@ -30,8 +30,13 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 
 /**
  *
@@ -60,7 +65,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         PID parentPid = pidMinter.mintContentPid();
 
         PID filePid = PIDs.get(parentPid.getId() + "/my_bin");
-        BinaryObject obj = repoObjFactory.createOrUpdateBinary(filePid, contentUri,
+        BinaryObjectImpl obj = repoObjFactory.createOrUpdateBinary(filePid, contentUri,
                 FILENAME, MIMETYPE, CHECKSUM, null, null);
 
         // Verify that the body of the binary is retrieved
@@ -84,7 +89,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
         InputStream contentStream = new ByteArrayInputStream(BODY_STRING.getBytes());
 
-        BinaryObject obj = repoObjFactory.createBinary(parentPid.getRepositoryUri(), "binary_test",
+        BinaryObjectImpl obj = repoObjFactory.createBinary(parentPid.getRepositoryUri(), "binary_test",
                 contentStream, FILENAME, MIMETYPE, CHECKSUM, null, null);
 
         // Verify that the body of the binary is retrieved
@@ -102,7 +107,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getParent() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
 
         BinaryObject binObj = fileObj.addOriginalFile(contentUri, FILENAME, MIMETYPE, null, null);
 

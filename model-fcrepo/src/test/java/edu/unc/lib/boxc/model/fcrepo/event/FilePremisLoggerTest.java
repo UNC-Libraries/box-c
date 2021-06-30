@@ -42,9 +42,9 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.event.FilePremisLogger;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -53,7 +53,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  * @author lfarrell
  *
  */
-public class FilePremisLoggerTest extends AbstractFedoraTest {
+public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
     private String depositUUID;
     private PID pid;
     private Resource eventType;
@@ -89,8 +89,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     public void testTripleWrite() throws IOException {
         String message = "Test event successfully added";
 
-        PID softwarePid = AgentPids.forSoftware(SoftwareAgent.clamav);
-        PID authPid = AgentPids.forPerson("agent2");
+        PID softwarePid = AgentPIDs.forSoftware(SoftwareAgent.clamav);
+        PID authPid = AgentPIDs.forPerson("agent2");
         Resource premisBuilder = premis.buildEvent(null, eventType, date)
                 .addEventDetail(message)
                 .addOutcome(true)
@@ -123,13 +123,13 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
     @Test
     public void testMultipleEvents() throws Exception {
-        PID agentPid1 = AgentPids.forPerson("agent1");
+        PID agentPid1 = AgentPIDs.forPerson("agent1");
         Resource event1 = premis.buildEvent(null, Premis.Normalization, date)
                 .addEventDetail("Event 1")
                 .addAuthorizingAgent(agentPid1)
                 .write();
 
-        PID agentPid2 = AgentPids.forSoftware(SoftwareAgent.clamav);
+        PID agentPid2 = AgentPIDs.forSoftware(SoftwareAgent.clamav);
         Resource event2 = premis.buildEvent(null, Premis.VirusCheck, date)
                 .addEventDetail("Event 2")
                 .addSoftwareAgent(agentPid2)
@@ -166,12 +166,12 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     @Test
     public void testGetEventsModel() {
 
-        PID agentPid1 = AgentPids.forSoftware(SoftwareAgent.depositService);
+        PID agentPid1 = AgentPIDs.forSoftware(SoftwareAgent.depositService);
         Resource event1 = premis.buildEvent(null, Premis.Normalization, date)
                 .addEventDetail("Event 1").addSoftwareAgent(agentPid1)
                 .write();
 
-        PID agentPid2 = AgentPids.forPerson("agent2");
+        PID agentPid2 = AgentPIDs.forPerson("agent2");
         Resource event2 = premis.buildEvent(null, Premis.VirusCheck, date)
                 .addEventDetail("Event 2").addAuthorizingAgent(agentPid2)
                 .write();

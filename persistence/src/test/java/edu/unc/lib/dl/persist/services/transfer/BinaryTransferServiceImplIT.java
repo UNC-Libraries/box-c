@@ -42,16 +42,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamPids;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
@@ -83,7 +83,7 @@ public class BinaryTransferServiceImplIT {
     @Autowired
     private StorageLocationManagerImpl storageManager;
     @Autowired
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
     @Autowired
     private TransactionManager txManager;
     @Autowired
@@ -250,8 +250,8 @@ public class BinaryTransferServiceImplIT {
         URI sourceUri2 = sourceFile2.toUri();
 
         // Create work with the initial state of the binary
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
-        FileObject fileObj = repoObjFactory.createFileObject(null);
+        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
+        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
         workObj.addMember(fileObj);
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
         URI firstVersionContentUri;
@@ -302,7 +302,7 @@ public class BinaryTransferServiceImplIT {
     public void rollbackWithNoBinaryChanges() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
         try {
-            WorkObject workObj = repoObjFactory.createWorkObject(null);
+            WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
             assertTrue(repoObjFactory.objectExists(workObj.getUri()));
             tx.cancelAndIgnore();
             assertFalse(repoObjFactory.objectExists(workObj.getUri()));

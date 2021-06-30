@@ -40,10 +40,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -69,9 +69,9 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
-    private RepositoryObject repoObj;
+    private AbstractRepositoryObject repoObj;
     @Mock
-    private CollectionObject collObj;
+    private CollectionObjectImpl collObj;
 
     @Before
     public void init() throws Exception {

@@ -34,16 +34,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.MultiDigestInputStreamWrapper;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Calculates digests for staged files, performing a fixity check if existing
@@ -151,7 +151,7 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
             // Store event for calculation of checksums
             PremisLogger premisDepositLogger = getPremisLogger(result.rescPid);
             PremisEventBuilderImpl builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-                    .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService));
+                    .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService));
             result.details.forEach(builder::addEventDetail);
             builder.write();
 

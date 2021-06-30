@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 import java.net.URI;
@@ -50,12 +50,12 @@ import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
 import de.digitalcollections.iiif.model.sharedcanvas.Manifest;
 import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Generates request, connects to, and streams the output from loris.  Sets pertinent headers.
