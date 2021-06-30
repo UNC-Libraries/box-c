@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
+import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -49,7 +49,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;

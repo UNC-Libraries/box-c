@@ -78,7 +78,7 @@
         <constructor-arg ref="fcrepoClient" />
     </bean>
     
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
@@ -115,7 +115,7 @@
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />

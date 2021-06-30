@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
+package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,7 +27,9 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

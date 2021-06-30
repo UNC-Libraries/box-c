@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.api.objects;
+package edu.unc.lib.boxc.model.api;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.StoragePolicy.EXTERNAL;
+import static edu.unc.lib.boxc.model.api.StoragePolicy.INTERNAL;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DATA_FILE_FILESET;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
-import static edu.unc.lib.dl.model.StoragePolicy.EXTERNAL;
-import static edu.unc.lib.dl.model.StoragePolicy.INTERNAL;
-
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.model.StoragePolicy;
 
 /**
  * Predefined binary datastream types which may be associated with repository objects.

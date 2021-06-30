@@ -30,8 +30,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 

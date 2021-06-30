@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.deposit.transfer;
 
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.hasDatastreamDescriptiveHistory;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -45,8 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;

@@ -25,7 +25,7 @@
         <property name="solrClient" ref="embeddedSolrServer" />
     </bean>
     
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="1000" />

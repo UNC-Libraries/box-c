@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
+package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getMetadataContainerUri;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -37,6 +37,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -52,6 +53,7 @@ import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

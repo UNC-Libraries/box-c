@@ -43,7 +43,7 @@ import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequ
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;

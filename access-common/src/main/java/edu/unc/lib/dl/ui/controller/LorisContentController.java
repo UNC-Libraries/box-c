@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.io.IOException;

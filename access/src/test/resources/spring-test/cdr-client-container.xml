@@ -54,7 +54,6 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
@@ -66,7 +65,7 @@
         <constructor-arg ref="queryModel" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

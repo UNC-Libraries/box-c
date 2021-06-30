@@ -52,8 +52,8 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
@@ -64,7 +64,6 @@ import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
-import edu.unc.lib.dl.fcrepo4.LdpContainerFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 /**
  *

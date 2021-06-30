@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.THUMBNAIL_SMALL;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;

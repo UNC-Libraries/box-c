@@ -61,9 +61,9 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;

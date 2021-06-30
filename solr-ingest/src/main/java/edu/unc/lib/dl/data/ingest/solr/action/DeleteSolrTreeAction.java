@@ -20,7 +20,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.api.objects.ResourceType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;

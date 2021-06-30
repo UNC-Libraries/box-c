@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_EVENTS;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;

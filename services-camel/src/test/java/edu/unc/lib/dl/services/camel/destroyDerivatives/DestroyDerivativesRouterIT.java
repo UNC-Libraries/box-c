@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static org.mockito.Matchers.any;
@@ -49,8 +49,8 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;

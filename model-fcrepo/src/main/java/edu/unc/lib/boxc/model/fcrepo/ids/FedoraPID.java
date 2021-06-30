@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.net.URI;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 
 /**
  * Persistent identifier for a fedora repository object.  Provides both externally

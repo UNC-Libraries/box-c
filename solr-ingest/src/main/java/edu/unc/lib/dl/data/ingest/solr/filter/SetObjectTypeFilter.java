@@ -17,7 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.List;
 
-import edu.unc.lib.boxc.model.api.objects.ResourceType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;

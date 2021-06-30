@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;

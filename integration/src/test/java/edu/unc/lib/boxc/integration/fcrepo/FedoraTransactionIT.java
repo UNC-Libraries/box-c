@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
+package edu.unc.lib.boxc.integration.fcrepo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,11 +36,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 
 /**
@@ -67,7 +69,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     public void createTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
 
-        FolderObjectImpl obj = null;
+        FolderObject obj = null;
         try {
             obj = repoObjFactory.createFolderObject(model);
 
@@ -88,7 +90,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test (expected = TransactionCancelledException.class)
     public void createRollbackTxTest() {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObjectImpl obj = repoObjFactory.createFolderObject(model);
+        FolderObject obj = repoObjFactory.createFolderObject(model);
         tx.cancel();
         assertNull(repoObjLoader.getFolderObject(obj.getPid()));
         assertNull(obj.getUri());
@@ -102,7 +104,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
         repoObjFactory.createFolderObject(model);
 
         FedoraTransaction subTx = txManager.startTransaction();
-        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
         subTx.close();
 
         assertNull(subTx.getTxUri());
@@ -119,7 +121,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test
     public void cannotAccessObjectOutsideTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
+        FolderObject folder = repoObjFactory.createFolderObject(null);
 
         verifyNonTxStatusCode(folder.getPid(), 404);
         tx.close();

@@ -49,9 +49,8 @@ import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
@@ -72,9 +71,6 @@ public class RepositoryObjectDriver {
     private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDriver.class);
 
     private RepositoryObjectLoader repositoryObjectLoader;
-
-    @Deprecated
-    private RepositoryObjectFactory repositoryObjectFactory;
 
     private FcrepoClient client;
 
@@ -152,7 +148,7 @@ public class RepositoryObjectDriver {
      * @param pid
      * @return
      */
-    public AbstractRepositoryObject getRepositoryObject(PID pid) {
+    public RepositoryObject getRepositoryObject(PID pid) {
         return repositoryObjectLoader.getRepositoryObject(pid);
     }
 
@@ -270,7 +266,7 @@ public class RepositoryObjectDriver {
      * @throws OrphanedObjectException thrown if no parent object found for the object.
      * @throws ObjectTypeMismatchException thrown if object is not of a type eligible to have a parent.
      */
-    public AbstractRepositoryObject getParentObject(RepositoryObject obj) {
+    public RepositoryObject getParentObject(RepositoryObject obj) {
         PID parentPid = getParentPid(obj);
 
         return repositoryObjectLoader.getRepositoryObject(parentPid);
@@ -355,13 +351,6 @@ public class RepositoryObjectDriver {
 
     public void setSparqlQueryService(SparqlQueryService SparqlQueryService) {
         this.sparqlQueryService = SparqlQueryService;
-    }
-
-    /**
-     * @param repositoryObjectFactory the repositoryObjectFactory to set
-     */
-    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
-        this.repositoryObjectFactory = repositoryObjectFactory;
     }
 
     /**

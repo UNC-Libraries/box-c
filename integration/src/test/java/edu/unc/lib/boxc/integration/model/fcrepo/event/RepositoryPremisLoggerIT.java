@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.event;
+package edu.unc.lib.boxc.integration.model.fcrepo.event;
 
 import static java.nio.file.Files.createTempFile;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
@@ -54,11 +54,12 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
+import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
@@ -66,7 +67,6 @@ import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;

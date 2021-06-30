@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.services;
+package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
@@ -35,24 +35,14 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.util.EntityTag;
-import net.sf.saxon.functions.Lang;
 
 /**
  * Loader for cache of repository objects
@@ -120,7 +110,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 .perform()) {
 
             model = ModelFactory.createDefaultModel();
-            model.read(modelResp.getBody(), null, Lang.TURTLE.getName());
+            model.read(modelResp.getBody(), null, "TURTLE");
         } catch (IOException e) {
             throw new FedoraException("Failed to read model for " + pid, e);
         } catch (FcrepoOperationFailedException e) {

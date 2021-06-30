@@ -36,8 +36,8 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl.StorageLocationMapping;

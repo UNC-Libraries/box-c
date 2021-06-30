@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.FCR_TOMBSTONE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.FCR_TOMBSTONE;
 
 import java.io.IOException;
 import java.net.URI;

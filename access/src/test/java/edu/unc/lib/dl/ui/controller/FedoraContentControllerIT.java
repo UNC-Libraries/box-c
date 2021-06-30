@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;

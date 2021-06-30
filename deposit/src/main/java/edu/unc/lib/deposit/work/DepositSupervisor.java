@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.work;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 
 import java.io.File;
 import java.text.MessageFormat;

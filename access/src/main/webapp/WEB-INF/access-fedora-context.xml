@@ -63,7 +63,7 @@
     </bean>
 
     <!-- Initialize access control dependencies -->
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
@@ -127,7 +127,7 @@
         <property name="pidMinter" ref="pidMinter" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>

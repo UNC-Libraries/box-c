@@ -16,8 +16,8 @@
 package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE_HISTORY;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA_HISTORY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE_HISTORY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA_HISTORY;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
 import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
@@ -67,8 +67,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;

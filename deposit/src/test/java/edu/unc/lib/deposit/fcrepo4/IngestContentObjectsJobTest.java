@@ -16,8 +16,8 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
@@ -69,11 +69,11 @@ import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;

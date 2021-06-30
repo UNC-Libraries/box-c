@@ -25,11 +25,11 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
 import edu.unc.lib.dl.services.camel.util.EventTypes;
 

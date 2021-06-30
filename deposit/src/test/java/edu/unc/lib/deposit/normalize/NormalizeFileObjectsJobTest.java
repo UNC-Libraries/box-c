@@ -16,7 +16,7 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

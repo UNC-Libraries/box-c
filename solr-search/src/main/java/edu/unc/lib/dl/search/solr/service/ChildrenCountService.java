@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.AdminUnit;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Collection;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.File;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Folder;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
+import static edu.unc.lib.boxc.model.api.ResourceType.AdminUnit;
+import static edu.unc.lib.boxc.model.api.ResourceType.Collection;
+import static edu.unc.lib.boxc.model.api.ResourceType.File;
+import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 import static java.util.Arrays.asList;
@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import edu.unc.lib.boxc.model.api.objects.ResourceType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;

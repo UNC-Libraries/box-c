@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.toByteArray;
@@ -37,9 +37,9 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;

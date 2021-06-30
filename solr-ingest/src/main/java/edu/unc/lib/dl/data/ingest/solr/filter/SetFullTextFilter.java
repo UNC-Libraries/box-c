@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;

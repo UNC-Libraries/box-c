@@ -47,9 +47,8 @@ import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectCacheLoader;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 
 /**
  *

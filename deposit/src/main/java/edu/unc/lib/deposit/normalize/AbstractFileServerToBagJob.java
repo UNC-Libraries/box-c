@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
 import java.io.File;
 import java.io.FileOutputStream;

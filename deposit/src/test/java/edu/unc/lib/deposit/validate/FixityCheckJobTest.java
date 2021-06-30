@@ -16,7 +16,7 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.addDatastream;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.getDatastream;
 import static java.nio.charset.StandardCharsets.UTF_8;

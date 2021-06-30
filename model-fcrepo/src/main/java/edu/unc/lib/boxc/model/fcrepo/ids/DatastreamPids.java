@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_EVENTS;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DATA_FILE_FILESET;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DATA_FILE_FILESET;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;

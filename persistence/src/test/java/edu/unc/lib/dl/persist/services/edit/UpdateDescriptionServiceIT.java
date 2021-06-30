@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.edit;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.MD_DESCRIPTIVE_HISTORY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
@@ -41,7 +41,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;

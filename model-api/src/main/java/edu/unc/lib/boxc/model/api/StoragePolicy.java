@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.model;
+package edu.unc.lib.boxc.model.api;
 
 /**
  * Storage policy describing how a datastream should be stored and addressed.

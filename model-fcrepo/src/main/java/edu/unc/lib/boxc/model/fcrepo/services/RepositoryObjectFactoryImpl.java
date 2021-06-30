@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.services;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.FCR_METADATA;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.FCR_METADATA;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.util.MimetypeHelpers.formatMimetype;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
@@ -49,25 +49,23 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.fcrepo4.LdpContainerFactory;
 import edu.unc.lib.dl.fcrepo4.SanitizeServerManagedTriplesSelector;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
@@ -103,13 +101,13 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public DepositRecordImpl createDepositRecord(Model model) throws FedoraException {
+    public DepositRecord createDepositRecord(Model model) throws FedoraException {
         PID pid = pidMinter.mintDepositRecordPid();
         return createDepositRecord(pid, model);
     }
 
     @Override
-    public DepositRecordImpl createDepositRecord(PID pid, Model model) throws FedoraException {
+    public DepositRecord createDepositRecord(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         log.debug("Creating deposit record {}", pid.getId());
@@ -151,7 +149,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public AdminUnitImpl createAdminUnit(Model model) throws FedoraException {
+    public AdminUnit createAdminUnit(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
         return createAdminUnit(pid, model);
@@ -166,7 +164,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public AdminUnitImpl createAdminUnit(PID pid, Model model) throws FedoraException {
+    public AdminUnit createAdminUnit(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -203,7 +201,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public CollectionObjectImpl createCollectionObject(Model model) throws FedoraException {
+    public CollectionObject createCollectionObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
         return createCollectionObject(pid, model);
@@ -218,7 +216,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public CollectionObjectImpl createCollectionObject(PID pid, Model model) throws FedoraException {
+    public CollectionObject createCollectionObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -237,7 +235,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public FolderObjectImpl createFolderObject(Model model) throws FedoraException {
+    public FolderObject createFolderObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
         return createFolderObject(pid, model);
@@ -252,7 +250,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public FolderObjectImpl createFolderObject(PID pid, Model model) throws FedoraException {
+    public FolderObject createFolderObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -271,7 +269,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public WorkObjectImpl createWorkObject(Model model) throws FedoraException {
+    public WorkObject createWorkObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
         return createWorkObject(pid, model);
@@ -286,7 +284,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public WorkObjectImpl createWorkObject(PID pid, Model model) throws FedoraException {
+    public WorkObject createWorkObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -305,7 +303,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public FileObjectImpl createFileObject(Model model) throws FedoraException {
+    public FileObject createFileObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
         return createFileObject(pid, model);
@@ -320,7 +318,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public FileObjectImpl createFileObject(PID pid, Model model) throws FedoraException {
+    public FileObject createFileObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -364,7 +362,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
      * @throws FedoraException
      */
     @Override
-    public BinaryObjectImpl createOrUpdateBinary(PID pid, URI storageUri, String filename, String mimetype,
+    public BinaryObject createOrUpdateBinary(PID pid, URI storageUri, String filename, String mimetype,
             String sha1Checksum, String md5Checksum, Model model) {
         // Upload the binary and provided metadata
         URI resultUri;
@@ -448,7 +446,7 @@ public class RepositoryObjectFactoryImpl implements RepositoryObjectFactory {
     * @throws FedoraException
     */
     @Override
-    public BinaryObjectImpl createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
+    public BinaryObject createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
             String sha1Checksum, String md5Checksum, Model model) throws FedoraException {
         if (content == null) {
             throw new IllegalArgumentException("Cannot create a binary object from a null content stream");

@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.THUMBNAIL_SMALL;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,8 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.util.DerivativeService.Derivative;
 

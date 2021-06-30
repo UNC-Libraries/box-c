@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.boxc.model.api.objects.DatastreamType.getByIdentifier;
+import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
+import static edu.unc.lib.boxc.model.api.StoragePolicy.EXTERNAL;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.dl.model.StoragePolicy.EXTERNAL;
 import static org.springframework.util.Assert.notNull;
 
 import java.io.File;
@@ -30,8 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.DatastreamType;
 
 /**
  * Service which locates and returns file information about derivatives for

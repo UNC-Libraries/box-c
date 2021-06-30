@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
+package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;

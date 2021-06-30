@@ -56,9 +56,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;

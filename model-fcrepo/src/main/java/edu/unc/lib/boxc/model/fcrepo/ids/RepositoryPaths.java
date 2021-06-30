@@ -16,16 +16,17 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
 import static edu.unc.lib.boxc.model.api.ids.PIDConstants.DEPOSITS_QUALIFIER;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_BASE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.METADATA_CONTAINER;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.REPOSITORY_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 
 import java.net.URI;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 
 /**
  * Provides access to base URIs needed for interacting with the repository

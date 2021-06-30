@@ -20,6 +20,7 @@ import java.util.List;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
+ * Factory for retrieving path information for content objects
  * @author bbpennel
  */
 public interface ContentPathFactory {

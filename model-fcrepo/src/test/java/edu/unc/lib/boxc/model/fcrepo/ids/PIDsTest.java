@@ -16,10 +16,10 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
 import static edu.unc.lib.boxc.model.api.ids.PIDConstants.DEPOSITS_QUALIFIER;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_BASE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.REPOSITORY_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,8 +30,8 @@ import org.junit.Test;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.dl.test.TestHelper;
 

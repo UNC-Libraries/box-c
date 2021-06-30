@@ -43,12 +43,12 @@ import org.mockito.stubbing.Answer;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
@@ -56,9 +56,8 @@ import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectCacheLoader;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
 
 /**
  *

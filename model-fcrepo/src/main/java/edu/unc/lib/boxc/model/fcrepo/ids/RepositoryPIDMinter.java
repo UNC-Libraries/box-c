@@ -15,13 +15,14 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.EVENT_ID_PREFIX;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.EVENT_ID_PREFIX;
 
 import java.util.UUID;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 
 /**
  * Minter of PIDs for content objects, deposit records, and PREMIS events.

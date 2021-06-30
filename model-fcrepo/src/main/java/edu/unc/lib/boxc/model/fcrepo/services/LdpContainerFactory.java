@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
+package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -32,6 +32,7 @@ import org.fcrepo.client.FedoraTypes;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 
 /**
  * Factory for creating LDP container objects in the repository

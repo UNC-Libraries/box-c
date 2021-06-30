@@ -30,11 +30,12 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
@@ -42,6 +43,7 @@ import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
@@ -182,7 +184,6 @@ public class RepositoryObjectLoaderImpl implements RepositoryObjectLoader {
         repositoryObjCache.invalidate(pid);
     }
 
-    @Override
     public LoadingCache<PID, RepositoryObject> getRepositoryObjectCache() {
         return repositoryObjCache;
     }

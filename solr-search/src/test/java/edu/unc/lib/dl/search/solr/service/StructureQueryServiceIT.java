@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.search.solr.service;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Folder;
-import static edu.unc.lib.boxc.model.api.objects.ResourceType.Work;
+import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;

@@ -90,7 +90,7 @@
         <property name="cacheMaxSize" value="0" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -109,7 +109,7 @@
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
