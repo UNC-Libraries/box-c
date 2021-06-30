@@ -18,6 +18,9 @@ package edu.unc.lib.dl.acl.fcrepo4;
 import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
@@ -31,6 +34,21 @@ import edu.unc.lib.dl.acl.util.Permission;
  *
  */
 public class DatastreamPermissionUtil {
+    private final static Map<DatastreamType, Permission> DS_PERMISSION_MAP;
+    static {
+        DS_PERMISSION_MAP = new EnumMap<>(DatastreamType.class);
+        DS_PERMISSION_MAP.put(DatastreamType.FULLTEXT_EXTRACTION, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.JP2_ACCESS_COPY, Permission.viewAccessCopies);
+        DS_PERMISSION_MAP.put(DatastreamType.MD_DESCRIPTIVE, Permission.viewMetadata);
+        DS_PERMISSION_MAP.put(DatastreamType.MD_DESCRIPTIVE_HISTORY, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.MD_EVENTS, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.ORIGINAL_FILE, Permission.viewOriginal);
+        DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.TECHNICAL_METADATA_HISTORY, Permission.viewHidden);
+        DS_PERMISSION_MAP.put(DatastreamType.THUMBNAIL_SMALL, Permission.viewMetadata);
+        DS_PERMISSION_MAP.put(DatastreamType.THUMBNAIL_LARGE, Permission.viewMetadata);
+    }
+
     private DatastreamPermissionUtil() {
     }
 
@@ -63,6 +81,6 @@ public class DatastreamPermissionUtil {
     public static Permission getPermissionForDatastream(DatastreamType datastream) {
         Assert.notNull(datastream);
 
-        return datastream.getAccessPermission();
+        return DS_PERMISSION_MAP.get(datastream);
     }
 }

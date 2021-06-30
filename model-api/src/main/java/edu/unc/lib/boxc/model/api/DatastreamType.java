@@ -19,10 +19,6 @@ import static edu.unc.lib.boxc.model.api.StoragePolicy.EXTERNAL;
 import static edu.unc.lib.boxc.model.api.StoragePolicy.INTERNAL;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DATA_FILE_FILESET;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
-import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
-import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
-import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
-import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
 
 /**
  * Predefined binary datastream types which may be associated with repository objects.
@@ -31,32 +27,30 @@ import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
  *
  */
 public enum DatastreamType {
-    FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL, viewHidden),
-    JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL, viewAccessCopies),
-    MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", METADATA_CONTAINER, INTERNAL, viewMetadata),
-    MD_DESCRIPTIVE_HISTORY("md_descriptive_history", "text/xml", "xml", METADATA_CONTAINER, INTERNAL, viewHidden),
-    MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL, viewHidden),
-    ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL, viewOriginal),
-    TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL, viewHidden),
-    TECHNICAL_METADATA_HISTORY("techmd_fits_history", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL, viewHidden),
-    THUMBNAIL_SMALL("thumbnail_small", "image/png", "png", null, EXTERNAL, viewMetadata),
-    THUMBNAIL_LARGE("thumbnail_large", "image/png", "png", null, EXTERNAL, viewMetadata);
+    FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
+    JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
+    MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
+    MD_DESCRIPTIVE_HISTORY("md_descriptive_history", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),
+    MD_EVENTS("event_log", "application/n-triples", "nt", METADATA_CONTAINER, INTERNAL),
+    ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
+    TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL),
+    TECHNICAL_METADATA_HISTORY("techmd_fits_history", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL),
+    THUMBNAIL_SMALL("thumbnail_small", "image/png", "png", null, EXTERNAL),
+    THUMBNAIL_LARGE("thumbnail_large", "image/png", "png", null, EXTERNAL);
 
     private final String id;
     private final String mimetype;
     private final String extension;
     private final String container;
     private final StoragePolicy storagePolicy;
-    private final Permission accessPermission;
 
     private DatastreamType(String identifier, String mimetype, String extension, String container,
-            StoragePolicy storagePolicy, Permission accessPermission) {
+            StoragePolicy storagePolicy) {
         this.id = identifier;
         this.mimetype = mimetype;
         this.extension = extension;
         this.container = container;
         this.storagePolicy = storagePolicy;
-        this.accessPermission = accessPermission;
     }
 
     /**
@@ -99,13 +93,6 @@ public enum DatastreamType {
      */
     public StoragePolicy getStoragePolicy() {
         return storagePolicy;
-    }
-
-    /**
-     * @return Permission required in order to access this datastream
-     */
-    public Permission getAccessPermission() {
-        return accessPermission;
     }
 
     /**
