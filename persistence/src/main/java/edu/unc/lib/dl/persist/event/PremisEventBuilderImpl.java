@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.event;
+package edu.unc.lib.dl.persist.event;
 
 import java.text.MessageFormat;
 import java.util.Date;
@@ -26,10 +26,10 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**

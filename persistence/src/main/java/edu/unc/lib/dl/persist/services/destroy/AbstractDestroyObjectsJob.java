@@ -37,17 +37,17 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
@@ -77,6 +77,7 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
     protected AccessControlService aclService;
     protected StorageLocationManager locManager;
     protected BinaryTransferService transferService;
+    protected PremisLoggerFactory premisLoggerFactory;
 
     protected TransactionManager txManager;
 
@@ -174,6 +175,9 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         this.aclService = aclService;
     }
 
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
+    }
 
     public void setStorageLocationManager(StorageLocationManager locManager) {
         this.locManager = locManager;

@@ -49,7 +49,7 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
@@ -73,7 +73,6 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
@@ -280,6 +279,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
@@ -434,6 +434,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
@@ -447,6 +448,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
     <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">

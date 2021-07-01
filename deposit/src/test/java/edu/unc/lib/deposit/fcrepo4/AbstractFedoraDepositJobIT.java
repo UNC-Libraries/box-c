@@ -36,7 +36,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -46,6 +45,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;

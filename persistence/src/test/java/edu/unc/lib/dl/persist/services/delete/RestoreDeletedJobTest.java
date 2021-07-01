@@ -34,20 +34,21 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
+import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
@@ -72,6 +73,8 @@ public class RestoreDeletedJobTest {
     @Mock
     private PremisLogger premisLogger;
     @Mock
+    private PremisLoggerFactory premisLoggerFactory;
+    @Mock
     private AdminUnit repoObj;
 
     private PremisEventBuilderImpl eventBuilder;
@@ -92,12 +95,13 @@ public class RestoreDeletedJobTest {
         when(contentObj.getMetadataUri()).thenReturn(URI.create(""));
 
         eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
-        when(contentObj.getPremisLog()).thenReturn(premisLogger);
+        when(premisLoggerFactory.createPremisLogger(contentObj)).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Accession))).thenReturn(eventBuilder);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        job = new RestoreDeletedJob(pid, agent, repositoryObjectLoader, sparqlUpdateService, aclService);
+        job = new RestoreDeletedJob(pid, agent, repositoryObjectLoader, sparqlUpdateService,
+                aclService, premisLoggerFactory);
     }
 
     @Test(expected = AccessRestrictionException.class)

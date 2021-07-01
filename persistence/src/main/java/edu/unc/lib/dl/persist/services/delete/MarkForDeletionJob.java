@@ -31,6 +31,7 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import io.dropwizard.metrics5.Timer;
 
@@ -45,6 +46,7 @@ public class MarkForDeletionJob implements Runnable {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private SparqlUpdateService sparqlUpdateService;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private AgentPrincipals agent;
     private PID pid;
@@ -55,10 +57,11 @@ public class MarkForDeletionJob implements Runnable {
 
     public MarkForDeletionJob(PID pid, String message, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
-            AccessControlService aclService) {
+            AccessControlService aclService, PremisLoggerFactory premisLoggerFactory) {
         this.pid = pid;
         this.repositoryObjectLoader = repositoryObjectLoader;
         this.sparqlUpdateService = sparqlUpdateService;
+        this.premisLoggerFactory = premisLoggerFactory;
         this.aclService = aclService;
         this.agent = agent;
         this.message = message;
@@ -86,7 +89,8 @@ public class MarkForDeletionJob implements Runnable {
 
             sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
-            repoObj.getPremisLog().buildEvent(Premis.Deaccession)
+            premisLoggerFactory.createPremisLogger(repoObj)
+                    .buildEvent(Premis.Deaccession)
                     .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Item marked for deletion and not available without permissions")
                     .addEventDetail(message)

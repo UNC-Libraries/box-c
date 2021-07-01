@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -63,6 +62,8 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -83,6 +84,7 @@ public class PatronAccessAssignmentService {
     private RepositoryObjectFactory repositoryObjectFactory;
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private ContentObjectAccessRestrictionValidator accessValidator;
 
@@ -181,7 +183,7 @@ public class PatronAccessAssignmentService {
         }
 
         // Add PREMIS event indicating the role changes
-        return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
+        return premisLoggerFactory.createPremisLogger(repoObj).buildEvent(Premis.PolicyAssignment)
                 .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail(createRoleEventDetails(assignments))
                 .create();
@@ -255,7 +257,7 @@ public class PatronAccessAssignmentService {
             return null;
         } else {
             // Produce the premis event for this embargo
-            return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
+            return premisLoggerFactory.createPremisLogger(repoObj).buildEvent(Premis.PolicyAssignment)
                     .addImplementorAgent(AgentPids.forPerson(request.getAgent()))
                     .addEventDetail(eventText)
                     .create();
@@ -321,7 +323,7 @@ public class PatronAccessAssignmentService {
     }
 
     private void writePremisEvents(RepositoryObject repoObj, Resource rolesEvent, Resource embargoEvent) {
-        try (PremisLogger logger = repoObj.getPremisLog()) {
+        try (PremisLogger logger = premisLoggerFactory.createPremisLogger(repoObj)) {
             if (rolesEvent != null) {
                 if (embargoEvent != null) {
                     logger.writeEvents(rolesEvent, embargoEvent);
@@ -357,6 +359,10 @@ public class PatronAccessAssignmentService {
 
     public void setAccessValidator(ContentObjectAccessRestrictionValidator accessValidator) {
         this.accessValidator = accessValidator;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public static class PatronAccessAssignmentRequest {

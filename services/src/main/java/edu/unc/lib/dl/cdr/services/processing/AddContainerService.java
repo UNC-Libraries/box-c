@@ -42,13 +42,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -61,7 +54,14 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
@@ -89,6 +89,7 @@ public class AddContainerService {
     private PatronAccessAssignmentService patronService;
     private StorageLocationManager storageLocationManager;
     private UpdateDescriptionService updateDescService;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private static final Timer timer = TimerFactory.createTimerForClass(AddContainerService.class);
 
@@ -162,7 +163,7 @@ public class AddContainerService {
 
             storeDescription(containerPid, addRequest);
 
-            child.getPremisLog()
+            premisLoggerFactory.createPremisLogger(child)
                 .buildEvent(Premis.Creation)
                 .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Container added at destination " + parentPid)
@@ -248,6 +249,10 @@ public class AddContainerService {
 
     public void setUpdateDescriptionService(UpdateDescriptionService updateDescService) {
         this.updateDescService = updateDescService;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public static class AddContainerRequest {

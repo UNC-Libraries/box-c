@@ -54,14 +54,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
-import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.services.InterruptedLockException;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;

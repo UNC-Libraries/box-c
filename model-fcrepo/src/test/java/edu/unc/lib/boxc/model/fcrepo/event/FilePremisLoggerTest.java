@@ -35,17 +35,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
-import edu.unc.lib.boxc.model.fcrepo.event.FilePremisLogger;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.event.FilePremisLogger;
+import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**

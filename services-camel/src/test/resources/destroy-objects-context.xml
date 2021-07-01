@@ -23,6 +23,7 @@
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

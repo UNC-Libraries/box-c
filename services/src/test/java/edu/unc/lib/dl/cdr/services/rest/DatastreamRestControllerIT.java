@@ -61,14 +61,15 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.ui.service.DerivativeContentService;
 
 /**
@@ -92,6 +93,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Autowired
     private DerivativeContentService derivativeContentService;
+
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Rule
     public TemporaryFolder derivDir = new TemporaryFolder();
@@ -247,7 +251,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         String id = folderPid.getId();
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
-        folderObj.getPremisLog().buildEvent(Premis.Creation)
+        premisLoggerFactory.createPremisLogger(folderObj)
+            .buildEvent(Premis.Creation)
             .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 
@@ -290,7 +295,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         String id = folderPid.getId();
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
-        folderObj.getPremisLog().buildEvent(Premis.Creation)
+        premisLoggerFactory.createPremisLogger(folderObj)
+            .buildEvent(Premis.Creation)
             .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 

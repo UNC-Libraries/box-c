@@ -40,6 +40,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

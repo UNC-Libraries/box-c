@@ -40,22 +40,23 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.google.common.collect.ImmutableMap;
 
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
@@ -86,6 +87,8 @@ public class BinaryCleanupRouterIT {
     private StorageLocationManager storageLocationManager;
     @Autowired
     private TransactionManager txManager;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Produce(uri = "{{cdr.registration.successful.dest}}")
     private ProducerTemplate template;
@@ -130,7 +133,7 @@ public class BinaryCleanupRouterIT {
     @Test
     public void binaryOnlyCurrentVersionTest() throws Exception {
         FolderObject folder = repoObjectFactory.createFolderObject(null);
-        PremisLogger premisLogger = folder.getPremisLog();
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(folder);
         premisLogger.buildEvent(Premis.Ingestion)
                     .addEventDetail("Ingested this thing")
                     .writeAndClose();
@@ -155,7 +158,7 @@ public class BinaryCleanupRouterIT {
     @Test
     public void binaryMultipleOlderVersionsTest() throws Exception {
         FolderObject folder = repoObjectFactory.createFolderObject(null);
-        PremisLogger premisLogger = folder.getPremisLog();
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(folder);
         // Add events one by one, to produce multiple versions of log datastream
         premisLogger.buildEvent(Premis.Ingestion)
                     .addEventDetail("Ingested this thing")
@@ -197,7 +200,7 @@ public class BinaryCleanupRouterIT {
     @Test
     public void binaryNewerVersionInTxTest() throws Exception {
         FolderObject folder = repoObjectFactory.createFolderObject(null);
-        PremisLogger premisLogger = folder.getPremisLog();
+        PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(folder);
         // Add events one by one, to produce multiple versions of log datastream
         premisLogger.buildEvent(Premis.Ingestion)
                     .addEventDetail("Ingested this thing")

@@ -245,6 +245,7 @@
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="editFilenameService" class="edu.unc.lib.dl.persist.services.edit.EditFilenameService">
@@ -253,6 +254,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
     <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
@@ -397,6 +399,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="patronAccessOperationTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -415,6 +418,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">

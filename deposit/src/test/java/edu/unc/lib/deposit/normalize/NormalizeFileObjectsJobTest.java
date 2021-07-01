@@ -46,17 +46,17 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
-import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
+import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**

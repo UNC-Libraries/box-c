@@ -31,11 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -45,8 +44,9 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Rdfs;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -96,7 +96,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         logTransferSession = getTransferSession(dModel);
 
         // Create the deposit record object in Fedora
-        DepositRecordImpl depositRecord;
+        DepositRecord depositRecord;
         try {
             // In case of a resume, check if object already exists
             if (!repoObjFactory.objectExists(depositPID.getRepositoryUri())) {

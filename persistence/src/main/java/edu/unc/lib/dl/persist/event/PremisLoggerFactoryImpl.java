@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.event;
+package edu.unc.lib.dl.persist.event;
 
 import java.io.File;
 
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
-import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 

@@ -41,8 +41,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
-import edu.unc.lib.boxc.model.api.event.PremisLoggerFactory;
+import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
@@ -53,6 +52,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
@@ -75,8 +75,6 @@ public class RepositoryObjectDriver {
     private FcrepoClient client;
 
     private SparqlQueryService sparqlQueryService;
-
-    private PremisLoggerFactory premisLoggerFactory;
 
     protected PIDMinter pidMinter;
 
@@ -329,8 +327,8 @@ public class RepositoryObjectDriver {
         return null;
     }
 
-    public PremisLogger getPremisLog(RepositoryObject repoObj) {
-        return premisLoggerFactory.createPremisLogger(repoObj);
+    public PremisLog getPremisLog(RepositoryObject repoObj) {
+        return new RepositoryPremisLog(repoObj, repositoryObjectLoader);
     }
 
     public void setClient(FcrepoClient client) {
@@ -358,12 +356,5 @@ public class RepositoryObjectDriver {
      */
     public void setPidMinter(PIDMinter pidMinter) {
         this.pidMinter = pidMinter;
-    }
-
-    /**
-     * @param premisLoggerFactory the premisLoggerFactory to set
-     */
-    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
-        this.premisLoggerFactory = premisLoggerFactory;
     }
 }

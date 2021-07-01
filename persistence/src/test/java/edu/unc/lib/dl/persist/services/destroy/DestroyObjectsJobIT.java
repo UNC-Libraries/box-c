@@ -68,23 +68,22 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -94,6 +93,7 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
@@ -145,6 +145,8 @@ public class DestroyObjectsJobIT {
     private InheritedAclFactory inheritedAclFactory;
     @Autowired
     private RepositoryInitializer repoInitializer;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
     @Mock
     private IndexingMessageSender indexingMessageSender;
     @Mock
@@ -341,7 +343,8 @@ public class DestroyObjectsJobIT {
     public void destroySingleObjectWithPreexistingPremisEventTest() {
         PID fileObjPid = objsToDestroy.get(2);
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        Resource event = fileObj.getPremisLog().buildEvent(null, Premis.Ingestion, new Date(1L)).write();
+        Resource event = premisLoggerFactory.createPremisLogger(fileObj)
+                .buildEvent(null, Premis.Ingestion, new Date(1L)).write();
 
         initializeJob(Collections.singletonList(fileObjPid));
 

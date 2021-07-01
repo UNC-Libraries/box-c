@@ -23,7 +23,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
@@ -74,7 +74,7 @@ public interface RepositoryObject {
      *
      * @return
      */
-    PremisLogger getPremisLog();
+    PremisLog getPremisLog();
 
     /**
      * @return the ResourceType which describes this object

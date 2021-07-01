@@ -24,7 +24,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
+import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
@@ -56,7 +56,7 @@ public abstract class AbstractRepositoryObject implements RepositoryObject {
 
     protected List<String> types;
 
-    protected PremisLogger premisLog;
+    protected PremisLog premisLog;
 
     protected AbstractRepositoryObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
@@ -132,8 +132,8 @@ public abstract class AbstractRepositoryObject implements RepositoryObject {
      * @return
      */
     @Override
-    public PremisLogger getPremisLog() {
-        if (premisLog == null || premisLog.isClosed()) {
+    public PremisLog getPremisLog() {
+        if (premisLog == null) {
             premisLog = driver.getPremisLog(this);
         }
         return premisLog;
@@ -241,6 +241,7 @@ public abstract class AbstractRepositoryObject implements RepositoryObject {
      *
      * @param etag
      */
+    @Override
     public void setEtag(String etag) {
         this.etag = etag;
     }

@@ -40,17 +40,15 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -60,6 +58,9 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
+import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
@@ -97,6 +98,8 @@ public class EditFilenameServiceTest {
     private AccessGroupSet groups;
     @Mock
     private PremisLogger premisLogger;
+    @Mock
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Captor
     private ArgumentCaptor<String> labelCaptor;
@@ -122,6 +125,7 @@ public class EditFilenameServiceTest {
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setTransactionManager(txManager);
         service.setOperationsMessageSender(messageSender);
+        service.setPremisLoggerFactory(premisLoggerFactory);
 
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
         when(repoObj.getOriginalFile()).thenReturn(binaryObj);
@@ -131,7 +135,7 @@ public class EditFilenameServiceTest {
         when(agent.getUsername()).thenReturn("user");
 
         eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
-        when(repoObj.getPremisLog()).thenReturn(premisLogger);
+        when(premisLoggerFactory.createPremisLogger(repoObj)).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.FilenameChange))).thenReturn(eventBuilder);
         when(agent.getUsernameUri()).thenReturn("agentname");
         when(eventBuilder.write()).thenReturn(resc);

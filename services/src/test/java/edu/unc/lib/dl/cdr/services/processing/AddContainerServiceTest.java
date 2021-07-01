@@ -45,17 +45,15 @@ import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -65,8 +63,11 @@ import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRe
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 
@@ -103,6 +104,8 @@ public class AddContainerServiceTest {
     private StorageLocation storageLocation;
     @Mock
     private UpdateDescriptionService updateDescService;
+    @Mock
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Captor
     private ArgumentCaptor<Collection<PID>> destinationsCaptor;
@@ -202,7 +205,7 @@ public class AddContainerServiceTest {
                 return folder;
             }
         });
-        when(folder.getPremisLog()).thenReturn(premisLogger);
+        when(premisLoggerFactory.createPremisLogger(folder)).thenReturn(premisLogger);
 
         service.addContainer(createRequest("folder", false, ResourceType.Folder));
 
@@ -238,7 +241,7 @@ public class AddContainerServiceTest {
                 return work;
             }
         });
-        when(work.getPremisLog()).thenReturn(premisLogger);
+        when(premisLoggerFactory.createPremisLogger(work)).thenReturn(premisLogger);
 
         service.addContainer(createRequest("work", false, ResourceType.Work));
 

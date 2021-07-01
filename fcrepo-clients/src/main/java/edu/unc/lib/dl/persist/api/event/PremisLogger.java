@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.api.event;
+package edu.unc.lib.dl.persist.api.event;
 
 import java.io.InputStream;
 import java.util.Date;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
+import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
  * @author bbpennel
  *
  */
-public interface PremisLogger extends AutoCloseable {
+public interface PremisLogger extends PremisLog, AutoCloseable {
 
     /**
      * Returns an instance of a PremisEventBuilder with the provided event pid and date.
@@ -63,11 +63,6 @@ public interface PremisLogger extends AutoCloseable {
      * @return this logger
      */
     public PremisLogger createLog(InputStream contentStream);
-
-    /**
-     * @return a model containing the events in this logger.
-     */
-    public Model getEventsModel();
 
     /**
      * Closes the logger

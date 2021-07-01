@@ -56,21 +56,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
-import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
+import edu.unc.lib.dl.persist.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
@@ -235,7 +234,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         Date ingestDate = Date.from(Instant.parse("2010-01-02T12:00:00Z"));
         for (int i = 1; i <= 200; i++) {
-            Resource anotherEvent = logger.buildEvent(new PID("event" + System.currentTimeMillis() + i), Premis.note,
+            Resource anotherEvent = logger.buildEvent(pidMinter.mintPremisEventPid(parentObject.getPid()), Premis.note,
                     ingestDate)
                     .addEventDetail("another premis event " + i)
                     .create();

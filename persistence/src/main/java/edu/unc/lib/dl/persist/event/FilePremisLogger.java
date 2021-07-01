@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.event;
+package edu.unc.lib.dl.persist.event;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdEventsPid;
 
@@ -33,11 +33,11 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.event;
+package edu.unc.lib.dl.persist.event;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdEventsPid;
@@ -36,8 +36,6 @@ import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -48,8 +46,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
+import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.util.RDFModelUtil;
@@ -62,25 +60,21 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  * @author bbpennel
  *
  */
-public class RepositoryPremisLogger implements PremisLogger {
+public class RepositoryPremisLogger extends RepositoryPremisLog implements PremisLogger {
 
     private static final Logger log = getLogger(RepositoryPremisLogger.class);
-    private static final PidLockManager lockManager = PidLockManager.getDefaultPidLockManager();
 
     private PIDMinter pidMinter;
-    private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
     private BinaryTransferSession transferSession;
 
-    private RepositoryObject repoObject;
     private boolean closed = false;
 
     public RepositoryPremisLogger(RepositoryObject repoObject, BinaryTransferSession transferSession,
             PIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
             RepositoryObjectFactory repoObjFactory) {
-        this.repoObject = repoObject;
+        super(repoObject, repoObjLoader);
         this.pidMinter = pidMinter;
-        this.repoObjLoader = repoObjLoader;
         this.repoObjFactory = repoObjFactory;
         this.transferSession = transferSession;
     }
@@ -179,20 +173,6 @@ public class RepositoryPremisLogger implements PremisLogger {
 
         return repoObjFactory.createOrUpdateBinary(logPid, outcome.getDestinationUri(),
                 MD_EVENTS.getDefaultFilename(), MD_EVENTS.getMimetype(), outcome.getSha1(), null, null);
-    }
-
-    @Override
-    public Model getEventsModel() {
-        PID logPid = DatastreamPids.getMdEventsPid(repoObject.getPid());
-        Lock logLock = lockManager.awaitReadLock(logPid);
-        try {
-            BinaryObject eventsObj = repoObjLoader.getBinaryObject(logPid);
-            return RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
-        } catch (NotFoundException e) {
-            return ModelFactory.createDefaultModel();
-        } finally {
-            logLock.unlock();
-        }
     }
 
     @Override

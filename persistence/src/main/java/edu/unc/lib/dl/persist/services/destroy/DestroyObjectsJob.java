@@ -104,7 +104,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
                     // Add premis event to parent
                     String lineSeparator = System.getProperty("line.separator");
-                    parentObj.getPremisLog().buildEvent(Premis.Deletion)
+                    premisLoggerFactory.createPremisLogger(parentObj)
+                            .buildEvent(Premis.Deletion)
                             .addAuthorizingAgent(AgentPids.forPerson(agent))
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
@@ -161,7 +162,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
 
         //add premis event to tombstone
-        rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
+        premisLoggerFactory.createPremisLogger(rootOfTree)
+            .buildEvent(Premis.Deletion)
             .addAuthorizingAgent(AgentPids.forPerson(agent))
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();

@@ -27,11 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;

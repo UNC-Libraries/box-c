@@ -62,14 +62,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.boxc.model.api.event.PremisEventBuilder;
-import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
@@ -83,12 +84,6 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -101,6 +96,8 @@ import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FedoraTransactionRefresher;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -890,7 +887,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // don't add event unless at least one child is ingested
         if (numChildren > 0) {
             // If target for this event is the existing destination object, then write to live log
-            try (PremisLogger premisLogger = isDestination ? obj.getPremisLog() : getPremisLogger(obj.getPid())) {
+            try (PremisLogger premisLogger = isDestination ? premisLoggerFactory.createPremisLogger(obj) : getPremisLogger(obj.getPid())) {
                 PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
                 if (numChildren == 1 && childPid != null) {
                     builder.addEventDetail("added child object {0} to this container",
