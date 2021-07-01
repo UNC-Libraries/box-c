@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.model.fcrepo.event;
+package edu.unc.lib.dl.persist.event;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -35,18 +35,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.api.rdf.Prov;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.dl.model.AgentPids;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.rdf.Prov;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.objects.AbstractFedoraObjectTest;
 import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.event.FilePremisLogger;
 import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  *

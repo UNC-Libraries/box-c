@@ -27,7 +27,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
+import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

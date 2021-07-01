@@ -44,9 +44,7 @@ import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 
 /**
  *

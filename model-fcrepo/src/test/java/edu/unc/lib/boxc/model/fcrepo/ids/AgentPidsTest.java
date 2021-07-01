@@ -20,12 +20,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.api.SoftwareAgentConstants;
+import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.util.SoftwareAgentConstants;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * @author bbpennel

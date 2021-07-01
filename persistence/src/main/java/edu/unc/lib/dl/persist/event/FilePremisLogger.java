@@ -37,8 +37,8 @@ import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
 
 /**
  * Logs PREMIS events for a repository object to a backing file

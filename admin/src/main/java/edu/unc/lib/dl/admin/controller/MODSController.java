@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -111,7 +111,7 @@ public class MODSController extends AbstractSolrSearchController {
         Map<String, String> selectors = new HashMap<>();
         // map of vocabulary names to their term values
         Map<String, Object> perVocabConfigs = new HashMap<>();
-        Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
+        Set<VocabularyHelper> helpers = vocabularies.getHelpers(PIDs.get(pid));
         if (helpers != null) {
             for (VocabularyHelper helper : helpers) {
                 Map<String, Object> vocabConfig = new HashMap<>();
