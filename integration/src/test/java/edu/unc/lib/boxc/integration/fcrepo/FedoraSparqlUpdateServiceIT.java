@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.sparql;
+package edu.unc.lib.boxc.integration.fcrepo;
 
 import static org.junit.Assert.assertTrue;
 
@@ -31,7 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**

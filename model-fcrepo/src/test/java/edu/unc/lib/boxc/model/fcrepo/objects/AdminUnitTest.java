@@ -35,15 +35,14 @@ import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 
 /**
  * @author harring
@@ -51,14 +50,14 @@ import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 public class AdminUnitTest extends AbstractFedoraObjectTest {
 
     private PID pid;
-    private AdminUnitImpl unit;
+    private AdminUnit unit;
 
     private PID collectionChildPid;
 
     @Mock
-    private CollectionObjectImpl collectionChildObj;
+    private CollectionObject collectionChildObj;
     @Mock
-    private WorkObjectImpl workChildObj;
+    private WorkObject workChildObj;
 
     @Before
     public void init() {
@@ -80,7 +79,7 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
         when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                unit.setTypes(types);
+                ((AdminUnitImpl) unit).setTypes(types);
                 return driver;
             }
         });
@@ -94,7 +93,7 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
         when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                unit.setTypes(types);
+                ((AdminUnitImpl) unit).setTypes(types);
                 return driver;
             }
         });
@@ -113,11 +112,11 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
         unit.addMember(collectionChildObj);
         pidMinter.mintContentPid();
 
-        ArgumentCaptor<AbstractContentObject> captor = ArgumentCaptor.forClass(AbstractContentObject.class);
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(unit), captor.capture());
 
-        AbstractContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof CollectionObjectImpl);
+        ContentObject child = captor.getValue();
+        assertTrue("Incorrect type of child added", child instanceof CollectionObject);
         assertEquals("Child did not have the expected pid", collectionChildPid, child.getPid());
     }
 

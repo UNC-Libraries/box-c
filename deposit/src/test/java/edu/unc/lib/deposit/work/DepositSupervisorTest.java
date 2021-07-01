@@ -25,7 +25,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jena.ext.com.google.common.base.Objects;
+import com.google.common.base.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

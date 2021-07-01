@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
@@ -70,7 +70,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Performing Datastream filter for object {}", dip.getPid());
 
-        AbstractContentObject contentObj = dip.getContentObject();
+        ContentObject contentObj = dip.getContentObject();
         IndexDocumentBean doc = dip.getDocument();
 
         List<Datastream> datastreams = new ArrayList<>();

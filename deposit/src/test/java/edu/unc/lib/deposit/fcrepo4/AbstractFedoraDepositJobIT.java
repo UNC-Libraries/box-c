@@ -44,13 +44,12 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
-import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
@@ -166,7 +165,7 @@ public abstract class AbstractFedoraDepositJobIT {
         }
     }
 
-    protected ContentObject findContentObjectByPid(List<AbstractContentObject> objs, final PID pid) {
+    protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
     }

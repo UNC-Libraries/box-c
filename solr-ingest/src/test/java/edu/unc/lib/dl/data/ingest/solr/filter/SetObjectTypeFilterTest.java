@@ -31,7 +31,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -50,7 +50,7 @@ public class SetObjectTypeFilterTest {
     @Mock
     private IndexDocumentBean idb;
     @Mock
-    private AbstractContentObject contentObj;
+    private ContentObject contentObj;
 
     @Mock
     private PID pid;

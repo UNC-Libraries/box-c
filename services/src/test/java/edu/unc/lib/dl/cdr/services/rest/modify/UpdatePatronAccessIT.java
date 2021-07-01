@@ -64,6 +64,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
@@ -71,7 +72,6 @@ import edu.unc.lib.dl.cdr.services.rest.modify.UpdatePatronAccessController.Bulk
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender;
-import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  * @author bbpennel

@@ -42,7 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
@@ -193,14 +193,14 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
     private void addSourceMembers(ContentContainerObject source, PID... pids) {
         for (PID pid : pids) {
-            AbstractContentObject memberObj = repositoryObjectFactory.createWorkObject(pid, null);
+            ContentObject memberObj = repositoryObjectFactory.createWorkObject(pid, null);
             source.addMember(memberObj);
         }
     }
 
     private void assertObjectsAtDestination(List<PID> movePids) {
         destContainer.setEtag(null);
-        List<AbstractContentObject> destMembers = destContainer.getMembers();
+        List<ContentObject> destMembers = destContainer.getMembers();
         for (PID movePid : movePids) {
             assertTrue("Destination did not contain moved object", destMembers.stream().
                     filter(m -> m.getPid().equals(movePid)).findAny().isPresent());
@@ -209,7 +209,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
     }
 
     private void assertObjectsRemovedFromSource(List<PID> movePids, ContentContainerObject source) {
-        List<AbstractContentObject> sourceMembers = source.getMembers();
+        List<ContentObject> sourceMembers = source.getMembers();
         for (PID movePid : movePids) {
             assertFalse("Source contained moved object", sourceMembers.stream().
                     filter(m -> m.getPid().equals(movePid)).findAny().isPresent());

@@ -31,17 +31,18 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService;
@@ -102,9 +103,9 @@ public class UpdateDescriptionService {
      */
     public BinaryObjectImpl updateDescription(UpdateDescriptionRequest request) throws IOException {
         PID pid = request.getPid();
-        AbstractContentObject obj = request.getContentObject();
+        ContentObject obj = request.getContentObject();
         if (obj == null) {
-            obj = (AbstractContentObject) repoObjLoader.getRepositoryObject(pid);
+            obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
         }
         log.debug("Updating description for {}", obj.getPid().getId());
         try (Timer.Context context = timer.time()) {
@@ -211,7 +212,7 @@ public class UpdateDescriptionService {
 
     public static class UpdateDescriptionRequest {
         private PID pid;
-        private AbstractContentObject contentObject;
+        private ContentObject contentObject;
         private BinaryTransferSession transferSession;
         private AgentPrincipals agent;
         private InputStream modsStream;
@@ -222,7 +223,7 @@ public class UpdateDescriptionService {
             this.pid = pid;
             this.modsStream = modsStream;
         }
-        public UpdateDescriptionRequest(AgentPrincipals agent, AbstractContentObject obj, InputStream modsStream) {
+        public UpdateDescriptionRequest(AgentPrincipals agent, ContentObject obj, InputStream modsStream) {
             this.agent = agent;
             this.contentObject = obj;
             this.pid = obj.getPid();
@@ -237,11 +238,11 @@ public class UpdateDescriptionService {
             this.pid = pid;
         }
 
-        public AbstractContentObject getContentObject() {
+        public ContentObject getContentObject() {
             return contentObject;
         }
 
-        public UpdateDescriptionRequest withContentObject(AbstractContentObject contentObject) {
+        public UpdateDescriptionRequest withContentObject(ContentObject contentObject) {
             this.contentObject = contentObject;
             return this;
         }

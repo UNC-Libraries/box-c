@@ -80,16 +80,15 @@ import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FileObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.FolderObject;
+import edu.unc.lib.boxc.model.fcrepo.objects.WorkObject;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -221,7 +220,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
         depositor = depositStatus.get(DepositField.depositorName.name());
-        depositorPid = AgentPIDs.forPerson(depositor);
+        depositorPid = AgentPids.forPerson(depositor);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof AbstractContentContainerObject)) {
@@ -303,7 +302,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 if (!childResc.hasProperty(RDF.type)
                         || childResc.hasProperty(RDF.type, Cdr.FileObject)) {
                     // Assume child is a file if no type is provided
-                    if (destObj instanceof WorkObjectImpl) {
+                    if (destObj instanceof WorkObject) {
                         // File object is being added to a work, go ahead
                         ingestFileObject(destObj, parentResc, childResc);
                     }
@@ -342,7 +341,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             return;
         }
 
-        WorkObjectImpl work = (WorkObjectImpl) parent;
+        WorkObject work = (WorkObject) parent;
 
         FedoraTransaction tx = txManager.startTransaction();
         FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
@@ -350,7 +349,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         try {
             txRefresher.start();
 
-            FileObjectImpl obj = addFileToWork(work, childResc);
+            FileObject obj = addFileToWork(work, childResc);
             pid = obj.getPid();
 
             // Add ingestion event for file object
@@ -388,7 +387,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @return
      * @throws DepositException
      */
-    private FileObjectImpl addFileToWork(WorkObjectImpl work, Resource childResc)
+    private FileObject addFileToWork(WorkObject work, Resource childResc)
             throws DepositException {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
@@ -422,7 +421,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         populateAIPProperties(childResc, aResc);
 
         // Add the file to the work as the datafile of its own FileObject
-        FileObjectImpl fileObj = null;
+        FileObject fileObj = null;
         // Retry if there are checksum failures
         for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
             try {
@@ -455,7 +454,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         return fileObj;
     }
 
-    private void addFitsHistory(FileObjectImpl fileObj, Resource dResc) {
+    private void addFitsHistory(FileObject fileObj, Resource dResc) {
         Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
         if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
             return;
@@ -473,7 +472,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 null);
     }
 
-    private void addFitsReport(FileObjectImpl fileObj, Resource resc) throws DepositException {
+    private void addFitsReport(FileObject fileObj, Resource resc) throws DepositException {
         Resource binResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
         if (binResc == null || !binResc.hasProperty(CdrDeposit.storageUri)) {
             failJob("Missing FITs extract", "No storage URI for FITS extract for " + fileObj.getPid().getId());
@@ -501,7 +500,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
-        FolderObjectImpl obj = null;
+        FolderObject obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing folder object
             obj = repoObjLoader.getFolderObject(childPid);
@@ -558,7 +557,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
-        AdminUnitImpl obj = null;
+        AdminUnit obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing admin unit object
             obj = repoObjLoader.getAdminUnit(childPid);
@@ -619,7 +618,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
-        CollectionObjectImpl obj = null;
+        CollectionObject obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing collection unit object
             obj = repoObjLoader.getCollectionObject(childPid);
@@ -692,7 +691,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             throws DepositException, IOException {
         PID childPid = PIDs.get(childResc.getURI());
 
-        WorkObjectImpl obj = null;
+        WorkObject obj = null;
         boolean skip = skipResumed(childResc);
         if (!skip) {
             Model model = ModelFactory.createDefaultModel();
@@ -785,7 +784,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void overrideModifiedTimestamp(AbstractContentObject contentObj, Resource dResc) {
+    private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {
         if (overrideTimestamps && dResc.hasProperty(CdrDeposit.lastModifiedTime)) {
             String val = dResc.getProperty(CdrDeposit.lastModifiedTime).getString();
             Literal modifiedLiteral = dResc.getModel().createTypedLiteral(val, XSDDatatype.XSDdateTime);
@@ -822,7 +821,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void addDescription(AbstractContentObject obj, Resource dResc) throws IOException {
+    private void addDescription(ContentObject obj, Resource dResc) throws IOException {
         addDescriptionHistory(obj, dResc);
 
         Path modsPath = getModsPath(obj.getPid());
@@ -835,7 +834,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 new UpdateDescriptionRequest(agent, obj, modsStream).withTransferSession(logTransferSession));
     }
 
-    private void addDescriptionHistory(AbstractContentObject obj, Resource dResc) throws IOException {
+    private void addDescriptionHistory(ContentObject obj, Resource dResc) throws IOException {
         Resource historyResc = DepositModelHelpers.getDatastream(dResc, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         if (historyResc == null || !historyResc.hasProperty(CdrDeposit.storageUri)) {
             return;
@@ -853,7 +852,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 null);
     }
 
-    private void addPremisEvents(AbstractContentObject obj) {
+    private void addPremisEvents(ContentObject obj) {
         File premisFile = getPremisFile(obj.getPid());
         if (!premisFile.exists()) {
             return;
@@ -899,25 +898,25 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 } else {
                     builder.addEventDetail("added {0} child objects to this container", numChildren);
                 }
-                builder.addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                         .addAuthorizingAgent(depositorPid)
                         .write();
             }
         }
     }
 
-    private void addIngestionEventForChild(AbstractContentObject obj) throws IOException {
+    private void addIngestionEventForChild(ContentObject obj) throws IOException {
         PremisLogger premisLogger = getPremisLogger(obj.getPid());
         PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 
-        if (obj instanceof FileObjectImpl) {
+        if (obj instanceof FileObject) {
             builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
                     obj.getPid().getQualifiedId(), ((FileObject) obj).getOriginalFile().getFilename());
         } else if (obj instanceof AbstractContentContainerObject) {
             builder.addEventDetail("ingested as PID: {0}",
                     obj.getPid().getQualifiedId());
         }
-        builder.addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+        builder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .addAuthorizingAgent(depositorPid)
                 .write();
     }

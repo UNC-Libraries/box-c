@@ -17,7 +17,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
+            <artifactId>model-fcrepo</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>

@@ -37,7 +37,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
@@ -101,7 +101,7 @@ public class AccessControlRetrievalController {
             assigned = objectAclFactory.getStaffRoleAssignments(pid);
             RepositoryObject parent = repoObj.getParent();
             inherited = inheritedAclFactory.getStaffRoleAssignments(parent.getPid());
-        } else if (repoObj instanceof AbstractContentObject) {
+        } else if (repoObj instanceof ContentObject) {
             assigned = Collections.emptyList();
             inherited = inheritedAclFactory.getStaffRoleAssignments(pid);
         } else {
@@ -165,7 +165,7 @@ public class AccessControlRetrievalController {
         if (repoObj instanceof AdminUnitImpl) {
             result.put("error", "Cannot retrieve patron access for a unit");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
-        } else if (repoObj instanceof AbstractContentObject) {
+        } else if (repoObj instanceof ContentObject) {
             result.put(INHERITED_ROLES, addInheritedPatronInfo(repoObj));
             result.put(ASSIGNED_ROLES, addAssignedPatronInfo(pid));
             result.put(ALLOWED_PATRON_PRINCIPALS, patronPrincipalProvider.getConfiguredPatronPrincipals());

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.test;
+package edu.unc.lib.boxc.model.fcrepo.test;
 
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 

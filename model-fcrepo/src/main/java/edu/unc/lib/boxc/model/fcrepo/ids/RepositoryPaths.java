@@ -25,6 +25,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.REPOSITORY_
 import java.net.URI;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 
@@ -43,14 +44,12 @@ public class RepositoryPaths {
     private static String contentBase;
     private static String agentsBase;
     private static String serverUri;
-    private static String baseUri;
-    private static String baseHost;
     private static PID contentRootPid;
     private static PID contentBasePid;
     private static PID rootPid;
 
     static {
-        setContentBase(System.getProperty("fcrepo.baseUri"));
+        setContentBase(FcrepoPaths.getBaseUri());
     }
 
     private RepositoryPaths() {
@@ -79,19 +78,6 @@ public class RepositoryPaths {
 
     public static String getServerUri() {
         return serverUri;
-    }
-
-    /**
-     * Get a string of the uri identifying the base of the repository.
-     *
-     * @return
-     */
-    public static String getBaseUri() {
-        return baseUri;
-    }
-
-    public static String getBaseHost() {
-        return baseHost;
     }
 
     /**
@@ -185,16 +171,12 @@ public class RepositoryPaths {
      *
      * @param uri base uri for repository
      */
-    private static void setContentBase(String uri) {
-        baseUri = uri;
-        if (!baseUri.endsWith("/")) {
-            baseUri += "/";
-        }
-        rootPid = new FedoraPID(REPOSITORY_ROOT_ID, REPOSITORY_ROOT_ID, null, URI.create(baseUri));
-        contentBase = URIUtil.join(baseUri, CONTENT_BASE);
+    private static void setContentBase(String fcrepoUri) {
+        rootPid = new FedoraPID(REPOSITORY_ROOT_ID, REPOSITORY_ROOT_ID, null, URI.create(fcrepoUri));
+        contentBase = URIUtil.join(fcrepoUri, CONTENT_BASE);
         contentBasePid = new FedoraPID(CONTENT_BASE, REPOSITORY_ROOT_ID, null, URI.create(contentBase));
         contentRootPid = PIDs.get(URIUtil.join(contentBase, CONTENT_ROOT_ID));
-        depositRecordBase = URIUtil.join(baseUri, DEPOSIT_RECORD_BASE);
+        depositRecordBase = URIUtil.join(fcrepoUri, DEPOSIT_RECORD_BASE);
         depositRecordRootPid = new FedoraPID(DEPOSITS_QUALIFIER, REPOSITORY_ROOT_ID, null,
                 URI.create(depositRecordBase));
     }

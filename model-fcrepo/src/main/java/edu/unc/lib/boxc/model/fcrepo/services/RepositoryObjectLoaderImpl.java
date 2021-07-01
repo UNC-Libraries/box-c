@@ -18,9 +18,9 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
-import org.apache.jena.ext.com.google.common.cache.LoadingCache;
-import org.apache.jena.ext.com.google.common.util.concurrent.UncheckedExecutionException;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;

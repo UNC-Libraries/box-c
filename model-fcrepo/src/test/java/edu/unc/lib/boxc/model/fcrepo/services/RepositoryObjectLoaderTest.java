@@ -40,7 +40,6 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
@@ -192,7 +191,7 @@ public class RepositoryObjectLoaderTest {
         // Trigger population of cache
         repoObjLoader.getRepositoryObject(pid);
 
-        LoadingCache<PID, AbstractRepositoryObject> repoObjCache = repoObjLoader.getRepositoryObjectCache();
+        LoadingCache<PID, RepositoryObject> repoObjCache = repoObjLoader.getRepositoryObjectCache();
         assertNotNull(repoObjCache.getIfPresent(pid));
         repoObjLoader.invalidate(pid);
         assertNull(repoObjCache.getIfPresent(pid));

@@ -65,12 +65,12 @@ import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *

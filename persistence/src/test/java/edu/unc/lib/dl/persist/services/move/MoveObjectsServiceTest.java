@@ -63,7 +63,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
@@ -224,7 +224,7 @@ public class MoveObjectsServiceTest {
         List<PID> movePids = asList(makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(mockDestObj).addMember(any(AbstractContentObject.class));
+        verify(mockDestObj).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
 
@@ -284,7 +284,7 @@ public class MoveObjectsServiceTest {
         List<PID> movePids = asList(makeMoveObject(mockParent), makeMoveObject(mockParent));
         service.moveObjects(mockAgent, destPid, movePids);
 
-        verify(mockDestObj, times(2)).addMember(any(AbstractContentObject.class));
+        verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
 

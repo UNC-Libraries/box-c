@@ -38,7 +38,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -169,8 +169,8 @@ public class UpdateTreeSetActionTest {
         action.performAction(request);
     }
 
-    private void indexTriples(AbstractContentObject... objs) {
-        for (AbstractContentObject obj : objs) {
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
             sparqlModel.add(obj.getResource().getModel());
         }
     }

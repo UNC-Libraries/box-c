@@ -40,7 +40,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
@@ -123,7 +123,7 @@ public class UpdateTreeActionTest {
 
     @Test
     public void testNoDescendents() throws Exception {
-        AbstractContentObject obj6 = mock(AbstractContentObject.class);
+        ContentObject obj6 = mock(ContentObject.class);
         when(obj6.getPid()).thenReturn(corpus.pid6);
         Model model = ModelFactory.createDefaultModel();
         when(obj6.getResource()).thenReturn(model.getResource(corpus.pid6.getRepositoryPath()));
@@ -138,8 +138,8 @@ public class UpdateTreeActionTest {
         assertTrue(pids.contains(corpus.pid6));
     }
 
-    private void indexTriples(AbstractContentObject... objs) {
-        for (AbstractContentObject obj : objs) {
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
             sparqlModel.add(obj.getResource().getModel());
         }
     }

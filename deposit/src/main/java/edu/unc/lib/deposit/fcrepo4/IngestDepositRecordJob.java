@@ -44,7 +44,7 @@ import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Rdfs;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
@@ -181,8 +181,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         PremisEventBuilder eventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion)
                 .addEventDetail("ingested as PID: {0}. {1}", depositPID.getId(),
                         aipObjResc.getProperty(DcElements.title).getObject().toString())
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
-                .addAuthorizingAgent(AgentPIDs.forPerson(status.get(DepositField.depositorName.name())));
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
+                .addAuthorizingAgent(AgentPids.forPerson(status.get(DepositField.depositorName.name())));
 
         // Add in deposit format if present
         String depositFormat = null;

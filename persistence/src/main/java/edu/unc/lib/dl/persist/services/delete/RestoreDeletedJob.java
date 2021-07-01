@@ -22,12 +22,12 @@ import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
 
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
@@ -64,12 +64,12 @@ public class RestoreDeletedJob implements Runnable {
 
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
-        if (repoObj instanceof AdminUnitImpl) {
+        if (repoObj instanceof AdminUnit) {
             aclService.assertHasAccess("Insufficient privileges to restore admin unit " + pid.getUUID(),
                     pid, agent.getPrincipals(), markForDeletionUnit);
         }
 
-        if (!(repoObj instanceof AbstractContentObject)) {
+        if (!(repoObj instanceof ContentObject)) {
             throw new InvalidOperationForObjectType("Cannot perform restore on object " + pid.getUUID()
                     + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
         }
@@ -79,7 +79,7 @@ public class RestoreDeletedJob implements Runnable {
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
         repoObj.getPremisLog().buildEvent(Premis.Accession)
-                .addImplementorAgent(AgentPIDs.forPerson(agent))
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Item restored from deletion")
                 .writeAndClose();
     }

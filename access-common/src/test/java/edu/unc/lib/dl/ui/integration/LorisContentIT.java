@@ -68,15 +68,15 @@ import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  * @author bbpennel

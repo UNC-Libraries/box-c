@@ -52,7 +52,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -136,7 +136,7 @@ public class XMLExportServiceTest {
     private PID mockObject() {
         PID pid = PIDs.get(UUID.randomUUID().toString());
 
-        AbstractContentObject obj = mock(AbstractContentObject.class);
+        ContentObject obj = mock(ContentObject.class);
         when(obj.getPid()).thenReturn(pid);
         when(obj.getLastModified()).thenReturn(new Date());
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(obj);
@@ -190,7 +190,7 @@ public class XMLExportServiceTest {
     @Test
     public void exportWithModsTest() throws Exception {
         PID pid1 = registerObject();
-        AbstractContentObject contentObj = (AbstractContentObject) repoObjLoader.getRepositoryObject(pid1);
+        ContentObject contentObj = (ContentObject) repoObjLoader.getRepositoryObject(pid1);
 
         BinaryObjectImpl modsObj = mock(BinaryObjectImpl.class);
         Date lastModified = new Date();

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.ContentPathConstants;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -85,7 +85,7 @@ public class SetPathFilter implements IndexDocumentFilter {
             idb.setParentUnit(pids.get(ContentPathConstants.UNIT_DEPTH).getId());
         }
 
-        AbstractContentObject contentObject = dip.getContentObject();
+        ContentObject contentObject = dip.getContentObject();
 
         String rollup;
 

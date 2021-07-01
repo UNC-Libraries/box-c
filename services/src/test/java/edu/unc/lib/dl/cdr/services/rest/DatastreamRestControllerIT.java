@@ -62,7 +62,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -248,7 +248,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPIDs.forPerson("some_user"))
+            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
@@ -291,7 +291,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPIDs.forPerson("some_user"))
+            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)

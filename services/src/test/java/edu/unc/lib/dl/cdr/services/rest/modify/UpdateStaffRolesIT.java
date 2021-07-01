@@ -46,16 +46,16 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdateStaffAccessController.UpdateStaffRequest;
-import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  * @author bbpennel
@@ -309,13 +309,13 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
             .andReturn();
     }
 
-    private void assertHasAssignment(String princ, UserRole role, AbstractContentObject obj) {
+    private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
         assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
     }
 
-    private void assertNoAssignment(String princ, UserRole role, AbstractContentObject obj) {
+    private void assertNoAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
         assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));

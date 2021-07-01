@@ -64,7 +64,7 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
@@ -137,7 +137,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource eventResc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         // Retrieve all of the events
@@ -160,7 +160,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .write();
 
         assertEventLogDigestChanged(parentObject);
@@ -418,7 +418,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // attempt to write log and fail
         Resource event = logger.buildEvent(Premis.VirusCheck)
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                 .create();
         Runnable commitThread = new Runnable() {
             @Override

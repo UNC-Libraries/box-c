@@ -50,18 +50,16 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidRelationshipException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 
 /**
  *
@@ -80,7 +78,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     private WorkObjectImpl work;
 
     @Mock
-    private FileObjectImpl fileObj;
+    private FileObject fileObj;
     private URI contentUri;
 
     private List<String> types;
@@ -143,14 +141,14 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
 
         work.setPrimaryObject(primaryPid);
 
-        verify(repoObjFactory).createExclusiveRelationship(any(AbstractRepositoryObject.class), eq(Cdr.primaryObject),
+        verify(repoObjFactory).createExclusiveRelationship(any(RepositoryObject.class), eq(Cdr.primaryObject),
                 eq(primaryResc));
     }
 
     @Test(expected = InvalidRelationshipException.class)
     public void setPrimaryObjectToNonMemberTest() {
         PID anotherPid =  makePid();
-        WorkObjectImpl anotherWork = mock(WorkObjectImpl.class);
+        WorkObject anotherWork = mock(WorkObject.class);
         when(anotherWork.getPid()).thenReturn(anotherPid);
 
         // Assign the file object to a different parent
@@ -161,7 +159,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         try {
             work.setPrimaryObject(primaryPid);
         } finally {
-            verify(repoObjFactory, never()).createExclusiveRelationship(any(AbstractRepositoryObject.class),
+            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
                     eq(Cdr.primaryObject), any(Resource.class));
         }
     }
@@ -169,7 +167,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     @Test(expected = InvalidOperationForObjectType.class)
     public void setPrimaryObjectToInvalidTypeTest() {
         PID anotherPid =  makePid();
-        WorkObjectImpl anotherWork = mock(WorkObjectImpl.class);
+        WorkObject anotherWork = mock(WorkObject.class);
         when(anotherWork.getPid()).thenReturn(anotherPid);
 
         when(driver.getRepositoryObject(eq(anotherPid))).thenReturn(anotherWork);
@@ -177,7 +175,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         try {
             work.setPrimaryObject(anotherPid);
         } finally {
-            verify(repoObjFactory, never()).createExclusiveRelationship(any(AbstractRepositoryObject.class),
+            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
                     eq(Cdr.primaryObject), any(Resource.class));
         }
     }
@@ -194,7 +192,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        when(driver.getRepositoryObject(eq(primaryPid), eq(FileObjectImpl.class))).thenReturn(fileObj);
+        when(driver.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
 
         resc.addProperty(Cdr.primaryObject, primaryResc);
 
@@ -208,7 +206,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         FileObject resultObj = work.getPrimaryObject();
 
         assertNull(resultObj);
-        verify(driver, never()).getRepositoryObject(any(PID.class), eq(FileObjectImpl.class));
+        verify(driver, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
     }
 
     @Test
@@ -221,11 +219,11 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void addMemberFolderTest() {
-        FolderObjectImpl folderObj = mock(FolderObjectImpl.class);
+        FolderObject folderObj = mock(FolderObject.class);
 
         work.addMember(folderObj);
 
-        verify(repoObjFactory).addMember(any(AbstractContentObject.class), any(AbstractContentObject.class));
+        verify(repoObjFactory).addMember(any(ContentObject.class), any(ContentObject.class));
     }
 
     @Test
@@ -257,7 +255,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file with properties
-        FileObjectImpl fileObj = work.addDataFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5, extraProperties);
+        FileObject fileObj = work.addDataFile(contentUri, FILENAME, MIMETYPE, SHA1, MD5, extraProperties);
 
         ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);

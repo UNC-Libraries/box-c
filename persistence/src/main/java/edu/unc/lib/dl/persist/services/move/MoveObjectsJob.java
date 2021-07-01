@@ -36,10 +36,10 @@ import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -140,7 +140,7 @@ public class MoveObjectsJob implements Runnable {
         aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission to move object "
                 + objPid, objPid, agent.getPrincipals(), Permission.move);
 
-        AbstractContentObject moveContent = (AbstractContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
+        ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
         // Store the pid of the current parent as the move source for this object
         PID sourcePid = moveContent.getParent().getPid();
         addPidToSource(objPid, sourcePid);
@@ -152,7 +152,7 @@ public class MoveObjectsJob implements Runnable {
         destContainer.addMember(moveContent);
     }
 
-    private void adminUnitMove(PID sourcePid, AbstractContentObject moveObj) {
+    private void adminUnitMove(PID sourcePid, ContentObject moveObj) {
         Map<String, String> destContainerInfo = getContainerInfo(destinationPid, 1);
         String destAdminUnit = destContainerInfo.get("adminUnit");
 
@@ -161,7 +161,7 @@ public class MoveObjectsJob implements Runnable {
 
         if (currentAdminUnit != null && destAdminUnit != null && !currentAdminUnit.equals(destAdminUnit)) {
             moveObj.getPremisLog().buildEvent(Premis.MetadataModification)
-                    .addAuthorizingAgent(AgentPIDs.forPerson(agent))
+                    .addAuthorizingAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Object moved from source {0} ({1}) in Admin Unit {2} ({3}) " +
                                     "to destination {4} ({5}) in Admin Unit {6} ({7})",
                             currentContainerInfo.get("container"), currentContainerInfo.get("containerTitle"),

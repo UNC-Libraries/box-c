@@ -59,7 +59,7 @@ import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -164,7 +164,7 @@ public class AddContainerService {
 
             child.getPremisLog()
                 .buildEvent(Premis.Creation)
-                .addImplementorAgent(AgentPIDs.forPerson(agent))
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Container added at destination " + parentPid)
                 .writeAndClose();
         } catch (Exception e) {

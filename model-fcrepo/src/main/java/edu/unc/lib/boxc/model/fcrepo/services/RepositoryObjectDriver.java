@@ -48,13 +48,13 @@ import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -87,7 +87,7 @@ public class RepositoryObjectDriver {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDriver loadTypes(AbstractRepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadTypes(RepositoryObject obj) throws FedoraException {
         List<String> types = new ArrayList<>();
         // Iterate through all type properties and add to list
         Resource resc = obj.getModel().getResource(obj.getPid().getRepositoryUri().toString());
@@ -96,7 +96,7 @@ public class RepositoryObjectDriver {
             types.add(it.nextStatement().getResource().getURI());
         }
 
-        obj.setTypes(types);
+        ((AbstractRepositoryObject) obj).setTypes(types);
 
         return this;
     }
@@ -110,7 +110,7 @@ public class RepositoryObjectDriver {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDriver loadModel(AbstractRepositoryObject obj, boolean checkForUpdates) throws FedoraException {
+    public RepositoryObjectDriver loadModel(RepositoryObject obj, boolean checkForUpdates) throws FedoraException {
         long start = System.nanoTime();
         URI metadataUri = obj.getMetadataUri();
         // Model needs to be loaded if not present, or if checkForUpdates is true and either in a tx or obj has changed
@@ -178,7 +178,7 @@ public class RepositoryObjectDriver {
      * @return
      * @throws FedoraException
      */
-    public InputStream getBinaryStream(BinaryObjectImpl obj) throws FedoraException {
+    public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
         PID pid = obj.getPid();
 
         try {
@@ -278,9 +278,9 @@ public class RepositoryObjectDriver {
      * @return
      */
     public PID getParentPid(RepositoryObject obj) {
-        if (obj instanceof BinaryObjectImpl) {
+        if (obj instanceof BinaryObject) {
             return fetchContainer(obj, PcdmModels.hasFile);
-        } else if (obj instanceof AbstractContentObject) {
+        } else if (obj instanceof ContentObject) {
             // For resources in the membership hierarchy, use reverse membership
             Statement memberOf = obj.getResource().getProperty(PcdmModels.memberOf);
             if (memberOf != null) {

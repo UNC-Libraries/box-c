@@ -65,15 +65,18 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
@@ -86,9 +89,6 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
@@ -471,7 +471,7 @@ public class StaffRoleAssignmentServiceIT {
         roleService.updateRoles(agent, pid, assignments);
     }
 
-    private void assertNoStaffRoles(AbstractContentObject obj) {
+    private void assertNoStaffRoles(ContentObject obj) {
         List<UserRole> staffRoles = UserRole.getStaffRoles();
 
         Resource resc = obj.getResource();
@@ -486,13 +486,13 @@ public class StaffRoleAssignmentServiceIT {
         }
     }
 
-    private void assertHasAssignment(String princ, UserRole role, AbstractContentObject obj) {
+    private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
         assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
     }
 
-    private void assertNoAssignment(String princ, UserRole role, AbstractContentObject obj) {
+    private void assertNoAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
         assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
                 resc.hasProperty(role.getProperty(), princ));
@@ -504,7 +504,7 @@ public class StaffRoleAssignmentServiceIT {
         assertTrue(pidListCaptor.getValue().contains(pid));
     }
 
-    private String assertEventCreatedAndGetDetail(AbstractContentObject repoObj) {
+    private String assertEventCreatedAndGetDetail(ContentObject repoObj) {
         Model eventsModel = repoObj.getPremisLog().getEventsModel();
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
         List<Resource> eventRescs = eventsModel.listResourcesWithProperty(Prov.used, objResc).toList();
@@ -512,13 +512,13 @@ public class StaffRoleAssignmentServiceIT {
         assertTrue("Event type was not set",
                 eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
-        assertEquals(AgentPIDs.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
+        assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
         String eventDetail = eventResc.getProperty(Premis.note).getString();
         assertThat(eventDetail, containsString("Staff roles for item set to:"));
         return eventDetail;
     }
 
-    private void assertEmbargoPresent(AbstractContentObject obj) {
+    private void assertEmbargoPresent(ContentObject obj) {
         Resource resc = obj.getResource();
         assertTrue("Embargo was not present", resc.hasProperty(CdrAcl.embargoUntil));
     }

@@ -39,7 +39,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 public class AddDerivativeProcessorTest {
 

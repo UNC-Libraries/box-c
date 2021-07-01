@@ -32,7 +32,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
@@ -54,7 +54,7 @@ public class SetRecordDatesFilterTest {
     @Mock
     private PID pid;
     @Mock
-    private AbstractContentObject contentObj;
+    private ContentObject contentObj;
     @Mock
     private Resource resource;
     @Mock

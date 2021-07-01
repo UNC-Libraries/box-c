@@ -53,7 +53,7 @@ import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 /**
  *

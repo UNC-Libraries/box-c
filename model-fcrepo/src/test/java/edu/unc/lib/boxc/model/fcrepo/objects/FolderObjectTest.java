@@ -35,13 +35,12 @@ import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 
 /**
  *
@@ -106,11 +105,11 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
 
         verify(repoObjFactory).createFolderObject((Model) isNull());
 
-        ArgumentCaptor<AbstractContentObject> captor = ArgumentCaptor.forClass(AbstractContentObject.class);
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(folder), captor.capture());
 
-        AbstractContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof FolderObjectImpl);
+        ContentObject child = captor.getValue();
+        assertTrue("Incorrect type of child added", child instanceof FolderObject);
         assertEquals("Child did not have the expected pid", childPid, child.getPid());
     }
 
@@ -119,11 +118,11 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
         WorkObjectImpl childObj = new WorkObjectImpl(childPid, driver, repoObjFactory);
         when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
-        WorkObjectImpl workObj = folder.addWork();
+        WorkObject workObj = folder.addWork();
 
         verify(repoObjFactory).createWorkObject(null);
 
-        assertTrue("Incorrect type of child added", workObj instanceof WorkObjectImpl);
+        assertTrue("Incorrect type of child added", workObj instanceof WorkObject);
         assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
     }
 }

@@ -38,13 +38,13 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fedora.ServiceException;
 
@@ -77,8 +77,8 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
     }
 
     private void destroyTree(RepositoryObject rootOfTree) {
-        if (!(rootOfTree instanceof WorkObjectImpl || rootOfTree instanceof FileObjectImpl
-                || rootOfTree instanceof FolderObjectImpl)) {
+        if (!(rootOfTree instanceof WorkObject || rootOfTree instanceof FileObject
+                || rootOfTree instanceof FolderObject)) {
             throw new ServiceException("Refusing to destroy object " + rootOfTree.getPid()
                     + " of type " + rootOfTree.getResourceType());
         }
@@ -88,9 +88,9 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
         log.info("Completely destroying object {}", rootOfTree.getPid());
         if (rootOfTree instanceof AbstractContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
-            List<AbstractContentObject> members = container.getMembers();
+            List<ContentObject> members = container.getMembers();
 
-            for (AbstractContentObject member : members) {
+            for (ContentObject member : members) {
                 destroyTree(member);
             }
         }

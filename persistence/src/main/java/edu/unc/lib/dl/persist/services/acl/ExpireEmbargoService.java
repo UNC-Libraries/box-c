@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -103,7 +103,7 @@ public class ExpireEmbargoService {
                             formatDateToUTC(parseUTCToDate(embargoDate));
                     // Produce the premis event for this embargo
                     repoObj.getPremisLog().buildEvent(Premis.Dissemination)
-                            .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.embargoExpirationService))
+                            .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService))
                             .addEventDetail(eventText)
                             .writeAndClose();
                 } catch (Exception e) {

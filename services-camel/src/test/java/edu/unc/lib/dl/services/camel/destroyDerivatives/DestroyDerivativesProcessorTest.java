@@ -30,7 +30,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;

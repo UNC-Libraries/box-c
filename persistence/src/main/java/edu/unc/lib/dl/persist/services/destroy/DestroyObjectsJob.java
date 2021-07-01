@@ -40,22 +40,22 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
@@ -107,7 +107,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                     // Add premis event to parent
                     String lineSeparator = System.getProperty("line.separator");
                     parentObj.getPremisLog().buildEvent(Premis.Deletion)
-                            .addAuthorizingAgent(AgentPIDs.forPerson(agent))
+                            .addAuthorizingAgent(AgentPids.forPerson(agent))
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
                             .addEventDetail("Objects destroyed:" + lineSeparator
@@ -135,9 +135,9 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
         if (rootOfTree instanceof AbstractContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
-            List<AbstractContentObject> members = container.getMembers();
+            List<ContentObject> members = container.getMembers();
 
-            for (AbstractContentObject member : members) {
+            for (ContentObject member : members) {
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
 
@@ -164,7 +164,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
-            .addAuthorizingAgent(AgentPIDs.forPerson(agent))
+            .addAuthorizingAgent(AgentPids.forPerson(agent))
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();
     }

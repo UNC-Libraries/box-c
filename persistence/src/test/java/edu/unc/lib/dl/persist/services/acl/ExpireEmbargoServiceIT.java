@@ -55,18 +55,18 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -257,7 +257,7 @@ public class ExpireEmbargoServiceIT {
             assertTrue("Event type was not set",
                     eventResc.hasProperty(RDF.type, Premis.Dissemination));
             Resource execAgent = eventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-            assertEquals(AgentPIDs.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
+            assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
                     execAgent.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());
         }

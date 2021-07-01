@@ -48,7 +48,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -111,7 +111,7 @@ public class StaffRoleAssignmentService {
             replaceStaffRoles(repoObj, assignments);
 
             repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
-                    .addImplementorAgent(AgentPIDs.forPerson(agent))
+                    .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail(createEventDetails(target))
                     .writeAndClose();
 

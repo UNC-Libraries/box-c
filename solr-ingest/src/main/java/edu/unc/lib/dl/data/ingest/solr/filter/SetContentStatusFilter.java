@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -50,7 +50,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             throws IndexingException {
 
         List<String> status = new ArrayList<>();
-        AbstractContentObject obj = dip.getContentObject();
+        ContentObject obj = dip.getContentObject();
         Resource resc = obj.getResource();
 
         if (resc.hasProperty(Cdr.hasMods)) {

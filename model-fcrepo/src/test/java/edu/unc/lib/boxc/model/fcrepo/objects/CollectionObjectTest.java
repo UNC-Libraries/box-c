@@ -34,15 +34,13 @@ import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 
 /**
  *
@@ -58,11 +56,11 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
     private PID workChildPid;
 
     @Mock
-    private FolderObjectImpl folderChildObj;
+    private FolderObject folderChildObj;
     @Mock
-    private WorkObjectImpl workChildObj;
+    private WorkObject workChildObj;
     @Mock
-    private CollectionObjectImpl collectionChildObj;
+    private CollectionObject collectionChildObj;
 
     @Before
     public void init() {
@@ -114,7 +112,7 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         AbstractContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof WorkObjectImpl);
+        assertTrue("Incorrect type of child added", child instanceof WorkObject);
         assertEquals("Child did not have the expected pid", workChildPid, child.getPid());
     }
 
@@ -126,7 +124,7 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         AbstractContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof FolderObjectImpl);
+        assertTrue("Incorrect type of child added", child instanceof FolderObject);
         assertEquals("Child did not have the expected pid", folderChildPid, child.getPid());
     }
 

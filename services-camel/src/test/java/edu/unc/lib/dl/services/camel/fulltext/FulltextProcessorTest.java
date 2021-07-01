@@ -38,7 +38,7 @@ import org.mockito.Mock;
 
 import com.google.common.io.Files;
 
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 public class FulltextProcessorTest {
     private FulltextProcessor processor;

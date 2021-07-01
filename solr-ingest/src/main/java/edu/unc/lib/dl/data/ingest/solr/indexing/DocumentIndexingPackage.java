@@ -18,7 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import org.jdom2.Element;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
@@ -34,7 +34,7 @@ public class DocumentIndexingPackage {
     private PID parentPid;
     private Element mods;
     private IndexDocumentBean document;
-    private AbstractContentObject contentObject;
+    private ContentObject contentObject;
 
     public DocumentIndexingPackage(PID pid, DocumentIndexingPackage parentDip,
             DocumentIndexingPackageDataLoader loader) {
@@ -55,7 +55,7 @@ public class DocumentIndexingPackage {
         this.pid = pid;
     }
 
-    public AbstractContentObject getContentObject() throws IndexingException {
+    public ContentObject getContentObject() throws IndexingException {
         if (contentObject == null) {
             contentObject = loader.getContentObject(this);
         }

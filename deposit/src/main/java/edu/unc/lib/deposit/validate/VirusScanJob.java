@@ -40,7 +40,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import fi.solita.clamav.ClamAVClient;
@@ -149,7 +149,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                         PremisLogger premisLogger = getPremisLogger(parentPid);
                         PremisEventBuilderImpl premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
-                        premisEventBuilder.addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
+                        premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                                 .addEventDetail("File passed pre-ingest scan for viruses")
                                 .addOutcome(true)
                                 .write();
@@ -185,7 +185,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
             PID depositPID = getDepositPID();
             PremisLogger premisDepositLogger = getPremisLogger(depositPID);
             premisDepositLogger.buildEvent(Premis.VirusCheck)
-                    .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.clamav))
+                    .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                     .addEventDetail(scannedObjects + "files scanned for viruses.")
                     .write();
         }

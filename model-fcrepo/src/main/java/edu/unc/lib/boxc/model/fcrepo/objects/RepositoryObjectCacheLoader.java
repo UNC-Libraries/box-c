@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.jena.ext.com.google.common.cache.CacheLoader;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -31,6 +30,8 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.CacheLoader;
 
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -60,11 +61,11 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     private RepositoryObjectDriver repositoryObjectDriver;
     private RepositoryObjectFactory repoObjFactory;
 
-    protected RepositoryObjectCacheLoader() {
+    public RepositoryObjectCacheLoader() {
     }
 
     @Override
-    public AbstractRepositoryObject load(PID pid) {
+    public RepositoryObject load(PID pid) {
         long start = System.nanoTime();
         try {
             return loadObject(pid);
@@ -73,7 +74,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         }
     }
 
-    public AbstractRepositoryObject loadObject(PID pid) {
+    public RepositoryObject loadObject(PID pid) {
         String etag;
         try (FcrepoResponse response = client.head(pid.getRepositoryUri())
                 .perform()) {
@@ -147,8 +148,8 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         return obj;
     }
 
-    private AbstractRepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {
-        AbstractRepositoryObject obj = null;
+    private RepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {
+        RepositoryObject obj = null;
 
         Resource resc = model.getResource(pid.getRepositoryPath());
 

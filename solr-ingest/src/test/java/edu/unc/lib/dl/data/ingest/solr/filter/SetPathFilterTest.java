@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -66,7 +66,7 @@ public class SetPathFilterTest {
     @Mock
     private IndexDocumentBean idb;
     @Mock
-    private AbstractContentObject contentObject;
+    private ContentObject contentObject;
     private PID pid;
     @Mock
     private FileObjectImpl fileObject;

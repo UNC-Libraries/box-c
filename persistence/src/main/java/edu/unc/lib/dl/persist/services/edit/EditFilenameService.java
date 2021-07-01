@@ -31,7 +31,7 @@ import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -85,7 +85,7 @@ public class EditFilenameService {
 
             obj.getPremisLog()
                 .buildEvent(Premis.FilenameChange)
-                .addImplementorAgent(AgentPIDs.forPerson(agent))
+                .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
                 .writeAndClose();
         } catch (Exception e) {

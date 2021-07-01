@@ -128,6 +128,13 @@ public interface RepositoryObject {
     String getEtag();
 
     /**
+     * Set the etag
+     *
+     * @param etag
+     */
+    void setEtag(String etag);
+
+    /**
      * Get a list of the RDF types for this object
      *
      * @return

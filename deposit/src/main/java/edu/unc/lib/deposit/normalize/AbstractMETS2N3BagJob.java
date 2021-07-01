@@ -46,7 +46,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -135,7 +135,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             PremisLogger premisLogger = getPremisLogger(pid);
             premisLogger.buildEvent(Premis.Accession)
                     .addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
-                    .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                    .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                     .write();
 
             count++;
@@ -194,7 +194,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
         PremisLogger premisDepositLogger = getPremisLogger(depositPID);
         premisDepositLogger.buildEvent(Premis.Validation)
                 .addEventDetail("METS schema(s) validated")
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 

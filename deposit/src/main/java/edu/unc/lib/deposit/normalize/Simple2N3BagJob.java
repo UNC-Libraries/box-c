@@ -35,7 +35,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.PackagingType;
@@ -99,7 +99,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         premisDepositLogger.buildEvent(Premis.Normalization)
                 .addEventDetail("Normalized deposit package from {0} to {1}",
                         PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
     }
 

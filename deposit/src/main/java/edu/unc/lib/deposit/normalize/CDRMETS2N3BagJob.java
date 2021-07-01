@@ -30,7 +30,7 @@ import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.event.PremisLogger;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -98,7 +98,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
         premisDepositLogger.buildEvent(Premis.Accession)
                 .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
                         PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(AgentPIDs.forSoftware(SoftwareAgent.depositService))
+                .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService))
                 .write();
 
         commit(() -> depModel.add(model));

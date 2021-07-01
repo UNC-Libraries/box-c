@@ -54,7 +54,7 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.deposit.work.JobInterruptedException;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
@@ -162,11 +162,11 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
                 + PackagingType.BAGIT.getUri() + " with profile no profile"));
 
         Resource execAgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
-        assertEquals(AgentPIDs.forSoftware(SoftwareAgent.depositService).getRepositoryPath(),
+        assertEquals(AgentPids.forSoftware(SoftwareAgent.depositService).getRepositoryPath(),
                 execAgent.getURI());
 
         Resource authgent = ingestEvent.getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource();
-        assertEquals(AgentPIDs.forPerson(DEPOSITOR_NAME).getRepositoryPath(),
+        assertEquals(AgentPids.forPerson(DEPOSITOR_NAME).getRepositoryPath(),
                 authgent.getURI());
     }
 

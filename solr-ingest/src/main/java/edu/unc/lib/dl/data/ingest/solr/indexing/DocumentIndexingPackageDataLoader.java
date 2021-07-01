@@ -28,7 +28,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
@@ -61,15 +61,15 @@ public class DocumentIndexingPackageDataLoader {
         }
     }
 
-    public AbstractContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
+    public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
         RepositoryObject repoObj = repoObjLoader.getRepositoryObject(dip.getPid());
         if (repoObj instanceof TombstoneImpl) {
             throw new ObjectTombstonedException("Object " + dip.getPid() + " is a tombstone");
         }
-        if (!(repoObj instanceof AbstractContentObject)) {
+        if (!(repoObj instanceof ContentObject)) {
             throw new IndexingException("Object " + dip.getPid() + " is not a ContentObject");
         }
-        return (AbstractContentObject) repoObj;
+        return (ContentObject) repoObj;
     }
 
     public long getCacheTimeToLive() {

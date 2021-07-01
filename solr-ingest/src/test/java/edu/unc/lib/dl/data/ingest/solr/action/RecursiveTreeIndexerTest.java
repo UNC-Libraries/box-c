@@ -40,7 +40,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
@@ -136,8 +136,8 @@ public class RecursiveTreeIndexerTest {
         assertTrue(pids.contains(child2Obj.getPid()));
     }
 
-    private void indexTriples(AbstractContentObject... objs) {
-        for (AbstractContentObject obj : objs) {
+    private void indexTriples(ContentObject... objs) {
+        for (ContentObject obj : objs) {
             sparqlModel.add(obj.getResource().getModel());
         }
     }

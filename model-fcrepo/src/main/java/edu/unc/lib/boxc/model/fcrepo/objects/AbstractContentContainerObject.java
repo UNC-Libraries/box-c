@@ -59,7 +59,7 @@ public abstract class AbstractContentContainerObject extends AbstractContentObje
     @Override
     public List<ContentObject> getMembers() {
         return driver.listMembers(this).stream()
-                .map(m -> (AbstractContentObject) driver.getRepositoryObject(m))
+                .map(m -> (ContentObject) driver.getRepositoryObject(m))
                 .collect(Collectors.toList());
     }
 }

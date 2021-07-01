@@ -48,15 +48,15 @@ import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.test.AclModelBuilder;
 import edu.unc.lib.dl.util.DescriptionConstants;
 
 /**
@@ -148,7 +148,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
 
-        AbstractContentObject member = getMemberByLabel(collObj, label);
+        ContentObject member = getMemberByLabel(collObj, label);
         assertHasAssignment(PUBLIC_PRINC, none, member);
         assertHasAssignment(AUTHENTICATED_PRINC, none, member);
     }
@@ -254,7 +254,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
 
-        AbstractContentObject member = getMemberByLabel(collObj, label);
+        ContentObject member = getMemberByLabel(collObj, label);
         assertHasAssignment(PUBLIC_PRINC, none, member);
         assertHasAssignment(AUTHENTICATED_PRINC, none, member);
     }
@@ -335,7 +335,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        AbstractContentObject member = getMemberByLabel(adminUnit, label);
+        ContentObject member = getMemberByLabel(adminUnit, label);
         assertHasAssignment(PUBLIC_PRINC, canViewOriginals, member);
         assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, member);
     }
@@ -363,7 +363,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        AbstractContentObject member = getMemberByLabel(adminUnit, label);
+        ContentObject member = getMemberByLabel(adminUnit, label);
         assertHasAssignment(PUBLIC_PRINC, none, member);
         assertHasAssignment(AUTHENTICATED_PRINC, none, member);
 
@@ -394,7 +394,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
-        AbstractContentObject member = getMemberByLabel(adminUnit, label);
+        ContentObject member = getMemberByLabel(adminUnit, label);
         assertHasAssignment(PUBLIC_PRINC, canViewOriginals, member);
         assertHasAssignment(AUTHENTICATED_PRINC, canViewOriginals, member);
 
@@ -424,7 +424,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
-    private AbstractContentObject getMemberByLabel(ContentContainerObject parent, String label) {
+    private ContentObject getMemberByLabel(ContentContainerObject parent, String label) {
         return parent.getMembers().stream()
                 .filter(m -> m.getResource().hasProperty(DcElements.title, label))
                 .findFirst().get();
@@ -457,7 +457,7 @@ public class AddContainerIT extends AbstractAPIIT {
     }
 
     private void assertPatronDoesNotHaveNonePermission(ContentContainerObject parent, String label) {
-        AbstractContentObject member = getMemberByLabel(parent, label);
+        ContentObject member = getMemberByLabel(parent, label);
 
         assertNoAssignment(PUBLIC_PRINC, none, member);
         assertNoAssignment(AUTHENTICATED_PRINC, none, member);

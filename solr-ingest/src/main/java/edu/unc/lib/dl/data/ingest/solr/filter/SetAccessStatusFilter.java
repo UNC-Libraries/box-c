@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
@@ -86,7 +86,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
-        AbstractContentObject contentObj = dip.getContentObject();
+        ContentObject contentObj = dip.getContentObject();
         // No need to continue with patron statuses if object is an AdminUnit
         if (contentObj instanceof AdminUnitImpl) {
             return status;
@@ -131,7 +131,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         return status;
     }
 
-    private boolean inheritingPatronRestrictions(AbstractContentObject contentObj, List<RoleAssignment> objRoles,
+    private boolean inheritingPatronRestrictions(ContentObject contentObj, List<RoleAssignment> objRoles,
             List<RoleAssignment> inheritedRoles, boolean isEmbargoed) {
         boolean noObjAssignments = objRoles.isEmpty();
         // No roles defined at any level, so inheriting staff only

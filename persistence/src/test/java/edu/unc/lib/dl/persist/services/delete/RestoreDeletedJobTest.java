@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -64,7 +64,7 @@ public class RestoreDeletedJobTest {
     @Mock
     private SparqlUpdateService sparqlUpdateService;
     @Mock
-    private AbstractContentObject contentObj;
+    private ContentObject contentObj;
     @Mock
     private AgentPrincipals agent;
     @Mock

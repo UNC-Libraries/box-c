@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -93,7 +93,7 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private AccessGroupSet groups;
     @Mock
-    private AbstractContentObject obj;
+    private ContentObject obj;
 
     @Captor
     private ArgumentCaptor<Collection<PID>> pidsCaptor;

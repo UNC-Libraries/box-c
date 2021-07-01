@@ -44,13 +44,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  * @author bbpennel
@@ -122,7 +122,7 @@ public class UpdateDescriptionServiceIT {
                 .get();
     }
 
-    private void addDescription(AbstractContentObject contentObj, String title, String date) throws Exception {
+    private void addDescription(ContentObject contentObj, String title, String date) throws Exception {
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(title, date));
         InputStream modsStream = documentToInputStream(doc);

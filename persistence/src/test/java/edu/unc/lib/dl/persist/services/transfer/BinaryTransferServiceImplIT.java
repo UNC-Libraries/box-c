@@ -50,6 +50,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
@@ -61,7 +62,6 @@ import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper;
 import edu.unc.lib.dl.persist.services.storage.HashedFilesystemStorageLocation;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  * @author bbpennel

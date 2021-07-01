@@ -55,7 +55,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -191,8 +191,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     }
 
     private List<String> createObjects() throws Exception {
-        AbstractContentObject folder = repositoryObjectFactory.createFolderObject(null);
-        AbstractContentObject work = repositoryObjectFactory.createWorkObject(null);
+        ContentObject folder = repositoryObjectFactory.createFolderObject(null);
+        ContentObject work = repositoryObjectFactory.createWorkObject(null);
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
                 agent, folder.getPid(), Files.newInputStream(MODS_PATH_1)));
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(

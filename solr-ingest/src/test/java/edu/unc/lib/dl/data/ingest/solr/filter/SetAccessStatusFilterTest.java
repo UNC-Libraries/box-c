@@ -43,17 +43,17 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.test.AclModelBuilder;
 
 /**
  * @author harring
@@ -72,7 +72,7 @@ public class SetAccessStatusFilterTest {
     private InheritedAclFactory inheritedAclFactory;
     private ObjectAclFactory objAclFactory;
     @Mock
-    private AbstractContentObject contentObj;
+    private ContentObject contentObj;
     @Mock
     private CollectionObjectImpl parentObj;
     @Mock
@@ -617,7 +617,7 @@ public class SetAccessStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.INHERITED_PATRON_SETTINGS));
     }
 
-    private void redefineContentObject(Class<? extends AbstractContentObject> clazz) {
+    private void redefineContentObject(Class<? extends ContentObject> clazz) {
         contentObj = mock(clazz);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getPid()).thenReturn(pid);

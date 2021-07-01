@@ -20,17 +20,17 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.SoftwareAgentConstants;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * @author bbpennel
  */
-public class AgentPIDsTest {
+public class AgentPidsTest {
 
     private static final String BASE_URI = "http://example.com/rest/";
 
@@ -43,53 +43,53 @@ public class AgentPIDsTest {
     @Test
     public void pidForSoftwareAgent() throws Exception {
         assertEquals(BASE_URI + "agents/software/bxc-services-5.x",
-                AgentPIDs.forSoftware(SoftwareAgent.servicesAPI).getRepositoryPath());
+                AgentPids.forSoftware(SoftwareAgent.servicesAPI).getRepositoryPath());
         assertEquals("agents/software/bxc-services-5.x",
-                AgentPIDs.forSoftware(SoftwareAgent.servicesAPI).getQualifiedId());
+                AgentPids.forSoftware(SoftwareAgent.servicesAPI).getQualifiedId());
         assertEquals("software/bxc-services-5.x",
-                AgentPIDs.forSoftware(SoftwareAgent.servicesAPI).getId());
+                AgentPids.forSoftware(SoftwareAgent.servicesAPI).getId());
     }
 
     @Test(expected = NullPointerException.class)
     public void pidForNullSoftwareAgent() throws Exception {
-        AgentPIDs.forSoftware((SoftwareAgent) null);
+        AgentPids.forSoftware((SoftwareAgent) null);
     }
 
     @Test
     public void pidForSoftwareName() throws Exception {
         assertEquals(BASE_URI + "agents/software/useful-software",
-                AgentPIDs.forSoftware("useful-software").getRepositoryPath());
+                AgentPids.forSoftware("useful-software").getRepositoryPath());
     }
 
     @Test(expected = NullPointerException.class)
     public void pidForNullSoftwareName() throws Exception {
-        AgentPIDs.forSoftware((String) null);
+        AgentPids.forSoftware((String) null);
     }
 
     @Test
     public void pidForPersonUsername() throws Exception {
         assertEquals(BASE_URI + "agents/person/onyen/someuser",
-                AgentPIDs.forPerson("someuser").getRepositoryPath());
+                AgentPids.forPerson("someuser").getRepositoryPath());
         assertEquals("agents/person/onyen/someuser",
-                AgentPIDs.forPerson("someuser").getQualifiedId());
+                AgentPids.forPerson("someuser").getQualifiedId());
         assertEquals("person/onyen/someuser",
-                AgentPIDs.forPerson("someuser").getId());
+                AgentPids.forPerson("someuser").getId());
     }
 
     @Test(expected = NullPointerException.class)
     public void pidForNullPersonUsername() throws Exception {
-        AgentPIDs.forPerson((String) null);
+        AgentPids.forPerson((String) null);
     }
 
     @Test
     public void pidForPersonAgentPrincipals() throws Exception {
         AgentPrincipals princs = new AgentPrincipals("someuser2", new AccessGroupSet("group"));
         assertEquals(BASE_URI + "agents/person/onyen/someuser2",
-                AgentPIDs.forPerson(princs).getRepositoryPath());
+                AgentPids.forPerson(princs).getRepositoryPath());
     }
 
     @Test(expected = NullPointerException.class)
     public void pidForNullPersonAgentPrincipals() throws Exception {
-        AgentPIDs.forPerson((AgentPrincipals) null);
+        AgentPids.forPerson((AgentPrincipals) null);
     }
 }

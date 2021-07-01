@@ -48,14 +48,15 @@ import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
@@ -63,7 +64,6 @@ import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 /**
  *
@@ -164,10 +164,10 @@ public class RepositoryObjectFactoryTest {
     @Test
     public void createFolderWithPidTest() {
         PID pid = pidMinter.mintContentPid();
-        FileObjectImpl mockFile = mock(FileObjectImpl.class);
+        FileObject mockFile = mock(FileObject.class);
         when(mockFile.getPid()).thenReturn(pid);
         when(repoObjLoader.getFileObject(pid)).thenReturn(mockFile);
-        FileObjectImpl obj = repoObjFactory.createFileObject(pid, null);
+        FileObject obj = repoObjFactory.createFileObject(pid, null);
         assertNotNull(obj);
         assertEquals(pid, obj.getPid());
     }
@@ -187,7 +187,7 @@ public class RepositoryObjectFactoryTest {
         String mimetype = "application/octet-stream";
         String sha1Checksum = "checksum";
 
-        BinaryObjectImpl obj = repoObjFactory.createBinary(binaryUri, slug, content, filename,
+        BinaryObject obj = repoObjFactory.createBinary(binaryUri, slug, content, filename,
                 mimetype, sha1Checksum, null, null);
 
         assertTrue(obj.getPid().getRepositoryPath().startsWith(binaryUri.toString()));
@@ -198,14 +198,14 @@ public class RepositoryObjectFactoryTest {
     @Test
     public void addMemberTest() {
         PID parentPid = pidMinter.mintContentPid();
-        AbstractContentObject parent = mock(AbstractContentObject.class);
+        ContentObject parent = mock(ContentObject.class);
         when(parent.getPid()).thenReturn(parentPid);
         when(parent.getUri()).thenReturn(parentPid.getRepositoryUri());
         when(parent.getResource()).thenReturn(createResource(parentPid.getRepositoryPath()));
 
         Model memberModel = ModelFactory.createDefaultModel();
         PID memberPid = pidMinter.mintContentPid();
-        AbstractContentObject member = mock(AbstractContentObject.class);
+        ContentObject member = mock(ContentObject.class);
         when(member.getPid()).thenReturn(memberPid);
         when(member.getModel(true)).thenReturn(memberModel);
         when(member.getMetadataUri()).thenReturn(memberPid.getRepositoryUri());

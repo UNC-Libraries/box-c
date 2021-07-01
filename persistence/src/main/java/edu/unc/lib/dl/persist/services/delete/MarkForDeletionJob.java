@@ -20,17 +20,17 @@ import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.AgentPIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import io.dropwizard.metrics5.Timer;
 
@@ -72,12 +72,12 @@ public class MarkForDeletionJob implements Runnable {
 
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
-            if (repoObj instanceof AdminUnitImpl) {
+            if (repoObj instanceof AdminUnit) {
                 aclService.assertHasAccess("Insufficient privileges to delete admin unit " + pid.getUUID(),
                         pid, agent.getPrincipals(), markForDeletionUnit);
             }
 
-            if (!(repoObj instanceof AbstractContentObject)) {
+            if (!(repoObj instanceof ContentObject)) {
                 throw new InvalidOperationForObjectType("Cannot mark object " + pid.getUUID()
                         + " for deletion, objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }
@@ -87,7 +87,7 @@ public class MarkForDeletionJob implements Runnable {
             sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
             repoObj.getPremisLog().buildEvent(Premis.Deaccession)
-                    .addImplementorAgent(AgentPIDs.forPerson(agent))
+                    .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail("Item marked for deletion and not available without permissions")
                     .addEventDetail(message)
                     .writeAndClose();

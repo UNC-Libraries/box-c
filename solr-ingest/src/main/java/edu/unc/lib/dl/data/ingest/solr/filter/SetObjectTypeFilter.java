@@ -18,7 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -35,7 +35,7 @@ public class SetObjectTypeFilter implements IndexDocumentFilter {
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         IndexDocumentBean idb = dip.getDocument();
 
-        AbstractContentObject contentObj = dip.getContentObject();
+        ContentObject contentObj = dip.getContentObject();
         List<String> types = contentObj.getTypes();
 
         ResourceType resourceType = ResourceType.getResourceTypeForUris(types);
